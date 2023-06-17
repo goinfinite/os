@@ -1,0 +1,16 @@
+# Config file for [Air](https://github.com/cosmtrek/air) in TOML format
+root = "."
+tmp_dir = "tmp"
+
+[build]
+bin = "bin/api"
+cmd = "go build -o ./bin/api ./src/presentation/api/*.go"
+delay = 1000
+exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
+follow_symlink = false
+full_bin = "export $(grep -v '^#' .env | xargs); ./bin/api"
+ignore = ["*_test.go", "testHelpers.go"]
+
+[[watcher]]
+build = true
+watch = "src/**/*.go"
