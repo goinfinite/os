@@ -1,10 +1,10 @@
 # SpeediaOS AppManager
 
-SpeediaOS AppManager is a container operating system that allows you to run your applications in a secure and isolated environment while managing the resources used by the application using a simple and intuitive dashboard, REST API or CLI.
+SpeediaOS AppManager is a REST API, CLI and dashboard built to help you run your applications in a single container without the need to understand how to write Dockerfiles or even manage infrastructure.
 
-The dashboard is located at "speedianet/sam-dash" repository. Here you'll only find the compiled dashboard files as they are served by the Echo framework used to run the REST API.
+AppManager is not actually an OS, it's just a collection of tools to help you run your applications and databases persistently in a container. The actual OS is Red Hat Universal Base Image (UBI).
 
-In this repository you'll find the REST API and CLI code. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding.
+The dashboard is located at "speedianet/sam-dash" repository. In this repository you'll find the REST API and CLI code plus the "compiled" dashboard files. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding.
 
 ## Development
 
