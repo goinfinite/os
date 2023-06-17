@@ -1,15 +1,15 @@
-package main
+package restApi
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/sam-api/src/presentation/api/helper"
-	customMiddleware "github.com/speedianet/sam-api/src/presentation/api/middleware"
+	restApiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	restApiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
-//	@title			SamBackend
+//	@title			SamApi
 //	@version		0.0.1
-//	@description	SpeediaOS AppManager Backend API
+//	@description	SpeediaOS AppManager API
 //	@termsOfService	https://speedia.net/tos/
 
 //	@contact.name	Speedia Engineering
@@ -26,19 +26,19 @@ import (
 
 // @host		localhost:10000
 // @BasePath	/v1
-func main() {
-	helper.CheckEnvs()
+func StartRestApi() {
+	restApiHelper.CheckEnvs()
 
 	e := echo.New()
 
 	basePath := "/v1"
 	baseRoute := e.Group(basePath)
 
-	e.Pre(customMiddleware.TrailingSlash(basePath))
-	e.Use(customMiddleware.PanicHandler)
-	e.Use(customMiddleware.SetDefaultHeaders)
+	e.Pre(restApiMiddleware.TrailingSlash(basePath))
+	e.Use(restApiMiddleware.PanicHandler)
+	e.Use(restApiMiddleware.SetDefaultHeaders)
 
-	RouterInit(baseRoute)
+	RestApiRouterInit(baseRoute)
 
 	e.Start(":10000")
 }

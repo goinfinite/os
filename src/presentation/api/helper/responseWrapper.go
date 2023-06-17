@@ -1,4 +1,4 @@
-package helper
+package restApiHelper
 
 import (
 	"github.com/labstack/echo/v4"

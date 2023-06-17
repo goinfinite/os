@@ -1,4 +1,4 @@
-package main
+package restApi
 
 import (
 	_ "embed"
@@ -25,7 +25,7 @@ func swaggerRoute(baseRoute *echo.Group) {
 func authRoutes(baseRoute *echo.Group) {
 }
 
-func RouterInit(baseRoute *echo.Group) {
+func RestApiRouterInit(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
 }
