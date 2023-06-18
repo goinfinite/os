@@ -1,8 +1,10 @@
 {
   "cSpell.words": [
+    "apikey",
     "clientid",
     "customfield",
     "customfields",
+    "Dockerfiles",
     "github",
     "godoc",
     "godotenv",
@@ -10,9 +12,9 @@
     "labstack",
     "responsetype",
     "serviceid",
+    "speedia",
+    "speedianet",
     "swaggo",
-    "uuid",
-    "apikey",
-    "speedia"
+    "uuid"
   ]
 }

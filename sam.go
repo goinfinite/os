@@ -1,3 +1,7 @@
 package main
 
-// TODO: Add CLI logic and API server logic here.
+import "github.com/speedianet/sam/src/presentation/cli"
+
+func main() {
+	cli.CliRouterInit()
+}
