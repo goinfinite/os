@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	restApiController "github.com/speedianet/sam/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -23,6 +24,8 @@ func swaggerRoute(baseRoute *echo.Group) {
 }
 
 func authRoutes(baseRoute *echo.Group) {
+	authGroup := baseRoute.Group("/auth")
+	authGroup.POST("/login/", restApiController.AuthLoginController)
 }
 
 func RestApiRouterInit(baseRoute *echo.Group) {

@@ -1,4 +1,4 @@
-package controller
+package restApiController
 
 import (
 	"net/http"
