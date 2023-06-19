@@ -52,7 +52,7 @@ The userApiKey is a _AES-256-CTR-Encrypted-Base64-Encoded_ string and is not sto
 To generate the swagger documentation, you must use the following command:
 
 ```
-swag init -g src/presentation/api/main.go -o src/presentation/api/docs
+swag init -g src/presentation/api/api.go -o src/presentation/api/docs
 ```
 
 The annotations are in the controller files. The reference file can be found [here](https://github.com/swaggo/swag#attribute).

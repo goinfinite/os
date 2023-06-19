@@ -7,22 +7,22 @@ import (
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
-//	@title			SamApi
-//	@version		0.0.1
-//	@description	SpeediaOS AppManager API
-//	@termsOfService	https://speedia.net/tos/
+// @title			SamApi
+// @version			0.0.1
+// @description		SpeediaOS AppManager API
+// @termsOfService	https://speedia.net/tos/
 
-//	@contact.name	Speedia Engineering
-//	@contact.url	https://speedia.net/
-//	@contact.email	eng+swagger@speedia.net
+// @contact.name	Speedia Engineering
+// @contact.url		https://speedia.net/
+// @contact.email	eng+swagger@speedia.net
 
-//	@license.name	Speedia Web Services, LLC © 2023. All Rights Reserved.
-//	@license.url	https://speedia.net/tos/
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@securityDefinitions.apikey Bearer
-//	@in header
-//	@name Authorization
-//	@description Type "Bearer" followed by a space and JWT token.
+// @securityDefinitions.apikey	Bearer
+// @in 							header
+// @name						Authorization
+// @description					Type "Bearer" followed by a space and JWT token.
 
 // @host		localhost:10000
 // @BasePath	/v1
