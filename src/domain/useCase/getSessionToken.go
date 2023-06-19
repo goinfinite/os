@@ -28,7 +28,11 @@ func GetSessionToken(
 		panic("InvalidLoginCredentials")
 	}
 
-	accountDetails := accQueryRepo.GetAccountDetailsByUsername(login.Username)
+	accountDetails, err := accQueryRepo.GetAccountDetailsByUsername(login.Username)
+	if err != nil {
+		panic("AccountDetailsFetchError")
+	}
+
 	userId := accountDetails.UserId
 	expiresIn := valueObject.UnixTime(
 		time.Now().Add(3 * time.Hour).Unix(),

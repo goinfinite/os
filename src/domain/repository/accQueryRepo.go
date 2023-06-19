@@ -8,5 +8,5 @@ import (
 type AccQueryRepo interface {
 	GetAccountDetailsByUsername(
 		username valueObject.Username,
-	) entity.AccountDetails
+	) (entity.AccountDetails, error)
 }
