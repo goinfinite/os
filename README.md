@@ -2,7 +2,7 @@
 
 SpeediaOS AppManager is a REST API, CLI and dashboard built to help you run your applications in a single container without the need to understand how to write Dockerfiles or even manage infrastructure.
 
-AppManager is not actually an OS, it's just a collection of tools to help you run your applications and databases persistently in a container. The actual OS is Red Hat Universal Base Image (UBI).
+AppManager is not actually an OS, it's just a collection of tools to help you run your applications and databases persistently in a container. The actual OS is Red Hat Universal Base Image (UBI) as per the Dockerfile.
 
 The dashboard is located at "speedianet/sam-dash" repository. In this repository you'll find the REST API and CLI code plus the "compiled" dashboard files. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding.
 
@@ -12,11 +12,9 @@ To run this project during development you must install [Air](https://github.com
 
 ### Environment Variables
 
-You must have an `.env` file in the root of the git directory **during development**. You can use the `.env.example` file as a template.
+You must have an `.env` file in the root of the git directory **during development**. You can use the `.env.example` file as a template. Air will read the `.env` file and use it to run the project during development.
 
-Air will read the `.env` file and use it to run the project during development.
-
-If you add a new env var, please add it to the `src/presentation/api/checkEnvs.go` file. That file is used to check if all the required env vars were sent when running the binary in production.
+If you add a new env var that is required to run the REST API, please add it to the `src/presentation/api/checkEnvs.go` file.
 
 When running in production, the `.env` file is ignored and the env vars must be set in the server/deployment or on the command line, for instance:
 
