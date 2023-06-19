@@ -33,12 +33,14 @@ func AuthLoginController(c echo.Context) error {
 
 	authQueryRepo := infra.AuthQueryRepo{}
 	authCmdRepo := infra.AuthCmdRepo{}
+	accQueryRepo := infra.AccQueryRepo{}
 
 	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
 
 	accessToken := useCase.GetSessionToken(
 		authQueryRepo,
 		authCmdRepo,
+		accQueryRepo,
 		loginDto,
 		ipAddress,
 	)
