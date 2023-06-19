@@ -1,3 +1,7 @@
+```
+This project is under active development and is not ready for production use.
+```
+
 # SpeediaOS AppManager
 
 SpeediaOS AppManager is a REST API, CLI and dashboard built to help you run your applications in a single container without the need to understand how to write Dockerfiles or even manage infrastructure.
