@@ -21,14 +21,14 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	apiURL := os.Getenv("VHOST")
 
 	now := time.Now()
-	tokenExpiration := time.Unix(expiresIn.GetUnixTime(), 0)
+	tokenExpiration := time.Unix(expiresIn.Get(), 0)
 
 	claims := jwt.MapClaims{
 		"iss":        apiURL,
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
-		"userId":     userId.GetUserId(),
+		"userId":     userId.Get(),
 		"originalIp": ipAddress.String(),
 	}
 
