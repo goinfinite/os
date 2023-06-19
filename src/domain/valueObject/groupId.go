@@ -23,7 +23,7 @@ func NewGroupIdFromStringPanic(value string) GroupId {
 	return GroupId(accId)
 }
 
-func (gid GroupId) GetGroupId() int64 {
+func (gid GroupId) Get() int64 {
 	return int64(gid)
 }
 

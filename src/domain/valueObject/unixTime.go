@@ -4,7 +4,7 @@ import "time"
 
 type UnixTime int64
 
-func (ut UnixTime) GetUnixTime() int64 {
+func (ut UnixTime) Get() int64 {
 	return time.Unix(int64(ut), 0).UTC().Unix()
 }
 

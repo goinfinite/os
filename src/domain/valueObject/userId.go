@@ -23,7 +23,7 @@ func NewUserIdFromStringPanic(value string) UserId {
 	return UserId(accId)
 }
 
-func (uid UserId) GetUserId() int64 {
+func (uid UserId) Get() int64 {
 	return int64(uid)
 }
 
