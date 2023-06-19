@@ -2,6 +2,7 @@ package useCase
 
 import (
 	"log"
+	"time"
 
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/entity"
@@ -29,5 +30,9 @@ func GetSessionToken(
 
 	accountDetails := accQueryRepo.GetAccountDetailsByUsername(login.Username)
 	userId := accountDetails.UserId
-	return authCmdRepo.GenerateSessionToken(userId, 28800, ipAddress)
+	expiresIn := valueObject.UnixTime(
+		time.Now().Add(3 * time.Hour).Unix(),
+	)
+
+	return authCmdRepo.GenerateSessionToken(userId, expiresIn, ipAddress)
 }
