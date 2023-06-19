@@ -1,0 +1,69 @@
+basePath: /v1
+definitions:
+  dto.Login:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  entity.AccessToken:
+    properties:
+      expiresIn:
+        type: integer
+      tokenStr:
+        type: string
+      type:
+        $ref: '#/definitions/valueObject.AccessTokenType'
+    type: object
+  valueObject.AccessTokenType:
+    enum:
+    - sessionToken
+    - userApiKey
+    type: string
+    x-enum-varnames:
+    - sessionToken
+    - userApiKey
+host: localhost:10000
+info:
+  contact:
+    email: eng+swagger@speedia.net
+    name: Speedia Engineering
+    url: https://speedia.net/
+  description: SpeediaOS AppManager API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://speedia.net/tos/
+  title: SamApi
+  version: 0.0.1
+paths:
+  /auth/login/:
+    post:
+      consumes:
+      - application/json
+      description: Generate JWT with credentials
+      parameters:
+      - description: Login
+        in: body
+        name: loginDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.AccessToken'
+      summary: Generate JWT with credentials
+      tags:
+      - auth
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
