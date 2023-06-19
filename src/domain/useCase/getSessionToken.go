@@ -1,6 +1,8 @@
 package useCase
 
 import (
+	"log"
+
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/repository"
@@ -17,6 +19,11 @@ func GetSessionToken(
 	isLoginValid := authQueryRepo.IsLoginValid(login)
 
 	if !isLoginValid {
+		log.Printf(
+			"Login failed for '%v' from '%v'.",
+			login.Username.String(),
+			ipAddress.String(),
+		)
 		panic("InvalidLoginCredentials")
 	}
 
