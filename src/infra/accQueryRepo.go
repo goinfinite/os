@@ -11,7 +11,7 @@ import (
 type AccQueryRepo struct {
 }
 
-func (repo AccQueryRepo) GetAccountDetailsByUsername(
+func (repo AccQueryRepo) GetByUsername(
 	username valueObject.Username,
 ) (entity.AccountDetails, error) {
 	userInfo, err := user.Lookup(string(username))

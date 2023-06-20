@@ -15,7 +15,7 @@ func TestAccQueryRepo(t *testing.T) {
 		username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
 
 		authQueryRepo := AccQueryRepo{}
-		accDetails, err := authQueryRepo.GetAccountDetailsByUsername(username)
+		accDetails, err := authQueryRepo.GetByUsername(username)
 		if err != nil {
 			t.Error("UnexpectedError")
 		}
@@ -30,7 +30,7 @@ func TestAccQueryRepo(t *testing.T) {
 
 		authQueryRepo := AccQueryRepo{}
 
-		_, err := authQueryRepo.GetAccountDetailsByUsername(username)
+		_, err := authQueryRepo.GetByUsername(username)
 		if err == nil {
 			t.Error("ExpectingError")
 		}

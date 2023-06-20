@@ -28,7 +28,7 @@ func GetSessionToken(
 		panic("InvalidLoginCredentials")
 	}
 
-	accountDetails, err := accQueryRepo.GetAccountDetailsByUsername(login.Username)
+	accountDetails, err := accQueryRepo.GetByUsername(login.Username)
 	if err != nil {
 		panic("AccountDetailsFetchError")
 	}

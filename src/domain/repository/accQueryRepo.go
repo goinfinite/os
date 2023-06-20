@@ -6,7 +6,7 @@ import (
 )
 
 type AccQueryRepo interface {
-	GetAccountDetailsByUsername(
+	GetByUsername(
 		username valueObject.Username,
 	) (entity.AccountDetails, error)
 }
