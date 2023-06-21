@@ -66,7 +66,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add new user",
+                "description": "Add a new user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -76,7 +76,7 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Add new user",
+                "summary": "AddNewUser",
                 "parameters": [
                     {
                         "description": "New user details",
@@ -91,6 +91,43 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "UserCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{userId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete an user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "DeleteUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserId",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UserDeleted",
                         "schema": {
                             "type": "object"
                         }

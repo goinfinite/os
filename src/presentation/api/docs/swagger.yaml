@@ -71,7 +71,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add new user
+      description: Add a new user.
       parameters:
       - description: New user details
         in: body
@@ -88,7 +88,30 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Add new user
+      summary: AddNewUser
+      tags:
+      - user
+  /user/{userId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an user.
+      parameters:
+      - description: UserId
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UserDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteUser
       tags:
       - user
 securityDefinitions:
