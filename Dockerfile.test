@@ -1,0 +1,27 @@
+FROM registry.access.redhat.com/ubi8/ubi-init:8.8
+
+WORKDIR /speedia
+
+RUN rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official \
+    && dnf config-manager --disableplugin subscription-manager --add-repo http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os \
+    && dnf config-manager --disableplugin subscription-manager --add-repo http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os \
+    && dnf config-manager --disableplugin subscription-manager --add-repo http://mirror.centos.org/centos/8-stream/PowerTools/x86_64/os \
+    && dnf install -qy https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+RUN dnf -y update-minimal --security --sec-severity=Important --sec-severity=Critical \
+    && dnf install --enablerepo=* -qy gcc make pam-devel curl wget tar git
+
+RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=1 go build -o sam
+
+ENTRYPOINT ["go", "test", "-v", "./..."]

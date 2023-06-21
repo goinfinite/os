@@ -2,13 +2,27 @@
 This project is under active development and is not ready for production use.
 ```
 
-# SpeediaOS AppManager
+# Speedia AppManager
 
-SpeediaOS AppManager is a REST API, CLI and dashboard built to help you run your applications in a single container without the need to understand how to write Dockerfiles or even manage infrastructure.
+Speedia AppManager (SAM) is an open source application hosting manager in a single file. It has a REST API, CLI and dashboard built to help you run your applications in a container easily.
 
-AppManager is not actually an OS, it's just a collection of tools to help you run your applications and databases persistently in a container. The actual OS is Red Hat Universal Base Image (UBI) as per the Dockerfile.
+In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
 
-The dashboard is located at "speedianet/sam-dash" repository. In this repository you'll find the REST API and CLI code plus the "compiled" dashboard files. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding.
+## Running
+
+SAM is designed to manage an application with its dependencies in a container, specifically on top of Red Hat UBI 8. However, it may also work as a regular binary in any RPM-based distro so you can use it to run your applications directly in a virtual machine or bare metal server.
+
+To run SAM as a container, you can use the image available at DockerHub with the following command:
+
+```
+podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it speedia/sam:latest
+```
+
+Feel free to rename the container, vhost and change the host port as you wish. SAM should work with Docker, Docker Swarm, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
+
+You can publish port 80 and 443 to the host when running SAM in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in the server.
+
+Otherwise, you may want to use a reverse proxy to run multiple SAM instances in the same server and proxy each domain to the respective SAM instance, using [nginx-proxy/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for example. Remember to also map port 10000 to a subdomain or directory in the reverse proxy for each SAM instance.
 
 ## Development
 
@@ -26,11 +40,38 @@ When running in production, the `.env` file is ignored and the env vars must be 
 ENV1=XXX /speedia/sam
 ```
 
+### Unit Testing
+
+SAM commands can harm your system, so it's important to run the unit tests in a proper container:
+
+```
+podman build --format=docker -t sam-unit-test:latest -f Dockerfile.test .
+podman run --rm -it sam-unit-test:latest
+```
+
+Make sure you have the `.env` file in the root of the git directory before running the tests.
+
 ### Dev Utils
 
 The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
 
 For instance there you'll find a `testHelpers.go` file that is used to read the `.env` during tests.
+
+### Building
+
+To build the project, run the command below. It takes two minutes to build the project at first. After that, it takes less than 10 seconds to build.
+
+```
+podman build --format=docker -t sam:latest .
+```
+
+To run the project you may use the following command:
+
+```
+podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it sam:latest
+```
+
+When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy.
 
 ## REST API
 

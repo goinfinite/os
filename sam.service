@@ -1,0 +1,13 @@
+[Unit]
+Description=Speedia AppManager
+
+[Service]
+User=root
+WorkingDirectory=/speedia
+ExecStart=/speedia/sam serve
+Restart=always
+RestartSec=1000
+TimeoutStartSec=1000
+
+[Install]
+WantedBy=multi-user.target
