@@ -11,7 +11,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   filepath.Base(os.Args[0]),
-	Short: "SpeediaOS AppManager CLI",
+	Short: "Speedia AppManager CLI",
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
@@ -21,7 +21,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print software version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("SpeediaOS AppManager v0.0.1")
+		fmt.Println("Speedia AppManager v0.0.1")
 	},
 }
 

@@ -9,7 +9,7 @@ import (
 
 // @title			SamApi
 // @version			0.0.1
-// @description		SpeediaOS AppManager API
+// @description		Speedia AppManager API
 // @termsOfService	https://speedia.net/tos/
 
 // @contact.name	Speedia Engineering
