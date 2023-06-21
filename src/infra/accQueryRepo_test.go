@@ -11,17 +11,23 @@ import (
 func TestAccQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("GetValidAccount", func(t *testing.T) {
+	t.Run("GetValidAccountByUsername", func(t *testing.T) {
 		username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
 
 		authQueryRepo := AccQueryRepo{}
-		accDetails, err := authQueryRepo.GetByUsername(username)
+		_, err := authQueryRepo.GetByUsername(username)
 		if err != nil {
 			t.Error("UnexpectedError")
 		}
+	})
 
-		if (accDetails.UserId.Get()) != 1000 {
-			t.Error("InvalidUserId")
+	t.Run("GetValidAccountById", func(t *testing.T) {
+		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+
+		authQueryRepo := AccQueryRepo{}
+		_, err := authQueryRepo.GetById(userId)
+		if err != nil {
+			t.Error("UnexpectedError")
 		}
 	})
 

@@ -9,4 +9,7 @@ type AccQueryRepo interface {
 	GetByUsername(
 		username valueObject.Username,
 	) (entity.AccountDetails, error)
+	GetById(
+		userId valueObject.UserId,
+	) (entity.AccountDetails, error)
 }

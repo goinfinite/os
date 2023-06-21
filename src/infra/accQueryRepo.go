@@ -11,12 +11,10 @@ import (
 type AccQueryRepo struct {
 }
 
-func (repo AccQueryRepo) GetByUsername(
-	username valueObject.Username,
-) (entity.AccountDetails, error) {
-	userInfo, err := user.Lookup(string(username))
+func accDetailsFactory(userInfo *user.User) (entity.AccountDetails, error) {
+	username, err := valueObject.NewUsername(userInfo.Username)
 	if err != nil {
-		return entity.AccountDetails{}, errors.New("UserLookupError")
+		return entity.AccountDetails{}, errors.New("UsernameParseError")
 	}
 
 	userId, err := valueObject.NewUserIdFromString(userInfo.Uid)
@@ -34,4 +32,26 @@ func (repo AccQueryRepo) GetByUsername(
 		userId,
 		groupId,
 	), nil
+}
+
+func (repo AccQueryRepo) GetByUsername(
+	username valueObject.Username,
+) (entity.AccountDetails, error) {
+	userInfo, err := user.Lookup(string(username))
+	if err != nil {
+		return entity.AccountDetails{}, errors.New("UserLookupError")
+	}
+
+	return accDetailsFactory(userInfo)
+}
+
+func (repo AccQueryRepo) GetById(
+	userId valueObject.UserId,
+) (entity.AccountDetails, error) {
+	userInfo, err := user.LookupId(userId.String())
+	if err != nil {
+		return entity.AccountDetails{}, errors.New("UserLookupError")
+	}
+
+	return accDetailsFactory(userInfo)
 }
