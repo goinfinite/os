@@ -18,7 +18,7 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	ipAddress valueObject.IpAddress,
 ) entity.AccessToken {
 	jwtSecret := os.Getenv("JWT_SECRET")
-	apiURL := os.Getenv("VHOST")
+	apiURL := os.Getenv("VIRTUAL_HOST")
 
 	now := time.Now()
 	tokenExpiration := time.Unix(expiresIn.Get(), 0)
