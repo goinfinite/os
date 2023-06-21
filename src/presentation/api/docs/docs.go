@@ -58,9 +58,59 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Add new user",
+                "parameters": [
+                    {
+                        "description": "New user details",
+                        "name": "addUserDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "UserCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.AddUser": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Login": {
             "type": "object",
             "properties": {
@@ -115,7 +165,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "SamApi",
-	Description:      "SpeediaOS AppManager API",
+	Description:      "Speedia AppManager API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

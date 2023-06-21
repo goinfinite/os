@@ -1,5 +1,12 @@
 basePath: /v1
 definitions:
+  dto.AddUser:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   dto.Login:
     properties:
       password:
@@ -30,7 +37,7 @@ info:
     email: eng+swagger@speedia.net
     name: Speedia Engineering
     url: https://speedia.net/
-  description: SpeediaOS AppManager API
+  description: Speedia AppManager API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -60,6 +67,30 @@ paths:
       summary: Generate JWT with credentials
       tags:
       - auth
+  /user/:
+    post:
+      consumes:
+      - application/json
+      description: Add new user
+      parameters:
+      - description: New user details
+        in: body
+        name: addUserDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: UserCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: Add new user
+      tags:
+      - user
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and JWT token.

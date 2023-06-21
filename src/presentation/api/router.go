@@ -28,7 +28,13 @@ func authRoutes(baseRoute *echo.Group) {
 	authGroup.POST("/login/", restApiController.AuthLoginController)
 }
 
+func userRoutes(baseRoute *echo.Group) {
+	userGroup := baseRoute.Group("/user")
+	userGroup.POST("/", restApiController.AddUserController)
+}
+
 func RestApiRouterInit(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
+	userRoutes(baseRoute)
 }

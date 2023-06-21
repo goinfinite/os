@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "SpeediaOS AppManager API",
+        "description": "Speedia AppManager API",
         "title": "SamApi",
         "termsOfService": "https://speedia.net/tos/",
         "contact": {
@@ -51,9 +51,59 @@
                     }
                 }
             }
+        },
+        "/user/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Add new user",
+                "parameters": [
+                    {
+                        "description": "New user details",
+                        "name": "addUserDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "UserCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.AddUser": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Login": {
             "type": "object",
             "properties": {
