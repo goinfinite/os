@@ -10,6 +10,8 @@
     "godotenv",
     "joho",
     "labstack",
+    "nginx",
+    "podman",
     "responsetype",
     "serviceid",
     "speedia",
