@@ -1,0 +1,8 @@
+Dockerfile
+Dockerfile.test
+logs/
+tmp/
+.env.example
+.git
+.gitignore
+TODO.md
