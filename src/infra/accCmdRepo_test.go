@@ -9,20 +9,29 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
+func addDummyUser() error {
+	username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
+	password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
+
+	addUser := dto.AddUser{
+		Username: username,
+		Password: password,
+	}
+
+	accCmdRepo := AccCmdRepo{}
+	err := accCmdRepo.Add(addUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestAccCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	t.Run("AddValidAccount", func(t *testing.T) {
-		username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
-		password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
-
-		addUser := dto.AddUser{
-			Username: username,
-			Password: password,
-		}
-
-		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.Add(addUser)
+		err := addDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -42,5 +51,19 @@ func TestAccCmdRepo(t *testing.T) {
 		if err == nil {
 			t.Error("ExpectingError")
 		}
+	})
+
+	t.Run("DeleteValidAccount", func(t *testing.T) {
+		_ = addDummyUser()
+
+		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+
+		accCmdRepo := AccCmdRepo{}
+		err := accCmdRepo.Delete(userId)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		_ = addDummyUser()
 	})
 }
