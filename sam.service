@@ -8,6 +8,7 @@ ExecStart=/speedia/sam serve
 Restart=always
 RestartSec=1000
 TimeoutStartSec=1000
+PassEnvironment=VIRTUAL_HOST
 
 [Install]
 WantedBy=multi-user.target
