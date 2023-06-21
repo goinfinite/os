@@ -12,8 +12,8 @@ import (
 )
 
 // AuthLogin godoc
-// @Summary      Add new user
-// @Description  Add new user
+// @Summary      AddNewUser
+// @Description  Add a new user.
 // @Tags         user
 // @Accept       json
 // @Produce      json
@@ -42,4 +42,29 @@ func AddUserController(c echo.Context) error {
 	)
 
 	return restApiHelper.ResponseWrapper(c, http.StatusCreated, "UserCreated")
+}
+
+// AuthLogin godoc
+// @Summary      DeleteUser
+// @Description  Delete an user.
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        userId 	  path   string  true  "UserId"
+// @Success      200 {object} object{} "UserDeleted"
+// @Router       /user/{userId}/ [delete]
+func DeleteUserController(c echo.Context) error {
+	userId := valueObject.NewUserIdFromStringPanic(c.Param("userId"))
+
+	accQueryRepo := infra.AccQueryRepo{}
+	accCmdRepo := infra.AccCmdRepo{}
+
+	useCase.DeleteUser(
+		accQueryRepo,
+		accCmdRepo,
+		userId,
+	)
+
+	return restApiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
 }
