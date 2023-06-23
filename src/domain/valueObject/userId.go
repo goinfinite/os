@@ -23,6 +23,16 @@ func NewUserIdFromStringPanic(value string) UserId {
 	return UserId(accId)
 }
 
+func NewUserIdFromFloatPanic(value float64) UserId {
+	accId, err := strconv.ParseInt(
+		strconv.FormatFloat(value, 'f', -1, 64), 10, 64,
+	)
+	if err != nil {
+		panic("InvalidUserId")
+	}
+	return UserId(accId)
+}
+
 func (uid UserId) Get() int64 {
 	return int64(uid)
 }

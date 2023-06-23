@@ -85,7 +85,13 @@ func UpdateUserController(c echo.Context) error {
 
 	restApiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	userId := valueObject.NewUserIdFromStringPanic(requestBody["userId"].(string))
+	var userId valueObject.UserId
+	switch id := requestBody["userId"].(type) {
+	case string:
+		userId = valueObject.NewUserIdFromStringPanic(id)
+	case float64:
+		userId = valueObject.NewUserIdFromFloatPanic(id)
+	}
 
 	var passPtr *valueObject.Password
 	if requestBody["password"] != nil {
