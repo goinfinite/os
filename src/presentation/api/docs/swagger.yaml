@@ -148,7 +148,7 @@ paths:
       - user
 securityDefinitions:
   Bearer:
-    description: Type "Bearer" followed by a space and JWT token.
+    description: Type "Bearer" + JWT token or API key.
     in: header
     name: Authorization
     type: apiKey
