@@ -57,12 +57,12 @@ func isDomainLayerPanic(stackTrace *StackTrace) bool {
 		strings.Contains(stackTrace.String(), useCasePath)
 }
 
-func isStaff(c echo.Context) bool {
-	currentIpAddress := c.RealIP()
-	staffIpAddresses := strings.Split(os.Getenv("STAFF_TRUSTED_IPS"), ",")
+func isTrustworthy(c echo.Context) bool {
+	currentIp := c.RealIP()
+	trustedIps := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
 
-	for _, staffIp := range staffIpAddresses {
-		if currentIpAddress == strings.TrimSpace(staffIp) {
+	for _, staffIp := range trustedIps {
+		if currentIp == strings.TrimSpace(staffIp) {
 			return true
 		}
 	}
@@ -122,7 +122,7 @@ func handlePanic(c echo.Context) {
 		statusCode = http.StatusBadRequest
 	}
 
-	if isStaff(c) {
+	if isTrustworthy(c) {
 		c.JSON(statusCode, map[string]interface{}{
 			"status": statusCode,
 			"body": map[string]interface{}{
