@@ -37,7 +37,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Generate JWT with credentials",
+                "summary": "GenerateJwtWithCredentials",
                 "parameters": [
                     {
                         "description": "Login",

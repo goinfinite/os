@@ -12,7 +12,7 @@ import (
 )
 
 // AuthLogin godoc
-// @Summary      Generate JWT with credentials
+// @Summary      GenerateJwtWithCredentials
 // @Description  Generate JWT with credentials
 // @Tags         auth
 // @Accept       json

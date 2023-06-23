@@ -73,7 +73,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/entity.AccessToken'
-      summary: Generate JWT with credentials
+      summary: GenerateJwtWithCredentials
       tags:
       - auth
   /user/:
