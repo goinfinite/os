@@ -3,6 +3,7 @@ package infra
 import (
 	"os"
 	"testing"
+	"time"
 
 	testHelpers "github.com/speedianet/sam/src/devUtils"
 	"github.com/speedianet/sam/src/domain/dto"
@@ -35,4 +36,35 @@ func TestAuthQueryRepo(t *testing.T) {
 			t.Error("Expected invalid login credentials, but got valid")
 		}
 	})
+
+	t.Run("ValidSessionAccessToken", func(t *testing.T) {
+		authCmdRepo := AuthCmdRepo{}
+
+		token := authCmdRepo.GenerateSessionToken(
+			valueObject.UserId(1000),
+			valueObject.UnixTime(
+				time.Now().Add(3*time.Hour).Unix(),
+			),
+			valueObject.NewIpAddressPanic("127.0.0.1"),
+		)
+
+		authQueryRepo := AuthQueryRepo{}
+		_, err := authQueryRepo.GetAccessTokenDetails(token.TokenStr)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("InvalidSessionAccessToken", func(t *testing.T) {
+		authQueryRepo := AuthQueryRepo{}
+		invalidToken := valueObject.NewAccessTokenStrPanic(
+			"invalidTokenInvalidTokenInvalidTokenInvalidTokenInvalidToken",
+		)
+		_, err := authQueryRepo.GetAccessTokenDetails(invalidToken)
+		if err == nil {
+			t.Error("ExpectingError")
+		}
+	})
+
+	// TODO: Test ApiKey
 }
