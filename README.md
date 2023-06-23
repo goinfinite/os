@@ -75,20 +75,13 @@ When testing, consider publishing port 80 and 443 to the host so that you don't 
 
 ## REST API
 
-### Authentication Concepts
+### Authentication
 
-- **sessionToken**: is a temporary token that is used to identify a user. Mainly used in the dashboard, it is a JWT token that contains the user's account id, IP address and expiration date. It is usually stored in the browser's local storage.
+The API accepts two types of tokens and uses the standard "Authorization: Bearer <token>" header:
 
-- **userApiKey**: is a fixed token that is used to identify a user for API calls. It is usually stored in the user's environment variables.
+- **sessionToken**: is a JWT, used for dashboard access and generated with the user login credentials. The token contains the userId, IP address and expiration date. It expires in 3 hours and only the IP address used on the token generation is allowed to use it.
 
-```
-Original String: U|1000|f5be9f20-1a26-44bc-87a5-33addccd4327
-Encrypted String: GPDw4aeq+tDTTr987+xJLJdfjqC3Gm0QtSYnXYZp/X1ut2a9WpHMn9UnB0P8StWc+u+hunTyStvEWg=
-```
-
-The session token authentication is a standard JWT authentication, it's supposed to expire in 3 hours. Only the IP address used to create the token is allowed to use it.
-
-The userApiKey is a _AES-256-CTR-Encrypted-Base64-Encoded_ string and is not stored after generating it. Only the SHA3-256 hash of the key is stored in file.
+- **userApiKey**: is a token used for API calls. The key is a _AES-256-CTR-Encrypted-Base64-Encoded_ string, but only the SHA3-256 hash of the key is stored in the server. The userId is retrieved during key decoding. It never expires, but the user can update it at any time.
 
 ### OpenApi // Swagger
 
