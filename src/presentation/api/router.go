@@ -31,6 +31,7 @@ func authRoutes(baseRoute *echo.Group) {
 func userRoutes(baseRoute *echo.Group) {
 	userGroup := baseRoute.Group("/user")
 	userGroup.POST("/", restApiController.AddUserController)
+	userGroup.PUT("/", restApiController.UpdateUserController)
 }
 
 func RestApiRouterInit(baseRoute *echo.Group) {
