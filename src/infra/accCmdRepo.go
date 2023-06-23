@@ -161,32 +161,34 @@ func storeNewApiKeyHash(
 
 	hashKeysFile := ".userKeys"
 
+	if _, err := os.Stat(hashKeysFile); err == nil {
+		removeOldKeyCmd := exec.Command(
+			"sed",
+			"-i",
+			"/"+userId.String()+"/d",
+			hashKeysFile,
+		)
+		err := removeOldKeyCmd.Run()
+		if err != nil {
+			log.Printf("UserKeysRemoveOldKeyError: %s", err)
+			return errors.New("UserKeysRemoveOldKeyError")
+		}
+	}
+
 	hash := sha3.New256()
 	hash.Write([]byte(apiKey.String()))
 	hashString := hex.EncodeToString(hash.Sum(nil))
 
 	file, err := os.OpenFile(hashKeysFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {
-		log.Fatalf("UserKeysOpenFileError: %v", err)
+		log.Printf("UserKeysOpenFileError: %v", err)
 		return errors.New("UserKeysOpenFileError")
 	}
 	defer file.Close()
 
-	removeOldKeyCmd := exec.Command(
-		"sed",
-		"-i",
-		"/"+userId.String()+"/d",
-		hashKeysFile,
-	)
-	err = removeOldKeyCmd.Run()
-	if err != nil {
-		log.Printf("UserKeysRemoveOldKeyError: %s", err)
-		return errors.New("UserKeysRemoveOldKeyError")
-	}
-
 	_, err = file.WriteString(userId.String() + ":" + hashString + "\n")
 	if err != nil {
-		log.Fatalf("UserKeysWriteError: %v", err)
+		log.Printf("UserKeysWriteError: %v", err)
 		return errors.New("UserKeysWriteError")
 	}
 
