@@ -151,38 +151,38 @@ func encryptApiKey(plainTextApiKey string) (valueObject.AccessTokenStr, error) {
 	return newApiKey, nil
 }
 
-func storeNewApiKeyHash(
+func storeNewKeyHash(
 	userId valueObject.UserId,
-	apiKey valueObject.AccessTokenStr,
+	uuid uuid.UUID,
 ) error {
 	var lock sync.Mutex
 	lock.Lock()
 	defer lock.Unlock()
 
-	hashKeysFile := ".userKeys"
+	keysHashFile := ".userKeys"
 
-	if _, err := os.Stat(hashKeysFile); err == nil {
-		removeOldKeyCmd := exec.Command(
+	if _, err := os.Stat(keysHashFile); err == nil {
+		purgeOldKeyCmd := exec.Command(
 			"sed",
 			"-i",
-			"/"+userId.String()+"/d",
-			hashKeysFile,
+			"/"+userId.String()+":/d",
+			keysHashFile,
 		)
-		err := removeOldKeyCmd.Run()
+		err := purgeOldKeyCmd.Run()
 		if err != nil {
-			log.Printf("UserKeysRemoveOldKeyError: %s", err)
-			return errors.New("UserKeysRemoveOldKeyError")
+			log.Printf("PurgeOldKeyError: %s", err)
+			return errors.New("PurgeOldKeyError")
 		}
 	}
 
 	hash := sha3.New256()
-	hash.Write([]byte(apiKey.String()))
+	hash.Write([]byte(uuid.String()))
 	hashString := hex.EncodeToString(hash.Sum(nil))
 
-	file, err := os.OpenFile(hashKeysFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
+	file, err := os.OpenFile(keysHashFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {
-		log.Printf("UserKeysOpenFileError: %v", err)
-		return errors.New("UserKeysOpenFileError")
+		log.Printf("KeysFileUnreadable: %v", err)
+		return errors.New("KeysFileUnreadable")
 	}
 	defer file.Close()
 
@@ -198,13 +198,14 @@ func storeNewApiKeyHash(
 func (repo AccCmdRepo) UpdateApiKey(
 	userId valueObject.UserId,
 ) (valueObject.AccessTokenStr, error) {
-	plainTextApiKey := userId.String() + ":" + uuid.New().String()
+	uuid := uuid.New()
+	plainTextApiKey := userId.String() + ":" + uuid.String()
 	newApiKey, err := encryptApiKey(plainTextApiKey)
 	if err != nil {
 		return "", err
 	}
 
-	err = storeNewApiKeyHash(userId, newApiKey)
+	err = storeNewKeyHash(userId, uuid)
 	if err != nil {
 		return "", err
 	}
