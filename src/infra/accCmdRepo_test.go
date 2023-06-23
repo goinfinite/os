@@ -27,6 +27,24 @@ func addDummyUser() error {
 	return nil
 }
 
+func deleteDummyUser() error {
+	userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+
+	accCmdRepo := AccCmdRepo{}
+	err := accCmdRepo.Delete(userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resetDummyUser() {
+	_ = addDummyUser()
+	_ = deleteDummyUser()
+	_ = addDummyUser()
+}
+
 func TestAccCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
@@ -56,14 +74,40 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("DeleteValidAccount", func(t *testing.T) {
 		_ = addDummyUser()
 
-		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
-
-		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.Delete(userId)
+		err := deleteDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
 		_ = addDummyUser()
+	})
+
+	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
+		resetDummyUser()
+
+		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		newPassword := valueObject.NewPasswordPanic("newPassword")
+
+		accCmdRepo := AccCmdRepo{}
+		err := accCmdRepo.UpdatePassword(userId, newPassword)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		resetDummyUser()
+	})
+
+	t.Run("UpdateApiKeyValidAccount", func(t *testing.T) {
+		resetDummyUser()
+
+		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+
+		accCmdRepo := AccCmdRepo{}
+		_, err := accCmdRepo.UpdateApiKey(userId)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		resetDummyUser()
 	})
 }
