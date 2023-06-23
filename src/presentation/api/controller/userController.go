@@ -122,7 +122,7 @@ func UpdateUserController(c echo.Context) error {
 		)
 	}
 
-	if updateUserDto.ShouldUpdateApiKey != nil {
+	if updateUserDto.ShouldUpdateApiKey != nil && *updateUserDto.ShouldUpdateApiKey {
 		newKey := useCase.UpdateUserApiKey(
 			accQueryRepo,
 			accCmdRepo,
