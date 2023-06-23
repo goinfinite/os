@@ -22,7 +22,7 @@ import (
 // @securityDefinitions.apikey	Bearer
 // @in 							header
 // @name						Authorization
-// @description					Type "Bearer" followed by a space and JWT token.
+// @description					Type "Bearer" + JWT token or API key.
 
 // @host		localhost:10000
 // @BasePath	/v1
@@ -37,6 +37,7 @@ func StartRestApi() {
 	e.Pre(restApiMiddleware.TrailingSlash(basePath))
 	e.Use(restApiMiddleware.PanicHandler)
 	e.Use(restApiMiddleware.SetDefaultHeaders)
+	e.Use(restApiMiddleware.Auth(basePath))
 
 	RestApiRouterInit(baseRoute)
 
