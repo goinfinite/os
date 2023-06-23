@@ -77,7 +77,7 @@ When testing, consider publishing port 80 and 443 to the host so that you don't 
 
 ### Authentication
 
-The API accepts two types of tokens and uses the standard "Authorization: Bearer <token>" header:
+The API accepts two types of tokens and uses the standard "Authorization: Bearer \<token\>" header:
 
 - **sessionToken**: is a JWT, used for dashboard access and generated with the user login credentials. The token contains the userId, IP address and expiration date. It expires in 3 hours and only the IP address used on the token generation is allowed to use it.
 
