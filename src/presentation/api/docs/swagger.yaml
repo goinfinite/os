@@ -14,6 +14,15 @@ definitions:
       username:
         type: string
     type: object
+  dto.UpdateUser:
+    properties:
+      password:
+        type: string
+      shouldUpdateApiKey:
+        type: boolean
+      userId:
+        type: integer
+    type: object
   entity.AccessToken:
     properties:
       expiresIn:
@@ -73,7 +82,7 @@ paths:
       - application/json
       description: Add a new user.
       parameters:
-      - description: New user details
+      - description: NewUserDetails
         in: body
         name: addUserDto
         required: true
@@ -89,6 +98,29 @@ paths:
       security:
       - Bearer: []
       summary: AddNewUser
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update an user.
+      parameters:
+      - description: UpdateUserDetails
+        in: body
+        name: updateUserDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UserUpdated message or NewKeyString
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateUser
       tags:
       - user
   /user/{userId}/:

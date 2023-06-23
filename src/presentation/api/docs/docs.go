@@ -60,6 +60,43 @@ const docTemplate = `{
             }
         },
         "/user/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "UpdateUser",
+                "parameters": [
+                    {
+                        "description": "UpdateUserDetails",
+                        "name": "updateUserDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UserUpdated message or NewKeyString",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -79,7 +116,7 @@ const docTemplate = `{
                 "summary": "AddNewUser",
                 "parameters": [
                     {
-                        "description": "New user details",
+                        "description": "NewUserDetails",
                         "name": "addUserDto",
                         "in": "body",
                         "required": true,
@@ -156,6 +193,20 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateUser": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "shouldUpdateApiKey": {
+                    "type": "boolean"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },

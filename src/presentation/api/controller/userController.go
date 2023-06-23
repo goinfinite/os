@@ -18,7 +18,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addUserDto 	  body    dto.AddUser  true  "New user details"
+// @Param        addUserDto 	  body    dto.AddUser  true  "NewUserDetails"
 // @Success      201 {object} object{} "UserCreated"
 // @Router       /user/ [post]
 func AddUserController(c echo.Context) error {
@@ -67,4 +67,63 @@ func DeleteUserController(c echo.Context) error {
 	)
 
 	return restApiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
+}
+
+// AuthLogin godoc
+// @Summary      UpdateUser
+// @Description  Update an user.
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateUserDto 	  body dto.UpdateUser  true  "UpdateUserDetails"
+// @Success      200 {object} object{} "UserUpdated message or NewKeyString"
+// @Router       /user/ [put]
+func UpdateUserController(c echo.Context) error {
+	requiredParams := []string{"userId"}
+	requestBody, _ := restApiHelper.GetRequestBody(c)
+
+	restApiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	userId := valueObject.NewUserIdFromStringPanic(requestBody["userId"].(string))
+
+	var passPtr *valueObject.Password
+	if requestBody["password"] != nil {
+		password := valueObject.NewPasswordPanic(requestBody["password"].(string))
+		passPtr = &password
+	}
+
+	var shouldUpdateApiKeyPtr *bool
+	if requestBody["shouldUpdateApiKey"] != nil {
+		shouldUpdateApiKey := requestBody["shouldUpdateApiKey"].(bool)
+		shouldUpdateApiKeyPtr = &shouldUpdateApiKey
+	}
+
+	updateUserDto := dto.NewUpdateUser(
+		userId,
+		passPtr,
+		shouldUpdateApiKeyPtr,
+	)
+
+	accQueryRepo := infra.AccQueryRepo{}
+	accCmdRepo := infra.AccCmdRepo{}
+
+	if updateUserDto.Password != nil {
+		useCase.UpdateUserPassword(
+			accQueryRepo,
+			accCmdRepo,
+			updateUserDto,
+		)
+	}
+
+	if updateUserDto.ShouldUpdateApiKey != nil {
+		newKey := useCase.UpdateUserApiKey(
+			accQueryRepo,
+			accCmdRepo,
+			updateUserDto,
+		)
+		return restApiHelper.ResponseWrapper(c, http.StatusOK, newKey)
+	}
+
+	return restApiHelper.ResponseWrapper(c, http.StatusOK, "UserUpdated")
 }
