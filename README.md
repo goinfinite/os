@@ -6,8 +6,6 @@ This project is under active development and is not ready for production use.
 
 Speedia AppManager (SAM) is an open source application hosting manager in a single file. It has a REST API, CLI and dashboard built to help you run your applications in a container easily.
 
-In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
-
 ## Running
 
 SAM is designed to manage an application with its dependencies in a container, specifically on top of Red Hat UBI 8. However, it may also work as a regular binary in any RPM-based distro so you can use it to run your applications directly in a virtual machine or bare metal server.
@@ -24,7 +22,11 @@ You can publish port 80 and 443 to the host when running SAM in a virtual machin
 
 Otherwise, you may want to use a reverse proxy to run multiple SAM instances in the same server and proxy each domain to the respective SAM instance, using [nginx-proxy/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for example. Remember to also map port 10000 to a subdomain or directory in the reverse proxy for each SAM instance.
 
+If you don't want to use containers, you can try running SAM directly in a VM or server by downloading the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [systemd service file](https://github.com/speedianet/sam/blob/main/sam.service) to run it as a service.
+
 ## Development
+
+In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
 
 To run this project during development you must install [Air](https://github.com/cosmtrek/air). Air is a tool that will watch for changes in the project and recompile it automatically.
 
