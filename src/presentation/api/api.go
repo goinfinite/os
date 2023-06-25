@@ -26,7 +26,7 @@ import (
 
 // @host		localhost:10000
 // @BasePath	/v1
-func RestApiInit() {
+func ApiInit() {
 	apiHelper.CheckEnvs()
 
 	e := echo.New()
@@ -39,7 +39,7 @@ func RestApiInit() {
 	e.Use(apiMiddleware.SetDefaultHeaders)
 	e.Use(apiMiddleware.Auth(basePath))
 
-	registerRestApiRoutes(baseRoute)
+	registerApiRoutes(baseRoute)
 
 	e.Start(":10000")
 }

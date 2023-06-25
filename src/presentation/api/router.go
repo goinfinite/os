@@ -34,7 +34,7 @@ func userRoutes(baseRoute *echo.Group) {
 	userGroup.PUT("/", apiController.UpdateUserController)
 }
 
-func registerRestApiRoutes(baseRoute *echo.Group) {
+func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
 	userRoutes(baseRoute)
