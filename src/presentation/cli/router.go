@@ -2,20 +2,11 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
-	restApi "github.com/speedianet/sam/src/presentation/api"
+	api "github.com/speedianet/sam/src/presentation/api"
+	cliController "github.com/speedianet/sam/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
-
-var rootCmd = &cobra.Command{
-	Use:   filepath.Base(os.Args[0]),
-	Short: "Speedia AppManager CLI",
-	CompletionOptions: cobra.CompletionOptions{
-		DisableDefaultCmd: true,
-	},
-}
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
@@ -29,15 +20,24 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the SAM server (default to port 10000)",
 	Run: func(cmd *cobra.Command, args []string) {
-		restApi.StartRestApi()
+		api.ApiInit()
 	},
 }
 
-func CliRouterInit() {
+func userRoutes() {
+	var userCmd = &cobra.Command{
+		Use:   "user",
+		Short: "UserManagement",
+	}
+
+	rootCmd.AddCommand(userCmd)
+	userCmd.AddCommand(cliController.AddUserController())
+	userCmd.AddCommand(cliController.DeleteUserController())
+	userCmd.AddCommand(cliController.UpdateUserController())
+}
+
+func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	userRoutes()
 }
