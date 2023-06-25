@@ -1,4 +1,4 @@
-package restApiController
+package apiController
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
-	restApiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
 // AuthLogin godoc
@@ -22,9 +22,9 @@ import (
 // @Router       /auth/login/ [post]
 func AuthLoginController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
-	requestBody, _ := restApiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.GetRequestBody(c)
 
-	restApiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	loginDto := dto.NewLogin(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
@@ -45,5 +45,5 @@ func AuthLoginController(c echo.Context) error {
 		ipAddress,
 	)
 
-	return restApiHelper.ResponseWrapper(c, http.StatusOK, accessToken)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, accessToken)
 }

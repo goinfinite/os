@@ -1,4 +1,4 @@
-package restApiHelper
+package apiHelper
 
 import (
 	"crypto/rand"

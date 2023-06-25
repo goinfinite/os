@@ -1,4 +1,4 @@
-package restApiController
+package apiController
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
-	restApiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
 // AuthLogin godoc
@@ -23,9 +23,9 @@ import (
 // @Router       /user/ [post]
 func AddUserController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
-	requestBody, _ := restApiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.GetRequestBody(c)
 
-	restApiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	addUserDto := dto.NewAddUser(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
@@ -41,7 +41,7 @@ func AddUserController(c echo.Context) error {
 		addUserDto,
 	)
 
-	return restApiHelper.ResponseWrapper(c, http.StatusCreated, "UserCreated")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "UserCreated")
 }
 
 // AuthLogin godoc
@@ -66,7 +66,7 @@ func DeleteUserController(c echo.Context) error {
 		userId,
 	)
 
-	return restApiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
 }
 
 // AuthLogin godoc
@@ -81,9 +81,9 @@ func DeleteUserController(c echo.Context) error {
 // @Router       /user/ [put]
 func UpdateUserController(c echo.Context) error {
 	requiredParams := []string{"userId"}
-	requestBody, _ := restApiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.GetRequestBody(c)
 
-	restApiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	var userId valueObject.UserId
 	switch id := requestBody["userId"].(type) {
@@ -128,8 +128,8 @@ func UpdateUserController(c echo.Context) error {
 			accCmdRepo,
 			updateUserDto,
 		)
-		return restApiHelper.ResponseWrapper(c, http.StatusOK, newKey)
+		return apiHelper.ResponseWrapper(c, http.StatusOK, newKey)
 	}
 
-	return restApiHelper.ResponseWrapper(c, http.StatusOK, "UserUpdated")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "UserUpdated")
 }

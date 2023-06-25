@@ -1,9 +1,9 @@
-package restApi
+package api
 
 import (
 	"github.com/labstack/echo/v4"
-	restApiHelper "github.com/speedianet/sam/src/presentation/api/helper"
-	restApiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
+	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
@@ -27,17 +27,17 @@ import (
 // @host		localhost:10000
 // @BasePath	/v1
 func RestApiInit() {
-	restApiHelper.CheckEnvs()
+	apiHelper.CheckEnvs()
 
 	e := echo.New()
 
 	basePath := "/v1"
 	baseRoute := e.Group(basePath)
 
-	e.Pre(restApiMiddleware.TrailingSlash(basePath))
-	e.Use(restApiMiddleware.PanicHandler)
-	e.Use(restApiMiddleware.SetDefaultHeaders)
-	e.Use(restApiMiddleware.Auth(basePath))
+	e.Pre(apiMiddleware.TrailingSlash(basePath))
+	e.Use(apiMiddleware.PanicHandler)
+	e.Use(apiMiddleware.SetDefaultHeaders)
+	e.Use(apiMiddleware.Auth(basePath))
 
 	registerRestApiRoutes(baseRoute)
 

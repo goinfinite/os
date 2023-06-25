@@ -1,4 +1,4 @@
-package restApiMiddleware
+package apiMiddleware
 
 import (
 	"net/http"

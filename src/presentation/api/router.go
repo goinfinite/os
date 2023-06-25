@@ -1,11 +1,11 @@
-package restApi
+package api
 
 import (
 	_ "embed"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	restApiController "github.com/speedianet/sam/src/presentation/api/controller"
+	apiController "github.com/speedianet/sam/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -25,13 +25,13 @@ func swaggerRoute(baseRoute *echo.Group) {
 
 func authRoutes(baseRoute *echo.Group) {
 	authGroup := baseRoute.Group("/auth")
-	authGroup.POST("/login/", restApiController.AuthLoginController)
+	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
 func userRoutes(baseRoute *echo.Group) {
 	userGroup := baseRoute.Group("/user")
-	userGroup.POST("/", restApiController.AddUserController)
-	userGroup.PUT("/", restApiController.UpdateUserController)
+	userGroup.POST("/", apiController.AddUserController)
+	userGroup.PUT("/", apiController.UpdateUserController)
 }
 
 func registerRestApiRoutes(baseRoute *echo.Group) {
