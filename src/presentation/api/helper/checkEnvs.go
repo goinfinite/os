@@ -33,7 +33,7 @@ func genSecret() (string, error) {
 }
 
 func CheckEnvs() {
-	file, err := os.OpenFile(".env", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile(".env", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {
 		log.Fatalf("EnvOpenFileError: %v", err)
 	}
