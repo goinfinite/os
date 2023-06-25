@@ -19,6 +19,7 @@ var rootCmd = &cobra.Command{
 
 func CliInit() {
 	defer cliMiddleware.PanicHandler()
+	cliMiddleware.PreventRootless()
 
 	registerCliRoutes()
 
