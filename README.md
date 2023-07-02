@@ -8,7 +8,7 @@ Speedia AppManager (SAM) is an open source application hosting manager in a sing
 
 ## Running
 
-SAM is designed to manage an application with its dependencies in a container, specifically on top of Red Hat UBI 8. However, it may also work as a regular binary in any RPM-based distro so you can use it to run your applications directly in a virtual machine or bare metal server.
+SAM is designed to manage an application with its dependencies in a container, specifically on top of [bitnami/minideb:bookworm-amd64](https://hub.docker.com/r/bitnami/minideb/) image. However, it may also work as a regular binary on Debian-based distro so you can use it to run your applications directly in a virtual machine or bare metal server.
 
 To run SAM as a container, you can use the image available at DockerHub with the following command:
 
@@ -16,13 +16,13 @@ To run SAM as a container, you can use the image available at DockerHub with the
 podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it speedia/sam:latest
 ```
 
-Feel free to rename the container, vhost and change the host port as you wish. SAM should work with Docker, Docker Swarm, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
+Feel free to rename the container, vhost and change the host port as you wish. SAM should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
 
 You can publish port 80 and 443 to the host when running SAM in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in the server.
 
 Otherwise, you may want to use a reverse proxy to run multiple SAM instances in the same server and proxy each domain to the respective SAM instance, using [nginx-proxy/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for example. Remember to also map port 10000 to a subdomain or directory in the reverse proxy for each SAM instance.
 
-If you don't want to use containers, you can attempt to run SAM directly in a VM or server at your own risk. Download the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [systemd service file](https://github.com/speedianet/sam/blob/main/sam.service) to run it as a service.
+If you don't want to use containers, you can attempt to run SAM directly in a VM or server at your own risk. Download the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [systemd service file](https://github.com/speedianet/sam/blob/main/sam.service) or [supervisord config file](https://github.com/speedianet/sam/blob/main/supervisord.conf) to run it as a service.
 
 ## Development
 
