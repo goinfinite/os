@@ -32,6 +32,21 @@ definitions:
       type:
         $ref: '#/definitions/valueObject.AccessTokenType'
     type: object
+  entity.O11yOverview:
+    properties:
+      currentUsage:
+        $ref: '#/definitions/valueObject.CurrentResourceUsage'
+      hostname:
+        type: string
+      publicIp:
+        type: string
+      runtimeContext:
+        $ref: '#/definitions/valueObject.RuntimeContext'
+      specs:
+        $ref: '#/definitions/valueObject.HardwareSpecs'
+      uptime:
+        type: integer
+    type: object
   valueObject.AccessTokenType:
     enum:
     - sessionToken
@@ -40,6 +55,38 @@ definitions:
     x-enum-varnames:
     - sessionToken
     - userApiKey
+  valueObject.CurrentResourceUsage:
+    properties:
+      cpuUsagePercent:
+        type: number
+      memUsagePercent:
+        type: number
+      storageUsage:
+        type: number
+    type: object
+  valueObject.HardwareSpecs:
+    properties:
+      cpuCores:
+        type: integer
+      cpuFrequency:
+        type: number
+      cpuModel:
+        type: string
+      memoryTotal:
+        type: integer
+      storageTotal:
+        type: integer
+    type: object
+  valueObject.RuntimeContext:
+    enum:
+    - container
+    - vm
+    - bareMetal
+    type: string
+    x-enum-varnames:
+    - container
+    - vm
+    - bareMetal
 host: localhost:10000
 info:
   contact:
@@ -76,6 +123,23 @@ paths:
       summary: GenerateJwtWithCredentials
       tags:
       - auth
+  /o11y/overview/:
+    get:
+      consumes:
+      - application/json
+      description: Show system information and resource usage.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.O11yOverview'
+      security:
+      - Bearer: []
+      summary: O11yOverview
+      tags:
+      - o11y
   /user/:
     post:
       consumes:

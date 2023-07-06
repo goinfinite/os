@@ -52,6 +52,34 @@
                 }
             }
         },
+        "/o11y/overview/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Show system information and resource usage.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "o11y"
+                ],
+                "summary": "O11yOverview",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.O11yOverview"
+                        }
+                    }
+                }
+            }
+        },
         "/user/": {
             "put": {
                 "security": [
@@ -217,6 +245,29 @@
                 }
             }
         },
+        "entity.O11yOverview": {
+            "type": "object",
+            "properties": {
+                "currentUsage": {
+                    "$ref": "#/definitions/valueObject.CurrentResourceUsage"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "publicIp": {
+                    "type": "string"
+                },
+                "runtimeContext": {
+                    "$ref": "#/definitions/valueObject.RuntimeContext"
+                },
+                "specs": {
+                    "$ref": "#/definitions/valueObject.HardwareSpecs"
+                },
+                "uptime": {
+                    "type": "integer"
+                }
+            }
+        },
         "valueObject.AccessTokenType": {
             "type": "string",
             "enum": [
@@ -226,6 +277,53 @@
             "x-enum-varnames": [
                 "sessionToken",
                 "userApiKey"
+            ]
+        },
+        "valueObject.CurrentResourceUsage": {
+            "type": "object",
+            "properties": {
+                "cpuUsagePercent": {
+                    "type": "number"
+                },
+                "memUsagePercent": {
+                    "type": "number"
+                },
+                "storageUsage": {
+                    "type": "number"
+                }
+            }
+        },
+        "valueObject.HardwareSpecs": {
+            "type": "object",
+            "properties": {
+                "cpuCores": {
+                    "type": "integer"
+                },
+                "cpuFrequency": {
+                    "type": "number"
+                },
+                "cpuModel": {
+                    "type": "string"
+                },
+                "memoryTotal": {
+                    "type": "integer"
+                },
+                "storageTotal": {
+                    "type": "integer"
+                }
+            }
+        },
+        "valueObject.RuntimeContext": {
+            "type": "string",
+            "enum": [
+                "container",
+                "vm",
+                "bareMetal"
+            ],
+            "x-enum-varnames": [
+                "container",
+                "vm",
+                "bareMetal"
             ]
         }
     },
