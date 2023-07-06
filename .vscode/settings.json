@@ -1,9 +1,12 @@
 {
   "cSpell.words": [
     "apikey",
+    "Bavail",
     "bitnami",
     "Bitnami",
+    "Bsize",
     "clientid",
+    "cpuacct",
     "CQRS",
     "customfield",
     "customfields",
@@ -16,12 +19,14 @@
     "minideb",
     "nginx",
     "podman",
+    "Procs",
     "responsetype",
     "serviceid",
     "speedia",
     "speedianet",
     "supervisord",
     "swaggo",
+    "Totalram",
     "userdel",
     "usermod",
     "uuid"
