@@ -1,34 +1,25 @@
 package infraHelper
 
 import (
-	"bufio"
-	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-func isContainer() bool {
-	file, err := os.Open("/proc/self/cgroup")
+func isVm() bool {
+	out, err := exec.Command("ps", "-p", "1", "-o", "comm=").Output()
 	if err != nil {
 		return false
 	}
-	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.Contains(line, "docker") || strings.Contains(line, "podman") {
-			return true
-		}
-	}
-
-	return false
+	output := strings.TrimSpace(string(out))
+	return output == "systemd"
 }
 
 func GetRuntimeContext() (valueObject.RuntimeContext, error) {
-	if isContainer() {
-		return valueObject.NewRuntimeContext("container")
+	if isVm() {
+		return valueObject.NewRuntimeContext("vm")
 	}
-	return valueObject.NewRuntimeContext("vm")
+	return valueObject.NewRuntimeContext("container")
 }
