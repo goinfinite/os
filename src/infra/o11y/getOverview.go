@@ -28,53 +28,65 @@ func (repo GetOverview) getUptime() (uint64, error) {
 	return uint64(sysinfo.Uptime), nil
 }
 
-func (repo GetOverview) getCgroupLimit(file string) (int64, error) {
+func (repo GetOverview) isCgroupV2() bool {
+	_, err := os.Stat("/sys/fs/cgroup/cpu.max")
+	return err == nil
+}
+
+func (repo GetOverview) getFileContent(file string) (string, error) {
 	fileContent, err := os.ReadFile(file)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
-	fileContentStr := strings.TrimSpace(string(fileContent))
-	val, err := strconv.ParseInt(fileContentStr, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return val, nil
+	return strings.TrimSpace(string(fileContent)), nil
 }
 
 func (repo GetOverview) getCpuQuota() (int64, error) {
 	cpuQuotaFile := "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"
-	cpuQuota, err := repo.getCgroupLimit(cpuQuotaFile)
+	if repo.isCgroupV2() {
+		cpuQuotaFile = "/sys/fs/cgroup/cpu.max"
+	}
+
+	cpuQuotaStr, err := repo.getFileContent(cpuQuotaFile)
 	if err != nil {
-		return 0, errors.New("CpuQuotaFileError")
+		cpuQuotaStr = "max"
+	}
+	if repo.isCgroupV2() {
+		cpuQuotaStr = strings.Split(cpuQuotaStr, " ")[0]
 	}
 
-	if cpuQuota == -1 {
-		cpuQuota = int64(100000 * runtime.NumCPU())
+	cpuQuotaInt, err := strconv.ParseInt(cpuQuotaStr, 10, 64)
+	if err != nil || cpuQuotaStr == "max" || cpuQuotaStr == "-1" {
+		cpuQuotaInt = int64(100000 * runtime.NumCPU())
 	}
 
-	return cpuQuota, nil
+	return cpuQuotaInt, nil
 }
 
 func (repo GetOverview) getMemoryLimit() (int64, error) {
 	memLimitFile := "/sys/fs/cgroup/memory/memory.limit_in_bytes"
-	memLimit, err := repo.getCgroupLimit(memLimitFile)
-	if err != nil {
-		return 0, errors.New("MemLimitFileError")
+	if repo.isCgroupV2() {
+		memLimitFile = "/sys/fs/cgroup/memory.max"
 	}
 
-	if memLimit == 9223372036854771712 {
+	memLimit, err := repo.getFileContent(memLimitFile)
+	if err != nil {
+		memLimit = "max"
+	}
+
+	memLimitInt, err := strconv.ParseInt(memLimit, 10, 64)
+	if err != nil || memLimit == "9223372036854771712" || memLimit == "max" {
 		var sysInfo syscall.Sysinfo_t
 		err = syscall.Sysinfo(&sysInfo)
 		if err != nil {
 			return 0, errors.New("GetSysInfoError")
 		}
 
-		memLimit = int64(sysInfo.Totalram * uint64(sysInfo.Unit))
+		memLimitInt = int64(sysInfo.Totalram * uint64(sysInfo.Unit))
 	}
 
-	return memLimit, nil
+	return memLimitInt, nil
 }
 
 func (repo GetOverview) getStorageInfo() (valueObject.StorageInfo, error) {
@@ -150,37 +162,107 @@ func (repo GetOverview) getHardwareSpecs() (valueObject.HardwareSpecs, error) {
 	), nil
 }
 
+func (repo GetOverview) getCpuUsagePercent() (float64, error) {
+	cpuUsageFile := "/sys/fs/cgroup/cpuacct/cpuacct.usage"
+	if repo.isCgroupV2() {
+		cpuUsageFile = "/sys/fs/cgroup/cpu.stat"
+	}
+
+	readUsageFileErr := false
+	startCpuUsage, err := repo.getFileContent(cpuUsageFile)
+	if err != nil {
+		readUsageFileErr = true
+		startCpuUsage, err = repo.getFileContent("/proc/stat")
+		if err != nil {
+			return 0, errors.New("CpuStartUsageFileError")
+		}
+		startCpuUsage = strings.Fields(startCpuUsage)[2]
+	}
+	time.Sleep(time.Second)
+	endCpuUsage, err := repo.getFileContent(cpuUsageFile)
+	if err != nil {
+		readUsageFileErr = true
+		endCpuUsage, err = repo.getFileContent("/proc/stat")
+		if err != nil {
+			return 0, errors.New("CpuEndUsageFileError")
+		}
+		endCpuUsage = strings.Fields(endCpuUsage)[2]
+	}
+
+	if repo.isCgroupV2() && !readUsageFileErr {
+		startCpuUsage = strings.Fields(startCpuUsage)[1]
+		endCpuUsage = strings.Fields(endCpuUsage)[1]
+	}
+
+	startCpuUsageInt, err := strconv.ParseInt(startCpuUsage, 10, 64)
+	if err != nil {
+		return 0, errors.New("ParseCpuStartUsageFailed")
+	}
+	endCpuUsageInt, err := strconv.ParseInt(endCpuUsage, 10, 64)
+	if err != nil {
+		return 0, errors.New("ParseCpuEndUsageFailed")
+	}
+
+	cpuQuotaUs, err := repo.getCpuQuota()
+	if err != nil {
+		return 0, errors.New("GetCpuQuotaFailed")
+	}
+
+	cpuUsageUs := float64(endCpuUsageInt - startCpuUsageInt)
+	if !repo.isCgroupV2() {
+		cpuUsageUs = cpuUsageUs / 1000
+	}
+	cpuUsagePercent := cpuUsageUs / float64(cpuQuotaUs) * 100
+
+	return cpuUsagePercent, nil
+}
+
+func (repo GetOverview) getMemUsagePercent() (float64, error) {
+	memUsageFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
+	if repo.isCgroupV2() {
+		memUsageFile = "/sys/fs/cgroup/memory.current"
+	}
+
+	memUsage, err := repo.getFileContent(memUsageFile)
+	if err != nil {
+		memUsageCmd := exec.Command(
+			"awk",
+			"/^MemTotal:/ {total=$2} /^MemAvailable:/ {available=$2} END {used=(total-available)*1024; printf \"%d\", used}",
+			"/proc/meminfo",
+		)
+		cmdOutput, err := memUsageCmd.Output()
+		if err != nil {
+			return 0, errors.New("GetMemUsageFailed")
+		}
+
+		memUsage = strings.TrimSpace(string(cmdOutput))
+	}
+	memUsageFloat, err := strconv.ParseFloat(memUsage, 64)
+	if err != nil {
+		return 0, errors.New("ParseMemUsageFailed")
+	}
+
+	memLimit, err := repo.getMemoryLimit()
+	if err != nil {
+		return 0, errors.New("GetMemoryLimitFailed")
+	}
+	memUsagePercent := memUsageFloat / float64(memLimit) * 100
+
+	return memUsagePercent, nil
+}
+
 func (repo GetOverview) getCurrentResourceUsage() (
 	valueObject.CurrentResourceUsage,
 	error,
 ) {
-	cpuUsageFile := "/sys/fs/cgroup/cpuacct/cpuacct.usage"
-	startCpuUsage, err := repo.getCgroupLimit(cpuUsageFile)
+	cpuUsagePercent, err := repo.getCpuUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("CpuStartUsageFileError")
+		return valueObject.CurrentResourceUsage{}, err
 	}
-	time.Sleep(time.Second)
-	endCpuUsage, err := repo.getCgroupLimit(cpuUsageFile)
+	memUsagePercent, err := repo.getMemUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("CpuEndUsageFileError")
+		return valueObject.CurrentResourceUsage{}, err
 	}
-
-	cpuQuota, err := repo.getCpuQuota()
-	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("GetCpuQuotaFailed")
-	}
-	cpuUsagePercent := float64(endCpuUsage-startCpuUsage) / 10000000 / float64(cpuQuota)
-
-	memUsageFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
-	memUsage, err := repo.getCgroupLimit(memUsageFile)
-	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("MemUsageFileError")
-	}
-	memLimit, err := repo.getMemoryLimit()
-	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("GetMemoryLimitFailed")
-	}
-	memUsagePercent := float64(memUsage) / float64(memLimit) * 100
 
 	storageInfo, err := repo.getStorageInfo()
 	if err != nil {
