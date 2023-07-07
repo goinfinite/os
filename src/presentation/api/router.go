@@ -36,7 +36,7 @@ func userRoutes(baseRoute *echo.Group) {
 
 func o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
-	o11yGroup.GET("/overview", apiController.O11yOverviewController)
+	o11yGroup.GET("/overview/", apiController.O11yOverviewController)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {
