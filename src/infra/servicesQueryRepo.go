@@ -140,3 +140,20 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 
 	return append(runningServices, remainingServices...), nil
 }
+
+func (repo ServicesQueryRepo) GetByName(
+	name valueObject.ServiceName,
+) (entity.Service, error) {
+	services, err := repo.Get()
+	if err != nil {
+		return entity.Service{}, err
+	}
+
+	for _, svc := range services {
+		if svc.Name.String() == name.String() {
+			return svc, nil
+		}
+	}
+
+	return entity.Service{}, errors.New("ServiceNotFound")
+}
