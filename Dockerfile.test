@@ -4,7 +4,7 @@ WORKDIR /speedia
 
 RUN apt-get update \
     && apt-get install -y --only-upgrade $(apt-get -s -o Debug::NoLocking=true upgrade | awk '/^Inst.*ecurity/ {print $2}') \
-    && apt-get install -y gcc make libpam0g-dev wget tar
+    && apt-get install -y gcc make libpam0g-dev wget tar procps
 
 RUN wget -nv https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
