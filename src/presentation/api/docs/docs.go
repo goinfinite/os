@@ -87,6 +87,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/services/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List services and their status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "GetServices",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Service"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/": {
             "put": {
                 "security": [
@@ -275,6 +306,29 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.Service": {
+            "type": "object",
+            "properties": {
+                "cpuUsagePercent": {
+                    "type": "number"
+                },
+                "memUsagePercent": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pid": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                },
+                "uptime": {
+                    "type": "number"
+                }
+            }
+        },
         "valueObject.AccessTokenType": {
             "type": "string",
             "enum": [
@@ -331,6 +385,21 @@ const docTemplate = `{
                 "container",
                 "vm",
                 "bareMetal"
+            ]
+        },
+        "valueObject.ServiceStatus": {
+            "type": "string",
+            "enum": [
+                "running",
+                "stopped",
+                "uninstalled",
+                "installing"
+            ],
+            "x-enum-varnames": [
+                "running",
+                "stopped",
+                "uninstalled",
+                "installing"
             ]
         }
     },
