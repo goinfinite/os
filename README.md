@@ -22,7 +22,7 @@ You can publish port 80 and 443 to the host when running SAM in a virtual machin
 
 Otherwise, you may want to use a reverse proxy to run multiple SAM instances in the same server and proxy each domain to the respective SAM instance, using [nginx-proxy/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for example. Remember to also map port 10000 to a subdomain or directory in the reverse proxy for each SAM instance.
 
-If you don't want to use containers, you can attempt to run SAM directly in a VM or server at your own risk. Download the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [systemd service file](https://github.com/speedianet/sam/blob/main/sam.service) or [supervisord config file](https://github.com/speedianet/sam/blob/main/supervisord.conf) to run it as a service. In the future there will be a CLI command to automate this installation.
+If you don't want to use containers, you can attempt to run SAM directly in a VM or server at your own risk. Download the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [supervisord config file](https://github.com/speedianet/sam/blob/main/supervisord.conf) to run it as a service. In the future there will be a CLI command to automate this installation.
 
 ## Development
 
