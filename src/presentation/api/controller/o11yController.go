@@ -9,7 +9,7 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
-// AuthLogin godoc
+// O11yOverview  godoc
 // @Summary      O11yOverview
 // @Description  Show system information and resource usage.
 // @Tags         o11y

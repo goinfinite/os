@@ -11,7 +11,7 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
-// AuthLogin godoc
+// AddUser		 godoc
 // @Summary      AddNewUser
 // @Description  Add a new user.
 // @Tags         user
@@ -44,7 +44,7 @@ func AddUserController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "UserCreated")
 }
 
-// AuthLogin godoc
+// DeleteUser	 godoc
 // @Summary      DeleteUser
 // @Description  Delete an user.
 // @Tags         user
@@ -69,7 +69,7 @@ func DeleteUserController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
 }
 
-// AuthLogin godoc
+// UpdateUser	 godoc
 // @Summary      UpdateUser
 // @Description  Update an user.
 // @Tags         user
