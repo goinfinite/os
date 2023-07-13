@@ -8,7 +8,7 @@ const (
 	running     ServiceStatus = "running"
 	stopped     ServiceStatus = "stopped"
 	uninstalled ServiceStatus = "uninstalled"
-	installing  ServiceStatus = "installing"
+	installed   ServiceStatus = "installed"
 )
 
 func NewServiceStatus(value string) (ServiceStatus, error) {
@@ -29,7 +29,7 @@ func NewServiceStatusPanic(value string) ServiceStatus {
 
 func (ss ServiceStatus) isValid() bool {
 	switch ss {
-	case running, stopped, uninstalled, installing:
+	case running, stopped, uninstalled, installed:
 		return true
 	default:
 		return false

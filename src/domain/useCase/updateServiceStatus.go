@@ -25,7 +25,7 @@ func UpdateServiceStatus(
 	isStopped := currentSvcStatus.Status.String() == "stopped"
 
 	if isRunning || isStopped &&
-		updateSvcStatusDto.Status.String() == "installing" {
+		updateSvcStatusDto.Status.String() == "installed" {
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
@@ -34,7 +34,7 @@ func UpdateServiceStatus(
 		return servicesCmdRepo.Start(updateSvcStatusDto.Name)
 	case "stopped":
 		return servicesCmdRepo.Stop(updateSvcStatusDto.Name)
-	case "installing":
+	case "installed":
 		return servicesCmdRepo.Install(
 			updateSvcStatusDto.Name,
 			updateSvcStatusDto.Version,

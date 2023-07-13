@@ -118,13 +118,13 @@ definitions:
     - running
     - stopped
     - uninstalled
-    - installing
+    - installed
     type: string
     x-enum-varnames:
     - running
     - stopped
     - uninstalled
-    - installing
+    - installed
 host: localhost:10000
 info:
   contact:

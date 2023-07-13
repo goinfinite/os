@@ -447,13 +447,13 @@ const docTemplate = `{
                 "running",
                 "stopped",
                 "uninstalled",
-                "installing"
+                "installed"
             ],
             "x-enum-varnames": [
                 "running",
                 "stopped",
                 "uninstalled",
-                "installing"
+                "installed"
             ]
         }
     },
