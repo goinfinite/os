@@ -29,6 +29,7 @@
     "nogroup",
     "openlitespeed",
     "pids",
+    "pkill",
     "podman",
     "Procs",
     "responsetype",
