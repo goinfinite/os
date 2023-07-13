@@ -37,6 +37,7 @@ func userRoutes(baseRoute *echo.Group) {
 func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
+	servicesGroup.PUT("/", apiController.UpdateServiceController)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {
