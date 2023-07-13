@@ -5,8 +5,8 @@ import "github.com/speedianet/sam/src/domain/valueObject"
 type Service struct {
 	Name            valueObject.ServiceName   `json:"name"`
 	Status          valueObject.ServiceStatus `json:"status"`
-	Pid             *uint32                   `json:"pid,omitempty"`
-	Uptime          *float64                  `json:"uptime,omitempty"`
+	Pids            *[]uint32                 `json:"pids,omitempty"`
+	UptimeSecs      *float64                  `json:"uptime,omitempty"`
 	CpuUsagePercent *float64                  `json:"cpuUsagePercent,omitempty"`
 	MemUsagePercent *float32                  `json:"memUsagePercent,omitempty"`
 }
@@ -14,16 +14,16 @@ type Service struct {
 func NewService(
 	name valueObject.ServiceName,
 	status valueObject.ServiceStatus,
-	pid *uint32,
-	uptime *float64,
+	pids *[]uint32,
+	uptimeSecs *float64,
 	cpuUsagePercent *float64,
 	memUsagePercent *float32,
 ) Service {
 	return Service{
 		Name:            name,
 		Status:          status,
-		Pid:             pid,
-		Uptime:          uptime,
+		Pids:            pids,
+		UptimeSecs:      uptimeSecs,
 		CpuUsagePercent: cpuUsagePercent,
 		MemUsagePercent: memUsagePercent,
 	}
