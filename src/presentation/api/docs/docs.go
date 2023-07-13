@@ -116,6 +116,43 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Start, stop, install or uninstall a service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "UpdateServiceStatus",
+                "parameters": [
+                    {
+                        "description": "UpdateServiceStatusDetails",
+                        "name": "updateSvcStatusDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateSvcStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ServiceStatusUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "/user/": {
@@ -255,6 +292,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateSvcStatus": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateUser": {
             "type": "object",
             "properties": {
@@ -318,8 +369,11 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "pid": {
-                    "type": "integer"
+                "pids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "status": {
                     "$ref": "#/definitions/valueObject.ServiceStatus"

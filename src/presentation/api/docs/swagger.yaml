@@ -14,6 +14,15 @@ definitions:
       username:
         type: string
     type: object
+  dto.UpdateSvcStatus:
+    properties:
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/valueObject.ServiceStatus'
+      version:
+        type: string
+    type: object
   dto.UpdateUser:
     properties:
       password:
@@ -55,8 +64,10 @@ definitions:
         type: number
       name:
         type: string
-      pid:
-        type: integer
+      pids:
+        items:
+          type: integer
+        type: array
       status:
         $ref: '#/definitions/valueObject.ServiceStatus'
       uptime:
@@ -184,6 +195,29 @@ paths:
       security:
       - Bearer: []
       summary: GetServices
+      tags:
+      - services
+    put:
+      consumes:
+      - application/json
+      description: Start, stop, install or uninstall a service.
+      parameters:
+      - description: UpdateServiceStatusDetails
+        in: body
+        name: updateSvcStatusDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSvcStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ServiceStatusUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateServiceStatus
       tags:
       - services
   /user/:
