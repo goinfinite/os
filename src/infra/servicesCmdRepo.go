@@ -12,13 +12,11 @@ import (
 type ServicesCmdRepo struct {
 }
 
-const (
-	supervisordCmd = "/usr/bin/supervisord"
-)
+const SupervisordCmd string = "/usr/bin/supervisord"
 
 func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	_, err := infraHelper.RunCmd(
-		supervisordCmd,
+		SupervisordCmd,
 		"ctl",
 		"start",
 		name.String(),
@@ -33,7 +31,7 @@ func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 
 func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 	_, err := infraHelper.RunCmd(
-		supervisordCmd,
+		SupervisordCmd,
 		"ctl",
 		"stop",
 		name.String(),
@@ -56,7 +54,7 @@ func (repo ServicesCmdRepo) Install(
 	}
 
 	_, err = infraHelper.RunCmd(
-		supervisordCmd,
+		SupervisordCmd,
 		"ctl",
 		"reload",
 	)
