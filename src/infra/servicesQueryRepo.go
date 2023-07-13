@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -45,15 +44,17 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		}
 		pidUint := uint32(pid)
 
-		fullName, err := p.Name()
+		procName, err := p.Name()
 		if err != nil {
 			continue
 		}
-		nameSlice := strings.Fields(fullName)
-		if len(nameSlice) == 0 {
-			continue
+		switch procName {
+		case "litespeed":
+			procName = "openlitespeed"
+		case "mysqld":
+			procName = "mysql"
 		}
-		svcName, err := valueObject.NewServiceName(nameSlice[0])
+		svcName, err := valueObject.NewServiceName(procName)
 		if err != nil {
 			continue
 		}
