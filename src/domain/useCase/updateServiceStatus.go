@@ -18,14 +18,23 @@ func UpdateServiceStatus(
 	}
 
 	if currentSvcStatus.Status.String() == updateSvcStatusDto.Status.String() {
-		return nil
+		return errors.New("ServiceStatusAlreadySet")
 	}
 
+	isInstalled := currentSvcStatus.Status.String() == "installed"
 	isRunning := currentSvcStatus.Status.String() == "running"
 	isStopped := currentSvcStatus.Status.String() == "stopped"
+	isInstalled = isInstalled || isRunning || isStopped
 
-	if isRunning || isStopped &&
-		updateSvcStatusDto.Status.String() == "installed" {
+	shouldRun := updateSvcStatusDto.Status.String() == "running"
+	shouldStop := updateSvcStatusDto.Status.String() == "stopped"
+	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
+	if !isInstalled && (shouldRun || shouldStop || shouldUninstall) {
+		return errors.New("ServiceNotInstalled")
+	}
+
+	shouldInstall := updateSvcStatusDto.Status.String() == "installed"
+	if isInstalled && shouldInstall {
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
