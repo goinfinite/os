@@ -41,6 +41,18 @@ func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return errors.New("StopServiceError")
 	}
 
+	switch name.String() {
+	case "openlitespeed":
+		infraHelper.RunCmd(
+			"/usr/local/lsws/bin/lswsctrl",
+			"stop",
+		)
+		infraHelper.RunCmd(
+			"pkill",
+			"lsphp",
+		)
+	}
+
 	return nil
 }
 
