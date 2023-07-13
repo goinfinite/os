@@ -42,7 +42,6 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		pidUint := uint32(pid)
 
 		procName, err := p.Name()
 		if err != nil {
@@ -78,6 +77,28 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
+
+		alreadyExists := false
+		for i, svc := range services {
+			if svc.Name.String() != svcName.String() {
+				continue
+			}
+			alreadyExists = true
+			*services[i].Pids = append(*services[i].Pids, uint32(pid))
+			if uptimeSeconds > *svc.UptimeSecs {
+				*services[i].UptimeSecs = uptimeSeconds
+			}
+			*services[i].CpuUsagePercent += cpuPercent
+			*services[i].MemUsagePercent += memPercent
+			continue
+		}
+
+		if alreadyExists {
+			continue
+		}
+
+		var pidUint []uint32
+		pidUint = append(pidUint, uint32(pid))
 
 		services = append(
 			services,
