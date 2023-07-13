@@ -17,11 +17,16 @@
     "gopsutil",
     "joho",
     "labstack",
+    "litespeed",
+    "lsadm",
     "lsphp",
+    "lsws",
+    "lswsctrl",
     "minideb",
     "mysql",
     "mysqld",
     "nginx",
+    "nogroup",
     "openlitespeed",
     "pids",
     "podman",
@@ -31,11 +36,13 @@
     "shirou",
     "speedia",
     "speedianet",
+    "sqlite",
     "supervisord",
     "swaggo",
     "Totalram",
     "userdel",
     "usermod",
-    "uuid"
+    "uuid",
+    "vhconf"
   ]
 }
