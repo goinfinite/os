@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -16,11 +17,9 @@ import (
 type ServicesQueryRepo struct {
 }
 
-var knownServices = []string{
+var KnownServices = []string{
 	"nginx",
 	"openlitespeed",
-	"php",
-	"lsphp",
 	"node",
 	"python",
 	"ruby",
@@ -46,15 +45,19 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		}
 		pidUint := uint32(pid)
 
-		name, err := p.Name()
+		fullName, err := p.Name()
 		if err != nil {
 			continue
 		}
-		svcName, err := valueObject.NewServiceName(name)
+		nameSlice := strings.Fields(fullName)
+		if len(nameSlice) == 0 {
+			continue
+		}
+		svcName, err := valueObject.NewServiceName(nameSlice[0])
 		if err != nil {
 			continue
 		}
-		if !slices.Contains(knownServices, svcName.String()) {
+		if !slices.Contains(KnownServices, svcName.String()) {
 			continue
 		}
 
@@ -103,7 +106,7 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	}
 
 	var notRunningServicesNames []string
-	for _, svc := range knownServices {
+	for _, svc := range KnownServices {
 		if !slices.Contains(runningServicesNames, svc) {
 			notRunningServicesNames = append(notRunningServicesNames, svc)
 		}
