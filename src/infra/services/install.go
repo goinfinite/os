@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -213,7 +214,7 @@ func installOLS() error {
 	return nil
 }
 
-func installMysql(version *valueObject.ServiceVersion) error {
+func installMariaDb(version *valueObject.ServiceVersion) error {
 	err := infraHelper.DownloadFile(
 		"https://r.mariadb.com/downloads/mariadb_repo_setup",
 		"/speedia/repo.mariadb.sh",
@@ -225,6 +226,15 @@ func installMysql(version *valueObject.ServiceVersion) error {
 
 	versionFlag := ""
 	if version != nil {
+		allowedVersionsRegex := `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`
+		re := regexp.MustCompile(allowedVersionsRegex)
+		isVersionAllowed := re.MatchString(version.String())
+
+		if !isVersionAllowed {
+			log.Printf("InvalidMysqlVersion: %s", version.String())
+			return errors.New("InvalidMysqlVersion")
+		}
+
 		versionFlag = "--mariadb-server-version=" + version.String()
 	}
 
@@ -256,6 +266,15 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	os.Symlink("/usr/bin/mariadb", "/usr/bin/mysql")
 	os.Symlink("/usr/bin/mariadb-admin", "/usr/bin/mysqladmin")
 	os.Symlink("/usr/bin/mariadbd-safe", "/usr/bin/mysqld_safe")
+
+	return nil
+}
+
+func installMysql(version *valueObject.ServiceVersion) error {
+	err := installMariaDb(version)
+	if err != nil {
+		return errors.New("InstallMariaDbError")
+	}
 
 	_, err = infraHelper.RunCmd(
 		"/usr/bin/mysqld_safe",
