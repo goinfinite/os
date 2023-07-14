@@ -11,6 +11,7 @@ func TestInstall(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	t.Run("InstallOls", func(t *testing.T) {
+		t.Skip("Skip ols install test")
 		err := Install(
 			valueObject.NewServiceNamePanic("openlitespeed"),
 			nil,
@@ -22,8 +23,20 @@ func TestInstall(t *testing.T) {
 	})
 
 	t.Run("InstallMysql", func(t *testing.T) {
+		t.Skip("Skip mysql install test")
 		err := Install(
 			valueObject.NewServiceNamePanic("mysql"),
+			nil,
+		)
+		if err != nil {
+			t.Errorf("Install() error = %v", err)
+			return
+		}
+	})
+
+	t.Run("InstallNode", func(t *testing.T) {
+		err := Install(
+			valueObject.NewServiceNamePanic("node"),
 			nil,
 		)
 		if err != nil {

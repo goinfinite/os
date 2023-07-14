@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -74,7 +73,7 @@ stderr_logfile_maxbytes=0
 	return nil
 }
 
-func installOLS() error {
+func installOls() error {
 	err := infraHelper.DownloadFile(
 		"https://repo.litespeed.sh",
 		"/speedia/repo.litespeed.sh",
@@ -343,27 +342,72 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	return nil
 }
 
-func Install(
-	name valueObject.ServiceName,
-	version *valueObject.ServiceVersion,
-) error {
-	switch name.String() {
-	case "openlitespeed", "litespeed":
-		return installOLS()
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
-		return installMysql(version)
+func installNode(version *valueObject.ServiceVersion) error {
+	repoFilePath := "/speedia/repo.node.sh"
+
+	repoUrl := "https://deb.nodesource.com/setup_lts.x"
+	if version != nil {
+		allowedVersionsRegex := `(1[2-9]|20)$`
+		re := regexp.MustCompile(allowedVersionsRegex)
+		isVersionAllowed := re.MatchString(version.String())
+
+		if !isVersionAllowed {
+			log.Printf("InvalidNodeVersion: %s", version.String())
+			return errors.New("InvalidNodeVersion")
+		}
+
+		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
 	}
 
-	installCmd := exec.Command(
-		"install_packages",
-		name.String(),
+	err := infraHelper.DownloadFile(
+		repoUrl,
+		repoFilePath,
 	)
+	if err != nil {
+		log.Printf("DownloadRepoFileError: %s", err)
+		return errors.New("DownloadRepoFileError")
+	}
 
-	err := installCmd.Run()
+	_, err = infraHelper.RunCmd(
+		"bash",
+		repoFilePath,
+	)
+	if err != nil {
+		log.Printf("RepoAddError: %s", err)
+		return errors.New("RepoAddError")
+	}
+
+	err = os.Remove(repoFilePath)
+	if err != nil {
+		log.Printf("RemoveRepoFileError: %s", err)
+		return errors.New("RemoveRepoFileError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"install_packages",
+		"nodejs",
+	)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
 	}
 
 	return nil
+}
+
+func Install(
+	name valueObject.ServiceName,
+	version *valueObject.ServiceVersion,
+) error {
+	switch name.String() {
+	case "openlitespeed", "litespeed":
+		return installOls()
+	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
+		return installMysql(version)
+	case "node", "nodejs":
+		return installNode(version)
+	default:
+		log.Printf("ServiceNotImplemented: %s", name.String())
+		return errors.New("ServiceNotImplemented")
+	}
 }
