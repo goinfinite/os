@@ -2,34 +2,46 @@ package valueObject
 
 import (
 	"errors"
-	"regexp"
-)
 
-const serviceNameRegex string = `^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$`
+	"golang.org/x/exp/slices"
+)
 
 type ServiceName string
 
+var SupportedServiceNames = []string{
+	"openlitespeed",
+	"litespeed",
+	"nginx",
+	"node",
+	"nodejs",
+	"mysql",
+	"mysqld",
+	"mariadb",
+	"percona",
+	"perconadb",
+	"redis",
+}
+
 func NewServiceName(value string) (ServiceName, error) {
-	user := ServiceName(value)
-	if !user.isValid() {
+	ss := ServiceName(value)
+	if !ss.isValid() {
 		return "", errors.New("InvalidServiceName")
 	}
-	return user, nil
+	return ss, nil
 }
 
 func NewServiceNamePanic(value string) ServiceName {
-	user := ServiceName(value)
-	if !user.isValid() {
+	ss := ServiceName(value)
+	if !ss.isValid() {
 		panic("InvalidServiceName")
 	}
-	return user
+	return ss
 }
 
-func (user ServiceName) isValid() bool {
-	re := regexp.MustCompile(serviceNameRegex)
-	return re.MatchString(string(user))
+func (ss ServiceName) isValid() bool {
+	return slices.Contains(SupportedServiceNames, ss.String())
 }
 
-func (user ServiceName) String() string {
-	return string(user)
+func (ss ServiceName) String() string {
+	return string(ss)
 }

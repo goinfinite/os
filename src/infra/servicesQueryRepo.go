@@ -16,18 +16,6 @@ import (
 type ServicesQueryRepo struct {
 }
 
-var KnownServices = []string{
-	"nginx",
-	"openlitespeed",
-	"node",
-	"python",
-	"ruby",
-	"java",
-	"mysqld",
-	"redis",
-	"elasticsearch",
-}
-
 func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) {
 	pids, err := process.Pids()
 	if err != nil {
@@ -57,15 +45,11 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		if !slices.Contains(KnownServices, svcName.String()) {
-			continue
-		}
 
 		uptime, err := p.CreateTime()
 		if err != nil {
 			continue
 		}
-
 		uptimeSeconds := time.Since(time.Unix(uptime/1000, 0)).Seconds()
 
 		cpuPercent, err := p.CPUPercent()
@@ -128,7 +112,7 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	}
 
 	var notRunningServicesNames []string
-	for _, svc := range KnownServices {
+	for _, svc := range valueObject.SupportedServiceNames {
 		if !slices.Contains(runningServicesNames, svc) {
 			notRunningServicesNames = append(notRunningServicesNames, svc)
 		}
