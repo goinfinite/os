@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os/exec"
+	"strings"
 )
 
 type CommandError struct {
@@ -23,15 +24,16 @@ func RunCmd(command string, args ...string) (string, error) {
 	cmdObj.Stderr = &stderr
 
 	err := cmdObj.Run()
+	stdOut := strings.TrimSpace(stdout.String())
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
-			return stdout.String(), &CommandError{
+			return stdOut, &CommandError{
 				StdErr:   stderr.String(),
 				ExitCode: exitErr.ExitCode(),
 			}
 		}
-		return stdout.String(), err
+		return stdOut, err
 	}
 
-	return stdout.String(), nil
+	return stdOut, nil
 }
