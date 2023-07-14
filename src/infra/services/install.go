@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
@@ -211,13 +213,126 @@ func installOLS() error {
 	return nil
 }
 
+func installMysql(version *valueObject.ServiceVersion) error {
+	err := infraHelper.DownloadFile(
+		"https://r.mariadb.com/downloads/mariadb_repo_setup",
+		"/speedia/repo.mariadb.sh",
+	)
+	if err != nil {
+		log.Printf("DownloadRepoFileError: %s", err)
+		return errors.New("DownloadRepoFileError")
+	}
+
+	versionFlag := ""
+	if version != nil {
+		versionFlag = "--mariadb-server-version=" + version.String()
+	}
+
+	_, err = infraHelper.RunCmd(
+		"bash",
+		"/speedia/repo.mariadb.sh",
+		versionFlag,
+	)
+	if err != nil {
+		log.Printf("RepoAddError: %s", err)
+		return errors.New("RepoAddError")
+	}
+
+	err = os.Remove("/speedia/repo.mariadb.sh")
+	if err != nil {
+		log.Printf("RemoveRepoFileError: %s", err)
+		return errors.New("RemoveRepoFileError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"install_packages",
+		"mariadb-server",
+	)
+	if err != nil {
+		log.Printf("InstallServiceError: %s", err)
+		return errors.New("InstallServiceError")
+	}
+
+	os.Symlink("/usr/bin/mariadb", "/usr/bin/mysql")
+	os.Symlink("/usr/bin/mariadb-admin", "/usr/bin/mysqladmin")
+	os.Symlink("/usr/bin/mariadbd-safe", "/usr/bin/mysqld_safe")
+
+	_, err = infraHelper.RunCmd(
+		"/usr/bin/mysqld_safe",
+		"--no-watch",
+	)
+	if err != nil {
+		log.Printf("StartMysqldSafeError: %s", err)
+		return errors.New("StartMysqldSafeError")
+	}
+
+	time.Sleep(5 * time.Second)
+
+	rootPass := infraHelper.GenPass(16)
+	postInstallQueries := []string{
+		"ALTER USER 'root'@'localhost' IDENTIFIED BY '" + rootPass + "';",
+		"DELETE FROM mysql.user WHERE User='';",
+		"DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');",
+		"DROP DATABASE IF EXISTS test;",
+		"DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';",
+		"FLUSH PRIVILEGES;",
+	}
+	postInstallQueriesJoined := strings.Join(postInstallQueries, "; ")
+	_, err = infraHelper.RunCmd(
+		"mysql",
+		"-e",
+		postInstallQueriesJoined,
+	)
+	if err != nil {
+		log.Printf("PostInstallQueryError: %s", err)
+		return errors.New("PostInstallQueryError")
+	}
+
+	err = infraHelper.UpdateFile(
+		"/root/.my.cnf",
+		"[client]\nuser=root\npassword="+rootPass+"\n",
+		true,
+	)
+	if err != nil {
+		log.Printf("CreateMyCnfError: %s", err)
+		return errors.New("CreateMyCnfError")
+	}
+
+	err = os.Chmod("/root/.my.cnf", 0400)
+	if err != nil {
+		log.Printf("ChmodMyCnfError: %s", err)
+		return errors.New("ChmodMyCnfError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"mysqladmin",
+		"shutdown",
+	)
+	if err != nil {
+		log.Printf("StopMysqldSafeError: %s", err)
+		return errors.New("StopMysqldSafeError")
+	}
+
+	err = appendSupervisorConf(
+		"mysql",
+		"/usr/bin/mysqld_safe",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError")
+	}
+
+	return nil
+}
+
 func Install(
 	name valueObject.ServiceName,
 	version *valueObject.ServiceVersion,
 ) error {
 	switch name.String() {
-	case "openlitespeed":
+	case "openlitespeed", "litespeed":
 		return installOLS()
+	case "mysql", "maria", "mariadb", "percona":
+		return installMysql(version)
 	}
 
 	installCmd := exec.Command(

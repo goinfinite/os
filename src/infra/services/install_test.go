@@ -10,9 +10,20 @@ import (
 func TestInstall(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("InstallOLS", func(t *testing.T) {
+	t.Run("InstallOls", func(t *testing.T) {
 		err := Install(
 			valueObject.NewServiceNamePanic("openlitespeed"),
+			nil,
+		)
+		if err != nil {
+			t.Errorf("Install() error = %v", err)
+			return
+		}
+	})
+
+	t.Run("InstallMysql", func(t *testing.T) {
+		err := Install(
+			valueObject.NewServiceNamePanic("mysql"),
 			nil,
 		)
 		if err != nil {
