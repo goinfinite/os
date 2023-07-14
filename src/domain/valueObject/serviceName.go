@@ -10,16 +10,20 @@ type ServiceName string
 
 var SupportedServiceNames = []string{
 	"openlitespeed",
-	"litespeed",
 	"nginx",
 	"node",
-	"nodejs",
 	"mysql",
+	"redis",
+}
+
+var SupportedServiceNamesAliases = []string{
+	"litespeed",
+	"nodejs",
 	"mysqld",
 	"mariadb",
 	"percona",
 	"perconadb",
-	"redis",
+	"redis-server",
 }
 
 func NewServiceName(value string) (ServiceName, error) {
@@ -39,7 +43,8 @@ func NewServiceNamePanic(value string) ServiceName {
 }
 
 func (ss ServiceName) isValid() bool {
-	return slices.Contains(SupportedServiceNames, ss.String())
+	supportedServices := append(SupportedServiceNames, SupportedServiceNamesAliases...)
+	return slices.Contains(supportedServices, ss.String())
 }
 
 func (ss ServiceName) String() string {
