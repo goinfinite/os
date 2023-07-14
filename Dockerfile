@@ -2,7 +2,7 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates gcc make libpam0g-dev wget tar procps
+RUN install_packages ca-certificates gcc make libpam0g-dev wget curl tar procps
 
 RUN wget -nv https://github.com/ochinchina/supervisord/releases/download/v0.7.3/supervisord_0.7.3_Linux_64-bit.tar.gz \
     && tar -xzf supervisord_0.7.3_Linux_64-bit.tar.gz \
