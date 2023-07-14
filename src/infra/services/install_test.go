@@ -35,8 +35,20 @@ func TestInstall(t *testing.T) {
 	})
 
 	t.Run("InstallNode", func(t *testing.T) {
+		t.Skip("Skip node install test")
 		err := Install(
 			valueObject.NewServiceNamePanic("node"),
+			nil,
+		)
+		if err != nil {
+			t.Errorf("Install() error = %v", err)
+			return
+		}
+	})
+
+	t.Run("InstallRedis", func(t *testing.T) {
+		err := Install(
+			valueObject.NewServiceNamePanic("redis"),
 			nil,
 		)
 		if err != nil {

@@ -14,6 +14,12 @@ import (
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 )
 
+var supportedServicesVersion = map[string]string{
+	"mariadb": `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`,
+	"node":    `^(1[2-9]|20)$`,
+	"redis":   `^6\.(0|2)|^7\.0$`,
+}
+
 //go:embed assets/*
 var assets embed.FS
 
@@ -225,8 +231,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 
 	versionFlag := ""
 	if version != nil {
-		allowedVersionsRegex := `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`
-		re := regexp.MustCompile(allowedVersionsRegex)
+		re := regexp.MustCompile(supportedServicesVersion["mariadb"])
 		isVersionAllowed := re.MatchString(version.String())
 
 		if !isVersionAllowed {
@@ -347,8 +352,7 @@ func installNode(version *valueObject.ServiceVersion) error {
 
 	repoUrl := "https://deb.nodesource.com/setup_lts.x"
 	if version != nil {
-		allowedVersionsRegex := `(1[2-9]|20)$`
-		re := regexp.MustCompile(allowedVersionsRegex)
+		re := regexp.MustCompile(supportedServicesVersion["node"])
 		isVersionAllowed := re.MatchString(version.String())
 
 		if !isVersionAllowed {
@@ -395,6 +399,116 @@ func installNode(version *valueObject.ServiceVersion) error {
 	return nil
 }
 
+func installRedis(version *valueObject.ServiceVersion) error {
+	versionFlag := ""
+	if version != nil {
+		re := regexp.MustCompile(supportedServicesVersion["redis"])
+		isVersionAllowed := re.MatchString(version.String())
+
+		if !isVersionAllowed {
+			log.Printf("InvalidRedisVersion: %s", version.String())
+			return errors.New("InvalidRedisVersion")
+		}
+
+		versionStr := version.String()
+		versionStrPtr := &versionStr
+		latestVersion, err := infraHelper.GetPkgLatestVersion(
+			"redis-server",
+			versionStrPtr,
+		)
+		if err != nil {
+			log.Printf("GetPkgLatestVersionError: %s", err)
+			return errors.New("GetPkgLatestVersionError")
+		}
+
+		versionFlag = "=" + latestVersion
+	}
+
+	_, err := infraHelper.RunCmd(
+		"install_packages",
+		"lsb-release",
+		"gpg",
+	)
+	if err != nil {
+		log.Printf("InstallPackagesError: %s", err)
+		return errors.New("InstallPackagesError")
+	}
+
+	osRelease, err := infraHelper.GetOsRelease()
+	if err != nil {
+		log.Printf("GetOsReleaseError: %s", err)
+		return errors.New("GetOsReleaseError")
+	}
+
+	err = infraHelper.DownloadFile(
+		"https://packages.redis.io/gpg",
+		"/speedia/redis.gpg",
+	)
+	if err != nil {
+		log.Printf("DownloadRepoFileError: %s", err)
+		return errors.New("DownloadRepoFileError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"gpg",
+		"--dearmor",
+		"-o",
+		"/usr/share/keyrings/redis-archive-keyring.gpg",
+		"/speedia/redis.gpg",
+	)
+	if err != nil {
+		log.Printf("GpgImportError: %s", err)
+		return errors.New("GpgImportError")
+	}
+
+	err = os.Remove("/speedia/redis.gpg")
+	if err != nil {
+		log.Printf("RemoveRepoFileError: %s", err)
+		return errors.New("RemoveRepoFileError")
+	}
+
+	repoLine := "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb " + osRelease + " main"
+	err = infraHelper.UpdateFile(
+		"/etc/apt/sources.list.d/redis.list",
+		repoLine,
+		true,
+	)
+	if err != nil {
+		log.Printf("CreateRepoFileError: %s", err)
+		return errors.New("CreateRepoFileError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"install_packages",
+		"redis-server"+versionFlag,
+	)
+	if err != nil {
+		log.Printf("InstallServiceError: %s", err)
+		return errors.New("InstallServiceError")
+	}
+
+	err = appendSupervisorConf(
+		"redis",
+		"/usr/bin/redis-server /etc/redis/redis.conf",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/^daemonize yes/daemonize no/g",
+		"/etc/redis/redis.conf",
+	)
+	if err != nil {
+		log.Printf("UpdateRedisConfError: %s", err)
+		return errors.New("UpdateRedisConfError")
+	}
+
+	return nil
+}
+
 func Install(
 	name valueObject.ServiceName,
 	version *valueObject.ServiceVersion,
@@ -406,6 +520,8 @@ func Install(
 		return installMysql(version)
 	case "node", "nodejs":
 		return installNode(version)
+	case "redis", "redis-server":
+		return installRedis(version)
 	default:
 		log.Printf("ServiceNotImplemented: %s", name.String())
 		return errors.New("ServiceNotImplemented")
