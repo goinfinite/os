@@ -350,7 +350,7 @@ func Install(
 	switch name.String() {
 	case "openlitespeed", "litespeed":
 		return installOLS()
-	case "mysql", "maria", "mariadb", "percona":
+	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
 		return installMysql(version)
 	}
 
