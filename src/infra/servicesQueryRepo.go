@@ -38,8 +38,10 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		switch procName {
 		case "litespeed":
 			procName = "openlitespeed"
-		case "mysqld":
+		case "mysqld", "mariadbd", "mariadb-server", "percona-server-mysqld":
 			procName = "mysql"
+		case "redis-server":
+			procName = "redis"
 		}
 		svcName, err := valueObject.NewServiceName(procName)
 		if err != nil {
