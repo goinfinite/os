@@ -47,9 +47,10 @@ func TestInstall(t *testing.T) {
 	})
 
 	t.Run("InstallRedis", func(t *testing.T) {
+		version, _ := valueObject.NewServiceVersion("7.0")
 		err := Install(
 			valueObject.NewServiceNamePanic("redis"),
-			nil,
+			&version,
 		)
 		if err != nil {
 			t.Errorf("Install() error = %v", err)

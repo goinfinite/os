@@ -409,19 +409,6 @@ func installRedis(version *valueObject.ServiceVersion) error {
 			log.Printf("InvalidRedisVersion: %s", version.String())
 			return errors.New("InvalidRedisVersion")
 		}
-
-		versionStr := version.String()
-		versionStrPtr := &versionStr
-		latestVersion, err := infraHelper.GetPkgLatestVersion(
-			"redis-server",
-			versionStrPtr,
-		)
-		if err != nil {
-			log.Printf("GetPkgLatestVersionError: %s", err)
-			return errors.New("GetPkgLatestVersionError")
-		}
-
-		versionFlag = "=" + latestVersion
 	}
 
 	_, err := infraHelper.RunCmd(
@@ -476,6 +463,20 @@ func installRedis(version *valueObject.ServiceVersion) error {
 	if err != nil {
 		log.Printf("CreateRepoFileError: %s", err)
 		return errors.New("CreateRepoFileError")
+	}
+
+	if version != nil {
+		versionStr := version.String()
+		latestVersion, err := infraHelper.GetPkgLatestVersion(
+			"redis-server",
+			&versionStr,
+		)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+
+		versionFlag = "=" + latestVersion
 	}
 
 	_, err = infraHelper.RunCmd(
