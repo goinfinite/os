@@ -2,17 +2,24 @@ package infraHelper
 
 import (
 	"errors"
-	"fmt"
+	"os"
 	"strings"
 )
 
 func GetPkgLatestVersion(pkgName string, majorVersion *string) (string, error) {
+	RunCmd("apt", "update")
 	out, err := RunCmd("apt", "list", "-a", pkgName)
 	if err != nil {
 		return "", err
 	}
+	os.RemoveAll("/var/lib/apt/lists")
+	os.RemoveAll("/var/cache/apt/archives")
 
 	lines := strings.Split(out, "\n")
+	if len(lines) < 2 {
+		return "", errors.New("PackageNotFound")
+	}
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, pkgName) {
@@ -24,14 +31,10 @@ func GetPkgLatestVersion(pkgName string, majorVersion *string) (string, error) {
 			continue
 		}
 		currentVersion := strings.Fields(line)[1]
-		if majorVersion == nil {
-			return currentVersion, nil
-		}
-
-		if strings.HasPrefix(line, fmt.Sprintf("%s/%s", pkgName, *majorVersion)) {
+		if majorVersion == nil || strings.Contains(line, *majorVersion) {
 			return currentVersion, nil
 		}
 	}
 
-	return "", errors.New("PackageOrVersionNotFound")
+	return "", errors.New("VersionNotFound")
 }
