@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strings"
 
 	"golang.org/x/exp/slices"
 )
@@ -9,15 +10,64 @@ import (
 type DatabasePrivilege string
 
 var ValidDatabasePrivileges = []string{
-	"openlitespeed",
-	"nginx",
-	"node",
-	"mysql",
-	"redis",
+	"ALL PRIVILEGES",
+	"ALL",
+	"ALTER ROUTINE",
+	"ALTER SYSTEM",
+	"ALTER",
+	"BYPASSRLS",
+	"CONNECT",
+	"CREATE DOMAIN",
+	"CREATE FUNCTION",
+	"CREATE GROUP",
+	"CREATE INDEX",
+	"CREATE LANGUAGE",
+	"CREATE PROCEDURE",
+	"CREATE ROLE",
+	"CREATE ROUTINE",
+	"CREATE SCHEMA",
+	"CREATE TABLE",
+	"CREATE TEMP",
+	"CREATE TEMPORARY TABLES",
+	"CREATE TRIGGER",
+	"CREATE TYPE",
+	"CREATE USER",
+	"CREATE VIEW",
+	"CREATE",
+	"CREATEDB",
+	"CREATEROLE",
+	"DELETE HISTORY",
+	"DELETE",
+	"DROP",
+	"EVENT",
+	"EXECUTE",
+	"FILE",
+	"INDEX",
+	"INSERT",
+	"LOCK TABLES",
+	"PASSWORDADMIN",
+	"PROCESS",
+	"PROXY",
+	"REFERENCES",
+	"RELOAD",
+	"REPLICATION CLIENT",
+	"REPLICATION SLAVE",
+	"REPLICATION",
+	"SELECT",
+	"SET",
+	"SHOW VIEW",
+	"SHUTDOWN",
+	"SUPER",
+	"SUPERUSER",
+	"TEMPORARY",
+	"TRIGGER",
+	"TRUNCATE",
+	"UPDATE",
+	"USAGE",
 }
 
 func NewDatabasePrivilege(value string) (DatabasePrivilege, error) {
-	dp := DatabasePrivilege(value)
+	dp := DatabasePrivilege(strings.ToUpper(value))
 	if !dp.isValid() {
 		return "", errors.New("InvalidDatabasePrivilege")
 	}
@@ -25,7 +75,7 @@ func NewDatabasePrivilege(value string) (DatabasePrivilege, error) {
 }
 
 func NewDatabasePrivilegePanic(value string) DatabasePrivilege {
-	dp := DatabasePrivilege(value)
+	dp := DatabasePrivilege(strings.ToUpper(value))
 	if !dp.isValid() {
 		panic("InvalidDatabasePrivilege")
 	}
