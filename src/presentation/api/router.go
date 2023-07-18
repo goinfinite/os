@@ -28,6 +28,16 @@ func authRoutes(baseRoute *echo.Group) {
 	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
+func databaseRoutes(baseRoute *echo.Group) {
+	databaseGroup := baseRoute.Group("/database")
+	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
+}
+
+func o11yRoutes(baseRoute *echo.Group) {
+	o11yGroup := baseRoute.Group("/o11y")
+	o11yGroup.GET("/overview/", apiController.O11yOverviewController)
+}
+
 func userRoutes(baseRoute *echo.Group) {
 	userGroup := baseRoute.Group("/user")
 	userGroup.POST("/", apiController.AddUserController)
@@ -40,15 +50,11 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
 }
 
-func o11yRoutes(baseRoute *echo.Group) {
-	o11yGroup := baseRoute.Group("/o11y")
-	o11yGroup.GET("/overview/", apiController.O11yOverviewController)
-}
-
 func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
+	databaseRoutes(baseRoute)
+	o11yRoutes(baseRoute)
 	userRoutes(baseRoute)
 	servicesRoutes(baseRoute)
-	o11yRoutes(baseRoute)
 }

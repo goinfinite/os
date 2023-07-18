@@ -41,6 +41,32 @@ definitions:
       type:
         $ref: '#/definitions/valueObject.AccessTokenType'
     type: object
+  entity.Database:
+    properties:
+      name:
+        type: string
+      size:
+        type: integer
+      type:
+        $ref: '#/definitions/valueObject.DatabaseType'
+      users:
+        items:
+          $ref: '#/definitions/entity.DatabaseUser'
+        type: array
+    type: object
+  entity.DatabaseUser:
+    properties:
+      dbName:
+        type: string
+      dbType:
+        $ref: '#/definitions/valueObject.DatabaseType'
+      privileges:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    type: object
   entity.O11yOverview:
     properties:
       currentUsage:
@@ -53,7 +79,7 @@ definitions:
         $ref: '#/definitions/valueObject.RuntimeContext'
       specs:
         $ref: '#/definitions/valueObject.HardwareSpecs'
-      uptime:
+      uptimeSecs:
         type: integer
     type: object
   entity.Service:
@@ -70,7 +96,7 @@ definitions:
         type: array
       status:
         $ref: '#/definitions/valueObject.ServiceStatus'
-      uptime:
+      uptimeSecs:
         type: number
     type: object
   valueObject.AccessTokenType:
@@ -90,6 +116,14 @@ definitions:
       storageUsage:
         type: number
     type: object
+  valueObject.DatabaseType:
+    enum:
+    - mysql
+    - postgres
+    type: string
+    x-enum-varnames:
+    - mysql
+    - postgres
   valueObject.HardwareSpecs:
     properties:
       cpuCores:
@@ -161,6 +195,34 @@ paths:
       summary: GenerateJwtWithCredentials
       tags:
       - auth
+  /database/{dbType}/:
+    get:
+      consumes:
+      - application/json
+      description: List databases names, users and sizes.
+      parameters:
+      - description: DatabaseType
+        enum:
+        - mysql
+        - postgres
+        in: path
+        name: dbType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Database'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetDatabases
+      tags:
+      - database
   /o11y/overview/:
     get:
       consumes:

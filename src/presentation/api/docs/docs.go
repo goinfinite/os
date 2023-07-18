@@ -59,6 +59,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/database/{dbType}/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List databases names, users and sizes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database"
+                ],
+                "summary": "GetDatabases",
+                "parameters": [
+                    {
+                        "enum": [
+                            "mysql",
+                            "postgres"
+                        ],
+                        "type": "string",
+                        "description": "DatabaseType",
+                        "name": "dbType",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Database"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
@@ -334,6 +378,46 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.Database": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/valueObject.DatabaseType"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.DatabaseUser"
+                    }
+                }
+            }
+        },
+        "entity.DatabaseUser": {
+            "type": "object",
+            "properties": {
+                "dbName": {
+                    "type": "string"
+                },
+                "dbType": {
+                    "$ref": "#/definitions/valueObject.DatabaseType"
+                },
+                "privileges": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.O11yOverview": {
             "type": "object",
             "properties": {
@@ -352,7 +436,7 @@ const docTemplate = `{
                 "specs": {
                     "$ref": "#/definitions/valueObject.HardwareSpecs"
                 },
-                "uptime": {
+                "uptimeSecs": {
                     "type": "integer"
                 }
             }
@@ -378,7 +462,7 @@ const docTemplate = `{
                 "status": {
                     "$ref": "#/definitions/valueObject.ServiceStatus"
                 },
-                "uptime": {
+                "uptimeSecs": {
                     "type": "number"
                 }
             }
@@ -407,6 +491,17 @@ const docTemplate = `{
                     "type": "number"
                 }
             }
+        },
+        "valueObject.DatabaseType": {
+            "type": "string",
+            "enum": [
+                "mysql",
+                "postgres"
+            ],
+            "x-enum-varnames": [
+                "mysql",
+                "postgres"
+            ]
         },
         "valueObject.HardwareSpecs": {
             "type": "object",
