@@ -101,21 +101,39 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseUserPrivileges(
 ) ([]valueObject.DatabasePrivilege, error) {
 	var dbUserPrivileges []valueObject.DatabasePrivilege
 
-	dbPrivilegesStr, err := mysqlCmd(
-		"SHOW GRANTS FOR '" + dbUser.String(),
+	userGrantsStr, err := mysqlCmd(
+		"SHOW GRANTS FOR '" + dbUser.String() + "'",
 	)
 	if err != nil {
-		log.Printf("GetDatabaseUserPrivilegesError: %v", err)
-		return dbUserPrivileges, errors.New("GetDatabaseUserPrivilegesError")
+		log.Printf("GetDatabaseUserGrantsError: %v", err)
+		return dbUserPrivileges, errors.New("GetDatabaseUserGrantsError")
 	}
 
-	dbPrivilegesSlice := strings.Split(dbPrivilegesStr, "\n")
-	for _, dbPrivilege := range dbPrivilegesSlice {
-		dbPrivilege, err := valueObject.NewDatabasePrivilege(dbPrivilege)
-		if err != nil {
+	userGrantsSlice := strings.Split(userGrantsStr, "\n")
+	if len(userGrantsSlice) == 0 {
+		return dbUserPrivileges, nil
+	}
+
+	privsRegexp := regexp.MustCompile(
+		`GRANT (?P<privs>.*) ON (?:\x60|'|")?` + dbName.String() + `(?:\x60|'|")?\.`,
+	)
+	for _, privileges := range userGrantsSlice {
+		privileges = strings.TrimSpace(privileges)
+		if !privsRegexp.MatchString(privileges) {
 			continue
 		}
-		dbUserPrivileges = append(dbUserPrivileges, dbPrivilege)
+
+		privsStr := privsRegexp.FindStringSubmatch(privileges)[1]
+		privsSlice := strings.Split(privsStr, ",")
+		for _, singlePriv := range privsSlice {
+			singlePriv = strings.TrimSpace(singlePriv)
+			parsedPriv, err := valueObject.NewDatabasePrivilege(singlePriv)
+			if err != nil {
+				continue
+			}
+
+			dbUserPrivileges = append(dbUserPrivileges, parsedPriv)
+		}
 	}
 
 	return dbUserPrivileges, nil
