@@ -16,6 +16,19 @@ import (
 type ServicesQueryRepo struct {
 }
 
+func (repo ServicesQueryRepo) ServiceNameAdapter(serviceName string) string {
+	switch serviceName {
+	case "litespeed":
+		return "openlitespeed"
+	case "mysqld", "mariadbd", "mariadb-server", "percona-server-mysqld":
+		return "mysql"
+	case "redis-server":
+		return "redis"
+	default:
+		return serviceName
+	}
+}
+
 func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) {
 	pids, err := process.Pids()
 	if err != nil {
@@ -35,14 +48,7 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		switch procName {
-		case "litespeed":
-			procName = "openlitespeed"
-		case "mysqld", "mariadbd", "mariadb-server", "percona-server-mysqld":
-			procName = "mysql"
-		case "redis-server":
-			procName = "redis"
-		}
+		procName = repo.ServiceNameAdapter(procName)
 		svcName, err := valueObject.NewServiceName(procName)
 		if err != nil {
 			continue
@@ -161,7 +167,8 @@ func (repo ServicesQueryRepo) GetByName(
 	}
 
 	for _, svc := range services {
-		if svc.Name.String() == name.String() {
+		svcName := repo.ServiceNameAdapter(svc.Name.String())
+		if svcName == name.String() {
 			return svc, nil
 		}
 	}
