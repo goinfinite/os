@@ -37,6 +37,7 @@
     "pids",
     "pkill",
     "podman",
+    "privs",
     "Procs",
     "responsetype",
     "serviceid",
