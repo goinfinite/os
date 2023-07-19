@@ -205,6 +205,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/database/{dbType}/{dbName}/user/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new database user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database"
+                ],
+                "summary": "AddDatabaseUser",
+                "parameters": [
+                    {
+                        "enum": [
+                            "mysql",
+                            "postgres"
+                        ],
+                        "type": "string",
+                        "description": "DatabaseType",
+                        "name": "dbType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseName",
+                        "name": "dbName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AddDatabaseUser",
+                        "name": "addDatabaseUserDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddDatabaseUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "DatabaseUserAdded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
@@ -420,6 +477,26 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dbName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddDatabaseUser": {
+            "type": "object",
+            "properties": {
+                "dbName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "privileges": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "username": {
                     "type": "string"
                 }
             }

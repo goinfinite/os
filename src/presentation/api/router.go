@@ -32,6 +32,14 @@ func databaseRoutes(baseRoute *echo.Group) {
 	databaseGroup := baseRoute.Group("/database")
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
+	databaseGroup.DELETE(
+		"/:dbType/:dbName/",
+		apiController.DeleteDatabaseController,
+	)
+	databaseGroup.POST(
+		"/:dbType/:dbName/user/",
+		apiController.AddDatabaseUserController,
+	)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {

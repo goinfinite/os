@@ -5,6 +5,19 @@ definitions:
       dbName:
         type: string
     type: object
+  dto.AddDatabaseUser:
+    properties:
+      dbName:
+        type: string
+      password:
+        type: string
+      privileges:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    type: object
   dto.AddUser:
     properties:
       password:
@@ -292,6 +305,43 @@ paths:
       security:
       - Bearer: []
       summary: DeleteDatabase
+      tags:
+      - database
+  /database/{dbType}/{dbName}/user/:
+    post:
+      consumes:
+      - application/json
+      description: Add a new database user.
+      parameters:
+      - description: DatabaseType
+        enum:
+        - mysql
+        - postgres
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
+      - description: AddDatabaseUser
+        in: body
+        name: addDatabaseUserDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddDatabaseUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: DatabaseUserAdded
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddDatabaseUser
       tags:
       - database
   /o11y/overview/:

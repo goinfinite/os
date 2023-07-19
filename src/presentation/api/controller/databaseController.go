@@ -99,3 +99,55 @@ func DeleteDatabaseController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
 }
+
+// AddDatabaseUser		 godoc
+// @Summary      AddDatabaseUser
+// @Description  Add a new database user.
+// @Tags         database
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbName path string true "DatabaseName"
+// @Param        addDatabaseUserDto body dto.AddDatabaseUser true "AddDatabaseUser"
+// @Success      201 {object} object{} "DatabaseUserAdded"
+// @Router       /database/{dbType}/{dbName}/user/ [post]
+func AddDatabaseUserController(c echo.Context) error {
+	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
+	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
+
+	requiredParams := []string{"username", "password"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	username := valueObject.NewUsernamePanic(requestBody["username"].(string))
+	password := valueObject.NewPasswordPanic(requestBody["password"].(string))
+	var privilegesPtr *[]valueObject.DatabasePrivilege
+	if requestBody["privileges"] != nil {
+		for _, privilege := range requestBody["privileges"].([]interface{}) {
+			privilege := valueObject.NewDatabasePrivilegePanic(privilege.(string))
+			*privilegesPtr = append(*privilegesPtr, privilege)
+		}
+	}
+
+	addDatabaseUserDto := dto.NewAddDatabaseUser(
+		dbName,
+		username,
+		password,
+		privilegesPtr,
+	)
+
+	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+
+	err := useCase.AddDatabaseUser(
+		databaseQueryRepo,
+		databaseCmdRepo,
+		addDatabaseUserDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, nil)
+}
