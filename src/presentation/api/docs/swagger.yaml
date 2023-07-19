@@ -1,5 +1,10 @@
 basePath: /v1
 definitions:
+  dto.AddDatabase:
+    properties:
+      dbName:
+        type: string
+    type: object
   dto.AddUser:
     properties:
       password:
@@ -221,6 +226,37 @@ paths:
       security:
       - Bearer: []
       summary: GetDatabases
+      tags:
+      - database
+    post:
+      consumes:
+      - application/json
+      description: Add a new database.
+      parameters:
+      - description: DatabaseType
+        enum:
+        - mysql
+        - postgres
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: AddDatabase
+        in: body
+        name: addDatabaseDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddDatabase'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: DatabaseAdded
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddDatabase
       tags:
       - database
   /o11y/overview/:

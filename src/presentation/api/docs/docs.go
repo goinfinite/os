@@ -101,6 +101,54 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database"
+                ],
+                "summary": "AddDatabase",
+                "parameters": [
+                    {
+                        "enum": [
+                            "mysql",
+                            "postgres"
+                        ],
+                        "type": "string",
+                        "description": "DatabaseType",
+                        "name": "dbType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AddDatabase",
+                        "name": "addDatabaseDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddDatabase"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "DatabaseAdded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "/o11y/overview/": {
@@ -314,6 +362,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AddDatabase": {
+            "type": "object",
+            "properties": {
+                "dbName": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddUser": {
             "type": "object",
             "properties": {

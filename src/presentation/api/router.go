@@ -31,6 +31,7 @@ func authRoutes(baseRoute *echo.Group) {
 func databaseRoutes(baseRoute *echo.Group) {
 	databaseGroup := baseRoute.Group("/database")
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
+	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {
