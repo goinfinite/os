@@ -27,11 +27,14 @@ func AddUserController() *cobra.Command {
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
 
-			useCase.AddUser(
+			err := useCase.AddUser(
 				accQueryRepo,
 				accCmdRepo,
 				addUserDto,
 			)
+			if err != nil {
+				fmt.Println(err)
+			}
 		},
 	}
 
@@ -54,11 +57,14 @@ func DeleteUserController() *cobra.Command {
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
 
-			useCase.DeleteUser(
+			err := useCase.DeleteUser(
 				accQueryRepo,
 				accCmdRepo,
 				userId,
 			)
+			if err != nil {
+				fmt.Println(err)
+			}
 		},
 	}
 
@@ -110,11 +116,14 @@ func UpdateUserController() *cobra.Command {
 			}
 
 			if updateUserDto.ShouldUpdateApiKey != nil && *updateUserDto.ShouldUpdateApiKey {
-				newKey := useCase.UpdateUserApiKey(
+				newKey, err := useCase.UpdateUserApiKey(
 					accQueryRepo,
 					accCmdRepo,
 					updateUserDto,
 				)
+				if err != nil {
+					fmt.Println(err)
+				}
 				fmt.Println(newKey)
 			}
 		},
