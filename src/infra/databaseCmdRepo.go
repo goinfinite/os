@@ -52,3 +52,17 @@ func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
 		return errors.New("DatabaseTypeNotSupported")
 	}
 }
+
+func (repo DatabaseCmdRepo) DeleteUser(
+	dbName valueObject.DatabaseName,
+	dbUser valueObject.DatabaseUsername,
+) error {
+	switch repo.dbType {
+	case "mysql":
+		return databaseInfra.MysqlDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
+	case "postgres":
+		return databaseInfra.PostgresDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
+	default:
+		return errors.New("DatabaseTypeNotSupported")
+	}
+}

@@ -37,17 +37,6 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 }
 
 func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
-	_, err := MysqlCmd(
-		"CREATE USER '" +
-			addDatabaseUser.Username.String() +
-			"'@'%' IDENTIFIED BY '" +
-			addDatabaseUser.Password.String() + "';",
-	)
-	if err != nil {
-		log.Printf("AddDatabaseUserError: %v", err)
-		return errors.New("AddDatabaseUserError")
-	}
-
 	privileges := []valueObject.DatabasePrivilege{
 		valueObject.NewDatabasePrivilegePanic("ALL"),
 	}
@@ -64,17 +53,41 @@ func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) er
 		privilegesStr = strings.Join(privilegesStrList, ", ")
 	}
 
-	_, err = MysqlCmd(
+	_, err := MysqlCmd(
 		"GRANT " +
 			privilegesStr +
 			" PRIVILEGES ON " +
 			addDatabaseUser.DatabaseName.String() +
 			".* TO '" +
-			addDatabaseUser.Username.String() + "'@'%'",
+			addDatabaseUser.Username.String() + "'@'%' " +
+			"IDENTIFIED BY '" +
+			addDatabaseUser.Password.String() +
+			"'; " +
+			"FLUSH PRIVILEGES;",
 	)
 	if err != nil {
 		log.Printf("AddDatabaseUserError: %v", err)
 		return errors.New("AddDatabaseUserError")
+	}
+
+	return nil
+}
+
+func (repo MysqlDatabaseCmdRepo) DeleteUser(
+	dbName valueObject.DatabaseName,
+	dbUser valueObject.DatabaseUsername,
+) error {
+	_, err := MysqlCmd(
+		"REVOKE ALL PRIVILEGES ON " +
+			dbName.String() +
+			".* FROM '" +
+			dbUser.String() +
+			"'@'%'; " +
+			"FLUSH PRIVILEGES;",
+	)
+	if err != nil {
+		log.Printf("DeleteDatabaseUserError: %v", err)
+		return errors.New("DeleteDatabaseUserError")
 	}
 
 	return nil

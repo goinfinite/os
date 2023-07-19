@@ -21,3 +21,10 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
 	return errors.New("NotImplemented")
 }
+
+func (repo PostgresDatabaseCmdRepo) DeleteUser(
+	dbName valueObject.DatabaseName,
+	dbUser valueObject.DatabaseUsername,
+) error {
+	return errors.New("NotImplemented")
+}
