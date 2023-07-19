@@ -46,7 +46,7 @@ func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) er
 	_, err := MysqlCmd(
 		"GRANT " +
 			privilegesStr +
-			" PRIVILEGES ON " +
+			" ON " +
 			addDatabaseUser.DatabaseName.String() +
 			".* TO '" +
 			addDatabaseUser.Username.String() + "'@'%' " +
