@@ -35,11 +35,14 @@ func AddUserController(c echo.Context) error {
 	accQueryRepo := infra.AccQueryRepo{}
 	accCmdRepo := infra.AccCmdRepo{}
 
-	useCase.AddUser(
+	err := useCase.AddUser(
 		accQueryRepo,
 		accCmdRepo,
 		addUserDto,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "UserCreated")
 }
@@ -60,11 +63,14 @@ func DeleteUserController(c echo.Context) error {
 	accQueryRepo := infra.AccQueryRepo{}
 	accCmdRepo := infra.AccCmdRepo{}
 
-	useCase.DeleteUser(
+	err := useCase.DeleteUser(
 		accQueryRepo,
 		accCmdRepo,
 		userId,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "UserDeleted")
 }
@@ -123,11 +129,15 @@ func UpdateUserController(c echo.Context) error {
 	}
 
 	if updateUserDto.ShouldUpdateApiKey != nil && *updateUserDto.ShouldUpdateApiKey {
-		newKey := useCase.UpdateUserApiKey(
+		newKey, err := useCase.UpdateUserApiKey(
 			accQueryRepo,
 			accCmdRepo,
 			updateUserDto,
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+
 		return apiHelper.ResponseWrapper(c, http.StatusOK, newKey)
 	}
 

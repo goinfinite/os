@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 
 	"github.com/speedianet/sam/src/domain/dto"
@@ -11,10 +12,10 @@ func UpdateUserPassword(
 	accQueryRepo repository.AccQueryRepo,
 	accCmdRepo repository.AccCmdRepo,
 	updateUserDto dto.UpdateUser,
-) {
+) error {
 	_, err := accQueryRepo.GetById(updateUserDto.UserId)
 	if err != nil {
-		panic("UserIdDoesNotExist")
+		return errors.New("UserNotFound")
 	}
 
 	err = accCmdRepo.UpdatePassword(
@@ -22,8 +23,10 @@ func UpdateUserPassword(
 		*updateUserDto.Password,
 	)
 	if err != nil {
-		panic("PasswordUpdateError")
+		return errors.New("UpdateUserPasswordError")
 	}
 
 	log.Printf("UserId '%v' password updated.", updateUserDto.UserId)
+
+	return nil
 }
