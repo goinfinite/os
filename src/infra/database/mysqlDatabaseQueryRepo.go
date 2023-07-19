@@ -15,7 +15,7 @@ import (
 type MysqlDatabaseQueryRepo struct {
 }
 
-func mysqlCmd(cmd string) (string, error) {
+func MysqlCmd(cmd string) (string, error) {
 	return infraHelper.RunCmd(
 		"mysql",
 		"--skip-column-names",
@@ -28,7 +28,7 @@ func mysqlCmd(cmd string) (string, error) {
 func (repo MysqlDatabaseQueryRepo) getDatabaseNames() ([]valueObject.DatabaseName, error) {
 	var dbNameList []valueObject.DatabaseName
 
-	dbNameListStr, err := mysqlCmd("SHOW DATABASES")
+	dbNameListStr, err := MysqlCmd("SHOW DATABASES")
 	if err != nil {
 		log.Printf("GetDatabaseNamesError: %v", err)
 		return dbNameList, errors.New("GetDatabaseNamesError")
@@ -54,7 +54,7 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseSize(dbName valueObject.DatabaseNa
 	valueObject.Byte,
 	error,
 ) {
-	dbSizeStr, err := mysqlCmd(
+	dbSizeStr, err := MysqlCmd(
 		"SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = '" + dbName.String() + "'",
 	)
 	if err != nil {
@@ -75,7 +75,7 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseUsernames(
 ) ([]valueObject.DatabaseUsername, error) {
 	var dbUsernameList []valueObject.DatabaseUsername
 
-	dbUserStr, err := mysqlCmd(
+	dbUserStr, err := MysqlCmd(
 		"SELECT User FROM mysql.db WHERE Db = '" + dbName.String() + "'",
 	)
 	if err != nil {
@@ -101,7 +101,7 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseUserPrivileges(
 ) ([]valueObject.DatabasePrivilege, error) {
 	var dbUserPrivileges []valueObject.DatabasePrivilege
 
-	userGrantsStr, err := mysqlCmd(
+	userGrantsStr, err := MysqlCmd(
 		"SHOW GRANTS FOR '" + dbUser.String() + "'",
 	)
 	if err != nil {
