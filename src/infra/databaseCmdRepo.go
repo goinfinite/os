@@ -29,3 +29,14 @@ func (repo DatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 		return errors.New("DatabaseTypeNotSupported")
 	}
 }
+
+func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
+	switch repo.dbType {
+	case "mysql":
+		return databaseInfra.MysqlDatabaseCmdRepo{}.Delete(dbName)
+	case "postgres":
+		return databaseInfra.PostgresDatabaseCmdRepo{}.Delete(dbName)
+	default:
+		return errors.New("DatabaseTypeNotSupported")
+	}
+}

@@ -21,3 +21,15 @@ func (repo MysqlDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 
 	return nil
 }
+
+func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
+	_, err := MysqlCmd(
+		"DROP DATABASE " + dbName.String(),
+	)
+	if err != nil {
+		log.Printf("DeleteDatabaseError: %v", err)
+		return errors.New("DeleteDatabaseError")
+	}
+
+	return nil
+}
