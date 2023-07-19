@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 
+	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	databaseInfra "github.com/speedianet/sam/src/infra/database"
 )
@@ -36,6 +37,17 @@ func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 		return databaseInfra.MysqlDatabaseCmdRepo{}.Delete(dbName)
 	case "postgres":
 		return databaseInfra.PostgresDatabaseCmdRepo{}.Delete(dbName)
+	default:
+		return errors.New("DatabaseTypeNotSupported")
+	}
+}
+
+func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+	switch repo.dbType {
+	case "mysql":
+		return databaseInfra.MysqlDatabaseCmdRepo{}.AddUser(addDatabaseUser)
+	case "postgres":
+		return databaseInfra.PostgresDatabaseCmdRepo{}.AddUser(addDatabaseUser)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}
