@@ -6,4 +6,5 @@ import (
 
 type DatabaseCmdRepo interface {
 	Add(dbName valueObject.DatabaseName) error
+	Delete(dbName valueObject.DatabaseName) error
 }
