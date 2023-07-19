@@ -19,6 +19,7 @@ import (
 // @Produce      json
 // @Param        loginDto 	  body    dto.Login  true  "Login"
 // @Success      200 {object} entity.AccessToken
+// @Failure      401 {object} string
 // @Router       /auth/login/ [post]
 func AuthLoginController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
@@ -37,13 +38,16 @@ func AuthLoginController(c echo.Context) error {
 
 	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
 
-	accessToken := useCase.GetSessionToken(
+	accessToken, err := useCase.GetSessionToken(
 		authQueryRepo,
 		authCmdRepo,
 		accQueryRepo,
 		loginDto,
 		ipAddress,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusUnauthorized, err.Error())
+	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, accessToken)
 }

@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -16,7 +17,7 @@ func GetSessionToken(
 	accQueryRepo repository.AccQueryRepo,
 	login dto.Login,
 	ipAddress valueObject.IpAddress,
-) entity.AccessToken {
+) (entity.AccessToken, error) {
 	isLoginValid := authQueryRepo.IsLoginValid(login)
 
 	if !isLoginValid {
@@ -25,12 +26,12 @@ func GetSessionToken(
 			login.Username.String(),
 			ipAddress.String(),
 		)
-		panic("InvalidLoginCredentials")
+		return entity.AccessToken{}, errors.New("InvalidCredentials")
 	}
 
 	accountDetails, err := accQueryRepo.GetByUsername(login.Username)
 	if err != nil {
-		panic("AccountDetailsFetchError")
+		return entity.AccessToken{}, errors.New("UserNotFound")
 	}
 
 	userId := accountDetails.UserId
@@ -38,5 +39,5 @@ func GetSessionToken(
 		time.Now().Add(3 * time.Hour).Unix(),
 	)
 
-	return authCmdRepo.GenerateSessionToken(userId, expiresIn, ipAddress)
+	return authCmdRepo.GenerateSessionToken(userId, expiresIn, ipAddress), nil
 }
