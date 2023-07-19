@@ -69,3 +69,33 @@ func AddDatabaseController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, nil)
 }
+
+// DeleteDatabase godoc
+// @Summary      DeleteDatabase
+// @Description  Delete a database.
+// @Tags         database
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbName path string true "DatabaseName"
+// @Success      200 {object} object{} "DatabaseDeleted"
+// @Router       /database/{dbType}/{dbName}/ [delete]
+func DeleteDatabaseController(c echo.Context) error {
+	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
+	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
+
+	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+
+	err := useCase.DeleteDatabase(
+		databaseQueryRepo,
+		databaseCmdRepo,
+		dbName,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
+}

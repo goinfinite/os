@@ -55,6 +55,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/entity.AccessToken"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -144,6 +150,54 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "DatabaseAdded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/database/{dbType}/{dbName}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database"
+                ],
+                "summary": "DeleteDatabase",
+                "parameters": [
+                    {
+                        "enum": [
+                            "mysql",
+                            "postgres"
+                        ],
+                        "type": "string",
+                        "description": "DatabaseType",
+                        "name": "dbType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseName",
+                        "name": "dbName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "DatabaseDeleted",
                         "schema": {
                             "type": "object"
                         }

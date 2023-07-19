@@ -197,6 +197,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/entity.AccessToken'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
       summary: GenerateJwtWithCredentials
       tags:
       - auth
@@ -257,6 +261,37 @@ paths:
       security:
       - Bearer: []
       summary: AddDatabase
+      tags:
+      - database
+  /database/{dbType}/{dbName}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a database.
+      parameters:
+      - description: DatabaseType
+        enum:
+        - mysql
+        - postgres
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: DatabaseDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteDatabase
       tags:
       - database
   /o11y/overview/:
