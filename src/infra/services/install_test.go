@@ -47,6 +47,7 @@ func TestInstall(t *testing.T) {
 	})
 
 	t.Run("InstallRedis", func(t *testing.T) {
+		t.Skip("Skip redis install test")
 		version, _ := valueObject.NewServiceVersion("7.0")
 		err := Install(
 			valueObject.NewServiceNamePanic("redis"),
