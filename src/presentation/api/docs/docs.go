@@ -262,6 +262,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/database/{dbType}/{dbName}/user/{dbUser}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a database user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database"
+                ],
+                "summary": "DeleteDatabaseUser",
+                "parameters": [
+                    {
+                        "enum": [
+                            "mysql",
+                            "postgres"
+                        ],
+                        "type": "string",
+                        "description": "DatabaseType",
+                        "name": "dbType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseName",
+                        "name": "dbName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseUsername",
+                        "name": "dbUser",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "DatabaseUserDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [

@@ -40,6 +40,10 @@ func databaseRoutes(baseRoute *echo.Group) {
 		"/:dbType/:dbName/user/",
 		apiController.AddDatabaseUserController,
 	)
+	databaseGroup.DELETE(
+		"/:dbType/:dbName/user/:dbUser/",
+		apiController.DeleteDatabaseUserController,
+	)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {

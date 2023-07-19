@@ -11,7 +11,7 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
-// GetDatabases	 godoc
+// GetDatabases godoc
 // @Summary      GetDatabases
 // @Description  List databases names, users and sizes.
 // @Tags         database
@@ -100,7 +100,7 @@ func DeleteDatabaseController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
 }
 
-// AddDatabaseUser		 godoc
+// AddDatabaseUser godoc
 // @Summary      AddDatabaseUser
 // @Description  Add a new database user.
 // @Tags         database
@@ -150,4 +150,37 @@ func AddDatabaseUserController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, nil)
+}
+
+// DeleteDatabaseUser godoc
+// @Summary      DeleteDatabaseUser
+// @Description  Delete a database user.
+// @Tags         database
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbName path string true "DatabaseName"
+// @Param        dbUser path string true "DatabaseUsername"
+// @Success      200 {object} object{} "DatabaseUserDeleted"
+// @Router       /database/{dbType}/{dbName}/user/{dbUser}/ [delete]
+func DeleteDatabaseUserController(c echo.Context) error {
+	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
+	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
+	dbUser := valueObject.NewDatabaseUsernamePanic(c.Param("dbUser"))
+
+	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+
+	err := useCase.DeleteDatabaseUser(
+		databaseQueryRepo,
+		databaseCmdRepo,
+		dbName,
+		dbUser,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
 }

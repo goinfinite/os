@@ -344,6 +344,42 @@ paths:
       summary: AddDatabaseUser
       tags:
       - database
+  /database/{dbType}/{dbName}/user/{dbUser}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a database user.
+      parameters:
+      - description: DatabaseType
+        enum:
+        - mysql
+        - postgres
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
+      - description: DatabaseUsername
+        in: path
+        name: dbUser
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: DatabaseUserDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteDatabaseUser
+      tags:
+      - database
   /o11y/overview/:
     get:
       consumes:
