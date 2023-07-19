@@ -6,6 +6,7 @@ import (
 
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/repository"
+	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
 func AddDatabaseUser(
@@ -16,6 +17,12 @@ func AddDatabaseUser(
 	_, err := dbQueryRepo.GetByName(addDatabaseUser.DatabaseName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
+	}
+
+	if len(addDatabaseUser.Privileges) == 0 {
+		addDatabaseUser.Privileges = []valueObject.DatabasePrivilege{
+			valueObject.NewDatabasePrivilegePanic("ALL"),
+		}
 	}
 
 	err = dbCmdRepo.AddUser(addDatabaseUser)

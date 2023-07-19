@@ -67,7 +67,7 @@ func AddDatabaseController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, nil)
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseAdded")
 }
 
 // DeleteDatabase godoc
@@ -97,7 +97,7 @@ func DeleteDatabaseController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "DatabaseDeleted")
 }
 
 // AddDatabaseUser godoc
@@ -122,11 +122,12 @@ func AddDatabaseUserController(c echo.Context) error {
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 	username := valueObject.NewUsernamePanic(requestBody["username"].(string))
 	password := valueObject.NewPasswordPanic(requestBody["password"].(string))
-	var privilegesPtr *[]valueObject.DatabasePrivilege
+
+	privileges := []valueObject.DatabasePrivilege{}
 	if requestBody["privileges"] != nil {
 		for _, privilege := range requestBody["privileges"].([]interface{}) {
 			privilege := valueObject.NewDatabasePrivilegePanic(privilege.(string))
-			*privilegesPtr = append(*privilegesPtr, privilege)
+			privileges = append(privileges, privilege)
 		}
 	}
 
@@ -134,7 +135,7 @@ func AddDatabaseUserController(c echo.Context) error {
 		dbName,
 		username,
 		password,
-		privilegesPtr,
+		privileges,
 	)
 
 	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
@@ -149,7 +150,7 @@ func AddDatabaseUserController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, nil)
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseUserAdded")
 }
 
 // DeleteDatabaseUser godoc
@@ -182,5 +183,5 @@ func DeleteDatabaseUserController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, nil)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "DatabaseUserDeleted")
 }

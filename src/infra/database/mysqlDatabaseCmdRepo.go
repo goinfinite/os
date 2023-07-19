@@ -37,21 +37,11 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 }
 
 func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
-	privileges := []valueObject.DatabasePrivilege{
-		valueObject.NewDatabasePrivilegePanic("ALL"),
+	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
+	for i, privilege := range addDatabaseUser.Privileges {
+		privilegesStrList[i] = privilege.String()
 	}
-	if addDatabaseUser.Privileges != nil {
-		privileges = *addDatabaseUser.Privileges
-	}
-
-	var privilegesStr string
-	if len(privileges) > 0 {
-		privilegesStrList := make([]string, len(privileges))
-		for i, privilege := range privileges {
-			privilegesStrList[i] = privilege.String()
-		}
-		privilegesStr = strings.Join(privilegesStrList, ", ")
-	}
+	privilegesStr := strings.Join(privilegesStrList, ", ")
 
 	_, err := MysqlCmd(
 		"GRANT " +
