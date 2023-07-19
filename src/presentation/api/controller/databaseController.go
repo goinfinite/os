@@ -120,7 +120,7 @@ func AddDatabaseUserController(c echo.Context) error {
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
-	username := valueObject.NewUsernamePanic(requestBody["username"].(string))
+	username := valueObject.NewDatabaseUsernamePanic(requestBody["username"].(string))
 	password := valueObject.NewPasswordPanic(requestBody["password"].(string))
 
 	privileges := []valueObject.DatabasePrivilege{}
