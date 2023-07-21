@@ -54,5 +54,15 @@ func (repo ServicesCmdRepo) Install(
 func (repo ServicesCmdRepo) Uninstall(
 	name valueObject.ServiceName,
 ) error {
-	return servicesInfra.Uninstall(name)
+	err := servicesInfra.Uninstall(name)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.SupervisordFacade{}.Reload()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
