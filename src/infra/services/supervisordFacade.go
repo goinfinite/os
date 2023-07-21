@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
@@ -91,15 +92,21 @@ stderr_logfile_maxbytes=0
 }
 
 func (facade SupervisordFacade) RemoveConf(svcName string) error {
-	_, err := infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"/[program:"+svcName+"]/,/^stderr_logfile_maxbytes=0/d",
-		supervisordConf,
-	)
+	fileContent, err := os.ReadFile(supervisordConf)
 	if err != nil {
-		log.Printf("RemoveSupervisorConfError: %s", err)
-		return errors.New("RemoveSupervisorConfError")
+		log.Printf("OpenSupervisorConfError: %s", err)
+		return errors.New("OpenSupervisorConfError")
+	}
+
+	re := regexp.MustCompile(
+		`\n?\[program:` + svcName + `\][\s\S]*?stderr_logfile_maxbytes=0\n?`,
+	)
+	updatedContent := re.ReplaceAll(fileContent, []byte{})
+
+	err = os.WriteFile(supervisordConf, updatedContent, 0644)
+	if err != nil {
+		log.Printf("WriteSupervisorConfError: %s", err)
+		return errors.New("WriteSupervisorConfError")
 	}
 
 	return nil
