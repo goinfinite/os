@@ -13,6 +13,7 @@ type SupervisordFacade struct {
 }
 
 const supervisordCmd string = "/usr/bin/supervisord"
+const supervisordConf string = "/speedia/supervisord.conf"
 
 func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
 	_, err := infraHelper.RunCmd(
@@ -59,7 +60,7 @@ func (facade SupervisordFacade) Reload() error {
 }
 
 func (facade SupervisordFacade) AddConf(svcName string, svcCmd string) error {
-	supervisorConf := `
+	svcConf := `
 [program:` + svcName + `]
 command=` + svcCmd + `
 user=root
@@ -74,16 +75,31 @@ stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 `
 
-	f, err := os.OpenFile("/speedia/supervisord.conf", os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("OpenSupervisorConfError: %s", err)
 		return errors.New("OpenSupervisorConfError")
 	}
 	defer f.Close()
 
-	if _, err := f.WriteString(supervisorConf); err != nil {
+	if _, err := f.WriteString(svcConf); err != nil {
 		log.Printf("WriteSupervisorConfError: %s", err)
 		return errors.New("WriteSupervisorConfError")
+	}
+
+	return nil
+}
+
+func (facade SupervisordFacade) RemoveConf(svcName string) error {
+	_, err := infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"/[program:"+svcName+"]/,/^stderr_logfile_maxbytes=0/d",
+		supervisordConf,
+	)
+	if err != nil {
+		log.Printf("RemoveSupervisorConfError: %s", err)
+		return errors.New("RemoveSupervisorConfError")
 	}
 
 	return nil
