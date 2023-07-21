@@ -412,6 +412,8 @@ func installRedis(version *valueObject.ServiceVersion) error {
 
 	_, err = infraHelper.RunCmd(
 		"gpg",
+		"--batch",
+		"--yes",
 		"--dearmor",
 		"-o",
 		"/usr/share/keyrings/redis-archive-keyring.gpg",
