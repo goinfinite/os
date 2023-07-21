@@ -54,7 +54,12 @@ func (repo ServicesCmdRepo) Install(
 func (repo ServicesCmdRepo) Uninstall(
 	name valueObject.ServiceName,
 ) error {
-	err := servicesInfra.Uninstall(name)
+	err := repo.Stop(name)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.Uninstall(name)
 	if err != nil {
 		return err
 	}
