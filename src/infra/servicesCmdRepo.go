@@ -1,9 +1,6 @@
 package infra
 
 import (
-	"errors"
-	"log"
-
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 	servicesInfra "github.com/speedianet/sam/src/infra/services"
@@ -12,33 +9,14 @@ import (
 type ServicesCmdRepo struct {
 }
 
-const SupervisordCmd string = "/usr/bin/supervisord"
-
 func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd(
-		SupervisordCmd,
-		"ctl",
-		"start",
-		name.String(),
-	)
-	if err != nil {
-		log.Printf("StartServiceError: %s", err)
-		return errors.New("StartServiceError")
-	}
-
-	return nil
+	return servicesInfra.SupervisordFacade{}.Start(name)
 }
 
 func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd(
-		SupervisordCmd,
-		"ctl",
-		"stop",
-		name.String(),
-	)
+	err := servicesInfra.SupervisordFacade{}.Stop(name)
 	if err != nil {
-		log.Printf("StopServiceError: %s", err)
-		return errors.New("StopServiceError")
+		return err
 	}
 
 	switch name.String() {
@@ -65,14 +43,9 @@ func (repo ServicesCmdRepo) Install(
 		return err
 	}
 
-	_, err = infraHelper.RunCmd(
-		SupervisordCmd,
-		"ctl",
-		"reload",
-	)
+	err = servicesInfra.SupervisordFacade{}.Reload()
 	if err != nil {
-		log.Printf("ReloadSupervisorError: %s", err)
-		return errors.New("ReloadSupervisorError")
+		return err
 	}
 
 	return nil

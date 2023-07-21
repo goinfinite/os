@@ -20,6 +20,43 @@ var supportedServicesVersion = map[string]string{
 	"redis":   `^6\.(0|2)|^7\.0$`,
 }
 
+var OlsPackages = []string{
+	"openlitespeed",
+	"lsphp74",
+	"lsphp74-common",
+	"lsphp74-curl",
+	"lsphp74-intl",
+	"lsphp74-mysql",
+	"lsphp74-opcache",
+	"lsphp74-sqlite3",
+	"lsphp81",
+	"lsphp81-common",
+	"lsphp81-curl",
+	"lsphp81-intl",
+	"lsphp81-mysql",
+	"lsphp81-opcache",
+	"lsphp81-sqlite3",
+	"lsphp82",
+	"lsphp82-common",
+	"lsphp82-curl",
+	"lsphp82-intl",
+	"lsphp82-mysql",
+	"lsphp82-opcache",
+	"lsphp82-sqlite3",
+}
+
+var MariaDbPackages = []string{
+	"mariadb-server",
+}
+
+var NodePackages = []string{
+	"nodejs",
+}
+
+var RedisPackages = []string{
+	"redis-server",
+}
+
 //go:embed assets/*
 var assets embed.FS
 
@@ -43,37 +80,6 @@ func copyAssets(srcPath string, dstPath string) error {
 	if err != nil {
 		log.Printf("CopyFileError: %s", err)
 		return errors.New("CopyFileError")
-	}
-
-	return nil
-}
-
-func appendSupervisorConf(svcName string, svcBin string) error {
-	supervisorConf := `
-[program:` + svcName + `]
-command=` + svcBin + `
-user=root
-directory=/speedia
-autostart=true
-autorestart=true
-startretries=3
-startsecs=5
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-`
-
-	f, err := os.OpenFile("/speedia/supervisord.conf", os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Printf("OpenSupervisorConfError: %s", err)
-		return errors.New("OpenSupervisorConfError")
-	}
-	defer f.Close()
-
-	if _, err := f.WriteString(supervisorConf); err != nil {
-		log.Printf("WriteSupervisorConfError: %s", err)
-		return errors.New("WriteSupervisorConfError")
 	}
 
 	return nil
@@ -104,31 +110,7 @@ func installOls() error {
 		return errors.New("RemoveRepoFileError")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"install_packages",
-		"openlitespeed",
-		"lsphp74",
-		"lsphp74-common",
-		"lsphp74-curl",
-		"lsphp74-intl",
-		"lsphp74-mysql",
-		"lsphp74-opcache",
-		"lsphp74-sqlite3",
-		"lsphp81",
-		"lsphp81-common",
-		"lsphp81-curl",
-		"lsphp81-intl",
-		"lsphp81-mysql",
-		"lsphp81-opcache",
-		"lsphp81-sqlite3",
-		"lsphp82",
-		"lsphp82-common",
-		"lsphp82-curl",
-		"lsphp82-intl",
-		"lsphp82-mysql",
-		"lsphp82-opcache",
-		"lsphp82-sqlite3",
-	)
+	err = infraHelper.InstallPkgs(OlsPackages)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
@@ -208,7 +190,7 @@ func installOls() error {
 		return errors.New("CopyAssetsError")
 	}
 
-	err = appendSupervisorConf(
+	err = SupervisordFacade{}.AddConf(
 		"openlitespeed",
 		"bash /speedia/ols-entrypoint.sh",
 	)
@@ -258,10 +240,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 		return errors.New("RemoveRepoFileError")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"install_packages",
-		"mariadb-server",
-	)
+	err = infraHelper.InstallPkgs(MariaDbPackages)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
@@ -336,7 +315,7 @@ func installMysql(version *valueObject.ServiceVersion) error {
 		return errors.New("StopMysqldSafeError")
 	}
 
-	err = appendSupervisorConf(
+	err = SupervisordFacade{}.AddConf(
 		"mysql",
 		"/usr/bin/mysqld_safe",
 	)
@@ -387,10 +366,7 @@ func installNode(version *valueObject.ServiceVersion) error {
 		return errors.New("RemoveRepoFileError")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"install_packages",
-		"nodejs",
-	)
+	err = infraHelper.InstallPkgs(NodePackages)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
@@ -411,10 +387,8 @@ func installRedis(version *valueObject.ServiceVersion) error {
 		}
 	}
 
-	_, err := infraHelper.RunCmd(
-		"install_packages",
-		"lsb-release",
-		"gpg",
+	err := infraHelper.InstallPkgs(
+		[]string{"lsb-release", "gpg"},
 	)
 	if err != nil {
 		log.Printf("InstallPackagesError: %s", err)
@@ -479,16 +453,15 @@ func installRedis(version *valueObject.ServiceVersion) error {
 		versionFlag = "=" + latestVersion
 	}
 
-	_, err = infraHelper.RunCmd(
-		"install_packages",
-		"redis-server"+versionFlag,
+	err = infraHelper.InstallPkgs(
+		[]string{RedisPackages[0] + versionFlag},
 	)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
 	}
 
-	err = appendSupervisorConf(
+	err = SupervisordFacade{}.AddConf(
 		"redis",
 		"/usr/bin/redis-server /etc/redis/redis.conf",
 	)
