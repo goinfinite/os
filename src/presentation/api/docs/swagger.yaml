@@ -32,6 +32,21 @@ definitions:
       username:
         type: string
     type: object
+  dto.UpdatePhpConfigs:
+    properties:
+      hostname:
+        type: string
+      modules:
+        items:
+          $ref: '#/definitions/entity.PhpModule'
+        type: array
+      settings:
+        items:
+          $ref: '#/definitions/entity.PhpSetting'
+        type: array
+      version:
+        type: string
+    type: object
   dto.UpdateSvcStatus:
     properties:
       name:
@@ -108,6 +123,24 @@ definitions:
         $ref: '#/definitions/valueObject.HardwareSpecs'
       uptimeSecs:
         type: integer
+    type: object
+  entity.PhpModule:
+    properties:
+      name:
+        type: string
+      status:
+        type: boolean
+    type: object
+  entity.PhpSetting:
+    properties:
+      name:
+        type: string
+      options:
+        items:
+          type: string
+        type: array
+      value:
+        type: string
     type: object
   entity.Service:
     properties:
@@ -406,6 +439,30 @@ paths:
       summary: O11yOverview
       tags:
       - o11y
+  /runtime/php/{hostname}/:
+    put:
+      consumes:
+      - application/json
+      description: Update php version, modules and settings for a hostname.
+      parameters:
+      - description: UpdatePhpConfigs
+        in: body
+        name: updatePhpConfigsDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePhpConfigs'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PhpConfigsUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdatePhpConfigs
+      tags:
+      - runtime
   /services/:
     get:
       consumes:

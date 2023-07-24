@@ -345,6 +345,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/runtime/php/{hostname}/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update php version, modules and settings for a hostname.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "runtime"
+                ],
+                "summary": "UpdatePhpConfigs",
+                "parameters": [
+                    {
+                        "description": "UpdatePhpConfigs",
+                        "name": "updatePhpConfigsDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePhpConfigs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PhpConfigsUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/services/": {
             "get": {
                 "security": [
@@ -610,6 +649,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdatePhpConfigs": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "modules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PhpModule"
+                    }
+                },
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PhpSetting"
+                    }
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateSvcStatus": {
             "type": "object",
             "properties": {
@@ -726,6 +788,34 @@ const docTemplate = `{
                 },
                 "uptimeSecs": {
                     "type": "integer"
+                }
+            }
+        },
+        "entity.PhpModule": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "entity.PhpSetting": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
