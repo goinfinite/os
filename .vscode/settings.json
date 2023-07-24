@@ -53,6 +53,8 @@
     "userdel",
     "usermod",
     "uuid",
-    "vhconf"
+    "vhconf",
+    "vhost",
+    "vhosts"
   ]
 }
