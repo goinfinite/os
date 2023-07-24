@@ -11,6 +11,10 @@ type PhpVersion string
 
 func NewPhpVersion(value string) (PhpVersion, error) {
 	version := PhpVersion(value)
+	if len(value) == 2 {
+		version = PhpVersion(value[:1] + "." + value[1:])
+	}
+
 	if !version.isValid() {
 		return "", errors.New("InvalidPhpVersion")
 	}
@@ -18,10 +22,11 @@ func NewPhpVersion(value string) (PhpVersion, error) {
 }
 
 func NewPhpVersionPanic(value string) PhpVersion {
-	version := PhpVersion(value)
-	if !version.isValid() {
-		panic("InvalidPhpVersion")
+	version, err := NewPhpVersion(value)
+	if err != nil {
+		panic(err)
 	}
+
 	return version
 }
 
