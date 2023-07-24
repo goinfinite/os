@@ -2,7 +2,6 @@ package infra
 
 import (
 	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
 	servicesInfra "github.com/speedianet/sam/src/infra/services"
 )
 
@@ -14,24 +13,11 @@ func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	err := servicesInfra.SupervisordFacade{}.Stop(name)
-	if err != nil {
-		return err
-	}
+	return servicesInfra.SupervisordFacade{}.Stop(name)
+}
 
-	switch name.String() {
-	case "openlitespeed":
-		infraHelper.RunCmd(
-			"/usr/local/lsws/bin/lswsctrl",
-			"stop",
-		)
-		infraHelper.RunCmd(
-			"pkill",
-			"lsphp",
-		)
-	}
-
-	return nil
+func (repo ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
+	return servicesInfra.SupervisordFacade{}.Restart(name)
 }
 
 func (repo ServicesCmdRepo) Install(

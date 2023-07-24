@@ -43,6 +43,46 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		return errors.New("StopServiceError")
 	}
 
+	switch name.String() {
+	case "openlitespeed":
+		infraHelper.RunCmd(
+			"/usr/local/lsws/bin/lswsctrl",
+			"stop",
+		)
+		infraHelper.RunCmd(
+			"pkill",
+			"lsphp",
+		)
+		infraHelper.RunCmd(
+			"pkill",
+			"sleep",
+		)
+	}
+
+	return nil
+}
+
+func (facade SupervisordFacade) Restart(name valueObject.ServiceName) error {
+	switch name.String() {
+	case "openlitespeed":
+		_, err := infraHelper.RunCmd(
+			"/usr/local/lsws/bin/lswsctrl",
+			"restart",
+		)
+		return err
+	}
+
+	_, err := infraHelper.RunCmd(
+		supervisordCmd,
+		"ctl",
+		"restart",
+		name.String(),
+	)
+	if err != nil {
+		log.Printf("RestartServiceError: %s", err)
+		return errors.New("RestartServiceError")
+	}
+
 	return nil
 }
 
