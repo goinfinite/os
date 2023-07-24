@@ -53,6 +53,7 @@ func o11yRoutes(baseRoute *echo.Group) {
 
 func userRoutes(baseRoute *echo.Group) {
 	userGroup := baseRoute.Group("/user")
+	userGroup.GET("/", apiController.GetUsersController)
 	userGroup.POST("/", apiController.AddUserController)
 	userGroup.PUT("/", apiController.UpdateUserController)
 }

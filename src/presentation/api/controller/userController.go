@@ -11,6 +11,26 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
+// GetUsers	 godoc
+// @Summary      GetUsers
+// @Description  List users.
+// @Tags         user
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200 {array} entity.AccountDetails
+// @Router       /user/ [get]
+func GetUsersController(c echo.Context) error {
+	usersQueryRepo := infra.AccQueryRepo{}
+	usersList, err := useCase.GetUsers(usersQueryRepo)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, usersList)
+}
+
 // AddUser		 godoc
 // @Summary      AddNewUser
 // @Description  Add a new user.

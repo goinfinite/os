@@ -414,6 +414,38 @@ const docTemplate = `{
             }
         },
         "/user/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List users.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "GetUsers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.AccountDetails"
+                            }
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -617,6 +649,20 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.AccessTokenType"
+                }
+            }
+        },
+        "entity.AccountDetails": {
+            "type": "object",
+            "properties": {
+                "groupId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
