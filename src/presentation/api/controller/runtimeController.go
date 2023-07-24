@@ -134,10 +134,12 @@ func UpdatePhpConfigsController(c echo.Context) error {
 
 	runtimeQueryRepo := infra.RuntimeQueryRepo{}
 	runtimeCmdRepo := infra.RuntimeCmdRepo{}
+	wsQueryRepo := infra.WsQueryRepo{}
 
 	err = useCase.UpdatePhpConfigs(
 		runtimeQueryRepo,
 		runtimeCmdRepo,
+		wsQueryRepo,
 		updatePhpConfigsDto,
 	)
 	if err != nil {
