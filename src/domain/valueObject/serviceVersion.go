@@ -10,26 +10,26 @@ const serviceVersionRegex string = `^[\d\.\_\-]{1,20}$`
 type ServiceVersion string
 
 func NewServiceVersion(value string) (ServiceVersion, error) {
-	user := ServiceVersion(value)
-	if !user.isValid() {
+	version := ServiceVersion(value)
+	if !version.isValid() {
 		return "", errors.New("InvalidServiceVersion")
 	}
-	return user, nil
+	return version, nil
 }
 
 func NewServiceVersionPanic(value string) ServiceVersion {
-	user := ServiceVersion(value)
-	if !user.isValid() {
+	version := ServiceVersion(value)
+	if !version.isValid() {
 		panic("InvalidServiceVersion")
 	}
-	return user
+	return version
 }
 
-func (user ServiceVersion) isValid() bool {
+func (version ServiceVersion) isValid() bool {
 	re := regexp.MustCompile(serviceVersionRegex)
-	return re.MatchString(string(user))
+	return re.MatchString(string(version))
 }
 
-func (user ServiceVersion) String() string {
-	return string(user)
+func (version ServiceVersion) String() string {
+	return string(version)
 }
