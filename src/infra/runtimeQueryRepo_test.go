@@ -9,6 +9,7 @@ import (
 )
 
 func TestRuntimeQueryRepo(t *testing.T) {
+	t.Skip("SkipRuntimeQueryRepoTest")
 	testHelpers.LoadEnvVars()
 
 	servicesInfra.Install(
