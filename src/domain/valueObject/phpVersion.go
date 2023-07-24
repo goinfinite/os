@@ -38,3 +38,7 @@ func (version PhpVersion) isValid() bool {
 func (version PhpVersion) String() string {
 	return string(version)
 }
+
+func (version PhpVersion) GetWithoutDots() string {
+	return string(version[:1]) + string(version[2:])
+}
