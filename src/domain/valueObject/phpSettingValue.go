@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strconv"
 )
 
 type PhpSettingValue string
@@ -29,4 +30,31 @@ func (settingValue PhpSettingValue) isValid() bool {
 
 func (settingValue PhpSettingValue) String() string {
 	return string(settingValue)
+}
+
+func (settingValue PhpSettingValue) IsBool() bool {
+	return settingValue == "On" || settingValue == "Off"
+}
+
+func (settingValue PhpSettingValue) IsNumber() bool {
+	_, err := strconv.Atoi(settingValue.String())
+	return err == nil
+}
+
+func (settingValue PhpSettingValue) IsByteSize() bool {
+	lastChar := settingValue[len(settingValue)-1]
+	return lastChar == 'K' || lastChar == 'M' || lastChar == 'G'
+}
+
+func (settingValue PhpSettingValue) GetType() string {
+	if settingValue.IsBool() {
+		return "bool"
+	}
+	if settingValue.IsNumber() {
+		return "number"
+	}
+	if settingValue.IsByteSize() {
+		return "byteSize"
+	}
+	return "string"
 }
