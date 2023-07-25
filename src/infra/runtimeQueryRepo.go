@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"golang.org/x/exp/slices"
 )
 
 var PhpTimeZones = []string{
@@ -226,6 +227,56 @@ func (r RuntimeQueryRepo) GetPhpSettings(
 	return phpSettings, nil
 }
 
+func (r RuntimeQueryRepo) GetPhpModules(
+	hostname valueObject.Fqdn,
+	version valueObject.PhpVersion,
+) ([]entity.PhpModule, error) {
+	activeModuleList, err := infraHelper.RunCmd(
+		"/usr/local/lsws/lsphp"+version.GetWithoutDots()+"/bin/php",
+		"-m",
+	)
+	if err != nil {
+		log.Printf("GetActivePhpModulesFailed: %v", err)
+		return nil, errors.New("GetActivePhpModulesFailed")
+	}
+
+	activeModules := []string{}
+	for _, moduleName := range strings.Split(activeModuleList, "\n") {
+		if moduleName == "" {
+			continue
+		}
+
+		moduleName = strings.Replace(moduleName, "Zend", "", -1)
+
+		phpModule, err := valueObject.NewPhpModuleName(moduleName)
+		if err != nil {
+			continue
+		}
+
+		activeModules = append(activeModules, phpModule.String())
+	}
+
+	phpModules := []entity.PhpModule{}
+	for _, moduleName := range valueObject.ValidPhpModuleNames {
+		isModuleInstalled := false
+		if slices.Contains(activeModules, moduleName) {
+			isModuleInstalled = true
+		}
+
+		phpModule, err := valueObject.NewPhpModuleName(moduleName)
+		if err != nil {
+			continue
+		}
+
+		phpModules = append(
+			phpModules,
+			entity.NewPhpModule(phpModule, isModuleInstalled),
+		)
+	}
+
+	return phpModules, nil
+}
+
 func (r RuntimeQueryRepo) GetPhpConfigs(
 	hostname valueObject.Fqdn,
 ) (entity.PhpConfigs, error) {
@@ -239,7 +290,7 @@ func (r RuntimeQueryRepo) GetPhpConfigs(
 		return entity.PhpConfigs{}, err
 	}
 
-	phpModules, err := r.GetPhpModules(hostname)
+	phpModules, err := r.GetPhpModules(hostname, phpVersion.Value)
 	if err != nil {
 		return entity.PhpConfigs{}, err
 	}

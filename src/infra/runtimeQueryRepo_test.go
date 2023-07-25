@@ -17,9 +17,10 @@ func TestRuntimeQueryRepo(t *testing.T) {
 		nil,
 	)
 
+	repo := RuntimeQueryRepo{}
+
 	t.Run("ReturnPhpVersionsList", func(t *testing.T) {
-		repo := RuntimeQueryRepo{}
-		phpVersions, err := repo.GetPhpVersions()
+		phpVersions, err := repo.GetPhpVersionsInstalled()
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
@@ -27,6 +28,18 @@ func TestRuntimeQueryRepo(t *testing.T) {
 
 		if len(phpVersions) == 0 {
 			t.Errorf("Expected a list of php versions, got %v", phpVersions)
+		}
+	})
+
+	t.Run("ReturnPhpConfigs", func(t *testing.T) {
+		phpConfigs, err := repo.GetPhpConfigs()
+
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+
+		if len(phpConfigs.Modules) == 0 {
+			t.Errorf("Expected a list of php modules, got %v", phpConfigs)
 		}
 	})
 }
