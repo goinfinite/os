@@ -201,6 +201,11 @@ func installOls() error {
 		return errors.New("AddSupervisorConfError")
 	}
 
+	os.Symlink(
+		"/usr/local/lsws/lsphp82/bin/php",
+		"/usr/bin/php",
+	)
+
 	return nil
 }
 
