@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"strings"
@@ -10,59 +11,6 @@ import (
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 	"golang.org/x/exp/slices"
 )
-
-var PhpTimeZones = []string{
-	"UTC",
-	"Europe/London",
-	"Europe/Paris",
-	"Europe/Berlin",
-	"America/New_York",
-	"America/Los_Angeles",
-	"America/Chicago",
-	"Asia/Tokyo",
-	"Asia/Shanghai",
-	"Australia/Sydney",
-	"Australia/Melbourne",
-	"Africa/Johannesburg",
-	"Pacific/Auckland",
-	"America/Sao_Paulo",
-	"Europe/Rome",
-	"Europe/Madrid",
-	"America/Toronto",
-	"Asia/Dubai",
-	"Asia/Kolkata",
-	"Europe/Amsterdam",
-	"Europe/Stockholm",
-	"Europe/Istanbul",
-	"America/Mexico_City",
-	"America/Phoenix",
-	"Asia/Hong_Kong",
-	"Asia/Singapore",
-	"America/Argentina/Buenos_Aires",
-	"America/Denver",
-	"America/Vancouver",
-	"Europe/Vienna",
-	"Europe/Zurich",
-	"Europe/Prague",
-	"Africa/Cairo",
-	"Africa/Lagos",
-	"Asia/Seoul",
-	"Asia/Tehran",
-	"Australia/Brisbane",
-	"Australia/Perth",
-	"America/Manaus",
-	"America/Bogota",
-	"America/Lima",
-	"America/Montreal",
-	"Asia/Jakarta",
-	"Asia/Riyadh",
-	"Europe/Warsaw",
-	"Europe/Athens",
-	"Europe/Helsinki",
-	"Europe/Lisbon",
-	"Africa/Nairobi",
-	"Pacific/Honolulu",
-}
 
 type RuntimeQueryRepo struct {
 }
@@ -124,6 +72,27 @@ func (r RuntimeQueryRepo) GetPhpVersion(
 	return entity.NewPhpVersion(currentPhpVersion, phpVersions), nil
 }
 
+func (r RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
+	timezonesRaw, err := infraHelper.RunCmd(
+		"php",
+		"-r",
+		"echo json_encode(DateTimeZone::listIdentifiers());",
+	)
+	if err != nil {
+		log.Printf("FailedToGetPhpTimezones: %v", err)
+		return nil, errors.New("FailedToGetPhpTimezones")
+	}
+
+	var timezones []string
+	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
+	if err != nil {
+		log.Printf("FailedToGetPhpTimezones: %v", err)
+		return nil, errors.New("FailedToGetPhpTimezones")
+	}
+
+	return timezones, nil
+}
+
 func (r RuntimeQueryRepo) phpSettingFactory(
 	setting string,
 ) (entity.PhpSetting, error) {
@@ -160,7 +129,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 		valuesToInject = []string{"On", "Off"}
 	case "number":
 		valuesToInject = []string{
-			"30", "60", "120", "300", "600", "900", "1800", "3600", "7200",
+			"0", "30", "60", "120", "300", "600", "900", "1800", "3600", "7200",
 		}
 	case "byteSize":
 		lastChar := settingValue[len(settingValue)-1]
@@ -168,7 +137,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 		case 'K':
 			valuesToInject = []string{"4096K", "8192K", "16384K"}
 		case 'M':
-			valuesToInject = []string{"256M", "512M", "1024M", "2048M"}
+			valuesToInject = []string{"16M", "32M", "64M", "128M", "256M", "512M", "1024M", "2048M"}
 		case 'G':
 			valuesToInject = []string{"1G", "2G", "4G"}
 		}
@@ -184,7 +153,10 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 			"E_ERROR|E_CORE_ERROR|E_COMPILE_ERROR",
 		}
 	case "date.timezone":
-		valuesToInject = PhpTimeZones
+		valuesToInject, err = r.getPhpTimezones()
+		if err != nil {
+			valuesToInject = []string{}
+		}
 	}
 
 	if len(valuesToInject) > 0 {
