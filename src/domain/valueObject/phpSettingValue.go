@@ -3,11 +3,15 @@ package valueObject
 import (
 	"errors"
 	"strconv"
+	"strings"
 )
 
 type PhpSettingValue string
 
 func NewPhpSettingValue(value string) (PhpSettingValue, error) {
+	value = strings.Trim(value, "\"")
+	value = strings.TrimSpace(value)
+
 	settingValue := PhpSettingValue(value)
 	if !settingValue.isValid() {
 		return "", errors.New("InvalidPhpSettingValue")
