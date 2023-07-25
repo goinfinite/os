@@ -102,6 +102,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
+// @Param        hostname 	  path   string  true  "Hostname"
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"UpdatePhpConfigs"
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /runtime/php/{hostname}/ [put]

@@ -445,6 +445,11 @@ paths:
       - application/json
       description: Update php version, modules and settings for a hostname.
       parameters:
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
       - description: UpdatePhpConfigs
         in: body
         name: updatePhpConfigsDto
@@ -520,7 +525,6 @@ paths:
               $ref: '#/definitions/entity.AccountDetails'
             type: array
       security:
-      - Bearer: []
       - Bearer: []
       summary: GetUsers
       tags:

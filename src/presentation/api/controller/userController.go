@@ -15,7 +15,6 @@ import (
 // @Summary      GetUsers
 // @Description  List users.
 // @Tags         user
-// @Security     Bearer
 // @Accept       json
 // @Produce      json
 // @Security     Bearer

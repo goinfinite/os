@@ -365,6 +365,13 @@ const docTemplate = `{
                 "summary": "UpdatePhpConfigs",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "UpdatePhpConfigs",
                         "name": "updatePhpConfigsDto",
                         "in": "body",
@@ -455,9 +462,6 @@ const docTemplate = `{
         "/user/": {
             "get": {
                 "security": [
-                    {
-                        "Bearer": []
-                    },
                     {
                         "Bearer": []
                     }
