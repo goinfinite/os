@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"os"
 	"testing"
 
 	testHelpers "github.com/speedianet/sam/src/devUtils"
@@ -32,7 +33,8 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		phpConfigs, err := repo.GetPhpConfigs()
+		hostname := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
+		phpConfigs, err := repo.GetPhpConfigs(hostname)
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
