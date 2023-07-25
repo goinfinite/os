@@ -2,8 +2,6 @@ package infra
 
 import (
 	"errors"
-	"log"
-	"os"
 
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
@@ -17,31 +15,16 @@ func (r RuntimeCmdRepo) UpdatePhpVersion(
 	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
-	vhconfFile := "/app/conf/vhconf.conf"
-	mainVirtualHost := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
-	if hostname != mainVirtualHost {
-		vhconfFile = "/app/domains/" + string(hostname) + "/conf/vhconf.conf"
-	}
-
-	currentPhpVersionStr, err := infraHelper.RunCmd(
-		"awk",
-		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		vhconfFile,
-	)
+	phpVersion, err := RuntimeQueryRepo{}.GetPhpVersion(hostname)
 	if err != nil {
-		log.Printf("FailedToGetPhpVersion: %v", err)
-		return errors.New("FailedToGetPhpVersion")
+		return err
 	}
 
-	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
-	if err != nil {
-		return errors.New("FailedToGetPhpVersion")
-	}
-
-	if currentPhpVersion == version {
+	if phpVersion.Value == version {
 		return nil
 	}
 
+	vhconfFile := WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
 	_, err = infraHelper.RunCmd(
 		"sed",
