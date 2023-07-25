@@ -5,16 +5,16 @@ import "testing"
 func TestPhpModuleName(t *testing.T) {
 	t.Run("ValidPhpModuleNames", func(t *testing.T) {
 		validNames := []string{
-			"ioncube_loader",
+			"ioncube",
 			"apcu",
 			"imagick",
 			"opcache",
-			"pdo_mysql",
+			"mysqli",
 		}
 		for _, name := range validNames {
 			_, err := NewPhpModuleName(name)
 			if err != nil {
-				t.Errorf("Expected no error, got %v", err)
+				t.Errorf("Expected no error for %s, got %v", name, err)
 			}
 		}
 	})

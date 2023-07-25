@@ -2,14 +2,54 @@ package valueObject
 
 import (
 	"errors"
-	"regexp"
+	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
-const phpModuleNameRegex string = `^[0-9a-zA-Z_-]{3,32}$`
+var ValidPhpModuleNames = []string{
+	"curl",
+	"mysqli",
+	"opcache",
+	"apcu",
+	"igbinary",
+	"imagick",
+	"imap",
+	"intl",
+	"ioncube",
+	"ldap",
+	"mailparse",
+	"memcached",
+	"mcrypt",
+	"mongodb",
+	"msgpack",
+	"parallel",
+	"pdo_mysql",
+	"pdo_sqlite",
+	"pear",
+	"pgsql",
+	"phalcon",
+	"pspell",
+	"redis",
+	"snmp",
+	"solr",
+	"sqlite3",
+	"sqlsrv",
+	"ssh2",
+	"swoole",
+	"sybase",
+	"tidy",
+	"timezonedb",
+	"yaml",
+	"xdebug",
+}
 
 type PhpModuleName string
 
 func NewPhpModuleName(value string) (PhpModuleName, error) {
+	value = strings.TrimSpace(value)
+	value = strings.ToLower(value)
+
 	moduleName := PhpModuleName(value)
 	if !moduleName.isValid() {
 		return "", errors.New("InvalidPhpModuleName")
@@ -18,16 +58,15 @@ func NewPhpModuleName(value string) (PhpModuleName, error) {
 }
 
 func NewPhpModuleNamePanic(value string) PhpModuleName {
-	moduleName := PhpModuleName(value)
-	if !moduleName.isValid() {
+	moduleName, err := NewPhpModuleName(value)
+	if err != nil {
 		panic("InvalidPhpModuleName")
 	}
 	return moduleName
 }
 
 func (moduleName PhpModuleName) isValid() bool {
-	re := regexp.MustCompile(phpModuleNameRegex)
-	return re.MatchString(string(moduleName))
+	return slices.Contains(ValidPhpModuleNames, moduleName.String())
 }
 
 func (moduleName PhpModuleName) String() string {
