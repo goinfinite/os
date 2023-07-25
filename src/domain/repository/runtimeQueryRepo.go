@@ -1,7 +1,11 @@
 package repository
 
-import "github.com/speedianet/sam/src/domain/valueObject"
+import (
+	"github.com/speedianet/sam/src/domain/entity"
+	"github.com/speedianet/sam/src/domain/valueObject"
+)
 
 type RuntimeQueryRepo interface {
-	GetPhpVersions() ([]valueObject.PhpVersion, error)
+	GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error)
+	GetPhpConfigs(hostname valueObject.Fqdn) (entity.PhpConfigs, error)
 }

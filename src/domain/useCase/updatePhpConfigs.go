@@ -12,7 +12,7 @@ func isPhpInstalled(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	phpVersion valueObject.PhpVersion,
 ) bool {
-	phpVersions, err := runtimeQueryRepo.GetPhpVersions()
+	phpVersions, err := runtimeQueryRepo.GetPhpVersionsInstalled()
 	if err != nil {
 		return false
 	}
