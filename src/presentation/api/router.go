@@ -53,6 +53,7 @@ func o11yRoutes(baseRoute *echo.Group) {
 
 func runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup := baseRoute.Group("/runtime")
+	runtimeGroup.GET("/php/:hostname/", apiController.GetPhpConfigsController)
 	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
 }
 

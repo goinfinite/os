@@ -124,6 +124,21 @@ definitions:
       uptimeSecs:
         type: integer
     type: object
+  entity.PhpConfigs:
+    properties:
+      hostname:
+        type: string
+      modules:
+        items:
+          $ref: '#/definitions/entity.PhpModule'
+        type: array
+      settings:
+        items:
+          $ref: '#/definitions/entity.PhpSetting'
+        type: array
+      version:
+        $ref: '#/definitions/entity.PhpVersion'
+    type: object
   entity.PhpModule:
     properties:
       name:
@@ -135,6 +150,15 @@ definitions:
     properties:
       name:
         type: string
+      options:
+        items:
+          type: string
+        type: array
+      value:
+        type: string
+    type: object
+  entity.PhpVersion:
+    properties:
       options:
         items:
           type: string
@@ -440,6 +464,28 @@ paths:
       tags:
       - o11y
   /runtime/php/{hostname}/:
+    get:
+      consumes:
+      - application/json
+      description: Get php version, modules and settings for a hostname.
+      parameters:
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.PhpConfigs'
+      security:
+      - Bearer: []
+      summary: GetPhpConfigs
+      tags:
+      - runtime
     put:
       consumes:
       - application/json

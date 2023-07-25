@@ -14,6 +14,28 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
+// GetPhpConfigs godoc
+// @Summary      GetPhpConfigs
+// @Description  Get php version, modules and settings for a hostname.
+// @Tags         runtime
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        hostname 	  path   string  true  "Hostname"
+// @Success      200 {object} entity.PhpConfigs
+// @Router       /runtime/php/{hostname}/ [get]
+func GetPhpConfigsController(c echo.Context) error {
+	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+
+	runtimeQueryRepo := infra.RuntimeQueryRepo{}
+	phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, phpConfigs)
+}
+
 func getPhpModules(requestBody map[string]interface{}) ([]entity.PhpModule, error) {
 	var phpModules []entity.PhpModule
 	modules, ok := requestBody["modules"].([]interface{})

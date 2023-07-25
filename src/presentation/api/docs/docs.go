@@ -346,6 +346,41 @@ const docTemplate = `{
             }
         },
         "/runtime/php/{hostname}/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get php version, modules and settings for a hostname.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "runtime"
+                ],
+                "summary": "GetPhpConfigs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.PhpConfigs"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -795,6 +830,29 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.PhpConfigs": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "modules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PhpModule"
+                    }
+                },
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PhpSetting"
+                    }
+                },
+                "version": {
+                    "$ref": "#/definitions/entity.PhpVersion"
+                }
+            }
+        },
         "entity.PhpModule": {
             "type": "object",
             "properties": {
@@ -812,6 +870,20 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.PhpVersion": {
+            "type": "object",
+            "properties": {
                 "options": {
                     "type": "array",
                     "items": {
