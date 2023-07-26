@@ -200,7 +200,6 @@ func (r RuntimeQueryRepo) GetPhpSettings(
 }
 
 func (r RuntimeQueryRepo) GetPhpModules(
-	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) ([]entity.PhpModule, error) {
 	activeModuleList, err := infraHelper.RunCmd(
@@ -262,7 +261,7 @@ func (r RuntimeQueryRepo) GetPhpConfigs(
 		return entity.PhpConfigs{}, err
 	}
 
-	phpModules, err := r.GetPhpModules(hostname, phpVersion.Value)
+	phpModules, err := r.GetPhpModules(phpVersion.Value)
 	if err != nil {
 		return entity.PhpConfigs{}, err
 	}
