@@ -218,6 +218,7 @@ func (r RuntimeQueryRepo) GetPhpModules(
 		}
 
 		moduleName = strings.Replace(moduleName, "Zend", "", -1)
+		moduleName = strings.Replace(moduleName, "Loader", "", -1)
 
 		phpModule, err := valueObject.NewPhpModuleName(moduleName)
 		if err != nil {
