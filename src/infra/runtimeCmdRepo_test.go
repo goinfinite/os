@@ -44,4 +44,32 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			t.Errorf("Expected nil, got %v", err)
 		}
 	})
+
+	t.Run("UpdatePhpModules", func(t *testing.T) {
+		err := RuntimeCmdRepo{}.UpdatePhpModules(
+			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+			[]entity.PhpModule{
+				entity.NewPhpModule(
+					valueObject.NewPhpModuleNamePanic("ioncube"),
+					true,
+				),
+			},
+		)
+		if err != nil {
+			t.Errorf("Expected nil, got %v", err)
+		}
+
+		err = RuntimeCmdRepo{}.UpdatePhpModules(
+			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+			[]entity.PhpModule{
+				entity.NewPhpModule(
+					valueObject.NewPhpModuleNamePanic("ioncube"),
+					false,
+				),
+			},
+		)
+		if err != nil {
+			t.Errorf("Expected nil, got %v", err)
+		}
+	})
 }
