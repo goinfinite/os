@@ -16,6 +16,15 @@ func NewPhpSettingValue(value string) (PhpSettingValue, error) {
 	if !settingValue.isValid() {
 		return "", errors.New("InvalidPhpSettingValue")
 	}
+
+	if settingValue == "on" || settingValue == "true" {
+		settingValue = "On"
+	}
+
+	if settingValue == "off" || settingValue == "false" {
+		settingValue = "Off"
+	}
+
 	return settingValue, nil
 }
 
