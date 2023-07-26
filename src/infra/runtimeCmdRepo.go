@@ -33,12 +33,12 @@ func (r RuntimeCmdRepo) UpdatePhpVersion(
 		vhconfFile,
 	)
 	if err != nil {
-		return errors.New("FailedToUpdatePhpVersion")
+		return errors.New("UpdatePhpVersionFailed")
 	}
 
 	err = ServicesCmdRepo{}.Restart(valueObject.NewServiceNamePanic("openlitespeed"))
 	if err != nil {
-		return errors.New("FailedToRestartWebServer")
+		return errors.New("RestartWebServerFailed")
 	}
 
 	return nil
@@ -48,6 +48,30 @@ func (r RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
+	vhconfFile := WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	for _, setting := range settings {
+		name := setting.Name.String()
+		value := setting.Value.String()
+		if setting.Value.GetType() == "string" {
+			value = "\"" + value + "\""
+		}
+
+		_, err := infraHelper.RunCmd(
+			"sed",
+			"-i",
+			"s/"+name+" .*/"+name+" "+value+"/g",
+			vhconfFile,
+		)
+		if err != nil {
+			continue
+		}
+	}
+
+	err := ServicesCmdRepo{}.Restart(valueObject.NewServiceNamePanic("openlitespeed"))
+	if err != nil {
+		return errors.New("RestartWebServerFailed")
+	}
+
 	return nil
 }
 
