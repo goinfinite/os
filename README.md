@@ -34,9 +34,9 @@ To run this project during development you must install [Air](https://github.com
 
 You must have an `.env` file in the root of the git directory **during development**. You can use the `.env.example` file as a template. Air will read the `.env` file and use it to run the project during development.
 
-If you add a new env var that is required to run the REST API, please add it to the `src/presentation/api/checkEnvs.go` file.
+If you add a new env var that is required to run the apis, please add it to the `src/presentation/shared/checkEnvs.go` file.
 
-When running in production, the `.env` file is ignored and the env vars must be set in the server/deployment or on the command line, for instance:
+When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system. For instance, if you want to set the `ENV1` variable, you can do it in the `.env` file or in the command line:
 
 ```
 ENV1=XXX /speedia/sam
