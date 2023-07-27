@@ -15,7 +15,7 @@ func GetO11yOverviewController() *cobra.Command {
 			o11yQueryRepo := infra.O11yQueryRepo{}
 			o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, o11yOverview)

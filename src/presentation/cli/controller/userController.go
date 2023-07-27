@@ -17,7 +17,7 @@ func GetUsersController() *cobra.Command {
 			accQueryRepo := infra.AccQueryRepo{}
 			usersList, err := useCase.GetUsers(accQueryRepo)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, usersList)
@@ -49,7 +49,7 @@ func AddUserController() *cobra.Command {
 				addUserDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "UserAdded")
@@ -81,7 +81,7 @@ func DeleteUserController() *cobra.Command {
 				userId,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "UserDeleted")
@@ -139,7 +139,7 @@ func UpdateUserController() *cobra.Command {
 					updateUserDto,
 				)
 				if err != nil {
-					cliHelper.ResponseWrapper(false, err)
+					cliHelper.ResponseWrapper(false, err.Error())
 				}
 
 				cliHelper.ResponseWrapper(true, newKey)

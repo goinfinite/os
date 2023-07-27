@@ -27,7 +27,7 @@ func GetPhpConfigsController() *cobra.Command {
 			runtimeQueryRepo := infra.RuntimeQueryRepo{}
 			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, phpConfigs)
@@ -98,7 +98,7 @@ func UpdatePhpConfigController() *cobra.Command {
 				updatePhpConfigsDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "PhpConfigsUpdated")
@@ -160,7 +160,7 @@ func UpdatePhpSettingController() *cobra.Command {
 				updatePhpConfigsDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "PhpSettingUpdated")
@@ -219,7 +219,7 @@ func UpdatePhpModuleController() *cobra.Command {
 				updatePhpConfigsDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "PhpModuleUpdated")

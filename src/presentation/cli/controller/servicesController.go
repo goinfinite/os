@@ -17,7 +17,7 @@ func GetServicesController() *cobra.Command {
 			servicesQueryRepo := infra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetServices(servicesQueryRepo)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, servicesList)
@@ -60,7 +60,7 @@ func UpdateServiceController() *cobra.Command {
 				updateSvcStatusDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "ServiceStatusUpdated")

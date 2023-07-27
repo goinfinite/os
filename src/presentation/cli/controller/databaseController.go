@@ -22,7 +22,7 @@ func GetDatabasesController() *cobra.Command {
 
 			databasesList, err := useCase.GetDatabases(databaseQueryRepo)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, databasesList)
@@ -56,7 +56,7 @@ func AddDatabaseController() *cobra.Command {
 				addDatabaseDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "DatabaseAdded")
@@ -90,7 +90,7 @@ func DeleteDatabaseController() *cobra.Command {
 				dbName,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "DatabaseDeleted")
@@ -144,7 +144,7 @@ func AddDatabaseUserController() *cobra.Command {
 				addDatabaseUserDto,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "DatabaseUserAdded")
@@ -193,7 +193,7 @@ func DeleteDatabaseUserController() *cobra.Command {
 				dbUser,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			cliHelper.ResponseWrapper(true, "DatabaseUserDeleted")
