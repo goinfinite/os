@@ -24,6 +24,20 @@ var serveCmd = &cobra.Command{
 	},
 }
 
+func databaseRoutes() {
+	var databaseCmd = &cobra.Command{
+		Use:   "db",
+		Short: "DatabaseManagement",
+	}
+
+	rootCmd.AddCommand(databaseCmd)
+	databaseCmd.AddCommand(cliController.GetDatabasesController())
+	databaseCmd.AddCommand(cliController.AddDatabaseController())
+	databaseCmd.AddCommand(cliController.DeleteDatabaseController())
+	databaseCmd.AddCommand(cliController.AddDatabaseUserController())
+	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
+}
+
 func userRoutes() {
 	var userCmd = &cobra.Command{
 		Use:   "user",
@@ -40,5 +54,6 @@ func userRoutes() {
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
+	databaseRoutes()
 	userRoutes()
 }
