@@ -13,6 +13,9 @@ COPY /bin/sam /speedia/sam
 
 COPY supervisord.conf /speedia/supervisord.conf
 
+RUN chmod +x /speedia/sam \
+    && ln -s /speedia/sam /usr/bin/sam
+
 EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 10000/tcp
 
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/speedia/supervisord.conf"]
