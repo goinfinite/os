@@ -61,10 +61,22 @@ func userRoutes() {
 	userCmd.AddCommand(cliController.UpdateUserController())
 }
 
+func servicesRoutes() {
+	var servicesCmd = &cobra.Command{
+		Use:   "services",
+		Short: "ServicesManagement",
+	}
+
+	rootCmd.AddCommand(servicesCmd)
+	servicesCmd.AddCommand(cliController.GetServicesController())
+	servicesCmd.AddCommand(cliController.UpdateServiceController())
+}
+
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
 	databaseRoutes()
 	o11yRoutes()
 	userRoutes()
+	servicesRoutes()
 }
