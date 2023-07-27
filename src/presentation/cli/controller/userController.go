@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ListUserController() *cobra.Command {
+func GetUsersController() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "ListUser",
+		Use:   "get",
+		Short: "GetUsers",
 		Run: func(cmd *cobra.Command, args []string) {
 			accQueryRepo := infra.AccQueryRepo{}
 			usersList, err := useCase.GetUsers(accQueryRepo)

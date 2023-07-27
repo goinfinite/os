@@ -31,7 +31,7 @@ func userRoutes() {
 	}
 
 	rootCmd.AddCommand(userCmd)
-	userCmd.AddCommand(cliController.ListUserController())
+	userCmd.AddCommand(cliController.GetUsersController())
 	userCmd.AddCommand(cliController.AddUserController())
 	userCmd.AddCommand(cliController.DeleteUserController())
 	userCmd.AddCommand(cliController.UpdateUserController())
