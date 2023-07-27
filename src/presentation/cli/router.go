@@ -38,6 +38,16 @@ func databaseRoutes() {
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
+func o11yRoutes() {
+	var o11yCmd = &cobra.Command{
+		Use:   "o11y",
+		Short: "O11yManagement",
+	}
+
+	rootCmd.AddCommand(o11yCmd)
+	o11yCmd.AddCommand(cliController.GetO11yOverviewController())
+}
+
 func userRoutes() {
 	var userCmd = &cobra.Command{
 		Use:   "user",
@@ -55,5 +65,6 @@ func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
 	databaseRoutes()
+	o11yRoutes()
 	userRoutes()
 }
