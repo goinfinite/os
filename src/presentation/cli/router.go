@@ -48,6 +48,25 @@ func o11yRoutes() {
 	o11yCmd.AddCommand(cliController.GetO11yOverviewController())
 }
 
+func runtimeRoutes() {
+	var runtimeCmd = &cobra.Command{
+		Use:   "runtime",
+		Short: "RuntimeManagement",
+	}
+
+	var phpCmd = &cobra.Command{
+		Use:   "php",
+		Short: "PhpManagement",
+	}
+
+	rootCmd.AddCommand(runtimeCmd)
+	runtimeCmd.AddCommand(phpCmd)
+	phpCmd.AddCommand(cliController.GetPhpConfigsController())
+	phpCmd.AddCommand(cliController.UpdatePhpConfigController())
+	phpCmd.AddCommand(cliController.UpdatePhpSettingController())
+	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
+}
+
 func userRoutes() {
 	var userCmd = &cobra.Command{
 		Use:   "user",
@@ -77,6 +96,7 @@ func registerCliRoutes() {
 	rootCmd.AddCommand(serveCmd)
 	databaseRoutes()
 	o11yRoutes()
+	runtimeRoutes()
 	userRoutes()
 	servicesRoutes()
 }
