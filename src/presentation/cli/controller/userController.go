@@ -1,8 +1,6 @@
 package cliController
 
 import (
-	"fmt"
-
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
@@ -30,16 +28,15 @@ func GetUsersController() *cobra.Command {
 }
 
 func AddUserController() *cobra.Command {
+	var usernameStr string
+	var passwordStr string
+
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "AddNewUser",
 		Run: func(cmd *cobra.Command, args []string) {
-			username := valueObject.NewUsernamePanic(
-				cmd.Flags().Lookup("username").Value.String(),
-			)
-			password := valueObject.NewPasswordPanic(
-				cmd.Flags().Lookup("password").Value.String(),
-			)
+			username := valueObject.NewUsernamePanic(usernameStr)
+			password := valueObject.NewPasswordPanic(passwordStr)
 
 			addUserDto := dto.NewAddUser(username, password)
 
@@ -52,26 +49,28 @@ func AddUserController() *cobra.Command {
 				addUserDto,
 			)
 			if err != nil {
-				fmt.Println(err)
+				cliHelper.ResponseWrapper(false, err)
 			}
+
+			cliHelper.ResponseWrapper(true, "UserAdded")
 		},
 	}
 
-	cmd.Flags().StringP("username", "u", "", "Username")
+	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.MarkFlagRequired("username")
-	cmd.Flags().StringP("password", "p", "", "Password")
+	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.MarkFlagRequired("password")
 	return cmd
 }
 
 func DeleteUserController() *cobra.Command {
+	var userIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteUser",
 		Run: func(cmd *cobra.Command, args []string) {
-			userId := valueObject.NewUserIdFromStringPanic(
-				cmd.Flags().Lookup("user-id").Value.String(),
-			)
+			userId := valueObject.NewUserIdFromStringPanic(userIdStr)
 
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
@@ -82,39 +81,38 @@ func DeleteUserController() *cobra.Command {
 				userId,
 			)
 			if err != nil {
-				fmt.Println(err)
+				cliHelper.ResponseWrapper(false, err)
 			}
+
+			cliHelper.ResponseWrapper(true, "UserDeleted")
 		},
 	}
 
-	cmd.Flags().StringP("user-id", "u", "", "UserId")
+	cmd.Flags().StringVarP(&userIdStr, "user-id", "u", "", "UserId")
 	cmd.MarkFlagRequired("user-id")
 	return cmd
 }
 
 func UpdateUserController() *cobra.Command {
+	var userIdStr string
+	var passwordStr string
+	shouldUpdateApiKeyBool := false
+
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "UpdateUser (pass or apiKey)",
 		Run: func(cmd *cobra.Command, args []string) {
-			userId := valueObject.NewUserIdFromStringPanic(
-				cmd.Flags().Lookup("user-id").Value.String(),
-			)
+			userId := valueObject.NewUserIdFromStringPanic(userIdStr)
 
 			var passPtr *valueObject.Password
-			if cmd.Flags().Lookup("password").Value.String() != "" {
-				password := valueObject.NewPasswordPanic(
-					cmd.Flags().Lookup("password").Value.String(),
-				)
+			if passwordStr != "" {
+				password := valueObject.NewPasswordPanic(passwordStr)
 				passPtr = &password
 			}
 
 			var shouldUpdateApiKeyPtr *bool
-			if cmd.Flags().Lookup("update-api-key") != nil {
-				shouldUpdateApiKey := cmd.Flags().
-					Lookup("update-api-key").
-					Value.String() == "true"
-				shouldUpdateApiKeyPtr = &shouldUpdateApiKey
+			if shouldUpdateApiKeyBool {
+				shouldUpdateApiKeyPtr = &shouldUpdateApiKeyBool
 			}
 
 			updateUserDto := dto.NewUpdateUser(
@@ -134,23 +132,30 @@ func UpdateUserController() *cobra.Command {
 				)
 			}
 
-			if updateUserDto.ShouldUpdateApiKey != nil && *updateUserDto.ShouldUpdateApiKey {
+			if shouldUpdateApiKeyBool {
 				newKey, err := useCase.UpdateUserApiKey(
 					accQueryRepo,
 					accCmdRepo,
 					updateUserDto,
 				)
 				if err != nil {
-					fmt.Println(err)
+					cliHelper.ResponseWrapper(false, err)
 				}
-				fmt.Println(newKey)
+
+				cliHelper.ResponseWrapper(true, newKey)
 			}
 		},
 	}
 
-	cmd.Flags().StringP("user-id", "u", "", "UserId")
+	cmd.Flags().StringVarP(&userIdStr, "user-id", "u", "", "UserId")
 	cmd.MarkFlagRequired("user-id")
-	cmd.Flags().StringP("password", "p", "", "Password")
-	cmd.Flags().BoolP("update-api-key", "k", false, "ShouldUpdateApiKey")
+	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
+	cmd.Flags().BoolVarP(
+		&shouldUpdateApiKeyBool,
+		"update-api-key",
+		"k",
+		false,
+		"ShouldUpdateApiKey",
+	)
 	return cmd
 }
