@@ -7,8 +7,27 @@ import (
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
+	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
+
+func ListUserController() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "ListUser",
+		Run: func(cmd *cobra.Command, args []string) {
+			accQueryRepo := infra.AccQueryRepo{}
+			usersList, err := useCase.GetUsers(accQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err)
+			}
+
+			cliHelper.ResponseWrapper(true, usersList)
+		},
+	}
+
+	return cmd
+}
 
 func AddUserController() *cobra.Command {
 	cmd := &cobra.Command{
