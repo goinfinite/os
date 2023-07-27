@@ -1,4 +1,4 @@
-package apiHelper
+package shared
 
 import (
 	"crypto/rand"

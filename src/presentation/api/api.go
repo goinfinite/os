@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
-	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
+	"github.com/speedianet/sam/src/presentation/shared"
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
@@ -27,7 +27,7 @@ import (
 // @host		localhost:10000
 // @BasePath	/v1
 func ApiInit() {
-	apiHelper.CheckEnvs()
+	shared.CheckEnvs()
 
 	e := echo.New()
 
