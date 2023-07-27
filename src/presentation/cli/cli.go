@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	cliMiddleware "github.com/speedianet/sam/src/presentation/cli/middleware"
+	"github.com/speedianet/sam/src/presentation/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,8 @@ var rootCmd = &cobra.Command{
 func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
+
+	shared.CheckEnvs()
 
 	registerCliRoutes()
 
