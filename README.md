@@ -13,7 +13,7 @@ SAM is designed to manage an application with its dependencies in a lightweight 
 To run SAM as a container, you can use the image available at DockerHub with the following command:
 
 ```
-podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it speedia/sam:latest
+podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it docker.io/speedia/sam:latest
 ```
 
 Feel free to rename the container, vhost and change the host port as you wish. SAM should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
