@@ -49,7 +49,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.AccountDetails"
+                                "$ref": "#/definitions/entity.Account"
                             }
                         }
                     }
@@ -74,7 +74,7 @@ const docTemplate = `{
                 "summary": "UpdateAccount",
                 "parameters": [
                     {
-                        "description": "UpdateAccountDetails",
+                        "description": "UpdateAccount",
                         "name": "updateAccountDto",
                         "in": "body",
                         "required": true,
@@ -111,7 +111,7 @@ const docTemplate = `{
                 "summary": "AddNewAccount",
                 "parameters": [
                     {
-                        "description": "NewAccountDetails",
+                        "description": "NewAccount",
                         "name": "addAccountDto",
                         "in": "body",
                         "required": true,
@@ -753,7 +753,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.AccountDetails": {
+        "entity.Account": {
             "type": "object",
             "properties": {
                 "groupId": {

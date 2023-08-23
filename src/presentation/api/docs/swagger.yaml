@@ -74,7 +74,7 @@ definitions:
       type:
         $ref: '#/definitions/valueObject.AccessTokenType'
     type: object
-  entity.AccountDetails:
+  entity.Account:
     properties:
       groupId:
         type: integer
@@ -269,7 +269,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.AccountDetails'
+              $ref: '#/definitions/entity.Account'
             type: array
       security:
       - Bearer: []
@@ -281,7 +281,7 @@ paths:
       - application/json
       description: Add a new account.
       parameters:
-      - description: NewAccountDetails
+      - description: NewAccount
         in: body
         name: addAccountDto
         required: true
@@ -304,7 +304,7 @@ paths:
       - application/json
       description: Update an account.
       parameters:
-      - description: UpdateAccountDetails
+      - description: UpdateAccount
         in: body
         name: updateAccountDto
         required: true

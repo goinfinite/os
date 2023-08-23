@@ -54,8 +54,8 @@ func getUsernameById(accountId valueObject.AccountId) (valueObject.Username, err
 	accQuery := AccQueryRepo{}
 	accDetails, err := accQuery.GetById(accountId)
 	if err != nil {
-		log.Printf("GetAccountDetailsError: %s", err)
-		return "", errors.New("GetAccountDetailsError")
+		log.Printf("GetAccountError: %s", err)
+		return "", errors.New("GetAccountError")
 	}
 
 	return accDetails.Username, nil

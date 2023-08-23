@@ -7,6 +7,6 @@ import (
 
 func GetAccounts(
 	accQueryRepo repository.AccQueryRepo,
-) ([]entity.AccountDetails, error) {
+) ([]entity.Account, error) {
 	return accQueryRepo.Get()
 }

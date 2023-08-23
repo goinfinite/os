@@ -18,7 +18,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.AccountDetails
+// @Success      200 {array} entity.Account
 // @Router       /account/ [get]
 func GetAccountsController(c echo.Context) error {
 	accountsQueryRepo := infra.AccQueryRepo{}
@@ -37,7 +37,7 @@ func GetAccountsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addAccountDto 	  body    dto.AddAccount  true  "NewAccountDetails"
+// @Param        addAccountDto 	  body    dto.AddAccount  true  "NewAccount"
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /account/ [post]
 func AddAccountController(c echo.Context) error {
@@ -101,7 +101,7 @@ func DeleteAccountController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateAccountDto 	  body dto.UpdateAccount  true  "UpdateAccountDetails"
+// @Param        updateAccountDto 	  body dto.UpdateAccount  true  "UpdateAccount"
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /account/ [put]
 func UpdateAccountController(c echo.Context) error {
