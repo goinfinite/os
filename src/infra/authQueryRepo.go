@@ -72,20 +72,20 @@ func (repo AuthQueryRepo) getTokenDetailsFromSession(
 		return dto.AccessTokenDetails{}, errors.New("OriginalIpUnreadable")
 	}
 
-	var userId valueObject.UserId
-	switch id := sessionTokenClaims["userId"].(type) {
+	var accountId valueObject.AccountId
+	switch id := sessionTokenClaims["accountId"].(type) {
 	case string:
-		userId, err = valueObject.NewUserIdFromString(id)
+		accountId, err = valueObject.NewAccountIdFromString(id)
 	case float64:
-		userId, err = valueObject.NewUserIdFromFloat(id)
+		accountId, err = valueObject.NewAccountIdFromFloat(id)
 	}
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("UserIdUnreadable")
+		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
 	}
 
 	return dto.NewAccessTokenDetails(
 		valueObject.NewAccessTokenTypePanic("sessionToken"),
-		userId,
+		accountId,
 		&issuedIp,
 	), nil
 }
@@ -124,9 +124,9 @@ func (repo AuthQueryRepo) decryptApiKey(
 }
 
 func (repo AuthQueryRepo) getKeyHash(
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 ) (string, error) {
-	keysHashFile := ".userKeys"
+	keysHashFile := ".accountApiKeys"
 	if _, err := os.Stat(keysHashFile); err != nil {
 		return "", errors.New("KeysHashFileUnreadable")
 	}
@@ -134,7 +134,7 @@ func (repo AuthQueryRepo) getKeyHash(
 	getKeyCmd := exec.Command(
 		"sed",
 		"-n",
-		"/"+userId.String()+":/p",
+		"/"+accountId.String()+":/p",
 		keysHashFile,
 	)
 	getKeyOutput, err := getKeyCmd.Output()
@@ -142,14 +142,14 @@ func (repo AuthQueryRepo) getKeyHash(
 		return "", errors.New("KeysHashFileUnreadable")
 	}
 	if len(getKeyOutput) == 0 {
-		return "", errors.New("UserKeyNotFound")
+		return "", errors.New("AccountKeyNotFound")
 	}
 
-	// lineFormat: userId:uuidHash
+	// lineFormat: accountId:uuidHash
 	lineContent := strings.TrimSpace(string(getKeyOutput))
 	lineParts := strings.Split(lineContent, ":")
 	if len(lineParts) != 2 {
-		return "", errors.New("UserKeyFormatError")
+		return "", errors.New("AccountKeyFormatError")
 	}
 
 	return lineParts[1], nil
@@ -163,15 +163,15 @@ func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 		return dto.AccessTokenDetails{}, errors.New("ApiKeyDecryptionError")
 	}
 
-	// keyFormat: userId:UUIDv4
+	// keyFormat: accountId:UUIDv4
 	keyParts := strings.Split(decryptedApiKey, ":")
 	if len(keyParts) != 2 {
 		return dto.AccessTokenDetails{}, errors.New("ApiKeyFormatError")
 	}
 
-	userId, err := valueObject.NewUserIdFromString(keyParts[0])
+	accountId, err := valueObject.NewAccountIdFromString(keyParts[0])
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("UserIdUnreadable")
+		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
 	}
 	uuid := keyParts[1]
 
@@ -179,18 +179,18 @@ func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 	uuidHash.Write([]byte(uuid))
 	uuidHashStr := hex.EncodeToString(uuidHash.Sum(nil))
 
-	storedUuidHash, err := repo.getKeyHash(userId)
+	storedUuidHash, err := repo.getKeyHash(accountId)
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("UserKeyHashUnreadable")
+		return dto.AccessTokenDetails{}, errors.New("AccountKeyHashUnreadable")
 	}
 
 	if uuidHashStr != storedUuidHash {
-		return dto.AccessTokenDetails{}, errors.New("UserKeyHashMismatch")
+		return dto.AccessTokenDetails{}, errors.New("AccountKeyHashMismatch")
 	}
 
 	return dto.NewAccessTokenDetails(
-		valueObject.NewAccessTokenTypePanic("userApiKey"),
-		userId,
+		valueObject.NewAccessTokenTypePanic("accountApiKey"),
+		accountId,
 		nil,
 	), nil
 }

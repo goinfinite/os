@@ -4,18 +4,18 @@ import "github.com/speedianet/sam/src/domain/valueObject"
 
 type AccessTokenDetails struct {
 	TokenType valueObject.AccessTokenType `json:"tokenType"`
-	UserId    valueObject.UserId          `json:"userId"`
+	AccountId valueObject.AccountId       `json:"accountId"`
 	IpAddress *valueObject.IpAddress      `json:"ipAddress"`
 }
 
 func NewAccessTokenDetails(
 	tokenType valueObject.AccessTokenType,
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 	ipAddress *valueObject.IpAddress,
 ) AccessTokenDetails {
 	return AccessTokenDetails{
 		TokenType: tokenType,
-		UserId:    userId,
+		AccountId: accountId,
 		IpAddress: ipAddress,
 	}
 }

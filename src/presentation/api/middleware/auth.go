@@ -12,10 +12,10 @@ import (
 	"github.com/speedianet/sam/src/infra"
 )
 
-func getUserIdFromAccessToken(
+func getAccountIdFromAccessToken(
 	accessToken valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
-) (valueObject.UserId, error) {
+) (valueObject.AccountId, error) {
 	authQueryRepo := infra.AuthQueryRepo{}
 
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
@@ -35,10 +35,10 @@ func getUserIdFromAccessToken(
 		ipAddress,
 	)
 	if err != nil {
-		return valueObject.UserId(0), err
+		return valueObject.AccountId(0), err
 	}
 
-	return accessTokenDetails.UserId, nil
+	return accessTokenDetails.AccountId, nil
 }
 
 func Auth(basePath string) echo.MiddlewareFunc {
@@ -61,7 +61,7 @@ func Auth(basePath string) echo.MiddlewareFunc {
 			}
 
 			tokenWithoutPrefix := token[7:]
-			userId, err := getUserIdFromAccessToken(
+			accountId, err := getAccountIdFromAccessToken(
 				valueObject.AccessTokenStr(tokenWithoutPrefix),
 				valueObject.NewIpAddressPanic(c.RealIP()),
 			)
@@ -72,7 +72,7 @@ func Auth(basePath string) echo.MiddlewareFunc {
 				})
 			}
 
-			c.Set("userId", userId.String())
+			c.Set("accountId", accountId.String())
 			return next(c)
 		}
 	}

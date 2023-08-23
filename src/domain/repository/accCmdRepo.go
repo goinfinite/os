@@ -6,8 +6,8 @@ import (
 )
 
 type AccCmdRepo interface {
-	Add(addUser dto.AddUser) error
-	Delete(userId valueObject.UserId) error
-	UpdatePassword(userId valueObject.UserId, password valueObject.Password) error
-	UpdateApiKey(userId valueObject.UserId) (valueObject.AccessTokenStr, error)
+	Add(addUser dto.AddAccount) error
+	Delete(accId valueObject.AccountId) error
+	UpdatePassword(accId valueObject.AccountId, password valueObject.Password) error
+	UpdateApiKey(accId valueObject.AccountId) (valueObject.AccessTokenStr, error)
 }

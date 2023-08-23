@@ -29,9 +29,9 @@ func TestAccQueryRepo(t *testing.T) {
 	})
 
 	t.Run("GetValidAccountById", func(t *testing.T) {
-		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
 
-		_, err := authQueryRepo.GetById(userId)
+		_, err := authQueryRepo.GetById(accountId)
 		if err != nil {
 			t.Error("UnexpectedError")
 		}

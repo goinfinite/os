@@ -81,9 +81,9 @@ When testing, consider publishing port 80 and 443 to the host so that you don't 
 
 The API accepts two types of tokens and uses the standard "Authorization: Bearer \<token\>" header:
 
-- **sessionToken**: is a JWT, used for dashboard access and generated with the user login credentials. The token contains the userId, IP address and expiration date. It expires in 3 hours and only the IP address used on the token generation is allowed to use it.
+- **sessionToken**: is a JWT, used for dashboard access and generated with the account login credentials. The token contains the accountId, IP address and expiration date. It expires in 3 hours and only the IP address used on the token generation is allowed to use it.
 
-- **userApiKey**: is a token meant for M2M communication. The token is a _AES-256-CTR-Encrypted-Base64-Encoded_ string, but only the SHA3-256 hash of the key is stored in the server. The userId is retrieved during key decoding, thus you don't need to provide it. The token never expires, but the user can update it at any time.
+- **accountApiKey**: is a token meant for M2M communication. The token is a _AES-256-CTR-Encrypted-Base64-Encoded_ string, but only the SHA3-256 hash of the key is stored in the server. The accountId is retrieved during key decoding, thus you don't need to provide it. The token never expires, but the user can update it at any time.
 
 ### OpenApi // Swagger
 

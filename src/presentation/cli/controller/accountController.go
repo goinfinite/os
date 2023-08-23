@@ -9,50 +9,50 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func GetUsersController() *cobra.Command {
+func GetAccountsController() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "GetUsers",
+		Short: "GetAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
 			accQueryRepo := infra.AccQueryRepo{}
-			usersList, err := useCase.GetUsers(accQueryRepo)
+			accsList, err := useCase.GetAccounts(accQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, usersList)
+			cliHelper.ResponseWrapper(true, accsList)
 		},
 	}
 
 	return cmd
 }
 
-func AddUserController() *cobra.Command {
+func AddAccountController() *cobra.Command {
 	var usernameStr string
 	var passwordStr string
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddNewUser",
+		Short: "AddNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			username := valueObject.NewUsernamePanic(usernameStr)
 			password := valueObject.NewPasswordPanic(passwordStr)
 
-			addUserDto := dto.NewAddUser(username, password)
+			addAccountDto := dto.NewAddAccount(username, password)
 
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
 
-			err := useCase.AddUser(
+			err := useCase.AddAccount(
 				accQueryRepo,
 				accCmdRepo,
-				addUserDto,
+				addAccountDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "UserAdded")
+			cliHelper.ResponseWrapper(true, "AccountAdded")
 		},
 	}
 
@@ -63,46 +63,46 @@ func AddUserController() *cobra.Command {
 	return cmd
 }
 
-func DeleteUserController() *cobra.Command {
-	var userIdStr string
+func DeleteAccountController() *cobra.Command {
+	var accountIdStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "DeleteUser",
+		Short: "DeleteAccount",
 		Run: func(cmd *cobra.Command, args []string) {
-			userId := valueObject.NewUserIdFromStringPanic(userIdStr)
+			accountId := valueObject.NewAccountIdFromStringPanic(accountIdStr)
 
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
 
-			err := useCase.DeleteUser(
+			err := useCase.DeleteAccount(
 				accQueryRepo,
 				accCmdRepo,
-				userId,
+				accountId,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "UserDeleted")
+			cliHelper.ResponseWrapper(true, "AccountDeleted")
 		},
 	}
 
-	cmd.Flags().StringVarP(&userIdStr, "user-id", "u", "", "UserId")
-	cmd.MarkFlagRequired("user-id")
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "u", "", "AccountId")
+	cmd.MarkFlagRequired("account-id")
 	return cmd
 }
 
-func UpdateUserController() *cobra.Command {
-	var userIdStr string
+func UpdateAccountController() *cobra.Command {
+	var accountIdStr string
 	var passwordStr string
 	shouldUpdateApiKeyBool := false
 
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "UpdateUser (pass or apiKey)",
+		Short: "UpdateAccount (pass or apiKey)",
 		Run: func(cmd *cobra.Command, args []string) {
-			userId := valueObject.NewUserIdFromStringPanic(userIdStr)
+			accountId := valueObject.NewAccountIdFromStringPanic(accountIdStr)
 
 			var passPtr *valueObject.Password
 			if passwordStr != "" {
@@ -115,8 +115,8 @@ func UpdateUserController() *cobra.Command {
 				shouldUpdateApiKeyPtr = &shouldUpdateApiKeyBool
 			}
 
-			updateUserDto := dto.NewUpdateUser(
-				userId,
+			updateAccountDto := dto.NewUpdateAccount(
+				accountId,
 				passPtr,
 				shouldUpdateApiKeyPtr,
 			)
@@ -124,19 +124,19 @@ func UpdateUserController() *cobra.Command {
 			accQueryRepo := infra.AccQueryRepo{}
 			accCmdRepo := infra.AccCmdRepo{}
 
-			if updateUserDto.Password != nil {
-				useCase.UpdateUserPassword(
+			if updateAccountDto.Password != nil {
+				useCase.UpdateAccountPassword(
 					accQueryRepo,
 					accCmdRepo,
-					updateUserDto,
+					updateAccountDto,
 				)
 			}
 
 			if shouldUpdateApiKeyBool {
-				newKey, err := useCase.UpdateUserApiKey(
+				newKey, err := useCase.UpdateAccountApiKey(
 					accQueryRepo,
 					accCmdRepo,
-					updateUserDto,
+					updateAccountDto,
 				)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
@@ -147,8 +147,8 @@ func UpdateUserController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&userIdStr, "user-id", "u", "", "UserId")
-	cmd.MarkFlagRequired("user-id")
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "u", "", "AccountId")
+	cmd.MarkFlagRequired("account-id")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.Flags().BoolVarP(
 		&shouldUpdateApiKeyBool,

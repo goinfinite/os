@@ -19,9 +19,9 @@ func accDetailsFactory(userInfo *user.User) (entity.AccountDetails, error) {
 		return entity.AccountDetails{}, errors.New("UsernameParseError")
 	}
 
-	userId, err := valueObject.NewUserIdFromString(userInfo.Uid)
+	accountId, err := valueObject.NewAccountIdFromString(userInfo.Uid)
 	if err != nil {
-		return entity.AccountDetails{}, errors.New("UserIdParseError")
+		return entity.AccountDetails{}, errors.New("AccountIdParseError")
 	}
 
 	groupId, err := valueObject.NewGroupIdFromString(userInfo.Gid)
@@ -31,7 +31,7 @@ func accDetailsFactory(userInfo *user.User) (entity.AccountDetails, error) {
 
 	return entity.NewAccountDetails(
 		username,
-		userId,
+		accountId,
 		groupId,
 	), nil
 }
@@ -54,7 +54,7 @@ func (repo AccQueryRepo) Get() ([]entity.AccountDetails, error) {
 		if err != nil {
 			continue
 		}
-		if accDetails.UserId < 1000 {
+		if accDetails.AccountId < 1000 {
 			continue
 		}
 		if accDetails.Username == "nobody" {
@@ -79,9 +79,9 @@ func (repo AccQueryRepo) GetByUsername(
 }
 
 func (repo AccQueryRepo) GetById(
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 ) (entity.AccountDetails, error) {
-	userInfo, err := user.LookupId(userId.String())
+	userInfo, err := user.LookupId(accountId.String())
 	if err != nil {
 		return entity.AccountDetails{}, errors.New("UserLookupError")
 	}

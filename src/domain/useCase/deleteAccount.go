@@ -8,22 +8,22 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-func DeleteUser(
+func DeleteAccount(
 	accQueryRepo repository.AccQueryRepo,
 	accCmdRepo repository.AccCmdRepo,
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 ) error {
-	_, err := accQueryRepo.GetById(userId)
+	_, err := accQueryRepo.GetById(accountId)
 	if err != nil {
-		return errors.New("UserNotFound")
+		return errors.New("AccountNotFound")
 	}
 
-	err = accCmdRepo.Delete(userId)
+	err = accCmdRepo.Delete(accountId)
 	if err != nil {
-		return errors.New("DeleteUserError")
+		return errors.New("DeleteAccountError")
 	}
 
-	log.Printf("UserId '%v' deleted.", userId)
+	log.Printf("AccountId '%v' deleted.", accountId)
 
 	return nil
 }

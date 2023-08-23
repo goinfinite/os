@@ -1,5 +1,12 @@
 basePath: /v1
 definitions:
+  dto.AddAccount:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   dto.AddDatabase:
     properties:
       dbName:
@@ -18,19 +25,21 @@ definitions:
       username:
         type: string
     type: object
-  dto.AddUser:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    type: object
   dto.Login:
     properties:
       password:
         type: string
       username:
         type: string
+    type: object
+  dto.UpdateAccount:
+    properties:
+      accountId:
+        type: integer
+      password:
+        type: string
+      shouldUpdateApiKey:
+        type: boolean
     type: object
   dto.UpdatePhpConfigs:
     properties:
@@ -55,15 +64,6 @@ definitions:
         $ref: '#/definitions/valueObject.ServiceStatus'
       version:
         type: string
-    type: object
-  dto.UpdateUser:
-    properties:
-      password:
-        type: string
-      shouldUpdateApiKey:
-        type: boolean
-      userId:
-        type: integer
     type: object
   entity.AccessToken:
     properties:
@@ -186,11 +186,11 @@ definitions:
   valueObject.AccessTokenType:
     enum:
     - sessionToken
-    - userApiKey
+    - accountApiKey
     type: string
     x-enum-varnames:
     - sessionToken
-    - userApiKey
+    - accountApiKey
   valueObject.CurrentResourceUsage:
     properties:
       cpuUsagePercent:
@@ -257,6 +257,94 @@ info:
   title: SamApi
   version: 0.0.1
 paths:
+  /account/:
+    get:
+      consumes:
+      - application/json
+      description: List accounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.AccountDetails'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetAccounts
+      tags:
+      - account
+    post:
+      consumes:
+      - application/json
+      description: Add a new account.
+      parameters:
+      - description: NewAccountDetails
+        in: body
+        name: addAccountDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddAccount'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: AccountCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewAccount
+      tags:
+      - account
+    put:
+      consumes:
+      - application/json
+      description: Update an account.
+      parameters:
+      - description: UpdateAccountDetails
+        in: body
+        name: updateAccountDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccount'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AccountUpdated message or NewKeyString
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateAccount
+      tags:
+      - account
+  /account/{accountId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an account.
+      parameters:
+      - description: AccountId
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AccountDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteAccount
+      tags:
+      - account
   /auth/login/:
     post:
       consumes:
@@ -556,94 +644,6 @@ paths:
       summary: UpdateServiceStatus
       tags:
       - services
-  /user/:
-    get:
-      consumes:
-      - application/json
-      description: List users.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.AccountDetails'
-            type: array
-      security:
-      - Bearer: []
-      summary: GetUsers
-      tags:
-      - user
-    post:
-      consumes:
-      - application/json
-      description: Add a new user.
-      parameters:
-      - description: NewUserDetails
-        in: body
-        name: addUserDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AddUser'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: UserCreated
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: AddNewUser
-      tags:
-      - user
-    put:
-      consumes:
-      - application/json
-      description: Update an user.
-      parameters:
-      - description: UpdateUserDetails
-        in: body
-        name: updateUserDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateUser'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UserUpdated message or NewKeyString
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: UpdateUser
-      tags:
-      - user
-  /user/{userId}/:
-    delete:
-      consumes:
-      - application/json
-      description: Delete an user.
-      parameters:
-      - description: UserId
-        in: path
-        name: userId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UserDeleted
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: DeleteUser
-      tags:
-      - user
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.

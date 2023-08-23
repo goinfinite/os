@@ -31,13 +31,13 @@ func GetSessionToken(
 
 	accountDetails, err := accQueryRepo.GetByUsername(login.Username)
 	if err != nil {
-		return entity.AccessToken{}, errors.New("UserNotFound")
+		return entity.AccessToken{}, errors.New("AccountNotFound")
 	}
 
-	userId := accountDetails.UserId
+	accountId := accountDetails.AccountId
 	expiresIn := valueObject.UnixTime(
 		time.Now().Add(3 * time.Hour).Unix(),
 	)
 
-	return authCmdRepo.GenerateSessionToken(userId, expiresIn, ipAddress), nil
+	return authCmdRepo.GenerateSessionToken(accountId, expiresIn, ipAddress), nil
 }

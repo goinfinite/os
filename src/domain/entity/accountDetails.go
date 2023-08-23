@@ -3,19 +3,19 @@ package entity
 import "github.com/speedianet/sam/src/domain/valueObject"
 
 type AccountDetails struct {
-	Username valueObject.Username `json:"username"`
-	UserId   valueObject.UserId   `json:"id"`
-	GroupId  valueObject.GroupId  `json:"groupId"`
+	Username  valueObject.Username  `json:"username"`
+	AccountId valueObject.AccountId `json:"id"`
+	GroupId   valueObject.GroupId   `json:"groupId"`
 }
 
 func NewAccountDetails(
 	username valueObject.Username,
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 	groupId valueObject.GroupId,
 ) AccountDetails {
 	return AccountDetails{
-		Username: username,
-		UserId:   userId,
-		GroupId:  groupId,
+		Username:  username,
+		AccountId: accountId,
+		GroupId:   groupId,
 	}
 }

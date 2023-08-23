@@ -57,11 +57,11 @@ func runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
 }
 
-func userRoutes(baseRoute *echo.Group) {
-	userGroup := baseRoute.Group("/user")
-	userGroup.GET("/", apiController.GetUsersController)
-	userGroup.POST("/", apiController.AddUserController)
-	userGroup.PUT("/", apiController.UpdateUserController)
+func accountRoutes(baseRoute *echo.Group) {
+	accountGroup := baseRoute.Group("/account")
+	accountGroup.GET("/", apiController.GetAccountsController)
+	accountGroup.POST("/", apiController.AddAccountController)
+	accountGroup.PUT("/", apiController.UpdateAccountController)
 }
 
 func servicesRoutes(baseRoute *echo.Group) {
@@ -76,6 +76,6 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	databaseRoutes(baseRoute)
 	o11yRoutes(baseRoute)
 	runtimeRoutes(baseRoute)
-	userRoutes(baseRoute)
+	accountRoutes(baseRoute)
 	servicesRoutes(baseRoute)
 }

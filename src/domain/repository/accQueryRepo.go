@@ -11,6 +11,6 @@ type AccQueryRepo interface {
 		username valueObject.Username,
 	) (entity.AccountDetails, error)
 	GetById(
-		userId valueObject.UserId,
+		accId valueObject.AccountId,
 	) (entity.AccountDetails, error)
 }

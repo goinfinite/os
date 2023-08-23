@@ -25,6 +25,148 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List accounts.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetAccounts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.AccountDetails"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "UpdateAccount",
+                "parameters": [
+                    {
+                        "description": "UpdateAccountDetails",
+                        "name": "updateAccountDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "AccountUpdated message or NewKeyString",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "AddNewAccount",
+                "parameters": [
+                    {
+                        "description": "NewAccountDetails",
+                        "name": "addAccountDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "AccountCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/account/{accountId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete an account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "DeleteAccount",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AccountId",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "AccountDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login/": {
             "post": {
                 "description": "Generate JWT with credentials",
@@ -493,151 +635,20 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/user/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List users.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "GetUsers",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.AccountDetails"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update an user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "UpdateUser",
-                "parameters": [
-                    {
-                        "description": "UpdateUserDetails",
-                        "name": "updateUserDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateUser"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UserUpdated message or NewKeyString",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Add a new user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "AddNewUser",
-                "parameters": [
-                    {
-                        "description": "NewUserDetails",
-                        "name": "addUserDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddUser"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "UserCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{userId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete an user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "DeleteUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "UserId",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UserDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
+        "dto.AddAccount": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddDatabase": {
             "type": "object",
             "properties": {
@@ -666,7 +677,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AddUser": {
+        "dto.Login": {
             "type": "object",
             "properties": {
                 "password": {
@@ -677,14 +688,17 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Login": {
+        "dto.UpdateAccount": {
             "type": "object",
             "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
                 "password": {
                     "type": "string"
                 },
-                "username": {
-                    "type": "string"
+                "shouldUpdateApiKey": {
+                    "type": "boolean"
                 }
             }
         },
@@ -722,20 +736,6 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.UpdateUser": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "shouldUpdateApiKey": {
-                    "type": "boolean"
-                },
-                "userId": {
-                    "type": "integer"
                 }
             }
         },
@@ -925,11 +925,11 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "sessionToken",
-                "userApiKey"
+                "accountApiKey"
             ],
             "x-enum-varnames": [
                 "sessionToken",
-                "userApiKey"
+                "accountApiKey"
             ]
         },
         "valueObject.CurrentResourceUsage": {

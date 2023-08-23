@@ -13,7 +13,7 @@ func addDummyUser() error {
 	username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
 	password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
 
-	addUser := dto.AddUser{
+	addUser := dto.AddAccount{
 		Username: username,
 		Password: password,
 	}
@@ -28,10 +28,10 @@ func addDummyUser() error {
 }
 
 func deleteDummyUser() error {
-	userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+	accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
 
 	accCmdRepo := AccCmdRepo{}
-	err := accCmdRepo.Delete(userId)
+	err := accCmdRepo.Delete(accountId)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func TestAccCmdRepo(t *testing.T) {
 		username := valueObject.NewUsernamePanic("root")
 		password := valueObject.NewPasswordPanic("invalid")
 
-		addUser := dto.AddUser{
+		addUser := dto.AddAccount{
 			Username: username,
 			Password: password,
 		}
@@ -85,11 +85,11 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
 		newPassword := valueObject.NewPasswordPanic("newPassword")
 
 		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.UpdatePassword(userId, newPassword)
+		err := accCmdRepo.UpdatePassword(accountId, newPassword)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -100,10 +100,10 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("UpdateApiKeyValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		userId := valueObject.NewUserIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
 
 		accCmdRepo := AccCmdRepo{}
-		_, err := accCmdRepo.UpdateApiKey(userId)
+		_, err := accCmdRepo.UpdateApiKey(accountId)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}

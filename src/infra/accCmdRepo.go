@@ -23,9 +23,9 @@ import (
 type AccCmdRepo struct {
 }
 
-func (repo AccCmdRepo) Add(addUser dto.AddUser) error {
+func (repo AccCmdRepo) Add(addAccount dto.AddAccount) error {
 	passHash, err := bcrypt.GenerateFromPassword(
-		[]byte(addUser.Password.String()),
+		[]byte(addAccount.Password.String()),
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
@@ -33,57 +33,57 @@ func (repo AccCmdRepo) Add(addUser dto.AddUser) error {
 		return errors.New("PasswordHashError")
 	}
 
-	addUserCmd := exec.Command(
+	addAccountCmd := exec.Command(
 		"useradd",
 		"-m",
 		"-s", "/bin/bash",
 		"-p", string(passHash),
-		addUser.Username.String(),
+		addAccount.Username.String(),
 	)
 
-	err = addUserCmd.Run()
+	err = addAccountCmd.Run()
 	if err != nil {
-		log.Printf("UserAddError: %s", err)
-		return errors.New("UserAddError")
+		log.Printf("AccountAddError: %s", err)
+		return errors.New("AccountAddError")
 	}
 
 	return nil
 }
 
-func getUsernameById(userId valueObject.UserId) (valueObject.Username, error) {
+func getUsernameById(accountId valueObject.AccountId) (valueObject.Username, error) {
 	accQuery := AccQueryRepo{}
-	accDetails, err := accQuery.GetById(userId)
+	accDetails, err := accQuery.GetById(accountId)
 	if err != nil {
-		log.Printf("GetUserDetailsError: %s", err)
-		return "", errors.New("GetUserDetailsError")
+		log.Printf("GetAccountDetailsError: %s", err)
+		return "", errors.New("GetAccountDetailsError")
 	}
 
 	return accDetails.Username, nil
 }
 
-func (repo AccCmdRepo) Delete(userId valueObject.UserId) error {
-	username, err := getUsernameById(userId)
+func (repo AccCmdRepo) Delete(accountId valueObject.AccountId) error {
+	username, err := getUsernameById(accountId)
 	if err != nil {
 		return err
 	}
 
-	delUserCmd := exec.Command(
+	delAccountCmd := exec.Command(
 		"userdel",
 		"-r",
 		username.String(),
 	)
 
-	err = delUserCmd.Run()
+	err = delAccountCmd.Run()
 	if err != nil {
-		log.Printf("UserDeleteError: %s", err)
-		return errors.New("UserDeleteError")
+		log.Printf("AccountDeleteError: %s", err)
+		return errors.New("AccountDeleteError")
 	}
 
 	return nil
 }
 
 func (repo AccCmdRepo) UpdatePassword(
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 	password valueObject.Password,
 ) error {
 	passHash, err := bcrypt.GenerateFromPassword(
@@ -95,18 +95,18 @@ func (repo AccCmdRepo) UpdatePassword(
 		return errors.New("PasswordHashError")
 	}
 
-	username, err := getUsernameById(userId)
+	username, err := getUsernameById(accountId)
 	if err != nil {
 		return err
 	}
 
-	updateUserCmd := exec.Command(
+	updateAccountCmd := exec.Command(
 		"usermod",
 		"-p", string(passHash),
 		username.String(),
 	)
 
-	err = updateUserCmd.Run()
+	err = updateAccountCmd.Run()
 	if err != nil {
 		log.Printf("PasswordUpdateError: %s", err)
 		return errors.New("PasswordUpdateError")
@@ -152,20 +152,20 @@ func encryptApiKey(plainTextApiKey string) (valueObject.AccessTokenStr, error) {
 }
 
 func storeNewKeyHash(
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 	uuid uuid.UUID,
 ) error {
 	var lock sync.Mutex
 	lock.Lock()
 	defer lock.Unlock()
 
-	keysHashFile := ".userKeys"
+	keysHashFile := ".accountApiKeys"
 
 	if _, err := os.Stat(keysHashFile); err == nil {
 		purgeOldKeyCmd := exec.Command(
 			"sed",
 			"-i",
-			"/"+userId.String()+":/d",
+			"/"+accountId.String()+":/d",
 			keysHashFile,
 		)
 		err := purgeOldKeyCmd.Run()
@@ -186,26 +186,26 @@ func storeNewKeyHash(
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(userId.String() + ":" + hashString + "\n")
+	_, err = file.WriteString(accountId.String() + ":" + hashString + "\n")
 	if err != nil {
-		log.Printf("UserKeysWriteError: %v", err)
-		return errors.New("UserKeysWriteError")
+		log.Printf("AccountKeysWriteError: %v", err)
+		return errors.New("AccountKeysWriteError")
 	}
 
 	return nil
 }
 
 func (repo AccCmdRepo) UpdateApiKey(
-	userId valueObject.UserId,
+	accountId valueObject.AccountId,
 ) (valueObject.AccessTokenStr, error) {
 	uuid := uuid.New()
-	plainTextApiKey := userId.String() + ":" + uuid.String()
+	plainTextApiKey := accountId.String() + ":" + uuid.String()
 	newApiKey, err := encryptApiKey(plainTextApiKey)
 	if err != nil {
 		return "", err
 	}
 
-	err = storeNewKeyHash(userId, uuid)
+	err = storeNewKeyHash(accountId, uuid)
 	if err != nil {
 		return "", err
 	}

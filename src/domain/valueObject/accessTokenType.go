@@ -5,8 +5,8 @@ import "errors"
 type AccessTokenType string
 
 const (
-	sessionToken AccessTokenType = "sessionToken"
-	userApiKey   AccessTokenType = "userApiKey"
+	sessionToken  AccessTokenType = "sessionToken"
+	accountApiKey AccessTokenType = "accountApiKey"
 )
 
 func NewAccessTokenType(value string) (AccessTokenType, error) {
@@ -27,7 +27,7 @@ func NewAccessTokenTypePanic(value string) AccessTokenType {
 
 func (att AccessTokenType) isValid() bool {
 	switch att {
-	case sessionToken, userApiKey:
+	case sessionToken, accountApiKey:
 		return true
 	default:
 		return false

@@ -9,22 +9,22 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-func UpdateUserApiKey(
+func UpdateAccountApiKey(
 	accQueryRepo repository.AccQueryRepo,
 	accCmdRepo repository.AccCmdRepo,
-	updateUserDto dto.UpdateUser,
+	updateAccountDto dto.UpdateAccount,
 ) (valueObject.AccessTokenStr, error) {
-	_, err := accQueryRepo.GetById(updateUserDto.UserId)
+	_, err := accQueryRepo.GetById(updateAccountDto.AccountId)
 	if err != nil {
-		return "", errors.New("UserNotFound")
+		return "", errors.New("AccountNotFound")
 	}
 
-	newKey, err := accCmdRepo.UpdateApiKey(updateUserDto.UserId)
+	newKey, err := accCmdRepo.UpdateApiKey(updateAccountDto.AccountId)
 	if err != nil {
-		return "", errors.New("UpdateUserApiKeyError")
+		return "", errors.New("UpdateAccountApiKeyError")
 	}
 
-	log.Printf("UserId '%v' api key updated.", updateUserDto.UserId)
+	log.Printf("AccountId '%v' api key updated.", updateAccountDto.AccountId)
 
 	return newKey, nil
 }
