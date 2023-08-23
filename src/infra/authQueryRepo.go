@@ -6,15 +6,15 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/msteinert/pam"
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/valueObject"
+	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -22,31 +22,24 @@ type AuthQueryRepo struct {
 }
 
 func (repo AuthQueryRepo) IsLoginValid(login dto.Login) bool {
-	tx, err := pam.StartFunc(
-		"system-auth",
-		login.Username.String(),
-		func(s pam.Style, msg string) (string, error) {
-			switch s {
-			case pam.PromptEchoOff:
-				return login.Password.String(), nil
-			case pam.PromptEchoOn, pam.ErrorMsg, pam.TextInfo:
-				log.Printf("PamMessage: %s", msg)
-				return "", nil
-			}
-			log.Println("UnhandledPamMessageStyle")
-			return "", errors.New("UnhandledPamMessageStyle")
-		})
-
+	storedPassHash, err := infraHelper.RunCmd(
+		"bash",
+		"-c",
+		"getent shadow "+login.Username.String()+" | awk -F: '{print $2}'",
+	)
 	if err != nil {
-		log.Printf("PamError: %v", err)
 		return false
 	}
 
-	if err = tx.Authenticate(0); err != nil {
+	if len(storedPassHash) == 0 {
 		return false
 	}
 
-	return true
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(storedPassHash),
+		[]byte(login.Password.String()),
+	)
+	return err == nil
 }
 
 func (repo AuthQueryRepo) getSessionTokenClaims(
