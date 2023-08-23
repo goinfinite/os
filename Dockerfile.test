@@ -2,7 +2,7 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates gcc make libpam0g-dev wget curl tar procps
+RUN install_packages ca-certificates wget curl tar procps
 
 RUN wget -nv https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
@@ -12,6 +12,6 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 COPY . .
 
 RUN go mod download \
-    && CGO_ENABLED=1 go build -o sam
+    && go build -o sam
 
 ENTRYPOINT ["go", "test", "-v", "./..."]
