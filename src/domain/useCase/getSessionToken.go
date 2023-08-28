@@ -34,7 +34,7 @@ func GetSessionToken(
 		return entity.AccessToken{}, errors.New("AccountNotFound")
 	}
 
-	accountId := accountDetails.AccountId
+	accountId := accountDetails.Id
 	expiresIn := valueObject.UnixTime(
 		time.Now().Add(3 * time.Hour).Unix(),
 	)

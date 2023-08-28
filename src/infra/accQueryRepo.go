@@ -54,7 +54,7 @@ func (repo AccQueryRepo) Get() ([]entity.Account, error) {
 		if err != nil {
 			continue
 		}
-		if accDetails.AccountId < 1000 {
+		if accDetails.Id < 1000 {
 			continue
 		}
 		if accDetails.Username == "nobody" {
