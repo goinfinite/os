@@ -3,18 +3,18 @@ package dto
 import "github.com/speedianet/sam/src/domain/valueObject"
 
 type UpdateAccount struct {
-	AccountId          valueObject.AccountId `json:"accountId"`
+	Id                 valueObject.AccountId `json:"id"`
 	Password           *valueObject.Password `json:"password"`
 	ShouldUpdateApiKey *bool                 `json:"shouldUpdateApiKey"`
 }
 
 func NewUpdateAccount(
-	accountId valueObject.AccountId,
+	id valueObject.AccountId,
 	password *valueObject.Password,
 	shouldUpdateApiKey *bool,
 ) UpdateAccount {
 	return UpdateAccount{
-		AccountId:          accountId,
+		Id:                 id,
 		Password:           password,
 		ShouldUpdateApiKey: shouldUpdateApiKey,
 	}

@@ -105,13 +105,13 @@ func DeleteAccountController(c echo.Context) error {
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /account/ [put]
 func UpdateAccountController(c echo.Context) error {
-	requiredParams := []string{"accountId"}
+	requiredParams := []string{"id"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	var accountId valueObject.AccountId
-	switch id := requestBody["accountId"].(type) {
+	switch id := requestBody["id"].(type) {
 	case string:
 		accountId = valueObject.NewAccountIdFromStringPanic(id)
 	case float64:

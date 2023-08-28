@@ -14,17 +14,17 @@ func UpdateAccountApiKey(
 	accCmdRepo repository.AccCmdRepo,
 	updateAccountDto dto.UpdateAccount,
 ) (valueObject.AccessTokenStr, error) {
-	_, err := accQueryRepo.GetById(updateAccountDto.AccountId)
+	_, err := accQueryRepo.GetById(updateAccountDto.Id)
 	if err != nil {
 		return "", errors.New("AccountNotFound")
 	}
 
-	newKey, err := accCmdRepo.UpdateApiKey(updateAccountDto.AccountId)
+	newKey, err := accCmdRepo.UpdateApiKey(updateAccountDto.Id)
 	if err != nil {
 		return "", errors.New("UpdateAccountApiKeyError")
 	}
 
-	log.Printf("AccountId '%v' api key updated.", updateAccountDto.AccountId)
+	log.Printf("AccountId '%v' api key updated.", updateAccountDto.Id)
 
 	return newKey, nil
 }

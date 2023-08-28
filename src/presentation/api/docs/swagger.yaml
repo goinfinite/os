@@ -34,7 +34,7 @@ definitions:
     type: object
   dto.UpdateAccount:
     properties:
-      accountId:
+      id:
         type: integer
       password:
         type: string

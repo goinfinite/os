@@ -691,7 +691,7 @@ const docTemplate = `{
         "dto.UpdateAccount": {
             "type": "object",
             "properties": {
-                "accountId": {
+                "id": {
                     "type": "integer"
                 },
                 "password": {

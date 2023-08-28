@@ -13,20 +13,20 @@ func UpdateAccountPassword(
 	accCmdRepo repository.AccCmdRepo,
 	updateAccountDto dto.UpdateAccount,
 ) error {
-	_, err := accQueryRepo.GetById(updateAccountDto.AccountId)
+	_, err := accQueryRepo.GetById(updateAccountDto.Id)
 	if err != nil {
 		return errors.New("AccountNotFound")
 	}
 
 	err = accCmdRepo.UpdatePassword(
-		updateAccountDto.AccountId,
+		updateAccountDto.Id,
 		*updateAccountDto.Password,
 	)
 	if err != nil {
 		return errors.New("UpdateAccountPasswordError")
 	}
 
-	log.Printf("AccountId '%v' password updated.", updateAccountDto.AccountId)
+	log.Printf("AccountId '%v' password updated.", updateAccountDto.Id)
 
 	return nil
 }
