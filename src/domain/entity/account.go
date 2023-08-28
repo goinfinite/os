@@ -9,9 +9,9 @@ type Account struct {
 }
 
 func NewAccount(
-	username valueObject.Username,
 	accountId valueObject.AccountId,
 	groupId valueObject.GroupId,
+	username valueObject.Username,
 ) Account {
 	return Account{
 		Id:       accountId,

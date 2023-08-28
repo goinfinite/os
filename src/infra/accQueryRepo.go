@@ -14,11 +14,6 @@ type AccQueryRepo struct {
 }
 
 func accDetailsFactory(userInfo *user.User) (entity.Account, error) {
-	username, err := valueObject.NewUsername(userInfo.Username)
-	if err != nil {
-		return entity.Account{}, errors.New("UsernameParseError")
-	}
-
 	accountId, err := valueObject.NewAccountIdFromString(userInfo.Uid)
 	if err != nil {
 		return entity.Account{}, errors.New("AccountIdParseError")
@@ -29,10 +24,15 @@ func accDetailsFactory(userInfo *user.User) (entity.Account, error) {
 		return entity.Account{}, errors.New("GroupIdParseError")
 	}
 
+	username, err := valueObject.NewUsername(userInfo.Username)
+	if err != nil {
+		return entity.Account{}, errors.New("UsernameParseError")
+	}
+
 	return entity.NewAccount(
-		username,
 		accountId,
 		groupId,
+		username,
 	), nil
 }
 
