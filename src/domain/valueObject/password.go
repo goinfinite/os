@@ -13,9 +13,9 @@ func NewPassword(value string) (Password, error) {
 }
 
 func NewPasswordPanic(value string) Password {
-	pass := Password(value)
-	if !pass.isValid() {
-		panic("InvalidPassword")
+	pass, err := NewPassword(value)
+	if err != nil {
+		panic(err)
 	}
 	return pass
 }
