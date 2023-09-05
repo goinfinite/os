@@ -67,8 +67,16 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 	}
 
 	cronLines := strings.Split(cronOut, "\n")
-	var crons []entity.Cron
+	if len(cronLines) == 0 {
+		return []entity.Cron{}, nil
+	}
+
+	crons := []entity.Cron{}
 	for cronIndex, cronLine := range cronLines {
+		if cronLine == "" {
+			continue
+		}
+
 		if strings.HasPrefix(cronLine, "#") {
 			continue
 		}
