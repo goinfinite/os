@@ -2,7 +2,8 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates wget curl tar procps
+RUN install_packages ca-certificates wget curl tar procps cron \
+    && touch /var/spool/cron/crontabs/root
 
 RUN wget -nv https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
