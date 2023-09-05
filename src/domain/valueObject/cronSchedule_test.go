@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewCronSchedule(t *testing.T) {
-	t.Run("ValidFQDN", func(t *testing.T) {
+	t.Run("ValidSchedule", func(t *testing.T) {
 		validSchedules := []string{
 			"@annually",
 			"@yearly",
@@ -32,7 +32,7 @@ func TestNewCronSchedule(t *testing.T) {
 		}
 	})
 
-	t.Run("InvalidFQDN", func(t *testing.T) {
+	t.Run("InvalidSchedule", func(t *testing.T) {
 		invalidSchedules := []string{
 			"*/5 * * * * *",
 			"0 0 * *",
