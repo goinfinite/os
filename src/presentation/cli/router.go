@@ -24,6 +24,29 @@ var serveCmd = &cobra.Command{
 	},
 }
 
+func accountRoutes() {
+	var accountCmd = &cobra.Command{
+		Use:   "account",
+		Short: "AccountManagement",
+	}
+
+	rootCmd.AddCommand(accountCmd)
+	accountCmd.AddCommand(cliController.GetAccountsController())
+	accountCmd.AddCommand(cliController.AddAccountController())
+	accountCmd.AddCommand(cliController.DeleteAccountController())
+	accountCmd.AddCommand(cliController.UpdateAccountController())
+}
+
+func cronRoutes() {
+	var cronCmd = &cobra.Command{
+		Use:   "cron",
+		Short: "CronManagement",
+	}
+
+	rootCmd.AddCommand(cronCmd)
+	cronCmd.AddCommand(cliController.GetCronController())
+}
+
 func databaseRoutes() {
 	var databaseCmd = &cobra.Command{
 		Use:   "db",
@@ -67,19 +90,6 @@ func runtimeRoutes() {
 	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
 }
 
-func accountRoutes() {
-	var accountCmd = &cobra.Command{
-		Use:   "account",
-		Short: "AccountManagement",
-	}
-
-	rootCmd.AddCommand(accountCmd)
-	accountCmd.AddCommand(cliController.GetAccountsController())
-	accountCmd.AddCommand(cliController.AddAccountController())
-	accountCmd.AddCommand(cliController.DeleteAccountController())
-	accountCmd.AddCommand(cliController.UpdateAccountController())
-}
-
 func servicesRoutes() {
 	var servicesCmd = &cobra.Command{
 		Use:   "services",
@@ -94,9 +104,10 @@ func servicesRoutes() {
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
+	accountRoutes()
+	cronRoutes()
 	databaseRoutes()
 	o11yRoutes()
 	runtimeRoutes()
-	accountRoutes()
 	servicesRoutes()
 }
