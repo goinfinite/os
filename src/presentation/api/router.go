@@ -28,6 +28,12 @@ func authRoutes(baseRoute *echo.Group) {
 	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
+func cronRoutes(baseRoute *echo.Group) {
+	cronGroup := baseRoute.Group("/cron")
+	cronGroup.GET("/", apiController.GetCronsController)
+	cronGroup.POST("/", apiController.AddCronController)
+}
+
 func databaseRoutes(baseRoute *echo.Group) {
 	databaseGroup := baseRoute.Group("/database")
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
@@ -73,6 +79,7 @@ func servicesRoutes(baseRoute *echo.Group) {
 func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
+	cronRoutes(baseRoute)
 	databaseRoutes(baseRoute)
 	o11yRoutes(baseRoute)
 	runtimeRoutes(baseRoute)
