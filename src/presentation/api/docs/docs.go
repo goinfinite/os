@@ -207,6 +207,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/cron/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List Crons.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "GetCrons",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Cron"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "AddNewCron",
+                "parameters": [
+                    {
+                        "description": "NewCron",
+                        "name": "addCronDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddCron"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "CronCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/database/{dbType}/": {
             "get": {
                 "security": [
@@ -649,6 +717,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AddCron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddDatabase": {
             "type": "object",
             "properties": {
@@ -763,6 +845,23 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Cron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "schedule": {
                     "type": "string"
                 }
             }
