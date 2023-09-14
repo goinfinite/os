@@ -25,7 +25,7 @@ func UpdateCron(
 		return errors.New("UpdateCronInfraError")
 	}
 
-	log.Printf("Cron '%v' updated.", updateCron.Id.String())
+	log.Printf("Cron with ID '%v' updated.", updateCron.Id.String())
 
 	return nil
 }
