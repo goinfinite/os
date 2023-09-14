@@ -25,14 +25,7 @@ func UpdateCron(
 		return errors.New("UpdateCronInfraError")
 	}
 
-	cronCmdLimitStr := len(updateCron.Command.String())
-	if cronCmdLimitStr > 75 {
-		cronCmdLimitStr = 75
-	}
-	cronCmdShortVersion := updateCron.Command.String()[:cronCmdLimitStr]
-	cronLine := updateCron.Schedule.String() + " " + cronCmdShortVersion
-
-	log.Printf("Cron '%v' updated.", cronLine)
+	log.Printf("Cron '%v' updated.", updateCron.Id.String())
 
 	return nil
 }
