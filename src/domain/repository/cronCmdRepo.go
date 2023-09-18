@@ -9,5 +9,5 @@ import (
 type CronCmdRepo interface {
 	Add(addCron dto.AddCron) error
 	Update(cronjob entity.Cron, updateCron dto.UpdateCron) error
-	Delete(accId valueObject.CronId) error
+	Delete(cronId valueObject.CronId) error
 }
