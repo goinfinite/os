@@ -7,7 +7,5 @@ import (
 
 type CronQueryRepo interface {
 	Get() ([]entity.Cron, error)
-	GetById(
-		croId valueObject.CronId,
-	) (entity.Cron, error)
+	GetById(cronId valueObject.CronId) (entity.Cron, error)
 }
