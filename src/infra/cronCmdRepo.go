@@ -88,7 +88,9 @@ func removeCronjob(line string, cronUnixTimestampStr string) error {
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
-	cronLine := addCron.Schedule.String() + " " + addCron.Command.String() + " # " + addCron.Comment.String()
+	cronLine := addCron.Schedule.String() + " " +
+		addCron.Command.String() + " # " +
+		addCron.Comment.String()
 
 	err := editCrontab(cronLine, cronUnixTimestampStr, false)
 	return err
