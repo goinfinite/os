@@ -70,3 +70,60 @@ func AddCronController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "CronCreated")
 }
+
+// UpdateCron godoc
+// @Summary      UpdateCron
+// @Description  Update an cron.
+// @Tags         cron
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateCronDto 	  body dto.UpdateCron  true  "UpdateCron"
+// @Success      200 {object} object{} "CronUpdated message"
+// @Router       /cron/ [put]
+func UpdateCronController(c echo.Context) error {
+	requiredParams := []string{"id"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	var cronSchedulePtr *valueObject.CronSchedule
+	if requestBody["schedule"] != nil {
+		cronSchedule := valueObject.NewCronSchedulePanic(requestBody["schedule"].(string))
+		cronSchedulePtr = &cronSchedule
+	}
+
+	var cronCommandPtr *valueObject.UnixCommand
+	if requestBody["command"] != nil {
+		cronCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
+		cronCommandPtr = &cronCommand
+	}
+
+	var cronCommentPtr *valueObject.CronComment
+	if requestBody["comment"] != nil {
+		cronComment := valueObject.NewCronCommentPanic(requestBody["comment"].(string))
+		cronCommentPtr = &cronComment
+	}
+
+	updateCronDto := dto.NewUpdateCron(
+		valueObject.NewCronIdPanic(requestBody["id"].(interface{})),
+		cronSchedulePtr,
+		cronCommandPtr,
+		cronCommentPtr,
+	)
+
+	cronQueryRepo := infra.CronQueryRepo{}
+	cronCmdRepo := infra.CronCmdRepo{}
+
+	err := useCase.UpdateCron(
+		cronQueryRepo,
+		cronCmdRepo,
+		updateCronDto,
+	)
+
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "CronUpdated")
+}
