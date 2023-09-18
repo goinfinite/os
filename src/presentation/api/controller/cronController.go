@@ -107,7 +107,7 @@ func UpdateCronController(c echo.Context) error {
 	}
 
 	updateCronDto := dto.NewUpdateCron(
-		valueObject.NewCronIdPanic(requestBody["id"].(interface{})),
+		valueObject.NewCronIdPanic(requestBody["id"]),
 		cronSchedulePtr,
 		cronCommandPtr,
 		cronCommentPtr,
