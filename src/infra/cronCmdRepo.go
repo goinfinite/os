@@ -52,11 +52,7 @@ func installNewCrontab(timeSuffix string) error {
 	}
 
 	err = os.Remove(crontabFileName)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func editCrontab(crontabContent string, cronUnixTimestampStr string, delete bool) error {
@@ -73,11 +69,7 @@ func editCrontab(crontabContent string, cronUnixTimestampStr string, delete bool
 	}
 
 	err = installNewCrontab(cronUnixTimestampStr)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func removeCronjob(line string, cronUnixTimestampStr string) error {
@@ -91,11 +83,7 @@ func removeCronjob(line string, cronUnixTimestampStr string) error {
 	}
 
 	err = editCrontab(crontabWithoutSpecificLine, cronUnixTimestampStr, true)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
@@ -103,11 +91,7 @@ func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 	cronLine := addCron.Schedule.String() + " " + addCron.Command.String() + " # " + addCron.Comment.String()
 
 	err := editCrontab(cronLine, cronUnixTimestampStr, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (repo CronCmdRepo) Update(cron entity.Cron, updateCron dto.UpdateCron) error {
@@ -142,20 +126,12 @@ func (repo CronCmdRepo) Update(cron entity.Cron, updateCron dto.UpdateCron) erro
 	}
 
 	err = removeCronjob(updateCron.Id.String(), cronUnixTimestampStr)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (repo CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
 
 	err := removeCronjob(cronId.String(), cronUnixTimestampStr)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
