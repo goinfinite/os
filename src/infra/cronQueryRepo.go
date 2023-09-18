@@ -80,7 +80,7 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 		if strings.HasPrefix(cronLine, "#") {
 			continue
 		}
-		cron, err := repo.cronFactory(cronIndex, cronLine)
+		cron, err := repo.cronFactory(cronIndex+1, cronLine)
 		if err != nil {
 			continue
 		}
