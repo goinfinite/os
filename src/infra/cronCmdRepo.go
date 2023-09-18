@@ -16,9 +16,9 @@ type CronCmdRepo struct {
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
-	cronjob := addCron.Schedule.String() + " " + addCron.Command.String() + " # " + addCron.Comment.String()
+	cronLine := addCron.Schedule.String() + " " + addCron.Command.String() + " # " + addCron.Comment.String()
 
-	err := editCrontab(cronjob, cronUnixTimestampStr, false)
+	err := editCrontab(cronLine, cronUnixTimestampStr, false)
 	if err != nil {
 		return err
 	}
