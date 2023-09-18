@@ -91,20 +91,24 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 }
 
 func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error) {
-	cronLineIndex := "'" + cronId.String() + "!d'"
+	var requestedCronjob entity.Cron
 
-	cronLine, err := infraHelper.RunCmd(
-		"bash",
-		"-c",
-		"crontab -l | sed "+cronLineIndex,
-	)
+	cronjobs, err := repo.Get()
 	if err != nil {
 		return entity.Cron{}, err
 	}
 
-	if len(cronLine) < 1 {
+	if len(cronjobs) < 1 {
 		return entity.Cron{}, errors.New("CronNotFound")
 	}
 
-	return repo.cronFactory(int(cronId.Get()), cronLine)
+	for _, cronjob := range cronjobs {
+		if cronjob.Id.String() != cronId.String() {
+			continue
+		}
+
+		requestedCronjob = cronjob
+	}
+
+	return requestedCronjob, nil
 }
