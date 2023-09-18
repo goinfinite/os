@@ -63,4 +63,13 @@ func TestCronCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
+
+	t.Run("DeleteCron", func(t *testing.T) {
+		cronCmdRepo := CronCmdRepo{}
+
+		err := cronCmdRepo.Delete(valueObject.NewCronIdPanic((1)))
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
 }
