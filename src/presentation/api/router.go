@@ -33,6 +33,7 @@ func cronRoutes(baseRoute *echo.Group) {
 	cronGroup.GET("/", apiController.GetCronsController)
 	cronGroup.POST("/", apiController.AddCronController)
 	cronGroup.PUT("/", apiController.UpdateCronController)
+	cronGroup.DELETE("/:cronId", apiController.DeleteCronController)
 }
 
 func databaseRoutes(baseRoute *echo.Group) {

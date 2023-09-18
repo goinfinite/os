@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/sam/src/domain/dto"
@@ -126,4 +127,34 @@ func UpdateCronController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "CronUpdated")
+}
+
+// DeleteCron	 godoc
+// @Summary      DeleteCron
+// @Description  Delete an cron.
+// @Tags         cron
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        cronId 	  path   string  true  "CronId"
+// @Success      200 {object} object{} "CronDeleted"
+// @Router       /cron/{cronId} [delete]
+func DeleteCronController(c echo.Context) error {
+	cronId := valueObject.NewCronIdPanic(
+		strings.TrimRight(c.Param("cronId"), "/"),
+	)
+
+	cronQueryRepo := infra.CronQueryRepo{}
+	cronCmdRepo := infra.CronCmdRepo{}
+
+	err := useCase.DeleteCron(
+		cronQueryRepo,
+		cronCmdRepo,
+		cronId,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "CronDeleted")
 }
