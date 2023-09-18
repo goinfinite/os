@@ -13,13 +13,13 @@ func UpdateCron(
 	cronCmdRepo repository.CronCmdRepo,
 	updateCron dto.UpdateCron,
 ) error {
-	cronjob, err := cronQueryRepo.GetById(updateCron.Id)
+	_, err := cronQueryRepo.GetById(updateCron.Id)
 	if err != nil {
 		log.Printf("CronNotFound: %s", err)
 		return errors.New("CronNotFound")
 	}
 
-	err = cronCmdRepo.Update(cronjob, updateCron)
+	err = cronCmdRepo.Update(updateCron)
 	if err != nil {
 		log.Printf("UpdateCronError: %s", err)
 		return errors.New("UpdateCronInfraError")
