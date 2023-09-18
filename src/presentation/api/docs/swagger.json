@@ -230,6 +230,43 @@
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "UpdateCron",
+                "parameters": [
+                    {
+                        "description": "UpdateCron",
+                        "name": "updateCronDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCron"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CronUpdated message",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -261,6 +298,43 @@
                 "responses": {
                     "201": {
                         "description": "CronCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/cron/{cronId}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete an cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "DeleteCron",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CronId",
+                        "name": "cronId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CronDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -774,6 +848,23 @@
                 },
                 "shouldUpdateApiKey": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.UpdateCron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "type": "string"
                 }
             }
         },

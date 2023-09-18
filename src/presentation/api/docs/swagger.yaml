@@ -50,6 +50,17 @@ definitions:
       shouldUpdateApiKey:
         type: boolean
     type: object
+  dto.UpdateCron:
+    properties:
+      command:
+        type: string
+      comment:
+        type: string
+      id:
+        type: integer
+      schedule:
+        type: string
+    type: object
   dto.UpdatePhpConfigs:
     properties:
       hostname:
@@ -431,6 +442,52 @@ paths:
       security:
       - Bearer: []
       summary: AddNewCron
+      tags:
+      - cron
+    put:
+      consumes:
+      - application/json
+      description: Update an cron.
+      parameters:
+      - description: UpdateCron
+        in: body
+        name: updateCronDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCron'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: CronUpdated message
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateCron
+      tags:
+      - cron
+  /cron/{cronId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an cron.
+      parameters:
+      - description: CronId
+        in: path
+        name: cronId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: CronDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteCron
       tags:
       - cron
   /database/{dbType}/:
