@@ -1,0 +1,29 @@
+package useCase
+
+import (
+	"errors"
+	"log"
+
+	"github.com/speedianet/sam/src/domain/repository"
+	"github.com/speedianet/sam/src/domain/valueObject"
+)
+
+func DeleteCron(
+	cronQueryRepo repository.CronQueryRepo,
+	cronCmdRepo repository.CronCmdRepo,
+	cronId valueObject.CronId,
+) error {
+	_, err := cronQueryRepo.GetById(cronId)
+	if err != nil {
+		return errors.New("CronNotFound")
+	}
+
+	err = cronCmdRepo.Delete(cronId)
+	if err != nil {
+		return errors.New("DeleteCronError")
+	}
+
+	log.Printf("CronId '%v' deleted.", cronId)
+
+	return nil
+}
