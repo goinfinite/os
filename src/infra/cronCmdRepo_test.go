@@ -30,26 +30,20 @@ func TestCronCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateCron", func(t *testing.T) {
-		cronQueryRepo := CronQueryRepo{}
 		cronCmdRepo := CronCmdRepo{}
-
-		cron, err := cronQueryRepo.GetById(valueObject.NewCronIdPanic((1)))
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
 
 		schedule := valueObject.NewCronSchedulePanic("* * * * 0")
 		command := valueObject.NewUnixCommandPanic("echo \"cronUpdateTest\" >> crontab_logs.txt")
 		comment := valueObject.NewCronCommentPanic("update test")
 
 		updateCron := dto.NewUpdateCron(
-			cron.Id,
+			valueObject.NewCronIdPanic(1),
 			&schedule,
 			&command,
 			&comment,
 		)
 
-		err = cronCmdRepo.Update(cron, updateCron)
+		err := cronCmdRepo.Update(updateCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
