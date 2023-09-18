@@ -21,11 +21,7 @@ func addDummyCron() error {
 
 	cronCmdRepo := CronCmdRepo{}
 	err := cronCmdRepo.Add(addCron)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func TestCronCmdRepo(t *testing.T) {
