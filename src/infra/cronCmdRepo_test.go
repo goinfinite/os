@@ -13,11 +13,11 @@ func addDummyCron() error {
 	command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
 	comment := valueObject.NewCronCommentPanic("Test cron job")
 
-	addCron := dto.AddCron{
-		Schedule: schedule,
-		Command:  command,
-		Comment:  &comment,
-	}
+	addCron := dto.NewAddCron(
+		schedule,
+		command,
+		&comment,
+	)
 
 	cronCmdRepo := CronCmdRepo{}
 	err := cronCmdRepo.Add(addCron)
