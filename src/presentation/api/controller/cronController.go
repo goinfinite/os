@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/sam/src/domain/dto"
@@ -140,9 +139,7 @@ func UpdateCronController(c echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /cron/{cronId}/ [delete]
 func DeleteCronController(c echo.Context) error {
-	cronId := valueObject.NewCronIdPanic(
-		strings.TrimRight(c.Param("cronId"), "/"),
-	)
+	cronId := valueObject.NewCronIdPanic(c.Param("cronId"))
 
 	cronQueryRepo := infra.CronQueryRepo{}
 	cronCmdRepo := infra.CronCmdRepo{}
