@@ -311,7 +311,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/cron/{cronId}": {
+        "/cron/{cronId}/": {
             "delete": {
                 "security": [
                     {

@@ -467,7 +467,7 @@ paths:
       summary: UpdateCron
       tags:
       - cron
-  /cron/{cronId}:
+  /cron/{cronId}/:
     delete:
       consumes:
       - application/json

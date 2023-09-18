@@ -305,7 +305,7 @@
                 }
             }
         },
-        "/cron/{cronId}": {
+        "/cron/{cronId}/": {
             "delete": {
                 "security": [
                     {
