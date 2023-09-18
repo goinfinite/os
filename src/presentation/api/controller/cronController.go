@@ -138,7 +138,7 @@ func UpdateCronController(c echo.Context) error {
 // @Security     Bearer
 // @Param        cronId 	  path   string  true  "CronId"
 // @Success      200 {object} object{} "CronDeleted"
-// @Router       /cron/{cronId} [delete]
+// @Router       /cron/{cronId}/ [delete]
 func DeleteCronController(c echo.Context) error {
 	cronId := valueObject.NewCronIdPanic(
 		strings.TrimRight(c.Param("cronId"), "/"),
