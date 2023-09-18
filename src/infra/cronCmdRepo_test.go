@@ -8,27 +8,22 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-func addDummyCron() error {
-	schedule := valueObject.NewCronSchedulePanic("* * * * *")
-	command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
-	comment := valueObject.NewCronCommentPanic("Test cron job")
-
-	addCron := dto.NewAddCron(
-		schedule,
-		command,
-		&comment,
-	)
-
-	cronCmdRepo := CronCmdRepo{}
-	err := cronCmdRepo.Add(addCron)
-	return err
-}
-
 func TestCronCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	t.Run("AddCron", func(t *testing.T) {
-		err := addDummyCron()
+		schedule := valueObject.NewCronSchedulePanic("* * * * *")
+		command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
+		comment := valueObject.NewCronCommentPanic("Test cron job")
+
+		addCron := dto.NewAddCron(
+			schedule,
+			command,
+			&comment,
+		)
+
+		cronCmdRepo := CronCmdRepo{}
+		err := cronCmdRepo.Add(addCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
