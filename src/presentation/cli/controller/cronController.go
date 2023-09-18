@@ -69,3 +69,62 @@ func AddCronControler() *cobra.Command {
 	cmd.Flags().StringVarP(&commentStr, "comment", "d", "", "Comment")
 	return cmd
 }
+
+func UpdateCronController() *cobra.Command {
+	var idStr string
+	var scheduleStr string
+	var commandStr string
+	var commentStr string
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "UpdateCron",
+		Run: func(cmd *cobra.Command, args []string) {
+			var schedulePtr *valueObject.CronSchedule
+			if scheduleStr != "" {
+				schedule := valueObject.NewCronSchedulePanic(scheduleStr)
+				schedulePtr = &schedule
+			}
+
+			var commandPtr *valueObject.UnixCommand
+			if commandStr != "" {
+				command := valueObject.NewUnixCommandPanic(commandStr)
+				commandPtr = &command
+			}
+
+			var commentPtr *valueObject.CronComment
+			if commentStr != "" {
+				comment := valueObject.NewCronCommentPanic(commentStr)
+				commentPtr = &comment
+			}
+
+			updateCronDto := dto.NewUpdateCron(
+				valueObject.NewCronIdPanic(idStr),
+				schedulePtr,
+				commandPtr,
+				commentPtr,
+			)
+
+			cronQueryRepo := infra.CronQueryRepo{}
+			cronCmdRepo := infra.CronCmdRepo{}
+
+			err := useCase.UpdateCron(
+				cronQueryRepo,
+				cronCmdRepo,
+				updateCronDto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "CronAdded")
+		},
+	}
+
+	cmd.Flags().StringVarP(&idStr, "id", "i", "", "CronId")
+	cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVarP(&scheduleStr, "schedule", "s", "", "Schedule")
+	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
+	cmd.Flags().StringVarP(&commentStr, "comment", "d", "", "Comment")
+	return cmd
+}
