@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 )
@@ -96,7 +95,14 @@ func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 	return err
 }
 
-func (repo CronCmdRepo) Update(cron entity.Cron, updateCron dto.UpdateCron) error {
+func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
+	cronQueryRepo := CronQueryRepo{}
+
+	cron, err := cronQueryRepo.GetById(updateCron.Id)
+	if err != nil {
+		return err
+	}
+
 	var cronjobSchedule string
 	var cronjobCommand string
 	var cronjobComment string
@@ -118,7 +124,7 @@ func (repo CronCmdRepo) Update(cron entity.Cron, updateCron dto.UpdateCron) erro
 		cronjobComment = updateCron.Comment.String()
 	}
 
-	err := editCrontab(
+	err = editCrontab(
 		cronjobSchedule+" "+cronjobCommand+" # "+cronjobComment,
 		cronUnixTimestampStr,
 		false,
