@@ -102,5 +102,9 @@ func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error
 		return entity.Cron{}, err
 	}
 
+	if len(cronLine) < 1 {
+		return entity.Cron{}, errors.New("CronNotFound")
+	}
+
 	return repo.cronFactory(int(cronId.Get()), cronLine)
 }
