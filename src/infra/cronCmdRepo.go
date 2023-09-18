@@ -7,6 +7,7 @@ import (
 
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/entity"
+	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 )
 
@@ -57,6 +58,17 @@ func (repo CronCmdRepo) Update(cron entity.Cron, updateCron dto.UpdateCron) erro
 	}
 
 	err = removeCronjob(updateCron.Id.String(), cronUnixTimestampStr)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo CronCmdRepo) Delete(cronId valueObject.CronId) error {
+	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
+
+	err := removeCronjob(cronId.String(), cronUnixTimestampStr)
 	if err != nil {
 		return err
 	}
