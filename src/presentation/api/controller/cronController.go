@@ -22,8 +22,8 @@ import (
 // @Success      200 {array} entity.Cron
 // @Router       /cron/ [get]
 func GetCronsController(c echo.Context) error {
-	cronsQueryRepo := infra.CronQueryRepo{}
-	cronsList, err := useCase.GetCrons(cronsQueryRepo)
+	cronQueryRepo := infra.CronQueryRepo{}
+	cronsList, err := useCase.GetCrons(cronQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
