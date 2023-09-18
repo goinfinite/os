@@ -46,6 +46,7 @@ func cronRoutes() {
 	rootCmd.AddCommand(cronCmd)
 	cronCmd.AddCommand(cliController.GetCronsController())
 	cronCmd.AddCommand(cliController.AddCronControler())
+	cronCmd.AddCommand(cliController.UpdateCronController())
 }
 
 func databaseRoutes() {
