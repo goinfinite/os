@@ -128,3 +128,33 @@ func UpdateCronController() *cobra.Command {
 	cmd.Flags().StringVarP(&commentStr, "comment", "d", "", "Comment")
 	return cmd
 }
+
+func DeleteCronController() *cobra.Command {
+	var cronIdStr string
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteCron",
+		Run: func(cmd *cobra.Command, args []string) {
+			cronId := valueObject.NewCronIdPanic(cronIdStr)
+
+			cronQueryRepo := infra.CronQueryRepo{}
+			cronCmdRepo := infra.CronCmdRepo{}
+
+			err := useCase.DeleteCron(
+				cronQueryRepo,
+				cronCmdRepo,
+				cronId,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "CronDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&cronIdStr, "id", "i", "", "CronId")
+	cmd.MarkFlagRequired("id")
+	return cmd
+}
