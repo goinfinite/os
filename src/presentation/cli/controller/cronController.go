@@ -48,9 +48,12 @@ func AddCronControler() *cobra.Command {
 				commentPtr,
 			)
 
-			cronCmdRepo := infra.CronCmdRepo{}
+			cronCmdRepo, err := infra.NewCronCmdRepo()
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
-			err := useCase.AddCron(
+			err = useCase.AddCron(
 				cronCmdRepo,
 				addCronDto,
 			)
@@ -106,9 +109,12 @@ func UpdateCronController() *cobra.Command {
 			)
 
 			cronQueryRepo := infra.CronQueryRepo{}
-			cronCmdRepo := infra.CronCmdRepo{}
+			cronCmdRepo, err := infra.NewCronCmdRepo()
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
-			err := useCase.UpdateCron(
+			err = useCase.UpdateCron(
 				cronQueryRepo,
 				cronCmdRepo,
 				updateCronDto,
@@ -139,9 +145,12 @@ func DeleteCronController() *cobra.Command {
 			cronId := valueObject.NewCronIdPanic(cronIdStr)
 
 			cronQueryRepo := infra.CronQueryRepo{}
-			cronCmdRepo := infra.CronCmdRepo{}
+			cronCmdRepo, err := infra.NewCronCmdRepo()
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
-			err := useCase.DeleteCron(
+			err = useCase.DeleteCron(
 				cronQueryRepo,
 				cronCmdRepo,
 				cronId,

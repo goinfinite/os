@@ -58,9 +58,12 @@ func AddCronController(c echo.Context) error {
 		cronCommentPtr,
 	)
 
-	cronCmdRepo := infra.CronCmdRepo{}
+	cronCmdRepo, err := infra.NewCronCmdRepo()
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
-	err := useCase.AddCron(
+	err = useCase.AddCron(
 		cronCmdRepo,
 		addCronDto,
 	)
@@ -113,9 +116,12 @@ func UpdateCronController(c echo.Context) error {
 	)
 
 	cronQueryRepo := infra.CronQueryRepo{}
-	cronCmdRepo := infra.CronCmdRepo{}
+	cronCmdRepo, err := infra.NewCronCmdRepo()
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
-	err := useCase.UpdateCron(
+	err = useCase.UpdateCron(
 		cronQueryRepo,
 		cronCmdRepo,
 		updateCronDto,
@@ -142,9 +148,12 @@ func DeleteCronController(c echo.Context) error {
 	cronId := valueObject.NewCronIdPanic(c.Param("cronId"))
 
 	cronQueryRepo := infra.CronQueryRepo{}
-	cronCmdRepo := infra.CronCmdRepo{}
+	cronCmdRepo, err := infra.NewCronCmdRepo()
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
-	err := useCase.DeleteCron(
+	err = useCase.DeleteCron(
 		cronQueryRepo,
 		cronCmdRepo,
 		cronId,
