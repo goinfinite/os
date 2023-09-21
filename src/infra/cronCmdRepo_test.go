@@ -22,15 +22,22 @@ func TestCronCmdRepo(t *testing.T) {
 			&comment,
 		)
 
-		cronCmdRepo := CronCmdRepo{}
-		err := cronCmdRepo.Add(addCron)
+		cronCmdRepo, err := NewCronCmdRepo()
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		err = cronCmdRepo.Add(addCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("UpdateCron", func(t *testing.T) {
-		cronCmdRepo := CronCmdRepo{}
+		cronCmdRepo, err := NewCronCmdRepo()
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
 
 		schedule := valueObject.NewCronSchedulePanic("* * * * 0")
 		command := valueObject.NewUnixCommandPanic("echo \"cronUpdateTest\" >> crontab_logs.txt")
@@ -43,16 +50,19 @@ func TestCronCmdRepo(t *testing.T) {
 			&comment,
 		)
 
-		err := cronCmdRepo.Update(updateCron)
+		err = cronCmdRepo.Update(updateCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("DeleteCron", func(t *testing.T) {
-		cronCmdRepo := CronCmdRepo{}
+		cronCmdRepo, err := NewCronCmdRepo()
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
 
-		err := cronCmdRepo.Delete(valueObject.NewCronIdPanic((1)))
+		err = cronCmdRepo.Delete(valueObject.NewCronIdPanic((1)))
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
