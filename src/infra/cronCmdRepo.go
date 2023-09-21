@@ -2,35 +2,37 @@ package infra
 
 import (
 	"os"
-	"strconv"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/speedianet/sam/src/domain/dto"
+	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 )
 
 type CronCmdRepo struct {
+	currentCrontab     []entity.Cron
+	tmpCrontabFilename string
 }
 
-func importCurrentCrontab(timeSuffix string) error {
-	crontabFileName := "cron_" + timeSuffix
+func NewCronCmdRepo() (*CronCmdRepo, error) {
+	cronQueryRepo := CronQueryRepo{}
 
-	currentCrontab, err := infraHelper.RunCmd(
-		"crontab",
-		"-l",
-	)
+	currentCrontab, err := cronQueryRepo.Get()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	currentCrontabLen := len(currentCrontab)
-	if currentCrontabLen > 0 {
-		currentCrontab += "\n"
-	}
+	tmpCrontabFilename := "tmpCrontab_" + uuid.NewString()
 
-	tmpCrontabFile, err := os.Create(crontabFileName)
-	_, err = tmpCrontabFile.WriteString(currentCrontab)
+	return &CronCmdRepo{
+		currentCrontab:     currentCrontab,
+		tmpCrontabFilename: tmpCrontabFilename,
+	}, nil
+}
+
+func (repo CronCmdRepo) createCrontabTmpFile() error {
+	tmpCrontabFile, err := os.Create(repo.tmpCrontabFilename)
 	if err != nil {
 		return err
 	}
@@ -39,107 +41,83 @@ func importCurrentCrontab(timeSuffix string) error {
 	return nil
 }
 
-func installNewCrontab(timeSuffix string) error {
-	crontabFileName := "cron_" + timeSuffix
+func (repo CronCmdRepo) delCrontabTmpFile() error {
+	err := os.Remove(repo.tmpCrontabFilename)
+	return err
+}
 
-	_, err := infraHelper.RunCmd(
+func (repo CronCmdRepo) installNewCrontab() error {
+	err := repo.createCrontabTmpFile()
+	if err != nil {
+		return nil
+	}
+
+	var crontabContent string
+
+	for _, currentCrontabContent := range repo.currentCrontab {
+		crontabContent += currentCrontabContent.Schedule.String() + " " +
+			currentCrontabContent.Command.String() + " # " +
+			currentCrontabContent.Comment.String() + "\n"
+	}
+
+	err = infraHelper.UpdateFile(repo.tmpCrontabFilename, crontabContent, true)
+	if err != nil {
+		return err
+	}
+
+	_, err = infraHelper.RunCmd(
 		"crontab",
-		crontabFileName,
+		repo.tmpCrontabFilename,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = os.Remove(crontabFileName)
-	return err
-}
-
-func editCrontab(crontabContent string, cronUnixTimestampStr string, delete bool) error {
-	err := importCurrentCrontab(cronUnixTimestampStr)
-	if err != nil {
-		return err
-	}
-
-	shouldOverwrite := delete
-
-	err = infraHelper.UpdateFile("cron_"+cronUnixTimestampStr, crontabContent+"\n", shouldOverwrite)
-	if err != nil {
-		return err
-	}
-
-	err = installNewCrontab(cronUnixTimestampStr)
-	return err
-}
-
-func removeCronjob(line string, cronUnixTimestampStr string) error {
-	crontabWithoutSpecificLine, err := infraHelper.RunCmd(
-		"bash",
-		"-c",
-		"crontab -l | sed '"+line+"d'",
-	)
-	if err != nil {
-		return err
-	}
-
-	err = editCrontab(crontabWithoutSpecificLine, cronUnixTimestampStr, true)
+	err = repo.delCrontabTmpFile()
 	return err
 }
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
-	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
-	cronLine := addCron.Schedule.String() + " " +
-		addCron.Command.String() + " # " +
-		addCron.Comment.String()
+	newCron := entity.NewCron(
+		valueObject.NewCronIdPanic(len(repo.currentCrontab)+1),
+		addCron.Schedule,
+		addCron.Command,
+		addCron.Comment,
+	)
 
-	err := editCrontab(cronLine, cronUnixTimestampStr, false)
+	repo.currentCrontab = append(repo.currentCrontab, newCron)
+
+	err := repo.installNewCrontab()
 	return err
 }
 
 func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
-	cronQueryRepo := CronQueryRepo{}
+	cronIndex := updateCron.Id.Get() - 1
 
-	cron, err := cronQueryRepo.GetById(updateCron.Id)
-	if err != nil {
-		return err
-	}
-
-	var cronjobSchedule string
-	var cronjobCommand string
-	var cronjobComment string
-
-	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
-
-	cronjobSchedule = cron.Schedule.String()
 	if updateCron.Schedule != nil {
-		cronjobSchedule = updateCron.Schedule.String()
+		repo.currentCrontab[cronIndex].Schedule = *updateCron.Schedule
 	}
 
-	cronjobCommand = cron.Command.String()
 	if updateCron.Command != nil {
-		cronjobCommand = updateCron.Command.String()
+		repo.currentCrontab[cronIndex].Command = *updateCron.Command
 	}
 
-	cronjobComment = cron.Comment.String()
 	if updateCron.Comment != nil {
-		cronjobComment = updateCron.Comment.String()
+		repo.currentCrontab[cronIndex].Comment = updateCron.Comment
 	}
 
-	err = editCrontab(
-		cronjobSchedule+" "+cronjobCommand+" # "+cronjobComment,
-		cronUnixTimestampStr,
-		false,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = removeCronjob(updateCron.Id.String(), cronUnixTimestampStr)
+	err := repo.installNewCrontab()
 	return err
 }
 
 func (repo CronCmdRepo) Delete(cronId valueObject.CronId) error {
-	cronUnixTimestampStr := strconv.FormatInt(time.Now().Unix(), 10)
+	cronIndex := cronId.Get() - 1
 
-	err := removeCronjob(cronId.String(), cronUnixTimestampStr)
+	repo.currentCrontab = append(
+		repo.currentCrontab[:cronIndex],
+		repo.currentCrontab[cronIndex+1:]...,
+	)
+
+	err := repo.installNewCrontab()
 	return err
 }
