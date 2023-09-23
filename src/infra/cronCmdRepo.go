@@ -41,11 +41,6 @@ func (repo CronCmdRepo) createCrontabTmpFile() error {
 	return nil
 }
 
-func (repo CronCmdRepo) delCrontabTmpFile() error {
-	err := os.Remove(repo.tmpCrontabFilename)
-	return err
-}
-
 func (repo CronCmdRepo) installNewCrontab() error {
 	err := repo.createCrontabTmpFile()
 	if err != nil {
@@ -73,7 +68,7 @@ func (repo CronCmdRepo) installNewCrontab() error {
 		return err
 	}
 
-	err = repo.delCrontabTmpFile()
+	err = os.Remove(repo.tmpCrontabFilename)
 	return err
 }
 
