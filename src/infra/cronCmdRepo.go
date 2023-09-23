@@ -48,7 +48,6 @@ func (repo CronCmdRepo) installNewCrontab() error {
 	}
 
 	var crontabContent string
-
 	for _, currentCrontabContent := range repo.currentCrontab {
 		crontabContent += currentCrontabContent.Schedule.String() + " " +
 			currentCrontabContent.Command.String() + " # " +
