@@ -15,12 +15,14 @@ func DeleteCron(
 ) error {
 	_, err := cronQueryRepo.GetById(cronId)
 	if err != nil {
+		log.Printf("CronNotFound: %s", err)
 		return errors.New("CronNotFound")
 	}
 
 	err = cronCmdRepo.Delete(cronId)
 	if err != nil {
-		return errors.New("DeleteCronError")
+		log.Printf("DeleteCronError: %s", err)
+		return errors.New("DeleteCronInfraError")
 	}
 
 	log.Printf("CronId '%v' deleted.", cronId)
