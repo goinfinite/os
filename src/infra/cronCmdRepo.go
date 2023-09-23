@@ -36,7 +36,7 @@ func (repo CronCmdRepo) createCrontabTmpFile() error {
 	if err != nil {
 		return err
 	}
-	_ = tmpCrontabFile.Close()
+	defer tmpCrontabFile.Close()
 
 	return nil
 }
