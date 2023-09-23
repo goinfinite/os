@@ -71,13 +71,18 @@ func (repo CronCmdRepo) installNewCrontab() error {
 		return err
 	}
 
-	err = os.Remove(repo.tmpCrontabFilename)
-	return err
+	return os.Remove(repo.tmpCrontabFilename)
 }
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
+	cronLineIndex := len(repo.currentCrontab) + 1
+	cronId, err := valueObject.NewCronId(cronLineIndex)
+	if err != nil {
+		return err
+	}
+
 	newCron := entity.NewCron(
-		valueObject.NewCronIdPanic(len(repo.currentCrontab)+1),
+		cronId,
 		addCron.Schedule,
 		addCron.Command,
 		addCron.Comment,
@@ -85,8 +90,7 @@ func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 
 	repo.currentCrontab = append(repo.currentCrontab, newCron)
 
-	err := repo.installNewCrontab()
-	return err
+	return repo.installNewCrontab()
 }
 
 func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
