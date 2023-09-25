@@ -91,10 +91,6 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 }
 
 func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error) {
-	var requestedCronjob entity.Cron
-
-	foundCronjob := false
-
 	cronjobs, err := repo.Get()
 	if err != nil {
 		return entity.Cron{}, err
@@ -109,13 +105,8 @@ func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error
 			continue
 		}
 
-		requestedCronjob = cronjob
-		foundCronjob = true
+		return cronjob, nil
 	}
 
-	if !foundCronjob {
-		return entity.Cron{}, errors.New("CronNotFound")
-	}
-
-	return requestedCronjob, nil
+	return entity.Cron{}, errors.New("CronNotFound")
 }
