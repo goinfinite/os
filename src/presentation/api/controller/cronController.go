@@ -126,7 +126,6 @@ func UpdateCronController(c echo.Context) error {
 		cronCmdRepo,
 		updateCronDto,
 	)
-
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
