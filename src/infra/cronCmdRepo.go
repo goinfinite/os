@@ -90,8 +90,8 @@ func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 }
 
 func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
-	cronId := updateCron.Id.Get()
-	cronListIndex := cronId - 1
+	cronToUpdateId := updateCron.Id.Get()
+	cronToUpdateListIndex := cronToUpdateId - 1
 
 	newCronId, err := valueObject.NewCronId(len(repo.currentCrontab) + 1)
 	if err != nil {
@@ -102,17 +102,17 @@ func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 	var newCronCommand valueObject.UnixCommand
 	var newCronComment *valueObject.CronComment
 
-	newCronSchedule = repo.currentCrontab[cronListIndex].Schedule
+	newCronSchedule = repo.currentCrontab[cronToUpdateListIndex].Schedule
 	if updateCron.Schedule != nil {
 		newCronSchedule = *updateCron.Schedule
 	}
 
-	newCronCommand = repo.currentCrontab[cronListIndex].Command
+	newCronCommand = repo.currentCrontab[cronToUpdateListIndex].Command
 	if updateCron.Command != nil {
 		newCronCommand = *updateCron.Command
 	}
 
-	newCronComment = repo.currentCrontab[cronListIndex].Comment
+	newCronComment = repo.currentCrontab[cronToUpdateListIndex].Comment
 	if updateCron.Comment != nil {
 		newCronComment = updateCron.Comment
 	}
@@ -124,7 +124,7 @@ func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 		newCronComment,
 	)
 
-	repo.currentCrontab[cronListIndex] = newCron
+	repo.currentCrontab[cronToUpdateListIndex] = newCron
 
 	return repo.installNewCrontab()
 }
