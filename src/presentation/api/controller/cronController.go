@@ -76,7 +76,7 @@ func AddCronController(c echo.Context) error {
 
 // UpdateCron godoc
 // @Summary      UpdateCron
-// @Description  Update an cron.
+// @Description  Update a cron.
 // @Tags         cron
 // @Accept       json
 // @Produce      json
@@ -135,7 +135,7 @@ func UpdateCronController(c echo.Context) error {
 
 // DeleteCron	 godoc
 // @Summary      DeleteCron
-// @Description  Delete an cron.
+// @Description  Delete a cron.
 // @Tags         cron
 // @Accept       json
 // @Produce      json
