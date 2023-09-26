@@ -22,3 +22,13 @@ func NewCron(
 		Comment:  comment,
 	}
 }
+
+func (cron Cron) String() string {
+	cronLineStr := cron.Schedule.String() + " " + cron.Command.String()
+
+	if cron.Comment != nil {
+		cronLineStr += " # " + cron.Comment.String() + "\n"
+	}
+
+	return cronLineStr
+}
