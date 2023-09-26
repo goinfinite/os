@@ -41,12 +41,6 @@ func (repo CronCmdRepo) createCrontabTmpFile() error {
 	return nil
 }
 
-func fromCronEntityToCronStr(cron entity.Cron) string {
-	return cron.Schedule.String() + " " +
-		cron.Command.String() + " # " +
-		cron.Comment.String() + "\n"
-}
-
 func (repo CronCmdRepo) installNewCrontab() error {
 	err := repo.createCrontabTmpFile()
 	if err != nil {
@@ -55,7 +49,7 @@ func (repo CronCmdRepo) installNewCrontab() error {
 
 	var crontabContent string
 	for _, currentCrontabContent := range repo.currentCrontab {
-		crontabContent += fromCronEntityToCronStr(currentCrontabContent)
+		crontabContent += currentCrontabContent.String()
 	}
 
 	err = infraHelper.UpdateFile(repo.tmpCrontabFilename, crontabContent, true)
