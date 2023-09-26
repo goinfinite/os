@@ -69,8 +69,10 @@ func (repo CronCmdRepo) installNewCrontab() error {
 }
 
 func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
-	cronLineIndex := len(repo.currentCrontab) + 1
-	cronId, err := valueObject.NewCronId(cronLineIndex)
+	cronsCount := len(repo.currentCrontab)
+	newCronIndex := cronsCount + 1
+
+	cronId, err := valueObject.NewCronId(newCronIndex)
 	if err != nil {
 		return err
 	}
