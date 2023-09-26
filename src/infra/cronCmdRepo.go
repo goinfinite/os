@@ -93,7 +93,9 @@ func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 	cronToUpdateId := updateCron.Id.Get()
 	cronToUpdateListIndex := cronToUpdateId - 1
 
-	newCronId, err := valueObject.NewCronId(len(repo.currentCrontab) + 1)
+	cronsCount := len(repo.currentCrontab)
+	updatedCronId := cronsCount + 1
+	newCronId, err := valueObject.NewCronId(updatedCronId)
 	if err != nil {
 		return err
 	}
