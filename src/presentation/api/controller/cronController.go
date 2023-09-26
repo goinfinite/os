@@ -13,7 +13,7 @@ import (
 
 // GetCrons	 godoc
 // @Summary      GetCrons
-// @Description  List Crons.
+// @Description  List crons.
 // @Tags         cron
 // @Accept       json
 // @Produce      json
