@@ -68,7 +68,7 @@ func AddCronController(c echo.Context) error {
 		addCronDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "CronCreated")
@@ -127,7 +127,7 @@ func UpdateCronController(c echo.Context) error {
 		updateCronDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "CronUpdated")
@@ -158,7 +158,7 @@ func DeleteCronController(c echo.Context) error {
 		cronId,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "CronDeleted")
