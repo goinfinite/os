@@ -48,8 +48,8 @@ func (repo CronCmdRepo) installNewCrontab() error {
 	}
 
 	var crontabContent string
-	for _, currentCrontabContent := range repo.currentCrontab {
-		crontabContent += currentCrontabContent.String()
+	for _, cron := range repo.currentCrontab {
+		crontabContent += cron.String()
 	}
 
 	err = infraHelper.UpdateFile(repo.tmpCrontabFilename, crontabContent, true)
