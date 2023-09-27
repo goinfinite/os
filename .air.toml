@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
 bin = "bin/sam"
-cmd = "go build -o ./bin/sam ./sam.go"
+cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sam ./sam.go"
 delay = 1000
 exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
 follow_symlink = false

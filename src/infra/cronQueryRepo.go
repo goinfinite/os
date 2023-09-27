@@ -80,7 +80,8 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 		if strings.HasPrefix(cronLine, "#") {
 			continue
 		}
-		cron, err := repo.cronFactory(cronIndex, cronLine)
+		cronLineIndex := cronIndex + 1
+		cron, err := repo.cronFactory(cronLineIndex, cronLine)
 		if err != nil {
 			continue
 		}
@@ -88,4 +89,25 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 	}
 
 	return crons, nil
+}
+
+func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error) {
+	cronjobs, err := repo.Get()
+	if err != nil {
+		return entity.Cron{}, err
+	}
+
+	if len(cronjobs) < 1 {
+		return entity.Cron{}, errors.New("CronNotFound")
+	}
+
+	for _, cronjob := range cronjobs {
+		if cronjob.Id.String() != cronId.String() {
+			continue
+		}
+
+		return cronjob, nil
+	}
+
+	return entity.Cron{}, errors.New("CronNotFound")
 }
