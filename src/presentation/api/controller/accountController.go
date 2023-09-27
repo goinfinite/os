@@ -60,7 +60,7 @@ func AddAccountController(c echo.Context) error {
 		addAccountDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "AccountCreated")
@@ -88,7 +88,7 @@ func DeleteAccountController(c echo.Context) error {
 		accountId,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "AccountDeleted")
@@ -154,7 +154,7 @@ func UpdateAccountController(c echo.Context) error {
 			updateAccountDto,
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 		}
 
 		return apiHelper.ResponseWrapper(c, http.StatusOK, newKey)
