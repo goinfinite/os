@@ -90,15 +90,8 @@ func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
 }
 
 func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
-	cronToUpdateId := updateCron.Id.Get()
-	cronToUpdateListIndex := cronToUpdateId - 1
-
-	cronsCount := len(repo.currentCrontab)
-	updatedCronId := cronsCount + 1
-	newCronId, err := valueObject.NewCronId(updatedCronId)
-	if err != nil {
-		return err
-	}
+	cronToUpdateId := updateCron.Id
+	cronToUpdateListIndex := cronToUpdateId.Get() - 1
 
 	var newCronSchedule valueObject.CronSchedule
 	var newCronCommand valueObject.UnixCommand
@@ -120,7 +113,7 @@ func (repo CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 	}
 
 	newCron := entity.NewCron(
-		newCronId,
+		cronToUpdateId,
 		newCronSchedule,
 		newCronCommand,
 		newCronComment,
