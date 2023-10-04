@@ -20,8 +20,9 @@ func NewSslQueryRepo() *SslQueryRepo {
 	}
 }
 
-func (repo SslQueryRepo) sslFactory(
+func (repo SslQueryRepo) SslFactory(
 	sslId int,
+	sslHostname string,
 	sslPrivateKey string,
 	sslCertContent string,
 ) (entity.Ssl, error) {
@@ -55,12 +56,12 @@ func (repo SslQueryRepo) sslFactory(
 		chainCertificates = append(chainCertificates, chainCertificate)
 	}
 
-	certInfo, _ := certificate.GetCertInfo()
-	certCname := certInfo.Subject.CommonName
-	hostname, err := valueObject.NewFqdn(certCname)
+	hostname, err := valueObject.NewVirtualHost(sslHostname)
 	if err != nil {
 		return ssl, errors.New("SslHostnameError")
 	}
+
+	certInfo, _ := certificate.GetCertInfo()
 
 	certIssuedAtUnix := certInfo.NotBefore.Unix()
 	issuedAt := valueObject.UnixTime(certIssuedAtUnix)
@@ -91,7 +92,8 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
 
 	for httpdVhostConfigIndex, httpdVhostConfigStr := range httpdVhostsConfigSlice {
-		httpdVhostConfigGroups := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, "(?:configFile\\s*)(?P<configFile>.*)")
+		httpdVhostConfigGroups := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, "(?:virtualhost )(?P<virtualHost>.*) {\n\\s*vhRoot\\s*.*\n\\s*(?:configFile\\s*)(?P<configFile>.*)")
+		httpdVhostConfigVirtualHost := httpdVhostConfigGroups["virtualHost"]
 		httpdVhostConfigFilePath := httpdVhostConfigGroups["configFile"]
 
 		vhostConfigOutput, err := infraHelper.RunCmd(
@@ -114,7 +116,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 		}
 
 		sslId := httpdVhostConfigIndex + 1
-		ssl, err := repo.sslFactory(sslId, privateKeyOutput, certFileOutput)
+		ssl, err := repo.SslFactory(sslId, httpdVhostConfigVirtualHost, privateKeyOutput, certFileOutput)
 		if err != nil {
 			return []entity.Ssl{}, err
 		}
