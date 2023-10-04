@@ -73,6 +73,7 @@ func servicesRoutes(baseRoute *echo.Group) {
 func sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
 	sslGroup.GET("/", apiController.GetSslsController)
+	sslGroup.POST("/", apiController.AddSslController)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {
