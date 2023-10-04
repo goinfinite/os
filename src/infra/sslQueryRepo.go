@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -91,7 +92,12 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 		"sed", "-n", "/virtualhost/, /}/p", repo.olsHttpdConfigPath,
 	)
 	if err != nil {
-		return []HttpdVhostConfig{}, err
+		matchErr, _ := regexp.MatchString("No such file or directory", err.Error())
+		if !matchErr {
+			return []HttpdVhostConfig{}, err
+		}
+
+		return []HttpdVhostConfig{}, errors.New("HttpdVhostsConfigEmpty")
 	}
 
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
@@ -127,10 +133,10 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 		}
 
 		if len(vhostConfigOutput) < 1 {
-			return []entity.Ssl{}, nil
+			return []entity.Ssl{}, errors.New("VhostConfigEmpty")
 		}
 
-		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*(?:CACertFile\\s*(?P<CACertFile>.*))")
+		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*)?(?:(?:CACertFile\\s*(?P<CACertFile>.*))?)")
 		privateKeyOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["keyFile"])
 		if err != nil {
 			return []entity.Ssl{}, err
