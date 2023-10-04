@@ -158,3 +158,24 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 
 	return ssls, nil
 }
+
+func (repo SslQueryRepo) GetById(sslId valueObject.SslId) (entity.Ssl, error) {
+	ssls, err := repo.Get()
+	if err != nil {
+		return entity.Ssl{}, err
+	}
+
+	if len(ssls) < 1 {
+		return entity.Ssl{}, errors.New("SslNotFound")
+	}
+
+	for _, ssl := range ssls {
+		if ssl.Id.String() != sslId.String() {
+			continue
+		}
+
+		return ssl, nil
+	}
+
+	return entity.Ssl{}, errors.New("SslNotFound")
+}
