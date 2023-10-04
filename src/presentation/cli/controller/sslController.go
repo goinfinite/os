@@ -1,7 +1,11 @@
 package cliController
 
 import (
+	"strings"
+
+	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/useCase"
+	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
 	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
@@ -22,5 +26,45 @@ func GetSslsController() *cobra.Command {
 		},
 	}
 
+	return cmd
+}
+
+func AddSslControler() *cobra.Command {
+	var hostnameStr string
+	var certificateStr string
+	var keyStr string
+	cmd := &cobra.Command{
+		Use:   "add",
+		Short: "AddNewSSl",
+		Run: func(cmd *cobra.Command, args []string) {
+			parsedCertificateStr := strings.Replace(certificateStr, "\\n", "\n", -1)
+			parsedKeyStr := strings.Replace(keyStr, "\\n", "\n", -1)
+
+			addSslDto := dto.NewAddSsl(
+				valueObject.NewVirtualHostPanic(hostnameStr),
+				valueObject.NewSslCertificatePanic(parsedCertificateStr),
+				valueObject.NewSslPrivateKeyPanic(parsedKeyStr),
+			)
+
+			sslCmdRepo := infra.SslCmdRepo{}
+
+			err := useCase.AddSsl(
+				sslCmdRepo,
+				addSslDto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "SslAdded")
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "virtualHostname", "v", "", "Virtual Hostname")
+	cmd.MarkFlagRequired("virtualHostname")
+	cmd.Flags().StringVarP(&certificateStr, "certificate", "c", "", "Certificate")
+	cmd.MarkFlagRequired("certificate")
+	cmd.Flags().StringVarP(&keyStr, "key", "k", "", "Key")
+	cmd.MarkFlagRequired("key")
 	return cmd
 }
