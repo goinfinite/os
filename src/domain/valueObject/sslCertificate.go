@@ -25,16 +25,25 @@ func NewSslCertificatePanic(value string) SslCertificate {
 }
 
 func (sslCertificate SslCertificate) isValid() bool {
-	block, _ := pem.Decode([]byte(sslCertificate))
-	if block == nil {
-		return false
-	}
-	_, err := x509.ParseCertificate(block.Bytes)
+	_, err := sslCertificate.GetCertInfo()
 	if err != nil {
 		return false
 	}
 
 	return true
+}
+
+func (sslCertificate SslCertificate) GetCertInfo() (*x509.Certificate, error) {
+	block, _ := pem.Decode([]byte(sslCertificate))
+	if block == nil {
+		return nil, errors.New("PemDecodeError")
+	}
+	parsedCert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedCert, nil
 }
 
 func (sslCertificate SslCertificate) String() string {
