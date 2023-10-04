@@ -70,6 +70,11 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
 }
 
+func sslRoutes(baseRoute *echo.Group) {
+	sslGroup := baseRoute.Group("/ssl")
+	sslGroup.GET("/", apiController.GetSslsController)
+}
+
 func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
@@ -78,4 +83,5 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	runtimeRoutes(baseRoute)
 	accountRoutes(baseRoute)
 	servicesRoutes(baseRoute)
+	sslRoutes(baseRoute)
 }
