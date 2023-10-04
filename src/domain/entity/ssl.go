@@ -4,7 +4,7 @@ import "github.com/speedianet/sam/src/domain/valueObject"
 
 type Ssl struct {
 	Id                valueObject.SslId            `json:"id"`
-	Hostname          valueObject.Fqdn             `json:"hostname"`
+	Hostname          valueObject.VirtualHost      `json:"hostname"`
 	IssuedAt          *valueObject.UnixTime        `json:"issuedAt,omitempty"`
 	ExpireAt          *valueObject.UnixTime        `json:"expireAt,omitempty"`
 	Certificate       valueObject.SslCertificate   `json:"certificate"`
@@ -14,7 +14,7 @@ type Ssl struct {
 
 func NewSsl(
 	id valueObject.SslId,
-	hostname valueObject.Fqdn,
+	hostname valueObject.VirtualHost,
 	issuedAt *valueObject.UnixTime,
 	expireAt *valueObject.UnixTime,
 	certificate valueObject.SslCertificate,
