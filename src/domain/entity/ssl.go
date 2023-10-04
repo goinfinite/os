@@ -3,13 +3,13 @@ package entity
 import "github.com/speedianet/sam/src/domain/valueObject"
 
 type Ssl struct {
-	Id               valueObject.SslId            `json:"id"`
-	Hostname         valueObject.Fqdn             `json:"hostname"`
-	IssuedAt         *valueObject.UnixTime        `json:"issuedAt,omitempty"`
-	ExpireAt         *valueObject.UnixTime        `json:"expireAt,omitempty"`
-	Certificate      valueObject.SslCertificate   `json:"certificate"`
-	Key              valueObject.SslPrivateKey    `json:"key"`
-	RootCertificates []valueObject.SslCertificate `json:"rootCertificates"`
+	Id                valueObject.SslId            `json:"id"`
+	Hostname          valueObject.Fqdn             `json:"hostname"`
+	IssuedAt          *valueObject.UnixTime        `json:"issuedAt,omitempty"`
+	ExpireAt          *valueObject.UnixTime        `json:"expireAt,omitempty"`
+	Certificate       valueObject.SslCertificate   `json:"certificate"`
+	Key               valueObject.SslPrivateKey    `json:"key"`
+	ChainCertificates []valueObject.SslCertificate `json:"chainCertificates"`
 }
 
 func NewSsl(
@@ -19,15 +19,15 @@ func NewSsl(
 	expireAt *valueObject.UnixTime,
 	certificate valueObject.SslCertificate,
 	key valueObject.SslPrivateKey,
-	rootCertificates []valueObject.SslCertificate,
+	chainCertificates []valueObject.SslCertificate,
 ) Ssl {
 	return Ssl{
-		Id:               id,
-		Hostname:         hostname,
-		IssuedAt:         issuedAt,
-		ExpireAt:         expireAt,
-		Certificate:      certificate,
-		Key:              key,
-		RootCertificates: rootCertificates,
+		Id:                id,
+		Hostname:          hostname,
+		IssuedAt:          issuedAt,
+		ExpireAt:          expireAt,
+		Certificate:       certificate,
+		Key:               key,
+		ChainCertificates: chainCertificates,
 	}
 }
