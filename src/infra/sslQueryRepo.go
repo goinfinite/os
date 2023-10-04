@@ -104,6 +104,10 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 			return []entity.Ssl{}, err
 		}
 
+		if len(vhostConfigOutput) < 1 {
+			return []entity.Ssl{}, nil
+		}
+
 		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*(?:CACertFile\\s*(?P<CACertFile>.*))")
 		privateKeyOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["keyFile"])
 		if err != nil {
