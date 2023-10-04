@@ -14,6 +14,11 @@ type SslQueryRepo struct {
 	olsHttpdConfigPath string
 }
 
+type HttpdVhostConfig struct {
+	VirtualHost string
+	FilePath    string
+}
+
 func NewSslQueryRepo() *SslQueryRepo {
 	return &SslQueryRepo{
 		olsHttpdConfigPath: "/usr/local/lsws/conf/httpd_config.conf",
@@ -80,24 +85,41 @@ func (repo SslQueryRepo) SslFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
-	var ssls []entity.Ssl
+func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
+	var httpdVhostsConfig []HttpdVhostConfig
 	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
 		"sed", "-n", "/virtualhost/, /}/p", repo.olsHttpdConfigPath,
 	)
 	if err != nil {
-		return []entity.Ssl{}, err
+		return []HttpdVhostConfig{}, err
 	}
 
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
 
-	for httpdVhostConfigIndex, httpdVhostConfigStr := range httpdVhostsConfigSlice {
+	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
 		httpdVhostConfigGroups := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, "(?:virtualhost )(?P<virtualHost>.*) {\n\\s*vhRoot\\s*.*\n\\s*(?:configFile\\s*)(?P<configFile>.*)")
 		httpdVhostConfigVirtualHost := httpdVhostConfigGroups["virtualHost"]
 		httpdVhostConfigFilePath := httpdVhostConfigGroups["configFile"]
 
+		httpdVhostsConfig = append(httpdVhostsConfig, HttpdVhostConfig{
+			VirtualHost: httpdVhostConfigVirtualHost,
+			FilePath:    httpdVhostConfigFilePath,
+		})
+	}
+
+	return httpdVhostsConfig, nil
+}
+
+func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
+	var ssls []entity.Ssl
+	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
+	if err != nil {
+		return []entity.Ssl{}, err
+	}
+
+	for httpdVhostConfigIndex, httpdVhostConfig := range httpdVhostsConfig {
 		vhostConfigOutput, err := infraHelper.RunCmd(
-			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfigFilePath,
+			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfig.FilePath,
 		)
 		if err != nil {
 			log.Print(err)
@@ -120,7 +142,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 		}
 
 		sslId := httpdVhostConfigIndex + 1
-		ssl, err := repo.SslFactory(sslId, httpdVhostConfigVirtualHost, privateKeyOutput, certFileOutput)
+		ssl, err := repo.SslFactory(sslId, httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
 		if err != nil {
 			return []entity.Ssl{}, err
 		}
