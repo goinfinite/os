@@ -33,8 +33,8 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 	}
 
 	sslCertDirPath := "/speedia/pki/" + addSsl.Hostname.String()
-	sslCertFilePath := sslCertDirPath + "/ssl_crt.pem"
-	sslPrivateKeyFilePath := sslCertDirPath + "/ssl_key.pem"
+	sslCertFilePath := sslCertDirPath + "/ssl.crt"
+	sslPrivateKeyFilePath := sslCertDirPath + "/ssl.key"
 
 	err = infraHelper.MakeDir(sslCertDirPath)
 	if err != nil {
