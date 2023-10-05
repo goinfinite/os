@@ -52,7 +52,7 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 	}
 
 	newSsl, err := sslQueryRepo.SslFactory(
-		int(sslId.Get()),
+		uint64(sslId.Get()),
 		addSsl.Hostname.String(),
 		addSsl.Key.String(),
 		addSsl.Certificate.String(),
