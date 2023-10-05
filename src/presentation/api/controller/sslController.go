@@ -64,3 +64,31 @@ func AddSslController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslCreated")
 }
+
+// DeleteSsl	 godoc
+// @Summary      DeleteSsl
+// @Description  Delete a ssl.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        sslId 	  path   string  true  "SslId"
+// @Success      200 {object} object{} "SslDeleted"
+// @Router       /ssl/{sslId}/ [delete]
+func DeleteSslController(c echo.Context) error {
+	sslId := valueObject.NewSslIdPanic(c.Param("sslId"))
+
+	sslQueryRepo := infra.NewSslQueryRepo()
+	sslCmdRepo := infra.SslCmdRepo{}
+
+	err := useCase.DeleteSsl(
+		sslQueryRepo,
+		sslCmdRepo,
+		sslId,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslDeleted")
+}

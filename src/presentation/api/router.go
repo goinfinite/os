@@ -74,6 +74,7 @@ func sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
 	sslGroup.GET("/", apiController.GetSslsController)
 	sslGroup.POST("/", apiController.AddSslController)
+	sslGroup.DELETE("/:sslId/", apiController.DeleteSslController)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {
