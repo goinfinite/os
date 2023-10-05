@@ -2,7 +2,6 @@ package infra
 
 import (
 	"errors"
-	"log"
 	"regexp"
 	"strings"
 
@@ -18,6 +17,11 @@ type SslQueryRepo struct {
 type HttpdVhostConfig struct {
 	VirtualHost string
 	FilePath    string
+}
+
+type VhostConfig struct {
+	FilePath    string
+	FileContent string
 }
 
 func NewSslQueryRepo() *SslQueryRepo {
@@ -117,6 +121,34 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 	return httpdVhostsConfig, nil
 }
 
+func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
+	vhostConfigFilePath := ""
+	vhostConfigFileContent := ""
+
+	httpdVhostsConfigs, err := repo.GetHttpdVhostsConfig()
+	if err != nil {
+		return VhostConfig{}, err
+	}
+
+	for _, httpdVhostConfig := range httpdVhostsConfigs {
+		if vhost != httpdVhostConfig.VirtualHost {
+			continue
+		}
+
+		vhostConfigFilePath = httpdVhostConfig.FilePath
+		vhostConfigFileContent, err = infraHelper.RunCmd("cat", vhostConfigFilePath)
+		if err != nil {
+			return VhostConfig{}, err
+		}
+		break
+	}
+
+	return VhostConfig{
+		FilePath:    vhostConfigFilePath,
+		FileContent: vhostConfigFileContent,
+	}, nil
+}
+
 func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 	var ssls []entity.Ssl
 	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
@@ -129,7 +161,6 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfig.FilePath,
 		)
 		if err != nil {
-			log.Print(err)
 			return []entity.Ssl{}, err
 		}
 
