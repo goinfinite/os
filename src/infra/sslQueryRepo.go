@@ -27,20 +27,21 @@ func NewSslQueryRepo() *SslQueryRepo {
 }
 
 func (repo SslQueryRepo) SslFactory(
-	sslId int,
+	sslId uint64,
 	sslHostname string,
 	sslPrivateKey string,
 	sslCertContent string,
 ) (entity.Ssl, error) {
 	var ssl entity.Ssl
+
 	id, err := valueObject.NewSslId(sslId)
 	if err != nil {
-		return ssl, errors.New("SslIdError")
+		return ssl, err
 	}
 
 	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKey)
 	if err != nil {
-		return ssl, errors.New("SslPrivateKeyError")
+		return ssl, err
 	}
 
 	var certificate valueObject.SslCertificate
@@ -147,7 +148,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 			return []entity.Ssl{}, err
 		}
 
-		sslId := httpdVhostConfigIndex + 1
+		sslId := uint64(httpdVhostConfigIndex + 1)
 		ssl, err := repo.SslFactory(sslId, httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
 		if err != nil {
 			return []entity.Ssl{}, err
