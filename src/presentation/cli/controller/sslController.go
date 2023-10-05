@@ -68,3 +68,33 @@ func AddSslControler() *cobra.Command {
 	cmd.MarkFlagRequired("key")
 	return cmd
 }
+
+func DeleteSslController() *cobra.Command {
+	var sslIdStr string
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteSsl",
+		Run: func(cmd *cobra.Command, args []string) {
+			sslId := valueObject.NewSslIdPanic(sslIdStr)
+
+			cronQueryRepo := infra.NewSslQueryRepo()
+			cronCmdRepo := infra.SslCmdRepo{}
+
+			err := useCase.DeleteSsl(
+				cronQueryRepo,
+				cronCmdRepo,
+				sslId,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "SslDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&sslIdStr, "id", "i", "", "SslId")
+	cmd.MarkFlagRequired("id")
+	return cmd
+}
