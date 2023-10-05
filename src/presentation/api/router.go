@@ -62,6 +62,7 @@ func accountRoutes(baseRoute *echo.Group) {
 	accountGroup.GET("/", apiController.GetAccountsController)
 	accountGroup.POST("/", apiController.AddAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
+	accountGroup.PUT("/:accountId/", apiController.DeleteAccountController)
 }
 
 func servicesRoutes(baseRoute *echo.Group) {
