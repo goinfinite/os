@@ -2,14 +2,12 @@ package infraHelper
 
 import (
 	"os"
-	"regexp"
 )
 
 func MakeDir(dirPath string) error {
 	_, err := os.Stat(dirPath)
 	if err != nil {
-		matchErr, _ := regexp.MatchString("no such file or directory", err.Error())
-		if !matchErr {
+		if !os.IsNotExist(err) {
 			return err
 		}
 	}
