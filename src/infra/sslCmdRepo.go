@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"os"
 	"regexp"
 	"strconv"
 
@@ -82,7 +83,7 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 
 		err = infraHelper.UpdateFile(
 			httpdVhostConfig.FilePath,
-			"\nvhssl {\n\tkeyFile\t"+sslPrivateKeyFilePath+"\n\tcertFile\t"+sslCertFilePath+"\n\tcertChain\t"+strconv.Itoa(isChainedCert)+caCertPath+caCertFile+"\n}",
+			"\n\nvhssl {\n\tkeyFile\t"+sslPrivateKeyFilePath+"\n\tcertFile\t"+sslCertFilePath+"\n\tcertChain\t"+strconv.Itoa(isChainedCert)+caCertPath+caCertFile+"\n}",
 			false,
 		)
 		if err != nil {
@@ -91,5 +92,51 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 		break
 	}
 
+	return nil
+}
+
+func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
+	sslQueryRepo := NewSslQueryRepo()
+
+	sslToDelete, err := sslQueryRepo.GetById(sslId)
+	if err != nil {
+		return errors.New("SslNotFound")
+	}
+
+	httpdVhostsConfig, err := sslQueryRepo.GetHttpdVhostsConfig()
+	if err != nil {
+		matchErr, _ := regexp.MatchString("^(HttpdVhostsConfigEmpty|VhostConfigEmpty)$", err.Error())
+		if !matchErr {
+			return err
+		}
+
+		return errors.New("HttpdVhostsConfigEmpty")
+	}
+
+	sslCertDirPath := "/speedia/certs/" + sslToDelete.Hostname.String()
+	err = os.RemoveAll(sslCertDirPath)
+	if err != nil {
+		return err
+	}
+
+	for _, httpdVhostConfig := range httpdVhostsConfig {
+		if httpdVhostConfig.VirtualHost != sslToDelete.Hostname.String() {
+			continue
+		}
+
+		vhostConfigOutput, err := infraHelper.RunCmd(
+			"cat",
+			httpdVhostConfig.FilePath,
+		)
+
+		matchVhostConfigVhssl := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
+		vhostConfigWithoutVhssl := matchVhostConfigVhssl.ReplaceAllString(vhostConfigOutput, "")
+
+		err = infraHelper.UpdateFile(httpdVhostConfig.FilePath, vhostConfigWithoutVhssl, true)
+		if err != nil {
+			return err
+		}
+		break
+	}
 	return nil
 }
