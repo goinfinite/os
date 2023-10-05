@@ -17,9 +17,9 @@ func NewSslPrivateKey(value string) (SslPrivateKey, error) {
 }
 
 func NewSslPrivateKeyPanic(value string) SslPrivateKey {
-	sslPrivateKey := SslPrivateKey(value)
-	if !sslPrivateKey.isValid() {
-		panic("InvalidSslPrivateKey")
+	sslPrivateKey, err := NewSslPrivateKey(value)
+	if err != nil {
+		panic(err)
 	}
 	return sslPrivateKey
 }
