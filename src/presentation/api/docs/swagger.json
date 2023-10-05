@@ -200,6 +200,148 @@
                 }
             }
         },
+        "/cron/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List Crons.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "GetCrons",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Cron"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "UpdateCron",
+                "parameters": [
+                    {
+                        "description": "UpdateCron",
+                        "name": "updateCronDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCron"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CronUpdated message",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "AddNewCron",
+                "parameters": [
+                    {
+                        "description": "NewCron",
+                        "name": "addCronDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddCron"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "CronCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/cron/{cronId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete an cron.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cron"
+                ],
+                "summary": "DeleteCron",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CronId",
+                        "name": "cronId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CronDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/database/{dbType}/": {
             "get": {
                 "security": [
@@ -642,6 +784,20 @@
                 }
             }
         },
+        "dto.AddCron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddDatabase": {
             "type": "object",
             "properties": {
@@ -692,6 +848,23 @@
                 },
                 "shouldUpdateApiKey": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.UpdateCron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "type": "string"
                 }
             }
         },
@@ -756,6 +929,23 @@
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Cron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "schedule": {
                     "type": "string"
                 }
             }

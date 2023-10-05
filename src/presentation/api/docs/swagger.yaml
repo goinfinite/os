@@ -7,6 +7,15 @@ definitions:
       username:
         type: string
     type: object
+  dto.AddCron:
+    properties:
+      command:
+        type: string
+      comment:
+        type: string
+      schedule:
+        type: string
+    type: object
   dto.AddDatabase:
     properties:
       dbName:
@@ -40,6 +49,17 @@ definitions:
         type: string
       shouldUpdateApiKey:
         type: boolean
+    type: object
+  dto.UpdateCron:
+    properties:
+      command:
+        type: string
+      comment:
+        type: string
+      id:
+        type: integer
+      schedule:
+        type: string
     type: object
   dto.UpdatePhpConfigs:
     properties:
@@ -81,6 +101,17 @@ definitions:
       id:
         type: integer
       username:
+        type: string
+    type: object
+  entity.Cron:
+    properties:
+      command:
+        type: string
+      comment:
+        type: string
+      id:
+        type: integer
+      schedule:
         type: string
     type: object
   entity.Database:
@@ -371,6 +402,94 @@ paths:
       summary: GenerateJwtWithCredentials
       tags:
       - auth
+  /cron/:
+    get:
+      consumes:
+      - application/json
+      description: List Crons.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Cron'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetCrons
+      tags:
+      - cron
+    post:
+      consumes:
+      - application/json
+      description: Add a new cron.
+      parameters:
+      - description: NewCron
+        in: body
+        name: addCronDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddCron'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: CronCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewCron
+      tags:
+      - cron
+    put:
+      consumes:
+      - application/json
+      description: Update an cron.
+      parameters:
+      - description: UpdateCron
+        in: body
+        name: updateCronDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCron'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: CronUpdated message
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateCron
+      tags:
+      - cron
+  /cron/{cronId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an cron.
+      parameters:
+      - description: CronId
+        in: path
+        name: cronId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: CronDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteCron
+      tags:
+      - cron
   /database/{dbType}/:
     get:
       consumes:

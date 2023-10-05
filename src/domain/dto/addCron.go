@@ -1,34 +1,21 @@
-package entity
+package dto
 
 import "github.com/speedianet/sam/src/domain/valueObject"
 
-type Cron struct {
-	Id       valueObject.CronId       `json:"id"`
+type AddCron struct {
 	Schedule valueObject.CronSchedule `json:"schedule"`
 	Command  valueObject.UnixCommand  `json:"command"`
 	Comment  *valueObject.CronComment `json:"comment,omitempty"`
 }
 
-func NewCron(
-	id valueObject.CronId,
+func NewAddCron(
 	schedule valueObject.CronSchedule,
 	command valueObject.UnixCommand,
 	comment *valueObject.CronComment,
-) Cron {
-	return Cron{
-		Id:       id,
+) AddCron {
+	return AddCron{
 		Schedule: schedule,
 		Command:  command,
 		Comment:  comment,
 	}
-}
-
-func (cron Cron) String() string {
-	cronLineStr := cron.Schedule.String() + " " + cron.Command.String()
-
-	if cron.Comment != nil {
-		cronLineStr += " # " + cron.Comment.String() + "\n"
-	}
-
-	return cronLineStr
 }
