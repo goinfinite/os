@@ -3,7 +3,6 @@ package useCase
 import (
 	"errors"
 	"log"
-	"strings"
 
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/repository"
@@ -19,9 +18,9 @@ func AddSsl(
 		return errors.New("AddSslInfraError")
 	}
 
-	sslCertShortVersion := addSsl.Certificate.String()[:75]
-	parsedSslCertShortVersion := strings.Replace(sslCertShortVersion, "\n", "\\n", -1)
-	log.Printf("SSL '%v' added to '%v' virtual host.", parsedSslCertShortVersion, addSsl.Hostname.String())
+	sslCert, _ := addSsl.Certificate.GetCertInfo()
+	sslCertCname := sslCert.Subject.CommonName
+	log.Printf("SSL added to '%v' cname in '%v' virtual host.", sslCertCname, addSsl.Hostname.String())
 
 	return nil
 }
