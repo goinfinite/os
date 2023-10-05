@@ -32,7 +32,7 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 		return err
 	}
 
-	sslCertDirPath := "/speedia/certs/" + addSsl.Hostname.String()
+	sslCertDirPath := "/speedia/pki/" + addSsl.Hostname.String()
 	sslCertFilePath := sslCertDirPath + "/ssl_crt.pem"
 	sslPrivateKeyFilePath := sslCertDirPath + "/ssl_key.pem"
 
@@ -113,7 +113,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("HttpdVhostsConfigEmpty")
 	}
 
-	sslCertDirPath := "/speedia/certs/" + sslToDelete.Hostname.String()
+	sslCertDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
 	err = os.RemoveAll(sslCertDirPath)
 	if err != nil {
 		return err
