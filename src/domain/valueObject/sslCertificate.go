@@ -17,9 +17,9 @@ func NewSslCertificate(value string) (SslCertificate, error) {
 }
 
 func NewSslCertificatePanic(value string) SslCertificate {
-	sslCertificate := SslCertificate(value)
-	if !sslCertificate.isValid() {
-		panic("InvalidSslCertificate")
+	sslCertificate, err := NewSslCertificate(value)
+	if err != nil {
+		panic(err)
 	}
 	return sslCertificate
 }
