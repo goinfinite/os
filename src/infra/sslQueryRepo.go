@@ -30,61 +30,68 @@ func NewSslQueryRepo() *SslQueryRepo {
 	}
 }
 
+func (repo SslQueryRepo) splitSslCertificate(
+	sslCertContent string,
+) ([]entity.SslPair, error) {
+	certificates := []entity.SslPair{}
+
+	sslCertContentSlice := strings.SplitAfter(sslCertContent, "-----END CERTIFICATE-----\n")
+	for _, sslCertContentStr := range sslCertContentSlice {
+		certificate, err := entity.NewSslPair(sslCertContentStr)
+		if err != nil {
+			return certificates, errors.New("SslCertificateError")
+		}
+		certificates = append(certificates, certificate)
+	}
+
+	return certificates, nil
+}
+
 func (repo SslQueryRepo) SslFactory(
-	sslId uint64,
 	sslHostname string,
 	sslPrivateKey string,
 	sslCertContent string,
 ) (entity.Ssl, error) {
 	var ssl entity.Ssl
 
-	id, err := valueObject.NewSslId(sslId)
-	if err != nil {
-		return ssl, err
-	}
-
-	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKey)
-	if err != nil {
-		return ssl, err
-	}
-
-	var certificate valueObject.SslCertificate
-	var chainCertificates []valueObject.SslCertificate
-	sslCertContentSlice := strings.SplitAfter(sslCertContent, "-----END CERTIFICATE-----\n")
-	for sslCertContentIndex, sslCertContentStr := range sslCertContentSlice {
-		if sslCertContentIndex == 0 {
-			certificate, err = valueObject.NewSslCertificate(sslCertContentStr)
-			if err != nil {
-				return ssl, errors.New("SslCertificateError")
-			}
-			continue
-		}
-
-		chainCertificate, err := valueObject.NewSslCertificate(sslCertContentStr)
-		if err != nil {
-			return ssl, errors.New("SslCertificateError")
-		}
-		chainCertificates = append(chainCertificates, chainCertificate)
-	}
-
-	hostname, err := valueObject.NewVirtualHost(sslHostname)
+	hostname, err := valueObject.NewFqdn(sslHostname)
 	if err != nil {
 		return ssl, errors.New("SslHostnameError")
 	}
+	_, err = repo.GetVhostConfig(hostname.String())
+	if err != nil {
+		return ssl, err
+	}
 
-	certInfo, _ := certificate.GetCertInfo()
+	privateKey, err := entity.NewSslPrivateKey(sslPrivateKey)
+	if err != nil {
+		return ssl, err
+	}
 
-	certIssuedAtUnix := certInfo.NotBefore.Unix()
-	issuedAt := valueObject.UnixTime(certIssuedAtUnix)
+	sslCertificates, err := repo.splitSslCertificate(sslCertContent)
+	if err != nil {
+		return ssl, err
+	}
 
-	certExpireAtUnix := certInfo.NotAfter.Unix()
-	expireAt := valueObject.UnixTime(certExpireAtUnix)
+	var certificate entity.SslPair
+	var chainCertificates []entity.SslPair
+	for _, sslCertificate := range sslCertificates {
+		if sslCertificate.IsCA {
+			certificate = sslCertificate
+			continue
+		}
+
+		chainCertificates = append(chainCertificates, sslCertificate)
+	}
+
+	id, err := valueObject.NewSslId(certificate.SerialNumber.String())
+	if err != nil {
+		return ssl, err
+	}
 
 	return entity.NewSsl(
 		id,
 		hostname,
-		&issuedAt,
-		&expireAt,
 		certificate,
 		privateKey,
 		chainCertificates,
@@ -143,6 +150,10 @@ func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
 		break
 	}
 
+	if len(vhostConfigFilePath) == 0 {
+		return VhostConfig{}, errors.New("VhostNotFound")
+	}
+
 	return VhostConfig{
 		FilePath:    vhostConfigFilePath,
 		FileContent: vhostConfigFileContent,
@@ -156,7 +167,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 		return []entity.Ssl{}, err
 	}
 
-	for httpdVhostConfigIndex, httpdVhostConfig := range httpdVhostsConfig {
+	for _, httpdVhostConfig := range httpdVhostsConfig {
 		vhostConfigOutput, err := infraHelper.RunCmd(
 			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfig.FilePath,
 		)
@@ -165,7 +176,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 		}
 
 		if len(vhostConfigOutput) < 1 {
-			return []entity.Ssl{}, errors.New("VhostConfigEmpty")
+			return []entity.Ssl{}, nil
 		}
 
 		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*)?(?:(?:CACertFile\\s*(?P<CACertFile>.*))?)")
@@ -179,8 +190,7 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 			return []entity.Ssl{}, err
 		}
 
-		sslId := uint64(httpdVhostConfigIndex + 1)
-		ssl, err := repo.SslFactory(sslId, httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
+		ssl, err := repo.SslFactory(httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
 		if err != nil {
 			return []entity.Ssl{}, err
 		}
