@@ -5,7 +5,10 @@ import (
 	"math/big"
 )
 
-type SslId big.Int
+type SslId struct {
+	bigIntValue big.Int
+	stringValue string
+}
 
 func NewSslId(value string) (SslId, error) {
 	sslIdBigInt := new(big.Int)
@@ -20,7 +23,10 @@ func NewSslId(value string) (SslId, error) {
 		return SslId{}, errors.New("InvalidSslId")
 	}
 
-	return SslId(*sslIdBigInt), nil
+	return SslId{
+		bigIntValue: *sslIdBigInt,
+		stringValue: sslIdBigInt.String(),
+	}, nil
 }
 
 func NewSslIdPanic(value string) SslId {
@@ -32,9 +38,9 @@ func NewSslIdPanic(value string) SslId {
 }
 
 func (id SslId) Get() big.Int {
-	return big.Int(id)
+	return id.bigIntValue
 }
 
 func (id SslId) String() string {
-	return big.NewInt(1).String()
+	return id.stringValue
 }
