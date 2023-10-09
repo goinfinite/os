@@ -58,7 +58,7 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		uptimeSeconds := time.Since(time.Unix(uptime/1000, 0)).Seconds()
+		uptimeSeconds := int64(time.Since(time.Unix(uptime/1000, 0)).Seconds())
 
 		cpuPercent, err := p.CPUPercent()
 		if err != nil {
