@@ -14,6 +14,7 @@ type SslPair struct {
 	CommonName   string
 	IssuedAt     time.Time
 	ExpiresAt    time.Time
+	IsCA         bool
 }
 
 func NewSslPair(certificate string) (SslPair, error) {
@@ -33,5 +34,6 @@ func NewSslPair(certificate string) (SslPair, error) {
 		CommonName:   parsedCert.Subject.CommonName,
 		IssuedAt:     parsedCert.NotBefore,
 		ExpiresAt:    parsedCert.NotAfter,
+		IsCA:         parsedCert.IsCA,
 	}, nil
 }
