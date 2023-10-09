@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/speedianet/sam/src/domain/valueObject"
 	"golang.org/x/exp/slices"
 )
 
@@ -60,5 +61,11 @@ func CheckEnvs() {
 		if err != nil {
 			log.Fatalf("EnvWriteFileError: %v", err)
 		}
+	}
+
+	virtualHost := os.Getenv("VIRTUAL_HOST")
+	_, err = valueObject.NewFqdn(virtualHost)
+	if err != nil {
+		log.Fatalf("VirtualHostEnvInvalidValue")
 	}
 }
