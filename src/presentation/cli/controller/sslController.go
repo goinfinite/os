@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/dto"
+	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
@@ -40,15 +41,25 @@ func AddSslControler() *cobra.Command {
 			parsedCertificateStr := strings.Replace(certificateStr, "\\n", "\n", -1)
 			parsedKeyStr := strings.Replace(keyStr, "\\n", "\n", -1)
 
+			sslPair, err := entity.NewSslPair(parsedCertificateStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			sslPrivateKey, err := entity.NewSslPrivateKey(parsedKeyStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			addSslDto := dto.NewAddSsl(
-				valueObject.NewVirtualHostPanic(hostnameStr),
-				valueObject.NewSslCertificatePanic(parsedCertificateStr),
-				valueObject.NewSslPrivateKeyPanic(parsedKeyStr),
+				valueObject.NewFqdnPanic(hostnameStr),
+				sslPair,
+				sslPrivateKey,
 			)
 
 			sslCmdRepo := infra.SslCmdRepo{}
 
-			err := useCase.AddSsl(
+			err = useCase.AddSsl(
 				sslCmdRepo,
 				addSslDto,
 			)

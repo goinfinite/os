@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/sam/src/domain/dto"
+	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
@@ -46,15 +47,25 @@ func AddSslController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
+	sslPair, err := entity.NewSslPair(requestBody["certificate"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
+	sslPrivateKey, err := entity.NewSslPrivateKey(requestBody["key"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
 	addCronDto := dto.NewAddSsl(
-		valueObject.NewVirtualHostPanic(requestBody["hostname"].(string)),
-		valueObject.NewSslCertificatePanic(requestBody["certificate"].(string)),
-		valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string)),
+		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
+		sslPair,
+		sslPrivateKey,
 	)
 
 	sslCmdRepo := infra.SslCmdRepo{}
 
-	err := useCase.AddSsl(
+	err = useCase.AddSsl(
 		sslCmdRepo,
 		addCronDto,
 	)
