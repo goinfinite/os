@@ -18,9 +18,11 @@ func AddSsl(
 		return errors.New("AddSslInfraError")
 	}
 
-	sslCert, _ := addSsl.Certificate.GetCertInfo()
-	sslCertCname := sslCert.Subject.CommonName
-	log.Printf("SSL added to '%v' cname in '%v' virtual host.", sslCertCname, addSsl.Hostname.String())
+	log.Printf(
+		"SSL added to '%v' cname in '%v' virtual host.",
+		addSsl.Certificate.CommonName,
+		addSsl.Hostname.String(),
+	)
 
 	return nil
 }

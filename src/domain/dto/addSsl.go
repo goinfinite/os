@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/speedianet/sam/src/domain/valueObject"
+import (
+	"github.com/speedianet/sam/src/domain/entity"
+	"github.com/speedianet/sam/src/domain/valueObject"
+)
 
 type AddSsl struct {
-	Hostname    valueObject.VirtualHost    `json:"hostname"`
-	Certificate valueObject.SslCertificate `json:"certificate"`
-	Key         valueObject.SslPrivateKey  `json:"key"`
+	Hostname    valueObject.VirtualHost `json:"hostname"`
+	Certificate entity.SslPair          `json:"certificate"`
+	Key         entity.SslPrivateKey    `json:"key"`
 }
 
 func NewAddSsl(
 	hostname valueObject.VirtualHost,
-	certificate valueObject.SslCertificate,
-	key valueObject.SslPrivateKey,
+	certificate entity.SslPair,
+	key entity.SslPrivateKey,
 ) AddSsl {
 	return AddSsl{
 		Hostname:    hostname,
