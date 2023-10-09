@@ -1,17 +1,21 @@
 package entity
 
-import "github.com/speedianet/sam/src/domain/valueObject"
+import (
+	"math/big"
+
+	"github.com/speedianet/sam/src/domain/valueObject"
+)
 
 type Ssl struct {
-	Id                valueObject.SslId `json:"id"`
-	Hostname          valueObject.Fqdn  `json:"hostname"`
-	Certificate       SslPair           `json:"certificate"`
-	Key               SslPrivateKey     `json:"key"`
-	ChainCertificates []SslPair         `json:"chainCertificates"`
+	Id                big.Int          `json:"id"`
+	Hostname          valueObject.Fqdn `json:"hostname"`
+	Certificate       SslPair          `json:"certificate"`
+	Key               SslPrivateKey    `json:"key"`
+	ChainCertificates []SslPair        `json:"chainCertificates"`
 }
 
 func NewSsl(
-	id valueObject.SslId,
+	id big.Int,
 	hostname valueObject.Fqdn,
 	certificate SslPair,
 	key SslPrivateKey,
