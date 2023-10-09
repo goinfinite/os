@@ -10,7 +10,7 @@ import (
 
 type SslPair struct {
 	Certificate  string
-	SerialNumber big.Int
+	SerialNumber *big.Int
 	CommonName   string
 	IssuedAt     time.Time
 	ExpiresAt    time.Time
@@ -29,7 +29,7 @@ func NewSslPair(certificate string) (SslPair, error) {
 
 	return SslPair{
 		Certificate:  certificate,
-		SerialNumber: *parsedCert.SerialNumber,
+		SerialNumber: parsedCert.SerialNumber,
 		CommonName:   parsedCert.Subject.CommonName,
 		IssuedAt:     parsedCert.NotBefore,
 		ExpiresAt:    parsedCert.NotAfter,
