@@ -5,6 +5,7 @@ import (
 
 	api "github.com/speedianet/sam/src/presentation/api"
 	cliController "github.com/speedianet/sam/src/presentation/cli/controller"
+	cliMiddleware "github.com/speedianet/sam/src/presentation/cli/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -49,8 +50,9 @@ func cronRoutes() {
 
 func databaseRoutes() {
 	var databaseCmd = &cobra.Command{
-		Use:   "db",
-		Short: "DatabaseManagement",
+		Use:              "db",
+		Short:            "DatabaseManagement",
+		PersistentPreRun: cliMiddleware.PreventServiceDown("mysql"),
 	}
 
 	rootCmd.AddCommand(databaseCmd)
