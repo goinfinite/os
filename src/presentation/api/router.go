@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	apiController "github.com/speedianet/sam/src/presentation/api/controller"
+	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -29,7 +30,7 @@ func authRoutes(baseRoute *echo.Group) {
 }
 
 func databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database")
+	databaseGroup := baseRoute.Group("/database", apiMiddleware.PreventServiceDown("mysql"))
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 	databaseGroup.DELETE(
