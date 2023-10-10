@@ -18,12 +18,12 @@ func GetSslsController() *cobra.Command {
 		Short: "GetSsls",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := infra.NewSslQueryRepo()
-			sslsList, err := useCase.GetSsls(sslQueryRepo)
+			sslPairsList, err := useCase.GetSsls(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, sslsList)
+			cliHelper.ResponseWrapper(true, sslPairsList)
 		},
 	}
 
@@ -41,7 +41,7 @@ func AddSslControler() *cobra.Command {
 			parsedCertificateStr := strings.Replace(certificateStr, "\\n", "\n", -1)
 			parsedKeyStr := strings.Replace(keyStr, "\\n", "\n", -1)
 
-			sslPair, err := entity.NewSslPair(parsedCertificateStr)
+			sslCertificate, err := entity.NewSslCertificate(parsedCertificateStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -53,7 +53,7 @@ func AddSslControler() *cobra.Command {
 
 			addSslDto := dto.NewAddSsl(
 				valueObject.NewFqdnPanic(hostnameStr),
-				sslPair,
+				sslCertificate,
 				sslPrivateKey,
 			)
 
@@ -81,13 +81,13 @@ func AddSslControler() *cobra.Command {
 }
 
 func DeleteSslController() *cobra.Command {
-	var sslIdStr string
+	var sslSerialNumberStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteSsl",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslId := valueObject.NewSslIdPanic(sslIdStr)
+			sslSerialNumber := valueObject.NewSslSerialNumberPanic(sslSerialNumberStr)
 
 			cronQueryRepo := infra.NewSslQueryRepo()
 			cronCmdRepo := infra.SslCmdRepo{}
@@ -95,7 +95,7 @@ func DeleteSslController() *cobra.Command {
 			err := useCase.DeleteSsl(
 				cronQueryRepo,
 				cronCmdRepo,
-				sslId,
+				sslSerialNumber,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -105,7 +105,7 @@ func DeleteSslController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslIdStr, "id", "i", "", "SslId")
+	cmd.Flags().StringVarP(&sslSerialNumberStr, "id", "i", "", "SslSerialNumber")
 	cmd.MarkFlagRequired("id")
 	return cmd
 }

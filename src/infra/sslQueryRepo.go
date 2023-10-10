@@ -32,12 +32,12 @@ func NewSslQueryRepo() *SslQueryRepo {
 
 func (repo SslQueryRepo) splitSslCertificate(
 	sslCertContent string,
-) ([]entity.SslPair, error) {
-	certificates := []entity.SslPair{}
+) ([]entity.SslCertificate, error) {
+	certificates := []entity.SslCertificate{}
 
 	sslCertContentSlice := strings.SplitAfter(sslCertContent, "-----END CERTIFICATE-----\n")
 	for _, sslCertContentStr := range sslCertContentSlice {
-		certificate, err := entity.NewSslPair(sslCertContentStr)
+		certificate, err := entity.NewSslCertificate(sslCertContentStr)
 		if err != nil {
 			return certificates, errors.New("SslCertificateError")
 		}
@@ -51,8 +51,8 @@ func (repo SslQueryRepo) SslFactory(
 	sslHostname string,
 	sslPrivateKey string,
 	sslCertContent string,
-) (entity.Ssl, error) {
-	var ssl entity.Ssl
+) (entity.SslPair, error) {
+	var ssl entity.SslPair
 
 	hostname, err := valueObject.NewFqdn(sslHostname)
 	if err != nil {
@@ -73,8 +73,8 @@ func (repo SslQueryRepo) SslFactory(
 		return ssl, err
 	}
 
-	var certificate entity.SslPair
-	var chainCertificates []entity.SslPair
+	var certificate entity.SslCertificate
+	var chainCertificates []entity.SslCertificate
 	for _, sslCertificate := range sslCertificates {
 		if sslCertificate.IsCA {
 			certificate = sslCertificate
@@ -84,12 +84,12 @@ func (repo SslQueryRepo) SslFactory(
 		chainCertificates = append(chainCertificates, sslCertificate)
 	}
 
-	id, err := valueObject.NewSslId(certificate.SerialNumber.String())
+	id, err := valueObject.NewSslSerialNumber(certificate.SerialNumber.String())
 	if err != nil {
 		return ssl, err
 	}
 
-	return entity.NewSsl(
+	return entity.NewSslPair(
 		id,
 		hostname,
 		certificate,
@@ -160,11 +160,11 @@ func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
 	}, nil
 }
 
-func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
-	var ssls []entity.Ssl
+func (repo SslQueryRepo) Get() ([]entity.SslPair, error) {
+	var sslPairs []entity.SslPair
 	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
 	if err != nil {
-		return []entity.Ssl{}, err
+		return []entity.SslPair{}, err
 	}
 
 	for _, httpdVhostConfig := range httpdVhostsConfig {
@@ -172,52 +172,52 @@ func (repo SslQueryRepo) Get() ([]entity.Ssl, error) {
 			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfig.FilePath,
 		)
 		if err != nil {
-			return []entity.Ssl{}, err
+			return []entity.SslPair{}, err
 		}
 
 		if len(vhostConfigOutput) < 1 {
-			return []entity.Ssl{}, nil
+			return []entity.SslPair{}, nil
 		}
 
 		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*)?(?:(?:CACertFile\\s*(?P<CACertFile>.*))?)")
 		privateKeyOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["keyFile"])
 		if err != nil {
-			return []entity.Ssl{}, err
+			return []entity.SslPair{}, err
 		}
 
 		certFileOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["certFile"])
 		if err != nil {
-			return []entity.Ssl{}, err
+			return []entity.SslPair{}, err
 		}
 
 		ssl, err := repo.SslFactory(httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
 		if err != nil {
-			return []entity.Ssl{}, err
+			return []entity.SslPair{}, err
 		}
 
-		ssls = append(ssls, ssl)
+		sslPairs = append(sslPairs, ssl)
 	}
 
-	return ssls, nil
+	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) GetById(sslId valueObject.SslId) (entity.Ssl, error) {
-	ssls, err := repo.Get()
+func (repo SslQueryRepo) GetById(sslSerialNumber valueObject.SslSerialNumber) (entity.SslPair, error) {
+	sslPairs, err := repo.Get()
 	if err != nil {
-		return entity.Ssl{}, err
+		return entity.SslPair{}, err
 	}
 
-	if len(ssls) < 1 {
-		return entity.Ssl{}, errors.New("SslNotFound")
+	if len(sslPairs) < 1 {
+		return entity.SslPair{}, errors.New("SslPairNotFound")
 	}
 
-	for _, ssl := range ssls {
-		if ssl.Id.String() != sslId.String() {
+	for _, ssl := range sslPairs {
+		if ssl.Id.String() != sslSerialNumber.String() {
 			continue
 		}
 
 		return ssl, nil
 	}
 
-	return entity.Ssl{}, errors.New("SslNotFound")
+	return entity.SslPair{}, errors.New("SslPairNotFound")
 }

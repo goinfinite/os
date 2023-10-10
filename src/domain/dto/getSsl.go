@@ -14,11 +14,11 @@ type GetSsl struct {
 }
 
 func NewGetSsl(
-	id valueObject.SslId,
+	id valueObject.SslSerialNumber,
 	hostname valueObject.Fqdn,
-	certificate entity.SslPair,
+	certificate entity.SslCertificate,
 	key entity.SslPrivateKey,
-	chainCertificates []entity.SslPair,
+	chainCertificates []entity.SslCertificate,
 ) GetSsl {
 	var parsedChainCertificates []string
 	for _, chainCertificate := range chainCertificates {

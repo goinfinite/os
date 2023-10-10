@@ -11,21 +11,21 @@ import (
 func DeleteSsl(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	sslId valueObject.SslId,
+	sslSerialNumber valueObject.SslSerialNumber,
 ) error {
-	_, err := sslQueryRepo.GetById(sslId)
+	_, err := sslQueryRepo.GetById(sslSerialNumber)
 	if err != nil {
 		log.Printf("SslNotFound: %s", err)
 		return errors.New("SslNotFound")
 	}
 
-	err = sslCmdRepo.Delete(sslId)
+	err = sslCmdRepo.Delete(sslSerialNumber)
 	if err != nil {
 		log.Printf("DeleteSslError: %s", err)
 		return errors.New("DeleteSslInfraError")
 	}
 
-	log.Printf("SslId '%v' deleted.", sslId)
+	log.Printf("SslSerialNumber '%v' deleted.", sslSerialNumber)
 
 	return nil
 }

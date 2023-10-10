@@ -1,39 +1,27 @@
 package entity
 
-import (
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
-	"math/big"
-	"time"
-)
+import "github.com/speedianet/sam/src/domain/valueObject"
 
 type SslPair struct {
-	Certificate  string
-	SerialNumber *big.Int
-	CommonName   string
-	IssuedAt     time.Time
-	ExpiresAt    time.Time
-	IsCA         bool
+	Id                valueObject.SslSerialNumber `json:"id"`
+	Hostname          valueObject.Fqdn            `json:"hostname"`
+	Certificate       SslCertificate              `json:"certificate"`
+	Key               SslPrivateKey               `json:"key"`
+	ChainCertificates []SslCertificate            `json:"chainCertificates"`
 }
 
-func NewSslPair(certificate string) (SslPair, error) {
-	block, _ := pem.Decode([]byte(certificate))
-	if block == nil {
-		return SslPair{}, errors.New("SslPairError")
-	}
-
-	parsedCert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return SslPair{}, err
-	}
-
+func NewSslPair(
+	id valueObject.SslSerialNumber,
+	hostname valueObject.Fqdn,
+	certificate SslCertificate,
+	key SslPrivateKey,
+	chainCertificates []SslCertificate,
+) SslPair {
 	return SslPair{
-		Certificate:  certificate,
-		SerialNumber: parsedCert.SerialNumber,
-		CommonName:   parsedCert.Subject.CommonName,
-		IssuedAt:     parsedCert.NotBefore,
-		ExpiresAt:    parsedCert.NotAfter,
-		IsCA:         parsedCert.IsCA,
-	}, nil
+		Id:                id,
+		Hostname:          hostname,
+		Certificate:       certificate,
+		Key:               key,
+		ChainCertificates: chainCertificates,
+	}
 }
