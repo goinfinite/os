@@ -15,11 +15,13 @@ func Uninstall(name valueObject.ServiceName) error {
 	}
 
 	var packages []string
+	nonInteractive := false
 	switch name.String() {
 	case "openlitespeed", "litespeed":
 		packages = OlsPackages
 	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
 		packages = MariaDbPackages
+		nonInteractive = true
 	case "node", "nodejs":
 		packages = NodePackages
 	case "redis", "redis-server":
@@ -29,8 +31,15 @@ func Uninstall(name valueObject.ServiceName) error {
 		return errors.New("ServiceNotImplemented")
 	}
 
+	var purgeEnvVars map[string]string
+	if nonInteractive {
+		purgeEnvVars = map[string]string{
+			"DEBIAN_FRONTEND": "noninteractive",
+		}
+	}
+
 	purgePackages := append([]string{"purge", "-y"}, packages...)
-	_, err = infraHelper.RunCmd("apt-get", purgePackages...)
+	_, err = infraHelper.RunCmdWithEnvVars("apt-get", purgeEnvVars, purgePackages...)
 	if err != nil {
 		log.Printf("UninstallServiceError: %s", err.Error())
 		return errors.New("UninstallServiceError")
