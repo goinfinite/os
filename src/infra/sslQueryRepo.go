@@ -10,9 +10,9 @@ import (
 	infraHelper "github.com/speedianet/sam/src/infra/helper"
 )
 
-type SslQueryRepo struct {
-	olsHttpdConfigPath string
-}
+const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
+
+type SslQueryRepo struct{}
 
 type HttpdVhostConfig struct {
 	VirtualHost string
@@ -22,12 +22,6 @@ type HttpdVhostConfig struct {
 type VhostConfig struct {
 	FilePath    string
 	FileContent string
-}
-
-func NewSslQueryRepo() *SslQueryRepo {
-	return &SslQueryRepo{
-		olsHttpdConfigPath: "/usr/local/lsws/conf/httpd_config.conf",
-	}
 }
 
 func (repo SslQueryRepo) splitSslCertificate(
@@ -101,7 +95,7 @@ func (repo SslQueryRepo) SslFactory(
 func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 	var httpdVhostsConfig []HttpdVhostConfig
 	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
-		"sed", "-n", "/virtualhost/, /}/p", repo.olsHttpdConfigPath,
+		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
 	)
 	if err != nil {
 		matchErr, _ := regexp.MatchString("No such file or directory", err.Error())

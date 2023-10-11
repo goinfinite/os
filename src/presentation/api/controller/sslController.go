@@ -22,7 +22,7 @@ import (
 // @Success      200 {array} entity.Ssl
 // @Router       /ssl/ [get]
 func GetSslsController(c echo.Context) error {
-	sslQueryRepo := infra.NewSslQueryRepo()
+	sslQueryRepo := infra.SslQueryRepo{}
 	sslPairsList, err := useCase.GetSsls(sslQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -89,7 +89,7 @@ func AddSslController(c echo.Context) error {
 func DeleteSslController(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslSerialNumberPanic(c.Param("sslSerialNumber"))
 
-	sslQueryRepo := infra.NewSslQueryRepo()
+	sslQueryRepo := infra.SslQueryRepo{}
 	sslCmdRepo := infra.SslCmdRepo{}
 
 	err := useCase.DeleteSsl(

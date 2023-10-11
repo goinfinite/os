@@ -42,7 +42,7 @@ vhssl  {
 }
 
 func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
-	sslQueryRepo := NewSslQueryRepo()
+	sslQueryRepo := SslQueryRepo{}
 
 	vhostConfig, err := sslQueryRepo.GetVhostConfig(addSsl.Hostname.String())
 	if err != nil {
@@ -99,7 +99,7 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 }
 
 func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error {
-	sslQueryRepo := NewSslQueryRepo()
+	sslQueryRepo := SslQueryRepo{}
 
 	sslToDelete, err := sslQueryRepo.GetById(sslSerialNumber)
 	if err != nil {

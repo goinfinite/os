@@ -17,7 +17,7 @@ func GetSslsController() *cobra.Command {
 		Use:   "list",
 		Short: "GetSsls",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslQueryRepo := infra.NewSslQueryRepo()
+			sslQueryRepo := infra.SslQueryRepo{}
 			sslPairsList, err := useCase.GetSsls(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -89,7 +89,7 @@ func DeleteSslController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			sslSerialNumber := valueObject.NewSslSerialNumberPanic(sslSerialNumberStr)
 
-			cronQueryRepo := infra.NewSslQueryRepo()
+			cronQueryRepo := infra.SslQueryRepo{}
 			cronCmdRepo := infra.SslCmdRepo{}
 
 			err := useCase.DeleteSsl(
