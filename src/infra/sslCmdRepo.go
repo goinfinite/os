@@ -57,22 +57,20 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return err
 	}
 
-	sslDtoCert := addSslPair.Certificate
-	err = infraHelper.UpdateFile(sslCertFilePath, sslDtoCert.Certificate, true)
+	err = infraHelper.UpdateFile(sslCertFilePath, addSslPair.Certificate.String(), true)
 	if err != nil {
 		return err
 	}
 
-	sslDtoPrivateKey := addSslPair.Key
-	err = infraHelper.UpdateFile(sslKeyFilePath, sslDtoPrivateKey.Key, true)
+	err = infraHelper.UpdateFile(sslKeyFilePath, addSslPair.Key.String(), true)
 	if err != nil {
 		return err
 	}
 
 	newSsl, err := sslQueryRepo.SslFactory(
 		addSslPair.Hostname.String(),
-		sslDtoPrivateKey.Key,
-		sslDtoCert.Certificate,
+		addSslPair.Key.String(),
+		addSslPair.Certificate.String(),
 	)
 	if err != nil {
 		return err
