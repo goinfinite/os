@@ -33,7 +33,7 @@ func (repo SslQueryRepo) splitSslCertificate(
 	for _, sslCertContentStr := range sslCertContentSlice {
 		certificate, err := entity.NewSslCertificate(sslCertContentStr)
 		if err != nil {
-			return certificates, errors.New("SslCertificateError")
+			return certificates, err
 		}
 		certificates = append(certificates, certificate)
 	}
