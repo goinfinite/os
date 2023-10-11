@@ -18,7 +18,7 @@ func GetSslsController() *cobra.Command {
 		Short: "GetSsls",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := infra.SslQueryRepo{}
-			sslPairsList, err := useCase.GetSsls(sslQueryRepo)
+			sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -51,7 +51,7 @@ func AddSslControler() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			addSslDto := dto.NewAddSsl(
+			addSslDto := dto.NewAddSslPair(
 				valueObject.NewFqdnPanic(hostnameStr),
 				sslCertificate,
 				sslPrivateKey,
@@ -59,7 +59,7 @@ func AddSslControler() *cobra.Command {
 
 			sslCmdRepo := infra.SslCmdRepo{}
 
-			err = useCase.AddSsl(
+			err = useCase.AddSslPair(
 				sslCmdRepo,
 				addSslDto,
 			)
@@ -67,7 +67,7 @@ func AddSslControler() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "SslAdded")
+			cliHelper.ResponseWrapper(true, "SslPairAdded")
 		},
 	}
 
@@ -92,7 +92,7 @@ func DeleteSslController() *cobra.Command {
 			cronQueryRepo := infra.SslQueryRepo{}
 			cronCmdRepo := infra.SslCmdRepo{}
 
-			err := useCase.DeleteSsl(
+			err := useCase.DeleteSslPair(
 				cronQueryRepo,
 				cronCmdRepo,
 				sslSerialNumber,
@@ -101,7 +101,7 @@ func DeleteSslController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "SslDeleted")
+			cliHelper.ResponseWrapper(true, "SslPairDeleted")
 		},
 	}
 

@@ -5,28 +5,28 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-type GetSsl struct {
-	Id                string           `json:"id"`
+type GetSslPair struct {
+	SerialNumber      string           `json:"serialNumber"`
 	Hostname          valueObject.Fqdn `json:"hostname"`
 	Certificate       string           `json:"certificate"`
 	Key               string           `json:"key"`
 	ChainCertificates []string         `json:"chainCertificates"`
 }
 
-func NewGetSsl(
-	id valueObject.SslSerialNumber,
+func NewGetSslPair(
+	serialNumber valueObject.SslSerialNumber,
 	hostname valueObject.Fqdn,
 	certificate entity.SslCertificate,
 	key entity.SslPrivateKey,
 	chainCertificates []entity.SslCertificate,
-) GetSsl {
+) GetSslPair {
 	var parsedChainCertificates []string
 	for _, chainCertificate := range chainCertificates {
 		parsedChainCertificates = append(parsedChainCertificates, chainCertificate.Certificate)
 	}
 
-	return GetSsl{
-		Id:                id.String(),
+	return GetSslPair{
+		SerialNumber:      serialNumber.String(),
 		Hostname:          hostname,
 		Certificate:       certificate.Certificate,
 		Key:               key.Key,

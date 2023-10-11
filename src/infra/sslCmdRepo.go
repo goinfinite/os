@@ -17,9 +17,8 @@ type SslCmdRepo struct{}
 func (repo SslCmdRepo) vhsslConfigFactory(
 	sslCertFilePath string,
 	sslKeyFilePath string,
-	sslHostname string,
 	isChained bool,
-) (string, error) {
+) string {
 	vhsslChainedConfig := ""
 	sslCertChain := "0"
 	if isChained {
@@ -31,25 +30,25 @@ func (repo SslCmdRepo) vhsslConfigFactory(
 
 	vhsslConfigBreakline := "\n\n"
 	vhsslConfig := `
-vhssl  {
+vhssl {
   keyFile    ` + sslKeyFilePath + `
   certFile   ` + sslCertFilePath + `
   certChain  ` + sslCertChain +
 		vhsslChainedConfig + `
 }` + vhsslConfigBreakline
 
-	return vhsslConfig, nil
+	return vhsslConfig
 }
 
-func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
+func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	vhostConfig, err := sslQueryRepo.GetVhostConfig(addSsl.Hostname.String())
+	vhostConfig, err := sslQueryRepo.GetVhostConfig(addSslPair.Hostname.String())
 	if err != nil {
 		return err
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + addSsl.Hostname.String()
+	sslBaseDirPath := "/speedia/pki/" + addSslPair.Hostname.String()
 	sslKeyFilePath := sslBaseDirPath + "/ssl.key"
 	sslCertFilePath := sslBaseDirPath + "/ssl.crt"
 
@@ -58,21 +57,21 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 		return err
 	}
 
-	sslDtoCert := addSsl.Certificate
+	sslDtoCert := addSslPair.Certificate
 	err = infraHelper.UpdateFile(sslCertFilePath, sslDtoCert.Certificate, true)
 	if err != nil {
 		return err
 	}
 
-	sslDtoPk := addSsl.Key
-	err = infraHelper.UpdateFile(sslKeyFilePath, sslDtoPk.Key, true)
+	sslDtoPrivateKey := addSslPair.Key
+	err = infraHelper.UpdateFile(sslKeyFilePath, sslDtoPrivateKey.Key, true)
 	if err != nil {
 		return err
 	}
 
 	newSsl, err := sslQueryRepo.SslFactory(
-		addSsl.Hostname.String(),
-		sslDtoPk.Key,
+		addSslPair.Hostname.String(),
+		sslDtoPrivateKey.Key,
 		sslDtoCert.Certificate,
 	)
 	if err != nil {
@@ -84,10 +83,9 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 		isChainedCert = true
 	}
 
-	vhsslConfig, err := repo.vhsslConfigFactory(
+	vhsslConfig := repo.vhsslConfigFactory(
 		sslCertFilePath,
 		sslKeyFilePath,
-		addSsl.Hostname.String(),
 		isChainedCert,
 	)
 	err = infraHelper.UpdateFile(vhostConfig.FilePath, vhsslConfig, false)
@@ -101,7 +99,7 @@ func (repo SslCmdRepo) Add(addSsl dto.AddSsl) error {
 func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	sslToDelete, err := sslQueryRepo.GetById(sslSerialNumber)
+	sslToDelete, err := sslQueryRepo.GetSslPairBySerialNumber(sslSerialNumber)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}

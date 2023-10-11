@@ -154,7 +154,7 @@ func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
 	}, nil
 }
 
-func (repo SslQueryRepo) Get() ([]entity.SslPair, error) {
+func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	var sslPairs []entity.SslPair
 	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
 	if err != nil {
@@ -195,8 +195,8 @@ func (repo SslQueryRepo) Get() ([]entity.SslPair, error) {
 	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) GetById(sslSerialNumber valueObject.SslSerialNumber) (entity.SslPair, error) {
-	sslPairs, err := repo.Get()
+func (repo SslQueryRepo) GetSslPairBySerialNumber(sslSerialNumber valueObject.SslSerialNumber) (entity.SslPair, error) {
+	sslPairs, err := repo.GetSslPairs()
 	if err != nil {
 		return entity.SslPair{}, err
 	}

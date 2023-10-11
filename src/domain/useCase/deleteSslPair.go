@@ -8,24 +8,28 @@ import (
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
-func DeleteSsl(
+func DeleteSslPair(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
 	sslSerialNumber valueObject.SslSerialNumber,
 ) error {
-	_, err := sslQueryRepo.GetById(sslSerialNumber)
+	sslPair, err := sslQueryRepo.GetSslPairBySerialNumber(sslSerialNumber)
 	if err != nil {
-		log.Printf("SslNotFound: %s", err)
-		return errors.New("SslNotFound")
+		log.Printf("SslPairNotFound: %s", err)
+		return errors.New("SslPairNotFound")
 	}
 
 	err = sslCmdRepo.Delete(sslSerialNumber)
 	if err != nil {
-		log.Printf("DeleteSslError: %s", err)
-		return errors.New("DeleteSslInfraError")
+		log.Printf("DeleteSslPairError: %s", err)
+		return errors.New("DeleteSslPairInfraError")
 	}
 
-	log.Printf("SslSerialNumber '%v' deleted.", sslSerialNumber)
+	log.Printf(
+		"SSL '%v' deleted in '%v' hostname.",
+		sslSerialNumber,
+		sslPair.Hostname.String(),
+	)
 
 	return nil
 }

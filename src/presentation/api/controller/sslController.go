@@ -23,7 +23,7 @@ import (
 // @Router       /ssl/ [get]
 func GetSslsController(c echo.Context) error {
 	sslQueryRepo := infra.SslQueryRepo{}
-	sslPairsList, err := useCase.GetSsls(sslQueryRepo)
+	sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -57,7 +57,7 @@ func AddSslController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	addCronDto := dto.NewAddSsl(
+	addCronDto := dto.NewAddSslPair(
 		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
 		sslCertificate,
 		sslPrivateKey,
@@ -65,7 +65,7 @@ func AddSslController(c echo.Context) error {
 
 	sslCmdRepo := infra.SslCmdRepo{}
 
-	err = useCase.AddSsl(
+	err = useCase.AddSslPair(
 		sslCmdRepo,
 		addCronDto,
 	)
@@ -73,7 +73,7 @@ func AddSslController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslCreated")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
 // DeleteSsl	 godoc
@@ -92,7 +92,7 @@ func DeleteSslController(c echo.Context) error {
 	sslQueryRepo := infra.SslQueryRepo{}
 	sslCmdRepo := infra.SslCmdRepo{}
 
-	err := useCase.DeleteSsl(
+	err := useCase.DeleteSslPair(
 		sslQueryRepo,
 		sslCmdRepo,
 		sslSerialNumber,
@@ -101,5 +101,5 @@ func DeleteSslController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslDeleted")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
 }
