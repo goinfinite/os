@@ -2,7 +2,6 @@ package infra
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -98,12 +97,7 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
 	)
 	if err != nil {
-		matchErr, _ := regexp.MatchString("No such file or directory", err.Error())
-		if !matchErr {
-			return []HttpdVhostConfig{}, err
-		}
-
-		return []HttpdVhostConfig{}, errors.New("HttpdVhostsConfigEmpty")
+		return []HttpdVhostConfig{}, err
 	}
 
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
