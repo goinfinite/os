@@ -37,3 +37,7 @@ func NewSslCertificate(certificate string) (SslCertificate, error) {
 		IsCA:         parsedCert.IsCA,
 	}, nil
 }
+
+func (sslCertificate SslCertificate) String() string {
+	return sslCertificate.Certificate
+}
