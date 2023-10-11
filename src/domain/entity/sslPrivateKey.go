@@ -24,3 +24,7 @@ func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
 		Key: privateKey,
 	}, nil
 }
+
+func (sslPrivateKey SslPrivateKey) String() string {
+	return sslPrivateKey.Key
+}
