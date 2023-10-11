@@ -16,7 +16,7 @@ func GetSsls(
 	sslListFormatted := []dto.GetSsl{}
 	for _, ssl := range sslList {
 		sslFormatted := dto.NewGetSsl(
-			ssl.Id,
+			ssl.SerialNumber,
 			ssl.Hostname,
 			ssl.Certificate,
 			ssl.Key,

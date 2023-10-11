@@ -206,7 +206,7 @@ func (repo SslQueryRepo) GetById(sslSerialNumber valueObject.SslSerialNumber) (e
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.Id.String() != sslSerialNumber.String() {
+		if ssl.SerialNumber.String() != sslSerialNumber.String() {
 			continue
 		}
 
