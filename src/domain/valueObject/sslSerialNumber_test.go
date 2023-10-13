@@ -1,16 +1,16 @@
 package valueObject
 
 import (
+	"math/big"
+	"math/rand"
 	"testing"
 )
 
 func TestNewSslSerialNumber(t *testing.T) {
 	t.Run("ValidSerialNumber", func(t *testing.T) {
-		validSerialNumbers := []string{
-			"12345",
-			"314159265358979323846264338327950288419716939937510582097494459",
-			"598437582340",
-			"21094819052730572857384801928390218492359374608430598239047894",
+		validSerialNumbers := []interface{}{
+			genDummyBigInt(false),
+			genDummyBigInt(false).String(),
 		}
 
 		for _, sslSerialNumber := range validSerialNumbers {
@@ -22,10 +22,9 @@ func TestNewSslSerialNumber(t *testing.T) {
 	})
 
 	t.Run("InvalidSerialNumber", func(t *testing.T) {
-		invalidSerialNumbers := []string{
-			"-1",
-			"0",
-			"-1231231231242353467",
+		invalidSerialNumbers := []interface{}{
+			genDummyBigInt(true),
+			genDummyBigInt(true).String(),
 		}
 
 		for _, sslSerialNumber := range invalidSerialNumbers {
@@ -35,4 +34,12 @@ func TestNewSslSerialNumber(t *testing.T) {
 			}
 		}
 	})
+}
+
+func genDummyBigInt(negative bool) *big.Int {
+	randomIntNumber := rand.Int63n(9999999)
+	if negative {
+		randomIntNumber -= randomIntNumber * 2
+	}
+	return new(big.Int).SetInt64(randomIntNumber)
 }

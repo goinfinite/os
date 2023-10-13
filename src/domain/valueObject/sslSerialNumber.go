@@ -5,42 +5,66 @@ import (
 	"math/big"
 )
 
-type SslSerialNumber struct {
-	bigIntValue big.Int
-	stringValue string
-}
+type SslSerialNumber string
 
-func NewSslSerialNumber(value string) (SslSerialNumber, error) {
-	sslSerialNumberBigInt := new(big.Int)
-	sslSerialNumberBigInt, ok := sslSerialNumberBigInt.SetString(value, 10)
-	if !ok {
-		return SslSerialNumber{}, errors.New("InvalidSslSerialNumber")
+func NewSslSerialNumber(sslSerialNumber interface{}) (SslSerialNumber, error) {
+	var sslSerialNumberOutput SslSerialNumber
+	isValidType := true
+
+	switch serialNumber := sslSerialNumber.(type) {
+	case *big.Int:
+		sslSerialNumberOutput = SslSerialNumber(serialNumber.String())
+	case string:
+		sslSerialNumberBigInt, err := stringToBigInt(serialNumber)
+		if err != nil {
+			isValidType = false
+		}
+		sslSerialNumberOutput = SslSerialNumber(sslSerialNumberBigInt.String())
+	default:
+		isValidType = false
 	}
 
-	zeroBigInt := new(big.Int)
-	result := sslSerialNumberBigInt.Cmp(zeroBigInt)
-	if result <= 0 {
-		return SslSerialNumber{}, errors.New("InvalidSslSerialNumber")
+	if !isValidType || !sslSerialNumberOutput.isValid() {
+		return "", errors.New("InvalidSslSerialNumber")
 	}
 
-	return SslSerialNumber{
-		bigIntValue: *sslSerialNumberBigInt,
-		stringValue: sslSerialNumberBigInt.String(),
-	}, nil
+	return sslSerialNumberOutput, nil
 }
 
-func NewSslSerialNumberPanic(value string) SslSerialNumber {
-	sslSerialNumber, err := NewSslSerialNumber(value)
+func NewSslSerialNumberPanic(input interface{}) SslSerialNumber {
+	sslSerialNumber, err := NewSslSerialNumber(input)
 	if err != nil {
 		panic(err)
 	}
 	return sslSerialNumber
 }
 
-func (id SslSerialNumber) Get() big.Int {
-	return id.bigIntValue
+func stringToBigInt(sslSerialNumberStr string) (*big.Int, error) {
+	sslSerialNumberBigInt := new(big.Int)
+	sslSerialNumberBigInt, ok := sslSerialNumberBigInt.SetString(sslSerialNumberStr, 10)
+	if !ok {
+		return nil, errors.New("InvalidSslSerialNumber")
+	}
+
+	return sslSerialNumberBigInt, nil
 }
 
-func (id SslSerialNumber) String() string {
-	return id.stringValue
+func (sslSerialNumber SslSerialNumber) isValid() bool {
+	sslSerialNumberBigInt, _ := stringToBigInt(string(sslSerialNumber))
+	zeroBigInt := new(big.Int)
+	result := sslSerialNumberBigInt.Cmp(zeroBigInt)
+	if result <= 0 {
+		return false
+	}
+
+	return true
+}
+
+func (sslSerialNumber SslSerialNumber) BigInt() big.Int {
+	sslSerialNumberBigInt, _ := stringToBigInt(sslSerialNumber.String())
+	return *sslSerialNumberBigInt
+}
+
+func (sslSerialNumber SslSerialNumber) String() string {
+	return string(sslSerialNumber)
 }
