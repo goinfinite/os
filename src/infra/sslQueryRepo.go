@@ -99,13 +99,15 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
 
 	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
-		httpdVhostConfigGroups := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, "(?:virtualhost )(?P<virtualHost>.*) {\n\\s*vhRoot\\s*.*\n\\s*(?:configFile\\s*)(?P<configFile>.*)")
-		httpdVhostConfigVirtualHost := httpdVhostConfigGroups["virtualHost"]
-		httpdVhostConfigFilePath := httpdVhostConfigGroups["configFile"]
+		httpdVhostConfigVirtualHostRegex := "(?:virtualhost )(?P<virtualHost>.*)\\s{"
+		httpdVhostConfigVirtualHostMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigVirtualHostRegex)["virtualHost"]
+
+		httpdVhostConfigFileRegex := "(?:configFile\\s*)(?P<configFile>.*)"
+		httpdVhostConfigFileMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigFileRegex)["configFile"]
 
 		httpdVhostsConfig = append(httpdVhostsConfig, HttpdVhostConfig{
-			VirtualHost: httpdVhostConfigVirtualHost,
-			FilePath:    httpdVhostConfigFilePath,
+			VirtualHost: httpdVhostConfigVirtualHostMatch,
+			FilePath:    httpdVhostConfigFileMatch,
 		})
 	}
 
