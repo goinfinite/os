@@ -80,12 +80,12 @@ func AddSslPairController() *cobra.Command {
 	return cmd
 }
 
-func DeleteSslController() *cobra.Command {
+func DeleteSslPairController() *cobra.Command {
 	var sslSerialNumberStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "DeleteSsl",
+		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslSerialNumber := valueObject.NewSslSerialNumberPanic(sslSerialNumberStr)
 

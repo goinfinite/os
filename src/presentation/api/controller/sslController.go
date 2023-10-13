@@ -70,16 +70,16 @@ func AddSslPairController(c echo.Context) error {
 }
 
 // DeleteSsl	 godoc
-// @Summary      DeleteSsl
-// @Description  Delete a ssl.
+// @Summary      DeleteSslPair
+// @Description  Delete a ssl pair.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
 // @Param        sslSerialNumber 	  path   string  true  "SslSerialNumber"
-// @Success      200 {object} object{} "SslDeleted"
+// @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /ssl/{sslSerialNumber}/ [delete]
-func DeleteSslController(c echo.Context) error {
+func DeleteSslPairController(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslSerialNumberPanic(c.Param("sslSerialNumber"))
 
 	sslQueryRepo := infra.SslQueryRepo{}
