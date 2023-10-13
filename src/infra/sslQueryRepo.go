@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -167,18 +168,23 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			return []entity.SslPair{}, nil
 		}
 
-		vhostConfigGroups := infraHelper.GetRegexNamedGroups(vhostConfigOutput, "(?:keyFile\\s*(?P<keyFile>.*))?\n\\s*(?:certFile\\s*(?P<certFile>.*))\n\\s*(?:certChain\\s*(?P<certChain>.*))\n\\s*(?:(?:CACertPath\\s*(?P<CACertPath>.*))\n\\s*)?(?:(?:CACertFile\\s*(?P<CACertFile>.*))?)")
-		privateKeyOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["keyFile"])
+		vhostConfigKeyFileRegex := "(?:keyFile\\s*(?P<keyFile>.*))"
+		vhostConfigKeyFileMatch := infraHelper.GetRegexNamedGroups(vhostConfigOutput, vhostConfigKeyFileRegex)["keyFile"]
+		privateKeyBytesOutput, err := os.ReadFile(vhostConfigKeyFileMatch)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
+		privateKeyOutputStr := string(privateKeyBytesOutput)
 
-		certFileOutput, err := infraHelper.RunCmd("cat", vhostConfigGroups["certFile"])
+		vhostConfigCertFileRegex := "(?:certFile\\s*(?P<certFile>.*))"
+		vhostConfigCertFileMatch := infraHelper.GetRegexNamedGroups(vhostConfigOutput, vhostConfigCertFileRegex)["certFile"]
+		certFileBytesOutput, err := os.ReadFile(vhostConfigCertFileMatch)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
+		certFileOutputStr := string(certFileBytesOutput)
 
-		ssl, err := repo.SslFactory(httpdVhostConfig.VirtualHost, privateKeyOutput, certFileOutput)
+		ssl, err := repo.SslFactory(httpdVhostConfig.VirtualHost, privateKeyOutputStr, certFileOutputStr)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
