@@ -71,8 +71,8 @@ func AddSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "virtualHostname", "v", "", "Virtual Hostname")
-	cmd.MarkFlagRequired("virtualHostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "t", "", "Hostname")
+	cmd.MarkFlagRequired("Hostname")
 	cmd.Flags().StringVarP(&certificateStr, "certificate", "c", "", "Certificate")
 	cmd.MarkFlagRequired("certificate")
 	cmd.Flags().StringVarP(&keyStr, "key", "k", "", "Key")
