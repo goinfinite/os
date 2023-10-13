@@ -30,13 +30,13 @@ func GetSslPairsController() *cobra.Command {
 	return cmd
 }
 
-func AddSslControler() *cobra.Command {
+func AddSslPairController() *cobra.Command {
 	var hostnameStr string
 	var certificateStr string
 	var keyStr string
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddNewSSl",
+		Short: "AddNewSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
 			parsedCertificateStr := strings.Replace(certificateStr, "\\n", "\n", -1)
 			parsedKeyStr := strings.Replace(keyStr, "\\n", "\n", -1)

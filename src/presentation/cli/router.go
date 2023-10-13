@@ -109,7 +109,7 @@ func sslRoutes() {
 
 	rootCmd.AddCommand(sslCmd)
 	sslCmd.AddCommand(cliController.GetSslPairsController())
-	sslCmd.AddCommand(cliController.AddSslControler())
+	sslCmd.AddCommand(cliController.AddSslPairController())
 	sslCmd.AddCommand(cliController.DeleteSslController())
 }
 

@@ -32,16 +32,16 @@ func GetSslPairsController(c echo.Context) error {
 }
 
 // AddSsl    	 godoc
-// @Summary      AddNewSsl
-// @Description  Add a new ssl.
+// @Summary      AddNewSslPair
+// @Description  Add a new ssl pair.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addSslDto 	  body    dto.AddSsl  true  "NewSsl"
-// @Success      201 {object} object{} "SslCreated"
+// @Param        addSslPairDto 	  body    dto.AddSslPair  true  "NewSslPair"
+// @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
-func AddSslController(c echo.Context) error {
+func AddSslPairController(c echo.Context) error {
 	requiredParams := []string{"hostname", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
