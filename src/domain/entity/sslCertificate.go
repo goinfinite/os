@@ -5,20 +5,21 @@ import (
 	"encoding/pem"
 	"errors"
 	"math/big"
-	"time"
+
+	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
 type SslCertificate struct {
-	Certificate  string
+	Certificate  valueObject.SslCertificateStr
 	SerialNumber *big.Int
-	CommonName   string
-	IssuedAt     time.Time
-	ExpiresAt    time.Time
+	CommonName   valueObject.Fqdn
+	IssuedAt     valueObject.UnixTime
+	ExpiresAt    valueObject.UnixTime
 	IsCA         bool
 }
 
-func NewSslCertificate(certificate string) (SslCertificate, error) {
-	block, _ := pem.Decode([]byte(certificate))
+func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
+	block, _ := pem.Decode([]byte(sslCertificate))
 	if block == nil {
 		return SslCertificate{}, errors.New("SslCertificateError")
 	}
@@ -28,12 +29,17 @@ func NewSslCertificate(certificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
+	certificate := valueObject.NewSslCertificateStrPanic(sslCertificate)
+	commonName := valueObject.NewFqdnPanic(parsedCert.Subject.CommonName)
+	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
+	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
+
 	return SslCertificate{
 		Certificate:  certificate,
 		SerialNumber: parsedCert.SerialNumber,
-		CommonName:   parsedCert.Subject.CommonName,
-		IssuedAt:     parsedCert.NotBefore,
-		ExpiresAt:    parsedCert.NotAfter,
+		CommonName:   commonName,
+		IssuedAt:     issuedAt,
+		ExpiresAt:    expiresAt,
 		IsCA:         parsedCert.IsCA,
 	}, nil
 }
@@ -47,5 +53,5 @@ func NewSslCertificatePanic(certificate string) SslCertificate {
 }
 
 func (sslCertificate SslCertificate) String() string {
-	return sslCertificate.Certificate
+	return sslCertificate.Certificate.String()
 }
