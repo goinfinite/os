@@ -4,14 +4,13 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"math/big"
 
 	"github.com/speedianet/sam/src/domain/valueObject"
 )
 
 type SslCertificate struct {
 	Certificate  valueObject.SslCertificateStr
-	SerialNumber *big.Int
+	SerialNumber valueObject.SslSerialNumber
 	CommonName   valueObject.Fqdn
 	IssuedAt     valueObject.UnixTime
 	ExpiresAt    valueObject.UnixTime
@@ -30,13 +29,14 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 	}
 
 	certificate := valueObject.NewSslCertificateStrPanic(sslCertificate)
+	serialNumber := valueObject.NewSslSerialNumberPanic(parsedCert.SerialNumber)
 	commonName := valueObject.NewFqdnPanic(parsedCert.Subject.CommonName)
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
 	return SslCertificate{
 		Certificate:  certificate,
-		SerialNumber: parsedCert.SerialNumber,
+		SerialNumber: serialNumber,
 		CommonName:   commonName,
 		IssuedAt:     issuedAt,
 		ExpiresAt:    expiresAt,
