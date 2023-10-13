@@ -6,15 +6,15 @@ import (
 )
 
 type AddSslPair struct {
-	Hostname    valueObject.Fqdn      `json:"hostname"`
-	Certificate entity.SslCertificate `json:"certificate"`
-	Key         entity.SslPrivateKey  `json:"key"`
+	Hostname    valueObject.Fqdn          `json:"hostname"`
+	Certificate entity.SslCertificate     `json:"certificate"`
+	Key         valueObject.SslPrivateKey `json:"key"`
 }
 
 func NewAddSslPair(
 	hostname valueObject.Fqdn,
 	certificate entity.SslCertificate,
-	key entity.SslPrivateKey,
+	key valueObject.SslPrivateKey,
 ) AddSslPair {
 	return AddSslPair{
 		Hostname:    hostname,

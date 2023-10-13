@@ -1,4 +1,4 @@
-package entity
+package valueObject
 
 import (
 	"crypto/x509"
@@ -6,23 +6,19 @@ import (
 	"errors"
 )
 
-type SslPrivateKey struct {
-	Key string
-}
+type SslPrivateKey string
 
 func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
 	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
-		return SslPrivateKey{}, errors.New("SslPrivateKeyError")
+		return "", errors.New("SslPrivateKeyError")
 	}
 	_, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return SslPrivateKey{}, nil
+		return "", errors.New("SslPrivateKeyError")
 	}
 
-	return SslPrivateKey{
-		Key: privateKey,
-	}, nil
+	return SslPrivateKey(privateKey), nil
 }
 
 func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
@@ -34,5 +30,5 @@ func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
 }
 
 func (sslPrivateKey SslPrivateKey) String() string {
-	return sslPrivateKey.Key
+	return string(sslPrivateKey)
 }

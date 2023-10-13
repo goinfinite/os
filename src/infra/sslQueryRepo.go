@@ -47,7 +47,7 @@ func (repo SslQueryRepo) SslFactory(
 		return ssl, err
 	}
 
-	privateKey, err := entity.NewSslPrivateKey(sslPrivateKey)
+	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKey)
 	if err != nil {
 		return ssl, err
 	}

@@ -52,7 +52,7 @@ func AddSslPairController() *cobra.Command {
 			privateKeyOutputStr := string(privateKeyBytesOutput)
 
 			sslCertificate := entity.NewSslCertificatePanic(certificateOutputStr)
-			sslPrivateKey := entity.NewSslPrivateKeyPanic(privateKeyOutputStr)
+			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyOutputStr)
 
 			addSslDto := dto.NewAddSslPair(
 				valueObject.NewFqdnPanic(hostnameStr),
