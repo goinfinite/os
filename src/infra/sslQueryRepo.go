@@ -31,6 +31,30 @@ func (repo SslQueryRepo) splitSslCertificate(
 	return certificates, nil
 }
 
+func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
+	httpdVhostsConfig := make(map[string]string)
+	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
+		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
+	)
+	if err != nil {
+		return httpdVhostsConfig, err
+	}
+
+	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
+
+	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
+		httpdVhostConfigVirtualHostRegex := "(?:virtualhost )(?P<virtualHost>.*)\\s{"
+		httpdVhostConfigVirtualHostMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigVirtualHostRegex)["virtualHost"]
+
+		httpdVhostConfigFileRegex := "(?:configFile\\s*)(?P<configFile>.*)"
+		httpdVhostConfigFileMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigFileRegex)["configFile"]
+
+		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFileMatch
+	}
+
+	return httpdVhostsConfig, nil
+}
+
 func (repo SslQueryRepo) SslFactory(
 	sslHostname string,
 	sslPrivateKey string,
@@ -80,30 +104,6 @@ func (repo SslQueryRepo) SslFactory(
 		privateKey,
 		chainCertificates,
 	), nil
-}
-
-func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
-	httpdVhostsConfig := make(map[string]string)
-	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
-		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
-	)
-	if err != nil {
-		return httpdVhostsConfig, err
-	}
-
-	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
-
-	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
-		httpdVhostConfigVirtualHostRegex := "(?:virtualhost )(?P<virtualHost>.*)\\s{"
-		httpdVhostConfigVirtualHostMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigVirtualHostRegex)["virtualHost"]
-
-		httpdVhostConfigFileRegex := "(?:configFile\\s*)(?P<configFile>.*)"
-		httpdVhostConfigFileMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigFileRegex)["configFile"]
-
-		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFileMatch
-	}
-
-	return httpdVhostsConfig, nil
 }
 
 func (repo SslQueryRepo) GetVhostConfigFilePath(vhost string) (string, error) {
