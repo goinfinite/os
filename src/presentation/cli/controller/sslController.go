@@ -1,7 +1,7 @@
 package cliController
 
 import (
-	"strings"
+	"os"
 
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/entity"
@@ -32,24 +32,27 @@ func GetSslPairsController() *cobra.Command {
 
 func AddSslPairController() *cobra.Command {
 	var hostnameStr string
-	var certificateStr string
-	var keyStr string
+	var certificateFilePathStr string
+	var keyFilePathStr string
+
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "AddNewSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			parsedCertificateStr := strings.Replace(certificateStr, "\\n", "\n", -1)
-			parsedKeyStr := strings.Replace(keyStr, "\\n", "\n", -1)
-
-			sslCertificate, err := entity.NewSslCertificate(parsedCertificateStr)
+			certificateBytesOutput, err := os.ReadFile(certificateFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
+			certificateOutputStr := string(certificateBytesOutput)
 
-			sslPrivateKey, err := entity.NewSslPrivateKey(parsedKeyStr)
+			privateKeyBytesOutput, err := os.ReadFile(keyFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
+			privateKeyOutputStr := string(privateKeyBytesOutput)
+
+			sslCertificate := entity.NewSslCertificatePanic(certificateOutputStr)
+			sslPrivateKey := entity.NewSslPrivateKeyPanic(privateKeyOutputStr)
 
 			addSslDto := dto.NewAddSslPair(
 				valueObject.NewFqdnPanic(hostnameStr),
@@ -72,11 +75,11 @@ func AddSslPairController() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "t", "", "Hostname")
-	cmd.MarkFlagRequired("Hostname")
-	cmd.Flags().StringVarP(&certificateStr, "certificate", "c", "", "Certificate")
-	cmd.MarkFlagRequired("certificate")
-	cmd.Flags().StringVarP(&keyStr, "key", "k", "", "Key")
-	cmd.MarkFlagRequired("key")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(&certificateFilePathStr, "certificateFilePath", "c", "", "Certificate File Path")
+	cmd.MarkFlagRequired("certificateFilePath")
+	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "Key File Path")
+	cmd.MarkFlagRequired("keyFilePath")
 	return cmd
 }
 
