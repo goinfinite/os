@@ -14,11 +14,6 @@ const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
 
 type SslQueryRepo struct{}
 
-type HttpdVhostConfig struct {
-	VirtualHost string
-	FilePath    string
-}
-
 func (repo SslQueryRepo) splitSslCertificate(
 	sslCertContent string,
 ) ([]entity.SslCertificate, error) {
@@ -87,13 +82,13 @@ func (repo SslQueryRepo) SslFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
-	var httpdVhostsConfig []HttpdVhostConfig
+func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
+	httpdVhostsConfig := make(map[string]string)
 	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
 		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
 	)
 	if err != nil {
-		return []HttpdVhostConfig{}, err
+		return httpdVhostsConfig, err
 	}
 
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
@@ -105,40 +100,27 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 		httpdVhostConfigFileRegex := "(?:configFile\\s*)(?P<configFile>.*)"
 		httpdVhostConfigFileMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigFileRegex)["configFile"]
 
-		httpdVhostsConfig = append(httpdVhostsConfig, HttpdVhostConfig{
-			VirtualHost: httpdVhostConfigVirtualHostMatch,
-			FilePath:    httpdVhostConfigFileMatch,
-		})
+		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFileMatch
 	}
 
 	return httpdVhostsConfig, nil
 }
 
 func (repo SslQueryRepo) GetVhostConfigFilePath(vhost string) (string, error) {
-	vhostConfigFilePath := ""
-
-	httpdVhostsConfigs, err := repo.GetHttpdVhostsConfig()
+	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
 	if err != nil {
 		return "", err
 	}
 
-	for _, httpdVhostConfig := range httpdVhostsConfigs {
-		if vhost != httpdVhostConfig.VirtualHost {
+	for virtualHost, configFilePath := range httpdVhostsConfig {
+		if vhost != virtualHost {
 			continue
 		}
 
-		vhostConfigFilePath = httpdVhostConfig.FilePath
-		if err != nil {
-			return "", err
-		}
-		break
+		return configFilePath, nil
 	}
 
-	if len(vhostConfigFilePath) == 0 {
-		return "", errors.New("VhostNotFound")
-	}
-
-	return vhostConfigFilePath, nil
+	return "", errors.New("VhostNotFound")
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
@@ -148,9 +130,9 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		return []entity.SslPair{}, err
 	}
 
-	for _, httpdVhostConfig := range httpdVhostsConfig {
+	for virtualHost, configFilePath := range httpdVhostsConfig {
 		vhostConfigOutput, err := infraHelper.RunCmd(
-			"sed", "-n", "/vhssl/, /}/p", httpdVhostConfig.FilePath,
+			"sed", "-n", "/vhssl/, /}/p", configFilePath,
 		)
 		if err != nil {
 			return []entity.SslPair{}, err
@@ -176,7 +158,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 		certFileOutputStr := string(certFileBytesOutput)
 
-		ssl, err := repo.SslFactory(httpdVhostConfig.VirtualHost, privateKeyOutputStr, certFileOutputStr)
+		ssl, err := repo.SslFactory(virtualHost, privateKeyOutputStr, certFileOutputStr)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
