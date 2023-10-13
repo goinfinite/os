@@ -12,14 +12,14 @@ import (
 	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
 )
 
-// GetSsls	 	 godoc
-// @Summary      GetSsls
-// @Description  List ssls.
+// GetSslPairs	 godoc
+// @Summary      GetSslPair
+// @Description  List ssl pairs.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.Ssl
+// @Success      200 {array} entity.SslPair
 // @Router       /ssl/ [get]
 func GetSslsController(c echo.Context) error {
 	sslQueryRepo := infra.SslQueryRepo{}
@@ -31,7 +31,7 @@ func GetSslsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, sslPairsList)
 }
 
-// AddSsl    godoc
+// AddSsl    	 godoc
 // @Summary      AddNewSsl
 // @Description  Add a new ssl.
 // @Tags         ssl
@@ -47,15 +47,8 @@ func AddSslController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sslCertificate, err := entity.NewSslCertificate(requestBody["certificate"].(string))
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-
-	sslPrivateKey, err := entity.NewSslPrivateKey(requestBody["key"].(string))
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
+	sslCertificate := entity.NewSslCertificatePanic(requestBody["certificate"].(string))
+	sslPrivateKey := entity.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
 	addCronDto := dto.NewAddSslPair(
 		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
@@ -65,7 +58,7 @@ func AddSslController(c echo.Context) error {
 
 	sslCmdRepo := infra.SslCmdRepo{}
 
-	err = useCase.AddSslPair(
+	err := useCase.AddSslPair(
 		sslCmdRepo,
 		addCronDto,
 	)
@@ -83,9 +76,9 @@ func AddSslController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        sslId 	  path   string  true  "SslId"
+// @Param        sslSerialNumber 	  path   string  true  "SslSerialNumber"
 // @Success      200 {object} object{} "SslDeleted"
-// @Router       /ssl/{sslId}/ [delete]
+// @Router       /ssl/{sslSerialNumber}/ [delete]
 func DeleteSslController(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslSerialNumberPanic(c.Param("sslSerialNumber"))
 
