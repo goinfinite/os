@@ -19,11 +19,6 @@ type HttpdVhostConfig struct {
 	FilePath    string
 }
 
-type VhostConfig struct {
-	FilePath    string
-	FileContent string
-}
-
 func (repo SslQueryRepo) splitSslCertificate(
 	sslCertContent string,
 ) ([]entity.SslCertificate, error) {
@@ -52,7 +47,7 @@ func (repo SslQueryRepo) SslFactory(
 	if err != nil {
 		return ssl, errors.New("SslHostnameError")
 	}
-	_, err = repo.GetVhostConfig(hostname.String())
+	_, err = repo.GetVhostConfigFilePath(hostname.String())
 	if err != nil {
 		return ssl, err
 	}
@@ -117,13 +112,12 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() ([]HttpdVhostConfig, error) {
 	return httpdVhostsConfig, nil
 }
 
-func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
+func (repo SslQueryRepo) GetVhostConfigFilePath(vhost string) (string, error) {
 	vhostConfigFilePath := ""
-	vhostConfigFileContent := ""
 
 	httpdVhostsConfigs, err := repo.GetHttpdVhostsConfig()
 	if err != nil {
-		return VhostConfig{}, err
+		return "", err
 	}
 
 	for _, httpdVhostConfig := range httpdVhostsConfigs {
@@ -132,21 +126,17 @@ func (repo SslQueryRepo) GetVhostConfig(vhost string) (VhostConfig, error) {
 		}
 
 		vhostConfigFilePath = httpdVhostConfig.FilePath
-		vhostConfigFileContent, err = infraHelper.RunCmd("cat", vhostConfigFilePath)
 		if err != nil {
-			return VhostConfig{}, err
+			return "", err
 		}
 		break
 	}
 
 	if len(vhostConfigFilePath) == 0 {
-		return VhostConfig{}, errors.New("VhostNotFound")
+		return "", errors.New("VhostNotFound")
 	}
 
-	return VhostConfig{
-		FilePath:    vhostConfigFilePath,
-		FileContent: vhostConfigFileContent,
-	}, nil
+	return vhostConfigFilePath, nil
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {

@@ -43,7 +43,7 @@ vhssl {
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	vhostConfig, err := sslQueryRepo.GetVhostConfig(addSslPair.Hostname.String())
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname.String())
 	if err != nil {
 		return err
 	}
@@ -86,12 +86,8 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		sslKeyFilePath,
 		isChainedCert,
 	)
-	err = infraHelper.UpdateFile(vhostConfig.FilePath, vhsslConfig, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	err = infraHelper.UpdateFile(vhostConfigFilePath, vhsslConfig, false)
+	return err
 }
 
 func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error {
@@ -102,10 +98,16 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfig, err := sslQueryRepo.GetVhostConfig(sslToDelete.Hostname.String())
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.Hostname.String())
 	if err != nil {
 		return err
 	}
+
+	vhostConfigBytesOutput, err := os.ReadFile(vhostConfigFilePath)
+	if err != nil {
+		return err
+	}
+	vhostConfigOutputStr := string(vhostConfigBytesOutput)
 
 	sslBaseDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
 	err = os.RemoveAll(sslBaseDirPath)
@@ -114,16 +116,12 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 	}
 
 	matchVhostConfigVhssl := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
-	vhostConfigWithoutVhssl := matchVhostConfigVhssl.ReplaceAllString(vhostConfig.FileContent, "")
+	vhostConfigWithoutVhssl := matchVhostConfigVhssl.ReplaceAllString(vhostConfigOutputStr, "")
 
 	err = infraHelper.UpdateFile(
-		vhostConfig.FilePath,
+		vhostConfigFilePath,
 		strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)+"\n\n",
 		true,
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
