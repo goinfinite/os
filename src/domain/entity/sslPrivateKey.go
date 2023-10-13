@@ -25,6 +25,14 @@ func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
 	}, nil
 }
 
+func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
+	sslPrivateKey, err := NewSslPrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
+	return sslPrivateKey
+}
+
 func (sslPrivateKey SslPrivateKey) String() string {
 	return sslPrivateKey.Key
 }

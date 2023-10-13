@@ -38,6 +38,14 @@ func NewSslCertificate(certificate string) (SslCertificate, error) {
 	}, nil
 }
 
+func NewSslCertificatePanic(certificate string) SslCertificate {
+	sslCertificate, err := NewSslCertificate(certificate)
+	if err != nil {
+		panic(err)
+	}
+	return sslCertificate
+}
+
 func (sslCertificate SslCertificate) String() string {
 	return sslCertificate.Certificate
 }
