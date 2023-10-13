@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func GetSslsController() *cobra.Command {
+func GetSslPairsController() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "GetSsls",
+		Short: "GetSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := infra.SslQueryRepo{}
 			sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)

@@ -21,7 +21,7 @@ import (
 // @Security     Bearer
 // @Success      200 {array} entity.SslPair
 // @Router       /ssl/ [get]
-func GetSslsController(c echo.Context) error {
+func GetSslPairsController(c echo.Context) error {
 	sslQueryRepo := infra.SslQueryRepo{}
 	sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 	if err != nil {
