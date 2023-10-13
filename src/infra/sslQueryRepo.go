@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/speedianet/sam/src/domain/entity"
@@ -43,13 +44,15 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
 	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
 
 	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
-		httpdVhostConfigVirtualHostRegex := "(?:virtualhost )(?P<virtualHost>.*)\\s{"
-		httpdVhostConfigVirtualHostMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigVirtualHostRegex)["virtualHost"]
+		httpdVhostConfigVirtualHostExpression := "virtualhost\\s*(.*)\\s{"
+		httpdVhostConfigVirtualHostRegex := regexp.MustCompile(httpdVhostConfigVirtualHostExpression)
+		httpdVhostConfigVirtualHostMatch := httpdVhostConfigVirtualHostRegex.FindStringSubmatch(httpdVhostConfigStr)[1]
 
-		httpdVhostConfigFileRegex := "(?:configFile\\s*)(?P<configFile>.*)"
-		httpdVhostConfigFileMatch := infraHelper.GetRegexNamedGroups(httpdVhostConfigStr, httpdVhostConfigFileRegex)["configFile"]
+		httpdVhostConfigFilePathExpression := "configFile\\s*(.*)"
+		httpdVhostConfigFilePathRegex := regexp.MustCompile(httpdVhostConfigFilePathExpression)
+		httpdVhostConfigFilePathMatch := httpdVhostConfigFilePathRegex.FindStringSubmatch(httpdVhostConfigStr)[1]
 
-		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFileMatch
+		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFilePathMatch
 	}
 
 	return httpdVhostsConfig, nil
@@ -57,8 +60,8 @@ func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
 
 func (repo SslQueryRepo) SslFactory(
 	sslHostname string,
-	sslPrivateKey string,
-	sslCertContent string,
+	sslPrivateKeyStr string,
+	sslCertStr string,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
@@ -66,17 +69,17 @@ func (repo SslQueryRepo) SslFactory(
 	if err != nil {
 		return ssl, errors.New("SslHostnameError")
 	}
-	_, err = repo.GetVhostConfigFilePath(hostname.String())
+	_, err = repo.GetVhostConfigFilePath(hostname)
 	if err != nil {
 		return ssl, err
 	}
 
-	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKey)
+	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKeyStr)
 	if err != nil {
 		return ssl, err
 	}
 
-	sslCertificates, err := repo.splitSslCertificate(sslCertContent)
+	sslCertificates, err := repo.splitSslCertificate(sslCertStr)
 	if err != nil {
 		return ssl, err
 	}
@@ -106,14 +109,14 @@ func (repo SslQueryRepo) SslFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) GetVhostConfigFilePath(vhost string) (string, error) {
+func (repo SslQueryRepo) GetVhostConfigFilePath(vhost valueObject.Fqdn) (string, error) {
 	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
 	if err != nil {
 		return "", err
 	}
 
 	for virtualHost, configFilePath := range httpdVhostsConfig {
-		if vhost != virtualHost {
+		if vhost.String() != virtualHost {
 			continue
 		}
 

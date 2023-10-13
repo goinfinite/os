@@ -43,7 +43,7 @@ vhssl {
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname.String())
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.Hostname.String())
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.Hostname)
 	if err != nil {
 		return err
 	}
