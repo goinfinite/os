@@ -88,7 +88,7 @@ func (repo SslQueryRepo) SslFactory(
 	var certificate entity.SslCertificate
 	var chainCertificates []entity.SslCertificate
 	for _, sslCertificate := range sslCertificates {
-		if sslCertificate.IsCA {
+		if !sslCertificate.IsCA {
 			certificate = sslCertificate
 			continue
 		}
