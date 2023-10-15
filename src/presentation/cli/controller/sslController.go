@@ -41,13 +41,13 @@ func AddSslPairController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			certificateBytesOutput, err := os.ReadFile(certificateFilePathStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
 			}
 			certificateOutputStr := string(certificateBytesOutput)
 
 			privateKeyBytesOutput, err := os.ReadFile(keyFilePathStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				cliHelper.ResponseWrapper(false, "FailedToOpenPrivateKeyFile")
 			}
 			privateKeyOutputStr := string(privateKeyBytesOutput)
 

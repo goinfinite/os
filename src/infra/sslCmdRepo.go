@@ -107,7 +107,7 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 	vhostConfigBytesOutput, err := os.ReadFile(vhostConfigFilePath)
 	if err != nil {
 		log.Printf("FailedToOpenFile: %v", err)
-		return errors.New("FailedToOpenFile")
+		return errors.New("FailedToOpenVhconfFile")
 	}
 	vhostConfigOutputStr := string(vhostConfigBytesOutput)
 

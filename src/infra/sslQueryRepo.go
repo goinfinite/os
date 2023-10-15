@@ -151,8 +151,8 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		vhostConfigKeyFileMatch := vhostConfigKeyFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
 		privateKeyBytesOutput, err := os.ReadFile(vhostConfigKeyFileMatch)
 		if err != nil {
-			log.Printf("FailedToOpenFile: %v", err)
-			return []entity.SslPair{}, errors.New("FailedToOpenFile")
+			log.Printf("FailedToOpenHttpdFile: %v", err)
+			return []entity.SslPair{}, errors.New("FailedToOpenHttpdFile")
 		}
 		privateKeyOutputStr := string(privateKeyBytesOutput)
 
@@ -161,8 +161,8 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		vhostConfigCertFileMatch := vhostConfigCertFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
 		certFileBytesOutput, err := os.ReadFile(vhostConfigCertFileMatch)
 		if err != nil {
-			log.Printf("FailedToOpenFile: %v", err)
-			return []entity.SslPair{}, errors.New("FailedToOpenFile")
+			log.Printf("FailedToOpenVhconfFile: %v", err)
+			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
 		}
 		certFileOutputStr := string(certFileBytesOutput)
 
