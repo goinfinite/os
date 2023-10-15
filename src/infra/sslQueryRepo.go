@@ -96,13 +96,8 @@ func (repo SslQueryRepo) SslFactory(
 		chainCertificates = append(chainCertificates, sslCertificate)
 	}
 
-	id, err := valueObject.NewSslSerialNumber(certificate.SerialNumber.String())
-	if err != nil {
-		return ssl, err
-	}
-
 	return entity.NewSslPair(
-		id,
+		certificate.SerialNumber,
 		hostname,
 		certificate,
 		privateKey,
