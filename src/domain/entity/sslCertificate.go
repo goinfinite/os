@@ -11,7 +11,7 @@ import (
 type SslCertificate struct {
 	Certificate  valueObject.SslCertificateStr
 	SerialNumber valueObject.SslSerialNumber
-	CommonName   valueObject.Fqdn
+	CommonName   *valueObject.Fqdn
 	IssuedAt     valueObject.UnixTime
 	ExpiresAt    valueObject.UnixTime
 	IsCA         bool
@@ -30,14 +30,20 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 
 	certificate := valueObject.NewSslCertificateStrPanic(sslCertificate)
 	serialNumber := valueObject.NewSslSerialNumberPanic(parsedCert.SerialNumber)
-	commonName := valueObject.NewFqdnPanic(parsedCert.Subject.CommonName)
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
+
+	var commonNamePtr *valueObject.Fqdn
+	commonNamePtr = nil
+	if !parsedCert.IsCA {
+		commonName := valueObject.NewFqdnPanic(parsedCert.Subject.CommonName)
+		commonNamePtr = &commonName
+	}
 
 	return SslCertificate{
 		Certificate:  certificate,
 		SerialNumber: serialNumber,
-		CommonName:   commonName,
+		CommonName:   commonNamePtr,
 		IssuedAt:     issuedAt,
 		ExpiresAt:    expiresAt,
 		IsCA:         parsedCert.IsCA,
