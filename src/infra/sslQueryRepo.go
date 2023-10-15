@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -134,30 +135,34 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	}
 
 	for virtualHost, configFilePath := range httpdVhostsConfig {
-		vhostConfigOutput, err := infraHelper.RunCmd(
+		vhostConfigOutputStr, err := infraHelper.RunCmd(
 			"sed", "-n", "/vhssl/, /}/p", configFilePath,
 		)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
 
-		if len(vhostConfigOutput) < 1 {
+		if len(vhostConfigOutputStr) < 1 {
 			return []entity.SslPair{}, nil
 		}
 
-		vhostConfigKeyFileRegex := "(?:keyFile\\s*(?P<keyFile>.*))"
-		vhostConfigKeyFileMatch := infraHelper.GetRegexNamedGroups(vhostConfigOutput, vhostConfigKeyFileRegex)["keyFile"]
+		vhostConfigKeyFileExpression := "keyFile\\s*(.*)"
+		vhostConfigKeyFileRegex := regexp.MustCompile(vhostConfigKeyFileExpression)
+		vhostConfigKeyFileMatch := vhostConfigKeyFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
 		privateKeyBytesOutput, err := os.ReadFile(vhostConfigKeyFileMatch)
 		if err != nil {
-			return []entity.SslPair{}, err
+			log.Printf("FailedToOpenFile: %v", err)
+			return []entity.SslPair{}, errors.New("FailedToOpenFile")
 		}
 		privateKeyOutputStr := string(privateKeyBytesOutput)
 
-		vhostConfigCertFileRegex := "(?:certFile\\s*(?P<certFile>.*))"
-		vhostConfigCertFileMatch := infraHelper.GetRegexNamedGroups(vhostConfigOutput, vhostConfigCertFileRegex)["certFile"]
+		vhostConfigCertFileExpression := "certFile\\s*(.*)"
+		vhostConfigCertFileRegex := regexp.MustCompile(vhostConfigCertFileExpression)
+		vhostConfigCertFileMatch := vhostConfigCertFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
 		certFileBytesOutput, err := os.ReadFile(vhostConfigCertFileMatch)
 		if err != nil {
-			return []entity.SslPair{}, err
+			log.Printf("FailedToOpenFile: %v", err)
+			return []entity.SslPair{}, errors.New("FailedToOpenFile")
 		}
 		certFileOutputStr := string(certFileBytesOutput)
 

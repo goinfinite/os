@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -105,7 +106,8 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 
 	vhostConfigBytesOutput, err := os.ReadFile(vhostConfigFilePath)
 	if err != nil {
-		return err
+		log.Printf("FailedToOpenFile: %v", err)
+		return errors.New("FailedToOpenFile")
 	}
 	vhostConfigOutputStr := string(vhostConfigBytesOutput)
 
@@ -115,8 +117,8 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 		return err
 	}
 
-	matchVhostConfigVhssl := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
-	vhostConfigWithoutVhssl := matchVhostConfigVhssl.ReplaceAllString(vhostConfigOutputStr, "")
+	vhostConfigVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
+	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigOutputStr, "")
 
 	err = infraHelper.UpdateFile(
 		vhostConfigFilePath,
