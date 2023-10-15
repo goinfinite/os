@@ -108,7 +108,7 @@ func DeleteSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslSerialNumberStr, "id", "i", "", "SslSerialNumber")
-	cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVarP(&sslSerialNumberStr, "serialNumber", "s", "", "SslSerialNumber")
+	cmd.MarkFlagRequired("serialNumber")
 	return cmd
 }
