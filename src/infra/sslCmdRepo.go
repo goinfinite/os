@@ -119,10 +119,12 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 
 	vhostConfigVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
 	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigOutputStr, "")
+	vhostConfigWithoutSpaces := strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)
+	vhostConfigWithBreakLines := vhostConfigWithoutSpaces + "\n\n"
 
 	err = infraHelper.UpdateFile(
 		vhostConfigFilePath,
-		strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)+"\n\n",
+		vhostConfigWithBreakLines,
 		true,
 	)
 	return err
