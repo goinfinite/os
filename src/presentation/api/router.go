@@ -30,7 +30,7 @@ func authRoutes(baseRoute *echo.Group) {
 }
 
 func databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database", apiMiddleware.PreventServiceDown("mysql"))
+	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 	databaseGroup.DELETE(

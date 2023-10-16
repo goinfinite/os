@@ -52,7 +52,7 @@ func databaseRoutes() {
 	var databaseCmd = &cobra.Command{
 		Use:              "db",
 		Short:            "DatabaseManagement",
-		PersistentPreRun: cliMiddleware.PreventServiceDown("mysql"),
+		PersistentPreRun: cliMiddleware.ServiceStatusValidator("mysql"),
 	}
 
 	rootCmd.AddCommand(databaseCmd)

@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/sam/src/infra"
 )
 
-func PreventServiceDown(serviceNameStr string) echo.MiddlewareFunc {
+func ServiceStatusValidator(serviceNameStr string) echo.MiddlewareFunc {
 	servicesQueryRepo := infra.ServicesQueryRepo{}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

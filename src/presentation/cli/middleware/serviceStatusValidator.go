@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func PreventServiceDown(serviceNameStr string) func(cmd *cobra.Command, args []string) {
+func ServiceStatusValidator(serviceNameStr string) func(cmd *cobra.Command, args []string) {
 	servicesQueryRepo := infra.ServicesQueryRepo{}
 
 	return func(cmd *cobra.Command, args []string) {
