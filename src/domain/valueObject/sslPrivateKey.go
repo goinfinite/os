@@ -9,16 +9,12 @@ import (
 type SslPrivateKey string
 
 func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
-	block, _ := pem.Decode([]byte(privateKey))
-	if block == nil {
-		return "", errors.New("SslPrivateKeyError")
-	}
-	_, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
+	sslPrivateKey := SslPrivateKey(privateKey)
+	if !sslPrivateKey.isValid() {
 		return "", errors.New("SslPrivateKeyError")
 	}
 
-	return SslPrivateKey(privateKey), nil
+	return sslPrivateKey, nil
 }
 
 func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
@@ -27,6 +23,19 @@ func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
 		panic(err)
 	}
 	return sslPrivateKey
+}
+
+func (sslPrivateKey SslPrivateKey) isValid() bool {
+	block, _ := pem.Decode([]byte(sslPrivateKey))
+	if block == nil {
+		return false
+	}
+	_, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 func (sslPrivateKey SslPrivateKey) String() string {
