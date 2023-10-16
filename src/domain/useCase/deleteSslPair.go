@@ -26,7 +26,7 @@ func DeleteSslPair(
 	}
 
 	log.Printf(
-		"SSL '%v' deleted in '%v' hostname.",
+		"SSL '%v' of '%v' hostname deleted.",
 		sslSerialNumber,
 		sslPair.Hostname.String(),
 	)
