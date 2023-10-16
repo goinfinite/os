@@ -104,12 +104,12 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 		return err
 	}
 
-	vhostConfigBytesOutput, err := os.ReadFile(vhostConfigFilePath)
+	vhostConfigContentBytes, err := os.ReadFile(vhostConfigFilePath)
 	if err != nil {
 		log.Printf("FailedToOpenFile: %v", err)
 		return errors.New("FailedToOpenVhconfFile")
 	}
-	vhostConfigOutputStr := string(vhostConfigBytesOutput)
+	vhostConfigContentStr := string(vhostConfigContentBytes)
 
 	sslBaseDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
 	err = os.RemoveAll(sslBaseDirPath)
@@ -118,7 +118,7 @@ func (repo SslCmdRepo) Delete(sslSerialNumber valueObject.SslSerialNumber) error
 	}
 
 	vhostConfigVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
-	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigOutputStr, "")
+	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigContentStr, "")
 	vhostConfigWithoutSpaces := strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)
 	vhostConfigWithBreakLines := vhostConfigWithoutSpaces + "\n\n"
 

@@ -130,38 +130,38 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	}
 
 	for virtualHost, configFilePath := range httpdVhostsConfig {
-		vhostConfigOutputStr, err := infraHelper.RunCmd(
+		vhostConfigContentStr, err := infraHelper.RunCmd(
 			"sed", "-n", "/vhssl/, /}/p", configFilePath,
 		)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
 
-		if len(vhostConfigOutputStr) < 1 {
+		if len(vhostConfigContentStr) < 1 {
 			return []entity.SslPair{}, nil
 		}
 
 		vhostConfigKeyFileExpression := "keyFile\\s*(.*)"
 		vhostConfigKeyFileRegex := regexp.MustCompile(vhostConfigKeyFileExpression)
-		vhostConfigKeyFileMatch := vhostConfigKeyFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
-		privateKeyBytesOutput, err := os.ReadFile(vhostConfigKeyFileMatch)
+		vhostConfigKeyFileMatch := vhostConfigKeyFileRegex.FindStringSubmatch(vhostConfigContentStr)[1]
+		privateKeyContentBytes, err := os.ReadFile(vhostConfigKeyFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenHttpdFile: %v", err)
 			return []entity.SslPair{}, errors.New("FailedToOpenHttpdFile")
 		}
-		privateKeyOutputStr := string(privateKeyBytesOutput)
+		privateKeyContentStr := string(privateKeyContentBytes)
 
 		vhostConfigCertFileExpression := "certFile\\s*(.*)"
 		vhostConfigCertFileRegex := regexp.MustCompile(vhostConfigCertFileExpression)
-		vhostConfigCertFileMatch := vhostConfigCertFileRegex.FindStringSubmatch(vhostConfigOutputStr)[1]
-		certFileBytesOutput, err := os.ReadFile(vhostConfigCertFileMatch)
+		vhostConfigCertFileMatch := vhostConfigCertFileRegex.FindStringSubmatch(vhostConfigContentStr)[1]
+		certFileContentBytes, err := os.ReadFile(vhostConfigCertFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenVhconfFile: %v", err)
 			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
 		}
-		certFileOutputStr := string(certFileBytesOutput)
+		certFileContentStr := string(certFileContentBytes)
 
-		ssl, err := repo.SslFactory(virtualHost, privateKeyOutputStr, certFileOutputStr)
+		ssl, err := repo.SslFactory(virtualHost, privateKeyContentStr, certFileContentStr)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
