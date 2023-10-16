@@ -28,15 +28,26 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
-	certificate := valueObject.NewSslCertificateStrPanic(sslCertificate)
-	serialNumber := valueObject.NewSslSerialNumberPanic(parsedCert.SerialNumber)
+	certificate, err := valueObject.NewSslCertificateStr(sslCertificate)
+	if err != nil {
+		return SslCertificate{}, err
+	}
+
+	serialNumber, err := valueObject.NewSslSerialNumber(parsedCert.SerialNumber)
+	if err != nil {
+		return SslCertificate{}, err
+	}
+
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
 	var commonNamePtr *valueObject.Fqdn
 	commonNamePtr = nil
 	if !parsedCert.IsCA {
-		commonName := valueObject.NewFqdnPanic(parsedCert.Subject.CommonName)
+		commonName, err := valueObject.NewFqdn(parsedCert.Subject.CommonName)
+		if err != nil {
+			return SslCertificate{}, err
+		}
 		commonNamePtr = &commonName
 	}
 
