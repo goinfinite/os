@@ -36,6 +36,18 @@ func Uninstall(name valueObject.ServiceName) error {
 		return errors.New("ServiceNotImplemented")
 	}
 
+	err = SupervisordFacade{}.Stop(name)
+	if err != nil {
+		log.Printf("UninstallServiceError: %s", err.Error())
+		return errors.New("UninstallServiceError")
+	}
+
+	err = SupervisordFacade{}.RemoveConf(supervisordConfigName)
+	if err != nil {
+		log.Printf("UninstallServiceError: %s", err.Error())
+		return errors.New("UninstallServiceError")
+	}
+
 	var purgeEnvVars map[string]string
 	if nonInteractive {
 		purgeEnvVars = map[string]string{
@@ -45,18 +57,6 @@ func Uninstall(name valueObject.ServiceName) error {
 
 	purgePackages := append([]string{"purge", "-y"}, packages...)
 	_, err = infraHelper.RunCmdWithEnvVars("apt-get", purgeEnvVars, purgePackages...)
-	if err != nil {
-		log.Printf("UninstallServiceError: %s", err.Error())
-		return errors.New("UninstallServiceError")
-	}
-
-	err = SupervisordFacade{}.Stop(name)
-	if err != nil {
-		log.Printf("UninstallServiceError: %s", err.Error())
-		return errors.New("UninstallServiceError")
-	}
-
-	err = SupervisordFacade{}.RemoveConf(supervisordConfigName)
 	if err != nil {
 		log.Printf("UninstallServiceError: %s", err.Error())
 		return errors.New("UninstallServiceError")
