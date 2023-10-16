@@ -19,6 +19,7 @@ func NewCronSchedule(value string) (CronSchedule, error) {
 		if !hasAtSign {
 			schedule = CronSchedule("@" + value)
 		}
+		return schedule, nil
 	}
 
 	if !schedule.isValid() {
@@ -44,13 +45,6 @@ func (schedule CronSchedule) shouldHaveAtSign() bool {
 }
 
 func (schedule CronSchedule) isValid() bool {
-	frequencyRegex := regexp.MustCompile(cronSchedulePredefinedFrequencyRegex)
-	frequencyMatch := frequencyRegex.MatchString(string(schedule))
-
-	if frequencyMatch {
-		return true
-	}
-
 	scheduleRe := regexp.MustCompile(cronScheduleFrequencyRegex)
 	return scheduleRe.MatchString(string(schedule))
 }
