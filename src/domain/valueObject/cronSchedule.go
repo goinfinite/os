@@ -13,12 +13,16 @@ type CronSchedule string
 
 func NewCronSchedule(value string) (CronSchedule, error) {
 	schedule := CronSchedule(value)
-	if !schedule.isValid() {
-		return "", errors.New("InvalidCronSchedule")
+
+	if schedule.shouldHaveAtSign() {
+		hasAtSign := strings.HasPrefix(string(schedule), "@")
+		if !hasAtSign {
+			schedule = CronSchedule("@" + value)
+		}
 	}
 
-	if !schedule.shouldHaveAtSign() {
-		schedule = CronSchedule("@" + value)
+	if !schedule.isValid() {
+		return "", errors.New("InvalidCronSchedule")
 	}
 
 	return schedule, nil
@@ -34,13 +38,9 @@ func NewCronSchedulePanic(value string) CronSchedule {
 
 func (schedule CronSchedule) shouldHaveAtSign() bool {
 	frequencyRegex := regexp.MustCompile(cronSchedulePredefinedFrequencyRegex)
-	frequencyGroup := frequencyRegex.FindStringSubmatch(string(schedule))
+	frequencyMatch := frequencyRegex.MatchString(string(schedule))
 
-	if len(frequencyGroup) > 0 {
-		return strings.HasPrefix(string(schedule), "@")
-	}
-
-	return false
+	return frequencyMatch
 }
 
 func (schedule CronSchedule) isValid() bool {
