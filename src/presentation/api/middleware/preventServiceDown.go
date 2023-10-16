@@ -24,7 +24,7 @@ func PreventServiceDown(serviceNameStr string) echo.MiddlewareFunc {
 
 			isStopped := currentSvcStatus.Status.String() == "stopped"
 			if isStopped {
-				badRequestMessage = "ServicePaused"
+				badRequestMessage = "ServiceStopped"
 			}
 			isUninstalled := currentSvcStatus.Status.String() == "uninstalled"
 			if isUninstalled {
