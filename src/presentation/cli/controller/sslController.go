@@ -77,7 +77,7 @@ func AddSslPairController() *cobra.Command {
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "t", "", "Hostname")
 	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "Certificate File Path")
-	cmd.MarkFlagRequired("certificateFilePath")
+	cmd.MarkFlagRequired("certFilePath")
 	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "Key File Path")
 	cmd.MarkFlagRequired("keyFilePath")
 	return cmd
