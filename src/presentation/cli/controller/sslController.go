@@ -84,13 +84,13 @@ func AddSslPairController() *cobra.Command {
 }
 
 func DeleteSslPairController() *cobra.Command {
-	var sslSerialNumberStr string
+	var sslHashIdStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslSerialNumber := valueObject.NewSslSerialNumberPanic(sslSerialNumberStr)
+			sslHashId := valueObject.NewSslHashIdFromStringPanic(sslHashIdStr)
 
 			cronQueryRepo := infra.SslQueryRepo{}
 			cronCmdRepo := infra.SslCmdRepo{}
@@ -98,7 +98,7 @@ func DeleteSslPairController() *cobra.Command {
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,
 				cronCmdRepo,
-				sslSerialNumber,
+				sslHashId,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -108,7 +108,7 @@ func DeleteSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslSerialNumberStr, "serialNumber", "s", "", "SslSerialNumber")
-	cmd.MarkFlagRequired("serialNumber")
+	cmd.Flags().StringVarP(&sslHashIdStr, "sslHashId", "s", "", "SslHashId")
+	cmd.MarkFlagRequired("sslHashId")
 	return cmd
 }

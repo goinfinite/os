@@ -7,5 +7,5 @@ import (
 
 type SslCmdRepo interface {
 	Add(addSslPair dto.AddSslPair) error
-	Delete(sslSerialNumber valueObject.SslSerialNumber) error
+	Delete(sslHashId valueObject.SslHashId) error
 }

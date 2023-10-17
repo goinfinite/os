@@ -11,15 +11,15 @@ import (
 func DeleteSslPair(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	sslSerialNumber valueObject.SslSerialNumber,
+	sslHashId valueObject.SslHashId,
 ) error {
-	sslPair, err := sslQueryRepo.GetSslPairBySerialNumber(sslSerialNumber)
+	sslPair, err := sslQueryRepo.GetSslPairByHashId(sslHashId)
 	if err != nil {
 		log.Printf("SslPairNotFound: %s", err)
 		return errors.New("SslPairNotFound")
 	}
 
-	err = sslCmdRepo.Delete(sslSerialNumber)
+	err = sslCmdRepo.Delete(sslHashId)
 	if err != nil {
 		log.Printf("DeleteSslPairError: %s", err)
 		return errors.New("DeleteSslPairInfraError")
@@ -27,7 +27,7 @@ func DeleteSslPair(
 
 	log.Printf(
 		"SSL '%v' of '%v' hostname deleted.",
-		sslSerialNumber,
+		sslHashId,
 		sslPair.Hostname.String(),
 	)
 

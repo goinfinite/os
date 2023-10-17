@@ -87,6 +87,7 @@ func (repo SslQueryRepo) SslFactory(
 
 	var certificate entity.SslCertificate
 	var chainCertificates []entity.SslCertificate
+	var chainCertificatesContent []valueObject.SslCertificateStr
 	for _, sslCertificate := range sslCertificates {
 		if !sslCertificate.IsCA {
 			certificate = sslCertificate
@@ -94,10 +95,20 @@ func (repo SslQueryRepo) SslFactory(
 		}
 
 		chainCertificates = append(chainCertificates, sslCertificate)
+		chainCertificatesContent = append(chainCertificatesContent, sslCertificate.Certificate)
+	}
+
+	hashId, err := valueObject.NewSslHashIdFromSslPair(
+		certificate.Certificate,
+		chainCertificatesContent,
+		privateKey,
+	)
+	if err != nil {
+		return ssl, err
 	}
 
 	return entity.NewSslPair(
-		certificate.SerialNumber,
+		hashId,
 		hostname,
 		certificate,
 		privateKey,
@@ -172,7 +183,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) GetSslPairBySerialNumber(sslSerialNumber valueObject.SslSerialNumber) (entity.SslPair, error) {
+func (repo SslQueryRepo) GetSslPairByHashId(sslHashId valueObject.SslHashId) (entity.SslPair, error) {
 	sslPairs, err := repo.GetSslPairs()
 	if err != nil {
 		return entity.SslPair{}, err
@@ -183,7 +194,7 @@ func (repo SslQueryRepo) GetSslPairBySerialNumber(sslSerialNumber valueObject.Ss
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.SerialNumber.String() != sslSerialNumber.String() {
+		if ssl.HashId.String() != sslHashId.String() {
 			continue
 		}
 
