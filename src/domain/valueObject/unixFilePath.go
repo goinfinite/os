@@ -5,6 +5,8 @@ import (
 	"regexp"
 )
 
+const unixFilePathRegexExpression = "^\\S*\\/[^\\/]*\\.[A-z]{1,5}$"
+
 type UnixFilePath string
 
 func NewUnixFilePath(unixFilePathStr string) (UnixFilePath, error) {
@@ -16,7 +18,6 @@ func NewUnixFilePath(unixFilePathStr string) (UnixFilePath, error) {
 }
 
 func (unixFilePath UnixFilePath) isValid() bool {
-	unixFilePathRegexExpression := "^\\S*\\/[^\\/]*\\.[A-z]{1,5}$"
 	unixFilePathRegexRegex := regexp.MustCompile(unixFilePathRegexExpression)
 	return unixFilePathRegexRegex.MatchString(string(unixFilePath))
 }
