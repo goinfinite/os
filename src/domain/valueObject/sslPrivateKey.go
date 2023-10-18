@@ -31,11 +31,7 @@ func (sslPrivateKey SslPrivateKey) isValid() bool {
 		return false
 	}
 	_, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err != nil
 }
 
 func (sslPrivateKey SslPrivateKey) String() string {
