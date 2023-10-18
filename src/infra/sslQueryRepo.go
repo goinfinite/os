@@ -33,30 +33,31 @@ func (repo SslQueryRepo) splitSslCertificate(
 	return certificates, nil
 }
 
-func (repo SslQueryRepo) GetHttpdVhostsConfig() (map[string]string, error) {
-	httpdVhostsConfig := make(map[string]string)
-	httpdVhostsConfigOutput, err := infraHelper.RunCmd(
-		"sed", "-n", "/virtualhost/, /}/p", olsHttpdConfigPath,
-	)
+func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
+	httpdContent, err := infraHelper.ReadFile(olsHttpdConfigPath)
 	if err != nil {
-		return httpdVhostsConfig, err
+		return []valueObject.Fqdn{}, err
 	}
 
-	httpdVhostsConfigSlice := strings.SplitAfter(httpdVhostsConfigOutput, "}\nvirtualhost")
-
-	for _, httpdVhostConfigStr := range httpdVhostsConfigSlice {
-		httpdVhostConfigVirtualHostExpression := "virtualhost\\s*(.*)\\s{"
-		httpdVhostConfigVirtualHostRegex := regexp.MustCompile(httpdVhostConfigVirtualHostExpression)
-		httpdVhostConfigVirtualHostMatch := httpdVhostConfigVirtualHostRegex.FindStringSubmatch(httpdVhostConfigStr)[1]
-
-		httpdVhostConfigFilePathExpression := "configFile\\s*(.*)"
-		httpdVhostConfigFilePathRegex := regexp.MustCompile(httpdVhostConfigFilePathExpression)
-		httpdVhostConfigFilePathMatch := httpdVhostConfigFilePathRegex.FindStringSubmatch(httpdVhostConfigStr)[1]
-
-		httpdVhostsConfig[httpdVhostConfigVirtualHostMatch] = httpdVhostConfigFilePathMatch
+	vhostsExpression := "virtualhost\\s*(.*) {"
+	vhostsRegex := regexp.MustCompile(vhostsExpression)
+	vhostsMatch := vhostsRegex.FindAllStringSubmatch(httpdContent, -1)
+	if len(vhostsMatch) < 1 {
+		return []valueObject.Fqdn{}, err
 	}
 
-	return httpdVhostsConfig, nil
+	httpdVhosts := []valueObject.Fqdn{}
+	for _, vhostMatchStr := range vhostsMatch {
+		vhostStr := vhostMatchStr[1]
+		vhost, err := valueObject.NewFqdn(vhostStr)
+		if err != nil {
+			log.Printf("UnableToGetVhost (%v): %v", vhostStr, err)
+			continue
+		}
+		httpdVhosts = append(httpdVhosts, vhost)
+	}
+
+	return httpdVhosts, nil
 }
 
 func (repo SslQueryRepo) SslFactory(
@@ -116,45 +117,57 @@ func (repo SslQueryRepo) SslFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) GetVhostConfigFilePath(vhost valueObject.Fqdn) (string, error) {
-	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
+func (repo SslQueryRepo) GetVhostConfigFilePath(
+	vhost valueObject.Fqdn,
+) (valueObject.UnixFilePath, error) {
+	var vhostConfigFilePath valueObject.UnixFilePath
+	httpdContent, err := infraHelper.ReadFile(olsHttpdConfigPath)
 	if err != nil {
 		return "", err
 	}
 
-	for virtualHost, configFilePath := range httpdVhostsConfig {
-		if vhost.String() != virtualHost {
-			continue
-		}
-
-		return configFilePath, nil
+	vhostConfigFileExpression := "\\s*configFile\\s*(.*)"
+	vhostConfigFileMatch, err := infraHelper.GetRegexUniqueMatch(httpdContent, vhostConfigFileExpression)
+	if err != nil {
+		return "", err
 	}
 
-	return "", errors.New("VhostNotFound")
+	vhostConfigFilePath, err = valueObject.NewUnixFilePath(vhostConfigFileMatch)
+	if err != nil {
+		return "", err
+	}
+
+	return vhostConfigFilePath, nil
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	var sslPairs []entity.SslPair
-	httpdVhostsConfig, err := repo.GetHttpdVhostsConfig()
+	httpdVhosts, err := repo.GetVhosts()
 	if err != nil {
 		return []entity.SslPair{}, err
 	}
 
-	for virtualHost, configFilePath := range httpdVhostsConfig {
-		vhostConfigContentStr, err := infraHelper.RunCmd(
-			"sed", "-n", "/vhssl/, /}/p", configFilePath,
-		)
+	for _, vhost := range httpdVhosts {
+		vhostConfigFilePath, err := repo.GetVhostConfigFilePath(vhost)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
 
+		vhostConfigContentStr, err := infraHelper.ReadFile(vhostConfigFilePath.String())
+		if err != nil {
+			return []entity.SslPair{}, err
+		}
+
+		/* TODO: Remover quando implementar o middleware de validação de serviço. */
 		if len(vhostConfigContentStr) < 1 {
 			return []entity.SslPair{}, nil
 		}
 
 		vhostConfigKeyFileExpression := "keyFile\\s*(.*)"
-		vhostConfigKeyFileRegex := regexp.MustCompile(vhostConfigKeyFileExpression)
-		vhostConfigKeyFileMatch := vhostConfigKeyFileRegex.FindStringSubmatch(vhostConfigContentStr)[1]
+		vhostConfigKeyFileMatch, err := infraHelper.GetRegexUniqueMatch(vhostConfigContentStr, vhostConfigKeyFileExpression)
+		if err != nil {
+			return []entity.SslPair{}, nil
+		}
 		privateKeyContentBytes, err := os.ReadFile(vhostConfigKeyFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenHttpdFile: %v", err)
@@ -163,8 +176,10 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		privateKeyContentStr := string(privateKeyContentBytes)
 
 		vhostConfigCertFileExpression := "certFile\\s*(.*)"
-		vhostConfigCertFileRegex := regexp.MustCompile(vhostConfigCertFileExpression)
-		vhostConfigCertFileMatch := vhostConfigCertFileRegex.FindStringSubmatch(vhostConfigContentStr)[1]
+		vhostConfigCertFileMatch, err := infraHelper.GetRegexUniqueMatch(vhostConfigContentStr, vhostConfigCertFileExpression)
+		if err != nil {
+			return []entity.SslPair{}, nil
+		}
 		certFileContentBytes, err := os.ReadFile(vhostConfigCertFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenVhconfFile: %v", err)
@@ -172,7 +187,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 		certFileContentStr := string(certFileContentBytes)
 
-		ssl, err := repo.SslFactory(virtualHost, privateKeyContentStr, certFileContentStr)
+		ssl, err := repo.SslFactory(vhost.String(), privateKeyContentStr, certFileContentStr)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}

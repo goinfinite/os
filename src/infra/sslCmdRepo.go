@@ -87,7 +87,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		sslKeyFilePath,
 		isChainedCert,
 	)
-	err = infraHelper.UpdateFile(vhostConfigFilePath, vhsslConfig, false)
+	err = infraHelper.UpdateFile(vhostConfigFilePath.String(), vhsslConfig, false)
 	return err
 }
 
@@ -104,7 +104,7 @@ func (repo SslCmdRepo) Delete(sslHashId valueObject.SslHashId) error {
 		return err
 	}
 
-	vhostConfigContentBytes, err := os.ReadFile(vhostConfigFilePath)
+	vhostConfigContentBytes, err := os.ReadFile(vhostConfigFilePath.String())
 	if err != nil {
 		log.Printf("FailedToOpenFile: %v", err)
 		return errors.New("FailedToOpenVhconfFile")
@@ -123,7 +123,7 @@ func (repo SslCmdRepo) Delete(sslHashId valueObject.SslHashId) error {
 	vhostConfigWithBreakLines := vhostConfigWithoutSpaces + "\n\n"
 
 	err = infraHelper.UpdateFile(
-		vhostConfigFilePath,
+		vhostConfigFilePath.String(),
 		vhostConfigWithBreakLines,
 		true,
 	)
