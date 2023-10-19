@@ -16,6 +16,38 @@ const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
 
 type SslQueryRepo struct{}
 
+func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
+	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
+	if err != nil {
+		return []valueObject.Fqdn{}, err
+	}
+
+	vhostsExpression := "virtualhost\\s*(.*) {"
+	vhostsRegex := regexp.MustCompile(vhostsExpression)
+	vhostsMatch := vhostsRegex.FindAllStringSubmatch(httpdContent, -1)
+	if len(vhostsMatch) < 1 {
+		return []valueObject.Fqdn{}, err
+	}
+
+	httpdVhosts := []valueObject.Fqdn{}
+	for _, vhostMatchStr := range vhostsMatch {
+		if len(vhostMatchStr) < 2 {
+			log.Printf("UnableToGetVhost: RegexNotMatched")
+			continue
+		}
+
+		vhostStr := vhostMatchStr[1]
+		vhost, err := valueObject.NewFqdn(vhostStr)
+		if err != nil {
+			log.Printf("UnableToGetVhost (%v): %v", vhostStr, err)
+			continue
+		}
+		httpdVhosts = append(httpdVhosts, vhost)
+	}
+
+	return httpdVhosts, nil
+}
+
 func (repo SslQueryRepo) SslCertificatesFactory(
 	sslCertContentStr valueObject.SslCertificateStr,
 ) ([]entity.SslCertificate, error) {
@@ -34,33 +66,6 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 	}
 
 	return certificates, nil
-}
-
-func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
-	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
-	if err != nil {
-		return []valueObject.Fqdn{}, err
-	}
-
-	vhostsExpression := "virtualhost\\s*(.*) {"
-	vhostsRegex := regexp.MustCompile(vhostsExpression)
-	vhostsMatch := vhostsRegex.FindAllStringSubmatch(httpdContent, -1)
-	if len(vhostsMatch) < 1 {
-		return []valueObject.Fqdn{}, err
-	}
-
-	httpdVhosts := []valueObject.Fqdn{}
-	for _, vhostMatchStr := range vhostsMatch {
-		vhostStr := vhostMatchStr[1]
-		vhost, err := valueObject.NewFqdn(vhostStr)
-		if err != nil {
-			log.Printf("UnableToGetVhost (%v): %v", vhostStr, err)
-			continue
-		}
-		httpdVhosts = append(httpdVhosts, vhost)
-	}
-
-	return httpdVhosts, nil
 }
 
 func (repo SslQueryRepo) SslPairFactory(
