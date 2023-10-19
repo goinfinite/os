@@ -152,7 +152,6 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			return []entity.SslPair{}, err
 		}
 
-		/* TODO: Remover quando implementar o middleware de validação de serviço. */
 		if len(vhostConfigContentStr) < 1 {
 			return []entity.SslPair{}, nil
 		}
