@@ -12,15 +12,15 @@ const cronScheduleFrequencyRegex string = `^(((?P<minute>(\d+,)+\d+|(\d+(\/|-)\d
 type CronSchedule string
 
 func NewCronSchedule(value string) (CronSchedule, error) {
-	schedule := CronSchedule(value)
-
-	if schedule.shouldHaveAtSign() {
-		hasAtSign := strings.HasPrefix(string(schedule), "@")
+	if shouldHaveAtSign(value) {
+		hasAtSign := strings.HasPrefix(value, "@")
 		if !hasAtSign {
-			schedule = CronSchedule("@" + value)
+			value = "@" + value
 		}
-		return schedule, nil
+		return CronSchedule(value), nil
 	}
+
+	schedule := CronSchedule(value)
 
 	if !schedule.isValid() {
 		return "", errors.New("InvalidCronSchedule")
@@ -37,9 +37,9 @@ func NewCronSchedulePanic(value string) CronSchedule {
 	return schedule
 }
 
-func (schedule CronSchedule) shouldHaveAtSign() bool {
+func shouldHaveAtSign(value string) bool {
 	frequencyRegex := regexp.MustCompile(cronScheduleCustomFrequencyRegex)
-	return frequencyRegex.MatchString(string(schedule))
+	return frequencyRegex.MatchString(value)
 }
 
 func (schedule CronSchedule) isValid() bool {
