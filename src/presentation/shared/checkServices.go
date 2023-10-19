@@ -11,6 +11,9 @@ func CheckServices(serviceNameStr string) error {
 	servicesQueryRepo := infra.ServicesQueryRepo{}
 
 	serviceName, err := valueObject.NewServiceName(serviceNameStr)
+	if err != nil {
+		return err
+	}
 
 	currentSvcStatus, err := servicesQueryRepo.GetByName(serviceName)
 	if err != nil {
