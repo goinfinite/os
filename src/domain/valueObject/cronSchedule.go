@@ -39,9 +39,7 @@ func NewCronSchedulePanic(value string) CronSchedule {
 
 func (schedule CronSchedule) shouldHaveAtSign() bool {
 	frequencyRegex := regexp.MustCompile(cronScheduleCustomFrequencyRegex)
-	frequencyMatch := frequencyRegex.MatchString(string(schedule))
-
-	return frequencyMatch
+	return frequencyRegex.MatchString(string(schedule))
 }
 
 func (schedule CronSchedule) isValid() bool {
