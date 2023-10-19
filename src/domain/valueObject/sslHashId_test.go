@@ -31,7 +31,7 @@ yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 -----END CERTIFICATE-----`
 
 		sslCertificateStr, _ := NewSslCertificateStr(validSslCert)
-		_, err := NewSslHashIdFromSslCertificate(sslCertificateStr)
+		_, err := NewSslHashIdFromSslCertificateContent(sslCertificateStr)
 		if err != nil {
 			t.Errorf("Expected no error for %s, got %v", sslCertificateStr.String(), err)
 		}
