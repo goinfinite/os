@@ -52,6 +52,29 @@ func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
 	return httpdVhosts, nil
 }
 
+func (repo SslQueryRepo) GetVhostConfigFilePath(
+	vhost valueObject.Fqdn,
+) (valueObject.UnixFilePath, error) {
+	var vhostConfigFilePath valueObject.UnixFilePath
+	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
+	if err != nil {
+		return "", err
+	}
+
+	vhostConfigFileExpression := "\\s*configFile\\s*(.*)"
+	vhostConfigFileMatch, err := infraHelper.GetRegexUniqueMatch(httpdContent, vhostConfigFileExpression)
+	if err != nil {
+		return "", err
+	}
+
+	vhostConfigFilePath, err = valueObject.NewUnixFilePath(vhostConfigFileMatch)
+	if err != nil {
+		return "", err
+	}
+
+	return vhostConfigFilePath, nil
+}
+
 func (repo SslQueryRepo) SslCertificatesFactory(
 	sslCertContentStr valueObject.SslCertificateStr,
 ) (SslCertificates, error) {
@@ -114,29 +137,6 @@ func (repo SslQueryRepo) SslPairFactory(
 		sslPrivateKey,
 		chainCertificates,
 	), nil
-}
-
-func (repo SslQueryRepo) GetVhostConfigFilePath(
-	vhost valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostConfigFilePath valueObject.UnixFilePath
-	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
-	if err != nil {
-		return "", err
-	}
-
-	vhostConfigFileExpression := "\\s*configFile\\s*(.*)"
-	vhostConfigFileMatch, err := infraHelper.GetRegexUniqueMatch(httpdContent, vhostConfigFileExpression)
-	if err != nil {
-		return "", err
-	}
-
-	vhostConfigFilePath, err = valueObject.NewUnixFilePath(vhostConfigFileMatch)
-	if err != nil {
-		return "", err
-	}
-
-	return vhostConfigFilePath, nil
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
