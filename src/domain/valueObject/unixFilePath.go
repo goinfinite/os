@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const unixFilePathRegexExpression = "^\\S*\\/[^\\/]*\\.[A-z]{1,5}$"
+const unixFilePathRegexExpression = `^\S*\/[^\/]*`
 
 type UnixFilePath string
 
