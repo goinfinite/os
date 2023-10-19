@@ -85,9 +85,9 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return err
 	}
 
-	isChainedCert := false
-	if len(newSsl.ChainCertificates) > 1 {
-		isChainedCert = true
+	isChainedCert := true
+	if len(newSsl.ChainCertificates) == 1 {
+		isChainedCert = false
 	}
 
 	vhsslConfig := repo.vhsslConfigFactory(
