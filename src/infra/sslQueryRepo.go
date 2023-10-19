@@ -62,7 +62,7 @@ func (repo SslQueryRepo) GetVhostConfigFilePath(
 	}
 
 	vhostConfigFileExpression := "\\s*configFile\\s*(.*)"
-	vhostConfigFileMatch, err := infraHelper.GetRegexUniqueMatch(httpdContent, vhostConfigFileExpression)
+	vhostConfigFileMatch, err := infraHelper.GetRegexFirstGroup(httpdContent, vhostConfigFileExpression)
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +162,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 
 		vhostConfigKeyFileExpression := "keyFile\\s*(.*)"
-		vhostConfigKeyFileMatch, err := infraHelper.GetRegexUniqueMatch(vhostConfigContentStr, vhostConfigKeyFileExpression)
+		vhostConfigKeyFileMatch, err := infraHelper.GetRegexFirstGroup(vhostConfigContentStr, vhostConfigKeyFileExpression)
 		if err != nil {
 			return []entity.SslPair{}, nil
 		}
@@ -177,7 +177,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 
 		vhostConfigCertFileExpression := "certFile\\s*(.*)"
-		vhostConfigCertFileMatch, err := infraHelper.GetRegexUniqueMatch(vhostConfigContentStr, vhostConfigCertFileExpression)
+		vhostConfigCertFileMatch, err := infraHelper.GetRegexFirstGroup(vhostConfigContentStr, vhostConfigCertFileExpression)
 		if err != nil {
 			return []entity.SslPair{}, nil
 		}
