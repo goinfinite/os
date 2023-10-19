@@ -2,7 +2,6 @@ package infra
 
 import (
 	"errors"
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -112,12 +111,10 @@ func (repo SslCmdRepo) Delete(sslHashId valueObject.SslHashId) error {
 		return err
 	}
 
-	vhostConfigContentBytes, err := os.ReadFile(vhostConfigFilePath.String())
+	vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
 	if err != nil {
-		log.Printf("FailedToOpenFile: %v", err)
-		return errors.New("FailedToOpenVhconfFile")
+		return err
 	}
-	vhostConfigContentStr := string(vhostConfigContentBytes)
 
 	sslBaseDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
 	err = os.RemoveAll(sslBaseDirPath)
