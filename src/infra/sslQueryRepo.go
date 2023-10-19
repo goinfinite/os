@@ -15,6 +15,11 @@ const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
 
 type SslQueryRepo struct{}
 
+type SslCertificates struct {
+	MainCertificate     entity.SslCertificate
+	ChainedCertificates []entity.SslCertificate
+}
+
 func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
 	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
 	if err != nil {
@@ -49,8 +54,8 @@ func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
 
 func (repo SslQueryRepo) SslCertificatesFactory(
 	sslCertContentStr valueObject.SslCertificateStr,
-) ([]entity.SslCertificate, error) {
-	certificates := []entity.SslCertificate{}
+) (SslCertificates, error) {
+	var certificates SslCertificates
 
 	sslCertContentSlice := strings.SplitAfter(
 		sslCertContentStr.String(),
@@ -61,7 +66,13 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 		if err != nil {
 			return certificates, err
 		}
-		certificates = append(certificates, certificate)
+
+		if !certificate.IsCA {
+			certificates.MainCertificate = certificate
+			continue
+		}
+
+		certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
 	}
 
 	return certificates, nil
@@ -70,7 +81,7 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 func (repo SslQueryRepo) SslPairFactory(
 	sslHostname valueObject.Fqdn,
 	sslPrivateKey valueObject.SslPrivateKey,
-	sslCertificates []entity.SslCertificate,
+	sslCertificates SslCertificates,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
@@ -79,17 +90,12 @@ func (repo SslQueryRepo) SslPairFactory(
 		return ssl, err
 	}
 
-	var certificate entity.SslCertificate
-	var chainCertificates []entity.SslCertificate
-	var chainCertificatesContent []valueObject.SslCertificateStr
-	for _, sslCertificate := range sslCertificates {
-		if !sslCertificate.IsCA {
-			certificate = sslCertificate
-			continue
-		}
+	certificate := sslCertificates.MainCertificate
+	chainCertificates := sslCertificates.ChainedCertificates
 
-		chainCertificates = append(chainCertificates, sslCertificate)
-		chainCertificatesContent = append(chainCertificatesContent, sslCertificate.Certificate)
+	var chainCertificatesContent []valueObject.SslCertificateStr
+	for _, sslChainCertificate := range chainCertificates {
+		chainCertificatesContent = append(chainCertificatesContent, sslChainCertificate.Certificate)
 	}
 
 	hashId, err := valueObject.NewSslIdFromSslPairContent(
