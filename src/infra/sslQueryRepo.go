@@ -3,7 +3,6 @@ package infra
 import (
 	"errors"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 
@@ -161,12 +160,11 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		if err != nil {
 			return []entity.SslPair{}, nil
 		}
-		privateKeyContentBytes, err := os.ReadFile(vhostConfigKeyFileMatch)
+		privateKeyContentStr, err := infraHelper.GetFileContent(vhostConfigKeyFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenHttpdFile: %v", err)
 			return []entity.SslPair{}, errors.New("FailedToOpenHttpdFile")
 		}
-		privateKeyContentStr := string(privateKeyContentBytes)
 		privateKey, err := valueObject.NewSslPrivateKey(privateKeyContentStr)
 		if err != nil {
 			return []entity.SslPair{}, nil
@@ -177,12 +175,11 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		if err != nil {
 			return []entity.SslPair{}, nil
 		}
-		certFileContentBytes, err := os.ReadFile(vhostConfigCertFileMatch)
+		certFileContentStr, err := infraHelper.GetFileContent(vhostConfigCertFileMatch)
 		if err != nil {
 			log.Printf("FailedToOpenVhconfFile: %v", err)
 			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
 		}
-		certFileContentStr := string(certFileContentBytes)
 		certificate, err := valueObject.NewSslCertificateStr(certFileContentStr)
 		if err != nil {
 			return []entity.SslPair{}, nil

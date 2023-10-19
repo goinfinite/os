@@ -1,13 +1,12 @@
 package cliController
 
 import (
-	"os"
-
 	"github.com/speedianet/sam/src/domain/dto"
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/useCase"
 	"github.com/speedianet/sam/src/domain/valueObject"
 	"github.com/speedianet/sam/src/infra"
+	infraHelper "github.com/speedianet/sam/src/infra/helper"
 	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -39,17 +38,15 @@ func AddSslPairController() *cobra.Command {
 		Use:   "add",
 		Short: "AddNewSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			certificateContentBytes, err := os.ReadFile(certificateFilePathStr)
+			certificateContentStr, err := infraHelper.GetFileContent(certificateFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
 			}
-			certificateContentStr := string(certificateContentBytes)
 
-			privateKeyContentBytes, err := os.ReadFile(keyFilePathStr)
+			privateKeyContentStr, err := infraHelper.GetFileContent(keyFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenPrivateKeyFile")
 			}
-			privateKeyContentStr := string(privateKeyContentBytes)
 
 			sslCertificate := entity.NewSslCertificatePanic(certificateContentStr)
 			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
