@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const cronSchedulePredefinedFrequencyRegex string = `^((@?(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(?:ns|us|µs|ms|s|m|h))+))$`
+const cronScheduleCustomFrequencyRegex string = `^((@?(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(?:ns|us|µs|ms|s|m|h))+))$`
 const cronScheduleFrequencyRegex string = `^(((?P<minute>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<hour>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<day>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<month>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<weekday>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )?)$`
 
 type CronSchedule string
@@ -38,7 +38,7 @@ func NewCronSchedulePanic(value string) CronSchedule {
 }
 
 func (schedule CronSchedule) shouldHaveAtSign() bool {
-	frequencyRegex := regexp.MustCompile(cronSchedulePredefinedFrequencyRegex)
+	frequencyRegex := regexp.MustCompile(cronScheduleCustomFrequencyRegex)
 	frequencyMatch := frequencyRegex.MatchString(string(schedule))
 
 	return frequencyMatch
