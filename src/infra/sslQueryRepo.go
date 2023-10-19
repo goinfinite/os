@@ -16,12 +16,15 @@ const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
 
 type SslQueryRepo struct{}
 
-func (repo SslQueryRepo) splitSslCertificate(
-	sslCertContent string,
+func (repo SslQueryRepo) SslCertificatesFactory(
+	sslCertContentStr valueObject.SslCertificateStr,
 ) ([]entity.SslCertificate, error) {
 	certificates := []entity.SslCertificate{}
 
-	sslCertContentSlice := strings.SplitAfter(sslCertContent, "-----END CERTIFICATE-----\n")
+	sslCertContentSlice := strings.SplitAfter(
+		sslCertContentStr.String(),
+		"-----END CERTIFICATE-----\n",
+	)
 	for _, sslCertContentStr := range sslCertContentSlice {
 		certificate, err := entity.NewSslCertificate(sslCertContentStr)
 		if err != nil {
@@ -34,7 +37,7 @@ func (repo SslQueryRepo) splitSslCertificate(
 }
 
 func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
-	httpdContent, err := infraHelper.ReadFile(olsHttpdConfigPath)
+	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
 	if err != nil {
 		return []valueObject.Fqdn{}, err
 	}
@@ -60,28 +63,14 @@ func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
 	return httpdVhosts, nil
 }
 
-func (repo SslQueryRepo) SslFactory(
-	sslHostname string,
-	sslPrivateKeyStr string,
-	sslCertStr string,
+func (repo SslQueryRepo) SslPairFactory(
+	sslHostname valueObject.Fqdn,
+	sslPrivateKey valueObject.SslPrivateKey,
+	sslCertificates []entity.SslCertificate,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
-	hostname, err := valueObject.NewFqdn(sslHostname)
-	if err != nil {
-		return ssl, errors.New("SslHostnameError")
-	}
-	_, err = repo.GetVhostConfigFilePath(hostname)
-	if err != nil {
-		return ssl, err
-	}
-
-	privateKey, err := valueObject.NewSslPrivateKey(sslPrivateKeyStr)
-	if err != nil {
-		return ssl, err
-	}
-
-	sslCertificates, err := repo.splitSslCertificate(sslCertStr)
+	_, err := repo.GetVhostConfigFilePath(sslHostname)
 	if err != nil {
 		return ssl, err
 	}
@@ -99,10 +88,10 @@ func (repo SslQueryRepo) SslFactory(
 		chainCertificatesContent = append(chainCertificatesContent, sslCertificate.Certificate)
 	}
 
-	hashId, err := valueObject.NewSslHashIdFromSslPair(
+	hashId, err := valueObject.NewSslHashIdFromSslPairContent(
 		certificate.Certificate,
 		chainCertificatesContent,
-		privateKey,
+		sslPrivateKey,
 	)
 	if err != nil {
 		return ssl, err
@@ -110,9 +99,9 @@ func (repo SslQueryRepo) SslFactory(
 
 	return entity.NewSslPair(
 		hashId,
-		hostname,
+		sslHostname,
 		certificate,
-		privateKey,
+		sslPrivateKey,
 		chainCertificates,
 	), nil
 }
@@ -121,7 +110,7 @@ func (repo SslQueryRepo) GetVhostConfigFilePath(
 	vhost valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
 	var vhostConfigFilePath valueObject.UnixFilePath
-	httpdContent, err := infraHelper.ReadFile(olsHttpdConfigPath)
+	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
 	if err != nil {
 		return "", err
 	}
@@ -153,7 +142,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			return []entity.SslPair{}, err
 		}
 
-		vhostConfigContentStr, err := infraHelper.ReadFile(vhostConfigFilePath.String())
+		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
 		if err != nil {
 			return []entity.SslPair{}, err
 		}
@@ -174,6 +163,10 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			return []entity.SslPair{}, errors.New("FailedToOpenHttpdFile")
 		}
 		privateKeyContentStr := string(privateKeyContentBytes)
+		privateKey, err := valueObject.NewSslPrivateKey(privateKeyContentStr)
+		if err != nil {
+			return []entity.SslPair{}, nil
+		}
 
 		vhostConfigCertFileExpression := "certFile\\s*(.*)"
 		vhostConfigCertFileMatch, err := infraHelper.GetRegexUniqueMatch(vhostConfigContentStr, vhostConfigCertFileExpression)
@@ -186,8 +179,17 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
 		}
 		certFileContentStr := string(certFileContentBytes)
+		certificate, err := valueObject.NewSslCertificateStr(certFileContentStr)
+		if err != nil {
+			return []entity.SslPair{}, nil
+		}
 
-		ssl, err := repo.SslFactory(vhost.String(), privateKeyContentStr, certFileContentStr)
+		sslCertificates, err := repo.SslCertificatesFactory(certificate)
+		if err != nil {
+			return []entity.SslPair{}, err
+		}
+
+		ssl, err := repo.SslPairFactory(vhost, privateKey, sslCertificates)
 		if err != nil {
 			return []entity.SslPair{}, err
 		}

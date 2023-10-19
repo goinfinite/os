@@ -80,7 +80,7 @@ func AddSslPairController(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /ssl/{sslHashId}/ [delete]
 func DeleteSslPairController(c echo.Context) error {
-	sslSerialNumber := valueObject.NewSslHashIdFromStringPanic(c.Param("sslHashId"))
+	sslSerialNumber := valueObject.NewSslHashIdPanic(c.Param("sslHashId"))
 
 	sslQueryRepo := infra.SslQueryRepo{}
 	sslCmdRepo := infra.SslCmdRepo{}

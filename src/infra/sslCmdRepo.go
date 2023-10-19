@@ -68,10 +68,18 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return err
 	}
 
-	newSsl, err := sslQueryRepo.SslFactory(
-		addSslPair.Hostname.String(),
-		addSslPair.Key.String(),
-		addSslPair.Certificate.String(),
+	sslPairCertificate := addSslPair.Certificate
+	sslCertificates, err := sslQueryRepo.SslCertificatesFactory(
+		sslPairCertificate.Certificate,
+	)
+	if err != nil {
+		return err
+	}
+
+	newSsl, err := sslQueryRepo.SslPairFactory(
+		addSslPair.Hostname,
+		addSslPair.Key,
+		sslCertificates,
 	)
 	if err != nil {
 		return err

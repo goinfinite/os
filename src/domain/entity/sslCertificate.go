@@ -33,7 +33,7 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
-	hashId, err := valueObject.NewSslHashIdFromSslCertificate(certificate)
+	hashId, err := valueObject.NewSslHashIdFromSslCertificateContent(certificate)
 	if err != nil {
 		return SslCertificate{}, err
 	}

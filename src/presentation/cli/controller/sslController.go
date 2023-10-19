@@ -90,7 +90,7 @@ func DeleteSslPairController() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslHashId := valueObject.NewSslHashIdFromStringPanic(sslHashIdStr)
+			sslHashId := valueObject.NewSslHashIdPanic(sslHashIdStr)
 
 			cronQueryRepo := infra.SslQueryRepo{}
 			cronCmdRepo := infra.SslCmdRepo{}
