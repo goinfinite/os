@@ -73,21 +73,21 @@ func AddSslPairController() *cobra.Command {
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "t", "", "Hostname")
 	cmd.MarkFlagRequired("hostname")
-	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "Certificate File Path")
+	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "CertificateFilePath")
 	cmd.MarkFlagRequired("certFilePath")
-	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "Key File Path")
+	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "KeyFilePath")
 	cmd.MarkFlagRequired("keyFilePath")
 	return cmd
 }
 
 func DeleteSslPairController() *cobra.Command {
-	var sslHashIdStr string
+	var sslPairIdStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslHashId := valueObject.NewSslHashIdPanic(sslHashIdStr)
+			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
 			cronQueryRepo := infra.SslQueryRepo{}
 			cronCmdRepo := infra.SslCmdRepo{}
@@ -95,7 +95,7 @@ func DeleteSslPairController() *cobra.Command {
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,
 				cronCmdRepo,
-				sslHashId,
+				sslId,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -105,7 +105,7 @@ func DeleteSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslHashIdStr, "sslHashId", "s", "", "SslHashId")
-	cmd.MarkFlagRequired("sslHashId")
+	cmd.Flags().StringVarP(&sslPairIdStr, "sslPairId", "s", "", "SslPairId")
+	cmd.MarkFlagRequired("sslPairId")
 	return cmd
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type SslCertificate struct {
-	HashId      valueObject.SslHashId
+	HashId      valueObject.SslId
 	Certificate valueObject.SslCertificateStr
 	CommonName  *valueObject.Fqdn
 	IssuedAt    valueObject.UnixTime
@@ -33,7 +33,7 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
-	hashId, err := valueObject.NewSslHashIdFromSslCertificateContent(certificate)
+	hashId, err := valueObject.NewSslIdFromSslCertificateContent(certificate)
 	if err != nil {
 		return SslCertificate{}, err
 	}

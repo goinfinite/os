@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestNewSslHashId(t *testing.T) {
+func TestNewSslId(t *testing.T) {
 	t.Run("ValidHashId", func(t *testing.T) {
 		validSslCert := `
 -----BEGIN CERTIFICATE-----
@@ -31,7 +31,7 @@ yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 -----END CERTIFICATE-----`
 
 		sslCertificateStr, _ := NewSslCertificateStr(validSslCert)
-		_, err := NewSslHashIdFromSslCertificateContent(sslCertificateStr)
+		_, err := NewSslIdFromSslCertificateContent(sslCertificateStr)
 		if err != nil {
 			t.Errorf("Expected no error for %s, got %v", sslCertificateStr.String(), err)
 		}

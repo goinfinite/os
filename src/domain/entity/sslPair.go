@@ -3,7 +3,7 @@ package entity
 import "github.com/speedianet/sam/src/domain/valueObject"
 
 type SslPair struct {
-	HashId            valueObject.SslHashId     `json:"hashId"`
+	HashId            valueObject.SslId         `json:"hashId"`
 	Hostname          valueObject.Fqdn          `json:"hostname"`
 	Certificate       SslCertificate            `json:"certificate"`
 	Key               valueObject.SslPrivateKey `json:"key"`
@@ -11,7 +11,7 @@ type SslPair struct {
 }
 
 func NewSslPair(
-	hashId valueObject.SslHashId,
+	hashId valueObject.SslId,
 	hostname valueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,
