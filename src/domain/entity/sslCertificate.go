@@ -17,8 +17,10 @@ type SslCertificate struct {
 	IsCA             bool
 }
 
-func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
-	block, _ := pem.Decode([]byte(sslCertificate))
+func NewSslCertificate(
+	sslCertificateContent valueObject.SslCertificateStr,
+) (SslCertificate, error) {
+	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
 	if block == nil {
 		return SslCertificate{}, errors.New("SslCertificateError")
 	}
@@ -28,12 +30,9 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
-	certificate, err := valueObject.NewSslCertificateStr(sslCertificate)
-	if err != nil {
-		return SslCertificate{}, err
-	}
-
-	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(certificate)
+	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(
+		sslCertificateContent,
+	)
 	if err != nil {
 		return SslCertificate{}, err
 	}
@@ -53,7 +52,7 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 
 	return SslCertificate{
 		SslCertificateId: sslCertificateId,
-		Certificate:      certificate,
+		Certificate:      sslCertificateContent,
 		CommonName:       commonNamePtr,
 		IssuedAt:         issuedAt,
 		ExpiresAt:        expiresAt,
@@ -61,8 +60,10 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 	}, nil
 }
 
-func NewSslCertificatePanic(certificate string) SslCertificate {
-	sslCertificate, err := NewSslCertificate(certificate)
+func NewSslCertificatePanic(
+	sslCertificateContent valueObject.SslCertificateStr,
+) SslCertificate {
+	sslCertificate, err := NewSslCertificate(sslCertificateContent)
 	if err != nil {
 		panic(err)
 	}

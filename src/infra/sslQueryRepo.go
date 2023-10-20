@@ -76,16 +76,21 @@ func (repo SslQueryRepo) GetVhostConfigFilePath(
 }
 
 func (repo SslQueryRepo) SslCertificatesFactory(
-	sslCertContentStr valueObject.SslCertificateStr,
+	sslCertContent valueObject.SslCertificateStr,
 ) (SslCertificates, error) {
 	var certificates SslCertificates
 
 	sslCertContentSlice := strings.SplitAfter(
-		sslCertContentStr.String(),
+		sslCertContent.String(),
 		"-----END CERTIFICATE-----\n",
 	)
 	for _, sslCertContentStr := range sslCertContentSlice {
-		certificate, err := entity.NewSslCertificate(sslCertContentStr)
+		certificateContent, err := valueObject.NewSslCertificateStr(sslCertContentStr)
+		if err != nil {
+			return certificates, err
+		}
+
+		certificate, err := entity.NewSslCertificate(certificateContent)
 		if err != nil {
 			return certificates, err
 		}
@@ -218,7 +223,7 @@ func (repo SslQueryRepo) GetSslPairByHashId(sslId valueObject.SslId) (entity.Ssl
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.HashId.String() != sslId.String() {
+		if ssl.SslPairId.String() != sslId.String() {
 			continue
 		}
 
