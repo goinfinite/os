@@ -10,7 +10,7 @@ import (
 
 type SslCertificate struct {
 	SslCertificateId valueObject.SslId
-	Certificate      valueObject.SslCertificateStr
+	Certificate      valueObject.SslCertificateContent
 	CommonName       *valueObject.Fqdn
 	IssuedAt         valueObject.UnixTime
 	ExpiresAt        valueObject.UnixTime
@@ -18,7 +18,7 @@ type SslCertificate struct {
 }
 
 func NewSslCertificate(
-	sslCertificateContent valueObject.SslCertificateStr,
+	sslCertificateContent valueObject.SslCertificateContent,
 ) (SslCertificate, error) {
 	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
 	if block == nil {
@@ -61,7 +61,7 @@ func NewSslCertificate(
 }
 
 func NewSslCertificatePanic(
-	sslCertificateContent valueObject.SslCertificateStr,
+	sslCertificateContent valueObject.SslCertificateContent,
 ) SslCertificate {
 	sslCertificate, err := NewSslCertificate(sslCertificateContent)
 	if err != nil {

@@ -42,14 +42,14 @@ func AddSslPairController() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
 			}
-			sslCertificateStr := valueObject.NewSslCertificateStrPanic(certificateContentStr)
+			SslCertificateContent := valueObject.NewSslCertificateContentPanic(certificateContentStr)
 
 			privateKeyContentStr, err := infraHelper.GetFileContent(keyFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenPrivateKeyFile")
 			}
 
-			sslCertificate := entity.NewSslCertificatePanic(sslCertificateStr)
+			sslCertificate := entity.NewSslCertificatePanic(SslCertificateContent)
 			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
 
 			addSslDto := dto.NewAddSslPair(

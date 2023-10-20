@@ -76,7 +76,7 @@ func (repo SslQueryRepo) GetVhostConfigFilePath(
 }
 
 func (repo SslQueryRepo) SslCertificatesFactory(
-	sslCertContent valueObject.SslCertificateStr,
+	sslCertContent valueObject.SslCertificateContent,
 ) (SslCertificates, error) {
 	var certificates SslCertificates
 
@@ -85,7 +85,7 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 		"-----END CERTIFICATE-----\n",
 	)
 	for _, sslCertContentStr := range sslCertContentSlice {
-		certificateContent, err := valueObject.NewSslCertificateStr(sslCertContentStr)
+		certificateContent, err := valueObject.NewSslCertificateContent(sslCertContentStr)
 		if err != nil {
 			return certificates, err
 		}
@@ -121,7 +121,7 @@ func (repo SslQueryRepo) SslPairFactory(
 	certificate := sslCertificates.MainCertificate
 	chainCertificates := sslCertificates.ChainedCertificates
 
-	var chainCertificatesContent []valueObject.SslCertificateStr
+	var chainCertificatesContent []valueObject.SslCertificateContent
 	for _, sslChainCertificate := range chainCertificates {
 		chainCertificatesContent = append(chainCertificatesContent, sslChainCertificate.Certificate)
 	}
@@ -191,7 +191,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			log.Printf("FailedToOpenVhconfFile: %v", err)
 			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
 		}
-		certificate, err := valueObject.NewSslCertificateStr(certFileContentStr)
+		certificate, err := valueObject.NewSslCertificateContent(certFileContentStr)
 		if err != nil {
 			return []entity.SslPair{}, nil
 		}

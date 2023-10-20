@@ -48,8 +48,8 @@ func sslIdFactory(value string) (SslId, error) {
 }
 
 func NewSslIdFromSslPairContent(
-	sslCertificate SslCertificateStr,
-	sslChainCertificates []SslCertificateStr,
+	sslCertificate SslCertificateContent,
+	sslChainCertificates []SslCertificateContent,
 	sslPrivateKey SslPrivateKey,
 ) (SslId, error) {
 	var sslChainCertificatesMerged string
@@ -68,7 +68,7 @@ func NewSslIdFromSslPairContent(
 }
 
 func NewSslIdFromSslCertificateContent(
-	sslCertificate SslCertificateStr,
+	sslCertificate SslCertificateContent,
 ) (SslId, error) {
 	sslId, err := sslIdFactory(sslCertificate.String())
 	if err != nil {

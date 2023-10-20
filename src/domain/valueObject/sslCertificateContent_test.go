@@ -2,8 +2,8 @@ package valueObject
 
 import "testing"
 
-func TestSslCertificateStr(t *testing.T) {
-	t.Run("ValidSslCertificateStr", func(t *testing.T) {
+func TestSslCertificateContent(t *testing.T) {
+	t.Run("ValidSslCertificateContent", func(t *testing.T) {
 		validSslCert := `
 -----BEGIN CERTIFICATE-----
 MIIDujCCAqKgAwIBAgIIE31FZVaPXTUwDQYJKoZIhvcNAQEFBQAwSTELMAkGA1UE
@@ -28,13 +28,13 @@ RvOTa8hYiU6A475WuZKyEHcwnGYe57u2I2KbMgcKjPniocj4QzgYsVAVKW3IwaOh
 yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 -----END CERTIFICATE-----`
 
-		_, err := NewSslCertificateStr(validSslCert)
+		_, err := NewSslCertificateContent(validSslCert)
 		if err != nil {
 			t.Errorf("Expected no error for dummy SSL certificate, got %v", err)
 		}
 	})
 
-	t.Run("InvalidSslCertificateStr", func(t *testing.T) {
+	t.Run("InvalidSslCertificateContent", func(t *testing.T) {
 		invalidSslCerts := []string{
 			`-----BEGIN CERTIFICATE-----
 MIIDujCCAqKgAwIBAgIIE31FZVaPXTUwDQYJKoZIhvcNAQEFBQAwSTELMAkGA1UE
@@ -76,7 +76,7 @@ RvOTa8hYiU6A475WuZKyEHcwnGYe57u2I2KbMgcKjPniocj4QzgYsVAVKW3IwaOh
 yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==`,
 		}
 		for sslCertIndex, sslCert := range invalidSslCerts {
-			_, err := NewSslCertificateStr(sslCert)
+			_, err := NewSslCertificateContent(sslCert)
 			if err == nil {
 				t.Errorf("Expected error for '%v' SSL certificate, got nil", sslCertIndex)
 			}

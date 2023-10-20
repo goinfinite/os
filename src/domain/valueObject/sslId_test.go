@@ -30,10 +30,10 @@ RvOTa8hYiU6A475WuZKyEHcwnGYe57u2I2KbMgcKjPniocj4QzgYsVAVKW3IwaOh
 yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 -----END CERTIFICATE-----`
 
-		sslCertificateStr, _ := NewSslCertificateStr(validSslCert)
-		_, err := NewSslIdFromSslCertificateContent(sslCertificateStr)
+		SslCertificateContent, _ := NewSslCertificateContent(validSslCert)
+		_, err := NewSslIdFromSslCertificateContent(SslCertificateContent)
 		if err != nil {
-			t.Errorf("Expected no error for %s, got %v", sslCertificateStr.String(), err)
+			t.Errorf("Expected no error for %s, got %v", SslCertificateContent.String(), err)
 		}
 	})
 }

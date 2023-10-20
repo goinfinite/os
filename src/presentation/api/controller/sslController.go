@@ -47,8 +47,8 @@ func AddSslPairController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sslCertificateStr := valueObject.NewSslCertificateStrPanic(requestBody["certificate"].(string))
-	sslCertificate := entity.NewSslCertificatePanic(sslCertificateStr)
+	SslCertificateContent := valueObject.NewSslCertificateContentPanic(requestBody["certificate"].(string))
+	sslCertificate := entity.NewSslCertificatePanic(SslCertificateContent)
 	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
 	addCronDto := dto.NewAddSslPair(
