@@ -32,7 +32,7 @@ func (sslCertificate SslCertificateStr) isValid() bool {
 	}
 
 	_, err := x509.ParseCertificate(block.Bytes)
-	return !(err != nil)
+	return err == nil
 }
 
 func (sslCertificate SslCertificateStr) String() string {
