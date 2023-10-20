@@ -9,12 +9,12 @@ import (
 )
 
 type SslCertificate struct {
-	HashId      valueObject.SslId
-	Certificate valueObject.SslCertificateStr
-	CommonName  *valueObject.Fqdn
-	IssuedAt    valueObject.UnixTime
-	ExpiresAt   valueObject.UnixTime
-	IsCA        bool
+	SslCertificateId valueObject.SslId
+	Certificate      valueObject.SslCertificateStr
+	CommonName       *valueObject.Fqdn
+	IssuedAt         valueObject.UnixTime
+	ExpiresAt        valueObject.UnixTime
+	IsCA             bool
 }
 
 func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
@@ -33,7 +33,7 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 		return SslCertificate{}, err
 	}
 
-	hashId, err := valueObject.NewSslIdFromSslCertificateContent(certificate)
+	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(certificate)
 	if err != nil {
 		return SslCertificate{}, err
 	}
@@ -52,12 +52,12 @@ func NewSslCertificate(sslCertificate string) (SslCertificate, error) {
 	}
 
 	return SslCertificate{
-		HashId:      hashId,
-		Certificate: certificate,
-		CommonName:  commonNamePtr,
-		IssuedAt:    issuedAt,
-		ExpiresAt:   expiresAt,
-		IsCA:        parsedCert.IsCA,
+		SslCertificateId: sslCertificateId,
+		Certificate:      certificate,
+		CommonName:       commonNamePtr,
+		IssuedAt:         issuedAt,
+		ExpiresAt:        expiresAt,
+		IsCA:             parsedCert.IsCA,
 	}, nil
 }
 
