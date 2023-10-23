@@ -223,7 +223,7 @@ func (repo SslQueryRepo) GetSslPairByHashId(sslId valueObject.SslId) (entity.Ssl
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.SslPairId.String() != sslId.String() {
+		if ssl.Id.String() != sslId.String() {
 			continue
 		}
 
