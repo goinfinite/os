@@ -8,6 +8,7 @@ import (
 
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
 	"github.com/shirou/gopsutil/process"
@@ -120,7 +121,8 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	}
 
 	var notRunningServicesNames []string
-	for _, svc := range valueObject.SupportedServiceNames {
+	supportedServiceNames := maps.Keys(valueObject.SupportedServiceNamesAndAliases)
+	for _, svc := range supportedServiceNames {
 		if !slices.Contains(runningServicesNames, svc) {
 			notRunningServicesNames = append(notRunningServicesNames, svc)
 		}

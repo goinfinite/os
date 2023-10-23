@@ -44,7 +44,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 	}
 
 	switch name.String() {
-	case "openlitespeed", "litespeed":
+	case "openlitespeed":
 		infraHelper.RunCmd(
 			"/usr/local/lsws/bin/lswsctrl",
 			"stop",
@@ -57,7 +57,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			"pkill",
 			"sleep",
 		)
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
+	case "mysql":
 		infraHelper.RunCmd(
 			"mysqladmin",
 			"shutdown",

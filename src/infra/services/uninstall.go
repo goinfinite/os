@@ -15,20 +15,15 @@ func Uninstall(name valueObject.ServiceName) error {
 	}
 
 	var packages []string
-	var supervisordConfigName string
 	switch name.String() {
-	case "openlitespeed", "litespeed":
+	case "openlitespeed":
 		packages = OlsPackages
-		supervisordConfigName = "openlitespeed"
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
+	case "mysql":
 		packages = MariaDbPackages
-		supervisordConfigName = "mysql"
-	case "node", "nodejs":
+	case "node":
 		packages = NodePackages
-		supervisordConfigName = "node"
-	case "redis", "redis-server":
+	case "redis":
 		packages = RedisPackages
-		supervisordConfigName = "redis"
 	default:
 		log.Printf("ServiceNotImplemented: %s", name.String())
 		return errors.New("ServiceNotImplemented")
@@ -40,7 +35,7 @@ func Uninstall(name valueObject.ServiceName) error {
 		return errors.New("UninstallServiceError")
 	}
 
-	err = SupervisordFacade{}.RemoveConf(supervisordConfigName)
+	err = SupervisordFacade{}.RemoveConf(name.String())
 	if err != nil {
 		log.Printf("UninstallServiceError: %s", err.Error())
 		return errors.New("UninstallServiceError")
