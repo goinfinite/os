@@ -20,7 +20,7 @@ func AddSslPair(
 
 	log.Printf(
 		"SSL '%v' added in '%v' hostname.",
-		addSslPair.Certificate.SslCertificateId.String(),
+		addSslPair.Certificate.Id.String(),
 		addSslPair.Hostname.String(),
 	)
 
