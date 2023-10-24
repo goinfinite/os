@@ -11,7 +11,6 @@ type ServiceName string
 
 var SupportedServiceNamesAndAliases = map[string][]string{
 	"openlitespeed": {"litespeed"},
-	"nginx":         {},
 	"node":          {"nodejs"},
 	"mysql":         {"mysqld", "mariadb", "percona", "perconadb"},
 	"redis":         {"redis-server"},
