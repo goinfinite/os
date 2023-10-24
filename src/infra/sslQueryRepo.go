@@ -36,7 +36,6 @@ func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
 	httpdVhosts := []valueObject.Fqdn{}
 	for _, vhostMatchStr := range vhostsMatch {
 		if len(vhostMatchStr) < 2 {
-			log.Printf("UnableToGetVhost: RegexNotMatched")
 			continue
 		}
 
