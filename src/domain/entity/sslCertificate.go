@@ -45,7 +45,7 @@ func NewSslCertificate(
 	if !parsedCert.IsCA {
 		commonName, err := valueObject.NewFqdn(parsedCert.Subject.CommonName)
 		if err != nil {
-			return SslCertificate{}, err
+			return SslCertificate{}, errors.New("InvalidSslCertificateCommonName")
 		}
 		commonNamePtr = &commonName
 	}
