@@ -22,12 +22,12 @@ func NewSslCertificate(
 ) (SslCertificate, error) {
 	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
 	if block == nil {
-		return SslCertificate{}, errors.New("SslCertificateError")
+		return SslCertificate{}, errors.New("SslCertificateContentDecodeError")
 	}
 
 	parsedCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return SslCertificate{}, err
+		return SslCertificate{}, errors.New("SslCertificateContentParseError")
 	}
 
 	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(
