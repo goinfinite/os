@@ -17,6 +17,14 @@ func NewUnixFilePath(unixFilePathStr string) (UnixFilePath, error) {
 	return unixFilePath, nil
 }
 
+func NewUnixFilePathPanic(unixFilePathStr string) UnixFilePath {
+	unixFilePath, err := NewUnixFilePath(unixFilePathStr)
+	if err != nil {
+		panic(err)
+	}
+	return unixFilePath
+}
+
 func (unixFilePath UnixFilePath) isValid() bool {
 	unixFilePathRegexRegex := regexp.MustCompile(unixFilePathRegexExpression)
 	return unixFilePathRegexRegex.MatchString(string(unixFilePath))
