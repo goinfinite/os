@@ -212,7 +212,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) GetSslPairByHashId(sslId valueObject.SslId) (entity.SslPair, error) {
+func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error) {
 	sslPairs, err := repo.GetSslPairs()
 	if err != nil {
 		return entity.SslPair{}, err

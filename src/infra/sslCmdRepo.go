@@ -101,7 +101,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	sslToDelete, err := sslQueryRepo.GetSslPairByHashId(sslId)
+	sslToDelete, err := sslQueryRepo.GetSslPairById(sslId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}
