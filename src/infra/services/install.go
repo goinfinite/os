@@ -380,6 +380,39 @@ func installNode(version *valueObject.ServiceVersion) error {
 		return errors.New("InstallServiceError")
 	}
 
+	indexJsFileDir := "/speedia/node"
+	err = infraHelper.MakeDir(indexJsFileDir)
+	if err != nil {
+		log.Printf("CreateBaseDirError: %s", err)
+		return errors.New("CreateBaseDirError")
+	}
+
+	indexJsFilePath := indexJsFileDir + "/index.js"
+	indexJsFileContent := "require('http').createServer((req, res) => res.end()).listen(3000)"
+	err = infraHelper.UpdateFile(indexJsFilePath, indexJsFileContent, true)
+	if err != nil {
+		log.Printf("CreateBaseFileError: %s", err)
+		return errors.New("CreateBaseFileError")
+	}
+
+	err = SupervisordFacade{}.AddConf(
+		"node",
+		"/usr/bin/node "+indexJsFilePath+" &",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"/usr/bin/node",
+		indexJsFilePath,
+		"&",
+	)
+	if err != nil {
+		log.Printf("RunNodeJsServiceError: %s", err)
+		return errors.New("RunNodeJsServiceError")
+	}
+
 	return nil
 }
 
