@@ -54,7 +54,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Update an account.",
+                "description": "Update an account (Only id is required).",
                 "consumes": [
                     "application/json"
                 ],
@@ -910,7 +910,7 @@
                     "$ref": "#/definitions/valueObject.ServiceStatus"
                 },
                 "uptimeSecs": {
-                    "type": "number"
+                    "type": "integer"
                 }
             }
         },

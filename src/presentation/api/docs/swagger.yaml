@@ -181,7 +181,7 @@ definitions:
       status:
         $ref: '#/definitions/valueObject.ServiceStatus'
       uptimeSecs:
-        type: number
+        type: integer
     type: object
   valueObject.AccessTokenType:
     enum:
@@ -302,7 +302,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an account.
+      description: Update an account (Only id is required).
       parameters:
       - description: UpdateAccount
         in: body
