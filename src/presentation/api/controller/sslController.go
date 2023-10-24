@@ -51,7 +51,7 @@ func AddSslPairController(c echo.Context) error {
 	sslCertificate := entity.NewSslCertificatePanic(SslCertificateContent)
 	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
-	addCronDto := dto.NewAddSslPair(
+	addSslPairDto := dto.NewAddSslPair(
 		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
 		sslCertificate,
 		sslPrivateKey,
@@ -61,7 +61,7 @@ func AddSslPairController(c echo.Context) error {
 
 	err := useCase.AddSslPair(
 		sslCmdRepo,
-		addCronDto,
+		addSslPairDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
