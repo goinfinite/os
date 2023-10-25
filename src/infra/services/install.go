@@ -335,11 +335,12 @@ func installMysql(version *valueObject.ServiceVersion) error {
 }
 
 func installNode(version *valueObject.ServiceVersion) error {
+	nodeSvcName, _ := valueObject.NewServiceName("node")
 	repoFilePath := "/speedia/repo.node.sh"
 
 	repoUrl := "https://deb.nodesource.com/setup_lts.x"
 	if version != nil {
-		re := regexp.MustCompile(supportedServicesVersion["node"])
+		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
 		isVersionAllowed := re.MatchString(version.String())
 
 		if !isVersionAllowed {
@@ -380,19 +381,21 @@ func installNode(version *valueObject.ServiceVersion) error {
 		return errors.New("InstallServiceError")
 	}
 
-	indexJsFileDir := "/speedia/node"
-	err = infraHelper.MakeDir(indexJsFileDir)
+	appHtmlDir := "/app/html"
+	err = infraHelper.MakeDir(appHtmlDir)
 	if err != nil {
 		log.Printf("CreateBaseDirError: %s", err)
 		return errors.New("CreateBaseDirError")
 	}
 
-	indexJsFilePath := indexJsFileDir + "/index.js"
-	indexJsFileContent := "require('http').createServer((req, res) => res.end()).listen(3000)"
-	err = infraHelper.UpdateFile(indexJsFilePath, indexJsFileContent, true)
+	indexJsFilePath := appHtmlDir + "/index.js"
+	err = copyAssets(
+		"nodejs/base-index.js",
+		indexJsFilePath,
+	)
 	if err != nil {
-		log.Printf("CreateBaseFileError: %s", err)
-		return errors.New("CreateBaseFileError")
+		log.Printf("CopyAssetsError: %s", err)
+		return errors.New("CopyAssetsError")
 	}
 
 	err = SupervisordFacade{}.AddConf(
@@ -403,11 +406,7 @@ func installNode(version *valueObject.ServiceVersion) error {
 		return errors.New("AddSupervisorConfError")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"/usr/bin/node",
-		indexJsFilePath,
-		"&",
-	)
+	err = SupervisordFacade{}.Start(nodeSvcName)
 	if err != nil {
 		log.Printf("RunNodeJsServiceError: %s", err)
 		return errors.New("RunNodeJsServiceError")
