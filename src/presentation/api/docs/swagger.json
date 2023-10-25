@@ -10,8 +10,8 @@
             "email": "eng+swagger@speedia.net"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "Eclipse Public License v2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
         "version": "0.0.1"
     },
@@ -207,7 +207,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "List Crons.",
+                "description": "List crons.",
                 "consumes": [
                     "application/json"
                 ],
@@ -236,7 +236,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Update an cron.",
+                "description": "Update a cron.",
                 "consumes": [
                     "application/json"
                 ],
@@ -312,7 +312,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Delete an cron.",
+                "description": "Delete a cron.",
                 "consumes": [
                     "application/json"
                 ],
@@ -778,7 +778,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "List ssls.",
+                "description": "List ssl pairs.",
                 "consumes": [
                     "application/json"
                 ],
@@ -788,14 +788,14 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "GetSsls",
+                "summary": "GetSslPair",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Ssl"
+                                "$ref": "#/definitions/entity.SslPair"
                             }
                         }
                     }
@@ -807,7 +807,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new ssl.",
+                "description": "Add a new ssl pair.",
                 "consumes": [
                     "application/json"
                 ],
@@ -817,21 +817,21 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "AddNewSsl",
+                "summary": "AddNewSslPair",
                 "parameters": [
                     {
-                        "description": "NewSsl",
-                        "name": "addSslDto",
+                        "description": "NewSslPair",
+                        "name": "addSslPairDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddSsl"
+                            "$ref": "#/definitions/dto.AddSslPair"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "SslCreated",
+                        "description": "SslPairCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -839,14 +839,14 @@
                 }
             }
         },
-        "/ssl/{sslId}/": {
+        "/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "Delete a ssl.",
+                "description": "Delete a ssl pair.",
                 "consumes": [
                     "application/json"
                 ],
@@ -856,19 +856,19 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "DeleteSsl",
+                "summary": "DeleteSslPair",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "SslId",
-                        "name": "sslId",
+                        "description": "SslPairId",
+                        "name": "sslPairId",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "SslDeleted",
+                        "description": "SslPairDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -878,9 +878,6 @@
         }
     },
     "definitions": {
-        "big.Int": {
-            "type": "object"
-        },
         "dto.AddAccount": {
             "type": "object",
             "properties": {
@@ -934,17 +931,17 @@
                 }
             }
         },
-        "dto.AddSsl": {
+        "dto.AddSslPair": {
             "type": "object",
             "properties": {
                 "certificate": {
-                    "$ref": "#/definitions/entity.SslPair"
+                    "$ref": "#/definitions/entity.SslCertificate"
                 },
                 "hostname": {
                     "type": "string"
                 },
                 "key": {
-                    "$ref": "#/definitions/entity.SslPrivateKey"
+                    "type": "string"
                 }
             }
         },
@@ -1226,30 +1223,7 @@
                 }
             }
         },
-        "entity.Ssl": {
-            "type": "object",
-            "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.SslPair"
-                },
-                "chainCertificates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.SslPair"
-                    }
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "$ref": "#/definitions/valueObject.SslId"
-                },
-                "key": {
-                    "$ref": "#/definitions/entity.SslPrivateKey"
-                }
-            }
-        },
-        "entity.SslPair": {
+        "entity.SslCertificate": {
             "type": "object",
             "properties": {
                 "certificate": {
@@ -1259,23 +1233,38 @@
                     "type": "string"
                 },
                 "expiresAt": {
+                    "type": "integer"
+                },
+                "id": {
                     "type": "string"
                 },
                 "isCA": {
                     "type": "boolean"
                 },
                 "issuedAt": {
-                    "type": "string"
-                },
-                "serialNumber": {
-                    "$ref": "#/definitions/big.Int"
+                    "type": "integer"
                 }
             }
         },
-        "entity.SslPrivateKey": {
+        "entity.SslPair": {
             "type": "object",
             "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.SslCertificate"
+                },
+                "chainCertificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SslCertificate"
+                    }
+                },
+                "hostname": {
+                    "type": "string"
+                },
                 "key": {
+                    "type": "string"
+                },
+                "sslPairId": {
                     "type": "string"
                 }
             }
@@ -1363,9 +1352,6 @@
                 "uninstalled",
                 "installed"
             ]
-        },
-        "valueObject.SslId": {
-            "type": "object"
         }
     },
     "securityDefinitions": {

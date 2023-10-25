@@ -1,7 +1,5 @@
 basePath: /v1
 definitions:
-  big.Int:
-    type: object
   dto.AddAccount:
     properties:
       password:
@@ -36,14 +34,14 @@ definitions:
       username:
         type: string
     type: object
-  dto.AddSsl:
+  dto.AddSslPair:
     properties:
       certificate:
-        $ref: '#/definitions/entity.SslPair'
+        $ref: '#/definitions/entity.SslCertificate'
       hostname:
         type: string
       key:
-        $ref: '#/definitions/entity.SslPrivateKey'
+        type: string
     type: object
   dto.Login:
     properties:
@@ -225,39 +223,34 @@ definitions:
       uptimeSecs:
         type: integer
     type: object
-  entity.Ssl:
-    properties:
-      certificate:
-        $ref: '#/definitions/entity.SslPair'
-      chainCertificates:
-        items:
-          $ref: '#/definitions/entity.SslPair'
-        type: array
-      hostname:
-        type: string
-      id:
-        $ref: '#/definitions/valueObject.SslId'
-      key:
-        $ref: '#/definitions/entity.SslPrivateKey'
-    type: object
-  entity.SslPair:
+  entity.SslCertificate:
     properties:
       certificate:
         type: string
       commonName:
         type: string
       expiresAt:
+        type: integer
+      id:
         type: string
       isCA:
         type: boolean
       issuedAt:
-        type: string
-      serialNumber:
-        $ref: '#/definitions/big.Int'
+        type: integer
     type: object
-  entity.SslPrivateKey:
+  entity.SslPair:
     properties:
+      certificate:
+        $ref: '#/definitions/entity.SslCertificate'
+      chainCertificates:
+        items:
+          $ref: '#/definitions/entity.SslCertificate'
+        type: array
+      hostname:
+        type: string
       key:
+        type: string
+      sslPairId:
         type: string
     type: object
   valueObject.AccessTokenType:
@@ -320,8 +313,6 @@ definitions:
     - stopped
     - uninstalled
     - installed
-  valueObject.SslId:
-    type: object
 host: localhost:10000
 info:
   contact:
@@ -330,8 +321,8 @@ info:
     url: https://speedia.net/
   description: Speedia AppManager API
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    name: Eclipse Public License v2.0
+    url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: SamApi
   version: 0.0.1
@@ -454,7 +445,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List Crons.
+      description: List crons.
       produces:
       - application/json
       responses:
@@ -495,7 +486,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an cron.
+      description: Update a cron.
       parameters:
       - description: UpdateCron
         in: body
@@ -519,7 +510,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete an cron.
+      description: Delete a cron.
       parameters:
       - description: CronId
         in: path
@@ -815,7 +806,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List ssls.
+      description: List ssl pairs.
       produces:
       - application/json
       responses:
@@ -823,57 +814,57 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.Ssl'
+              $ref: '#/definitions/entity.SslPair'
             type: array
       security:
       - Bearer: []
-      summary: GetSsls
+      summary: GetSslPair
       tags:
       - ssl
     post:
       consumes:
       - application/json
-      description: Add a new ssl.
+      description: Add a new ssl pair.
       parameters:
-      - description: NewSsl
+      - description: NewSslPair
         in: body
-        name: addSslDto
+        name: addSslPairDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddSsl'
+          $ref: '#/definitions/dto.AddSslPair'
       produces:
       - application/json
       responses:
         "201":
-          description: SslCreated
+          description: SslPairCreated
           schema:
             type: object
       security:
       - Bearer: []
-      summary: AddNewSsl
+      summary: AddNewSslPair
       tags:
       - ssl
-  /ssl/{sslId}/:
+  /ssl/{sslPairId}/:
     delete:
       consumes:
       - application/json
-      description: Delete a ssl.
+      description: Delete a ssl pair.
       parameters:
-      - description: SslId
+      - description: SslPairId
         in: path
-        name: sslId
+        name: sslPairId
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: SslDeleted
+          description: SslPairDeleted
           schema:
             type: object
       security:
       - Bearer: []
-      summary: DeleteSsl
+      summary: DeleteSslPair
       tags:
       - ssl
 securityDefinitions:

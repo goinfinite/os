@@ -19,8 +19,8 @@ import (
 // @contact.url		https://speedia.net/
 // @contact.email	eng+swagger@speedia.net
 
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.name  Eclipse Public License v2.0
+// @license.url   https://www.eclipse.org/legal/epl-2.0/
 
 // @securityDefinitions.apikey	Bearer
 // @in 							header
