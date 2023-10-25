@@ -104,6 +104,18 @@ func servicesRoutes() {
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
 }
 
+func sslRoutes() {
+	var sslCmd = &cobra.Command{
+		Use:   "ssl",
+		Short: "SslManagement",
+	}
+
+	rootCmd.AddCommand(sslCmd)
+	sslCmd.AddCommand(cliController.GetSslPairsController())
+	sslCmd.AddCommand(cliController.AddSslPairController())
+	sslCmd.AddCommand(cliController.DeleteSslPairController())
+}
+
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
@@ -113,4 +125,5 @@ func registerCliRoutes() {
 	o11yRoutes()
 	runtimeRoutes()
 	servicesRoutes()
+	sslRoutes()
 }

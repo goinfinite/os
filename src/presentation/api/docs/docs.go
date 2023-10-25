@@ -776,9 +776,117 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/ssl/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List ssls.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "GetSsls",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Ssl"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new ssl.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "AddNewSsl",
+                "parameters": [
+                    {
+                        "description": "NewSsl",
+                        "name": "addSslDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddSsl"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "SslCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/ssl/{sslId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a ssl.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "DeleteSsl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SslId",
+                        "name": "sslId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SslDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "big.Int": {
+            "type": "object"
+        },
         "dto.AddAccount": {
             "type": "object",
             "properties": {
@@ -829,6 +937,20 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.AddSsl": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.SslPair"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "key": {
+                    "$ref": "#/definitions/entity.SslPrivateKey"
                 }
             }
         },
@@ -1110,6 +1232,60 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.Ssl": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.SslPair"
+                },
+                "chainCertificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SslPair"
+                    }
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "$ref": "#/definitions/valueObject.SslId"
+                },
+                "key": {
+                    "$ref": "#/definitions/entity.SslPrivateKey"
+                }
+            }
+        },
+        "entity.SslPair": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "type": "string"
+                },
+                "commonName": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "isCA": {
+                    "type": "boolean"
+                },
+                "issuedAt": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "$ref": "#/definitions/big.Int"
+                }
+            }
+        },
+        "entity.SslPrivateKey": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
         "valueObject.AccessTokenType": {
             "type": "string",
             "enum": [
@@ -1193,6 +1369,9 @@ const docTemplate = `{
                 "uninstalled",
                 "installed"
             ]
+        },
+        "valueObject.SslId": {
+            "type": "object"
         }
     },
     "securityDefinitions": {

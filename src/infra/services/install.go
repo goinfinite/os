@@ -152,6 +152,18 @@ func installOls() error {
 		return errors.New("CopyAssetsError")
 	}
 
+	virtualHost := os.Getenv("VIRTUAL_HOST")
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/speedia.net/"+virtualHost+"/g",
+		"/usr/local/lsws/conf/httpd_config.conf",
+	)
+	if err != nil {
+		log.Printf("RenameHttpdVHostError: %s", err)
+		return errors.New("RenameHttpdVHostError")
+	}
+
 	err = copyAssets(
 		"vhconf.conf",
 		"/app/conf/vhconf.conf",
@@ -161,7 +173,6 @@ func installOls() error {
 		return errors.New("CopyAssetsError")
 	}
 
-	virtualHost := os.Getenv("VIRTUAL_HOST")
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",

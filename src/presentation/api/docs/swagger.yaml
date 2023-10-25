@@ -1,5 +1,7 @@
 basePath: /v1
 definitions:
+  big.Int:
+    type: object
   dto.AddAccount:
     properties:
       password:
@@ -33,6 +35,15 @@ definitions:
         type: array
       username:
         type: string
+    type: object
+  dto.AddSsl:
+    properties:
+      certificate:
+        $ref: '#/definitions/entity.SslPair'
+      hostname:
+        type: string
+      key:
+        $ref: '#/definitions/entity.SslPrivateKey'
     type: object
   dto.Login:
     properties:
@@ -214,6 +225,41 @@ definitions:
       uptimeSecs:
         type: number
     type: object
+  entity.Ssl:
+    properties:
+      certificate:
+        $ref: '#/definitions/entity.SslPair'
+      chainCertificates:
+        items:
+          $ref: '#/definitions/entity.SslPair'
+        type: array
+      hostname:
+        type: string
+      id:
+        $ref: '#/definitions/valueObject.SslId'
+      key:
+        $ref: '#/definitions/entity.SslPrivateKey'
+    type: object
+  entity.SslPair:
+    properties:
+      certificate:
+        type: string
+      commonName:
+        type: string
+      expiresAt:
+        type: string
+      isCA:
+        type: boolean
+      issuedAt:
+        type: string
+      serialNumber:
+        $ref: '#/definitions/big.Int'
+    type: object
+  entity.SslPrivateKey:
+    properties:
+      key:
+        type: string
+    type: object
   valueObject.AccessTokenType:
     enum:
     - sessionToken
@@ -274,6 +320,8 @@ definitions:
     - stopped
     - uninstalled
     - installed
+  valueObject.SslId:
+    type: object
 host: localhost:10000
 info:
   contact:
@@ -763,6 +811,71 @@ paths:
       summary: UpdateServiceStatus
       tags:
       - services
+  /ssl/:
+    get:
+      consumes:
+      - application/json
+      description: List ssls.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Ssl'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetSsls
+      tags:
+      - ssl
+    post:
+      consumes:
+      - application/json
+      description: Add a new ssl.
+      parameters:
+      - description: NewSsl
+        in: body
+        name: addSslDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddSsl'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: SslCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewSsl
+      tags:
+      - ssl
+  /ssl/{sslId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a ssl.
+      parameters:
+      - description: SslId
+        in: path
+        name: sslId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SslDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSsl
+      tags:
+      - ssl
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.
