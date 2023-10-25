@@ -62,6 +62,11 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			"mysqladmin",
 			"shutdown",
 		)
+	case "node":
+		infraHelper.RunCmd(
+			"pkill",
+			"node",
+		)
 	}
 
 	return nil

@@ -1,7 +1,10 @@
 package api
 
 import (
+	"time"
+
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
 	"github.com/speedianet/sam/src/presentation/shared"
 	_ "github.com/swaggo/echo-swagger/example/docs"
@@ -34,7 +37,12 @@ func ApiInit() {
 	basePath := "/v1"
 	baseRoute := e.Group(basePath)
 
+	requestTimeout := 60 * time.Second
+
 	e.Pre(apiMiddleware.TrailingSlash(basePath))
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Timeout: requestTimeout,
+	}))
 	e.Use(apiMiddleware.PanicHandler)
 	e.Use(apiMiddleware.SetDefaultHeaders)
 	e.Use(apiMiddleware.Auth(basePath))

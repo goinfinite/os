@@ -16,21 +16,36 @@ func Uninstall(name valueObject.ServiceName) error {
 
 	var packages []string
 	switch name.String() {
-	case "openlitespeed", "litespeed":
+	case "openlitespeed":
 		packages = OlsPackages
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
+	case "mysql":
 		packages = MariaDbPackages
-	case "node", "nodejs":
+	case "node":
 		packages = NodePackages
-	case "redis", "redis-server":
+	case "redis":
 		packages = RedisPackages
 	default:
 		log.Printf("ServiceNotImplemented: %s", name.String())
 		return errors.New("ServiceNotImplemented")
 	}
 
+	err = SupervisordFacade{}.Stop(name)
+	if err != nil {
+		log.Printf("UninstallServiceError: %s", err.Error())
+		return errors.New("UninstallServiceError")
+	}
+
+	err = SupervisordFacade{}.RemoveConf(name.String())
+	if err != nil {
+		log.Printf("UninstallServiceError: %s", err.Error())
+		return errors.New("UninstallServiceError")
+	}
+
+	purgeEnvVars := map[string]string{
+		"DEBIAN_FRONTEND": "noninteractive",
+	}
 	purgePackages := append([]string{"purge", "-y"}, packages...)
-	_, err = infraHelper.RunCmd("apt-get", purgePackages...)
+	_, err = infraHelper.RunCmdWithEnvVars("apt-get", purgeEnvVars, purgePackages...)
 	if err != nil {
 		log.Printf("UninstallServiceError: %s", err.Error())
 		return errors.New("UninstallServiceError")

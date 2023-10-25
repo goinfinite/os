@@ -96,7 +96,7 @@ func DeleteAccountController(c echo.Context) error {
 
 // UpdateAccount godoc
 // @Summary      UpdateAccount
-// @Description  Update an account.
+// @Description  Update an account (Only id is required).
 // @Tags         account
 // @Accept       json
 // @Produce      json

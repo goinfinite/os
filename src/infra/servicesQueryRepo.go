@@ -8,6 +8,7 @@ import (
 
 	"github.com/speedianet/sam/src/domain/entity"
 	"github.com/speedianet/sam/src/domain/valueObject"
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
 	"github.com/shirou/gopsutil/process"
@@ -58,7 +59,7 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		uptimeSeconds := time.Since(time.Unix(uptime/1000, 0)).Seconds()
+		uptimeSeconds := int64(time.Since(time.Unix(uptime/1000, 0)).Seconds())
 
 		cpuPercent, err := p.CPUPercent()
 		if err != nil {
@@ -120,7 +121,8 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	}
 
 	var notRunningServicesNames []string
-	for _, svc := range valueObject.SupportedServiceNames {
+	supportedServiceNames := maps.Keys(valueObject.SupportedServiceNamesAndAliases)
+	for _, svc := range supportedServiceNames {
 		if !slices.Contains(runningServicesNames, svc) {
 			notRunningServicesNames = append(notRunningServicesNames, svc)
 		}

@@ -60,7 +60,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Update an account.",
+                "description": "Update an account (Only id is required).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1228,7 +1228,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/valueObject.ServiceStatus"
                 },
                 "uptimeSecs": {
-                    "type": "number"
+                    "type": "integer"
                 }
             }
         },
@@ -1394,6 +1394,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "Speedia AppManager API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

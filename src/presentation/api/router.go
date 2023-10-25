@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	apiController "github.com/speedianet/sam/src/presentation/api/controller"
+	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -37,7 +38,7 @@ func cronRoutes(baseRoute *echo.Group) {
 }
 
 func databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database")
+	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 	databaseGroup.DELETE(
@@ -70,6 +71,7 @@ func accountRoutes(baseRoute *echo.Group) {
 	accountGroup.GET("/", apiController.GetAccountsController)
 	accountGroup.POST("/", apiController.AddAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
+	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }
 
 func servicesRoutes(baseRoute *echo.Group) {

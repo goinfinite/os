@@ -346,11 +346,12 @@ func installMysql(version *valueObject.ServiceVersion) error {
 }
 
 func installNode(version *valueObject.ServiceVersion) error {
+	nodeSvcName, _ := valueObject.NewServiceName("node")
 	repoFilePath := "/speedia/repo.node.sh"
 
 	repoUrl := "https://deb.nodesource.com/setup_lts.x"
 	if version != nil {
-		re := regexp.MustCompile(supportedServicesVersion["node"])
+		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
 		isVersionAllowed := re.MatchString(version.String())
 
 		if !isVersionAllowed {
@@ -389,6 +390,37 @@ func installNode(version *valueObject.ServiceVersion) error {
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
+	}
+
+	appHtmlDir := "/app/html"
+	err = infraHelper.MakeDir(appHtmlDir)
+	if err != nil {
+		log.Printf("CreateBaseDirError: %s", err)
+		return errors.New("CreateBaseDirError")
+	}
+
+	indexJsFilePath := appHtmlDir + "/index.js"
+	err = copyAssets(
+		"nodejs/base-index.js",
+		indexJsFilePath,
+	)
+	if err != nil {
+		log.Printf("CopyAssetsError: %s", err)
+		return errors.New("CopyAssetsError")
+	}
+
+	err = SupervisordFacade{}.AddConf(
+		"node",
+		"/usr/bin/node "+indexJsFilePath+" &",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError")
+	}
+
+	err = SupervisordFacade{}.Start(nodeSvcName)
+	if err != nil {
+		log.Printf("RunNodeJsServiceError: %s", err)
+		return errors.New("RunNodeJsServiceError")
 	}
 
 	return nil
