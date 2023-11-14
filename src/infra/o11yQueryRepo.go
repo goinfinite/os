@@ -1,8 +1,8 @@
 package infra
 
 import (
-	"github.com/speedianet/sam/src/domain/entity"
-	o11yInfra "github.com/speedianet/sam/src/infra/o11y"
+	"github.com/speedianet/os/src/domain/entity"
+	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 )
 
 type O11yQueryRepo struct {

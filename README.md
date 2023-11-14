@@ -2,27 +2,21 @@
 This project is under active development and is not ready for production use.
 ```
 
-# Speedia AppManager
+# Speedia OS
 
-Speedia AppManager (SAM) is an open source application hosting manager in a single file. It has a REST API, CLI and dashboard built to help you run your applications in a container easily.
+Speedia OS (SOS) is a streamlined container image equipped with a REST API, CLI, and user-friendly dashboard, purpose-built to simplify the deployment of your applications within a container environment.
 
 ## Running
 
-SAM is designed to manage an application with its dependencies in a lightweight container, specifically on top of [bitnami/minideb](https://hub.docker.com/r/bitnami/minideb/) image. However, it may also work as a regular binary on any Debian-based distro so you can use it to run your applications directly in a virtual machine or bare metal server.
-
-To run SAM as a container, you can use the image available at DockerHub with the following command:
+To run SOS as a container, you can use the image available at DockerHub with the following command:
 
 ```
-podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it docker.io/speedia/sam:latest
+podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it docker.io/speedia/sos:latest
 ```
 
-Feel free to rename the container, vhost and change the host port as you wish. SAM should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
+Feel free to rename the container, vhost and change the host port as you wish. SOS should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
 
-You can publish port 80 and 443 to the host when running SAM in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in the server.
-
-Otherwise, you may want to use a reverse proxy to run multiple SAM instances in the same server and proxy each domain to the respective SAM instance, using [nginx-proxy/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for example. Remember to also map port 10000 to a subdomain or directory in the reverse proxy for each SAM instance.
-
-If you don't want to use containers, you can attempt to run SAM directly in a VM or server at your own risk. Download the latest release from the [releases page](https://github.com/speedianet/sam/releases) and use the [supervisord config file](https://github.com/speedianet/sam/blob/main/supervisord.conf) to run it as a service. In the future there will be a CLI command to automate this installation.
+You can publish port 80 and 443 to the host when running SOS in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in that server.
 
 ## Development
 
@@ -39,16 +33,16 @@ If you add a new env var that is required to run the apis, please add it to the 
 When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system. For instance, if you want to set the `ENV1` variable, you can do it in the `.env` file or in the command line:
 
 ```
-ENV1=XXX /speedia/sam
+ENV1=XXX /speedia/sos
 ```
 
 ### Unit Testing
 
-SAM commands can harm your system, so it's important to run the unit tests in a proper container:
+SOS commands can harm your system, so it's important to run the unit tests in a proper container:
 
 ```
-podman build --format=docker -t sam-unit-test:latest -f Dockerfile.test .
-podman run --rm -it sam-unit-test:latest
+podman build --format=docker -t sos-unit-test:latest -f Dockerfile.test .
+podman run --rm -it sos-unit-test:latest
 ```
 
 Make sure you have the `.env` file in the root of the git directory before running the tests.
@@ -64,13 +58,13 @@ For instance there you'll find a `testHelpers.go` file that is used to read the 
 To build the project, run the command below. It takes two minutes to build the project at first. After that, it takes less than 10 seconds to build.
 
 ```
-podman build --format=docker -t sam:latest .
+podman build --format=docker -t sos:latest .
 ```
 
 To run the project you may use the following command:
 
 ```
-podman run --name sam --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it sam:latest
+podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it sos:latest
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy.

@@ -6,8 +6,8 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type SupervisordFacade struct {

@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/sam/src/domain/useCase"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	"github.com/speedianet/sam/src/infra"
+	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
 )
 
 func getAccountIdFromAccessToken(

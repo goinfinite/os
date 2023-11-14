@@ -1,8 +1,8 @@
 package cliMiddleware
 
 import (
-	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
-	"github.com/speedianet/sam/src/presentation/shared"
+	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/presentation/shared"
 	"github.com/spf13/cobra"
 )
 

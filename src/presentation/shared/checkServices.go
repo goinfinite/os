@@ -3,8 +3,8 @@ package shared
 import (
 	"errors"
 
-	"github.com/speedianet/sam/src/domain/valueObject"
-	"github.com/speedianet/sam/src/infra"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
 )
 
 func CheckServices(serviceNameStr string) error {

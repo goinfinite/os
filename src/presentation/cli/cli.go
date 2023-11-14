@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	cliMiddleware "github.com/speedianet/sam/src/presentation/cli/middleware"
-	"github.com/speedianet/sam/src/presentation/shared"
+	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
+	"github.com/speedianet/os/src/presentation/shared"
 	"github.com/spf13/cobra"
 )
 

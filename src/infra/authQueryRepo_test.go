@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	testHelpers "github.com/speedianet/os/src/devUtils"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func TestAuthQueryRepo(t *testing.T) {

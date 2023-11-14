@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/valueObject"
 	"golang.org/x/exp/slices"
 )
 

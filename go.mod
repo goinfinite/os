@@ -1,4 +1,4 @@
-module github.com/speedianet/sam
+module github.com/speedianet/os
 
 go 1.20
 

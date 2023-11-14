@@ -3,9 +3,9 @@ package cli
 import (
 	"fmt"
 
-	api "github.com/speedianet/sam/src/presentation/api"
-	cliController "github.com/speedianet/sam/src/presentation/cli/controller"
-	cliMiddleware "github.com/speedianet/sam/src/presentation/cli/middleware"
+	api "github.com/speedianet/os/src/presentation/api"
+	cliController "github.com/speedianet/os/src/presentation/cli/controller"
+	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	"github.com/spf13/cobra"
 )
 

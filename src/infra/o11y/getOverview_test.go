@@ -3,7 +3,7 @@ package o11yInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
+	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
 func TestGetOverview(t *testing.T) {

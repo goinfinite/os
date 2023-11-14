@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 

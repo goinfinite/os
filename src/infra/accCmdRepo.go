@@ -14,8 +14,8 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/valueObject"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/sha3"
 )

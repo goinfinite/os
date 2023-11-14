@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	apiController "github.com/speedianet/sam/src/presentation/api/controller"
-	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
+	apiController "github.com/speedianet/os/src/presentation/api/controller"
+	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 

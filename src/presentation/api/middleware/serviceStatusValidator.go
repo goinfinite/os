@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/sam/src/presentation/shared"
+	"github.com/speedianet/os/src/presentation/shared"
 )
 
 func ServiceStatusValidator(serviceNameStr string) echo.MiddlewareFunc {

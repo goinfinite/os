@@ -3,11 +3,11 @@ package databaseInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
-	servicesInfra "github.com/speedianet/sam/src/infra/services"
+	testHelpers "github.com/speedianet/os/src/devUtils"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {

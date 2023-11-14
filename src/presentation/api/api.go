@@ -5,8 +5,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
-	"github.com/speedianet/sam/src/presentation/shared"
+	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
+	"github.com/speedianet/os/src/presentation/shared"
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 

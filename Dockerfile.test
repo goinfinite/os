@@ -13,6 +13,6 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 COPY . .
 
 RUN go mod download \
-    && go build -o sam
+    && go build -o sos
 
 ENTRYPOINT ["go", "test", "-v", "./..."]

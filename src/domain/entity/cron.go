@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/speedianet/sam/src/domain/valueObject"
+import "github.com/speedianet/os/src/domain/valueObject"
 
 type Cron struct {
 	Id       valueObject.CronId       `json:"id"`

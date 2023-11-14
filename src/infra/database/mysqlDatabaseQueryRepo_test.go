@@ -3,7 +3,7 @@ package databaseInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
+	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
 func TestMysqlDatabaseQueryRepo(t *testing.T) {

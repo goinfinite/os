@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/sam/src/domain/useCase"
-	"github.com/speedianet/sam/src/infra"
-	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/infra"
+	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
 // O11yOverview  godoc

@@ -1,13 +1,13 @@
 package cliController
 
 import (
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/useCase"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	"github.com/speedianet/sam/src/infra"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
-	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
+	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 

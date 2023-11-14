@@ -1,8 +1,8 @@
 package infra
 
 import (
-	"github.com/speedianet/sam/src/domain/valueObject"
-	servicesInfra "github.com/speedianet/sam/src/infra/services"
+	"github.com/speedianet/os/src/domain/valueObject"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type ServicesCmdRepo struct {

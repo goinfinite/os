@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 type O11yOverview struct {

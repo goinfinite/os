@@ -3,8 +3,8 @@ package useCase
 import (
 	"errors"
 
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/repository"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/repository"
 )
 
 func UpdateServiceStatus(

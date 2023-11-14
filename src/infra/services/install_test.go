@@ -3,8 +3,8 @@ package servicesInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	testHelpers "github.com/speedianet/os/src/devUtils"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func TestInstall(t *testing.T) {

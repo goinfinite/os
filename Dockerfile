@@ -12,10 +12,10 @@ RUN wget -nv https://github.com/ochinchina/supervisord/releases/download/v0.7.3/
 
 COPY supervisord.conf /speedia/supervisord.conf
 
-COPY /bin/sam /speedia/sam
+COPY /bin/sos /speedia/sos
 
-RUN chmod +x /speedia/sam \
-    && ln -s /speedia/sam /usr/bin/sam
+RUN chmod +x /speedia/sos \
+    && ln -s /speedia/sos /usr/bin/sos
 
 EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 10000/tcp
 
