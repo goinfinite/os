@@ -14,7 +14,7 @@ func PreventRootless() {
 	}
 
 	if currentUser.Username != "root" {
-		fmt.Println("Only root can run SAM.")
+		fmt.Println("Only root can run SOS.")
 		os.Exit(1)
 	}
 }

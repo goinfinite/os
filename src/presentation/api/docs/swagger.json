@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Speedia AppManager API",
+        "description": "Speedia OS API",
         "title": "SamApi",
         "termsOfService": "https://speedia.net/tos/",
         "contact": {

@@ -10,9 +10,9 @@ import (
 	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
-// @title			SamApi
+// @title			SosApi
 // @version			0.0.1
-// @description		Speedia AppManager API
+// @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
 
 // @contact.name	Speedia Engineering

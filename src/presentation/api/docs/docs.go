@@ -1378,7 +1378,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "SamApi",
-	Description:      "Speedia AppManager API",
+	Description:      "Speedia OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

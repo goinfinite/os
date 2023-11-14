@@ -13,13 +13,13 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print software version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Speedia AppManager v0.0.1")
+		fmt.Println("Speedia OS v0.0.1")
 	},
 }
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Start the SAM server (default to port 10000)",
+	Short: "Start the SOS server (default to port 10000)",
 	Run: func(cmd *cobra.Command, args []string) {
 		api.ApiInit()
 	},
