@@ -89,9 +89,11 @@ func copyAssets(srcPath string, dstPath string) error {
 }
 
 func installOls() error {
+	repoFilePath := "/speedia/repo.litespeed.sh"
+
 	err := infraHelper.DownloadFile(
 		"https://repo.litespeed.sh",
-		"/speedia/repo.litespeed.sh",
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("DownloadRepoFileError: %s", err)
@@ -100,14 +102,14 @@ func installOls() error {
 
 	_, err = infraHelper.RunCmd(
 		"bash",
-		"/speedia/repo.litespeed.sh",
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("RepoAddError: %s", err)
 		return errors.New("RepoAddError")
 	}
 
-	err = os.Remove("/speedia/repo.litespeed.sh")
+	err = os.Remove(repoFilePath)
 	if err != nil {
 		log.Printf("RemoveRepoFileError: %s", err)
 		return errors.New("RemoveRepoFileError")
@@ -221,9 +223,11 @@ func installOls() error {
 }
 
 func installMariaDb(version *valueObject.ServiceVersion) error {
+	repoFilePath := "/speedia/repo.mariadb.sh"
+
 	err := infraHelper.DownloadFile(
 		"https://r.mariadb.com/downloads/mariadb_repo_setup",
-		"/speedia/repo.mariadb.sh",
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("DownloadRepoFileError: %s", err)
@@ -245,7 +249,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 
 	_, err = infraHelper.RunCmd(
 		"bash",
-		"/speedia/repo.mariadb.sh",
+		repoFilePath,
 		versionFlag,
 	)
 	if err != nil {
@@ -253,7 +257,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 		return errors.New("RepoAddError")
 	}
 
-	err = os.Remove("/speedia/repo.mariadb.sh")
+	err = os.Remove(repoFilePath)
 	if err != nil {
 		log.Printf("RemoveRepoFileError: %s", err)
 		return errors.New("RemoveRepoFileError")
