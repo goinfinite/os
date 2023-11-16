@@ -14,15 +14,16 @@ var SupportedServiceNamesAndAliases = map[string][]string{
 	"node":          {"nodejs"},
 	"mysql":         {"mysqld", "mariadb", "percona", "perconadb"},
 	"redis":         {"redis-server"},
+	"php":           {"lsphp", "php-fpm", "php-cgi", "php-cli"},
 }
 
 func NewServiceName(value string) (ServiceName, error) {
-	supportedServicesCorrectName := maps.Keys(SupportedServiceNamesAndAliases)
-	if slices.Contains(supportedServicesCorrectName, value) {
+	servicesName := maps.Keys(SupportedServiceNamesAndAliases)
+	if slices.Contains(servicesName, value) {
 		return ServiceName(value), nil
 	}
 
-	for _, serviceName := range supportedServicesCorrectName {
+	for _, serviceName := range servicesName {
 		if slices.Contains(
 			SupportedServiceNamesAndAliases[serviceName],
 			value,
@@ -35,13 +36,13 @@ func NewServiceName(value string) (ServiceName, error) {
 }
 
 func NewServiceNamePanic(value string) ServiceName {
-	ss, err := NewServiceName(value)
+	sn, err := NewServiceName(value)
 	if err != nil {
-		panic("InvalidServiceName")
+		panic(err)
 	}
-	return ss
+	return sn
 }
 
-func (ss ServiceName) String() string {
-	return string(ss)
+func (sn ServiceName) String() string {
+	return string(sn)
 }
