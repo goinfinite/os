@@ -4,19 +4,19 @@ This project is under active development and is not ready for production use.
 
 # Speedia OS
 
-Speedia OS (SOS) is a streamlined container image equipped with a REST API, CLI, and user-friendly dashboard, purpose-built to simplify the deployment of your applications within a container environment.
+Speedia OS is a streamlined container image equipped with a REST API, CLI, and user-friendly dashboard, purpose-built to simplify the deployment of your applications within a container environment.
 
 ## Running
 
-To run SOS as a container, you can use the image available at DockerHub with the following command:
+To run Speedia OS as a container, you can use the image available at DockerHub with the following command:
 
 ```
 podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it docker.io/speedia/sos:latest
 ```
 
-Feel free to rename the container, vhost and change the host port as you wish. SOS should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
+Feel free to rename the container, vhost and change the host port as you wish. Speedia OS should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
 
-You can publish port 80 and 443 to the host when running SOS in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in that server.
+You can publish port 80 and 443 to the host when running Speedia OS in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in that server.
 
 ## Development
 
@@ -38,7 +38,7 @@ ENV1=XXX /speedia/sos
 
 ### Unit Testing
 
-SOS commands can harm your system, so it's important to run the unit tests in a proper container:
+Speedia OS commands can harm your system, so it's important to run the unit tests in a proper container:
 
 ```
 podman build --format=docker -t sos-unit-test:latest -f Dockerfile.test .
@@ -68,6 +68,25 @@ podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 10000:10000 -it s
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy.
+
+### VSCode Extensions
+
+The following extensions are highly encouraged to be used during development:
+
+```
+EditorConfig.EditorConfig
+GitHub.copilot
+GitHub.vscode-pull-request-github
+esbenp.prettier-vscode
+foxundermoon.shell-format
+golang.go
+hbenl.vscode-test-explorer
+ms-vscode.test-adapter-converter
+redhat.vscode-yaml
+streetsidesoftware.code-spell-checker
+streetsidesoftware.code-spell-checker-portuguese-brazilian
+timonwong.shellcheck
+```
 
 ## REST API
 
