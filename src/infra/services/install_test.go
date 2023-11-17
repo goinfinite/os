@@ -22,6 +22,19 @@ func TestInstall(t *testing.T) {
 		}
 	})
 
+	t.Run("InstallPhp", func(t *testing.T) {
+		t.Skip("Skip php install test")
+		version, _ := valueObject.NewServiceVersion("7.4")
+		err := Install(
+			valueObject.NewServiceNamePanic("php"),
+			&version,
+		)
+		if err != nil {
+			t.Errorf("Install() error = %v", err)
+			return
+		}
+	})
+
 	t.Run("InstallMysql", func(t *testing.T) {
 		t.Skip("Skip mysql install test")
 		err := Install(

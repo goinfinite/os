@@ -22,30 +22,41 @@ var supportedServicesVersion = map[string]string{
 
 var OlsPackages = []string{
 	"openlitespeed",
-	"lsphp74",
-	"lsphp74-common",
-	"lsphp74-curl",
-	"lsphp74-intl",
-	"lsphp74-mysql",
-	"lsphp74-opcache",
-	"lsphp80",
-	"lsphp80-common",
-	"lsphp80-curl",
-	"lsphp80-intl",
-	"lsphp80-mysql",
-	"lsphp80-opcache",
-	"lsphp81",
-	"lsphp81-common",
-	"lsphp81-curl",
-	"lsphp81-intl",
-	"lsphp81-mysql",
-	"lsphp81-opcache",
-	"lsphp82",
-	"lsphp82-common",
-	"lsphp82-curl",
-	"lsphp82-intl",
-	"lsphp82-mysql",
-	"lsphp82-opcache",
+}
+
+var PhpPackages = map[string][]string{
+	"74": {
+		"lsphp74",
+		"lsphp74-common",
+		"lsphp74-curl",
+		"lsphp74-intl",
+		"lsphp74-mysql",
+		"lsphp74-opcache",
+	},
+	"80": {
+		"lsphp80",
+		"lsphp80-common",
+		"lsphp80-curl",
+		"lsphp80-intl",
+		"lsphp80-mysql",
+		"lsphp80-opcache",
+	},
+	"81": {
+		"lsphp81",
+		"lsphp81-common",
+		"lsphp81-curl",
+		"lsphp81-intl",
+		"lsphp81-mysql",
+		"lsphp81-opcache",
+	},
+	"82": {
+		"lsphp82",
+		"lsphp82-common",
+		"lsphp82-curl",
+		"lsphp82-intl",
+		"lsphp82-mysql",
+		"lsphp82-opcache",
+	},
 }
 
 var MariaDbPackages = []string{
@@ -214,8 +225,27 @@ func installOls() error {
 		return errors.New("AddSupervisorConfError")
 	}
 
+	return nil
+}
+
+func installPhp(version *valueObject.ServiceVersion) error {
+	phpVersion := "82"
+	if version != nil {
+		phpVersion = version.GetWithoutPunctuation()
+	}
+
+	phpPackages, exists := PhpPackages[phpVersion]
+	if !exists {
+		return errors.New("InvalidPhpVersion: " + phpVersion)
+	}
+
+	err := infraHelper.InstallPkgs(phpPackages)
+	if err != nil {
+		return err
+	}
+
 	os.Symlink(
-		"/usr/local/lsws/lsphp82/bin/php",
+		"/usr/local/lsws/lsphp"+phpVersion+"/bin/php",
 		"/usr/bin/php",
 	)
 
@@ -545,13 +575,15 @@ func Install(
 	version *valueObject.ServiceVersion,
 ) error {
 	switch name.String() {
-	case "openlitespeed", "litespeed":
+	case "openlitespeed":
 		return installOls()
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
-		return installMysql(version)
-	case "node", "nodejs":
+	case "php":
+		return installPhp(version)
+	case "node":
 		return installNode(version)
-	case "redis", "redis-server":
+	case "mysql":
+		return installMysql(version)
+	case "redis":
 		return installRedis(version)
 	default:
 		log.Printf("ServiceNotImplemented: %s", name.String())
