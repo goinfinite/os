@@ -10,18 +10,6 @@ import (
 func TestInstall(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("InstallOls", func(t *testing.T) {
-		t.Skip("Skip ols install test")
-		err := Install(
-			valueObject.NewServiceNamePanic("openlitespeed"),
-			nil,
-		)
-		if err != nil {
-			t.Errorf("Install() error = %v", err)
-			return
-		}
-	})
-
 	t.Run("InstallPhp", func(t *testing.T) {
 		t.Skip("Skip php install test")
 		version, _ := valueObject.NewServiceVersion("7.4")

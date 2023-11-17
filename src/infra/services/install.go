@@ -99,7 +99,7 @@ func copyAssets(srcPath string, dstPath string) error {
 	return nil
 }
 
-func installOls() error {
+func installPhp(version *valueObject.ServiceVersion) error {
 	repoFilePath := "/speedia/repo.litespeed.sh"
 
 	err := infraHelper.DownloadFile(
@@ -107,8 +107,7 @@ func installOls() error {
 		repoFilePath,
 	)
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
+		return errors.New("DownloadRepoFileError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
@@ -116,119 +115,19 @@ func installOls() error {
 		repoFilePath,
 	)
 	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
+		return errors.New("RepoAddError: " + err.Error())
 	}
 
 	err = os.Remove(repoFilePath)
 	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
+		return errors.New("RemoveRepoFileError: " + err.Error())
 	}
 
 	err = infraHelper.InstallPkgs(OlsPackages)
 	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
+		return errors.New("InstallPhpWebServerError: " + err.Error())
 	}
 
-	defaultDirs := []string{
-		"logs",
-		"conf",
-		"html",
-	}
-	for _, dir := range defaultDirs {
-		err = os.MkdirAll("/app/"+dir, 0755)
-		if err != nil {
-			log.Printf("CreateAppDirError: %s", err)
-			return errors.New("CreateAppDirError")
-		}
-	}
-
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"nobody:nogroup",
-		"/app",
-	)
-	if err != nil {
-		log.Printf("ChownAppDirError: %s", err)
-		return errors.New("ChownAppDirError")
-	}
-
-	err = copyAssets(
-		"httpd_config.conf",
-		"/usr/local/lsws/conf/httpd_config.conf",
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	virtualHost := os.Getenv("VIRTUAL_HOST")
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+virtualHost+"/g",
-		"/usr/local/lsws/conf/httpd_config.conf",
-	)
-	if err != nil {
-		log.Printf("RenameHttpdVHostError: %s", err)
-		return errors.New("RenameHttpdVHostError")
-	}
-
-	err = copyAssets(
-		"vhconf.conf",
-		"/app/conf/vhconf.conf",
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+virtualHost+"/g",
-		"/app/conf/vhconf.conf",
-	)
-	if err != nil {
-		log.Printf("RenameVHostError: %s", err)
-		return errors.New("RenameVHostError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"lsadm:nogroup",
-		"/app/conf",
-	)
-	if err != nil {
-		log.Printf("ChownConfDirError: %s", err)
-		return errors.New("ChownConfDirError")
-	}
-
-	err = copyAssets(
-		"ols-entrypoint.sh",
-		"/speedia/ols-entrypoint.sh",
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	err = SupervisordFacade{}.AddConf(
-		"openlitespeed",
-		"bash /speedia/ols-entrypoint.sh",
-	)
-	if err != nil {
-		return errors.New("AddSupervisorConfError")
-	}
-
-	return nil
-}
-
-func installPhp(version *valueObject.ServiceVersion) error {
 	phpVersion := "82"
 	if version != nil {
 		phpVersion = version.GetWithoutPunctuation()
@@ -239,7 +138,7 @@ func installPhp(version *valueObject.ServiceVersion) error {
 		return errors.New("InvalidPhpVersion: " + phpVersion)
 	}
 
-	err := infraHelper.InstallPkgs(phpPackages)
+	err = infraHelper.InstallPkgs(phpPackages)
 	if err != nil {
 		return err
 	}
@@ -248,6 +147,69 @@ func installPhp(version *valueObject.ServiceVersion) error {
 		"/usr/local/lsws/lsphp"+phpVersion+"/bin/php",
 		"/usr/bin/php",
 	)
+
+	err = copyAssets(
+		"httpd_config.conf",
+		"/usr/local/lsws/conf/httpd_config.conf",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	virtualHost := os.Getenv("VIRTUAL_HOST")
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/speedia.net/"+virtualHost+"/g",
+		"/usr/local/lsws/conf/httpd_config.conf",
+	)
+	if err != nil {
+		return errors.New("RenameHttpdVHostError: " + err.Error())
+	}
+
+	err = copyAssets(
+		"vhconf.conf",
+		"/app/conf/vhconf.conf",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/speedia.net/"+virtualHost+"/g",
+		"/app/conf/vhconf.conf",
+	)
+	if err != nil {
+		return errors.New("RenameVHostError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"-R",
+		"lsadm:nogroup",
+		"/app/conf",
+	)
+	if err != nil {
+		return errors.New("ChownConfDirError: " + err.Error())
+	}
+
+	err = copyAssets(
+		"ols-entrypoint.sh",
+		"/speedia/ols-entrypoint.sh",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	err = SupervisordFacade{}.AddConf(
+		"openlitespeed",
+		"bash /speedia/ols-entrypoint.sh",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError: " + err.Error())
+	}
 
 	return nil
 }
@@ -575,8 +537,6 @@ func Install(
 	version *valueObject.ServiceVersion,
 ) error {
 	switch name.String() {
-	case "openlitespeed":
-		return installOls()
 	case "php":
 		return installPhp(version)
 	case "node":
