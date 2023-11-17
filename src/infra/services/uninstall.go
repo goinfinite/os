@@ -16,12 +16,12 @@ func Uninstall(name valueObject.ServiceName) error {
 
 	var packages []string
 	switch name.String() {
-	case "openlitespeed":
-		packages = OlsPackages
-	case "mysql":
-		packages = MariaDbPackages
+	case "php":
+		packages = append(OlsPackages, "lsphp*")
 	case "node":
 		packages = NodePackages
+	case "mysql":
+		packages = MariaDbPackages
 	case "redis":
 		packages = RedisPackages
 	default:

@@ -204,7 +204,7 @@ func installPhp(version *valueObject.ServiceVersion) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"openlitespeed",
+		"php",
 		"bash /speedia/ols-entrypoint.sh",
 	)
 	if err != nil {

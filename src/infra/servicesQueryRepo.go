@@ -19,8 +19,8 @@ type ServicesQueryRepo struct {
 
 func (repo ServicesQueryRepo) ServiceNameAdapter(serviceName string) string {
 	switch serviceName {
-	case "litespeed":
-		return "openlitespeed"
+	case "litespeed", "openlitespeed", "lsphp":
+		return "php"
 	case "mysqld", "mariadbd", "mariadb-server", "percona-server-mysqld":
 		return "mysql"
 	case "redis-server":
