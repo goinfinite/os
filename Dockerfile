@@ -2,7 +2,10 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates wget curl tar procps cron \
+RUN install_packages ca-certificates wget curl tar procps debian-archive-keyring lsb-release gnupg2 \
+    && curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor > "/usr/share/keyrings/nginx-archive-keyring.gpg" \ 
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
+    && install_packages nginx cron \
     && touch /var/spool/cron/crontabs/root
 
 RUN wget -nv https://github.com/ochinchina/supervisord/releases/download/v0.7.3/supervisord_0.7.3_Linux_64-bit.tar.gz \
@@ -10,7 +13,7 @@ RUN wget -nv https://github.com/ochinchina/supervisord/releases/download/v0.7.3/
     && mv supervisord_0.7.3_Linux_64-bit/supervisord /usr/bin/supervisord \
     && rm -rf supervisord_0.7.3_Linux_64-bit supervisord_0.7.3_Linux_64-bit.tar.gz
 
-COPY supervisord.conf /speedia/supervisord.conf
+COPY /container/supervisord.conf /speedia/supervisord.conf
 
 COPY /bin/sos /speedia/sos
 
