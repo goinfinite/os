@@ -2,10 +2,31 @@ package useCase
 
 import (
 	"errors"
+	"log"
+
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
+
+var servicesDependencies = map[string][]string{
+	"php": {"openlitespeed"},
+}
+
+func isServiceInstalled(
+	servicesQueryRepo repository.ServicesQueryRepo,
+	serviceName valueObject.ServiceName,
+) bool {
+	serviceStatus, err := servicesQueryRepo.GetByName(serviceName)
+	if err != nil {
+		return false
+	}
+
+	return serviceStatus.Status.String() != "uninstalled"
+}
 
 func UpdateServiceStatus(
 	servicesQueryRepo repository.ServicesQueryRepo,
@@ -21,21 +42,41 @@ func UpdateServiceStatus(
 		return errors.New("ServiceStatusAlreadySet")
 	}
 
-	isInstalled := currentSvcStatus.Status.String() == "installed"
-	isRunning := currentSvcStatus.Status.String() == "running"
-	isStopped := currentSvcStatus.Status.String() == "stopped"
-	isInstalled = isInstalled || isRunning || isStopped
-
-	shouldRun := updateSvcStatusDto.Status.String() == "running"
-	shouldStop := updateSvcStatusDto.Status.String() == "stopped"
-	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
-	if !isInstalled && (shouldRun || shouldStop || shouldUninstall) {
-		return errors.New("ServiceNotInstalled")
-	}
-
+	isInstalled := currentSvcStatus.Status.String() != "uninstalled"
 	shouldInstall := updateSvcStatusDto.Status.String() == "installed"
 	if isInstalled && shouldInstall {
 		return errors.New("ServiceAlreadyInstalled")
+	}
+
+	if !isInstalled && !shouldInstall {
+		return errors.New("ServiceNotInstalled")
+	}
+
+	servicesWithDependencies := maps.Keys(servicesDependencies)
+	serviceHasDependencies := slices.Contains(
+		servicesWithDependencies,
+		updateSvcStatusDto.Name.String(),
+	)
+	if serviceHasDependencies {
+		serviceDependencies := servicesDependencies[updateSvcStatusDto.Name.String()]
+
+		for _, dependency := range serviceDependencies {
+			dependencyServiceName := valueObject.NewServiceNamePanic(dependency)
+			isDependencyInstalled := isServiceInstalled(
+				servicesQueryRepo,
+				dependencyServiceName,
+			)
+
+			if isDependencyInstalled {
+				continue
+			}
+
+			err = servicesCmdRepo.Install(dependencyServiceName, nil)
+			if err != nil {
+				log.Printf("DependenciesInstallFailed: %s", dependency)
+				return errors.New("DependenciesInstallFailed")
+			}
+		}
 	}
 
 	switch updateSvcStatusDto.Status.String() {
