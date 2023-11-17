@@ -252,6 +252,87 @@ func installPhp(version *valueObject.ServiceVersion) error {
 	return nil
 }
 
+func installNode(version *valueObject.ServiceVersion) error {
+	nodeSvcName, _ := valueObject.NewServiceName("node")
+	repoFilePath := "/speedia/repo.node.sh"
+
+	repoUrl := "https://deb.nodesource.com/setup_lts.x"
+	if version != nil {
+		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
+		isVersionAllowed := re.MatchString(version.String())
+
+		if !isVersionAllowed {
+			log.Printf("InvalidNodeVersion: %s", version.String())
+			return errors.New("InvalidNodeVersion")
+		}
+
+		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
+	}
+
+	err := infraHelper.DownloadFile(
+		repoUrl,
+		repoFilePath,
+	)
+	if err != nil {
+		log.Printf("DownloadRepoFileError: %s", err)
+		return errors.New("DownloadRepoFileError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"bash",
+		repoFilePath,
+	)
+	if err != nil {
+		log.Printf("RepoAddError: %s", err)
+		return errors.New("RepoAddError")
+	}
+
+	err = os.Remove(repoFilePath)
+	if err != nil {
+		log.Printf("RemoveRepoFileError: %s", err)
+		return errors.New("RemoveRepoFileError")
+	}
+
+	err = infraHelper.InstallPkgs(NodePackages)
+	if err != nil {
+		log.Printf("InstallServiceError: %s", err)
+		return errors.New("InstallServiceError")
+	}
+
+	appHtmlDir := "/app/html"
+	err = infraHelper.MakeDir(appHtmlDir)
+	if err != nil {
+		log.Printf("CreateBaseDirError: %s", err)
+		return errors.New("CreateBaseDirError")
+	}
+
+	indexJsFilePath := appHtmlDir + "/index.js"
+	err = copyAssets(
+		"nodejs/base-index.js",
+		indexJsFilePath,
+	)
+	if err != nil {
+		log.Printf("CopyAssetsError: %s", err)
+		return errors.New("CopyAssetsError")
+	}
+
+	err = SupervisordFacade{}.AddConf(
+		"node",
+		"/usr/bin/node "+indexJsFilePath+" &",
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError")
+	}
+
+	err = SupervisordFacade{}.Start(nodeSvcName)
+	if err != nil {
+		log.Printf("RunNodeJsServiceError: %s", err)
+		return errors.New("RunNodeJsServiceError")
+	}
+
+	return nil
+}
+
 func installMariaDb(version *valueObject.ServiceVersion) error {
 	repoFilePath := "/speedia/repo.mariadb.sh"
 
@@ -374,87 +455,6 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
-	}
-
-	return nil
-}
-
-func installNode(version *valueObject.ServiceVersion) error {
-	nodeSvcName, _ := valueObject.NewServiceName("node")
-	repoFilePath := "/speedia/repo.node.sh"
-
-	repoUrl := "https://deb.nodesource.com/setup_lts.x"
-	if version != nil {
-		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
-		isVersionAllowed := re.MatchString(version.String())
-
-		if !isVersionAllowed {
-			log.Printf("InvalidNodeVersion: %s", version.String())
-			return errors.New("InvalidNodeVersion")
-		}
-
-		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
-	}
-
-	err := infraHelper.DownloadFile(
-		repoUrl,
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"bash",
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
-	}
-
-	err = os.Remove(repoFilePath)
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
-	}
-
-	err = infraHelper.InstallPkgs(NodePackages)
-	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
-	}
-
-	appHtmlDir := "/app/html"
-	err = infraHelper.MakeDir(appHtmlDir)
-	if err != nil {
-		log.Printf("CreateBaseDirError: %s", err)
-		return errors.New("CreateBaseDirError")
-	}
-
-	indexJsFilePath := appHtmlDir + "/index.js"
-	err = copyAssets(
-		"nodejs/base-index.js",
-		indexJsFilePath,
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	err = SupervisordFacade{}.AddConf(
-		"node",
-		"/usr/bin/node "+indexJsFilePath+" &",
-	)
-	if err != nil {
-		return errors.New("AddSupervisorConfError")
-	}
-
-	err = SupervisordFacade{}.Start(nodeSvcName)
-	if err != nil {
-		log.Printf("RunNodeJsServiceError: %s", err)
-		return errors.New("RunNodeJsServiceError")
 	}
 
 	return nil

@@ -35,10 +35,10 @@ func TestInstall(t *testing.T) {
 		}
 	})
 
-	t.Run("InstallMysql", func(t *testing.T) {
-		t.Skip("Skip mysql install test")
+	t.Run("InstallNode", func(t *testing.T) {
+		t.Skip("Skip node install test")
 		err := Install(
-			valueObject.NewServiceNamePanic("mysql"),
+			valueObject.NewServiceNamePanic("node"),
 			nil,
 		)
 		if err != nil {
@@ -47,10 +47,10 @@ func TestInstall(t *testing.T) {
 		}
 	})
 
-	t.Run("InstallNode", func(t *testing.T) {
-		t.Skip("Skip node install test")
+	t.Run("InstallMysql", func(t *testing.T) {
+		t.Skip("Skip mysql install test")
 		err := Install(
-			valueObject.NewServiceNamePanic("node"),
+			valueObject.NewServiceNamePanic("mysql"),
 			nil,
 		)
 		if err != nil {
