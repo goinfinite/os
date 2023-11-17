@@ -41,7 +41,7 @@ ENV1=XXX /speedia/sos
 Speedia OS commands can harm your system, so it's important to run the unit tests in a proper container:
 
 ```
-podman build --format=docker -t sos-unit-test:latest -f Dockerfile.test .
+podman build -t sos-unit-test:latest -f Containerfile.test .
 podman run --rm -it sos-unit-test:latest
 ```
 
@@ -58,7 +58,7 @@ For instance there you'll find a `testHelpers.go` file that is used to read the 
 To build the project, run the command below. It takes two minutes to build the project at first. After that, it takes less than 10 seconds to build.
 
 ```
-podman build --format=docker -t sos:latest .
+podman build -t sos:latest .
 ```
 
 To run the project you may use the following command:
