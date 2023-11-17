@@ -10,11 +10,10 @@ import (
 type ServiceName string
 
 var SupportedServiceNamesAndAliases = map[string][]string{
-	"openlitespeed": {"litespeed"},
-	"node":          {"nodejs"},
-	"mysql":         {"mysqld", "mariadb", "percona", "perconadb"},
-	"redis":         {"redis-server"},
-	"php":           {"lsphp", "php-fpm", "php-cgi", "php-cli"},
+	"php":   {"lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
+	"node":  {"nodejs"},
+	"mysql": {"mysqld", "mariadb", "percona", "perconadb"},
+	"redis": {"redis-server"},
 }
 
 func NewServiceName(value string) (ServiceName, error) {
