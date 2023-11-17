@@ -546,7 +546,6 @@ func Install(
 	case "redis":
 		return installRedis(version)
 	default:
-		log.Printf("ServiceNotImplemented: %s", name.String())
-		return errors.New("ServiceNotImplemented")
+		return errors.New("ServiceNotImplemented: " + name.String())
 	}
 }
