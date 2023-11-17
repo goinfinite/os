@@ -31,6 +31,12 @@ func UpdateServiceStatus(
 		return errors.New("ServiceNotInstalled")
 	}
 
+	isNginx := updateSvcStatusDto.Name.String() == "nginx"
+	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
+	if isNginx && shouldUninstall {
+		return errors.New("NginxCannotBeUninstalled")
+	}
+
 	switch updateSvcStatusDto.Status.String() {
 	case "running":
 		return servicesCmdRepo.Start(updateSvcStatusDto.Name)
