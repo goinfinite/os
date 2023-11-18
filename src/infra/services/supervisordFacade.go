@@ -151,11 +151,11 @@ directory=/speedia
 autostart=true
 autorestart=true
 startretries=3
-startsecs=5
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
+startsecs=3
+stdout_logfile=/app/logs/` + svcName + `.log
+stdout_logfile_maxbytes=10MB
+stderr_logfile=/app/logs/` + svcName + `_err.log
+stderr_logfile_maxbytes=10MB
 `
 
 	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)
