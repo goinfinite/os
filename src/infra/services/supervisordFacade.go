@@ -2,10 +2,10 @@ package servicesInfra
 
 import (
 	"errors"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
@@ -66,31 +66,35 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		name.String(),
 	)
 	if err != nil {
-		log.Printf("StopServiceError: %s", err)
-		return errors.New("StopServiceError")
+		return errors.New("StopServiceError: " + err.Error())
 	}
 
 	switch name.String() {
+	case "nginx":
+		_, _ = infraHelper.RunCmd(
+			"pkill",
+			"nginx",
+		)
 	case "php":
-		infraHelper.RunCmd(
+		_, _ = infraHelper.RunCmd(
 			"/usr/local/lsws/bin/lswsctrl",
 			"stop",
 		)
-		infraHelper.RunCmd(
+		_, _ = infraHelper.RunCmd(
 			"pkill",
 			"lsphp",
 		)
-		infraHelper.RunCmd(
+		_, _ = infraHelper.RunCmd(
 			"pkill",
 			"sleep",
 		)
 	case "mysql":
-		infraHelper.RunCmd(
+		_, _ = infraHelper.RunCmd(
 			"mysqladmin",
 			"shutdown",
 		)
 	case "node":
-		infraHelper.RunCmd(
+		_, _ = infraHelper.RunCmd(
 			"pkill",
 			"node",
 		)
@@ -105,24 +109,16 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 }
 
 func (facade SupervisordFacade) Restart(name valueObject.ServiceName) error {
-	switch name.String() {
-	case "php":
-		_, err := infraHelper.RunCmd(
-			"/usr/local/lsws/bin/lswsctrl",
-			"restart",
-		)
-		return err
+	err := facade.Stop(name)
+	if err != nil {
+		return errors.New("StopServiceError: " + err.Error())
 	}
 
-	_, err := infraHelper.RunCmd(
-		supervisordCmd,
-		"ctl",
-		"restart",
-		name.String(),
-	)
+	time.Sleep(3 * time.Second)
+
+	err = facade.Start(name)
 	if err != nil {
-		log.Printf("RestartServiceError: %s", err)
-		return errors.New("RestartServiceError")
+		return errors.New("StartServiceError: " + err.Error())
 	}
 
 	return nil
@@ -135,8 +131,7 @@ func (facade SupervisordFacade) Reload() error {
 		"reload",
 	)
 	if err != nil {
-		log.Printf("ReloadSupervisorError: %s", err)
-		return errors.New("ReloadSupervisorError")
+		return errors.New("ReloadSupervisorError: " + err.Error())
 	}
 
 	return nil
@@ -160,14 +155,12 @@ stderr_logfile_maxbytes=10MB
 
 	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Printf("OpenSupervisorConfError: %s", err)
-		return errors.New("OpenSupervisorConfError")
+		return errors.New("OpenSupervisorConfError: " + err.Error())
 	}
 	defer f.Close()
 
 	if _, err := f.WriteString(svcConf); err != nil {
-		log.Printf("WriteSupervisorConfError: %s", err)
-		return errors.New("WriteSupervisorConfError")
+		return errors.New("WriteSupervisorConfError: " + err.Error())
 	}
 
 	return nil
@@ -176,8 +169,7 @@ stderr_logfile_maxbytes=10MB
 func (facade SupervisordFacade) RemoveConf(svcName string) error {
 	fileContent, err := os.ReadFile(supervisordConf)
 	if err != nil {
-		log.Printf("OpenSupervisorConfError: %s", err)
-		return errors.New("OpenSupervisorConfError")
+		return errors.New("OpenSupervisorConfError: " + err.Error())
 	}
 
 	re := regexp.MustCompile(
@@ -187,8 +179,7 @@ func (facade SupervisordFacade) RemoveConf(svcName string) error {
 
 	err = os.WriteFile(supervisordConf, updatedContent, 0644)
 	if err != nil {
-		log.Printf("WriteSupervisorConfError: %s", err)
-		return errors.New("WriteSupervisorConfError")
+		return errors.New("WriteSupervisorConfError: " + err.Error())
 	}
 
 	return nil
