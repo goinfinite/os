@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
@@ -16,6 +17,28 @@ type SupervisordFacade struct {
 const supervisordCmd string = "/usr/bin/supervisord"
 const supervisordConf string = "/speedia/supervisord.conf"
 
+func (facade SupervisordFacade) toggleAutoStart(
+	name valueObject.ServiceName,
+	isAutoStart bool,
+) error {
+	autoStartStr := strconv.FormatBool(isAutoStart)
+
+	_, err := infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"/\\[program:"+name.String()+"\\]/,"+
+			"/^\\[/{s/autostart=.*/autostart="+autoStartStr+"/"+
+			";s/autorestart=.*/autorestart="+autoStartStr+"/}",
+		supervisordConf,
+	)
+	if err != nil {
+		return errors.New("UpdateSupervisordConfError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
 	_, err := infraHelper.RunCmd(
 		supervisordCmd,
@@ -24,8 +47,12 @@ func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
 		name.String(),
 	)
 	if err != nil {
-		log.Printf("StartServiceError: %s", err)
-		return errors.New("StartServiceError")
+		return errors.New("StartServiceError: " + err.Error())
+	}
+
+	err = facade.toggleAutoStart(name, true)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -44,7 +71,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 	}
 
 	switch name.String() {
-	case "openlitespeed":
+	case "php":
 		infraHelper.RunCmd(
 			"/usr/local/lsws/bin/lswsctrl",
 			"stop",
@@ -69,12 +96,17 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		)
 	}
 
+	err = facade.toggleAutoStart(name, false)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (facade SupervisordFacade) Restart(name valueObject.ServiceName) error {
 	switch name.String() {
-	case "openlitespeed":
+	case "php":
 		_, err := infraHelper.RunCmd(
 			"/usr/local/lsws/bin/lswsctrl",
 			"restart",
