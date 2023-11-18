@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"golang.org/x/exp/slices"
 )
@@ -34,11 +35,18 @@ func genSecret() (string, error) {
 }
 
 func CheckEnvs() {
-	file, err := os.OpenFile(".env", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
+	envFilePath := "/speedia/.env"
+
+	envFile, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {
 		log.Fatalf("EnvOpenFileError: %v", err)
 	}
-	defer file.Close()
+	defer envFile.Close()
+
+	err = godotenv.Load(envFilePath)
+	if err != nil {
+		log.Fatalf("EnvLoadError: %v", err)
+	}
 
 	for _, key := range requiredEnvVars {
 		value := os.Getenv(key)
@@ -55,12 +63,12 @@ func CheckEnvs() {
 			log.Fatalf("GenSecretError: %v", err)
 		}
 
-		os.Setenv(key, value)
-
-		_, err = file.WriteString(key + "=" + value + "\n")
+		_, err = envFile.WriteString(key + "=" + value + "\n")
 		if err != nil {
 			log.Fatalf("EnvWriteFileError: %v", err)
 		}
+
+		os.Setenv(key, value)
 	}
 
 	virtualHost := os.Getenv("VIRTUAL_HOST")
