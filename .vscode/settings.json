@@ -38,6 +38,7 @@
     "nginx",
     "nogroup",
     "openlitespeed",
+    "openssl",
     "pecl",
     "percona",
     "perconadb",
