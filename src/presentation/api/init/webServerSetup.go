@@ -42,6 +42,7 @@ func WebServerSetup() {
 	_, err = infraHelper.RunCmd(
 		"openssl",
 		"dhparam",
+		"-dsaparam",
 		"-out",
 		"/etc/nginx/dhparam.pem",
 		"2048",
