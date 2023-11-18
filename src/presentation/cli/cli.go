@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
-	"github.com/speedianet/os/src/presentation/shared"
+	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
 
-	shared.CheckEnvs()
+	sharedMiddleware.CheckEnvs()
 
 	registerCliRoutes()
 
