@@ -3,13 +3,20 @@ package apiInit
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func WebServerSetup() {
+	webServerFirstSetup()
+	webServerOnStartSetup()
+}
+
+func webServerFirstSetup() {
 	_, err := os.Stat("/etc/nginx/dhparam.pem")
 	if err == nil {
 		return
@@ -89,4 +96,30 @@ func WebServerSetup() {
 	}
 
 	log.Print("WebServerConfigured!")
+}
+
+func webServerOnStartSetup() {
+	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
+	if err != nil {
+		log.Fatalf("WsOnStartupSetupGetContainerResourcesFailed")
+	}
+
+	cpuCores := containerResources.HardwareSpecs.CpuCores
+	cpuCoresStr := strconv.FormatUint(cpuCores, 10)
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/^worker_processes.*/worker_processes "+cpuCoresStr+";/g",
+		"/etc/nginx/nginx.conf",
+	)
+	if err != nil {
+		log.Fatalf("WsOnStartupSetupUpdateNginxWorkersCountFailed")
+	}
+
+	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
+	if err != nil {
+		log.Fatalf("WsOnStartupSetupRestartNginxFailed")
+	}
 }
