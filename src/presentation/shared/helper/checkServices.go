@@ -20,19 +20,9 @@ func CheckServices(serviceNameStr string) error {
 		return err
 	}
 
-	var serviceErrorMessage string
-
-	isStopped := currentSvcStatus.Status.String() == "stopped"
-	if isStopped {
-		serviceErrorMessage = "ServiceStopped"
-	}
-	isUninstalled := currentSvcStatus.Status.String() == "uninstalled"
-	if isUninstalled {
-		serviceErrorMessage = "ServiceNotInstalled"
-	}
-	shouldInstall := isStopped || isUninstalled
-	if shouldInstall {
-		return errors.New(serviceErrorMessage)
+	isRunning := currentSvcStatus.Status.String() == "running"
+	if !isRunning {
+		return errors.New("ServiceUnavailableError")
 	}
 
 	return nil
