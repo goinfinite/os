@@ -177,6 +177,21 @@ func installPhp() error {
 		return errors.New("ChownConfDirError: " + err.Error())
 	}
 
+	err = infraHelper.MakeDir("/app/logs/php")
+	if err != nil {
+		return errors.New("CreateLogDirError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"-R",
+		"nobody:nogroup",
+		"/app/logs/php",
+	)
+	if err != nil {
+		return errors.New("ChownLogDirError: " + err.Error())
+	}
+
 	err = copyAssets(
 		"ols-entrypoint.sh",
 		"/speedia/ols-entrypoint.sh",

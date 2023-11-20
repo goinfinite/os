@@ -138,6 +138,23 @@ func (facade SupervisordFacade) Reload() error {
 }
 
 func (facade SupervisordFacade) AddConf(svcName string, svcCmd string) error {
+	err := infraHelper.MakeDir("/app/logs/" + svcName)
+	if err != nil {
+		return errors.New("CreateLogDirError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"-R",
+		"nobody:nogroup",
+		"/app/logs/"+svcName,
+	)
+	if err != nil {
+		return errors.New("ChownLogDirError: " + err.Error())
+	}
+
+	logFilePath := "/app/logs/" + svcName + "/" + svcName + ".log"
+
 	svcConf := `
 [program:` + svcName + `]
 command=` + svcCmd + `
@@ -147,9 +164,9 @@ autostart=true
 autorestart=true
 startretries=3
 startsecs=3
-stdout_logfile=/app/logs/` + svcName + `.log
+stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
-stderr_logfile=/app/logs/` + svcName + `_err.log
+stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
 `
 
