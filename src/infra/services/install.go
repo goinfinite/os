@@ -131,7 +131,7 @@ func installPhp() error {
 	)
 
 	err = copyAssets(
-		"httpd_config.conf",
+		"php/httpd_config.conf",
 		"/usr/local/lsws/conf/httpd_config.conf",
 	)
 	if err != nil {
@@ -150,8 +150,8 @@ func installPhp() error {
 	}
 
 	err = copyAssets(
-		"vhconf.conf",
-		"/app/conf/vhconf.conf",
+		"php/primary.conf",
+		"/app/conf/php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -161,7 +161,7 @@ func installPhp() error {
 		"sed",
 		"-i",
 		"s/speedia.net/"+virtualHost+"/g",
-		"/app/conf/vhconf.conf",
+		"/app/conf/php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("RenameVHostError: " + err.Error())
@@ -171,7 +171,7 @@ func installPhp() error {
 		"chown",
 		"-R",
 		"lsadm:nogroup",
-		"/app/conf",
+		"/app/conf/php",
 	)
 	if err != nil {
 		return errors.New("ChownConfDirError: " + err.Error())
@@ -193,7 +193,7 @@ func installPhp() error {
 	}
 
 	err = copyAssets(
-		"ols-entrypoint.sh",
+		"php/ols-entrypoint.sh",
 		"/speedia/ols-entrypoint.sh",
 	)
 	if err != nil {
