@@ -8,7 +8,6 @@ import (
 	apiInit "github.com/speedianet/os/src/presentation/api/init"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
-	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
 // @title			SosApi
