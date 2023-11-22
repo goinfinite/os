@@ -17,9 +17,9 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 COPY . .
 
-COPY /container/nginx.conf /etc/nginx/nginx.conf
+COPY /container/nginx/root/* /etc/nginx/
 
-COPY --chown=nobody:nogroup /container/primary.conf /app/conf/nginx/primary.conf
+COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /speedia/supervisord.conf
 
