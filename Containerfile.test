@@ -2,8 +2,13 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates wget curl tar procps cron \
-    && touch /var/spool/cron/crontabs/root
+RUN install_packages ca-certificates wget curl tar procps debian-archive-keyring lsb-release gnupg2 haveged \
+    && curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor > "/usr/share/keyrings/nginx-archive-keyring.gpg" \ 
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
+    && install_packages nginx cron \
+    && touch /var/spool/cron/crontabs/root \
+    && mkdir -p /app/logs /app/conf/nginx /app/conf/pki /app/html \
+    && chown -R nobody:nogroup /app
 
 RUN wget -qO go.tar.gz "https://go.dev/dl/go1.21.4.linux-amd64.tar.gz" \
     && tar -C /usr/local -xzf go.tar.gz
@@ -11,6 +16,12 @@ RUN wget -qO go.tar.gz "https://go.dev/dl/go1.21.4.linux-amd64.tar.gz" \
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 COPY . .
+
+COPY /container/nginx.conf /etc/nginx/nginx.conf
+
+COPY --chown=nobody:nogroup /container/primary.conf /app/conf/nginx/primary.conf
+
+COPY /container/supervisord.conf /speedia/supervisord.conf
 
 RUN go mod download \
     && go build -o sos
