@@ -4,6 +4,7 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type Service struct {
 	Name            valueObject.ServiceName   `json:"name"`
+	Type            valueObject.ServiceType   `json:"type"`
 	Status          valueObject.ServiceStatus `json:"status"`
 	Pids            *[]uint32                 `json:"pids,omitempty"`
 	UptimeSecs      *int64                    `json:"uptimeSecs,omitempty"`
@@ -13,6 +14,7 @@ type Service struct {
 
 func NewService(
 	name valueObject.ServiceName,
+	svcType valueObject.ServiceType,
 	status valueObject.ServiceStatus,
 	pids *[]uint32,
 	uptimeSecs *int64,
@@ -21,6 +23,7 @@ func NewService(
 ) Service {
 	return Service{
 		Name:            name,
+		Type:            svcType,
 		Status:          status,
 		Pids:            pids,
 		UptimeSecs:      uptimeSecs,
