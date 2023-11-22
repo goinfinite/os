@@ -2,12 +2,11 @@ package infra
 
 import (
 	"errors"
-	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
@@ -28,6 +27,19 @@ func (repo ServicesQueryRepo) ServiceNameAdapter(serviceName string) string {
 	default:
 		return serviceName
 	}
+}
+
+func (repo ServicesQueryRepo) getType(
+	name valueObject.ServiceName,
+) (valueObject.ServiceType, error) {
+	svcTypeStr := "runtime"
+
+	switch name.String() {
+	case "mysql", "postgresql", "redis", "mongo":
+		svcTypeStr = "database"
+	}
+
+	return valueObject.NewServiceType(svcTypeStr)
 }
 
 func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) {
@@ -51,6 +63,11 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		}
 		procName = repo.ServiceNameAdapter(procName)
 		svcName, err := valueObject.NewServiceName(procName)
+		if err != nil {
+			continue
+		}
+
+		svcType, err := repo.getType(svcName)
 		if err != nil {
 			continue
 		}
@@ -97,6 +114,7 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 			services,
 			entity.NewService(
 				svcName,
+				svcType,
 				runningStatus,
 				&pidUint,
 				&uptimeSeconds,
@@ -110,44 +128,59 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 }
 
 func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
-	runningServices, err := repo.runningServiceFactory()
+	servicesList := []entity.Service{}
+
+	runningSvcs, err := repo.runningServiceFactory()
 	if err != nil {
-		return []entity.Service{}, err
+		return servicesList, err
 	}
 
-	var runningServicesNames []string
-	for _, svc := range runningServices {
-		runningServicesNames = append(runningServicesNames, svc.Name.String())
+	var runningSvcNames []string
+	for _, svc := range runningSvcs {
+		runningSvcNames = append(runningSvcNames, svc.Name.String())
 	}
 
-	var notRunningServicesNames []string
-	supportedServiceNames := maps.Keys(valueObject.SupportedServiceNamesAndAliases)
-	for _, svc := range supportedServiceNames {
-		if !slices.Contains(runningServicesNames, svc) {
-			notRunningServicesNames = append(notRunningServicesNames, svc)
-		}
+	supervisorConfPath := "/speedia/supervisord.conf"
+	supervisorConfContent, err := infraHelper.GetFileContent(supervisorConfPath)
+	if err != nil {
+		return servicesList, err
 	}
 
-	var remainingServices []entity.Service
-	confFilePath := "/speedia/supervisord.conf"
-	for _, svc := range notRunningServicesNames {
-		cmd := exec.Command(
-			"awk",
-			fmt.Sprintf("/%s/{found=1} END{if(!found) exit 1}", svc),
-			confFilePath,
-		)
-		err := cmd.Run()
+	supervisorSvcNameRegex := `(?m)^\[program:(\w{1,64})\]$`
+	installedSvcNames := infraHelper.GetRegexCapturingGroups(
+		supervisorConfContent,
+		supervisorSvcNameRegex,
+	)
+	if len(installedSvcNames) == 0 {
+		return servicesList, errors.New("NoServicesFound")
+	}
 
-		svcName, _ := valueObject.NewServiceName(svc)
-		svcStatus, _ := valueObject.NewServiceStatus("stopped")
+	supportedSvcNames := maps.Keys(valueObject.SupportedServiceNamesAndAliases)
+	for _, svcName := range supportedSvcNames {
+		svcName, err := valueObject.NewServiceName(svcName)
 		if err != nil {
-			svcStatus, _ = valueObject.NewServiceStatus("uninstalled")
+			continue
 		}
 
-		remainingServices = append(
-			remainingServices,
+		if slices.Contains(runningSvcNames, svcName.String()) {
+			continue
+		}
+
+		svcType, err := repo.getType(svcName)
+		if err != nil {
+			continue
+		}
+
+		svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
+		if slices.Contains(installedSvcNames, svcName.String()) {
+			svcStatus, _ = valueObject.NewServiceStatus("stopped")
+		}
+
+		servicesList = append(
+			servicesList,
 			entity.NewService(
 				svcName,
+				svcType,
 				svcStatus,
 				nil,
 				nil,
@@ -157,7 +190,7 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 		)
 	}
 
-	return append(runningServices, remainingServices...), nil
+	return append(servicesList, runningSvcs...), nil
 }
 
 func (repo ServicesQueryRepo) GetByName(
