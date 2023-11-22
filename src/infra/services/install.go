@@ -70,22 +70,19 @@ func copyAssets(srcPath string, dstPath string) error {
 	srcPath = "assets/" + srcPath
 	srcFile, err := assets.Open(srcPath)
 	if err != nil {
-		log.Printf("OpenSourceFileError: %s", err)
-		return errors.New("OpenSourceFileError")
+		return errors.New("OpenSourceFileError: " + err.Error())
 	}
 	defer srcFile.Close()
 
 	dstFile, err := os.OpenFile(dstPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		log.Printf("OpenDestinationFileError: %s", err)
-		return errors.New("OpenDestinationFileError")
+		return errors.New("OpenDestinationFileError: " + err.Error())
 	}
 	defer dstFile.Close()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
-		log.Printf("CopyFileError: %s", err)
-		return errors.New("CopyFileError")
+		return errors.New("CopyFileError: " + err.Error())
 	}
 
 	return nil
@@ -147,6 +144,11 @@ func installPhp() error {
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
+	}
+
+	err = infraHelper.MakeDir("/app/conf/php")
+	if err != nil {
+		return errors.New("CreateConfDirError: " + err.Error())
 	}
 
 	err = copyAssets(
