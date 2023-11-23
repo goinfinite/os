@@ -2,6 +2,8 @@ package infra
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -16,41 +18,163 @@ import (
 type ServicesQueryRepo struct {
 }
 
-func (repo ServicesQueryRepo) ServiceNameAdapter(serviceName string) string {
-	switch serviceName {
-	case "litespeed", "openlitespeed", "lsphp":
-		return "php"
-	case "mysqld", "mariadbd", "mariadb-server", "percona-server-mysqld":
-		return "mysql"
-	case "redis-server":
-		return "redis"
-	default:
-		return serviceName
+func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
+	servicesList := []entity.Service{}
+
+	svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
+
+	nativeSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
+	for _, nativeSvcName := range nativeSvcNames {
+		svcName, err := valueObject.NewServiceName(nativeSvcName)
+		if err != nil {
+			continue
+		}
+
+		svcType, _ := valueObject.NewServiceType("runtime")
+		switch svcName.String() {
+		case "mysql", "redis", "postgres", "mongo", "memcached", "elasticsearch":
+			svcType, _ = valueObject.NewServiceType("database")
+		}
+
+		svcEntity := entity.NewService(
+			svcName,
+			svcType,
+			svcStatus,
+			nil,
+			nil,
+			[]uint32{},
+			nil,
+			nil,
+			nil,
+		)
+
+		servicesList = append(servicesList, svcEntity)
 	}
+
+	return servicesList, nil
 }
 
-func (repo ServicesQueryRepo) getType(
-	name valueObject.ServiceName,
-) (valueObject.ServiceType, error) {
-	svcTypeStr := "runtime"
+func (repo ServicesQueryRepo) parseServiceEnvs(envs string) map[string]string {
+	envsMap := map[string]string{}
 
-	switch name.String() {
-	case "mysql", "postgresql", "redis", "mongo":
-		svcTypeStr = "database"
+	envsStr := strings.Split(envs, ",")
+	for _, envStr := range envsStr {
+		env := strings.Split(envStr, "=")
+		if len(env) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(env[0])
+		value := strings.TrimSpace(env[1])
+		envsMap[key] = value
 	}
 
-	return valueObject.NewServiceType(svcTypeStr)
+	return envsMap
 }
 
-func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) {
+func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
+	servicesList := []entity.Service{}
+
+	supervisorConfPath := "/speedia/supervisord.conf"
+	supervisorConfContent, err := infraHelper.GetFileContent(supervisorConfPath)
+	if err != nil {
+		return servicesList, err
+	}
+
+	svcConfigBlocksRegex := regexp.MustCompile(
+		`^\[program:` + valueObject.ServiceNameRegex + `\]\n(?:[^\[]+\n)*`,
+	)
+	svcConfigBlocks := svcConfigBlocksRegex.FindAllString(supervisorConfContent, -1)
+	if len(svcConfigBlocks) == 0 {
+		return servicesList, errors.New("NoServicesFound")
+	}
+
+	for _, svcConfigBlock := range svcConfigBlocks {
+		svcNameRegex := regexp.MustCompile(
+			`^\[program:(` + valueObject.ServiceNameRegex + `)\]`,
+		)
+		svcNameMatches := svcNameRegex.FindStringSubmatch(svcConfigBlock)
+		if len(svcNameMatches) == 0 {
+			continue
+		}
+
+		svcName, err := valueObject.NewServiceName(svcNameMatches[1])
+		if err != nil {
+			continue
+		}
+
+		svcCmdRegex := regexp.MustCompile(
+			`^command=(.*)$`,
+		)
+		svcCmdMatches := svcCmdRegex.FindStringSubmatch(svcConfigBlock)
+		if len(svcCmdMatches) == 0 {
+			continue
+		}
+
+		svcCmd, err := valueObject.NewUnixCommand(svcCmdMatches[1])
+		if err != nil {
+			continue
+		}
+
+		svcEnvsRegex := regexp.MustCompile(
+			`^environment=(.*)$`,
+		)
+		svcEnvsMatches := svcEnvsRegex.FindStringSubmatch(svcConfigBlock)
+		if len(svcEnvsMatches) == 0 {
+			continue
+		}
+
+		svcEnvs := repo.parseServiceEnvs(svcEnvsMatches[1])
+
+		svcTypeStr, exists := svcEnvs["SVC_TYPE"]
+		if !exists {
+			continue
+		}
+
+		svcType, err := valueObject.NewServiceType(svcTypeStr)
+		if err != nil {
+			continue
+		}
+
+		svcPortStr, exists := svcEnvs["SVC_PORT"]
+		if !exists {
+			continue
+		}
+
+		svcPort, err := valueObject.NewNetworkPort(svcPortStr)
+		if err != nil {
+			continue
+		}
+
+		svcStatus, _ := valueObject.NewServiceStatus("stopped")
+
+		servicesList = append(
+			servicesList,
+			entity.NewService(
+				svcName,
+				svcType,
+				svcStatus,
+				&svcCmd,
+				&svcPort,
+				[]uint32{},
+				nil,
+				nil,
+				nil,
+			),
+		)
+	}
+
+	return servicesList, nil
+}
+
+func (repo ServicesQueryRepo) addServicesMetrics(
+	installedServices []entity.Service,
+) ([]entity.Service, error) {
 	pids, err := process.Pids()
 	if err != nil {
-		return []entity.Service{}, errors.New("PidsUnavailable")
+		return installedServices, errors.New("ServicePidsUnavailable")
 	}
 
-	runningStatus, _ := valueObject.NewServiceStatus("running")
-
-	var services []entity.Service
 	for _, pid := range pids {
 		p, err := process.NewProcess(pid)
 		if err != nil {
@@ -61,152 +185,97 @@ func (repo ServicesQueryRepo) runningServiceFactory() ([]entity.Service, error) 
 		if err != nil {
 			continue
 		}
-		procName = repo.ServiceNameAdapter(procName)
+
 		svcName, err := valueObject.NewServiceName(procName)
 		if err != nil {
 			continue
 		}
 
-		svcType, err := repo.getType(svcName)
-		if err != nil {
-			continue
+		serviceEntity := entity.Service{}
+		for _, installedSvc := range installedServices {
+			if installedSvc.Name.String() != svcName.String() {
+				continue
+			}
+
+			serviceEntity = installedSvc
 		}
+
+		var pidUint []uint32
+		pidUint = append(pidUint, uint32(pid))
+		serviceEntity.Pids = pidUint
 
 		uptime, err := p.CreateTime()
 		if err != nil {
 			continue
 		}
 		uptimeSeconds := int64(time.Since(time.Unix(uptime/1000, 0)).Seconds())
+		serviceEntity.UptimeSecs = &uptimeSeconds
 
 		cpuPercent, err := p.CPUPercent()
 		if err != nil {
 			continue
 		}
+		serviceEntity.CpuUsagePercent = &cpuPercent
 
 		memPercent, err := p.MemoryPercent()
 		if err != nil {
 			continue
 		}
-
-		alreadyExists := false
-		for i, svc := range services {
-			if svc.Name.String() != svcName.String() {
-				continue
-			}
-			alreadyExists = true
-			*services[i].Pids = append(*services[i].Pids, uint32(pid))
-			if uptimeSeconds > *svc.UptimeSecs {
-				*services[i].UptimeSecs = uptimeSeconds
-			}
-			*services[i].CpuUsagePercent += cpuPercent
-			*services[i].MemUsagePercent += memPercent
-			continue
-		}
-
-		if alreadyExists {
-			continue
-		}
-
-		var pidUint []uint32
-		pidUint = append(pidUint, uint32(pid))
-
-		services = append(
-			services,
-			entity.NewService(
-				svcName,
-				svcType,
-				runningStatus,
-				&pidUint,
-				&uptimeSeconds,
-				&cpuPercent,
-				&memPercent,
-			),
-		)
+		serviceEntity.MemUsagePercent = &memPercent
 	}
 
-	return services, nil
+	return installedServices, nil
 }
 
 func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	servicesList := []entity.Service{}
 
-	runningSvcs, err := repo.runningServiceFactory()
+	nativeSvcs, err := repo.getNativeServices()
 	if err != nil {
 		return servicesList, err
 	}
 
-	var runningSvcNames []string
-	for _, svc := range runningSvcs {
-		runningSvcNames = append(runningSvcNames, svc.Name.String())
-	}
-
-	supervisorConfPath := "/speedia/supervisord.conf"
-	supervisorConfContent, err := infraHelper.GetFileContent(supervisorConfPath)
+	installedSvcs, err := repo.getInstalledServices()
 	if err != nil {
 		return servicesList, err
 	}
 
-	supervisorSvcNameRegex := `(?m)^\[program:(\w{1,64})\]$`
-	installedSvcNames := infraHelper.GetRegexCapturingGroups(
-		supervisorConfContent,
-		supervisorSvcNameRegex,
-	)
-	if len(installedSvcNames) == 0 {
-		return servicesList, errors.New("NoServicesFound")
+	installedSvcNames := []string{}
+	for _, installedSvc := range installedSvcs {
+		installedSvcNames = append(installedSvcNames, installedSvc.Name.String())
 	}
 
-	supportedSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
-	for _, svcName := range supportedSvcNames {
-		svcName, err := valueObject.NewServiceName(svcName)
-		if err != nil {
+	for _, nativeSvc := range nativeSvcs {
+		if slices.Contains(installedSvcNames, nativeSvc.Name.String()) {
 			continue
 		}
 
-		if slices.Contains(runningSvcNames, svcName.String()) {
-			continue
-		}
-
-		svcType, err := repo.getType(svcName)
-		if err != nil {
-			continue
-		}
-
-		svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
-		if slices.Contains(installedSvcNames, svcName.String()) {
-			svcStatus, _ = valueObject.NewServiceStatus("stopped")
-		}
-
-		servicesList = append(
-			servicesList,
-			entity.NewService(
-				svcName,
-				svcType,
-				svcStatus,
-				nil,
-				nil,
-				nil,
-				nil,
-			),
-		)
+		servicesList = append(servicesList, nativeSvc)
 	}
 
-	return append(servicesList, runningSvcs...), nil
+	svcsWithMetrics, err := repo.addServicesMetrics(installedSvcs)
+	if err != nil {
+		return servicesList, err
+	}
+
+	return append(servicesList, svcsWithMetrics...), nil
 }
 
 func (repo ServicesQueryRepo) GetByName(
 	name valueObject.ServiceName,
 ) (entity.Service, error) {
+	service := entity.Service{}
+
 	services, err := repo.Get()
 	if err != nil {
-		return entity.Service{}, err
+		return service, err
 	}
 
 	for _, svc := range services {
-		svcName := repo.ServiceNameAdapter(svc.Name.String())
-		if svcName == name.String() {
+		if svc.Name.String() == name.String() {
 			return svc, nil
 		}
 	}
 
-	return entity.Service{}, errors.New("ServiceNotFound")
+	return service, errors.New("ServiceNotFound")
 }
