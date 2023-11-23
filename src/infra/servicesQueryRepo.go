@@ -155,7 +155,7 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 		return servicesList, errors.New("NoServicesFound")
 	}
 
-	supportedSvcNames := maps.Keys(valueObject.SupportedServiceNamesAndAliases)
+	supportedSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
 	for _, svcName := range supportedSvcNames {
 		svcName, err := valueObject.NewServiceName(svcName)
 		if err != nil {

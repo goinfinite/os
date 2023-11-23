@@ -9,7 +9,7 @@ import (
 
 type ServiceName string
 
-var SupportedServiceNamesAndAliases = map[string][]string{
+var NativeSvcNamesWithAliases = map[string][]string{
 	"php":   {"lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
 	"node":  {"nodejs"},
 	"mysql": {"mysqld", "mariadb", "percona", "perconadb"},
@@ -17,14 +17,14 @@ var SupportedServiceNamesAndAliases = map[string][]string{
 }
 
 func NewServiceName(value string) (ServiceName, error) {
-	servicesName := maps.Keys(SupportedServiceNamesAndAliases)
+	servicesName := maps.Keys(NativeSvcNamesWithAliases)
 	if slices.Contains(servicesName, value) {
 		return ServiceName(value), nil
 	}
 
 	for _, serviceName := range servicesName {
 		if slices.Contains(
-			SupportedServiceNamesAndAliases[serviceName],
+			NativeSvcNamesWithAliases[serviceName],
 			value,
 		) {
 			return ServiceName(value), nil
