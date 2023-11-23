@@ -9,34 +9,35 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
-
 type ServiceName string
 
+const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
+
 var NativeSvcNamesWithAliases = map[string][]string{
-	"php":   {"lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
-	"node":  {"nodejs"},
-	"mysql": {"mysqld", "mariadb", "percona", "perconadb"},
+	"php":  {"lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
+	"node": {"nodejs"},
+	"mysql": {
+		"mysqld",
+		"mariadb",
+		"percona",
+		"perconadb",
+		"mysqld",
+		"mariadbd",
+		"mariadb-server",
+		"percona-server-mysqld",
+	},
 	"redis": {"redis-server"},
 }
 
 func NewServiceName(value string) (ServiceName, error) {
-	value = strings.ToLower(value)
+	svcName := ServiceNameAdapter(value)
 
-	servicesName := maps.Keys(NativeSvcNamesWithAliases)
-	for _, serviceName := range servicesName {
-		if !slices.Contains(NativeSvcNamesWithAliases[serviceName], value) {
-			continue
-		}
-		value = serviceName
-	}
-
-	svcName := ServiceName(value)
-	if !svcName.isValid() {
+	svcNameRegex := regexp.MustCompile(ServiceNameRegex)
+	if !svcNameRegex.MatchString(value) {
 		return "", errors.New("InvalidServiceName")
 	}
 
-	return svcName, nil
+	return ServiceName(svcName), nil
 }
 
 func NewServiceNamePanic(value string) ServiceName {
@@ -47,9 +48,18 @@ func NewServiceNamePanic(value string) ServiceName {
 	return sn
 }
 
-func (sn ServiceName) isValid() bool {
-	re := regexp.MustCompile(ServiceNameRegex)
-	return re.MatchString(string(sn))
+func ServiceNameAdapter(value string) string {
+	svcName := strings.ToLower(value)
+
+	nativeSvcNames := maps.Keys(NativeSvcNamesWithAliases)
+	for _, nativeSvcName := range nativeSvcNames {
+		if !slices.Contains(NativeSvcNamesWithAliases[nativeSvcName], svcName) {
+			continue
+		}
+		svcName = nativeSvcName
+	}
+
+	return svcName
 }
 
 func (sn ServiceName) String() string {
