@@ -12,14 +12,16 @@ type ServiceType string
 var ValidServiceTypes = []string{
 	"runtime",
 	"database",
+	"system",
+	"other",
 }
 
 func NewServiceType(value string) (ServiceType, error) {
-	st := ServiceType(strings.ToLower(value))
-	if !st.isValid() {
+	value = strings.ToLower(value)
+	if !slices.Contains(ValidServiceTypes, value) {
 		return "", errors.New("InvalidServiceType")
 	}
-	return st, nil
+	return ServiceType(value), nil
 }
 
 func NewServiceTypePanic(value string) ServiceType {
@@ -28,10 +30,6 @@ func NewServiceTypePanic(value string) ServiceType {
 		panic(err)
 	}
 	return st
-}
-
-func (st ServiceType) isValid() bool {
-	return slices.Contains(ValidServiceTypes, st.String())
 }
 
 func (st ServiceType) String() string {
