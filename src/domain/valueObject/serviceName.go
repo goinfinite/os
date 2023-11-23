@@ -2,10 +2,14 @@ package valueObject
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
+
+const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
 
 type ServiceName string
 
@@ -17,21 +21,22 @@ var NativeSvcNamesWithAliases = map[string][]string{
 }
 
 func NewServiceName(value string) (ServiceName, error) {
+	value = strings.ToLower(value)
+
 	servicesName := maps.Keys(NativeSvcNamesWithAliases)
-	if slices.Contains(servicesName, value) {
-		return ServiceName(value), nil
-	}
-
 	for _, serviceName := range servicesName {
-		if slices.Contains(
-			NativeSvcNamesWithAliases[serviceName],
-			value,
-		) {
-			return ServiceName(value), nil
+		if !slices.Contains(NativeSvcNamesWithAliases[serviceName], value) {
+			continue
 		}
+		value = serviceName
 	}
 
-	return "", errors.New("InvalidServiceName")
+	svcName := ServiceName(value)
+	if !svcName.isValid() {
+		return "", errors.New("InvalidServiceName")
+	}
+
+	return svcName, nil
 }
 
 func NewServiceNamePanic(value string) ServiceName {
@@ -40,6 +45,11 @@ func NewServiceNamePanic(value string) ServiceName {
 		panic(err)
 	}
 	return sn
+}
+
+func (sn ServiceName) isValid() bool {
+	re := regexp.MustCompile(ServiceNameRegex)
+	return re.MatchString(string(sn))
 }
 
 func (sn ServiceName) String() string {

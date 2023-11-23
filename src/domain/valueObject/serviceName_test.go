@@ -22,10 +22,10 @@ func TestServiceName(t *testing.T) {
 
 	t.Run("InvalidServiceNames", func(t *testing.T) {
 		invalidNamesAndAliases := []string{
-			"nginx-io",
-			"minispeed",
-			"openlitesped",
-			"reds",
+			"nginx@",
+			"my<>sql",
+			"php#fpm",
+			"node(js)",
 		}
 		for _, name := range invalidNamesAndAliases {
 			_, err := NewServiceName(name)
