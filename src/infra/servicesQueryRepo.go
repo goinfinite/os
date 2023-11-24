@@ -171,12 +171,14 @@ func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
 }
 
 func (repo ServicesQueryRepo) addServicesMetrics(
-	installedServices []entity.Service,
+	servicesList []entity.Service,
 ) ([]entity.Service, error) {
 	pids, err := process.Pids()
 	if err != nil {
-		return installedServices, errors.New("ServicePidsUnavailable")
+		return servicesList, errors.New("ServicePidsUnavailable")
 	}
+
+	svcRunningStatus, _ := valueObject.NewServiceStatus("running")
 
 	for _, pid := range pids {
 		p, err := process.NewProcess(pid)
@@ -195,13 +197,21 @@ func (repo ServicesQueryRepo) addServicesMetrics(
 		}
 
 		serviceEntity := entity.Service{}
-		for _, installedSvc := range installedServices {
-			if installedSvc.Name.String() != svcName.String() {
+		serviceEntityIndex := 0
+		for svcIndex, serviceFromList := range servicesList {
+			if serviceFromList.Name.String() != svcName.String() {
 				continue
 			}
 
-			serviceEntity = installedSvc
+			serviceEntity = serviceFromList
+			serviceEntityIndex = svcIndex
 		}
+
+		if serviceEntity.Name.String() == "" {
+			continue
+		}
+
+		serviceEntity.Status = svcRunningStatus
 
 		var pidUint []uint32
 		pidUint = append(pidUint, uint32(pid))
@@ -225,9 +235,11 @@ func (repo ServicesQueryRepo) addServicesMetrics(
 			continue
 		}
 		serviceEntity.MemUsagePercent = &memPercent
+
+		servicesList[serviceEntityIndex] = serviceEntity
 	}
 
-	return installedServices, nil
+	return servicesList, nil
 }
 
 func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
