@@ -81,8 +81,11 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 		return servicesList, err
 	}
 
+	svcNameRegex := strings.TrimLeft(valueObject.ServiceNameRegex, "^")
+	svcNameRegex = strings.TrimRight(svcNameRegex, "$")
+
 	svcConfigBlocksRegex := regexp.MustCompile(
-		`^\[program:` + valueObject.ServiceNameRegex + `\]\n(?:[^\[]+\n)*`,
+		`(?m)^\[program:` + svcNameRegex + `\]\n(?:[^\[]+\n)*`,
 	)
 	svcConfigBlocks := svcConfigBlocksRegex.FindAllString(supervisorConfContent, -1)
 	if len(svcConfigBlocks) == 0 {
@@ -91,7 +94,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 	for _, svcConfigBlock := range svcConfigBlocks {
 		svcNameRegex := regexp.MustCompile(
-			`^\[program:(` + valueObject.ServiceNameRegex + `)\]`,
+			`^\[program:(` + svcNameRegex + `)\]`,
 		)
 		svcNameMatches := svcNameRegex.FindStringSubmatch(svcConfigBlock)
 		if len(svcNameMatches) == 0 {
