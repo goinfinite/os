@@ -7,7 +7,7 @@ type Service struct {
 	Type            valueObject.ServiceType   `json:"type"`
 	Status          valueObject.ServiceStatus `json:"status"`
 	Command         *valueObject.UnixCommand  `json:"command,omitempty"`
-	Port            *valueObject.NetworkPort  `json:"port,omitempty"`
+	Ports           []valueObject.NetworkPort `json:"ports,omitempty"`
 	Pids            []uint32                  `json:"pids,omitempty"`
 	UptimeSecs      *int64                    `json:"uptimeSecs,omitempty"`
 	CpuUsagePercent *float64                  `json:"cpuUsagePercent,omitempty"`
@@ -19,7 +19,7 @@ func NewService(
 	svcType valueObject.ServiceType,
 	status valueObject.ServiceStatus,
 	command *valueObject.UnixCommand,
-	port *valueObject.NetworkPort,
+	ports []valueObject.NetworkPort,
 	pids []uint32,
 	uptimeSecs *int64,
 	cpuUsagePercent *float64,
@@ -30,7 +30,7 @@ func NewService(
 		Type:            svcType,
 		Status:          status,
 		Command:         command,
-		Port:            port,
+		Ports:           ports,
 		Pids:            pids,
 		UptimeSecs:      uptimeSecs,
 		CpuUsagePercent: cpuUsagePercent,

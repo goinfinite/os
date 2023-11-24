@@ -21,15 +21,18 @@ type ServicesQueryRepo struct {
 func (repo ServicesQueryRepo) parseServiceEnvs(envs string) map[string]string {
 	envsMap := map[string]string{}
 
-	envsStr := strings.Split(envs, ",")
-	for _, envStr := range envsStr {
-		env := strings.Split(envStr, "=")
-		if len(env) != 2 {
+	envsRegex := regexp.MustCompile(
+		`(?P<envName>[a-zA-Z0-9_\-]{1,256})="(?P<envValue>[^"]{1,256})"`,
+	)
+	envsMatches := envsRegex.FindAllStringSubmatch(envs, -1)
+
+	for _, match := range envsMatches {
+		if len(match) != 3 {
 			continue
 		}
 
-		key := strings.TrimSpace(env[0])
-		value := strings.TrimSpace(env[1])
+		key := strings.TrimSpace(match[1])
+		value := strings.TrimSpace(match[2])
 		envsMap[key] = value
 	}
 
@@ -101,14 +104,22 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			continue
 		}
 
-		svcPortStr, exists := svcEnvs["SVC_PORT"]
+		svcPortsStr, exists := svcEnvs["SVC_PORTS"]
 		if !exists {
 			continue
 		}
 
-		svcPort, err := valueObject.NewNetworkPort(svcPortStr)
-		if err != nil {
+		svcPortsParts := strings.Split(svcPortsStr, ",")
+		if len(svcPortsParts) == 0 {
 			continue
+		}
+		svcPorts := []valueObject.NetworkPort{}
+		for _, svcPortStr := range svcPortsParts {
+			svcPort, err := valueObject.NewNetworkPort(svcPortStr)
+			if err != nil {
+				continue
+			}
+			svcPorts = append(svcPorts, svcPort)
 		}
 
 		servicesList = append(
@@ -118,7 +129,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 				svcType,
 				svcStatus,
 				&svcCmd,
-				&svcPort,
+				svcPorts,
 				[]uint32{},
 				nil,
 				nil,
@@ -157,7 +168,7 @@ func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
 			svcType,
 			svcStatus,
 			nil,
-			nil,
+			[]valueObject.NetworkPort{},
 			[]uint32{},
 			nil,
 			nil,
