@@ -80,22 +80,12 @@ func webServerFirstSetup() {
 		log.Fatalf("GenerateSelfSignedCertFailed")
 	}
 
-	log.Print("AddingNginxToSupervisord...")
-
-	err = servicesInfra.SupervisordFacade{}.AddConf(
-		"nginx",
-		"/usr/sbin/nginx",
-	)
-	if err != nil {
-		log.Fatalf("AddNginxToSupervisordFailed")
-	}
-
-	err = servicesInfra.SupervisordFacade{}.Reload()
-	if err != nil {
-		log.Fatalf("ReloadSupervisordFailed")
-	}
-
 	log.Print("WebServerConfigured!")
+
+	err = servicesInfra.SupervisordFacade{}.Start("nginx")
+	if err != nil {
+		log.Fatalf("StartNginxFailed")
+	}
 }
 
 func webServerOnStartSetup() {
