@@ -60,7 +60,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 	for _, svcConfigBlock := range svcConfigBlocks {
 		svcNameRegex := regexp.MustCompile(
-			`^\[program:(` + svcNameRegex + `)\]`,
+			`(?m)^\[program:(` + svcNameRegex + `)\]`,
 		)
 		svcNameMatches := svcNameRegex.FindStringSubmatch(svcConfigBlock)
 		if len(svcNameMatches) == 0 {
@@ -72,9 +72,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			continue
 		}
 
-		svcCmdRegex := regexp.MustCompile(
-			`^command=(.*)$`,
-		)
+		svcCmdRegex := regexp.MustCompile(`(?m)^command\=(.*)$`)
 		svcCmdMatches := svcCmdRegex.FindStringSubmatch(svcConfigBlock)
 		if len(svcCmdMatches) == 0 {
 			continue
@@ -85,9 +83,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			continue
 		}
 
-		svcEnvsRegex := regexp.MustCompile(
-			`^environment=(.*)$`,
-		)
+		svcEnvsRegex := regexp.MustCompile(`(?m)^environment\=(.*)$`)
 		svcEnvsMatches := svcEnvsRegex.FindStringSubmatch(svcConfigBlock)
 		if len(svcEnvsMatches) == 0 {
 			continue
@@ -129,6 +125,10 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 				nil,
 			),
 		)
+	}
+
+	if len(servicesList) == 0 {
+		return servicesList, errors.New("GetInstalledServicesFailed")
 	}
 
 	return servicesList, nil
