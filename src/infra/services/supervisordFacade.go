@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -137,7 +138,12 @@ func (facade SupervisordFacade) Reload() error {
 	return nil
 }
 
-func (facade SupervisordFacade) AddConf(svcName string, svcCmd string) error {
+func (facade SupervisordFacade) AddConf(
+	svcName string,
+	svcCmd string,
+	svcType string,
+	svcPorts []int,
+) error {
 	err := infraHelper.MakeDir("/app/logs/" + svcName)
 	if err != nil {
 		return errors.New("CreateLogDirError: " + err.Error())
@@ -151,6 +157,17 @@ func (facade SupervisordFacade) AddConf(svcName string, svcCmd string) error {
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
+	}
+
+	svcType = "SVC_TYPE=\"" + svcType + "\""
+
+	svcPortsStr := ""
+	if len(svcPorts) > 0 {
+		portsStrSlice := []string{}
+		for _, port := range svcPorts {
+			portsStrSlice = append(portsStrSlice, strconv.Itoa(port))
+		}
+		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portsStrSlice, ",") + "\""
 	}
 
 	logFilePath := "/app/logs/" + svcName + "/" + svcName + ".log"
@@ -168,6 +185,7 @@ stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
 stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
+environment=` + svcType + svcPortsStr + `
 `
 
 	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)

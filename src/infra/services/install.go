@@ -205,6 +205,8 @@ func installPhp() error {
 	err = SupervisordFacade{}.AddConf(
 		"php",
 		"bash /speedia/ols-entrypoint.sh",
+		"runtime",
+		[]int{8080, 8443},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError: " + err.Error())
@@ -280,6 +282,8 @@ func installNode(version *valueObject.ServiceVersion) error {
 	err = SupervisordFacade{}.AddConf(
 		"node",
 		"/usr/bin/node "+indexJsFilePath+" &",
+		"database",
+		[]int{3000},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -413,6 +417,8 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	err = SupervisordFacade{}.AddConf(
 		"mysql",
 		"/usr/bin/mysqld_safe",
+		"database",
+		[]int{3306},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -512,6 +518,8 @@ func installRedis(version *valueObject.ServiceVersion) error {
 	err = SupervisordFacade{}.AddConf(
 		"redis",
 		"/usr/bin/redis-server /etc/redis/redis.conf",
+		"database",
+		[]int{6379},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
