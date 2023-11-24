@@ -97,6 +97,22 @@ func webServerOnStartSetup() {
 	cpuCores := containerResources.HardwareSpecs.CpuCores
 	cpuCoresStr := strconv.FormatUint(cpuCores, 10)
 
+	nginxConfFilePath := "/etc/nginx/nginx.conf"
+	workerCount, err := infraHelper.RunCmd(
+		"awk",
+		"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}",
+		nginxConfFilePath,
+	)
+	if err != nil {
+		log.Fatalf("WsOnStartupSetupGetNginxWorkersCountFailed")
+	}
+
+	if workerCount == cpuCoresStr {
+		return
+	}
+
+	log.Print("UpdatingNginxWorkersCount...")
+
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
