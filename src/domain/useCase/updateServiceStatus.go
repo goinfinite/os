@@ -2,9 +2,12 @@ package useCase
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"golang.org/x/exp/maps"
 )
 
 func UpdateServiceStatus(
@@ -31,10 +34,16 @@ func UpdateServiceStatus(
 		return errors.New("ServiceNotInstalled")
 	}
 
-	isNginx := updateSvcStatusDto.Name.String() == "nginx"
+	isSystemService := currentSvcStatus.Type.String() == "system"
 	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
-	if isNginx && shouldUninstall {
-		return errors.New("NginxCannotBeUninstalled")
+	if isSystemService && shouldUninstall {
+		return errors.New("SystemServicesCannotBeUninstalled")
+	}
+
+	nativeServicesNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
+	isNativeService := slices.Contains(nativeServicesNames, updateSvcStatusDto.Name.String())
+	if shouldInstall && !isNativeService {
+		return errors.New("NotNativeServiceCannotBeInstalled")
 	}
 
 	switch updateSvcStatusDto.Status.String() {
