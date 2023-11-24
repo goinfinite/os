@@ -18,42 +18,6 @@ import (
 type ServicesQueryRepo struct {
 }
 
-func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
-	servicesList := []entity.Service{}
-
-	svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
-
-	nativeSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
-	for _, nativeSvcName := range nativeSvcNames {
-		svcName, err := valueObject.NewServiceName(nativeSvcName)
-		if err != nil {
-			continue
-		}
-
-		svcType, _ := valueObject.NewServiceType("runtime")
-		switch svcName.String() {
-		case "mysql", "redis", "postgres", "mongo", "memcached", "elasticsearch":
-			svcType, _ = valueObject.NewServiceType("database")
-		}
-
-		svcEntity := entity.NewService(
-			svcName,
-			svcType,
-			svcStatus,
-			nil,
-			nil,
-			[]uint32{},
-			nil,
-			nil,
-			nil,
-		)
-
-		servicesList = append(servicesList, svcEntity)
-	}
-
-	return servicesList, nil
-}
-
 func (repo ServicesQueryRepo) parseServiceEnvs(envs string) map[string]string {
 	envsMap := map[string]string{}
 
@@ -91,6 +55,8 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 	if len(svcConfigBlocks) == 0 {
 		return servicesList, errors.New("NoServicesFound")
 	}
+
+	svcStatus, _ := valueObject.NewServiceStatus("stopped")
 
 	for _, svcConfigBlock := range svcConfigBlocks {
 		svcNameRegex := regexp.MustCompile(
@@ -149,8 +115,6 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			continue
 		}
 
-		svcStatus, _ := valueObject.NewServiceStatus("stopped")
-
 		servicesList = append(
 			servicesList,
 			entity.NewService(
@@ -165,6 +129,42 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 				nil,
 			),
 		)
+	}
+
+	return servicesList, nil
+}
+
+func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
+	servicesList := []entity.Service{}
+
+	svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
+
+	nativeSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
+	for _, nativeSvcName := range nativeSvcNames {
+		svcName, err := valueObject.NewServiceName(nativeSvcName)
+		if err != nil {
+			continue
+		}
+
+		svcType, _ := valueObject.NewServiceType("runtime")
+		switch svcName.String() {
+		case "mysql", "redis", "postgres", "mongo", "memcached", "elasticsearch":
+			svcType, _ = valueObject.NewServiceType("database")
+		}
+
+		svcEntity := entity.NewService(
+			svcName,
+			svcType,
+			svcStatus,
+			nil,
+			nil,
+			[]uint32{},
+			nil,
+			nil,
+			nil,
+		)
+
+		servicesList = append(servicesList, svcEntity)
 	}
 
 	return servicesList, nil
@@ -233,35 +233,36 @@ func (repo ServicesQueryRepo) addServicesMetrics(
 func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	servicesList := []entity.Service{}
 
+	installedSvcs, err := repo.getInstalledServices()
+	if err != nil {
+		return servicesList, err
+	}
+	servicesList = append(servicesList, installedSvcs...)
+
+	installedSvcsNames := []string{}
+	for _, installedSvc := range installedSvcs {
+		installedSvcsNames = append(installedSvcsNames, installedSvc.Name.String())
+	}
+
 	nativeSvcs, err := repo.getNativeServices()
 	if err != nil {
 		return servicesList, err
 	}
 
-	installedSvcs, err := repo.getInstalledServices()
-	if err != nil {
-		return servicesList, err
-	}
-
-	installedSvcNames := []string{}
-	for _, installedSvc := range installedSvcs {
-		installedSvcNames = append(installedSvcNames, installedSvc.Name.String())
-	}
-
 	for _, nativeSvc := range nativeSvcs {
-		if slices.Contains(installedSvcNames, nativeSvc.Name.String()) {
+		if slices.Contains(installedSvcsNames, nativeSvc.Name.String()) {
 			continue
 		}
 
 		servicesList = append(servicesList, nativeSvc)
 	}
 
-	svcsWithMetrics, err := repo.addServicesMetrics(installedSvcs)
+	svcsWithMetrics, err := repo.addServicesMetrics(servicesList)
 	if err != nil {
 		return servicesList, err
 	}
 
-	return append(servicesList, svcsWithMetrics...), nil
+	return svcsWithMetrics, nil
 }
 
 func (repo ServicesQueryRepo) GetByName(
