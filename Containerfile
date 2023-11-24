@@ -7,7 +7,7 @@ RUN install_packages ca-certificates wget curl tar procps debian-archive-keyring
     && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
     && install_packages nginx cron \
     && touch /var/spool/cron/crontabs/root \
-    && mkdir -p /app/logs /app/conf/pki /app/html \
+    && mkdir -p /app/logs/nginx /app/conf/pki /app/html \
     && chown -R nobody:nogroup /app
 
 RUN wget -qO supervisord.tar.gz https://github.com/ochinchina/supervisord/releases/download/v0.7.3/supervisord_0.7.3_Linux_64-bit.tar.gz \
