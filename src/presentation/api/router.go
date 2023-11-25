@@ -2,25 +2,18 @@ package api
 
 import (
 	_ "embed"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
-	apiController "github.com/speedianet/sam/src/presentation/api/controller"
+	apiController "github.com/speedianet/os/src/presentation/api/controller"
+	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
-)
 
-//go:embed docs/swagger.json
-var swaggerJson []byte
+	_ "github.com/speedianet/os/src/presentation/api/docs"
+)
 
 func swaggerRoute(baseRoute *echo.Group) {
 	swaggerGroup := baseRoute.Group("/swagger")
-
-	swaggerGroup.GET("/swagger.json", func(c echo.Context) error {
-		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, swaggerJson)
-	})
-
-	swaggerUrl := echoSwagger.URL("swagger.json")
-	swaggerGroup.GET("/*", echoSwagger.EchoWrapHandler(swaggerUrl))
+	swaggerGroup.GET("/*", echoSwagger.WrapHandler)
 }
 
 func authRoutes(baseRoute *echo.Group) {
@@ -37,7 +30,7 @@ func cronRoutes(baseRoute *echo.Group) {
 }
 
 func databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database")
+	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 	databaseGroup.DELETE(
@@ -70,12 +63,20 @@ func accountRoutes(baseRoute *echo.Group) {
 	accountGroup.GET("/", apiController.GetAccountsController)
 	accountGroup.POST("/", apiController.AddAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
+	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }
 
 func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
+}
+
+func sslRoutes(baseRoute *echo.Group) {
+	sslGroup := baseRoute.Group("/ssl")
+	sslGroup.GET("/", apiController.GetSslPairsController)
+	sslGroup.POST("/", apiController.AddSslPairController)
+	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {
@@ -87,4 +88,5 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	runtimeRoutes(baseRoute)
 	accountRoutes(baseRoute)
 	servicesRoutes(baseRoute)
+	sslRoutes(baseRoute)
 }

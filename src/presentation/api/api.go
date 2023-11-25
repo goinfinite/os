@@ -1,23 +1,26 @@
 package api
 
 import (
+	"time"
+
 	"github.com/labstack/echo/v4"
-	apiMiddleware "github.com/speedianet/sam/src/presentation/api/middleware"
-	"github.com/speedianet/sam/src/presentation/shared"
-	_ "github.com/swaggo/echo-swagger/example/docs"
+	"github.com/labstack/echo/v4/middleware"
+	apiInit "github.com/speedianet/os/src/presentation/api/init"
+	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
+	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 )
 
-// @title			SamApi
+// @title			SosApi
 // @version			0.0.1
-// @description		Speedia AppManager API
+// @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
 
 // @contact.name	Speedia Engineering
 // @contact.url		https://speedia.net/
 // @contact.email	eng+swagger@speedia.net
 
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.name  Eclipse Public License v2.0
+// @license.url   https://www.eclipse.org/legal/epl-2.0/
 
 // @securityDefinitions.apikey	Bearer
 // @in 							header
@@ -27,14 +30,20 @@ import (
 // @host		localhost:10000
 // @BasePath	/v1
 func ApiInit() {
-	shared.CheckEnvs()
+	sharedMiddleware.CheckEnvs()
+	apiInit.WebServerSetup()
 
 	e := echo.New()
 
 	basePath := "/v1"
 	baseRoute := e.Group(basePath)
 
+	requestTimeout := 60 * time.Second
+
 	e.Pre(apiMiddleware.TrailingSlash(basePath))
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Timeout: requestTimeout,
+	}))
 	e.Use(apiMiddleware.PanicHandler)
 	e.Use(apiMiddleware.SetDefaultHeaders)
 	e.Use(apiMiddleware.Auth(basePath))

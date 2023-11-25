@@ -3,8 +3,9 @@ package cli
 import (
 	"fmt"
 
-	api "github.com/speedianet/sam/src/presentation/api"
-	cliController "github.com/speedianet/sam/src/presentation/cli/controller"
+	api "github.com/speedianet/os/src/presentation/api"
+	cliController "github.com/speedianet/os/src/presentation/cli/controller"
+	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -12,13 +13,13 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print software version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Speedia AppManager v0.0.1")
+		fmt.Println("Speedia OS v0.0.1")
 	},
 }
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Start the SAM server (default to port 10000)",
+	Short: "Start the SOS server (default to port 10000)",
 	Run: func(cmd *cobra.Command, args []string) {
 		api.ApiInit()
 	},
@@ -52,8 +53,9 @@ func cronRoutes() {
 
 func databaseRoutes() {
 	var databaseCmd = &cobra.Command{
-		Use:   "db",
-		Short: "DatabaseManagement",
+		Use:              "db",
+		Short:            "DatabaseManagement",
+		PersistentPreRun: cliMiddleware.ServiceStatusValidator("mysql"),
 	}
 
 	rootCmd.AddCommand(databaseCmd)
@@ -104,6 +106,18 @@ func servicesRoutes() {
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
 }
 
+func sslRoutes() {
+	var sslCmd = &cobra.Command{
+		Use:   "ssl",
+		Short: "SslManagement",
+	}
+
+	rootCmd.AddCommand(sslCmd)
+	sslCmd.AddCommand(cliController.GetSslPairsController())
+	sslCmd.AddCommand(cliController.AddSslPairController())
+	sslCmd.AddCommand(cliController.DeleteSslPairController())
+}
+
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
@@ -113,4 +127,5 @@ func registerCliRoutes() {
 	o11yRoutes()
 	runtimeRoutes()
 	servicesRoutes()
+	sslRoutes()
 }

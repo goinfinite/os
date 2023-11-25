@@ -2,51 +2,66 @@ package valueObject
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
 type ServiceName string
 
-var SupportedServiceNames = []string{
-	"openlitespeed",
-	"nginx",
-	"node",
-	"mysql",
-	"redis",
-}
+const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
 
-var SupportedServiceNamesAliases = []string{
-	"litespeed",
-	"nodejs",
-	"mysqld",
-	"mariadb",
-	"percona",
-	"perconadb",
-	"redis-server",
+var NativeSvcNamesWithAliases = map[string][]string{
+	"php":  {"lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
+	"node": {"nodejs"},
+	"mysql": {
+		"mysqld",
+		"mariadb",
+		"percona",
+		"perconadb",
+		"mysqld",
+		"mariadbd",
+		"mariadb-server",
+		"percona-server-mysqld",
+	},
+	"redis": {"redis-server"},
 }
 
 func NewServiceName(value string) (ServiceName, error) {
-	ss := ServiceName(value)
-	if !ss.isValid() {
+	svcName := ServiceNameAdapter(value)
+
+	svcNameRegex := regexp.MustCompile(ServiceNameRegex)
+	if !svcNameRegex.MatchString(value) {
 		return "", errors.New("InvalidServiceName")
 	}
-	return ss, nil
+
+	return ServiceName(svcName), nil
 }
 
 func NewServiceNamePanic(value string) ServiceName {
-	ss := ServiceName(value)
-	if !ss.isValid() {
-		panic("InvalidServiceName")
+	sn, err := NewServiceName(value)
+	if err != nil {
+		panic(err)
 	}
-	return ss
+	return sn
 }
 
-func (ss ServiceName) isValid() bool {
-	supportedServices := append(SupportedServiceNames, SupportedServiceNamesAliases...)
-	return slices.Contains(supportedServices, ss.String())
+func ServiceNameAdapter(value string) string {
+	svcName := strings.ToLower(value)
+
+	nativeSvcNames := maps.Keys(NativeSvcNamesWithAliases)
+	for _, nativeSvcName := range nativeSvcNames {
+		if !slices.Contains(NativeSvcNamesWithAliases[nativeSvcName], svcName) {
+			continue
+		}
+		svcName = nativeSvcName
+	}
+
+	return svcName
 }
 
-func (ss ServiceName) String() string {
-	return string(ss)
+func (sn ServiceName) String() string {
+	return string(sn)
 }

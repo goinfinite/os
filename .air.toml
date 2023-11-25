@@ -3,12 +3,11 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-bin = "bin/sam"
-cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sam ./sam.go"
+bin = "bin/sos"
+cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sos ./sos.go"
 delay = 1000
 exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
 follow_symlink = false
-full_bin = "export $(grep -v '^#' .env | xargs); ./bin/sam"
 ignore = ["*_test.go", "testHelpers.go"]
 
 [[watcher]]

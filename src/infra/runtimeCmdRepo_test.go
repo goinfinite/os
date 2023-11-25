@@ -4,10 +4,10 @@ import (
 	"os"
 	"testing"
 
-	testHelpers "github.com/speedianet/sam/src/devUtils"
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	servicesInfra "github.com/speedianet/sam/src/infra/services"
+	testHelpers "github.com/speedianet/os/src/devUtils"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestRuntimeCmdRepo(t *testing.T) {

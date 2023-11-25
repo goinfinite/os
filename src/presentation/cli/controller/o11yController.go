@@ -1,9 +1,9 @@
 package cliController
 
 import (
-	"github.com/speedianet/sam/src/domain/useCase"
-	"github.com/speedianet/sam/src/infra"
-	cliHelper "github.com/speedianet/sam/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/infra"
+	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 

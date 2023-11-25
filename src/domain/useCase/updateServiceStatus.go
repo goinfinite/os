@@ -2,9 +2,12 @@ package useCase
 
 import (
 	"errors"
+	"slices"
 
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/repository"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/repository"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"golang.org/x/exp/maps"
 )
 
 func UpdateServiceStatus(
@@ -21,21 +24,26 @@ func UpdateServiceStatus(
 		return errors.New("ServiceStatusAlreadySet")
 	}
 
-	isInstalled := currentSvcStatus.Status.String() == "installed"
-	isRunning := currentSvcStatus.Status.String() == "running"
-	isStopped := currentSvcStatus.Status.String() == "stopped"
-	isInstalled = isInstalled || isRunning || isStopped
-
-	shouldRun := updateSvcStatusDto.Status.String() == "running"
-	shouldStop := updateSvcStatusDto.Status.String() == "stopped"
-	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
-	if !isInstalled && (shouldRun || shouldStop || shouldUninstall) {
-		return errors.New("ServiceNotInstalled")
-	}
-
+	isInstalled := currentSvcStatus.Status.String() != "uninstalled"
 	shouldInstall := updateSvcStatusDto.Status.String() == "installed"
 	if isInstalled && shouldInstall {
 		return errors.New("ServiceAlreadyInstalled")
+	}
+
+	if !isInstalled && !shouldInstall {
+		return errors.New("ServiceNotInstalled")
+	}
+
+	isSystemService := currentSvcStatus.Type.String() == "system"
+	shouldUninstall := updateSvcStatusDto.Status.String() == "uninstalled"
+	if isSystemService && shouldUninstall {
+		return errors.New("SystemServicesCannotBeUninstalled")
+	}
+
+	nativeServicesNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
+	isNativeService := slices.Contains(nativeServicesNames, updateSvcStatusDto.Name.String())
+	if shouldInstall && !isNativeService {
+		return errors.New("NotNativeServiceCannotBeInstalled")
 	}
 
 	switch updateSvcStatusDto.Status.String() {

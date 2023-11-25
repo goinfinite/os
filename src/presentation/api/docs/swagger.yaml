@@ -34,6 +34,15 @@ definitions:
       username:
         type: string
     type: object
+  dto.AddSslPair:
+    properties:
+      certificate:
+        $ref: '#/definitions/entity.SslCertificate'
+      hostname:
+        type: string
+      key:
+        type: string
+    type: object
   dto.Login:
     properties:
       password:
@@ -212,7 +221,37 @@ definitions:
       status:
         $ref: '#/definitions/valueObject.ServiceStatus'
       uptimeSecs:
-        type: number
+        type: integer
+    type: object
+  entity.SslCertificate:
+    properties:
+      certificate:
+        type: string
+      commonName:
+        type: string
+      expiresAt:
+        type: integer
+      id:
+        type: string
+      isCA:
+        type: boolean
+      issuedAt:
+        type: integer
+    type: object
+  entity.SslPair:
+    properties:
+      certificate:
+        $ref: '#/definitions/entity.SslCertificate'
+      chainCertificates:
+        items:
+          $ref: '#/definitions/entity.SslCertificate'
+        type: array
+      hostname:
+        type: string
+      key:
+        type: string
+      sslPairId:
+        type: string
     type: object
   valueObject.AccessTokenType:
     enum:
@@ -280,10 +319,10 @@ info:
     email: eng+swagger@speedia.net
     name: Speedia Engineering
     url: https://speedia.net/
-  description: Speedia AppManager API
+  description: Speedia OS API
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    name: Eclipse Public License v2.0
+    url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: SamApi
   version: 0.0.1
@@ -333,7 +372,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an account.
+      description: Update an account (Only id is required).
       parameters:
       - description: UpdateAccount
         in: body
@@ -406,7 +445,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List Crons.
+      description: List crons.
       produces:
       - application/json
       responses:
@@ -447,7 +486,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an cron.
+      description: Update a cron.
       parameters:
       - description: UpdateCron
         in: body
@@ -471,7 +510,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete an cron.
+      description: Delete a cron.
       parameters:
       - description: CronId
         in: path
@@ -763,6 +802,71 @@ paths:
       summary: UpdateServiceStatus
       tags:
       - services
+  /ssl/:
+    get:
+      consumes:
+      - application/json
+      description: List ssl pairs.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.SslPair'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetSslPair
+      tags:
+      - ssl
+    post:
+      consumes:
+      - application/json
+      description: Add a new ssl pair.
+      parameters:
+      - description: NewSslPair
+        in: body
+        name: addSslPairDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddSslPair'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: SslPairCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewSslPair
+      tags:
+      - ssl
+  /ssl/{sslPairId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a ssl pair.
+      parameters:
+      - description: SslPairId
+        in: path
+        name: sslPairId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SslPairDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSslPair
+      tags:
+      - ssl
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.

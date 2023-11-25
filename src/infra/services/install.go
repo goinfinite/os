@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 var supportedServicesVersion = map[string]string{
@@ -22,6 +22,9 @@ var supportedServicesVersion = map[string]string{
 
 var OlsPackages = []string{
 	"openlitespeed",
+}
+
+var PhpPackages = []string{
 	"lsphp74",
 	"lsphp74-common",
 	"lsphp74-curl",
@@ -67,31 +70,171 @@ func copyAssets(srcPath string, dstPath string) error {
 	srcPath = "assets/" + srcPath
 	srcFile, err := assets.Open(srcPath)
 	if err != nil {
-		log.Printf("OpenSourceFileError: %s", err)
-		return errors.New("OpenSourceFileError")
+		return errors.New("OpenSourceFileError: " + err.Error())
 	}
 	defer srcFile.Close()
 
 	dstFile, err := os.OpenFile(dstPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		log.Printf("OpenDestinationFileError: %s", err)
-		return errors.New("OpenDestinationFileError")
+		return errors.New("OpenDestinationFileError: " + err.Error())
 	}
 	defer dstFile.Close()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
-		log.Printf("CopyFileError: %s", err)
-		return errors.New("CopyFileError")
+		return errors.New("CopyFileError: " + err.Error())
 	}
 
 	return nil
 }
 
-func installOls() error {
+func installPhp() error {
+	repoFilePath := "/speedia/repo.litespeed.sh"
+
 	err := infraHelper.DownloadFile(
 		"https://repo.litespeed.sh",
-		"/speedia/repo.litespeed.sh",
+		repoFilePath,
+	)
+	if err != nil {
+		return errors.New("DownloadRepoFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"bash",
+		repoFilePath,
+	)
+	if err != nil {
+		return errors.New("RepoAddError: " + err.Error())
+	}
+
+	err = os.Remove(repoFilePath)
+	if err != nil {
+		return errors.New("RemoveRepoFileError: " + err.Error())
+	}
+
+	err = infraHelper.InstallPkgs(OlsPackages)
+	if err != nil {
+		return errors.New("InstallPhpWebServerError: " + err.Error())
+	}
+
+	err = infraHelper.InstallPkgs(PhpPackages)
+	if err != nil {
+		return err
+	}
+
+	os.Symlink(
+		"/usr/local/lsws/lsphp82/bin/php",
+		"/usr/bin/php",
+	)
+
+	err = copyAssets(
+		"php/httpd_config.conf",
+		"/usr/local/lsws/conf/httpd_config.conf",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	virtualHost := os.Getenv("VIRTUAL_HOST")
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/speedia.net/"+virtualHost+"/g",
+		"/usr/local/lsws/conf/httpd_config.conf",
+	)
+	if err != nil {
+		return errors.New("RenameHttpdVHostError: " + err.Error())
+	}
+
+	err = infraHelper.MakeDir("/app/conf/php")
+	if err != nil {
+		return errors.New("CreateConfDirError: " + err.Error())
+	}
+
+	err = copyAssets(
+		"php/primary.conf",
+		"/app/conf/php/primary.conf",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"s/speedia.net/"+virtualHost+"/g",
+		"/app/conf/php/primary.conf",
+	)
+	if err != nil {
+		return errors.New("RenameVHostError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"-R",
+		"lsadm:nogroup",
+		"/app/conf/php",
+	)
+	if err != nil {
+		return errors.New("ChownConfDirError: " + err.Error())
+	}
+
+	err = infraHelper.MakeDir("/app/logs/php")
+	if err != nil {
+		return errors.New("CreateLogDirError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"-R",
+		"nobody:nogroup",
+		"/app/logs/php",
+	)
+	if err != nil {
+		return errors.New("ChownLogDirError: " + err.Error())
+	}
+
+	err = copyAssets(
+		"php/ols-entrypoint.sh",
+		"/speedia/ols-entrypoint.sh",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	err = SupervisordFacade{}.AddConf(
+		"php",
+		"bash /speedia/ols-entrypoint.sh",
+		"runtime",
+		[]int{8080, 8443},
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError: " + err.Error())
+	}
+
+	return nil
+}
+
+func installNode(version *valueObject.ServiceVersion) error {
+	nodeSvcName, _ := valueObject.NewServiceName("node")
+	repoFilePath := "/speedia/repo.node.sh"
+
+	repoUrl := "https://deb.nodesource.com/setup_lts.x"
+	if version != nil {
+		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
+		isVersionAllowed := re.MatchString(version.String())
+
+		if !isVersionAllowed {
+			log.Printf("InvalidNodeVersion: %s", version.String())
+			return errors.New("InvalidNodeVersion")
+		}
+
+		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
+	}
+
+	err := infraHelper.DownloadFile(
+		repoUrl,
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("DownloadRepoFileError: %s", err)
@@ -100,93 +243,36 @@ func installOls() error {
 
 	_, err = infraHelper.RunCmd(
 		"bash",
-		"/speedia/repo.litespeed.sh",
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("RepoAddError: %s", err)
 		return errors.New("RepoAddError")
 	}
 
-	err = os.Remove("/speedia/repo.litespeed.sh")
+	err = os.Remove(repoFilePath)
 	if err != nil {
 		log.Printf("RemoveRepoFileError: %s", err)
 		return errors.New("RemoveRepoFileError")
 	}
 
-	err = infraHelper.InstallPkgs(OlsPackages)
+	err = infraHelper.InstallPkgs(NodePackages)
 	if err != nil {
 		log.Printf("InstallServiceError: %s", err)
 		return errors.New("InstallServiceError")
 	}
 
-	defaultDirs := []string{
-		"logs",
-		"conf",
-		"html",
-	}
-	for _, dir := range defaultDirs {
-		err = os.MkdirAll("/app/"+dir, 0755)
-		if err != nil {
-			log.Printf("CreateAppDirError: %s", err)
-			return errors.New("CreateAppDirError")
-		}
-	}
-
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"nobody:nogroup",
-		"/app",
-	)
+	appHtmlDir := "/app/html"
+	err = infraHelper.MakeDir(appHtmlDir)
 	if err != nil {
-		log.Printf("ChownAppDirError: %s", err)
-		return errors.New("ChownAppDirError")
+		log.Printf("CreateBaseDirError: %s", err)
+		return errors.New("CreateBaseDirError")
 	}
 
+	indexJsFilePath := appHtmlDir + "/index.js"
 	err = copyAssets(
-		"httpd_config.conf",
-		"/usr/local/lsws/conf/httpd_config.conf",
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	err = copyAssets(
-		"vhconf.conf",
-		"/app/conf/vhconf.conf",
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
-	}
-
-	virtualHost := os.Getenv("VIRTUAL_HOST")
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+virtualHost+"/g",
-		"/app/conf/vhconf.conf",
-	)
-	if err != nil {
-		log.Printf("RenameVHostError: %s", err)
-		return errors.New("RenameVHostError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"lsadm:nogroup",
-		"/app/conf",
-	)
-	if err != nil {
-		log.Printf("ChownConfDirError: %s", err)
-		return errors.New("ChownConfDirError")
-	}
-
-	err = copyAssets(
-		"ols-entrypoint.sh",
-		"/speedia/ols-entrypoint.sh",
+		"nodejs/base-index.js",
+		indexJsFilePath,
 	)
 	if err != nil {
 		log.Printf("CopyAssetsError: %s", err)
@@ -194,25 +280,30 @@ func installOls() error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"openlitespeed",
-		"bash /speedia/ols-entrypoint.sh",
+		"node",
+		"/usr/bin/node "+indexJsFilePath+" &",
+		"database",
+		[]int{3000},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
 	}
 
-	os.Symlink(
-		"/usr/local/lsws/lsphp82/bin/php",
-		"/usr/bin/php",
-	)
+	err = SupervisordFacade{}.Start(nodeSvcName)
+	if err != nil {
+		log.Printf("RunNodeJsServiceError: %s", err)
+		return errors.New("RunNodeJsServiceError")
+	}
 
 	return nil
 }
 
 func installMariaDb(version *valueObject.ServiceVersion) error {
+	repoFilePath := "/speedia/repo.mariadb.sh"
+
 	err := infraHelper.DownloadFile(
 		"https://r.mariadb.com/downloads/mariadb_repo_setup",
-		"/speedia/repo.mariadb.sh",
+		repoFilePath,
 	)
 	if err != nil {
 		log.Printf("DownloadRepoFileError: %s", err)
@@ -234,7 +325,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 
 	_, err = infraHelper.RunCmd(
 		"bash",
-		"/speedia/repo.mariadb.sh",
+		repoFilePath,
 		versionFlag,
 	)
 	if err != nil {
@@ -242,7 +333,7 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 		return errors.New("RepoAddError")
 	}
 
-	err = os.Remove("/speedia/repo.mariadb.sh")
+	err = os.Remove(repoFilePath)
 	if err != nil {
 		log.Printf("RemoveRepoFileError: %s", err)
 		return errors.New("RemoveRepoFileError")
@@ -326,58 +417,11 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	err = SupervisordFacade{}.AddConf(
 		"mysql",
 		"/usr/bin/mysqld_safe",
+		"database",
+		[]int{3306},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
-	}
-
-	return nil
-}
-
-func installNode(version *valueObject.ServiceVersion) error {
-	repoFilePath := "/speedia/repo.node.sh"
-
-	repoUrl := "https://deb.nodesource.com/setup_lts.x"
-	if version != nil {
-		re := regexp.MustCompile(supportedServicesVersion["node"])
-		isVersionAllowed := re.MatchString(version.String())
-
-		if !isVersionAllowed {
-			log.Printf("InvalidNodeVersion: %s", version.String())
-			return errors.New("InvalidNodeVersion")
-		}
-
-		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
-	}
-
-	err := infraHelper.DownloadFile(
-		repoUrl,
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"bash",
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
-	}
-
-	err = os.Remove(repoFilePath)
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
-	}
-
-	err = infraHelper.InstallPkgs(NodePackages)
-	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
 	}
 
 	return nil
@@ -474,6 +518,8 @@ func installRedis(version *valueObject.ServiceVersion) error {
 	err = SupervisordFacade{}.AddConf(
 		"redis",
 		"/usr/bin/redis-server /etc/redis/redis.conf",
+		"database",
+		[]int{6379},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -498,16 +544,15 @@ func Install(
 	version *valueObject.ServiceVersion,
 ) error {
 	switch name.String() {
-	case "openlitespeed", "litespeed":
-		return installOls()
-	case "mysql", "mysqld", "maria", "mariadb", "percona", "perconadb":
-		return installMysql(version)
-	case "node", "nodejs":
+	case "php":
+		return installPhp()
+	case "node":
 		return installNode(version)
-	case "redis", "redis-server":
+	case "mysql":
+		return installMysql(version)
+	case "redis":
 		return installRedis(version)
 	default:
-		log.Printf("ServiceNotImplemented: %s", name.String())
-		return errors.New("ServiceNotImplemented")
+		return errors.New("ServiceNotImplemented: " + name.String())
 	}
 }

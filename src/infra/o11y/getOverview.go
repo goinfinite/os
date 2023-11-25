@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type GetOverview struct {
@@ -34,12 +34,12 @@ func (repo GetOverview) isCgroupV2() bool {
 }
 
 func (repo GetOverview) getFileContent(file string) (string, error) {
-	fileContent, err := os.ReadFile(file)
+	fileContent, err := infraHelper.GetFileContent(file)
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(fileContent)), nil
+	return strings.TrimSpace(fileContent), nil
 }
 
 func (repo GetOverview) getCpuQuota() (int64, error) {

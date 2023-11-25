@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	infraHelper "github.com/speedianet/sam/src/infra/helper"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type CronCmdRepo struct {

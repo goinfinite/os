@@ -30,6 +30,11 @@ func (version ServiceVersion) isValid() bool {
 	return re.MatchString(string(version))
 }
 
+func (version ServiceVersion) GetWithoutPunctuation() string {
+	re := regexp.MustCompile(`[\.\_\-]`)
+	return re.ReplaceAllString(string(version), "")
+}
+
 func (version ServiceVersion) String() string {
 	return string(version)
 }

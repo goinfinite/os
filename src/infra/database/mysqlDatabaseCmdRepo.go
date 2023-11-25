@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 type MysqlDatabaseCmdRepo struct {

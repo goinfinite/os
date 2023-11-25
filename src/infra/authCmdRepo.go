@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/speedianet/sam/src/domain/entity"
-	"github.com/speedianet/sam/src/domain/valueObject"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 type AuthCmdRepo struct {

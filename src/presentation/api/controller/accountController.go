@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/sam/src/domain/dto"
-	"github.com/speedianet/sam/src/domain/useCase"
-	"github.com/speedianet/sam/src/domain/valueObject"
-	"github.com/speedianet/sam/src/infra"
-	apiHelper "github.com/speedianet/sam/src/presentation/api/helper"
+	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
+	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
 // GetAccounts	 godoc
@@ -96,7 +96,7 @@ func DeleteAccountController(c echo.Context) error {
 
 // UpdateAccount godoc
 // @Summary      UpdateAccount
-// @Description  Update an account.
+// @Description  Update an account (Only id is required).
 // @Tags         account
 // @Accept       json
 // @Produce      json

@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/speedianet/sam/src/domain/valueObject"
+import "github.com/speedianet/os/src/domain/valueObject"
 
 type UpdateCron struct {
 	Id       valueObject.CronId        `json:"id"`

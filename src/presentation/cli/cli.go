@@ -5,14 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
-	cliMiddleware "github.com/speedianet/sam/src/presentation/cli/middleware"
-	"github.com/speedianet/sam/src/presentation/shared"
+	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
+	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   filepath.Base(os.Args[0]),
-	Short: "Speedia AppManager CLI",
+	Short: "Speedia OS CLI",
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
@@ -22,7 +22,7 @@ func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
 
-	shared.CheckEnvs()
+	sharedMiddleware.CheckEnvs()
 
 	registerCliRoutes()
 
