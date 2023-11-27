@@ -12,16 +12,16 @@ var reservedUnixFileNames = []string{".", "..", "*", "/", "\\"}
 
 type UnixFileName string
 
-func NewUnixFileName(unixFileNameStr string) (UnixFileName, error) {
-	unixFileName := UnixFileName(unixFileNameStr)
+func NewUnixFileName(value string) (UnixFileName, error) {
+	unixFileName := UnixFileName(value)
 	if !unixFileName.isValid() {
 		return "", errors.New("InvalidUnixFileName")
 	}
 	return unixFileName, nil
 }
 
-func NewUnixFileNamePanic(unixFileNameStr string) UnixFileName {
-	unixFileName, err := NewUnixFileName(unixFileNameStr)
+func NewUnixFileNamePanic(value string) UnixFileName {
+	unixFileName, err := NewUnixFileName(value)
 	if err != nil {
 		panic(err)
 	}

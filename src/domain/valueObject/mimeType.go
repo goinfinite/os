@@ -9,16 +9,16 @@ const mimeTypeRegexExpression = `^[\p{L}0-9\-]{1,64}\/[\p{L}0-9\-\_\+\.\,]{2,128
 
 type MimeType string
 
-func NewMimeType(mimeTypeStr string) (MimeType, error) {
-	mimeType := MimeType(mimeTypeStr)
+func NewMimeType(value string) (MimeType, error) {
+	mimeType := MimeType(value)
 	if !mimeType.isValid() {
 		return "", errors.New("InvalidMimeType")
 	}
 	return mimeType, nil
 }
 
-func NewMimeTypePanic(mimeTypeStr string) MimeType {
-	mimeType, err := NewMimeType(mimeTypeStr)
+func NewMimeTypePanic(value string) MimeType {
+	mimeType, err := NewMimeType(value)
 	if err != nil {
 		panic(err)
 	}

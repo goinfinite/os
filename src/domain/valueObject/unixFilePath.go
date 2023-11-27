@@ -9,16 +9,16 @@ const unixFilePathRegexExpression = `^\/(?:[\w\p{Latin}\. \-]+\/)*[\w\p{Latin}\.
 
 type UnixFilePath string
 
-func NewUnixFilePath(unixFilePathStr string) (UnixFilePath, error) {
-	unixFilePath := UnixFilePath(unixFilePathStr)
+func NewUnixFilePath(value string) (UnixFilePath, error) {
+	unixFilePath := UnixFilePath(value)
 	if !unixFilePath.isValid() {
 		return "", errors.New("InvalidUnixFilePath")
 	}
 	return unixFilePath, nil
 }
 
-func NewUnixFilePathPanic(unixFilePathStr string) UnixFilePath {
-	unixFilePath, err := NewUnixFilePath(unixFilePathStr)
+func NewUnixFilePathPanic(value string) UnixFilePath {
+	unixFilePath, err := NewUnixFilePath(value)
 	if err != nil {
 		panic(err)
 	}
