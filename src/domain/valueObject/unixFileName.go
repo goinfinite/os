@@ -29,8 +29,8 @@ func NewUnixFileNamePanic(value string) UnixFileName {
 }
 
 func (unixFileName UnixFileName) isValid() bool {
-	unixFileNameRegexRegex := regexp.MustCompile(unixFileNameRegexExpression)
-	isValidFormat := unixFileNameRegexRegex.MatchString(string(unixFileName))
+	unixFileNameRegex := regexp.MustCompile(unixFileNameRegexExpression)
+	isValidFormat := unixFileNameRegex.MatchString(string(unixFileName))
 
 	isReservedUnixFileName := slices.Contains(reservedUnixFileNames, string(unixFileName))
 

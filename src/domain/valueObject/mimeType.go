@@ -26,8 +26,8 @@ func NewMimeTypePanic(value string) MimeType {
 }
 
 func (mimeType MimeType) isValid() bool {
-	mimeTypeRegexRegex := regexp.MustCompile(mimeTypeRegexExpression)
-	return mimeTypeRegexRegex.MatchString(string(mimeType))
+	mimeTypeRegex := regexp.MustCompile(mimeTypeRegexExpression)
+	return mimeTypeRegex.MatchString(string(mimeType))
 }
 
 func (mimeType MimeType) String() string {

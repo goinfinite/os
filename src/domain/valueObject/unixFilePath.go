@@ -26,8 +26,8 @@ func NewUnixFilePathPanic(value string) UnixFilePath {
 }
 
 func (unixFilePath UnixFilePath) isValid() bool {
-	unixFilePathRegexRegex := regexp.MustCompile(unixFilePathRegexExpression)
-	return unixFilePathRegexRegex.MatchString(string(unixFilePath))
+	unixFilePathRegex := regexp.MustCompile(unixFilePathRegexExpression)
+	return unixFilePathRegex.MatchString(string(unixFilePath))
 }
 
 func (unixFilePath UnixFilePath) String() string {
