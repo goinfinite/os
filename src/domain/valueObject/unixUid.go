@@ -19,7 +19,7 @@ func NewUnixUid(value int) (UnixUid, error) {
 func NewUnixUidPanic(value int) UnixUid {
 	unixUid, err := NewUnixUid(value)
 	if err != nil {
-		panic("InvalidUnixUid")
+		panic(err)
 	}
 	return UnixUid(unixUid)
 }

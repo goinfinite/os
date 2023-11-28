@@ -31,7 +31,7 @@ func NewUnixFilePermissions(value string) (UnixFilePermissions, error) {
 func NewUnixFilePermissionsPanic(value string) UnixFilePermissions {
 	unixFilePermissions, err := NewUnixFilePermissions(value)
 	if err != nil {
-		panic("InvalidUnixFilePermissions")
+		panic(err)
 	}
 	return UnixFilePermissions(unixFilePermissions)
 }
@@ -55,7 +55,7 @@ func NewUnixFilePermissionsFromInt(value interface{}) (UnixFilePermissions, erro
 func NewUnixFilePermissionsFromIntPanic(value interface{}) UnixFilePermissions {
 	unixFilePermissions, err := NewUnixFilePermissionsFromInt(value)
 	if err != nil {
-		panic("InvalidUnixFilePermissions")
+		panic(err)
 	}
 	return UnixFilePermissions(unixFilePermissions)
 }
