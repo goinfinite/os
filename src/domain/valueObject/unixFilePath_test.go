@@ -26,7 +26,7 @@ func TestUnixFilePath(t *testing.T) {
 		}
 	})
 
-	t.Run("ValidUnixFilePath", func(t *testing.T) {
+	t.Run("InvalidUnixFilePath", func(t *testing.T) {
 		invalidUnixFilePaths := []string{
 			"",
 			"/home/user/file.php?blabla",
