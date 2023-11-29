@@ -7,7 +7,7 @@ import (
 func GetFileExtensionMimeType(
 	fileExtension valueObject.UnixFileExtension,
 ) valueObject.MimeType {
-	var mimeType valueObject.MimeType
+	var mimeTypeStr string
 
 	extensionToMimeTypeList := map[string]string{
 		"x3d":         "application/vnd.hzn-3d-crossword",
@@ -707,12 +707,12 @@ func GetFileExtensionMimeType(
 		"zaz":         "application/vnd.zzazz.deck+xml",
 	}
 
-	mimeTypeExtensionEquivalent := extensionToMimeTypeList[fileExtension.String()]
-	if len(mimeTypeExtensionEquivalent) < 1 {
-		mimeType, _ = valueObject.NewMimeType("generic")
+	mimeTypeStr = extensionToMimeTypeList[fileExtension.String()]
+	if len(mimeTypeStr) < 1 {
+		mimeTypeStr = "generic"
 	}
 
-	mimeType, _ = valueObject.NewMimeType(mimeTypeExtensionEquivalent)
+	mimeType, _ := valueObject.NewMimeType(mimeTypeStr)
 
 	return mimeType
 }
