@@ -64,7 +64,12 @@ func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
 }
 
 func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
-	return NewUnixFileExtension(filepath.Ext(string(unixFilePath)))
+	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
+	if len(unixFileExtensionStr) < 1 {
+		return "", nil
+	}
+
+	return NewUnixFileExtension(unixFileExtensionStr)
 }
 
 func (unixFilePath UnixFilePath) GetFileDir() (UnixFilePath, error) {
