@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -98,50 +99,71 @@ func (repo FilesQueryRepo) unixFileFactory(
 func (repo FilesQueryRepo) Get(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
-	unixFileList := []entity.UnixFile{}
+	unixFileSlice := []entity.UnixFile{}
 
-	unixFileInfo, err := os.Stat(unixFilePath.String())
+	var unixPathInfoSlice []fs.FileInfo
+
+	unixPathInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
-		return unixFileList, errors.New("UnableToOpenFile")
+		return unixFileSlice, errors.New("UnableToGetPathInfo")
 	}
 
-	unixFileIsDir := unixFileInfo.IsDir()
+	unixPathInfoSlice = append(unixPathInfoSlice, unixPathInfo)
 
-	unixFileAbsPath, err := filepath.Abs(unixFilePath.String())
-	if err != nil {
-		return unixFileList, errors.New("UnableToGetFileAbsolutePath")
+	unixFileIsDir := unixPathInfo.IsDir()
+	if unixFileIsDir {
+		unixPathInfoSlice = unixPathInfoSlice[1:]
+
+		unixDirEntriesSlice, err := os.ReadDir(unixFilePath.String())
+		if err != nil {
+			return unixFileSlice, errors.New("UnableToGetDirInfo")
+		}
+
+		for _, dirEntry := range unixDirEntriesSlice {
+			dirInfo, _ := dirEntry.Info()
+			unixPathInfoSlice = append(unixPathInfoSlice, dirInfo)
+		}
 	}
 
-	unixFilePermissions := unixFileInfo.Mode().Perm()
-	unixFilePermissionsStr := fmt.Sprintf("%o", unixFilePermissions)
+	for _, pathInfo := range unixPathInfoSlice {
+		filePath := unixFilePath.String() + "/" + pathInfo.Name()
 
-	unixFileSysInfo := unixFileInfo.Sys().(*syscall.Stat_t)
+		unixFileAbsPath, err := filepath.Abs(filePath)
+		if err != nil {
+			return unixFileSlice, errors.New("UnableToGetFileAbsolutePath")
+		}
 
-	unixFileUidStr := fmt.Sprint(unixFileSysInfo.Uid)
-	unixFileOwner, err := user.LookupId(unixFileUidStr)
-	if err != nil {
-		return unixFileList, errors.New("UnableToGetFileGroupName")
+		unixFilePermissions := pathInfo.Mode().Perm()
+		unixFilePermissionsStr := fmt.Sprintf("%o", unixFilePermissions)
+
+		unixFileSysInfo := pathInfo.Sys().(*syscall.Stat_t)
+
+		unixFileUidStr := fmt.Sprint(unixFileSysInfo.Uid)
+		unixFileOwner, err := user.LookupId(unixFileUidStr)
+		if err != nil {
+			return unixFileSlice, errors.New("UnableToGetFileGroupName")
+		}
+
+		unixFileGidStr := fmt.Sprint(unixFileSysInfo.Gid)
+		unixFileGroup, err := user.LookupGroupId(unixFileGidStr)
+		if err != nil {
+			return unixFileSlice, errors.New("UnableToGetFileGroupName")
+		}
+
+		unixFile, err := repo.unixFileFactory(
+			unixFileIsDir,
+			unixFileAbsPath,
+			unixFilePermissionsStr,
+			pathInfo.Size(),
+			pathInfo.ModTime().Unix(),
+			unixFileSysInfo.Uid,
+			unixFileSysInfo.Gid,
+			unixFileOwner.Username,
+			unixFileGroup.Name,
+		)
+
+		unixFileSlice = append(unixFileSlice, unixFile)
 	}
 
-	unixFileGidStr := fmt.Sprint(unixFileSysInfo.Gid)
-	unixFileGroup, err := user.LookupGroupId(unixFileGidStr)
-	if err != nil {
-		return unixFileList, errors.New("UnableToGetFileGroupName")
-	}
-
-	unixFile, err := repo.unixFileFactory(
-		unixFileIsDir,
-		unixFileAbsPath,
-		unixFilePermissionsStr,
-		unixFileInfo.Size(),
-		unixFileInfo.ModTime().Unix(),
-		unixFileSysInfo.Uid,
-		unixFileSysInfo.Gid,
-		unixFileOwner.Username,
-		unixFileGroup.Name,
-	)
-
-	unixFileList = append(unixFileList, unixFile)
-
-	return unixFileList, nil
+	return unixFileSlice, nil
 }
