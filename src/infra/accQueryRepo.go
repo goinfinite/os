@@ -19,7 +19,7 @@ func accDetailsFactory(userInfo *user.User) (entity.Account, error) {
 		return entity.Account{}, errors.New("AccountIdParseError")
 	}
 
-	groupId, err := valueObject.NewGroupIdFromString(userInfo.Gid)
+	groupId, err := valueObject.NewGroupId(userInfo.Gid)
 	if err != nil {
 		return entity.Account{}, errors.New("GroupIdParseError")
 	}
