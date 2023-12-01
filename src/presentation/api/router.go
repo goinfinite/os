@@ -55,6 +55,11 @@ func databaseRoutes(baseRoute *echo.Group) {
 	)
 }
 
+func filesRoutes(baseRoute *echo.Group) {
+	filesGroup := baseRoute.Group("/files")
+	filesGroup.GET("/", apiController.GetFilesController)
+}
+
 func o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 	o11yGroup.GET("/overview/", apiController.O11yOverviewController)
@@ -85,6 +90,7 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	accountRoutes(baseRoute)
 	cronRoutes(baseRoute)
 	databaseRoutes(baseRoute)
+	filesRoutes(baseRoute)
 	o11yRoutes(baseRoute)
 	runtimeRoutes(baseRoute)
 	servicesRoutes(baseRoute)
