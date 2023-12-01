@@ -110,8 +110,8 @@ func (repo FilesQueryRepo) Get(
 
 	unixPathInfoSlice = append(unixPathInfoSlice, unixPathInfo)
 
-	unixFileIsDir := unixPathInfo.IsDir()
-	if unixFileIsDir {
+	unixPathIsDir := unixPathInfo.IsDir()
+	if unixPathIsDir {
 		unixPathInfoSlice = unixPathInfoSlice[1:]
 
 		unixDirEntriesSlice, err := os.ReadDir(unixFilePath.String())
@@ -126,6 +126,8 @@ func (repo FilesQueryRepo) Get(
 	}
 
 	for _, pathInfo := range unixPathInfoSlice {
+		unixFileIsDir := pathInfo.IsDir()
+
 		filePath := unixFilePath.String() + "/" + pathInfo.Name()
 
 		unixFileAbsPath, err := filepath.Abs(filePath)
@@ -166,4 +168,15 @@ func (repo FilesQueryRepo) Get(
 	}
 
 	return unixFileSlice, nil
+}
+
+func (repo FilesQueryRepo) Download(
+	unixFilePath valueObject.UnixFilePath,
+) error {
+	_, err := repo.Get(unixFilePath)
+	if err != nil {
+		return errors.New("FileNotFound")
+	}
+
+	return nil
 }
