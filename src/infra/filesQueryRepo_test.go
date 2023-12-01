@@ -19,7 +19,7 @@ func TestFilesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("Get (many)", func(t *testing.T) {
-		unixFilePath, _ := valueObject.NewUnixFilePath("/home/mmp/.vscode")
+		unixFilePath, _ := valueObject.NewUnixFilePath("/etc/ssl")
 		_, err := filesQueryRepo.Get(unixFilePath)
 		if err != nil {
 			t.Errorf("FilesQueryRepo.Get() should not return: %s", err)
