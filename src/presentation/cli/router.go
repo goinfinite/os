@@ -66,6 +66,16 @@ func databaseRoutes() {
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
+func filesRoutes() {
+	var filesCmd = &cobra.Command{
+		Use:   "files",
+		Short: "FilesManagement",
+	}
+
+	rootCmd.AddCommand(filesCmd)
+	filesCmd.AddCommand(cliController.GetFilesController())
+}
+
 func o11yRoutes() {
 	var o11yCmd = &cobra.Command{
 		Use:   "o11y",
@@ -124,6 +134,7 @@ func registerCliRoutes() {
 	accountRoutes()
 	cronRoutes()
 	databaseRoutes()
+	filesRoutes()
 	o11yRoutes()
 	runtimeRoutes()
 	servicesRoutes()
