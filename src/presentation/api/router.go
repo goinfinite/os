@@ -21,6 +21,14 @@ func authRoutes(baseRoute *echo.Group) {
 	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
+func accountRoutes(baseRoute *echo.Group) {
+	accountGroup := baseRoute.Group("/account")
+	accountGroup.GET("/", apiController.GetAccountsController)
+	accountGroup.POST("/", apiController.AddAccountController)
+	accountGroup.PUT("/", apiController.UpdateAccountController)
+	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
+}
+
 func cronRoutes(baseRoute *echo.Group) {
 	cronGroup := baseRoute.Group("/cron")
 	cronGroup.GET("/", apiController.GetCronsController)
@@ -58,14 +66,6 @@ func runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
 }
 
-func accountRoutes(baseRoute *echo.Group) {
-	accountGroup := baseRoute.Group("/account")
-	accountGroup.GET("/", apiController.GetAccountsController)
-	accountGroup.POST("/", apiController.AddAccountController)
-	accountGroup.PUT("/", apiController.UpdateAccountController)
-	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
-}
-
 func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
@@ -82,11 +82,11 @@ func sslRoutes(baseRoute *echo.Group) {
 func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
+	accountRoutes(baseRoute)
 	cronRoutes(baseRoute)
 	databaseRoutes(baseRoute)
 	o11yRoutes(baseRoute)
 	runtimeRoutes(baseRoute)
-	accountRoutes(baseRoute)
 	servicesRoutes(baseRoute)
 	sslRoutes(baseRoute)
 }
