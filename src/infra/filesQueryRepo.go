@@ -169,14 +169,3 @@ func (repo FilesQueryRepo) Get(
 
 	return unixFileSlice, nil
 }
-
-func (repo FilesQueryRepo) Download(
-	unixFilePath valueObject.UnixFilePath,
-) error {
-	_, err := repo.Get(unixFilePath)
-	if err != nil {
-		return errors.New("FileNotFound")
-	}
-
-	return nil
-}
