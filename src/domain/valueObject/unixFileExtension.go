@@ -34,9 +34,7 @@ func (unixFileExtension UnixFileExtension) isValid() bool {
 	unixFileExtensionRegex := regexp.MustCompile(unixFileExtensionRegexExpression)
 	isValidFormat := unixFileExtensionRegex.MatchString(string(unixFileExtension))
 
-	isEmpty := string(unixFileExtension) == ""
-
-	return isValidFormat && !isEmpty
+	return isValidFormat
 }
 
 func (unixFileExtension UnixFileExtension) String() string {
