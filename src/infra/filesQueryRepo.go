@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type FilesQueryRepo struct{}
@@ -68,7 +68,11 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileMimeType, _ := valueObject.NewMimeType("directory")
 
 	if !isDir {
-		unixFileMimeType = infraHelper.GetFileExtensionMimeType(unixFileExtension)
+		mimeTypeByExtension := mime.TypeByExtension(unixFileExtension.String())
+		unixFileMimeType, err = valueObject.NewMimeType(mimeTypeByExtension)
+		if err != nil {
+			return unixFile, err
+		}
 	}
 
 	unixFilePermissions, err := valueObject.NewUnixFilePermissions(filePermissions)
