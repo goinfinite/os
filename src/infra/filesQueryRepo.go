@@ -117,32 +117,33 @@ func (repo FilesQueryRepo) unixFileFactory(
 func (repo FilesQueryRepo) Get(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
-	unixFileSlice := []entity.UnixFile{}
+	unixFileList := []entity.UnixFile{}
 
 	filePathInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
-		return unixFileSlice, errors.New("UnableToGetPathInfo")
+		return unixFileList, errors.New("UnableToGetPathInfo")
 	}
 
-	unixPathIsDir := filePathInfo.IsDir()
-	if !unixPathIsDir {
+	filePathIsDir := filePathInfo.IsDir()
+	if !filePathIsDir {
 		unixFile, err := repo.unixFileFactory(unixFilePath, filePathInfo)
 		if err == nil {
-			unixFileSlice = append(unixFileSlice, unixFile)
+			unixFileList = append(unixFileList, unixFile)
 		}
+
+		return unixFileList, nil
 	}
 
 	var filePathToAnalyzeList []fs.FileInfo
-	if unixPathIsDir {
-		unixDirInodesToAnalyzeSlice, err := os.ReadDir(unixFilePath.String())
-		if err != nil {
-			return unixFileSlice, errors.New("UnableToGetDirInfo")
-		}
 
-		for _, dirEntry := range unixDirInodesToAnalyzeSlice {
-			dirInfo, _ := dirEntry.Info()
-			filePathToAnalyzeList = append(filePathToAnalyzeList, dirInfo)
-		}
+	dirEntriesToAnalyzeList, err := os.ReadDir(unixFilePath.String())
+	if err != nil {
+		return unixFileList, errors.New("UnableToGetDirInfo")
+	}
+
+	for _, dirEntry := range dirEntriesToAnalyzeList {
+		fileInfo, _ := dirEntry.Info()
+		filePathToAnalyzeList = append(filePathToAnalyzeList, fileInfo)
 	}
 
 	for _, pathInfo := range filePathToAnalyzeList {
@@ -151,8 +152,8 @@ func (repo FilesQueryRepo) Get(
 			continue
 		}
 
-		unixFileSlice = append(unixFileSlice, unixFile)
+		unixFileList = append(unixFileList, unixFile)
 	}
 
-	return unixFileSlice, nil
+	return unixFileList, nil
 }
