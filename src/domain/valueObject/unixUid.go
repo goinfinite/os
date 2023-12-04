@@ -3,12 +3,19 @@ package valueObject
 import (
 	"errors"
 	"strconv"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type UnixUid int64
 
-func NewUnixUid(value int) (UnixUid, error) {
-	unixUid := UnixUid(value)
+func NewUnixUid(value interface{}) (UnixUid, error) {
+	unixUidInt, err := voHelper.InterfaceToUint(value)
+	if err != nil {
+		return 0, errors.New("InvalidUnixUid")
+	}
+
+	unixUid := UnixUid(unixUidInt)
 	if !unixUid.isValid() {
 		return 0, errors.New("InvalidUnixUid")
 	}
