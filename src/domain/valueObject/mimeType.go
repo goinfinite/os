@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const mimeTypeRegexExpression = `^[\p{L}0-9\-]{1,64}\/[\p{L}0-9\-\_\+\.\,]{2,128}$|^(directory|generic)$`
+const mimeTypeRegexExpression = `^[A-z0-9\-]{1,64}\/[A-z0-9\-\_\+\.\,]{2,128}$|^(directory|generic)$`
 
 type MimeType string
 
