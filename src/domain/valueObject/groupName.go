@@ -10,17 +10,9 @@ const groupNameRegexExpression = `^[a-zA-Z0-9_]{1,32}$`
 type GroupName string
 
 func NewGroupName(value string) (GroupName, error) {
-	if len(value) < 1 {
-		return "", errors.New("InvalidGroupName")
-	}
-
 	groupName := GroupName(value)
 
-	if groupName.isGroupTooBig() {
-		return "", errors.New("InvalidGroupName")
-	}
-
-	if !groupName.isGroupAlphaNumericOnly() {
+	if !groupName.isValid() {
 		return "", errors.New("InvalidGroupName")
 	}
 
@@ -35,11 +27,7 @@ func NewGroupNamePanic(value string) GroupName {
 	return groupName
 }
 
-func (groupName GroupName) isGroupTooBig() bool {
-	return len(groupName) > 96
-}
-
-func (groupName GroupName) isGroupAlphaNumericOnly() bool {
+func (groupName GroupName) isValid() bool {
 	groupNameRegex := regexp.MustCompile(groupNameRegexExpression)
 	return groupNameRegex.MatchString(string(groupName))
 }
