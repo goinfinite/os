@@ -16,7 +16,7 @@ func TestUnixFilePath(t *testing.T) {
 			"/home/100sandbox/Imagem - Sem Título & BW.jpg",
 			"/home/100sandbox/Imagem - Sem Título # BW.jpg",
 			"/home/@directory/file.gif",
-			"file.php",
+			"/file.php",
 		}
 		for _, filePath := range validUnixFilePaths {
 			_, err := NewUnixFilePath(filePath)
@@ -33,6 +33,7 @@ func TestUnixFilePath(t *testing.T) {
 			"/home/sandbox/domains/@<php52.sandbox.ntorga.com>",
 			"../file.php",
 			"./file.php",
+			"file.php",
 			"/home/../file.php",
 		}
 		for _, filePath := range invalidUnixFilePaths {

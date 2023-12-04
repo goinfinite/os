@@ -13,11 +13,6 @@ const unixFileRelativePathRegexExpression = `(\.\.\/)|^\.\/|^\/\.\/`
 type UnixFilePath string
 
 func NewUnixFilePath(value string) (UnixFilePath, error) {
-	isFileName := len(value) > 0 && !strings.Contains(value, "/")
-	if isFileName {
-		value = "/" + value
-	}
-
 	unixFilePath := UnixFilePath(value)
 
 	if !unixFilePath.isValid() {
@@ -45,8 +40,12 @@ func (unixFilePath UnixFilePath) isValid() bool {
 }
 
 func (unixFilePath UnixFilePath) isRelative() bool {
+	unixFilePathStr := string(unixFilePath)
+
+	isOnlyFileName := !strings.Contains(unixFilePathStr, "/")
+
 	unixFileRelativePathRegex := regexp.MustCompile(unixFileRelativePathRegexExpression)
-	return unixFileRelativePathRegex.MatchString(string(unixFilePath))
+	return isOnlyFileName || unixFileRelativePathRegex.MatchString(unixFilePathStr)
 }
 
 func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
