@@ -17,17 +17,38 @@ import (
 type FilesQueryRepo struct{}
 
 func (repo FilesQueryRepo) unixFileFactory(
+	fileUid uint32,
+	fileOwner string,
+	fileGid uint32,
+	fileGroupName string,
 	isDir bool,
 	absFilePath string,
 	filePermissions string,
 	fileSizeInBytes int64,
 	fileModDate int64,
-	fileUid uint32,
-	fileGid uint32,
-	fileOwner string,
-	fileGroupName string,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
+
+	unixFileUidInt := int(fileUid)
+	unixFileUid, err := valueObject.NewUnixUid(unixFileUidInt)
+	if err != nil {
+		return unixFile, err
+	}
+
+	unixFileUsername, err := valueObject.NewUsername(fileOwner)
+	if err != nil {
+		return unixFile, err
+	}
+
+	unixFileGid, err := valueObject.NewGroupId(fileGid)
+	if err != nil {
+		return unixFile, err
+	}
+
+	unixFileGroup, err := valueObject.NewGroupName(fileGroupName)
+	if err != nil {
+		return unixFile, err
+	}
 
 	unixFilePath, err := valueObject.NewUnixFilePath(absFilePath)
 	if err != nil {
@@ -58,30 +79,11 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileSize := valueObject.Byte(fileSizeInBytes)
 	unixFileUpdatedAt := valueObject.UnixTime(fileModDate)
 
-	unixFileUidInt := int(fileUid)
-	unixFileUid, err := valueObject.NewUnixUid(unixFileUidInt)
-	if err != nil {
-		return unixFile, err
-	}
-
-	unixFileGid, err := valueObject.NewGroupId(fileGid)
-	if err != nil {
-		return unixFile, err
-	}
-
-	unixFileUsername, err := valueObject.NewUsername(fileOwner)
-	if err != nil {
-		return unixFile, err
-	}
-
-	unixFileGroup, err := valueObject.NewGroupName(fileGroupName)
-	if err != nil {
-		return unixFile, err
-	}
-
 	unixFile = entity.NewUnixFile(
 		unixFileUid,
+		unixFileUsername,
 		unixFileGid,
+		unixFileGroup,
 		unixFileMimeType,
 		unixFileName,
 		unixFilePath,
@@ -89,8 +91,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFilePermissions,
 		unixFileSize,
 		unixFileUpdatedAt,
-		unixFileUsername,
-		unixFileGroup,
 	)
 
 	return unixFile, nil
@@ -153,15 +153,15 @@ func (repo FilesQueryRepo) Get(
 		}
 
 		unixFile, err := repo.unixFileFactory(
+			unixFileSysInfo.Uid,
+			unixFileOwner.Username,
+			unixFileSysInfo.Gid,
+			unixFileGroup.Name,
 			unixFileIsDir,
 			unixFileAbsPath,
 			unixFilePermissionsStr,
 			pathInfo.Size(),
 			pathInfo.ModTime().Unix(),
-			unixFileSysInfo.Uid,
-			unixFileSysInfo.Gid,
-			unixFileOwner.Username,
-			unixFileGroup.Name,
 		)
 
 		unixFileSlice = append(unixFileSlice, unixFile)
