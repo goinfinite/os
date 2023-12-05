@@ -38,6 +38,6 @@ func (unixFilePermission UnixFilePermissions) String() string {
 }
 
 func (unixFilePermissions UnixFilePermissions) GetFileMode() fs.FileMode {
-	unixFilePermissionsInt, _ := strconv.ParseInt(string(unixFilePermissions), 10, 64)
+	unixFilePermissionsInt, _ := strconv.ParseInt(string(unixFilePermissions), 8, 64)
 	return fs.FileMode(unixFilePermissionsInt)
 }
