@@ -5,7 +5,8 @@ import "testing"
 func TestGroupName(t *testing.T) {
 	t.Run("ValidGroupName", func(t *testing.T) {
 		validGroupNames := []string{
-			"ntorga",
+			"ssl-cert",
+			"damn-man--",
 			"root",
 			"mysql",
 		}

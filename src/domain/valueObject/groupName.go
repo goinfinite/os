@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const groupNameRegexExpression = `^[a-zA-Z0-9_]{1,32}$`
+const groupNameRegexExpression = `^[a-zA-Z0-9_-]{1,32}$`
 
 type GroupName string
 
