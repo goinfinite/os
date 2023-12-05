@@ -21,10 +21,11 @@ import (
 // @Success      200 {array} entity.UnixFile
 // @Router       /files/ [get]
 func GetFilesController(c echo.Context) error {
-	unixFilePath := valueObject.NewUnixFilePathPanic(c.QueryParam("unixFilePath"))
-
 	filesQueryRepo := infra.FilesQueryRepo{}
-	filesList, err := useCase.GetFiles(filesQueryRepo, unixFilePath)
+	filesList, err := useCase.GetFiles(
+		filesQueryRepo,
+		valueObject.NewUnixFilePathPanic(c.QueryParam("unixFilePath")),
+	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}

@@ -15,10 +15,11 @@ func GetFilesController() *cobra.Command {
 		Use:   "get",
 		Short: "GetFiles",
 		Run: func(cmd *cobra.Command, args []string) {
-			unixFilePath := valueObject.NewUnixFilePathPanic(unixFilePath)
-
 			filesQueryRepo := infra.FilesQueryRepo{}
-			filesList, err := useCase.GetFiles(filesQueryRepo, unixFilePath)
+			filesList, err := useCase.GetFiles(
+				filesQueryRepo,
+				valueObject.NewUnixFilePathPanic(unixFilePath),
+			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
