@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -80,12 +81,15 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileMimeType, _ := valueObject.NewMimeType("directory")
 
 	if !fileInfo.IsDir() {
-		mimeTypeByExtension := mime.TypeByExtension("." + unixFileExtension.String())
-		if len(mimeTypeByExtension) < 1 {
-			mimeTypeByExtension = "generic"
+		mimeType := "generic"
+
+		mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
+		if len(mimeTypeWithCharset) > 1 {
+			mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
+			mimeType = mimeTypeOnly
 		}
 
-		unixFileMimeType, err = valueObject.NewMimeType(mimeTypeByExtension)
+		unixFileMimeType, err = valueObject.NewMimeType(mimeType)
 		if err != nil {
 			return unixFile, err
 		}
