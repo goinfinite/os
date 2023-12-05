@@ -69,6 +69,7 @@ func accountRoutes(baseRoute *echo.Group) {
 func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
+	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
 }
 

@@ -103,6 +103,7 @@ func servicesRoutes() {
 
 	rootCmd.AddCommand(servicesCmd)
 	servicesCmd.AddCommand(cliController.GetServicesController())
+	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
 }
 

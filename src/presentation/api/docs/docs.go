@@ -717,7 +717,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "List services and their status.",
+                "description": "List installed services and their status.",
                 "consumes": [
                     "application/json"
                 ],
@@ -773,6 +773,37 @@ const docTemplate = `{
                         "description": "ServiceStatusUpdated",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/installables/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List installable services.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "GetInstallableServices",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.InstallableService"
+                            }
                         }
                     }
                 }
@@ -1116,6 +1147,23 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.InstallableService": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "entity.O11yOverview": {
             "type": "object",
             "properties": {
@@ -1207,6 +1255,9 @@ const docTemplate = `{
         "entity.Service": {
             "type": "object",
             "properties": {
+                "command": {
+                    "type": "string"
+                },
                 "cpuUsagePercent": {
                     "type": "number"
                 },
@@ -1222,8 +1273,17 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/valueObject.ServiceStatus"
+                },
+                "type": {
+                    "type": "string"
                 },
                 "uptimeSecs": {
                     "type": "integer"
@@ -1377,7 +1437,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:10000",
 	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "SamApi",
+	Title:            "SosApi",
 	Description:      "Speedia OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

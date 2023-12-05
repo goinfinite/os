@@ -149,6 +149,17 @@ definitions:
       username:
         type: string
     type: object
+  entity.InstallableService:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      versions:
+        items:
+          type: string
+        type: array
+    type: object
   entity.O11yOverview:
     properties:
       currentUsage:
@@ -208,6 +219,8 @@ definitions:
     type: object
   entity.Service:
     properties:
+      command:
+        type: string
       cpuUsagePercent:
         type: number
       memUsagePercent:
@@ -218,8 +231,14 @@ definitions:
         items:
           type: integer
         type: array
+      ports:
+        items:
+          type: integer
+        type: array
       status:
         $ref: '#/definitions/valueObject.ServiceStatus'
+      type:
+        type: string
       uptimeSecs:
         type: integer
     type: object
@@ -324,7 +343,7 @@ info:
     name: Eclipse Public License v2.0
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
-  title: SamApi
+  title: SosApi
   version: 0.0.1
 paths:
   /account/:
@@ -764,7 +783,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List services and their status.
+      description: List installed services and their status.
       produces:
       - application/json
       responses:
@@ -800,6 +819,25 @@ paths:
       security:
       - Bearer: []
       summary: UpdateServiceStatus
+      tags:
+      - services
+  /services/installables/:
+    get:
+      consumes:
+      - application/json
+      description: List installable services.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.InstallableService'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetInstallableServices
       tags:
       - services
   /ssl/:

@@ -27,6 +27,24 @@ func GetServicesController() *cobra.Command {
 	return cmd
 }
 
+func GetInstallableServicesController() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-installables",
+		Short: "GetInstallableServices",
+		Run: func(cmd *cobra.Command, args []string) {
+			servicesQueryRepo := infra.ServicesQueryRepo{}
+			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, servicesList)
+		},
+	}
+
+	return cmd
+}
+
 func UpdateServiceController() *cobra.Command {
 	var nameStr string
 	var statusStr string

@@ -13,7 +13,7 @@ import (
 
 // GetServices	 godoc
 // @Summary      GetServices
-// @Description  List services and their status.
+// @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
 // @Accept       json
@@ -23,6 +23,25 @@ import (
 func GetServicesController(c echo.Context) error {
 	servicesQueryRepo := infra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetServices(servicesQueryRepo)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
+}
+
+// GetServices	 godoc
+// @Summary      GetInstallableServices
+// @Description  List installable services.
+// @Tags         services
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Success      200 {array} entity.InstallableService
+// @Router       /services/installables/ [get]
+func GetInstallableServicesController(c echo.Context) error {
+	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
