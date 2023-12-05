@@ -10,7 +10,7 @@ import (
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
-// GetCrons	 	 godoc
+// GetFiles    godoc
 // @Summary      GetFiles
 // @Description  List files.
 // @Tags         files
