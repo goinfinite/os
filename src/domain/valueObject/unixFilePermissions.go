@@ -2,7 +2,9 @@ package valueObject
 
 import (
 	"errors"
+	"io/fs"
 	"regexp"
+	"strconv"
 )
 
 const unixFilePermissionsRegexExpression = `^[0-7]{3,4}$`
@@ -33,4 +35,9 @@ func (unixFilePermissions UnixFilePermissions) isValid() bool {
 
 func (unixFilePermission UnixFilePermissions) String() string {
 	return string(unixFilePermission)
+}
+
+func (unixFilePermissions UnixFilePermissions) GetFileMode() fs.FileMode {
+	unixFilePermissionsInt, _ := strconv.ParseInt(string(unixFilePermissions), 10, 64)
+	return fs.FileMode(unixFilePermissionsInt)
 }
