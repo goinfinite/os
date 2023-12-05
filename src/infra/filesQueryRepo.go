@@ -80,7 +80,11 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileMimeType, _ := valueObject.NewMimeType("directory")
 
 	if !fileInfo.IsDir() {
-		mimeTypeByExtension := mime.TypeByExtension(unixFileExtension.String())
+		mimeTypeByExtension := mime.TypeByExtension("." + unixFileExtension.String())
+		if len(mimeTypeByExtension) < 1 {
+			mimeTypeByExtension = "generic"
+		}
+
 		unixFileMimeType, err = valueObject.NewMimeType(mimeTypeByExtension)
 		if err != nil {
 			return unixFile, err
@@ -134,20 +138,14 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, nil
 	}
 
-	var filePathToAnalyzeList []fs.FileInfo
-
 	dirEntriesToAnalyzeList, err := os.ReadDir(unixFilePath.String())
 	if err != nil {
 		return unixFileList, errors.New("UnableToGetDirInfo")
 	}
 
 	for _, dirEntry := range dirEntriesToAnalyzeList {
-		fileInfo, _ := dirEntry.Info()
-		filePathToAnalyzeList = append(filePathToAnalyzeList, fileInfo)
-	}
-
-	for _, pathInfo := range filePathToAnalyzeList {
-		unixFile, err := repo.unixFileFactory(unixFilePath, pathInfo)
+		inodeInfo, _ := dirEntry.Info()
+		unixFile, err := repo.unixFileFactory(unixFilePath, inodeInfo)
 		if err != nil {
 			continue
 		}
