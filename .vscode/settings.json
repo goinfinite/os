@@ -19,6 +19,7 @@
     "godotenv",
     "gopsutil",
     "gsub",
+    "Installables",
     "ioncube",
     "joho",
     "keyrings",

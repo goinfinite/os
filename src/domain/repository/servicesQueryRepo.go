@@ -8,4 +8,5 @@ import (
 type ServicesQueryRepo interface {
 	Get() ([]entity.Service, error)
 	GetByName(name valueObject.ServiceName) (entity.Service, error)
+	GetInstallables() ([]entity.InstallableService, error)
 }
