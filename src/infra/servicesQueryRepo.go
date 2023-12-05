@@ -306,3 +306,72 @@ func (repo ServicesQueryRepo) GetByName(
 
 	return service, errors.New("ServiceNotFound")
 }
+
+func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, error) {
+	phpService := entity.NewInstallableService(
+		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceTypePanic("runtime"),
+		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("8.2"),
+			valueObject.NewServiceVersionPanic("8.1"),
+			valueObject.NewServiceVersionPanic("8.0"),
+			valueObject.NewServiceVersionPanic("7.4"),
+			valueObject.NewServiceVersionPanic("7.3"),
+			valueObject.NewServiceVersionPanic("7.2"),
+			valueObject.NewServiceVersionPanic("7.1"),
+			valueObject.NewServiceVersionPanic("7.0"),
+			valueObject.NewServiceVersionPanic("5.6"),
+		},
+	)
+
+	nodeService := entity.NewInstallableService(
+		valueObject.NewServiceNamePanic("node"),
+		valueObject.NewServiceTypePanic("runtime"),
+		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("21"),
+			valueObject.NewServiceVersionPanic("20"),
+			valueObject.NewServiceVersionPanic("19"),
+			valueObject.NewServiceVersionPanic("18"),
+			valueObject.NewServiceVersionPanic("17"),
+			valueObject.NewServiceVersionPanic("16"),
+			valueObject.NewServiceVersionPanic("15"),
+			valueObject.NewServiceVersionPanic("14"),
+			valueObject.NewServiceVersionPanic("13"),
+			valueObject.NewServiceVersionPanic("12"),
+			valueObject.NewServiceVersionPanic("11"),
+			valueObject.NewServiceVersionPanic("10"),
+			valueObject.NewServiceVersionPanic("9"),
+			valueObject.NewServiceVersionPanic("8"),
+			valueObject.NewServiceVersionPanic("7"),
+			valueObject.NewServiceVersionPanic("6"),
+			valueObject.NewServiceVersionPanic("5"),
+			valueObject.NewServiceVersionPanic("4"),
+		},
+	)
+
+	mariadbService := entity.NewInstallableService(
+		valueObject.NewServiceNamePanic("mariadb"),
+		valueObject.NewServiceTypePanic("database"),
+		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("10.11"),
+			valueObject.NewServiceVersionPanic("10.6"),
+		},
+	)
+
+	redisService := entity.NewInstallableService(
+		valueObject.NewServiceNamePanic("redis"),
+		valueObject.NewServiceTypePanic("database"),
+		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("7.2"),
+			valueObject.NewServiceVersionPanic("7.0"),
+			valueObject.NewServiceVersionPanic("6.2"),
+		},
+	)
+
+	return []entity.InstallableService{
+		phpService,
+		nodeService,
+		mariadbService,
+		redisService,
+	}, nil
+}
