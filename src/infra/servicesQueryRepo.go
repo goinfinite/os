@@ -9,8 +9,6 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -94,6 +92,16 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 		svcEnvs := repo.parseServiceEnvs(svcEnvsMatches[1])
 
+		svcVersionStr, exists := svcEnvs["SVC_VERSION"]
+		if !exists {
+			continue
+		}
+
+		svcVersion, err := valueObject.NewServiceVersion(svcVersionStr)
+		if err != nil {
+			continue
+		}
+
 		svcTypeStr, exists := svcEnvs["SVC_TYPE"]
 		if !exists {
 			continue
@@ -106,7 +114,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 		svcPortsStr, exists := svcEnvs["SVC_PORTS"]
 		if !exists {
-			continue
+			svcPortsStr = "0"
 		}
 
 		svcPortsParts := strings.Split(svcPortsStr, ",")
@@ -115,6 +123,10 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 		}
 		svcPorts := []valueObject.NetworkPort{}
 		for _, svcPortStr := range svcPortsParts {
+			if svcPortStr == "0" {
+				continue
+			}
+
 			svcPort, err := valueObject.NewNetworkPort(svcPortStr)
 			if err != nil {
 				continue
@@ -127,6 +139,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			entity.NewService(
 				svcName,
 				svcType,
+				svcVersion,
 				svcStatus,
 				&svcCmd,
 				svcPorts,
@@ -140,42 +153,6 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 	if len(servicesList) == 0 {
 		return servicesList, errors.New("GetInstalledServicesFailed")
-	}
-
-	return servicesList, nil
-}
-
-func (repo ServicesQueryRepo) getNativeServices() ([]entity.Service, error) {
-	servicesList := []entity.Service{}
-
-	svcStatus, _ := valueObject.NewServiceStatus("uninstalled")
-
-	nativeSvcNames := maps.Keys(valueObject.NativeSvcNamesWithAliases)
-	for _, nativeSvcName := range nativeSvcNames {
-		svcName, err := valueObject.NewServiceName(nativeSvcName)
-		if err != nil {
-			continue
-		}
-
-		svcType, _ := valueObject.NewServiceType("runtime")
-		switch svcName.String() {
-		case "mysql", "redis", "postgres", "mongo", "memcached", "elasticsearch":
-			svcType, _ = valueObject.NewServiceType("database")
-		}
-
-		svcEntity := entity.NewService(
-			svcName,
-			svcType,
-			svcStatus,
-			nil,
-			[]valueObject.NetworkPort{},
-			[]uint32{},
-			nil,
-			nil,
-			nil,
-		)
-
-		servicesList = append(servicesList, svcEntity)
 	}
 
 	return servicesList, nil
@@ -260,27 +237,8 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	if err != nil {
 		return servicesList, err
 	}
-	servicesList = append(servicesList, installedSvcs...)
 
-	installedSvcsNames := []string{}
-	for _, installedSvc := range installedSvcs {
-		installedSvcsNames = append(installedSvcsNames, installedSvc.Name.String())
-	}
-
-	nativeSvcs, err := repo.getNativeServices()
-	if err != nil {
-		return servicesList, err
-	}
-
-	for _, nativeSvc := range nativeSvcs {
-		if slices.Contains(installedSvcsNames, nativeSvc.Name.String()) {
-			continue
-		}
-
-		servicesList = append(servicesList, nativeSvc)
-	}
-
-	svcsWithMetrics, err := repo.addServicesMetrics(servicesList)
+	svcsWithMetrics, err := repo.addServicesMetrics(installedSvcs)
 	if err != nil {
 		return servicesList, err
 	}
