@@ -1,8 +1,6 @@
 package infra
 
 import (
-	"mime"
-	"strings"
 	"testing"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -12,20 +10,24 @@ import (
 func TestFilesCmdRepo(t *testing.T) {
 	filesCmdRepo := FilesCmdRepo{}
 
-	t.Run("AddValidUnixFile", func(t *testing.T) {
-		unixFilePath := valueObject.NewUnixFilePathPanic("/home/mmp/filesCmdRepoTest.txt")
-
-		unixFileExtension, _ := unixFilePath.GetFileExtension()
-		mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
-		mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
-
-		unixFileName, _ := unixFilePath.GetFileName()
-
+	t.Run("AddValidUnixFile (directory)", func(t *testing.T) {
 		addUnixFile := dto.NewAddUnixFile(
-			valueObject.NewMimeTypePanic(mimeTypeOnly),
-			unixFileName,
-			unixFilePath,
+			valueObject.NewUnixFilePathPanic("/home/mmp/testDir"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
+			valueObject.NewUnixFileTypePanic("directory"),
+		)
+
+		err := filesCmdRepo.Add(addUnixFile)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("AddValidUnixFile (file)", func(t *testing.T) {
+		addUnixFile := dto.NewAddUnixFile(
+			valueObject.NewUnixFilePathPanic("/home/mmp/testDir/filesCmdRepoTest.txt"),
+			valueObject.NewUnixFilePermissionsPanic("0777"),
+			valueObject.NewUnixFileTypePanic("file"),
 		)
 
 		err := filesCmdRepo.Add(addUnixFile)
