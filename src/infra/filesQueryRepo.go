@@ -132,8 +132,7 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, errors.New("UnableToGetPathInfo")
 	}
 
-	filePathIsDir := filePathInfo.IsDir()
-	if !filePathIsDir {
+	if !filePathInfo.IsDir() {
 		unixFile, err := repo.unixFileFactory(unixFilePath, filePathInfo)
 		if err == nil {
 			unixFileList = append(unixFileList, unixFile)
