@@ -27,6 +27,6 @@ func (unixFileType UnixFileType) isValid() bool {
 	return unixFileType == "directory" || unixFileType == "file"
 }
 
-func (unixFileType UnixFileType) String() string {
-	return string(unixFileType)
+func (unixFileType UnixFileType) IsDir() bool {
+	return unixFileType == "directory"
 }
