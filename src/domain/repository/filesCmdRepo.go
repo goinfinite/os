@@ -7,5 +7,9 @@ import (
 
 type FilesCmdRepo interface {
 	Add(dto.AddUnixFile) error
-	UpdatePermissions(valueObject.UnixFilePath, valueObject.UnixFilePermissions) error
+	UpdatePermissions(
+		valueObject.UnixFilePath,
+		valueObject.UnixFilePermissions,
+		valueObject.UnixFileType,
+	) error
 }
