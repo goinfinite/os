@@ -7,6 +7,7 @@ import (
 
 type FilesCmdRepo interface {
 	Add(dto.AddUnixFile) error
+	Move(dto.MoveUnixFile) error
 	UpdatePermissions(
 		valueObject.UnixFilePath,
 		valueObject.UnixFilePermissions,

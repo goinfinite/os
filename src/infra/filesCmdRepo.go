@@ -36,6 +36,24 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 	return nil
 }
 
+func (repo FilesCmdRepo) Move(moveUnixFile dto.MoveUnixFile) error {
+	err := os.Rename(
+		moveUnixFile.OriginPath.String(),
+		moveUnixFile.DestinyPath.String(),
+	)
+	if err != nil {
+		moveErrorStr := "MoveUnixFileError"
+		if moveUnixFile.Type.IsDir() {
+			moveErrorStr = "MoveUnixDirectoryError"
+		}
+
+		log.Printf("%s: %s", moveErrorStr, err)
+		return errors.New(moveErrorStr)
+	}
+
+	return nil
+}
+
 func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
