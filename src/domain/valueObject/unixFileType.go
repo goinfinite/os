@@ -30,3 +30,13 @@ func (unixFileType UnixFileType) isValid() bool {
 func (unixFileType UnixFileType) IsDir() bool {
 	return unixFileType == "directory"
 }
+
+func (unixFileType UnixFileType) GetWithFirstLetterUpperCase() string {
+	typeWithFirstLetterUpperCase := "File"
+
+	if unixFileType == "directory" {
+		typeWithFirstLetterUpperCase = "Directory"
+	}
+
+	return typeWithFirstLetterUpperCase
+}
