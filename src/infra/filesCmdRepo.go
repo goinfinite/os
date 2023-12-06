@@ -20,13 +20,17 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 			return errors.New("CreateUnixFileError")
 		}
 
-		return repo.UpdatePermissions(addUnixFile.Path, addUnixFile.Permissions)
+		return repo.UpdatePermissions(
+			addUnixFile.Path,
+			addUnixFile.Permissions,
+			addUnixFile.Type,
+		)
 	}
 
 	err := os.MkdirAll(addUnixFile.Path.String(), addUnixFile.Permissions.GetFileMode())
 	if err != nil {
-		log.Printf("CreateUnixDirectoryError: %s", err)
-		return errors.New("CreateUnixDirectoryError")
+		log.Printf("CreateUnixFileError: %s", err)
+		return errors.New("CreateUnixFileError")
 	}
 
 	return nil
@@ -35,11 +39,17 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
+	unixFileType valueObject.UnixFileType,
 ) error {
 	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 	if err != nil {
-		log.Printf("ChmodUnixFileError: %s", err)
-		return errors.New("ChmodUnixFileError")
+		chmodErrorStr := "ChmodUnixFileError"
+		if unixFileType.IsDir() {
+			chmodErrorStr = "ChmodUnixDirectoryError"
+		}
+
+		log.Printf("%s: %s", chmodErrorStr, err)
+		return errors.New(chmodErrorStr)
 	}
 
 	return nil
