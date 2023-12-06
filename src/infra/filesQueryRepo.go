@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"mime"
 	"os"
 	"os/user"
@@ -33,6 +34,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	fileOwner, err := user.LookupId(fileUidStr)
 	if err != nil {
+		log.Printf("UnableToGetFileGroupName: %s", err)
 		return unixFile, errors.New("UnableToGetFileGroupName")
 	}
 
@@ -49,6 +51,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	fileGroupName, err := user.LookupGroupId(fileGidStr)
 	if err != nil {
+		log.Printf("UnableToGetFileGroupName: %s", err)
 		return unixFile, errors.New("UnableToGetFileGroupName")
 	}
 
@@ -60,6 +63,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	fileAbsPathStr := filePath.String() + "/" + fileInfo.Name()
 	unixFileAbsPath, err := filepath.Abs(fileAbsPathStr)
 	if err != nil {
+		log.Printf("UnableToGetFileAbsolutePath: %s", err)
 		return unixFile, errors.New("UnableToGetFileAbsolutePath")
 	}
 
@@ -91,6 +95,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 		unixFileMimeType, err = valueObject.NewMimeType(mimeType)
 		if err != nil {
+			log.Print(err)
 			return unixFile, err
 		}
 	}
@@ -99,6 +104,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	filePermissionsStr := fmt.Sprintf("%o", filePermissions)
 	unixFilePermissions, err := valueObject.NewUnixFilePermissions(filePermissionsStr)
 	if err != nil {
+		log.Print(err)
 		return unixFile, err
 	}
 
@@ -129,6 +135,7 @@ func (repo FilesQueryRepo) Get(
 
 	filePathInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
+		log.Printf("UnableToGetPathInfo: %s", err)
 		return unixFileList, errors.New("UnableToGetPathInfo")
 	}
 
@@ -143,6 +150,7 @@ func (repo FilesQueryRepo) Get(
 
 	dirEntriesToAnalyzeList, err := os.ReadDir(unixFilePath.String())
 	if err != nil {
+		log.Printf("UnableToGetDirInfo: %s", err)
 		return unixFileList, errors.New("UnableToGetDirInfo")
 	}
 
