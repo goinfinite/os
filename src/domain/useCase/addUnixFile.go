@@ -13,10 +13,7 @@ func AddUnixFile(
 	filesCmdRepo repository.FilesCmdRepo,
 	addUnixFile dto.AddUnixFile,
 ) error {
-	inodeType := "File"
-	if addUnixFile.Type.IsDir() {
-		inodeType = "Directory"
-	}
+	inodeType := addUnixFile.Type.GetWithFirstLetterUpperCase()
 
 	unixFiles, _ := filesQueryRepo.Get(addUnixFile.Path)
 

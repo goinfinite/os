@@ -13,10 +13,7 @@ func MoveUnixFile(
 	filesCmdRepo repository.FilesCmdRepo,
 	moveUnixFile dto.MoveUnixFile,
 ) error {
-	inodeType := "File"
-	if moveUnixFile.Type.IsDir() {
-		inodeType = "Directory"
-	}
+	inodeType := moveUnixFile.Type.GetWithFirstLetterUpperCase()
 
 	unixFiles, err := filesQueryRepo.Get(moveUnixFile.OriginPath)
 
