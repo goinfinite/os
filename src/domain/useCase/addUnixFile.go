@@ -13,12 +13,12 @@ func AddUnixFile(
 	filesCmdRepo repository.FilesCmdRepo,
 	addUnixFile dto.AddUnixFile,
 ) error {
-	unixFiles, _ := filesQueryRepo.Get(addUnixFile.Path)
-
 	inodeType := "File"
 	if addUnixFile.Type.IsDir() {
 		inodeType = "Directory"
 	}
+
+	unixFiles, _ := filesQueryRepo.Get(addUnixFile.Path)
 
 	if len(unixFiles) > 0 {
 		return errors.New(inodeType + "AlreadyExists")
