@@ -28,7 +28,7 @@ func NewUnixUidPanic(value int) UnixUid {
 	if err != nil {
 		panic(err)
 	}
-	return UnixUid(unixUid)
+	return unixUid
 }
 
 func (unixUid UnixUid) isValid() bool {
