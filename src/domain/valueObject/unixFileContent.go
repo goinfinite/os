@@ -36,13 +36,13 @@ func (unixFileContent UnixFileContent) isValid() bool {
 	return unixFileContentRegex.MatchString(string(unixFileContent)) && !isEmpty
 }
 
-func (unixFileContent UnixFileContent) GetDecodedContent() (string, error) {
+func (unixFileContent UnixFileContent) GetDecodedContent() string {
 	decodedContent, err := base64.StdEncoding.DecodeString(string(unixFileContent))
 	if err != nil {
-		return "", err
+		return ""
 	}
 
-	return string(decodedContent), nil
+	return string(decodedContent)
 }
 
 func (unixFileContent UnixFileContent) String() string {
