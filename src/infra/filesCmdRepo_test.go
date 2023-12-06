@@ -10,7 +10,7 @@ import (
 func TestFilesCmdRepo(t *testing.T) {
 	filesCmdRepo := FilesCmdRepo{}
 
-	t.Run("AddValidUnixFile (directory)", func(t *testing.T) {
+	t.Run("AddUnixDirectory", func(t *testing.T) {
 		addUnixFile := dto.NewAddUnixFile(
 			valueObject.NewUnixFilePathPanic("/home/mmp/testDir"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
@@ -23,7 +23,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("AddValidUnixFile (file)", func(t *testing.T) {
+	t.Run("AddUnixFile", func(t *testing.T) {
 		addUnixFile := dto.NewAddUnixFile(
 			valueObject.NewUnixFilePathPanic("/home/mmp/testDir/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
@@ -31,6 +31,36 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		err := filesCmdRepo.Add(addUnixFile)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("UpdateUnixDirectoryPermissions", func(t *testing.T) {
+		filePath := valueObject.NewUnixFilePathPanic("/home/mmp/testDir")
+		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+		fileType := valueObject.NewUnixFileTypePanic("directory")
+
+		err := filesCmdRepo.UpdatePermissions(
+			filePath,
+			filePermissions,
+			fileType,
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("UpdateUnixFilePermissions", func(t *testing.T) {
+		filePath := valueObject.NewUnixFilePathPanic("/home/mmp/testDir/filesCmdRepoTest.txt")
+		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+		fileType := valueObject.NewUnixFileTypePanic("file")
+
+		err := filesCmdRepo.UpdatePermissions(
+			filePath,
+			filePermissions,
+			fileType,
+		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
