@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -42,10 +43,7 @@ func (repo FilesCmdRepo) Move(moveUnixFile dto.MoveUnixFile) error {
 		moveUnixFile.DestinyPath.String(),
 	)
 	if err != nil {
-		moveErrorStr := "MoveUnixFileError"
-		if moveUnixFile.Type.IsDir() {
-			moveErrorStr = "MoveUnixDirectoryError"
-		}
+		moveErrorStr := fmt.Sprintf("MoveUnix%sError", moveUnixFile.Type.GetWithFirstLetterUpperCase())
 
 		log.Printf("%s: %s", moveErrorStr, err)
 		return errors.New(moveErrorStr)
@@ -61,10 +59,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 ) error {
 	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 	if err != nil {
-		chmodErrorStr := "ChmodUnixFileError"
-		if unixFileType.IsDir() {
-			chmodErrorStr = "ChmodUnixDirectoryError"
-		}
+		chmodErrorStr := fmt.Sprintf("ChmodUnix%sError", unixFileType.GetWithFirstLetterUpperCase())
 
 		log.Printf("%s: %s", chmodErrorStr, err)
 		return errors.New(chmodErrorStr)
