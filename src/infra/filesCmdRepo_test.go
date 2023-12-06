@@ -67,6 +67,18 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
+	t.Run("UpdateUnixFileContent", func(t *testing.T) {
+		updateUnixFileContent := dto.NewUpdateUnixFileContent(
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
+			valueObject.NewUnixFileContentPanic("Q29udGVudCB0byB0ZXN0"),
+		)
+
+		err := filesCmdRepo.UpdateContent(updateUnixFileContent)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
 	t.Run("UpdateUnixDirectoryPermissions", func(t *testing.T) {
 		filePath := valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir_")
 		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
