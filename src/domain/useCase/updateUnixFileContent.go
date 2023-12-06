@@ -16,16 +16,16 @@ func UpdateUnixFileContent(
 	unixFiles, err := filesQueryRepo.Get(updateUnixFileContent.Path)
 
 	if err != nil && len(unixFiles) < 1 {
-		return errors.New("FileAlreadyExists")
+		return errors.New("FileDoesNotExists")
 	}
 
 	err = filesCmdRepo.UpdateContent(updateUnixFileContent)
 	if err != nil {
-		return errors.New("UpdateContentFileError")
+		return errors.New("UpdateFileContentError")
 	}
 
 	fileName, _ := updateUnixFileContent.Path.GetFileName()
-	log.Printf("File '%s' was updated.", fileName.String())
+	log.Printf("File '%s' content updated.", fileName.String())
 
 	return nil
 }
