@@ -33,11 +33,11 @@ func (unixFilePermissions UnixFilePermissions) isValid() bool {
 	return unixFilePermissionsRegex.MatchString(string(unixFilePermissions))
 }
 
-func (unixFilePermission UnixFilePermissions) String() string {
-	return string(unixFilePermission)
-}
-
 func (unixFilePermissions UnixFilePermissions) GetFileMode() fs.FileMode {
 	unixFilePermissionsInt, _ := strconv.ParseInt(string(unixFilePermissions), 8, 64)
 	return fs.FileMode(unixFilePermissionsInt)
+}
+
+func (unixFilePermission UnixFilePermissions) String() string {
+	return string(unixFilePermission)
 }
