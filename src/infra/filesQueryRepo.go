@@ -135,7 +135,6 @@ func (repo FilesQueryRepo) Get(
 
 	filePathInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
-		log.Printf("UnableToGetPathInfo: %s", err)
 		return unixFileList, errors.New("UnableToGetPathInfo")
 	}
 
