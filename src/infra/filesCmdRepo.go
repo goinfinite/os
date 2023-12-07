@@ -24,7 +24,6 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 		return repo.UpdatePermissions(
 			addUnixFile.Path,
 			addUnixFile.Permissions,
-			addUnixFile.Type,
 		)
 	}
 
@@ -43,7 +42,13 @@ func (repo FilesCmdRepo) Move(moveUnixFile dto.MoveUnixFile) error {
 		moveUnixFile.DestinyPath.String(),
 	)
 	if err != nil {
-		moveErrorStr := fmt.Sprintf("MoveUnix%sError", moveUnixFile.Type.GetWithFirstLetterUpperCase())
+		fileType := "File"
+		fileIsDir, _ := moveUnixFile.OriginPath.IsDir()
+		if fileIsDir {
+			fileType = "Directory"
+		}
+
+		moveErrorStr := fmt.Sprintf("MoveUnix%sError", fileType)
 
 		log.Printf("%s: %s", moveErrorStr, err)
 		return errors.New(moveErrorStr)
@@ -92,11 +97,16 @@ func (repo FilesCmdRepo) UpdateContent(
 func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
-	unixFileType valueObject.UnixFileType,
 ) error {
 	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 	if err != nil {
-		chmodErrorStr := fmt.Sprintf("ChmodUnix%sError", unixFileType.GetWithFirstLetterUpperCase())
+		fileType := "File"
+		fileIsDir, _ := unixFilePath.IsDir()
+		if fileIsDir {
+			fileType = "Directory"
+		}
+
+		chmodErrorStr := fmt.Sprintf("ChmodUnix%sError", fileType)
 
 		log.Printf("%s: %s", chmodErrorStr, err)
 		return errors.New(chmodErrorStr)

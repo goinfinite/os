@@ -12,6 +12,5 @@ type FilesCmdRepo interface {
 	UpdatePermissions(
 		valueObject.UnixFilePath,
 		valueObject.UnixFilePermissions,
-		valueObject.UnixFileType,
 	) error
 }

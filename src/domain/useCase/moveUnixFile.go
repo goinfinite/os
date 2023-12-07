@@ -13,23 +13,27 @@ func MoveUnixFile(
 	filesCmdRepo repository.FilesCmdRepo,
 	moveUnixFile dto.MoveUnixFile,
 ) error {
-	inodeType := moveUnixFile.Type.GetWithFirstLetterUpperCase()
+	fileType := "File"
+	fileIsDir, _ := moveUnixFile.OriginPath.IsDir()
+	if fileIsDir {
+		fileType = "Directory"
+	}
 
 	unixFiles, err := filesQueryRepo.Get(moveUnixFile.OriginPath)
 
 	if err != nil && len(unixFiles) < 1 {
-		return errors.New(inodeType + "DoesNotExists")
+		return errors.New(fileType + "DoesNotExists")
 	}
 
 	err = filesCmdRepo.Move(moveUnixFile)
 	if err != nil {
-		return errors.New("Move" + inodeType + "Error")
+		return errors.New("Move" + fileType + "Error")
 	}
 
 	fileName, _ := moveUnixFile.OriginPath.GetFileName()
 	log.Printf(
 		"%s '%s' moved from %s to '%s'.",
-		inodeType,
+		fileType,
 		fileName.String(),
 		moveUnixFile.OriginPath.String(),
 		moveUnixFile.DestinyPath.String(),

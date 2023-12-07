@@ -45,7 +45,6 @@ func TestFilesCmdRepo(t *testing.T) {
 		moveUnixFile := dto.NewMoveUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
-			valueObject.NewUnixFileTypePanic("directory"),
 		)
 
 		err := filesCmdRepo.Move(moveUnixFile)
@@ -58,7 +57,6 @@ func TestFilesCmdRepo(t *testing.T) {
 		moveUnixFile := dto.NewMoveUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
-			valueObject.NewUnixFileTypePanic("file"),
 		)
 
 		err := filesCmdRepo.Move(moveUnixFile)
@@ -82,12 +80,10 @@ func TestFilesCmdRepo(t *testing.T) {
 	t.Run("UpdateUnixDirectoryPermissions", func(t *testing.T) {
 		filePath := valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir_")
 		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
-		fileType := valueObject.NewUnixFileTypePanic("directory")
 
 		err := filesCmdRepo.UpdatePermissions(
 			filePath,
 			filePermissions,
-			fileType,
 		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
@@ -97,12 +93,10 @@ func TestFilesCmdRepo(t *testing.T) {
 	t.Run("UpdateUnixFilePermissions", func(t *testing.T) {
 		filePath := valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir_/filesCmdRepoTest_.txt")
 		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
-		fileType := valueObject.NewUnixFileTypePanic("file")
 
 		err := filesCmdRepo.UpdatePermissions(
 			filePath,
 			filePermissions,
-			fileType,
 		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)

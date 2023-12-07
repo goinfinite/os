@@ -13,7 +13,6 @@ func UpdateUnixFilePermissions(
 	filesCmdRepo repository.FilesCmdRepo,
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
-	unixFileType valueObject.UnixFileType,
 ) error {
 	unixFiles, err := filesQueryRepo.Get(unixFilePath)
 
@@ -24,7 +23,6 @@ func UpdateUnixFilePermissions(
 	err = filesCmdRepo.UpdatePermissions(
 		unixFilePath,
 		unixFilePermissions,
-		unixFileType,
 	)
 	if err != nil {
 		return errors.New("UpdateFilePermissionsError")
