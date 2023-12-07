@@ -59,6 +59,7 @@ func filesRoutes(baseRoute *echo.Group) {
 	filesGroup := baseRoute.Group("/files")
 	filesGroup.GET("/", apiController.GetFilesController)
 	filesGroup.POST("/", apiController.AddFileController)
+	filesGroup.PUT("/content/", apiController.UpdateFileContentController)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {

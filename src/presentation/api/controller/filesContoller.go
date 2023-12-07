@@ -84,3 +84,39 @@ func AddFileController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, successResponse)
 }
+
+// UpdateFile godoc
+// @Summary      UpdateFileContent
+// @Description  Update a file content.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateUnixFileContentDto 	  body dto.UpdateUnixFileContent  true  "UpdateFileContent"
+// @Success      200 {object} object{} "FileContentUpdated message"
+// @Router       /files/content/ [put]
+func UpdateFileContentController(c echo.Context) error {
+	requiredParams := []string{"filePath", "encodedFileContent"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	fileContent := valueObject.NewUnixFileContentPanic(requestBody["encodedFileContent"].(string))
+
+	updateUnixFileContentDto := dto.NewUpdateUnixFileContent(filePath, fileContent)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.UpdateUnixFileContent(
+		filesQueryRepo,
+		filesCmdRepo,
+		updateUnixFileContentDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileContentUpdated")
+}
