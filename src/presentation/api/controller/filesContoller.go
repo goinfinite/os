@@ -42,7 +42,7 @@ func GetFilesController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        addFileDto 	  body    dto.AddUnixFile  true  "NewFile"
-// @Success      201 {object} object{} "FileCreated"
+// @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
 func AddFileController(c echo.Context) error {
 	requiredParams := []string{"filePath", "type"}
@@ -93,7 +93,7 @@ func AddFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        updateUnixFileDto 	  body dto.UpdateUnixFile  true  "UpdateFile"
-// @Success      200 {object} object{} "FileUpdated message"
+// @Success      200 {object} object{} "FileUpdated/DirectoryUpdate"
 // @Router       /files/ [put]
 func UpdateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
@@ -133,7 +133,13 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
+	fileIsDir, _ := filePath.IsDir()
+	successResponse := "FileUpdated"
+	if fileIsDir {
+		successResponse = "DirectoryUpdated"
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, successResponse)
 }
 
 // UpdateFile godoc
@@ -144,7 +150,7 @@ func UpdateFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        updateUnixFileContentDto 	  body dto.UpdateUnixFileContent  true  "UpdateFileContent"
-// @Success      200 {object} object{} "FileContentUpdated message"
+// @Success      200 {object} object{} "FileContentUpdated"
 // @Router       /files/content/ [put]
 func UpdateFileContentController(c echo.Context) error {
 	requiredParams := []string{"filePath", "encodedFileContent"}
