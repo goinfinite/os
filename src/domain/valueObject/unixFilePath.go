@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -46,6 +47,15 @@ func (unixFilePath UnixFilePath) isRelative() bool {
 
 	unixFileRelativePathRegex := regexp.MustCompile(unixFileRelativePathRegexExpression)
 	return isOnlyFileName || unixFileRelativePathRegex.MatchString(unixFilePathStr)
+}
+
+func (unixFilePath UnixFilePath) IsDir() (bool, error) {
+	pathInfo, err := os.Stat(string(unixFilePath))
+	if err != nil {
+		return false, err
+	}
+
+	return pathInfo.IsDir(), nil
 }
 
 func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
