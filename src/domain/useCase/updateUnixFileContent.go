@@ -13,10 +13,22 @@ func UpdateUnixFileContent(
 	filesCmdRepo repository.FilesCmdRepo,
 	updateUnixFileContent dto.UpdateUnixFileContent,
 ) error {
-	unixFiles, err := filesQueryRepo.Get(updateUnixFileContent.Path)
+	filePath := updateUnixFileContent.Path
 
-	if err != nil && len(unixFiles) < 1 {
+	unixFiles, err := filesQueryRepo.Get(filePath)
+
+	if err != nil || len(unixFiles) < 1 {
 		return errors.New("FileDoesNotExists")
+	}
+
+	isDir, err := filePath.IsDir()
+	if err != nil {
+		log.Printf("PathIsDirError: %s", err)
+		return errors.New("PathIsDirError")
+	}
+
+	if isDir {
+		return errors.New("FilePathIsDir")
 	}
 
 	err = filesCmdRepo.UpdateContent(updateUnixFileContent)
