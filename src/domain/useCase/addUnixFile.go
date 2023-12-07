@@ -27,7 +27,8 @@ func AddUnixFile(
 	}
 
 	fileName, _ := addUnixFile.Path.GetFileName()
-	log.Printf("%s '%s' added to '%s'.", fileType, fileName.String(), addUnixFile.Path.String())
+	fileDir, _ := addUnixFile.Path.GetFileDir()
+	log.Printf("%s '%s' added to '%s'.", fileType, fileName.String(), fileDir.String())
 
 	return nil
 }
