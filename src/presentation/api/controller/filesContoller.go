@@ -13,7 +13,7 @@ import (
 
 // GetFiles    godoc
 // @Summary      GetFiles
-// @Description  List files.
+// @Description  List dir/files.
 // @Tags         files
 // @Accept       json
 // @Produce      json
@@ -36,7 +36,7 @@ func GetFilesController(c echo.Context) error {
 
 // AddFile    godoc
 // @Summary      AddNewFile
-// @Description  Add a new file.
+// @Description  Add a new dir/file.
 // @Tags         files
 // @Accept       json
 // @Produce      json
@@ -83,6 +83,57 @@ func AddFileController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, successResponse)
+}
+
+// UpdateFile godoc
+// @Summary      UpdateFile
+// @Description  Update a dir/file path, name and/or permissions (ONly filePath is required).
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateUnixFileDto 	  body dto.UpdateUnixFile  true  "UpdateFile"
+// @Success      200 {object} object{} "FileUpdated message"
+// @Router       /files/ [put]
+func UpdateFileController(c echo.Context) error {
+	requiredParams := []string{"filePath"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+
+	var destinationPathPtr *valueObject.UnixFilePath
+	if requestBody["destinationPath"] != nil {
+		destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
+		destinationPathPtr = &destinationPath
+	}
+
+	var permissionsPtr *valueObject.UnixFilePermissions
+	if requestBody["permissions"] != nil {
+		permissions := valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
+		permissionsPtr = &permissions
+	}
+
+	updateUnixFileDto := dto.NewUpdateUnixFile(
+		filePath,
+		destinationPathPtr,
+		permissionsPtr,
+	)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.UpdateUnixFile(
+		filesQueryRepo,
+		filesCmdRepo,
+		updateUnixFileDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
 }
 
 // UpdateFile godoc
