@@ -44,7 +44,7 @@ func GetFilesController(c echo.Context) error {
 // @Param        addFileDto 	  body    dto.AddUnixFile  true  "NewFile"
 // @Success      201 {object} object{} "FileCreated"
 // @Router       /files/ [post]
-func AddFilesController(c echo.Context) error {
+func AddFileController(c echo.Context) error {
 	requiredParams := []string{"filePath", "type"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -60,7 +60,7 @@ func AddFilesController(c echo.Context) error {
 		successResponse = "DirectoryCreated"
 	}
 
-	if _, ok := requestBody["permissions"]; ok {
+	if requestBody["permissions"] != nil {
 		filePermissions = valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
 	}
 
