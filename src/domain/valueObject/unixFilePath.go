@@ -53,7 +53,7 @@ func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
 
 	isDir := strings.HasSuffix(string(unixFilePath), "/")
 	if isDir {
-		return unixFileName, errors.New("UnableToGetFileName")
+		return unixFileName, errors.New("FilePathIsDir")
 	}
 
 	unixFileBase := filepath.Base(string(unixFilePath))
