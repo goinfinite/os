@@ -42,24 +42,20 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
-		moveUnixFile := dto.NewMoveUnixFile(
+		err := filesCmdRepo.Move(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
 		)
-
-		err := filesCmdRepo.Move(moveUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
-		moveUnixFile := dto.NewMoveUnixFile(
+		err := filesCmdRepo.Move(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
 		)
-
-		err := filesCmdRepo.Move(moveUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
