@@ -51,11 +51,6 @@ func (unixFilePath UnixFilePath) isRelative() bool {
 func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
 	var unixFileName UnixFileName
 
-	isDir := strings.HasSuffix(string(unixFilePath), "/")
-	if isDir {
-		return unixFileName, errors.New("FilePathIsDir")
-	}
-
 	unixFileBase := filepath.Base(string(unixFilePath))
 	unixFileName, err := NewUnixFileName(unixFileBase)
 
