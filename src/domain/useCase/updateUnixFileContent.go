@@ -18,7 +18,7 @@ func UpdateUnixFileContent(
 	unixFiles, err := filesQueryRepo.Get(filePath)
 
 	if err != nil || len(unixFiles) < 1 {
-		return errors.New("FileDoesNotExists")
+		return errors.New("PathDoesNotExists")
 	}
 
 	isDir, err := filePath.IsDir()
