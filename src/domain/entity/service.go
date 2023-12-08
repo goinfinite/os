@@ -4,6 +4,7 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type Service struct {
 	Name            valueObject.ServiceName    `json:"name"`
+	Nature          valueObject.ServiceNature  `json:"nature"`
 	Type            valueObject.ServiceType    `json:"type"`
 	Version         valueObject.ServiceVersion `json:"version"`
 	Status          valueObject.ServiceStatus  `json:"status"`
