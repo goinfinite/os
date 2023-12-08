@@ -18,6 +18,7 @@ type Service struct {
 
 func NewService(
 	name valueObject.ServiceName,
+	nature valueObject.ServiceNature,
 	svcType valueObject.ServiceType,
 	version valueObject.ServiceVersion,
 	status valueObject.ServiceStatus,
@@ -30,6 +31,7 @@ func NewService(
 ) Service {
 	return Service{
 		Name:            name,
+		Nature:          nature,
 		Type:            svcType,
 		Version:         version,
 		Status:          status,

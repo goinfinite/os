@@ -92,11 +92,19 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 
 		svcEnvs := repo.parseServiceEnvs(svcEnvsMatches[1])
 
+		svcNatureStr, exists := svcEnvs["SVC_NATURE"]
+		if !exists {
+			continue
+		}
+		svcNature, err := valueObject.NewServiceNature(svcNatureStr)
+		if err != nil {
+			continue
+		}
+
 		svcVersionStr, exists := svcEnvs["SVC_VERSION"]
 		if !exists {
 			continue
 		}
-
 		svcVersion, err := valueObject.NewServiceVersion(svcVersionStr)
 		if err != nil {
 			continue
@@ -106,7 +114,6 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 		if !exists {
 			continue
 		}
-
 		svcType, err := valueObject.NewServiceType(svcTypeStr)
 		if err != nil {
 			continue
@@ -116,7 +123,6 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 		if !exists {
 			svcPortsStr = "0"
 		}
-
 		svcPortsParts := strings.Split(svcPortsStr, ",")
 		if len(svcPortsParts) == 0 {
 			continue
@@ -138,6 +144,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			servicesList,
 			entity.NewService(
 				svcName,
+				svcNature,
 				svcType,
 				svcVersion,
 				svcStatus,
