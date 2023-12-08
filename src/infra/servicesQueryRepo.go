@@ -148,7 +148,7 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 				svcType,
 				svcVersion,
 				svcStatus,
-				&svcCmd,
+				svcCmd,
 				svcPorts,
 				[]uint32{},
 				nil,
