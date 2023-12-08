@@ -107,6 +107,7 @@ func servicesRoutes() {
 	servicesCmd.AddCommand(cliController.AddInstallableServiceController())
 	servicesCmd.AddCommand(cliController.AddCustomServiceController())
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
+	servicesCmd.AddCommand(cliController.DeleteServiceController())
 }
 
 func sslRoutes() {

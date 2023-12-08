@@ -73,6 +73,7 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.POST("/installables/", apiController.AddInstallableServiceController)
 	servicesGroup.POST("/custom/", apiController.AddCustomServiceController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
+	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
 }
 
 func sslRoutes(baseRoute *echo.Group) {

@@ -252,3 +252,33 @@ func UpdateServiceController() *cobra.Command {
 	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
 	return cmd
 }
+
+func DeleteServiceController() *cobra.Command {
+	var nameStr string
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteService",
+		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic(nameStr)
+
+			servicesQueryRepo := infra.ServicesQueryRepo{}
+			servicesCmdRepo := infra.ServicesCmdRepo{}
+
+			err := useCase.DeleteService(
+				servicesQueryRepo,
+				servicesCmdRepo,
+				svcName,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "ServiceDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
+	cmd.MarkFlagRequired("name")
+	return cmd
+}

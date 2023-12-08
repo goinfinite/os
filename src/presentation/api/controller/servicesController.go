@@ -264,3 +264,31 @@ func UpdateServiceController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceUpdated")
 }
+
+// DeleteService godoc
+// @Summary      DeleteService
+// @Description  Delete/Uninstall a service.
+// @Tags         services
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        svcName path string true "ServiceName"
+// @Success      200 {object} object{} "ServiceDeleted"
+// @Router       /services/{svcName}/ [delete]
+func DeleteServiceController(c echo.Context) error {
+	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
+
+	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesCmdRepo := infra.ServicesCmdRepo{}
+
+	err := useCase.DeleteService(
+		servicesQueryRepo,
+		servicesCmdRepo,
+		svcName,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceDeleted")
+}
