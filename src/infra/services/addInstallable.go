@@ -204,9 +204,10 @@ func addPhp() error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"php",
-		"bash /speedia/ols-entrypoint.sh",
-		"runtime",
+		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewUnixCommandPanic("bash /speedia/ols-entrypoint.sh"),
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(8080),
 			valueObject.NewNetworkPortPanic(8443),
@@ -298,9 +299,10 @@ func addNode(addDto dto.AddInstallableService) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"node",
-		"/usr/bin/node "+startupFile.String()+" &",
-		"database",
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("multi"),
+		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewUnixCommandPanic("/usr/bin/node "+startupFile.String()+" &"),
 		ports,
 	)
 	if err != nil {
@@ -432,9 +434,10 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"mysql",
-		"/usr/bin/mysqld_safe",
-		"database",
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
+		valueObject.NewUnixCommandPanic("/usr/bin/mysqld_safe"),
 		ports,
 	)
 	if err != nil {
@@ -534,9 +537,10 @@ func addRedis(addDto dto.AddInstallableService) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"redis",
-		"/usr/bin/redis-server /etc/redis/redis.conf",
-		"database",
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.ServiceType("database"),
+		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(6379),
 		},
