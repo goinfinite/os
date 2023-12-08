@@ -14,7 +14,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	t.Skip("SkipRuntimeCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.SimplifiedInstallableServiceInstaller("php")
+	err := servicesInfra.AddInstallableSimplified("php")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return

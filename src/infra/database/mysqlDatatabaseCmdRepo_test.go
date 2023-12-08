@@ -14,7 +14,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.SimplifiedInstallableServiceInstaller("mariadb")
+	err := servicesInfra.AddInstallableSimplified("mariadb")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return

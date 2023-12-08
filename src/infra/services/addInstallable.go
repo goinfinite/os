@@ -576,7 +576,7 @@ func AddInstallable(
 	}
 }
 
-func SimplifiedInstallableServiceInstaller(serviceName string) error {
+func AddInstallableSimplified(serviceName string) error {
 	dto := dto.NewAddInstallableService(
 		valueObject.NewServiceNamePanic(serviceName),
 		nil,

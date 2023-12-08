@@ -12,7 +12,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallPhp", func(t *testing.T) {
 		t.Skip("SkipPhpInstallTest")
 
-		err := SimplifiedInstallableServiceInstaller("php")
+		err := AddInstallableSimplified("php")
 		if err != nil {
 			t.Errorf("PhpInstallFailed : %v", err)
 			return
@@ -22,7 +22,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallNode", func(t *testing.T) {
 		t.Skip("SkipNodeInstallTest")
 
-		err := SimplifiedInstallableServiceInstaller("node")
+		err := AddInstallableSimplified("node")
 		if err != nil {
 			t.Errorf("NodeInstallFailed : %v", err)
 			return
@@ -32,7 +32,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallMariaDb", func(t *testing.T) {
 		t.Skip("SkipMariaDbInstallTest")
 
-		err := SimplifiedInstallableServiceInstaller("mariadb")
+		err := AddInstallableSimplified("mariadb")
 		if err != nil {
 			t.Errorf("MariaDbInstallFailed : %v", err)
 			return
@@ -42,7 +42,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallRedis", func(t *testing.T) {
 		t.Skip("SkipRedisInstallTest")
 
-		err := SimplifiedInstallableServiceInstaller("redis")
+		err := AddInstallableSimplified("redis")
 		if err != nil {
 			t.Errorf("RedisInstallFailed : %v", err)
 			return
