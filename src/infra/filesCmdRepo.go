@@ -60,6 +60,27 @@ func (repo FilesCmdRepo) Move(
 	return nil
 }
 
+func (repo FilesCmdRepo) Copy(addUnixFileCopy dto.AddUnixFileCopy) error {
+	err := os.Link(
+		addUnixFileCopy.OriginPath.String(),
+		addUnixFileCopy.DestinationPath.String(),
+	)
+	if err != nil {
+		fileType := "File"
+		fileIsDir, _ := addUnixFileCopy.OriginPath.IsDir()
+		if fileIsDir {
+			fileType = "Directory"
+		}
+
+		moveErrorStr := fmt.Sprintf("CopyUnix%sError", fileType)
+
+		log.Printf("%s: %s", moveErrorStr, err)
+		return errors.New(moveErrorStr)
+	}
+
+	return nil
+}
+
 func (repo FilesCmdRepo) UpdateContent(
 	updateUnixFileContent dto.UpdateUnixFileContent,
 ) error {
