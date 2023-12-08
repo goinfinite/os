@@ -12,7 +12,7 @@ type ServiceStatus string
 var ValidServiceStatuses = []string{
 	"running",
 	"stopped",
-	"installed",
+	"uninstalled",
 }
 
 func NewServiceStatus(value string) (ServiceStatus, error) {
