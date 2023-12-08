@@ -139,12 +139,15 @@ func (facade SupervisordFacade) Reload() error {
 }
 
 func (facade SupervisordFacade) AddConf(
-	svcName string,
-	svcCmd string,
-	svcType string,
+	svcName valueObject.ServiceName,
+	svcNature valueObject.ServiceNature,
+	svcType valueObject.ServiceType,
+	svcCmd valueObject.UnixCommand,
 	svcPorts []valueObject.NetworkPort,
 ) error {
-	err := infraHelper.MakeDir("/app/logs/" + svcName)
+	svcNameStr := svcName.String()
+
+	err := infraHelper.MakeDir("/app/logs/" + svcNameStr)
 	if err != nil {
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
@@ -153,13 +156,15 @@ func (facade SupervisordFacade) AddConf(
 		"chown",
 		"-R",
 		"nobody:nogroup",
-		"/app/logs/"+svcName,
+		"/app/logs/"+svcNameStr,
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
 
-	svcType = "SVC_TYPE=\"" + svcType + "\""
+	svcNatureStr := "SVC_NATURE=\"" + svcNature.String() + "\""
+
+	svcTypeStr := "SVC_TYPE=\"" + svcType.String() + "\""
 
 	svcPortsStr := ""
 	if len(svcPorts) > 0 {
@@ -170,11 +175,12 @@ func (facade SupervisordFacade) AddConf(
 		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portsStrSlice, ",") + "\""
 	}
 
-	logFilePath := "/app/logs/" + svcName + "/" + svcName + ".log"
+	logFilePath := "/app/logs/" + svcNameStr + "/" + svcNameStr + ".log"
 
+	// cSpell:disable
 	svcConf := `
-[program:` + svcName + `]
-command=` + svcCmd + `
+[program:` + svcNameStr + `]
+command=` + svcCmd.String() + `
 user=root
 directory=/speedia
 autostart=true
@@ -185,8 +191,9 @@ stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
 stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
-environment=` + svcType + svcPortsStr + `
+environment=` + svcNatureStr + svcTypeStr + svcPortsStr + `
 `
+	// cSpell:enable
 
 	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
