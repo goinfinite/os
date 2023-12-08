@@ -142,7 +142,7 @@ func (facade SupervisordFacade) AddConf(
 	svcName string,
 	svcCmd string,
 	svcType string,
-	svcPorts []int,
+	svcPorts []valueObject.NetworkPort,
 ) error {
 	err := infraHelper.MakeDir("/app/logs/" + svcName)
 	if err != nil {
@@ -165,7 +165,7 @@ func (facade SupervisordFacade) AddConf(
 	if len(svcPorts) > 0 {
 		portsStrSlice := []string{}
 		for _, port := range svcPorts {
-			portsStrSlice = append(portsStrSlice, strconv.Itoa(port))
+			portsStrSlice = append(portsStrSlice, port.String())
 		}
 		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portsStrSlice, ",") + "\""
 	}

@@ -207,7 +207,10 @@ func addPhp() error {
 		"php",
 		"bash /speedia/ols-entrypoint.sh",
 		"runtime",
-		[]int{8080, 8443},
+		[]valueObject.NetworkPort{
+			valueObject.NewNetworkPortPanic(8080),
+			valueObject.NewNetworkPortPanic(8443),
+		},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError: " + err.Error())
@@ -534,7 +537,9 @@ func addRedis(addDto dto.AddInstallableService) error {
 		"redis",
 		"/usr/bin/redis-server /etc/redis/redis.conf",
 		"database",
-		[]int{6379},
+		[]valueObject.NetworkPort{
+			valueObject.NewNetworkPortPanic(6379),
+		},
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
