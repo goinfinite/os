@@ -739,7 +739,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Start, stop, install or uninstall a service.",
+                "description": "Update service details.",
                 "consumes": [
                     "application/json"
                 ],
@@ -749,21 +749,99 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "UpdateServiceStatus",
+                "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "UpdateServiceStatusDetails",
-                        "name": "updateSvcStatusDto",
+                        "description": "UpdateServiceDetails",
+                        "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateSvcStatus"
+                            "$ref": "#/definitions/dto.UpdateService"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "ServiceStatusUpdated",
+                        "description": "ServiceUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/custom/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new custom service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddCustomService",
+                "parameters": [
+                    {
+                        "description": "AddCustomService",
+                        "name": "addCustomServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddCustomService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ServiceInstalled",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/installable/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new installable service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddInstallableService",
+                "parameters": [
+                    {
+                        "description": "AddInstallableService",
+                        "name": "addInstallableServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddInstallableService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ServiceInstalled",
                         "schema": {
                             "type": "object"
                         }
@@ -797,6 +875,43 @@
                             "items": {
                                 "$ref": "#/definitions/entity.InstallableService"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/services/{svcName}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete/Uninstall a service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "DeleteService",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ServiceName",
+                        "name": "svcName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ServiceDeleted",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -934,6 +1049,29 @@
                 }
             }
         },
+        "dto.AddCustomService": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddDatabase": {
             "type": "object",
             "properties": {
@@ -958,6 +1096,26 @@
                     }
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddInstallableService": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -1041,14 +1199,29 @@
                 }
             }
         },
-        "dto.UpdateSvcStatus": {
+        "dto.UpdateService": {
             "type": "object",
             "properties": {
+                "command": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
                 "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 },
                 "version": {
                     "type": "string"
@@ -1260,6 +1433,9 @@
                 "name": {
                     "type": "string"
                 },
+                "nature": {
+                    "type": "string"
+                },
                 "pids": {
                     "type": "array",
                     "items": {
@@ -1273,13 +1449,16 @@
                     }
                 },
                 "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
                 },
                 "uptimeSecs": {
                     "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },
@@ -1396,21 +1575,6 @@
                 "container",
                 "vm",
                 "bareMetal"
-            ]
-        },
-        "valueObject.ServiceStatus": {
-            "type": "string",
-            "enum": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
-            ],
-            "x-enum-varnames": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
             ]
         }
     },

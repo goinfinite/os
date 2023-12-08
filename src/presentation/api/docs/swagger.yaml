@@ -16,6 +16,21 @@ definitions:
       schedule:
         type: string
     type: object
+  dto.AddCustomService:
+    properties:
+      command:
+        type: string
+      name:
+        type: string
+      ports:
+        items:
+          type: integer
+        type: array
+      type:
+        type: string
+      version:
+        type: string
+    type: object
   dto.AddDatabase:
     properties:
       dbName:
@@ -32,6 +47,19 @@ definitions:
           type: string
         type: array
       username:
+        type: string
+    type: object
+  dto.AddInstallableService:
+    properties:
+      name:
+        type: string
+      ports:
+        items:
+          type: integer
+        type: array
+      startupFile:
+        type: string
+      version:
         type: string
     type: object
   dto.AddSslPair:
@@ -85,12 +113,22 @@ definitions:
       version:
         type: string
     type: object
-  dto.UpdateSvcStatus:
+  dto.UpdateService:
     properties:
+      command:
+        type: string
       name:
         type: string
+      ports:
+        items:
+          type: integer
+        type: array
+      startupFile:
+        type: string
       status:
-        $ref: '#/definitions/valueObject.ServiceStatus'
+        type: string
+      type:
+        type: string
       version:
         type: string
     type: object
@@ -227,6 +265,8 @@ definitions:
         type: number
       name:
         type: string
+      nature:
+        type: string
       pids:
         items:
           type: integer
@@ -236,11 +276,13 @@ definitions:
           type: integer
         type: array
       status:
-        $ref: '#/definitions/valueObject.ServiceStatus'
+        type: string
       type:
         type: string
       uptimeSecs:
         type: integer
+      version:
+        type: string
     type: object
   entity.SslCertificate:
     properties:
@@ -320,18 +362,6 @@ definitions:
     - container
     - vm
     - bareMetal
-  valueObject.ServiceStatus:
-    enum:
-    - running
-    - stopped
-    - uninstalled
-    - installed
-    type: string
-    x-enum-varnames:
-    - running
-    - stopped
-    - uninstalled
-    - installed
 host: localhost:10000
 info:
   contact:
@@ -801,24 +831,95 @@ paths:
     put:
       consumes:
       - application/json
-      description: Start, stop, install or uninstall a service.
+      description: Update service details.
       parameters:
-      - description: UpdateServiceStatusDetails
+      - description: UpdateServiceDetails
         in: body
-        name: updateSvcStatusDto
+        name: updateServiceDto
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateSvcStatus'
+          $ref: '#/definitions/dto.UpdateService'
       produces:
       - application/json
       responses:
         "200":
-          description: ServiceStatusUpdated
+          description: ServiceUpdated
           schema:
             type: object
       security:
       - Bearer: []
-      summary: UpdateServiceStatus
+      summary: UpdateService
+      tags:
+      - services
+  /services/{svcName}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete/Uninstall a service.
+      parameters:
+      - description: ServiceName
+        in: path
+        name: svcName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ServiceDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteService
+      tags:
+      - services
+  /services/custom/:
+    post:
+      consumes:
+      - application/json
+      description: Install a new custom service.
+      parameters:
+      - description: AddCustomService
+        in: body
+        name: addCustomServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddCustomService'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ServiceInstalled
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddCustomService
+      tags:
+      - services
+  /services/installable/:
+    post:
+      consumes:
+      - application/json
+      description: Install a new installable service.
+      parameters:
+      - description: AddInstallableService
+        in: body
+        name: addInstallableServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddInstallableService'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ServiceInstalled
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddInstallableService
       tags:
       - services
   /services/installables/:

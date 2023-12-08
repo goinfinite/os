@@ -746,7 +746,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Start, stop, install or uninstall a service.",
+                "description": "Update service details.",
                 "consumes": [
                     "application/json"
                 ],
@@ -756,21 +756,99 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "UpdateServiceStatus",
+                "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "UpdateServiceStatusDetails",
-                        "name": "updateSvcStatusDto",
+                        "description": "UpdateServiceDetails",
+                        "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateSvcStatus"
+                            "$ref": "#/definitions/dto.UpdateService"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "ServiceStatusUpdated",
+                        "description": "ServiceUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/custom/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new custom service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddCustomService",
+                "parameters": [
+                    {
+                        "description": "AddCustomService",
+                        "name": "addCustomServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddCustomService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ServiceInstalled",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/installable/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new installable service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddInstallableService",
+                "parameters": [
+                    {
+                        "description": "AddInstallableService",
+                        "name": "addInstallableServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddInstallableService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ServiceInstalled",
                         "schema": {
                             "type": "object"
                         }
@@ -804,6 +882,43 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/entity.InstallableService"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/services/{svcName}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete/Uninstall a service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "DeleteService",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ServiceName",
+                        "name": "svcName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ServiceDeleted",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -941,6 +1056,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AddCustomService": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddDatabase": {
             "type": "object",
             "properties": {
@@ -965,6 +1103,26 @@ const docTemplate = `{
                     }
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddInstallableService": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -1048,14 +1206,29 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateSvcStatus": {
+        "dto.UpdateService": {
             "type": "object",
             "properties": {
+                "command": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
                 "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 },
                 "version": {
                     "type": "string"
@@ -1267,6 +1440,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "nature": {
+                    "type": "string"
+                },
                 "pids": {
                     "type": "array",
                     "items": {
@@ -1280,13 +1456,16 @@ const docTemplate = `{
                     }
                 },
                 "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
                 },
                 "uptimeSecs": {
                     "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },
@@ -1403,21 +1582,6 @@ const docTemplate = `{
                 "container",
                 "vm",
                 "bareMetal"
-            ]
-        },
-        "valueObject.ServiceStatus": {
-            "type": "string",
-            "enum": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
-            ],
-            "x-enum-varnames": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
             ]
         }
     },
