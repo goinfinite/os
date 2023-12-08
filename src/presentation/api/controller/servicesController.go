@@ -50,23 +50,47 @@ func GetInstallableServicesController(c echo.Context) error {
 }
 
 // UpdateService godoc
-// @Summary      UpdateServiceStatus
-// @Description  Start, stop, install or uninstall a service.
+// @Summary      UpdateService
+// @Description  Update service details.
 // @Tags         services
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateSvcStatusDto	body dto.UpdateSvcStatus	true	"UpdateServiceStatusDetails"
-// @Success      200 {object} object{} "ServiceStatusUpdated"
+// @Param        updateServiceDto	body dto.UpdateService	true	"UpdateServiceDetails"
+// @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /services/ [put]
 func UpdateServiceController(c echo.Context) error {
-	requiredParams := []string{"name", "status"}
+	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
-	svcStatus := valueObject.NewServiceStatusPanic(requestBody["status"].(string))
+
+	var svcTypePtr *valueObject.ServiceType
+	if requestBody["type"] != nil {
+		svcType := valueObject.NewServiceTypePanic(
+			requestBody["type"].(string),
+		)
+		svcTypePtr = &svcType
+	}
+
+	var svcCommandPtr *valueObject.UnixCommand
+	if requestBody["command"] != nil {
+		svcCommand := valueObject.NewUnixCommandPanic(
+			requestBody["command"].(string),
+		)
+		svcCommandPtr = &svcCommand
+	}
+
+	var svcStatusPtr *valueObject.ServiceStatus
+	if requestBody["status"] != nil {
+		svcStatus := valueObject.NewServiceStatusPanic(
+			requestBody["status"].(string),
+		)
+		svcStatusPtr = &svcStatus
+	}
+
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
 		svcVersion := valueObject.NewServiceVersionPanic(
@@ -75,19 +99,43 @@ func UpdateServiceController(c echo.Context) error {
 		svcVersionPtr = &svcVersion
 	}
 
-	updateSvcStatusDto := dto.NewUpdateSvcStatus(svcName, svcStatus, svcVersionPtr)
+	var svcStartupFilePtr *valueObject.UnixFilePath
+	if requestBody["startupFile"] != nil {
+		svcStartupFile := valueObject.NewUnixFilePathPanic(
+			requestBody["startupFile"].(string),
+		)
+		svcStartupFilePtr = &svcStartupFile
+	}
+
+	var svcPorts []valueObject.NetworkPort
+	if requestBody["ports"] != nil {
+		for _, port := range requestBody["ports"].([]interface{}) {
+			svcPort := valueObject.NewNetworkPortPanic(port)
+			svcPorts = append(svcPorts, svcPort)
+		}
+	}
+
+	updateSvcDto := dto.NewUpdateService(
+		svcName,
+		svcTypePtr,
+		svcCommandPtr,
+		svcStatusPtr,
+		svcVersionPtr,
+		svcStartupFilePtr,
+		svcPorts,
+	)
 
 	servicesQueryRepo := infra.ServicesQueryRepo{}
 	servicesCmdRepo := infra.ServicesCmdRepo{}
 
-	err := useCase.UpdateServiceStatus(
+	err := useCase.UpdateService(
 		servicesQueryRepo,
 		servicesCmdRepo,
-		updateSvcStatusDto,
+		updateSvcDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceStatusUpdated")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceUpdated")
 }

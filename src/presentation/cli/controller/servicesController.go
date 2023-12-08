@@ -168,48 +168,87 @@ func AddCustomServiceController() *cobra.Command {
 
 func UpdateServiceController() *cobra.Command {
 	var nameStr string
+	var typeStr string
+	var commandStr string
 	var statusStr string
 	var versionStr string
+	var startupFileStr string
+	var portsSlice []uint
 
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "UpdateServiceStatus",
+		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
-
 			svcName := valueObject.NewServiceNamePanic(nameStr)
-			svcStatus := valueObject.NewServiceStatusPanic(statusStr)
+
+			var svcTypePtr *valueObject.ServiceType
+			if typeStr != "" {
+				svcType := valueObject.NewServiceTypePanic(typeStr)
+				svcTypePtr = &svcType
+			}
+
+			var svcStatusPtr *valueObject.ServiceStatus
+			if statusStr != "" {
+				svcStatus := valueObject.NewServiceStatusPanic(statusStr)
+				svcStatusPtr = &svcStatus
+			}
+
+			var svcCommandPtr *valueObject.UnixCommand
+			if commandStr != "" {
+				svcCommand := valueObject.NewUnixCommandPanic(commandStr)
+				svcCommandPtr = &svcCommand
+			}
+
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
 				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
 				svcVersionPtr = &svcVersion
 			}
 
-			updateSvcStatusDto := dto.NewUpdateSvcStatus(
+			var svcStartupFilePtr *valueObject.UnixFilePath
+			if startupFileStr != "" {
+				svcStartupFile := valueObject.NewUnixFilePathPanic(startupFileStr)
+				svcStartupFilePtr = &svcStartupFile
+			}
+
+			var ports []valueObject.NetworkPort
+			for _, port := range portsSlice {
+				ports = append(ports, valueObject.NewNetworkPortPanic(port))
+			}
+
+			updateSvcDto := dto.NewUpdateService(
 				svcName,
-				svcStatus,
+				svcTypePtr,
+				svcCommandPtr,
+				svcStatusPtr,
 				svcVersionPtr,
+				svcStartupFilePtr,
+				ports,
 			)
 
 			servicesQueryRepo := infra.ServicesQueryRepo{}
 			servicesCmdRepo := infra.ServicesCmdRepo{}
 
-			err := useCase.UpdateServiceStatus(
+			err := useCase.UpdateService(
 				servicesQueryRepo,
 				servicesCmdRepo,
-				updateSvcStatusDto,
+				updateSvcDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "ServiceStatusUpdated")
+			cliHelper.ResponseWrapper(true, "ServiceUpdated")
 		},
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
+	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
+	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
-	cmd.MarkFlagRequired("status")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
+	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
+	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
 	return cmd
 }
