@@ -164,7 +164,7 @@ func (facade SupervisordFacade) AddConf(
 
 	svcNatureStr := "SVC_NATURE=\"" + svcNature.String() + "\""
 
-	svcTypeStr := "SVC_TYPE=\"" + svcType.String() + "\""
+	svcTypeStr := ",SVC_TYPE=\"" + svcType.String() + "\""
 
 	svcPortsStr := ""
 	if len(svcPorts) > 0 {
