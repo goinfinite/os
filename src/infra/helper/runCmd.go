@@ -38,3 +38,7 @@ func RunCmd(command string, args ...string) (string, error) {
 
 	return stdOut, nil
 }
+
+func RunCmdWithSubShell(command string) (string, error) {
+	return RunCmd("bash", "-c", "source /etc/profile; "+command)
+}
