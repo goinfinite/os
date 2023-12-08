@@ -7,7 +7,7 @@ import (
 
 type ServiceWithMetrics struct {
 	entity.Service
-	Metrics *valueObject.ServiceMetrics `json:"metrics"`
+	Metrics *valueObject.ServiceMetrics `json:"metrics,omitempty"`
 }
 
 func NewServiceWithMetrics(
