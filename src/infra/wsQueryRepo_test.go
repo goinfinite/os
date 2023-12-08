@@ -4,18 +4,11 @@ import (
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/valueObject"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestWsQueryRepo(t *testing.T) {
 	t.Skip("SkipWsQueryRepoTest")
 	testHelpers.LoadEnvVars()
-
-	servicesInfra.Install(
-		valueObject.NewServiceNamePanic("openlitespeed"),
-		nil,
-	)
 
 	t.Run("ReturnVirtualHostsList", func(t *testing.T) {
 		repo := WsQueryRepo{}

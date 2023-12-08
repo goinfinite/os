@@ -11,16 +11,15 @@ import (
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {
-	t.Skip("Skip mysql database cmd repo test")
+	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.Install(
-		valueObject.NewServiceNamePanic("mysql"),
-		nil,
-	)
+	err := servicesInfra.SimplifiedInstallableServiceInstaller("mariadb")
 	if err != nil {
-		t.Error("Error installing service")
+		t.Errorf("InstallDependenciesFail: %v", err)
+		return
 	}
+
 	_, err = infraHelper.RunCmd("mysqld_safe", "&")
 	if err != nil {
 		t.Error("Error starting command")

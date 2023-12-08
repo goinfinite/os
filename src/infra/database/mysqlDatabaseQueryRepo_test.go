@@ -7,7 +7,7 @@ import (
 )
 
 func TestMysqlDatabaseQueryRepo(t *testing.T) {
-	t.Skip("Skip mysql database query repo test")
+	t.Skip("SkipMysqlDatabaseQueryRepoTest")
 	testHelpers.LoadEnvVars()
 
 	t.Run("GetDatabases", func(t *testing.T) {
