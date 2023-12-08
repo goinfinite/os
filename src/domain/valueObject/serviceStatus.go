@@ -1,39 +1,34 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"strings"
+
+	"golang.org/x/exp/slices"
+)
 
 type ServiceStatus string
 
-const (
-	running     ServiceStatus = "running"
-	stopped     ServiceStatus = "stopped"
-	uninstalled ServiceStatus = "uninstalled"
-	installed   ServiceStatus = "installed"
-)
+var ValidServiceStatuses = []string{
+	"running",
+	"stopped",
+	"installed",
+}
 
 func NewServiceStatus(value string) (ServiceStatus, error) {
-	ss := ServiceStatus(value)
-	if !ss.isValid() {
+	value = strings.ToLower(value)
+	if !slices.Contains(ValidServiceStatuses, value) {
 		return "", errors.New("InvalidServiceStatus")
 	}
-	return ss, nil
+	return ServiceStatus(value), nil
 }
 
 func NewServiceStatusPanic(value string) ServiceStatus {
-	ss := ServiceStatus(value)
-	if !ss.isValid() {
-		panic("InvalidServiceStatus")
+	ss, err := NewServiceStatus(value)
+	if err != nil {
+		panic(err)
 	}
 	return ss
-}
-
-func (ss ServiceStatus) isValid() bool {
-	switch ss {
-	case running, stopped, uninstalled, installed:
-		return true
-	default:
-		return false
-	}
 }
 
 func (ss ServiceStatus) String() string {

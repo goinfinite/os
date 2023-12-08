@@ -24,13 +24,13 @@ func NewServiceNature(value string) (ServiceNature, error) {
 }
 
 func NewServiceNaturePanic(value string) ServiceNature {
-	st, err := NewServiceNature(value)
+	sn, err := NewServiceNature(value)
 	if err != nil {
 		panic(err)
 	}
-	return st
+	return sn
 }
 
-func (st ServiceNature) String() string {
-	return string(st)
+func (sn ServiceNature) String() string {
+	return string(sn)
 }
