@@ -734,7 +734,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Service"
+                                "$ref": "#/definitions/dto.ServiceWithMetrics"
                             }
                         }
                     }
@@ -1152,6 +1152,41 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ServiceWithMetrics": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "metrics": {
+                    "$ref": "#/definitions/valueObject.ServiceMetrics"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateAccount": {
             "type": "object",
             "properties": {
@@ -1425,50 +1460,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.Service": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "cpuUsagePercent": {
-                    "type": "number"
-                },
-                "memUsagePercent": {
-                    "type": "number"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "nature": {
-                    "type": "string"
-                },
-                "pids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "status": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "uptimeSecs": {
-                    "type": "integer"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
         "entity.SslCertificate": {
             "type": "object",
             "properties": {
@@ -1583,6 +1574,26 @@ const docTemplate = `{
                 "vm",
                 "bareMetal"
             ]
+        },
+        "valueObject.ServiceMetrics": {
+            "type": "object",
+            "properties": {
+                "cpuUsagePercent": {
+                    "type": "number"
+                },
+                "memUsagePercent": {
+                    "type": "number"
+                },
+                "pids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "uptimeSecs": {
+                    "type": "integer"
+                }
+            }
         }
     },
     "securityDefinitions": {

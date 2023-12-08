@@ -78,6 +78,29 @@ definitions:
       username:
         type: string
     type: object
+  dto.ServiceWithMetrics:
+    properties:
+      command:
+        type: string
+      metrics:
+        $ref: '#/definitions/valueObject.ServiceMetrics'
+      name:
+        type: string
+      nature:
+        type: string
+      ports:
+        items:
+          type: integer
+        type: array
+      startupFile:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      version:
+        type: string
+    type: object
   dto.UpdateAccount:
     properties:
       id:
@@ -255,35 +278,6 @@ definitions:
       value:
         type: string
     type: object
-  entity.Service:
-    properties:
-      command:
-        type: string
-      cpuUsagePercent:
-        type: number
-      memUsagePercent:
-        type: number
-      name:
-        type: string
-      nature:
-        type: string
-      pids:
-        items:
-          type: integer
-        type: array
-      ports:
-        items:
-          type: integer
-        type: array
-      status:
-        type: string
-      type:
-        type: string
-      uptimeSecs:
-        type: integer
-      version:
-        type: string
-    type: object
   entity.SslCertificate:
     properties:
       certificate:
@@ -362,6 +356,19 @@ definitions:
     - container
     - vm
     - bareMetal
+  valueObject.ServiceMetrics:
+    properties:
+      cpuUsagePercent:
+        type: number
+      memUsagePercent:
+        type: number
+      pids:
+        items:
+          type: integer
+        type: array
+      uptimeSecs:
+        type: integer
+    type: object
 host: localhost:1618
 info:
   contact:
@@ -821,7 +828,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.Service'
+              $ref: '#/definitions/dto.ServiceWithMetrics'
             type: array
       security:
       - Bearer: []
