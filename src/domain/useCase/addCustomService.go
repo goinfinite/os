@@ -12,13 +12,8 @@ func AddCustomService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	addDto dto.AddCustomService,
 ) error {
-	currentSvcStatus, err := servicesQueryRepo.GetByName(addDto.Name)
-	if err != nil {
-		return err
-	}
-
-	isInstalled := currentSvcStatus.Status.String() != "uninstalled"
-	if isInstalled {
+	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
 

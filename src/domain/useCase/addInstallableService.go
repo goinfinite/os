@@ -12,19 +12,9 @@ func AddInstallableService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	addDto dto.AddInstallableService,
 ) error {
-	currentSvcStatus, err := servicesQueryRepo.GetByName(addDto.Name)
-	if err != nil {
-		return err
-	}
-
-	isInstalled := currentSvcStatus.Status.String() != "uninstalled"
-	if isInstalled {
+	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
-	}
-
-	isSystemService := currentSvcStatus.Type.String() == "system"
-	if isSystemService {
-		return errors.New("SystemServicesCannotBeInstalled")
 	}
 
 	return servicesCmdRepo.AddInstallable(addDto)
