@@ -1,11 +1,18 @@
 package infra
 
 import (
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type ServicesCmdRepo struct {
+}
+
+func (repo ServicesCmdRepo) AddInstallable(
+	addDto dto.AddInstallableService,
+) error {
+	return servicesInfra.AddInstallable(addDto)
 }
 
 func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
