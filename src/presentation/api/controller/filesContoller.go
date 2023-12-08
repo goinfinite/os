@@ -11,6 +11,16 @@ import (
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
+func getInodeName(filePath valueObject.UnixFilePath) string {
+	fileIsDir, _ := filePath.IsDir()
+	inodeName := "File"
+	if fileIsDir {
+		inodeName = "Directory"
+	}
+
+	return inodeName
+}
+
 // GetFiles    godoc
 // @Summary      GetFiles
 // @Description  List dir/files.
@@ -133,13 +143,9 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	fileIsDir, _ := filePath.IsDir()
-	successResponse := "FileUpdated"
-	if fileIsDir {
-		successResponse = "DirectoryUpdated"
-	}
+	inodeName := getInodeName(filePath)
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, successResponse)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, inodeName+"Updated")
 }
 
 // UpdateFile godoc
@@ -176,4 +182,42 @@ func UpdateFileContentController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileContentUpdated")
+}
+
+// AddFile    godoc
+// @Summary      AddFileCopy
+// @Description  Add a new dir/file copy.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        addFileCopyDto 	  body    dto.AddUnixFileCopy  true  "NewFileCopy"
+// @Success      201 {object} object{} "FileCopyCreated/DirectoryCopyCreated"
+// @Router       /files/ [post]
+func AddFileCopyController(c echo.Context) error {
+	requiredParams := []string{"filePath", "destinationPath"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
+
+	addUnixFileCopyDto := dto.NewAddUnixFileCopy(filePath, destinationPath)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.AddUnixFileCopy(
+		filesQueryRepo,
+		filesCmdRepo,
+		addUnixFileCopyDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	inodeName := getInodeName(filePath)
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"CopyCreated")
 }
