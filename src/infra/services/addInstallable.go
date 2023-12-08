@@ -56,10 +56,6 @@ var MariaDbPackages = []string{
 	"mariadb-server",
 }
 
-var NodePackages = []string{
-	"nodejs",
-}
-
 var RedisPackages = []string{
 	"redis-server",
 }

@@ -20,8 +20,6 @@ func Uninstall(name valueObject.ServiceName) error {
 	switch name.String() {
 	case "php":
 		packages = append(OlsPackages, "lsphp*")
-	case "node":
-		packages = NodePackages
 	case "mariadb":
 		packages = MariaDbPackages
 	case "redis":
