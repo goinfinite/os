@@ -570,3 +570,13 @@ func AddInstallable(
 		return errors.New("UnknownInstallableService")
 	}
 }
+
+func SimplifiedInstallableServiceInstaller(serviceName string) error {
+	dto := dto.NewAddInstallableService(
+		valueObject.NewServiceNamePanic(serviceName),
+		nil,
+		nil,
+		[]valueObject.NetworkPort{},
+	)
+	return AddInstallable(dto)
+}
