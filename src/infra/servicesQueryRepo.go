@@ -119,6 +119,19 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 			continue
 		}
 
+		svcStartupFileStr, exists := svcEnvs["SVC_STARTUP_FILE"]
+		if !exists {
+			svcStartupFileStr = ""
+		}
+		var svcStartupFilePtr *valueObject.UnixFilePath
+		if svcStartupFileStr != "" {
+			svcStartupFile, err := valueObject.NewUnixFilePath(svcStartupFileStr)
+			if err != nil {
+				continue
+			}
+			svcStartupFilePtr = &svcStartupFile
+		}
+
 		svcPortsStr, exists := svcEnvs["SVC_PORTS"]
 		if !exists {
 			svcPortsStr = "0"
@@ -147,8 +160,9 @@ func (repo ServicesQueryRepo) getInstalledServices() ([]entity.Service, error) {
 				svcNature,
 				svcType,
 				svcVersion,
-				svcStatus,
 				svcCmd,
+				svcStatus,
+				svcStartupFilePtr,
 				svcPorts,
 				[]uint32{},
 				nil,

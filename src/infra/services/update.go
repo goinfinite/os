@@ -21,14 +21,19 @@ func Update(
 		svcType = *updateDto.Type
 	}
 
+	svcVersion := serviceEntity.Version
+	if updateDto.Version != nil {
+		svcVersion = *updateDto.Version
+	}
+
 	svcCommand := serviceEntity.Command
 	if updateDto.Command != nil {
 		svcCommand = *updateDto.Command
 	}
 
-	svcVersion := serviceEntity.Version
-	if updateDto.Version != nil {
-		svcVersion = *updateDto.Version
+	svcStartupFile := serviceEntity.StartupFile
+	if updateDto.StartupFile != nil {
+		svcStartupFile = updateDto.StartupFile
 	}
 
 	svcPorts := serviceEntity.Ports
@@ -42,6 +47,7 @@ func Update(
 		svcType,
 		svcVersion,
 		svcCommand,
+		svcStartupFile,
 		svcPorts,
 	)
 	if err != nil {

@@ -7,8 +7,9 @@ type Service struct {
 	Nature          valueObject.ServiceNature  `json:"nature"`
 	Type            valueObject.ServiceType    `json:"type"`
 	Version         valueObject.ServiceVersion `json:"version"`
-	Status          valueObject.ServiceStatus  `json:"status"`
 	Command         valueObject.UnixCommand    `json:"command"`
+	Status          valueObject.ServiceStatus  `json:"status"`
+	StartupFile     *valueObject.UnixFilePath  `json:"startupFile,omitempty"`
 	Ports           []valueObject.NetworkPort  `json:"ports,omitempty"`
 	Pids            []uint32                   `json:"pids,omitempty"`
 	UptimeSecs      *int64                     `json:"uptimeSecs,omitempty"`
@@ -21,8 +22,9 @@ func NewService(
 	nature valueObject.ServiceNature,
 	svcType valueObject.ServiceType,
 	version valueObject.ServiceVersion,
-	status valueObject.ServiceStatus,
 	command valueObject.UnixCommand,
+	status valueObject.ServiceStatus,
+	startupFile *valueObject.UnixFilePath,
 	ports []valueObject.NetworkPort,
 	pids []uint32,
 	uptimeSecs *int64,
@@ -34,8 +36,9 @@ func NewService(
 		Nature:          nature,
 		Type:            svcType,
 		Version:         version,
-		Status:          status,
 		Command:         command,
+		Status:          status,
+		StartupFile:     startupFile,
 		Ports:           ports,
 		Pids:            pids,
 		UptimeSecs:      uptimeSecs,

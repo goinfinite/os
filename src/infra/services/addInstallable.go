@@ -207,6 +207,7 @@ func addPhp() error {
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic("latest"),
 		valueObject.NewUnixCommandPanic("bash /speedia/ols-entrypoint.sh"),
+		nil,
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(8080),
 			valueObject.NewNetworkPortPanic(8443),
@@ -290,6 +291,7 @@ func addNode(addDto dto.AddInstallableService) error {
 		valueObject.NewUnixCommandPanic(
 			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
 		),
+		&startupFile,
 		ports,
 	)
 	if err != nil {
@@ -421,6 +423,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/mysqld_safe"),
+		nil,
 		ports,
 	)
 	if err != nil {
@@ -526,6 +529,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 		valueObject.ServiceType("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
+		nil,
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(6379),
 		},
