@@ -49,6 +49,131 @@ func GetInstallableServicesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
 }
 
+// AddInstallableService godoc
+// @Summary      AddInstallableService
+// @Description  Install a new installable service.
+// @Tags         services
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
+// @Success      201 {object} object{} "ServiceInstalled"
+// @Router       /services/installable/ [post]
+func AddInstallableServiceController(c echo.Context) error {
+	requiredParams := []string{"name"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+
+	var svcVersionPtr *valueObject.ServiceVersion
+	if requestBody["version"] != nil {
+		svcVersion := valueObject.NewServiceVersionPanic(
+			requestBody["version"].(string),
+		)
+		svcVersionPtr = &svcVersion
+	}
+
+	var svcStartupFilePtr *valueObject.UnixFilePath
+	if requestBody["startupFile"] != nil {
+		svcStartupFile := valueObject.NewUnixFilePathPanic(
+			requestBody["startupFile"].(string),
+		)
+		svcStartupFilePtr = &svcStartupFile
+	}
+
+	var svcPorts []valueObject.NetworkPort
+	if requestBody["ports"] != nil {
+		for _, port := range requestBody["ports"].([]interface{}) {
+			svcPort := valueObject.NewNetworkPortPanic(port)
+			svcPorts = append(svcPorts, svcPort)
+		}
+	}
+
+	addInstallableServiceDto := dto.NewAddInstallableService(
+		svcName,
+		svcVersionPtr,
+		svcStartupFilePtr,
+		svcPorts,
+	)
+
+	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesCmdRepo := infra.ServicesCmdRepo{}
+
+	err := useCase.AddInstallableService(
+		servicesQueryRepo,
+		servicesCmdRepo,
+		addInstallableServiceDto,
+	)
+
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ServiceInstalled")
+}
+
+// AddCustomService godoc
+// @Summary      AddCustomService
+// @Description  Install a new custom service.
+// @Tags         services
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        addCustomServiceDto	body dto.AddCustomService	true	"AddCustomService"
+// @Success      201 {object} object{} "ServiceInstalled"
+// @Router       /services/custom/ [post]
+func AddCustomServiceController(c echo.Context) error {
+	requiredParams := []string{"name", "type", "command"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	svcType := valueObject.NewServiceTypePanic(requestBody["type"].(string))
+	svcCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
+
+	var svcVersionPtr *valueObject.ServiceVersion
+	if requestBody["version"] != nil {
+		svcVersion := valueObject.NewServiceVersionPanic(
+			requestBody["version"].(string),
+		)
+		svcVersionPtr = &svcVersion
+	}
+
+	var svcPorts []valueObject.NetworkPort
+	if requestBody["ports"] != nil {
+		for _, port := range requestBody["ports"].([]interface{}) {
+			svcPort := valueObject.NewNetworkPortPanic(port)
+			svcPorts = append(svcPorts, svcPort)
+		}
+	}
+
+	addCustomServiceDto := dto.NewAddCustomService(
+		svcName,
+		svcType,
+		svcCommand,
+		svcVersionPtr,
+		svcPorts,
+	)
+
+	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesCmdRepo := infra.ServicesCmdRepo{}
+
+	err := useCase.AddCustomService(
+		servicesQueryRepo,
+		servicesCmdRepo,
+		addCustomServiceDto,
+	)
+
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ServiceInstalled")
+}
+
 // UpdateService godoc
 // @Summary      UpdateService
 // @Description  Update service details.
