@@ -208,14 +208,14 @@ environment=` + svcNatureStr + svcTypeStr + svcPortsStr + `
 	return nil
 }
 
-func (facade SupervisordFacade) RemoveConf(svcName string) error {
+func (facade SupervisordFacade) RemoveConf(svcName valueObject.ServiceName) error {
 	fileContent, err := os.ReadFile(supervisordConf)
 	if err != nil {
 		return errors.New("OpenSupervisorConfError: " + err.Error())
 	}
 
 	re := regexp.MustCompile(
-		`\n?\[program:` + svcName + `\][\s\S]*?stderr_logfile_maxbytes=0\n?`,
+		`\n?\[program:` + svcName.String() + `\][\s\S]*?stderr_logfile_maxbytes=0\n?`,
 	)
 	updatedContent := re.ReplaceAll(fileContent, []byte{})
 
