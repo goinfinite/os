@@ -49,7 +49,7 @@ func AddInstallableServiceController() *cobra.Command {
 	var nameStr string
 	var versionStr string
 	var startupFileStr string
-	var portsSlice []int
+	var portsSlice []uint
 
 	cmd := &cobra.Command{
 		Use:   "add-installable",
@@ -93,7 +93,7 @@ func AddInstallableServiceController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "ServiceAdded")
+			cliHelper.ResponseWrapper(true, "InstallableServiceAdded")
 		},
 	}
 
@@ -101,7 +101,68 @@ func AddInstallableServiceController() *cobra.Command {
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
-	cmd.Flags().IntSliceVarP(&portsSlice, "ports", "p", []int{}, "Ports")
+	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
+	return cmd
+}
+
+func AddCustomServiceController() *cobra.Command {
+	var nameStr string
+	var typeStr string
+	var commandStr string
+	var versionStr string
+	var portsSlice []uint
+
+	cmd := &cobra.Command{
+		Use:   "add-custom",
+		Short: "AddCustomService",
+		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcType := valueObject.NewServiceTypePanic(typeStr)
+			svcCommand := valueObject.NewUnixCommandPanic(commandStr)
+
+			var svcVersionPtr *valueObject.ServiceVersion
+			if versionStr != "" {
+				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
+				svcVersionPtr = &svcVersion
+			}
+
+			var ports []valueObject.NetworkPort
+			for _, port := range portsSlice {
+				ports = append(ports, valueObject.NewNetworkPortPanic(port))
+			}
+
+			addCustomServiceDto := dto.NewAddCustomService(
+				svcName,
+				svcType,
+				svcCommand,
+				svcVersionPtr,
+				ports,
+			)
+
+			servicesQueryRepo := infra.ServicesQueryRepo{}
+			servicesCmdRepo := infra.ServicesCmdRepo{}
+
+			err := useCase.AddCustomService(
+				servicesQueryRepo,
+				servicesCmdRepo,
+				addCustomServiceDto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "CustomServiceAdded")
+		},
+	}
+
+	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
+	cmd.MarkFlagRequired("name")
+	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
+	cmd.MarkFlagRequired("type")
+	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
+	cmd.MarkFlagRequired("command")
+	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
+	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
 	return cmd
 }
 
