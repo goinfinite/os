@@ -27,23 +27,6 @@ func (repo ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 	return servicesInfra.SupervisordFacade{}.Restart(name)
 }
 
-func (repo ServicesCmdRepo) Install(
-	name valueObject.ServiceName,
-	version *valueObject.ServiceVersion,
-) error {
-	err := servicesInfra.Install(name, version)
-	if err != nil {
-		return err
-	}
-
-	err = servicesInfra.SupervisordFacade{}.Reload()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo ServicesCmdRepo) Uninstall(
 	name valueObject.ServiceName,
 ) error {
