@@ -1,8 +1,6 @@
 package servicesInfra
 
 import (
-	"errors"
-
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
@@ -29,14 +27,11 @@ func Uninstall(name valueObject.ServiceName) error {
 	case "redis":
 		packages = RedisPackages
 	default:
-		return errors.New("ServiceUnknown")
+		return nil
 	}
 
-	purgeEnvVars := map[string]string{
-		"DEBIAN_FRONTEND": "noninteractive",
-	}
 	purgePackages := append([]string{"purge", "-y"}, packages...)
-	_, err = infraHelper.RunCmdWithEnvVars("apt-get", purgeEnvVars, purgePackages...)
+	_, err = infraHelper.RunCmd("apt-get", purgePackages...)
 	if err != nil {
 		return err
 	}

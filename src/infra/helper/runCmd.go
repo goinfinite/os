@@ -3,7 +3,6 @@ package infraHelper
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 	"os/exec"
 	"strings"
 )
@@ -14,14 +13,16 @@ type CommandError struct {
 }
 
 func (e *CommandError) Error() string {
-	errJSON, _ := json.Marshal(e)
-	return string(errJSON)
+	jsonError, _ := json.Marshal(e)
+	return string(jsonError)
 }
 
-func execCmd(cmdObj *exec.Cmd) (string, error) {
+func RunCmd(command string, args ...string) (string, error) {
 	var stdout, stderr bytes.Buffer
+	cmdObj := exec.Command(command, args...)
 	cmdObj.Stdout = &stdout
 	cmdObj.Stderr = &stderr
+	cmdObj.Env = append(cmdObj.Env, "DEBIAN_FRONTEND=noninteractive")
 
 	err := cmdObj.Run()
 	stdOut := strings.TrimSpace(stdout.String())
@@ -36,23 +37,4 @@ func execCmd(cmdObj *exec.Cmd) (string, error) {
 	}
 
 	return stdOut, nil
-}
-
-func RunCmd(command string, args ...string) (string, error) {
-	cmdObj := exec.Command(command, args...)
-	return execCmd(cmdObj)
-}
-
-func RunCmdWithEnvVars(
-	command string,
-	envVars map[string]string,
-	args ...string,
-) (string, error) {
-	cmdObj := exec.Command(command, args...)
-	cmdObj.Env = os.Environ()
-	for envVar, envValue := range envVars {
-		cmdObj.Env = append(cmdObj.Env, envVar+"="+envValue)
-	}
-	cmdObj.Env = append(cmdObj.Env)
-	return execCmd(cmdObj)
 }
