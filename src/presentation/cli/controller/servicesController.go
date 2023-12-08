@@ -15,7 +15,7 @@ func GetServicesController() *cobra.Command {
 		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := infra.ServicesQueryRepo{}
-			servicesList, err := useCase.GetServices(servicesQueryRepo)
+			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}

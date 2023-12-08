@@ -18,11 +18,11 @@ import (
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.Service
+// @Success      200 {array} dto.ServiceWithMetrics
 // @Router       /services/ [get]
 func GetServicesController(c echo.Context) error {
 	servicesQueryRepo := infra.ServicesQueryRepo{}
-	servicesList, err := useCase.GetServices(servicesQueryRepo)
+	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
