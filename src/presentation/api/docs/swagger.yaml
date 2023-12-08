@@ -362,7 +362,7 @@ definitions:
     - container
     - vm
     - bareMetal
-host: localhost:10000
+host: localhost:1618
 info:
   contact:
     email: eng+swagger@speedia.net

@@ -15,7 +15,7 @@
         },
         "version": "0.0.1"
     },
-    "host": "localhost:10000",
+    "host": "localhost:1618",
     "basePath": "/v1",
     "paths": {
         "/account/": {
