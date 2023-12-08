@@ -12,7 +12,33 @@ type ServicesCmdRepo struct {
 func (repo ServicesCmdRepo) AddInstallable(
 	addDto dto.AddInstallableService,
 ) error {
-	return servicesInfra.AddInstallable(addDto)
+	err := servicesInfra.AddInstallable(addDto)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.SupervisordFacade{}.Reload()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo ServicesCmdRepo) AddCustom(
+	addDto dto.AddCustomService,
+) error {
+	err := servicesInfra.AddCustom(addDto)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.SupervisordFacade{}.Reload()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
