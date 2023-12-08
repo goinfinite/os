@@ -27,5 +27,5 @@ func AddInstallableService(
 		return errors.New("SystemServicesCannotBeInstalled")
 	}
 
-	return servicesCmdRepo.AddInstallableService(addInstallableServiceDto)
+	return servicesCmdRepo.AddInstallable(addInstallableServiceDto)
 }
