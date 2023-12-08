@@ -26,6 +26,11 @@ func Update(
 		svcCommand = *updateDto.Command
 	}
 
+	svcVersion := serviceEntity.Version
+	if updateDto.Version != nil {
+		svcVersion = *updateDto.Version
+	}
+
 	svcPorts := serviceEntity.Ports
 	if len(updateDto.Ports) > 0 {
 		svcPorts = updateDto.Ports
@@ -35,6 +40,7 @@ func Update(
 		serviceEntity.Name,
 		serviceEntity.Nature,
 		svcType,
+		svcVersion,
 		svcCommand,
 		svcPorts,
 	)

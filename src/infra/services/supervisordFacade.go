@@ -142,6 +142,7 @@ func (facade SupervisordFacade) AddConf(
 	svcName valueObject.ServiceName,
 	svcNature valueObject.ServiceNature,
 	svcType valueObject.ServiceType,
+	svcVersion valueObject.ServiceVersion,
 	svcCmd valueObject.UnixCommand,
 	svcPorts []valueObject.NetworkPort,
 ) error {
@@ -165,6 +166,8 @@ func (facade SupervisordFacade) AddConf(
 	svcNatureStr := "SVC_NATURE=\"" + svcNature.String() + "\""
 
 	svcTypeStr := ",SVC_TYPE=\"" + svcType.String() + "\""
+
+	svcVersionStr := ",SVC_VERSION=\"" + svcVersion.String() + "\""
 
 	svcPortsStr := ""
 	if len(svcPorts) > 0 {
@@ -191,7 +194,7 @@ stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
 stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
-environment=` + svcNatureStr + svcTypeStr + svcPortsStr + `
+environment=` + svcNatureStr + svcTypeStr + svcVersionStr + svcPortsStr + `
 `
 	// cSpell:enable
 

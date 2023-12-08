@@ -207,6 +207,7 @@ func addPhp() error {
 		valueObject.NewServiceNamePanic("php"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewServiceVersionPanic("latest"),
 		valueObject.NewUnixCommandPanic("bash /speedia/ols-entrypoint.sh"),
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(8080),
@@ -280,6 +281,7 @@ func addNode(addDto dto.AddInstallableService) error {
 		addDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic(
 			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
 		),
@@ -305,8 +307,9 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	}
 
 	versionFlag := ""
+	versionStr := "latest"
 	if addDto.Version != nil {
-		versionStr := addDto.Version.String()
+		versionStr = addDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["mariadb"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -411,6 +414,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		addDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
+		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/mysqld_safe"),
 		ports,
 	)
@@ -423,8 +427,9 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 
 func addRedis(addDto dto.AddInstallableService) error {
 	versionFlag := ""
+	versionStr := "latest"
 	if addDto.Version != nil {
-		versionStr := addDto.Version.String()
+		versionStr = addDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["redis"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -514,6 +519,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 		addDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.ServiceType("database"),
+		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(6379),
