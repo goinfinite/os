@@ -1,7 +1,9 @@
 package servicesInfra
 
 import (
+	"crypto/md5"
 	"embed"
+	"encoding/hex"
 	"errors"
 	"io"
 	"log"
@@ -273,8 +275,15 @@ func addNode(addDto dto.AddInstallableService) error {
 		ports = addDto.Ports
 	}
 
+	startupFileBytes := []byte(startupFile.String())
+	startupFileHash := md5.Sum(startupFileBytes)
+	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
+	startupFileShortHashStr := startupFileHashStr[:12]
+
+	svcNameWithSuffix := addDto.Name.String() + "-" + startupFileShortHashStr
+
 	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+		valueObject.NewServiceNamePanic(svcNameWithSuffix),
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
