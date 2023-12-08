@@ -10,5 +10,6 @@ type ServicesCmdRepo interface {
 	AddCustom(addDto dto.AddCustomService) error
 	Start(name valueObject.ServiceName) error
 	Stop(name valueObject.ServiceName) error
+	Update(updateDto dto.UpdateService) error
 	Uninstall(name valueObject.ServiceName) error
 }
