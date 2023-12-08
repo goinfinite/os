@@ -10,9 +10,9 @@ import (
 func AddInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
-	addInstallableServiceDto dto.AddInstallableService,
+	addDto dto.AddInstallableService,
 ) error {
-	currentSvcStatus, err := servicesQueryRepo.GetByName(addInstallableServiceDto.Name)
+	currentSvcStatus, err := servicesQueryRepo.GetByName(addDto.Name)
 	if err != nil {
 		return err
 	}
@@ -27,5 +27,5 @@ func AddInstallableService(
 		return errors.New("SystemServicesCannotBeInstalled")
 	}
 
-	return servicesCmdRepo.AddInstallable(addInstallableServiceDto)
+	return servicesCmdRepo.AddInstallable(addDto)
 }
