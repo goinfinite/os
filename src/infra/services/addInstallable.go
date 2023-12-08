@@ -221,58 +221,28 @@ func addPhp() error {
 }
 
 func addNode(addDto dto.AddInstallableService) error {
-	repoFilePath := "/speedia/repo.node.sh"
-
-	repoUrl := "https://deb.nodesource.com/setup_lts.x"
-
+	versionStr := "lts"
 	if addDto.Version != nil {
-		versionStr := addDto.Version.String()
+		versionStr = addDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["node"])
 		isVersionAllowed := re.MatchString(versionStr)
 
 		if !isVersionAllowed {
-			log.Printf("InvalidNodeVersion: %s", versionStr)
-			return errors.New("InvalidNodeVersion")
+			return errors.New("InvalidNodeVersion: " + versionStr)
 		}
-
-		repoUrl = "https://deb.nodesource.com/setup_" + versionStr + ".x"
 	}
 
-	err := infraHelper.DownloadFile(
-		repoUrl,
-		repoFilePath,
+	_, err := infraHelper.RunCmdWithSubShell(
+		"rtx install node@" + versionStr,
 	)
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"bash",
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
-	}
-
-	err = os.Remove(repoFilePath)
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
-	}
-
-	err = infraHelper.InstallPkgs(NodePackages)
-	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
+		return errors.New("InstallNodeError: " + err.Error())
 	}
 
 	appHtmlDir := "/app/html"
 	err = infraHelper.MakeDir(appHtmlDir)
 	if err != nil {
-		log.Printf("CreateBaseDirError: %s", err)
-		return errors.New("CreateBaseDirError")
+		return errors.New("CreateBaseDirError: " + err.Error())
 	}
 
 	startupFile := valueObject.NewUnixFilePathPanic(appHtmlDir + "/index.js")
@@ -286,8 +256,16 @@ func addNode(addDto dto.AddInstallableService) error {
 			startupFile.String(),
 		)
 		if err != nil {
-			log.Printf("CopyAssetsError: %s", err)
-			return errors.New("CopyAssetsError")
+			return errors.New("CopyAssetsError: " + err.Error())
+		}
+
+		_, err = infraHelper.RunCmd(
+			"chown",
+			"nobody:nogroup",
+			startupFile.String(),
+		)
+		if err != nil {
+			return errors.New("ChownDummyIndexError: " + err.Error())
 		}
 	}
 
@@ -302,17 +280,13 @@ func addNode(addDto dto.AddInstallableService) error {
 		addDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
-		valueObject.NewUnixCommandPanic("/usr/bin/node "+startupFile.String()+" &"),
+		valueObject.NewUnixCommandPanic(
+			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
+		),
 		ports,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
-	}
-
-	err = SupervisordFacade{}.Start("node")
-	if err != nil {
-		log.Printf("RunNodeJsServiceError: %s", err)
-		return errors.New("RunNodeJsServiceError")
 	}
 
 	return nil
