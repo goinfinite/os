@@ -53,6 +53,32 @@ func (repo ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 	return servicesInfra.SupervisordFacade{}.Restart(name)
 }
 
+func (repo ServicesCmdRepo) Update(
+	updateDto dto.UpdateService,
+) error {
+	err := repo.Stop(updateDto.Name)
+	if err != nil {
+		return err
+	}
+
+	serviceEntity, err := ServicesQueryRepo{}.GetByName(updateDto.Name)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.Update(serviceEntity, updateDto)
+	if err != nil {
+		return err
+	}
+
+	err = servicesInfra.SupervisordFacade{}.Reload()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo ServicesCmdRepo) Uninstall(
 	name valueObject.ServiceName,
 ) error {
