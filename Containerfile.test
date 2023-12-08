@@ -15,6 +15,11 @@ RUN wget -qO go.tar.gz "https://go.dev/dl/go1.21.4.linux-amd64.tar.gz" \
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
+RUN curl -skL "https://rtx.pub/install.sh" | sh \
+    && ln -s /root/.local/share/rtx/bin/rtx /usr/bin/rtx \
+    && chmod +x /usr/bin/rtx \
+    && echo 'eval "$(/usr/bin/rtx activate bash)"' >> /root/.bashrc
+
 COPY . .
 
 COPY /container/nginx/root/* /etc/nginx/

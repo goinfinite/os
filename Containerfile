@@ -15,6 +15,11 @@ RUN wget -qO supervisord.tar.gz https://github.com/ochinchina/supervisord/releas
     && mv supervisord_*/supervisord /usr/bin/supervisord \
     && rm -rf supervisord*
 
+RUN curl -skL "https://rtx.pub/install.sh" | sh \
+    && ln -s /root/.local/share/rtx/bin/rtx /usr/bin/rtx \
+    && chmod +x /usr/bin/rtx \
+    && echo 'eval "$(/usr/bin/rtx activate bash)"' >> /root/.bashrc
+
 COPY /container/nginx/root/* /etc/nginx/
 
 COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
