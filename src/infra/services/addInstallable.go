@@ -193,20 +193,12 @@ func addPhp() error {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
 
-	err = copyAssets(
-		"php/ols-entrypoint.sh",
-		"/speedia/ols-entrypoint.sh",
-	)
-	if err != nil {
-		return errors.New("CopyAssetsError: " + err.Error())
-	}
-
 	err = SupervisordFacade{}.AddConf(
 		valueObject.NewServiceNamePanic("php"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic("latest"),
-		valueObject.NewUnixCommandPanic("bash /speedia/ols-entrypoint.sh"),
+		valueObject.NewUnixCommandPanic("/usr/local/lsws/bin/litespeed -d"),
 		nil,
 		[]valueObject.NetworkPort{
 			valueObject.NewNetworkPortPanic(8080),
