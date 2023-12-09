@@ -157,7 +157,7 @@ func AddCustomServiceController() *cobra.Command {
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
-	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
+	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)")
 	cmd.MarkFlagRequired("type")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
 	cmd.MarkFlagRequired("command")
