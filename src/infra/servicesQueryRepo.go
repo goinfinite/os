@@ -376,10 +376,7 @@ func (repo ServicesQueryRepo) GetWithMetrics() ([]dto.ServiceWithMetrics, error)
 		}
 
 		var serviceMetricsPtr *valueObject.ServiceMetrics
-		svcRunningStatus, _ := valueObject.NewServiceStatus("running")
 		if supervisordService.Status == "running" {
-			servicesList[serviceEntityIndex].Status = svcRunningStatus
-
 			serviceMetrics, err := repo.getSupervisordServiceMetrics(supervisordService)
 			if err != nil {
 				continue
