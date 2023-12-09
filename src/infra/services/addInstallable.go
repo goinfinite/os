@@ -342,7 +342,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	os.Symlink("/usr/bin/mariadbd-safe", "/usr/bin/mysqld_safe")
 
 	_, err = infraHelper.RunCmd(
-		"/usr/bin/mysqld_safe",
+		"mariadbd-safe",
 		"--no-watch",
 	)
 	if err != nil {
@@ -362,7 +362,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	}
 	postInstallQueriesJoined := strings.Join(postInstallQueries, "; ")
 	_, err = infraHelper.RunCmd(
-		"mysql",
+		"mariadb",
 		"-e",
 		postInstallQueriesJoined,
 	)
@@ -385,7 +385,9 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	}
 
 	_, err = infraHelper.RunCmd(
-		"mysqladmin",
+		"mariadb-admin",
+		"--user=root",
+		"--password="+rootPass,
 		"shutdown",
 	)
 	if err != nil {
@@ -404,7 +406,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
-		valueObject.NewUnixCommandPanic("/usr/bin/mysqld_safe"),
+		valueObject.NewUnixCommandPanic("/usr/bin/mariadbd-safe"),
 		nil,
 		ports,
 	)
