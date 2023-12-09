@@ -224,7 +224,7 @@ func (facade SupervisordFacade) RemoveConf(svcName valueObject.ServiceName) erro
 	}
 
 	re := regexp.MustCompile(
-		`\n?\[program:` + svcName.String() + `\][\s\S]*?stderr_logfile_maxbytes=0\n?`,
+		`\n?\[program:` + svcName.String() + `\][\s\S]*?environment=[^\n]*\n?`,
 	)
 	updatedContent := re.ReplaceAll(fileContent, []byte{})
 
