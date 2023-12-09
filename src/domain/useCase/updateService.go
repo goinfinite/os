@@ -46,15 +46,12 @@ func UpdateService(
 	}
 
 	if updateDto.Status != nil {
-		err = updateServiceStatus(
+		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
 			serviceEntity,
 			updateDto,
 		)
-		if err != nil {
-			return err
-		}
 	}
 
 	isSoloService := serviceEntity.Type.String() == "solo"
