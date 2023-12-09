@@ -301,8 +301,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		repoFilePath,
 	)
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
+		return errors.New("DownloadRepoFileError: " + err.Error())
 	}
 
 	versionFlag := ""
@@ -313,8 +312,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		isVersionAllowed := re.MatchString(versionStr)
 
 		if !isVersionAllowed {
-			log.Printf("InvalidMysqlVersion: %s", versionStr)
-			return errors.New("InvalidMysqlVersion")
+			return errors.New("InvalidMysqlVersion: " + versionStr)
 		}
 
 		versionFlag = "--mariadb-server-version=" + versionStr
@@ -326,20 +324,17 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		versionFlag,
 	)
 	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
+		return errors.New("RepoAddError: " + err.Error())
 	}
 
 	err = os.Remove(repoFilePath)
 	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
+		return errors.New("RemoveRepoFileError: " + err.Error())
 	}
 
 	err = infraHelper.InstallPkgs(MariaDbPackages)
 	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
+		return errors.New("InstallServiceError: " + err.Error())
 	}
 
 	os.Symlink("/usr/bin/mariadb", "/usr/bin/mysql")
@@ -351,8 +346,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		"--no-watch",
 	)
 	if err != nil {
-		log.Printf("StartMysqldSafeError: %s", err)
-		return errors.New("StartMysqldSafeError")
+		return errors.New("StartMysqldSafeError: " + err.Error())
 	}
 
 	time.Sleep(5 * time.Second)
@@ -373,8 +367,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		postInstallQueriesJoined,
 	)
 	if err != nil {
-		log.Printf("PostInstallQueryError: %s", err)
-		return errors.New("PostInstallQueryError")
+		return errors.New("PostInstallQueryError: " + err.Error())
 	}
 
 	err = infraHelper.UpdateFile(
@@ -383,14 +376,12 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		true,
 	)
 	if err != nil {
-		log.Printf("CreateMyCnfError: %s", err)
-		return errors.New("CreateMyCnfError")
+		return errors.New("CreateMyCnfError: " + err.Error())
 	}
 
 	err = os.Chmod("/root/.my.cnf", 0400)
 	if err != nil {
-		log.Printf("ChmodMyCnfError: %s", err)
-		return errors.New("ChmodMyCnfError")
+		return errors.New("ChmodMyCnfError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
@@ -398,8 +389,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		"shutdown",
 	)
 	if err != nil {
-		log.Printf("StopMysqldSafeError: %s", err)
-		return errors.New("StopMysqldSafeError")
+		return errors.New("StopMysqldSafeError: " + err.Error())
 	}
 
 	ports := []valueObject.NetworkPort{
