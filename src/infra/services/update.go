@@ -2,9 +2,11 @@ package servicesInfra
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func Update(
@@ -33,6 +35,13 @@ func Update(
 
 	svcStartupFile := serviceEntity.StartupFile
 	if updateDto.StartupFile != nil {
+		newCommandStr := strings.Replace(
+			svcCommand.String(),
+			serviceEntity.StartupFile.String(),
+			updateDto.StartupFile.String(),
+			1,
+		)
+		svcCommand = valueObject.UnixCommand(newCommandStr)
 		svcStartupFile = updateDto.StartupFile
 	}
 
