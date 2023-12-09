@@ -1,6 +1,8 @@
 package servicesInfra
 
 import (
+	"time"
+
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
@@ -10,6 +12,7 @@ func Uninstall(name valueObject.ServiceName) error {
 	if err != nil {
 		return err
 	}
+	time.Sleep(3 * time.Second)
 
 	err = SupervisordFacade{}.RemoveConf(name)
 	if err != nil {
