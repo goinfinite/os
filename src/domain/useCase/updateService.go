@@ -9,7 +9,8 @@ import (
 )
 
 func updateServiceStatus(
-	servicesCmdRepo repository.ServicesCmdRepo,
+	queryRepo repository.ServicesQueryRepo,
+	cmdRepo repository.ServicesCmdRepo,
 	serviceEntity entity.Service,
 	updateDto dto.UpdateService,
 ) error {
@@ -22,37 +23,32 @@ func updateServiceStatus(
 		return errors.New("ServiceNotInstalled")
 	}
 
-	isSystemService := serviceEntity.Type.String() == "system"
-	shouldUninstall := updateDto.Status.String() == "uninstalled"
-	if isSystemService && shouldUninstall {
-		return errors.New("SystemServicesCannotBeUninstalled")
-	}
-
 	switch updateDto.Status.String() {
 	case "running":
-		return servicesCmdRepo.Start(updateDto.Name)
+		return cmdRepo.Start(updateDto.Name)
 	case "stopped":
-		return servicesCmdRepo.Stop(updateDto.Name)
+		return cmdRepo.Stop(updateDto.Name)
 	case "uninstalled":
-		return servicesCmdRepo.Uninstall(updateDto.Name)
+		return DeleteService(queryRepo, cmdRepo, updateDto.Name)
 	default:
 		return errors.New("UnknownServiceStatus")
 	}
 }
 
 func UpdateService(
-	servicesQueryRepo repository.ServicesQueryRepo,
-	servicesCmdRepo repository.ServicesCmdRepo,
+	queryRepo repository.ServicesQueryRepo,
+	cmdRepo repository.ServicesCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	serviceEntity, err := servicesQueryRepo.GetByName(updateDto.Name)
+	serviceEntity, err := queryRepo.GetByName(updateDto.Name)
 	if err != nil {
 		return err
 	}
 
 	if updateDto.Status != nil {
 		err = updateServiceStatus(
-			servicesCmdRepo,
+			queryRepo,
+			cmdRepo,
 			serviceEntity,
 			updateDto,
 		)
@@ -67,5 +63,5 @@ func UpdateService(
 		return errors.New("SoloServicesVersionCannotBeChanged")
 	}
 
-	return servicesCmdRepo.Update(updateDto)
+	return cmdRepo.Update(updateDto)
 }
