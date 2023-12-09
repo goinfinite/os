@@ -1,7 +1,10 @@
 package infra
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -176,6 +179,129 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	return servicesList, nil
 }
 
+type supervisordService struct {
+	Name            string
+	Status          string
+	MainPid         int32
+	UptimeInSeconds int64
+}
+
+func (repo ServicesQueryRepo) getSupervisordServices() ([]supervisordService, error) {
+	supervisordServices := []supervisordService{}
+
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	httpResponse, err := httpClient.Get("http://127.0.0.1:9001/program/list")
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiUnavailable")
+	}
+	defer httpResponse.Body.Close()
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiResponseError")
+	}
+
+	var parsedResponse []interface{}
+	err = json.Unmarshal(responseBody, &parsedResponse)
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiDecodeResponseError")
+	}
+
+	nowEpoch := time.Now().Unix()
+
+	for _, svcDetails := range parsedResponse {
+		svcDetailsMap, assertOk := svcDetails.(map[string]interface{})
+		if !assertOk {
+			continue
+		}
+
+		svcName, assertOk := svcDetailsMap["name"].(string)
+		if !assertOk {
+			continue
+		}
+
+		svcStatus, assertOk := svcDetailsMap["statename"].(string)
+		if !assertOk {
+			continue
+		}
+		svcStatus = strings.ToLower(svcStatus)
+
+		svcStart, assertOk := svcDetailsMap["start"].(float64)
+		if !assertOk {
+			continue
+		}
+		svcUptime := nowEpoch - int64(svcStart)
+
+		svcPid, assertOk := svcDetailsMap["pid"].(float64)
+		if !assertOk {
+			continue
+		}
+
+		supervisordServices = append(
+			supervisordServices,
+			supervisordService{
+				Name:            svcName,
+				Status:          svcStatus,
+				MainPid:         int32(svcPid),
+				UptimeInSeconds: svcUptime,
+			},
+		)
+	}
+
+	return supervisordServices, nil
+}
+
+func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
+	supervisordService supervisordService,
+) (valueObject.ServiceMetrics, error) {
+	supervisordServiceMetrics := valueObject.ServiceMetrics{}
+
+	cpuPercent := float64(0.0)
+	memPercent := float32(0.0)
+
+	mainPidProcess, err := process.NewProcess(supervisordService.MainPid)
+	if err != nil {
+		return supervisordServiceMetrics, err
+	}
+	pidProcesses := []*process.Process{
+		mainPidProcess,
+	}
+
+	childrenPidProcesses, _ := mainPidProcess.Children()
+	if len(childrenPidProcesses) > 0 {
+		pidProcesses = append(pidProcesses, childrenPidProcesses...)
+	}
+
+	pids := []uint32{}
+	for _, process := range pidProcesses {
+		pidCpuPercent, err := process.CPUPercent()
+		if err != nil {
+			continue
+		}
+
+		pidMemPercent, err := process.MemoryPercent()
+		if err != nil {
+			continue
+		}
+
+		cpuPercent += pidCpuPercent
+		memPercent += pidMemPercent
+
+		pids = append(pids, uint32(process.Pid))
+	}
+
+	serviceMetrics := valueObject.NewServiceMetrics(
+		pids,
+		supervisordService.UptimeInSeconds,
+		cpuPercent,
+		memPercent,
+	)
+
+	return serviceMetrics, nil
+}
+
 func (repo ServicesQueryRepo) GetWithMetrics() ([]dto.ServiceWithMetrics, error) {
 	servicesWithMetrics := []dto.ServiceWithMetrics{}
 
@@ -184,95 +310,47 @@ func (repo ServicesQueryRepo) GetWithMetrics() ([]dto.ServiceWithMetrics, error)
 		return servicesWithMetrics, err
 	}
 
-	pids, err := process.Pids()
+	supervisordServices, err := repo.getSupervisordServices()
 	if err != nil {
-		return servicesWithMetrics, errors.New("ServicePidsUnavailable")
+		return servicesWithMetrics, err
 	}
 
-	svcRunningStatus, _ := valueObject.NewServiceStatus("running")
-
-	for _, pid := range pids {
-		p, err := process.NewProcess(pid)
+	for _, supervisordService := range supervisordServices {
+		svcName, err := valueObject.NewServiceName(supervisordService.Name)
 		if err != nil {
 			continue
 		}
 
-		procName, err := p.Name()
-		if err != nil {
-			continue
-		}
-
-		svcName, err := valueObject.NewServiceName(procName)
-		if err != nil {
-			continue
-		}
-
-		svcEntityIndex := 0
-		serviceEntity := entity.Service{}
+		serviceEntityIndex := -1
 		for svcIndex, serviceFromList := range servicesList {
 			if serviceFromList.Name.String() != svcName.String() {
 				continue
 			}
-
-			svcEntityIndex = svcIndex
-			serviceEntity = serviceFromList
+			serviceEntityIndex = svcIndex
 		}
 
-		if serviceEntity.Name.String() == "" {
+		if serviceEntityIndex == -1 {
 			continue
 		}
 
-		serviceEntity.Status = svcRunningStatus
-		servicesList[svcEntityIndex] = serviceEntity
+		var serviceMetricsPtr *valueObject.ServiceMetrics
+		svcRunningStatus, _ := valueObject.NewServiceStatus("running")
+		if supervisordService.Status == "running" {
+			servicesList[serviceEntityIndex].Status = svcRunningStatus
 
-		var pidsUint []uint32
-		pidsUint = append(pidsUint, uint32(pid))
-
-		uptime, err := p.CreateTime()
-		if err != nil {
-			continue
+			serviceMetrics, err := repo.getSupervisordServiceMetrics(supervisordService)
+			if err != nil {
+				continue
+			}
+			serviceMetricsPtr = &serviceMetrics
 		}
-		uptimeSeconds := int64(time.Since(time.Unix(uptime/1000, 0)).Seconds())
-
-		cpuPercent, err := p.CPUPercent()
-		if err != nil {
-			continue
-		}
-
-		memPercent, err := p.MemoryPercent()
-		if err != nil {
-			continue
-		}
-
-		serviceMetrics := valueObject.NewServiceMetrics(
-			pidsUint,
-			uptimeSeconds,
-			cpuPercent,
-			memPercent,
-		)
 
 		serviceWithMetrics := dto.NewServiceWithMetrics(
-			serviceEntity,
-			&serviceMetrics,
+			servicesList[serviceEntityIndex],
+			serviceMetricsPtr,
 		)
 		servicesWithMetrics = append(servicesWithMetrics, serviceWithMetrics)
 	}
-
-	servicesNotRunning := []dto.ServiceWithMetrics{}
-	for _, serviceFromList := range servicesList {
-		if serviceFromList.Status.String() == "running" {
-			continue
-		}
-
-		serviceWithMetrics := dto.NewServiceWithMetrics(
-			serviceFromList,
-			nil,
-		)
-
-		servicesNotRunning = append(servicesNotRunning, serviceWithMetrics)
-	}
-
-	servicesWithMetrics = append(servicesWithMetrics, servicesNotRunning...)
 
 	return servicesWithMetrics, nil
 }
@@ -301,6 +379,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 		valueObject.NewServiceNamePanic("php"),
 		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("8.3"),
 			valueObject.NewServiceVersionPanic("8.2"),
 			valueObject.NewServiceVersionPanic("8.1"),
 			valueObject.NewServiceVersionPanic("8.0"),
