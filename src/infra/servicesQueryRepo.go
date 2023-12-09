@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -18,6 +19,80 @@ import (
 )
 
 type ServicesQueryRepo struct {
+}
+
+type supervisordService struct {
+	Name            string
+	Status          string
+	MainPid         int32
+	UptimeInSeconds int64
+}
+
+func (repo ServicesQueryRepo) getSupervisordServices() ([]supervisordService, error) {
+	supervisordServices := []supervisordService{}
+
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	httpResponse, err := httpClient.Get("http://127.0.0.1:9001/program/list")
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiUnavailable")
+	}
+	defer httpResponse.Body.Close()
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiResponseError")
+	}
+
+	var parsedResponse []interface{}
+	err = json.Unmarshal(responseBody, &parsedResponse)
+	if err != nil {
+		return supervisordServices, errors.New("SupervisordApiDecodeResponseError")
+	}
+
+	nowEpoch := time.Now().Unix()
+
+	for _, svcDetails := range parsedResponse {
+		svcDetailsMap, assertOk := svcDetails.(map[string]interface{})
+		if !assertOk {
+			continue
+		}
+
+		svcName, assertOk := svcDetailsMap["name"].(string)
+		if !assertOk {
+			continue
+		}
+
+		svcStatus, assertOk := svcDetailsMap["statename"].(string)
+		if !assertOk {
+			continue
+		}
+		svcStatus = strings.ToLower(svcStatus)
+
+		svcStart, assertOk := svcDetailsMap["start"].(float64)
+		if !assertOk {
+			continue
+		}
+		svcUptime := nowEpoch - int64(svcStart)
+
+		svcPid, assertOk := svcDetailsMap["pid"].(float64)
+		if !assertOk {
+			continue
+		}
+
+		supervisordServices = append(
+			supervisordServices,
+			supervisordService{
+				Name:            svcName,
+				Status:          svcStatus,
+				MainPid:         int32(svcPid),
+				UptimeInSeconds: svcUptime,
+			},
+		)
+	}
+
+	return supervisordServices, nil
 }
 
 func (repo ServicesQueryRepo) parseServiceEnvs(envs string) map[string]string {
@@ -44,8 +119,8 @@ func (repo ServicesQueryRepo) parseServiceEnvs(envs string) map[string]string {
 func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	servicesList := []entity.Service{}
 
-	supervisorConfPath := "/speedia/supervisord.conf"
-	supervisorConfContent, err := infraHelper.GetFileContent(supervisorConfPath)
+	supervisordConfPath := "/speedia/supervisord.conf"
+	supervisordConfContent, err := infraHelper.GetFileContent(supervisordConfPath)
 	if err != nil {
 		return servicesList, err
 	}
@@ -56,12 +131,25 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	svcConfigBlocksRegex := regexp.MustCompile(
 		`(?m)^\[program:` + svcNameRegex + `\]\n(?:[^\[]+\n)*`,
 	)
-	svcConfigBlocks := svcConfigBlocksRegex.FindAllString(supervisorConfContent, -1)
+	svcConfigBlocks := svcConfigBlocksRegex.FindAllString(supervisordConfContent, -1)
 	if len(svcConfigBlocks) == 0 {
 		return servicesList, errors.New("NoServicesFound")
 	}
 
-	svcStatus, _ := valueObject.NewServiceStatus("stopped")
+	supervisordServicesFromApi, err := repo.getSupervisordServices()
+	if err != nil {
+		return servicesList, err
+	}
+	runningServicesNames := []string{}
+	for _, supervisordService := range supervisordServicesFromApi {
+		if supervisordService.Status != "running" {
+			continue
+		}
+
+		runningServicesNames = append(runningServicesNames, supervisordService.Name)
+	}
+	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
+	runningStatus, _ := valueObject.NewServiceStatus("running")
 
 	for _, svcConfigBlock := range svcConfigBlocks {
 		svcNameRegex := regexp.MustCompile(
@@ -157,6 +245,11 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 			svcPorts = append(svcPorts, svcPort)
 		}
 
+		svcStatus := stoppedStatus
+		if slices.Contains(runningServicesNames, svcName.String()) {
+			svcStatus = runningStatus
+		}
+
 		servicesList = append(
 			servicesList,
 			entity.NewService(
@@ -177,80 +270,6 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	}
 
 	return servicesList, nil
-}
-
-type supervisordService struct {
-	Name            string
-	Status          string
-	MainPid         int32
-	UptimeInSeconds int64
-}
-
-func (repo ServicesQueryRepo) getSupervisordServices() ([]supervisordService, error) {
-	supervisordServices := []supervisordService{}
-
-	httpClient := &http.Client{
-		Timeout: time.Second * 10,
-	}
-	httpResponse, err := httpClient.Get("http://127.0.0.1:9001/program/list")
-	if err != nil {
-		return supervisordServices, errors.New("SupervisordApiUnavailable")
-	}
-	defer httpResponse.Body.Close()
-
-	responseBody, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return supervisordServices, errors.New("SupervisordApiResponseError")
-	}
-
-	var parsedResponse []interface{}
-	err = json.Unmarshal(responseBody, &parsedResponse)
-	if err != nil {
-		return supervisordServices, errors.New("SupervisordApiDecodeResponseError")
-	}
-
-	nowEpoch := time.Now().Unix()
-
-	for _, svcDetails := range parsedResponse {
-		svcDetailsMap, assertOk := svcDetails.(map[string]interface{})
-		if !assertOk {
-			continue
-		}
-
-		svcName, assertOk := svcDetailsMap["name"].(string)
-		if !assertOk {
-			continue
-		}
-
-		svcStatus, assertOk := svcDetailsMap["statename"].(string)
-		if !assertOk {
-			continue
-		}
-		svcStatus = strings.ToLower(svcStatus)
-
-		svcStart, assertOk := svcDetailsMap["start"].(float64)
-		if !assertOk {
-			continue
-		}
-		svcUptime := nowEpoch - int64(svcStart)
-
-		svcPid, assertOk := svcDetailsMap["pid"].(float64)
-		if !assertOk {
-			continue
-		}
-
-		supervisordServices = append(
-			supervisordServices,
-			supervisordService{
-				Name:            svcName,
-				Status:          svcStatus,
-				MainPid:         int32(svcPid),
-				UptimeInSeconds: svcUptime,
-			},
-		)
-	}
-
-	return supervisordServices, nil
 }
 
 func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
