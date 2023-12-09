@@ -94,11 +94,6 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			"mysqladmin",
 			"shutdown",
 		)
-	case "node":
-		_, _ = infraHelper.RunCmd(
-			"pkill",
-			"node",
-		)
 	}
 
 	err = facade.toggleAutoStart(name, false)
