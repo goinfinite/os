@@ -272,6 +272,37 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 	return servicesList, nil
 }
 
+func (repo ServicesQueryRepo) getPpidEntireProcessFamily(
+	ppid int32,
+) ([]*process.Process, error) {
+	ppidProcesses := []*process.Process{}
+
+	ppidProcess, err := process.NewProcess(ppid)
+	if err != nil {
+		return ppidProcesses, err
+	}
+
+	ppidProcesses = append(ppidProcesses, ppidProcess)
+
+	childrenPidProcesses, _ := ppidProcess.Children()
+	if len(childrenPidProcesses) == 0 {
+		return ppidProcesses, nil
+	}
+
+	for _, childPidProcess := range childrenPidProcesses {
+		grandChildrenPidProcesses, _ := repo.getPpidEntireProcessFamily(
+			childPidProcess.Pid,
+		)
+		if len(grandChildrenPidProcesses) == 0 {
+			continue
+		}
+
+		ppidProcesses = append(ppidProcesses, grandChildrenPidProcesses...)
+	}
+
+	return ppidProcesses, nil
+}
+
 func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
 	supervisordService supervisordService,
 ) (valueObject.ServiceMetrics, error) {
@@ -280,17 +311,9 @@ func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
 	cpuPercent := float64(0.0)
 	memPercent := float32(0.0)
 
-	mainPidProcess, err := process.NewProcess(supervisordService.MainPid)
+	pidProcesses, err := repo.getPpidEntireProcessFamily(supervisordService.MainPid)
 	if err != nil {
 		return supervisordServiceMetrics, err
-	}
-	pidProcesses := []*process.Process{
-		mainPidProcess,
-	}
-
-	childrenPidProcesses, _ := mainPidProcess.Children()
-	if len(childrenPidProcesses) > 0 {
-		pidProcesses = append(pidProcesses, childrenPidProcesses...)
 	}
 
 	pids := []uint32{}
