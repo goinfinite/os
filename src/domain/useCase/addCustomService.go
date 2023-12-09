@@ -2,6 +2,7 @@ package useCase
 
 import (
 	"errors"
+	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -17,5 +18,11 @@ func AddCustomService(
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
-	return servicesCmdRepo.AddCustom(addDto)
+	err = servicesCmdRepo.AddCustom(addDto)
+	if err != nil {
+		log.Printf("AddCustomServiceError: %v", err)
+		return errors.New("AddCustomServiceInfraError")
+	}
+
+	return nil
 }
