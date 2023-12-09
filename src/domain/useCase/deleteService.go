@@ -13,9 +13,14 @@ func DeleteService(
 	cmdRepo repository.ServicesCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
-	_, err := queryRepo.GetByName(svcName)
+	serviceEntity, err := queryRepo.GetByName(svcName)
 	if err != nil {
 		return errors.New("ServiceNotFound")
+	}
+
+	isSystemService := serviceEntity.Type.String() == "system"
+	if isSystemService {
+		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 
 	err = cmdRepo.Uninstall(svcName)
