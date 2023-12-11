@@ -1028,6 +1028,37 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vhosts/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List virtual hosts.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "GetVirtualHosts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.VirtualHost"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1502,6 +1533,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sslPairId": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.VirtualHost": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "rootDirectory": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

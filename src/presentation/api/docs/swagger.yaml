@@ -308,6 +308,17 @@ definitions:
       sslPairId:
         type: string
     type: object
+  entity.VirtualHost:
+    properties:
+      hostname:
+        type: string
+      parentHostname:
+        type: string
+      rootDirectory:
+        type: string
+      type:
+        type: string
+    type: object
   valueObject.AccessTokenType:
     enum:
     - sessionToken
@@ -1013,6 +1024,25 @@ paths:
       summary: DeleteSslPair
       tags:
       - ssl
+  /vhosts/:
+    get:
+      consumes:
+      - application/json
+      description: List virtual hosts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.VirtualHost'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetVirtualHosts
+      tags:
+      - vhosts
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.

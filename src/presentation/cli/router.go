@@ -122,6 +122,16 @@ func sslRoutes() {
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
+func virtualHostRoutes() {
+	var vhostCmd = &cobra.Command{
+		Use:   "vhost",
+		Short: "VirtualHostManagement",
+	}
+
+	rootCmd.AddCommand(vhostCmd)
+	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
+}
+
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
@@ -132,4 +142,5 @@ func registerCliRoutes() {
 	runtimeRoutes()
 	servicesRoutes()
 	sslRoutes()
+	virtualHostRoutes()
 }

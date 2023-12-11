@@ -83,6 +83,11 @@ func sslRoutes(baseRoute *echo.Group) {
 	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
 }
 
+func vhostsRoutes(baseRoute *echo.Group) {
+	vhostsGroup := baseRoute.Group("/vhosts")
+	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
+}
+
 func registerApiRoutes(baseRoute *echo.Group) {
 	swaggerRoute(baseRoute)
 	authRoutes(baseRoute)
@@ -93,4 +98,5 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	accountRoutes(baseRoute)
 	servicesRoutes(baseRoute)
 	sslRoutes(baseRoute)
+	vhostsRoutes(baseRoute)
 }
