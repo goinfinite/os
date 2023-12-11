@@ -122,4 +122,22 @@ func TestFilesCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
+
+	t.Run("DeleteUnixDirectory", func(t *testing.T) {
+		err := filesCmdRepo.Delete(
+			valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/testDir_"),
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("DeleteUnixFile", func(t *testing.T) {
+		err := filesCmdRepo.Delete(
+			valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/filesCmdRepoTest_.txt"),
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
 }

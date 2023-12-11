@@ -14,4 +14,5 @@ type FilesCmdRepo interface {
 		valueObject.UnixFilePath,
 		valueObject.UnixFilePermissions,
 	) error
+	Delete(valueObject.UnixFilePath) error
 }

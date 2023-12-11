@@ -141,3 +141,15 @@ func (repo FilesCmdRepo) UpdatePermissions(
 
 	return nil
 }
+
+func (repo FilesCmdRepo) Delete(
+	unixFilePath valueObject.UnixFilePath,
+) error {
+	err := os.RemoveAll(unixFilePath.String())
+	if err != nil {
+		log.Printf("DeleteFileError: %s", err)
+		return errors.New("DeleteFileError")
+	}
+
+	return nil
+}
