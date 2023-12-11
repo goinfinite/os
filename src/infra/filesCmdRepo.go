@@ -8,6 +8,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type FilesCmdRepo struct {
@@ -61,7 +62,9 @@ func (repo FilesCmdRepo) Move(
 }
 
 func (repo FilesCmdRepo) Copy(addUnixFileCopy dto.AddUnixFileCopy) error {
-	err := os.Link(
+	_, err := infraHelper.RunCmd(
+		"rsync",
+		"-avq",
 		addUnixFileCopy.OriginPath.String(),
 		addUnixFileCopy.DestinationPath.String(),
 	)
