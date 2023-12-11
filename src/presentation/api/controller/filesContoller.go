@@ -1,7 +1,9 @@
 package apiController
 
 import (
+	"errors"
 	"net/http"
+	"reflect"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -11,6 +13,7 @@ import (
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
+/* Mudar para getInodeNameByFilePath */
 func getInodeName(filePath valueObject.UnixFilePath) string {
 	fileIsDir, _ := filePath.IsDir()
 	inodeName := "File"
@@ -19,6 +22,29 @@ func getInodeName(filePath valueObject.UnixFilePath) string {
 	}
 
 	return inodeName
+}
+
+func getFilePathSliceFromBody(
+	filePathBodyInput interface{},
+) []valueObject.UnixFilePath {
+	var filePaths []valueObject.UnixFilePath
+
+	filePathsIsList := reflect.TypeOf(filePathBodyInput).Kind() == reflect.Slice
+	if !filePathsIsList {
+		panic(errors.New("FilePathIsNotASlice"))
+	}
+
+	for _, filePathInterface := range filePathBodyInput.([]interface{}) {
+		filePathStr := filePathInterface.(string)
+		filePath, err := valueObject.NewUnixFilePath(filePathStr)
+		if err != nil {
+			continue
+		}
+
+		filePaths = append(filePaths, filePath)
+	}
+
+	return filePaths
 }
 
 // GetFiles    godoc
@@ -220,4 +246,37 @@ func AddFileCopyController(c echo.Context) error {
 	inodeName := getInodeName(filePath)
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"CopyCreated")
+}
+
+// DeleteFiles godoc
+// @Summary      DeleteFiles
+// @Description  Delete one or more directories/files.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        deleteFilesDto 	  body    dto.DeleteUnixFiles  true  "DeleteFile"
+// @Success      200 {object} object{} "DirectoriesAndFilesDeleted"
+// @Router       /files/{accountId}/ [put]
+func DeleteFileController(c echo.Context) error {
+	requiredParams := []string{"filePaths"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePaths := getFilePathSliceFromBody(requestBody["filePaths"])
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.DeleteUnixFiles(
+		filesQueryRepo,
+		filesCmdRepo,
+		filePaths,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "DirectoriesAndFilesDeleted")
 }
