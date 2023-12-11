@@ -184,7 +184,7 @@ func UpdateFileContentController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileContentUpdated")
 }
 
-// AddFile    godoc
+// AddFileCopy    godoc
 // @Summary      AddFileCopy
 // @Description  Add a new dir/file copy.
 // @Tags         files
