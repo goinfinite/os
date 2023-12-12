@@ -313,3 +313,39 @@ func CompressFilesController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FilesAndDirectoriesCompressed")
 }
+
+// ExtractFiles godoc
+// @Summary      ExtractFiles
+// @Description  Extract directories and files.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "ExtractFiles"
+// @Success      200 {object} object{} "ExtractFilesAndDirectories"
+// @Router       /files/extract/ [put]
+func ExtractFilesController(c echo.Context) error {
+	requiredParams := []string{"filePath", "destinationPath"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
+
+	extractUnixFilesDto := dto.NewExtractUnixFiles(filePath, destinationPath)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.ExtractUnixFiles(
+		filesQueryRepo,
+		filesCmdRepo,
+		extractUnixFilesDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ExtractFilesAndDirectories")
+}
