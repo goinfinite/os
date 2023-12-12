@@ -218,7 +218,7 @@ func UpdateFileContentController(c echo.Context) error {
 // @Security     Bearer
 // @Param        addFileCopyDto 	  body    dto.AddUnixFileCopy  true  "NewFileCopy"
 // @Success      201 {object} object{} "FileCopyCreated/DirectoryCopyCreated"
-// @Router       /files/ [post]
+// @Router       /files/copy/ [post]
 func AddFileCopyController(c echo.Context) error {
 	requiredParams := []string{"filePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -256,7 +256,7 @@ func AddFileCopyController(c echo.Context) error {
 // @Security     Bearer
 // @Param        deleteFilesDto 	  body    dto.DeleteUnixFiles  true  "DeleteFile"
 // @Success      200 {object} object{} "DirectoriesAndFilesDeleted"
-// @Router       /files/{accountId}/ [put]
+// @Router       /files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
 	requiredParams := []string{"filePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
