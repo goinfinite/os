@@ -10,6 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"golang.org/x/net/publicsuffix"
 )
 
 var configurationsDir string = "/app/conf/nginx"
@@ -65,6 +66,23 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		if isAliases {
 			vhostType, _ = valueObject.NewVirtualHostType("alias")
 			parentDomainPtr = &firstDomain
+		}
+
+		rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(serverName.String())
+		if err != nil {
+			log.Println("InvalidRootDomain: " + serverName.String())
+			continue
+		}
+		rootDomain, err := valueObject.NewFqdn(rootDomainStr)
+		if err != nil {
+			log.Println("InvalidRootDomain: " + rootDomainStr)
+			continue
+		}
+
+		isSubdomain := rootDomain != serverName
+		if isSubdomain {
+			vhostType, _ = valueObject.NewVirtualHostType("subdomain")
+			parentDomainPtr = &rootDomain
 		}
 
 		rootDirectorySuffix := "/" + serverName.String()

@@ -51,6 +51,7 @@
     "ppid",
     "privs",
     "Procs",
+    "publicsuffix",
     "responsetype",
     "serviceid",
     "shirou",
