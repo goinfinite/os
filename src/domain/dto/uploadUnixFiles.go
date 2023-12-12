@@ -2,17 +2,16 @@ package dto
 
 import (
 	"github.com/speedianet/os/src/domain/valueObject"
-	apiValueObject "github.com/speedianet/os/src/presentation/api/valueObject"
 )
 
 type UploadUnixFiles struct {
-	DestinationPath valueObject.UnixFilePath       `json:"destinationPath"`
-	MultipartFiles  []apiValueObject.MultipartFile `json:"multipartFiles"`
+	DestinationPath valueObject.UnixFilePath    `json:"destinationPath"`
+	MultipartFiles  []valueObject.MultipartFile `json:"multipartFiles"`
 }
 
 func NewUploadUnixFiles(
 	destinationPath valueObject.UnixFilePath,
-	multipartFiles []apiValueObject.MultipartFile,
+	multipartFiles []valueObject.MultipartFile,
 ) UploadUnixFiles {
 	return UploadUnixFiles{
 		DestinationPath: destinationPath,

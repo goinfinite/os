@@ -1,4 +1,4 @@
-package apiValueObject
+package valueObject
 
 import "mime/multipart"
 
