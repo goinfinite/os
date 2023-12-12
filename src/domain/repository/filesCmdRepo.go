@@ -16,7 +16,7 @@ type FilesCmdRepo interface {
 	) error
 	Delete(valueObject.UnixFilePath) error
 	Compress(
-		valueObject.UnixFilePath,
+		[]valueObject.UnixFilePath,
 		valueObject.UnixFilePath,
 		valueObject.UnixCompressionType,
 	) error

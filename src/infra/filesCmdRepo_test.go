@@ -125,7 +125,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CompressUnixFile", func(t *testing.T) {
 		err := filesCmdRepo.Compress(
-			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
+			[]valueObject.UnixFilePath{valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir_/filesCmdRepoTest_.txt")},
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress"),
 			valueObject.NewUnixCompressionTypePanic("gzip"),
 		)

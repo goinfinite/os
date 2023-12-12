@@ -1,11 +1,8 @@
 package infra
 
 import (
-	"bufio"
-	"compress/gzip"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -147,40 +144,39 @@ func (repo FilesCmdRepo) UpdatePermissions(
 }
 
 func (repo FilesCmdRepo) Compress(
-	unixFilePath valueObject.UnixFilePath,
+	unixFilePaths []valueObject.UnixFilePath,
 	unixFileDestinationPath valueObject.UnixFilePath,
 	unixCompressionType valueObject.UnixCompressionType,
 ) error {
-	fileToCompress, err := os.Open(unixFilePath.String())
-	if err != nil {
-		log.Printf("OpenFileToCompressError: %s", err)
-		return errors.New("OpenFileToCompressError")
+	compressBinary := "tar"
+	compressBinaryFlag := "-czf"
+	if unixCompressionType.String() == "zip" {
+		compressBinary = "zip"
+		compressBinaryFlag = "-qr"
 	}
 
-	fileToCompressReader := bufio.NewReader(fileToCompress)
+	filesToCompressStr := unixFilePaths[0].String()
+	if len(unixFilePaths) > 1 {
+		var filesToCompressStrSlice []string
+		for _, filePath := range unixFilePaths {
+			filesToCompressStrSlice = append(filesToCompressStrSlice, filePath.String())
+		}
 
-	fileToCompressBytes, err := io.ReadAll(fileToCompressReader)
-	if err != nil {
-		log.Printf("ReadFileToCompressBytesError: %s", err)
-		return errors.New("ReadFileToCompressBytesError")
+		filesToCompressStr = strings.Join(filesToCompressStrSlice, " ")
 	}
 
 	compressedFilePathWithoutExt := strings.Split(unixFileDestinationPath.String(), ".")[0]
 	compressedFilePathWithCompressionTypeAsExt := compressedFilePathWithoutExt + "." + unixCompressionType.String()
+	_, err := infraHelper.RunCmd(
+		compressBinary,
+		compressBinaryFlag,
+		compressedFilePathWithCompressionTypeAsExt,
+		filesToCompressStr,
+	)
 
-	compressedFile, err := os.Create(compressedFilePathWithCompressionTypeAsExt)
 	if err != nil {
-		log.Printf("CreateCompressedEmptyFileError: %s", err)
-		return errors.New("CreateCompressedEmptyFileError")
-	}
-
-	gzipWriter := gzip.NewWriter(compressedFile)
-	defer gzipWriter.Close()
-
-	_, err = gzipWriter.Write(fileToCompressBytes)
-	if err != nil {
-		log.Printf("WriteFileToCompressBytesInCompressedFileError: %s", err)
-		return errors.New("WriteFileToCompressBytesInCompressedFileError")
+		log.Printf("CompressFilesError: %s", err.Error())
+		return errors.New("CompressFilesError")
 	}
 
 	return nil
