@@ -17,11 +17,13 @@ func DeleteUnixFiles(
 
 		if err != nil || len(unixFiles) < 1 {
 			log.Printf("PathDoesNotExists: %v", err)
+			continue
 		}
 
 		isDir, err := filePath.IsDir()
 		if err != nil {
 			log.Printf("PathIsDirError: %v", err)
+			continue
 		}
 
 		inodeName := "File"
@@ -32,6 +34,7 @@ func DeleteUnixFiles(
 		err = filesCmdRepo.Delete(filePath)
 		if err != nil {
 			log.Printf("Delete%sError: %v", inodeName, err)
+			continue
 		}
 
 		log.Printf("%s '%s' deleted.", inodeName, filePath.String())
