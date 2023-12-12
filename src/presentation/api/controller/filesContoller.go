@@ -286,6 +286,7 @@ func DeleteFileController(c echo.Context) error {
 // @Security     Bearer
 // @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
 // @Success      201 {object} object{} "FilesAndDirectoriesCompressed"
+// @Success      207 {object} object{} "FilesAndDirectoriesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
 	requiredParams := []string{"filePaths", "destinationPath", "compressionType"}
@@ -302,16 +303,24 @@ func CompressFilesController(c echo.Context) error {
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
 
-	err := useCase.CompressUnixFiles(
+	compressionProcessInfo, err := useCase.CompressUnixFiles(
 		filesQueryRepo,
 		filesCmdRepo,
 		compressUnixFilesDto,
 	)
+
+	httpStatus := http.StatusCreated
+
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		httpStatus = http.StatusInternalServerError
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FilesAndDirectoriesCompressed")
+	isMultiStatus := len(compressionProcessInfo.Failure) > 0
+	if isMultiStatus {
+		httpStatus = http.StatusMultiStatus
+	}
+
+	return apiHelper.ResponseWrapper(c, httpStatus, compressionProcessInfo)
 }
 
 // ExtractFiles godoc
