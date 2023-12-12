@@ -16,49 +16,40 @@ func CompressUnixFiles(
 	compressionErrorCount := 0
 
 	for _, filePath := range compressUnixFiles.Paths {
-		unixFiles, _ := filesQueryRepo.Get(filePath)
+		unixFiles, _ := filesQueryRepo.Get(compressUnixFiles.DestinationPath)
 
 		if len(unixFiles) > 0 {
-			return errors.New("PathAlreadyExists")
-		}
-
-		unixDestinationFiles, err := filesQueryRepo.Get(compressUnixFiles.DestinationPath)
-
-		if err != nil || len(unixDestinationFiles) < 1 {
-			log.Printf("PathDoesNotExists: %v", err)
-			continue
-		}
-
-		isDir, err := filePath.IsDir()
-		if err != nil {
-			log.Printf("PathIsDirError: %s", err)
-			continue
-		}
-
-		inodeName := "File"
-		if isDir {
-			inodeName = "Directory"
-		}
-
-		err = filesCmdRepo.Compress(
-			filePath,
-			compressUnixFiles.DestinationPath,
-			compressUnixFiles.CompressionType,
-		)
-		if err != nil {
 			compressionErrorCount++
 
-			log.Printf("%sCompressError: %s", inodeName, err.Error())
+			log.Print("PathAlreadyExists")
+			continue
+		}
+
+		unixDestinationFiles, err := filesQueryRepo.Get(filePath)
+
+		if err != nil || len(unixDestinationFiles) < 1 {
+			compressionErrorCount++
+
+			log.Printf("PathDoesNotExists: %v", err)
 			continue
 		}
 	}
 
+	err := filesCmdRepo.Compress(
+		compressUnixFiles.Paths,
+		compressUnixFiles.DestinationPath,
+		compressUnixFiles.CompressionType,
+	)
+	if err != nil {
+		log.Printf("CompressError: %s", err.Error())
+		return errors.New("UnableToCompressFilesAndDirectories")
+	}
+
 	if compressionErrorCount == len(compressUnixFiles.Paths) {
 		log.Printf(
-			"UnableToCompressFilesAndDirectories: File compressed %s  wasn't created.",
+			"UnableToCompressFilesAndDirectories: File compressed %s wasn't created.",
 			compressUnixFiles.DestinationPath,
 		)
-
 		return errors.New("UnableToCompressFilesAndDirectories")
 	}
 
