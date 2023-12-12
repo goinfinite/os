@@ -1,10 +1,14 @@
 package infra
 
 import (
+	"bufio"
+	"compress/gzip"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -137,6 +141,46 @@ func (repo FilesCmdRepo) UpdatePermissions(
 
 		log.Printf("%s: %s", chmodErrorStr, err)
 		return errors.New(chmodErrorStr)
+	}
+
+	return nil
+}
+
+func (repo FilesCmdRepo) Compress(
+	unixFilePath valueObject.UnixFilePath,
+	unixFileDestinationPath valueObject.UnixFilePath,
+	unixCompressionType valueObject.UnixCompressionType,
+) error {
+	fileToCompress, err := os.Open(unixFilePath.String())
+	if err != nil {
+		log.Printf("OpenFileToCompressError: %s", err)
+		return errors.New("OpenFileToCompressError")
+	}
+
+	fileToCompressReader := bufio.NewReader(fileToCompress)
+
+	fileToCompressBytes, err := io.ReadAll(fileToCompressReader)
+	if err != nil {
+		log.Printf("ReadFileToCompressBytesError: %s", err)
+		return errors.New("ReadFileToCompressBytesError")
+	}
+
+	compressedFilePathWithoutExt := strings.Split(unixFileDestinationPath.String(), ".")[0]
+	compressedFilePathWithCompressionTypeAsExt := compressedFilePathWithoutExt + "." + unixCompressionType.String()
+
+	compressedFile, err := os.Create(compressedFilePathWithCompressionTypeAsExt)
+	if err != nil {
+		log.Printf("CreateCompressedEmptyFileError: %s", err)
+		return errors.New("CreateCompressedEmptyFileError")
+	}
+
+	gzipWriter := gzip.NewWriter(compressedFile)
+	defer gzipWriter.Close()
+
+	_, err = gzipWriter.Write(fileToCompressBytes)
+	if err != nil {
+		log.Printf("WriteFileToCompressBytesInCompressedFileError: %s", err)
+		return errors.New("WriteFileToCompressBytesInCompressedFileError")
 	}
 
 	return nil

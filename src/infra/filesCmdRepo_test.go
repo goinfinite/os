@@ -123,6 +123,17 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
+	t.Run("CompressUnixFile", func(t *testing.T) {
+		err := filesCmdRepo.Compress(
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress"),
+			valueObject.NewUnixCompressionTypePanic("gzip"),
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
 	t.Run("DeleteUnixDirectory", func(t *testing.T) {
 		err := filesCmdRepo.Delete(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/testDir_"),
