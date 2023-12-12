@@ -276,3 +276,40 @@ func DeleteFileController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "DirectoriesAndFilesDeleted")
 }
+
+// CompressFiles    godoc
+// @Summary      CompressFiles
+// @Description  Compress directories and files.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
+// @Success      201 {object} object{} "FilesAndDirectoriesCompressed"
+// @Router       /files/ [post]
+func CompressFilesController(c echo.Context) error {
+	requiredParams := []string{"filePaths", "destinationPath", "compressionType"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	filePaths := getFilePathSliceFromBody(requestBody["filePaths"])
+	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
+	compressionUnixType := valueObject.NewUnixCompressionTypePanic(requestBody["compressionType"].(string))
+
+	compressUnixFilesDto := dto.NewCompressUnixFiles(filePaths, destinationPath, compressionUnixType)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	err := useCase.CompressUnixFiles(
+		filesQueryRepo,
+		filesCmdRepo,
+		compressUnixFilesDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FilesAndDirectoriesCompressed")
+}

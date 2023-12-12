@@ -63,6 +63,7 @@ func filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/copy/", apiController.AddFileCopyController)
 	filesGroup.PUT("/content/", apiController.UpdateFileContentController)
 	filesGroup.PUT("/delete/", apiController.DeleteFileController)
+	filesGroup.POST("/compress/", apiController.CompressFilesController)
 }
 
 func o11yRoutes(baseRoute *echo.Group) {
