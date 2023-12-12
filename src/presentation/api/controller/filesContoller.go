@@ -286,7 +286,7 @@ func DeleteFileController(c echo.Context) error {
 // @Security     Bearer
 // @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
 // @Success      201 {object} object{} "FilesAndDirectoriesCompressed"
-// @Router       /files/ [post]
+// @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
 	requiredParams := []string{"filePaths", "destinationPath", "compressionType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
