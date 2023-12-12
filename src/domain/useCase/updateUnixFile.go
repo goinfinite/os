@@ -17,7 +17,6 @@ func UpdateUnixFile(
 	filePath := updateUnixFile.Path
 
 	unixFiles, err := filesQueryRepo.Get(filePath)
-
 	if err != nil || len(unixFiles) < 1 {
 		return errors.New("PathDoesNotExists")
 	}
