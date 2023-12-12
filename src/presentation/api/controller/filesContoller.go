@@ -268,14 +268,11 @@ func DeleteFileController(c echo.Context) error {
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
 
-	err := useCase.DeleteUnixFiles(
+	useCase.DeleteUnixFiles(
 		filesQueryRepo,
 		filesCmdRepo,
 		filePaths,
 	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "DirectoriesAndFilesDeleted")
 }

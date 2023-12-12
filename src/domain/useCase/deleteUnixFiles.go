@@ -11,7 +11,7 @@ func DeleteUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	unixFilePaths []valueObject.UnixFilePath,
-) error {
+) {
 	for _, filePath := range unixFilePaths {
 		unixFiles, err := filesQueryRepo.Get(filePath)
 
@@ -36,6 +36,4 @@ func DeleteUnixFiles(
 
 		log.Printf("%s '%s' deleted.", inodeName, filePath.String())
 	}
-
-	return nil
 }
