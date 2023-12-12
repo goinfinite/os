@@ -35,13 +35,15 @@ func CompressUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
 	compressUnixFiles dto.CompressUnixFiles,
 ) (CompressionProcessInfo, error) {
+	fileDestinationPath := compressUnixFiles.DestinationPath
+
 	compressionProcessInfo := CompressionProcessInfo{
 		Success:     []string{},
 		Failure:     []CompressionProcessFailure{},
-		Destination: compressUnixFiles.DestinationPath.String(),
+		Destination: fileDestinationPath.String(),
 	}
 
-	unixFiles, _ := filesQueryRepo.Get(compressUnixFiles.DestinationPath)
+	unixFiles, _ := filesQueryRepo.Get(fileDestinationPath)
 
 	if len(unixFiles) > 0 {
 		log.Print("PathAlreadyExists")
@@ -72,14 +74,14 @@ func CompressUnixFiles(
 	if allPathsFailedInCompression {
 		log.Printf(
 			"UnableToCompressFilesAndDirectories: File compressed %s wasn't created.",
-			compressUnixFiles.DestinationPath,
+			fileDestinationPath,
 		)
 		return compressionProcessInfo, errors.New("UnableToCompressFilesAndDirectories")
 	}
 
 	err := filesCmdRepo.Compress(
 		filesToCompress,
-		compressUnixFiles.DestinationPath,
+		fileDestinationPath,
 		compressUnixFiles.CompressionType,
 	)
 	if err != nil {
@@ -103,7 +105,7 @@ func CompressUnixFiles(
 		)
 	}
 
-	log.Printf("File compressed %s created.", compressUnixFiles.DestinationPath)
+	log.Printf("File compressed %s created.", fileDestinationPath)
 
 	return compressionProcessInfo, nil
 }
