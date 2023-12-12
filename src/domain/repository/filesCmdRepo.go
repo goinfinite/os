@@ -20,4 +20,5 @@ type FilesCmdRepo interface {
 		valueObject.UnixFilePath,
 		valueObject.UnixCompressionType,
 	) error
+	Extract(valueObject.UnixFilePath, valueObject.UnixFilePath) error
 }

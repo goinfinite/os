@@ -182,6 +182,43 @@ func (repo FilesCmdRepo) Compress(
 	return nil
 }
 
+func (repo FilesCmdRepo) Extract(
+	unixFilePath valueObject.UnixFilePath,
+	unixFileDestinationPath valueObject.UnixFilePath,
+) error {
+	compressBinary := "tar"
+	compressBinaryFlag := "-xf"
+	compressDestinationFlag := "-C"
+
+	unixFilePathExtension, _ := unixFilePath.GetFileExtension()
+	if unixFilePathExtension.String() == "zip" {
+		compressBinary = "unzip"
+		compressBinaryFlag = "-qq"
+		compressDestinationFlag = "-d"
+	}
+
+	err := infraHelper.MakeDir(unixFileDestinationPath.String())
+	if err != nil {
+		log.Printf("CreateExtractDirectoryError: %s", err.Error())
+		return errors.New("CreateExtractDirectoryError")
+	}
+
+	_, err = infraHelper.RunCmd(
+		compressBinary,
+		compressBinaryFlag,
+		unixFilePath.String(),
+		compressDestinationFlag,
+		unixFileDestinationPath.String(),
+	)
+
+	if err != nil {
+		log.Printf("ExtractFilesError: %s", err.Error())
+		return errors.New("ExtractFilesError")
+	}
+
+	return nil
+}
+
 func (repo FilesCmdRepo) Delete(
 	unixFilePath valueObject.UnixFilePath,
 ) error {
