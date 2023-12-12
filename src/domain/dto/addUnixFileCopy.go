@@ -8,11 +8,11 @@ type AddUnixFileCopy struct {
 }
 
 func NewAddUnixFileCopy(
-	OriginPath valueObject.UnixFilePath,
-	DestinationPath valueObject.UnixFilePath,
+	originPath valueObject.UnixFilePath,
+	destinationPath valueObject.UnixFilePath,
 ) AddUnixFileCopy {
 	return AddUnixFileCopy{
-		OriginPath:      OriginPath,
-		DestinationPath: DestinationPath,
+		OriginPath:      originPath,
+		DestinationPath: destinationPath,
 	}
 }

@@ -9,13 +9,13 @@ type AddUnixFile struct {
 }
 
 func NewAddUnixFile(
-	Path valueObject.UnixFilePath,
-	Permissions valueObject.UnixFilePermissions,
-	Type valueObject.UnixFileType,
+	path valueObject.UnixFilePath,
+	permissions valueObject.UnixFilePermissions,
+	fileType valueObject.UnixFileType,
 ) AddUnixFile {
 	return AddUnixFile{
-		Path:        Path,
-		Permissions: Permissions,
-		Type:        Type,
+		Path:        path,
+		Permissions: permissions,
+		Type:        fileType,
 	}
 }

@@ -8,11 +8,11 @@ type UpdateUnixFileContent struct {
 }
 
 func NewUpdateUnixFileContent(
-	Path valueObject.UnixFilePath,
-	Content valueObject.UnixFileContent,
+	path valueObject.UnixFilePath,
+	content valueObject.UnixFileContent,
 ) UpdateUnixFileContent {
 	return UpdateUnixFileContent{
-		Path:    Path,
-		Content: Content,
+		Path:    path,
+		Content: content,
 	}
 }

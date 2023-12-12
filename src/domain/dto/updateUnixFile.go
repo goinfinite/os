@@ -9,13 +9,13 @@ type UpdateUnixFile struct {
 }
 
 func NewUpdateUnixFile(
-	Path valueObject.UnixFilePath,
-	DestinationPath *valueObject.UnixFilePath,
-	Permissions *valueObject.UnixFilePermissions,
+	path valueObject.UnixFilePath,
+	destinationPath *valueObject.UnixFilePath,
+	permissions *valueObject.UnixFilePermissions,
 ) UpdateUnixFile {
 	return UpdateUnixFile{
-		Path:            Path,
-		DestinationPath: DestinationPath,
-		Permissions:     Permissions,
+		Path:            path,
+		DestinationPath: destinationPath,
+		Permissions:     permissions,
 	}
 }

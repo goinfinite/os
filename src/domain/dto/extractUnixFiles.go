@@ -8,11 +8,11 @@ type ExtractUnixFiles struct {
 }
 
 func NewExtractUnixFiles(
-	Path valueObject.UnixFilePath,
-	DestinationPath valueObject.UnixFilePath,
+	path valueObject.UnixFilePath,
+	destinationPath valueObject.UnixFilePath,
 ) ExtractUnixFiles {
 	return ExtractUnixFiles{
-		Path:            Path,
-		DestinationPath: DestinationPath,
+		Path:            path,
+		DestinationPath: destinationPath,
 	}
 }
