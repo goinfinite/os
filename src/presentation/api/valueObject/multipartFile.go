@@ -1,4 +1,4 @@
-package presentationValueObject
+package apiValueObject
 
 import "mime/multipart"
 
