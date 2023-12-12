@@ -41,7 +41,7 @@ func CompressUnixFiles(
 		compressUnixFiles.CompressionType,
 	)
 	if err != nil {
-		log.Printf("CompressError: %s", err.Error())
+		log.Printf("UnableToCompressFilesAndDirectories: %s", err.Error())
 		return errors.New("UnableToCompressFilesAndDirectories")
 	}
 
