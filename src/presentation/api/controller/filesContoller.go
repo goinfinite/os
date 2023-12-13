@@ -286,7 +286,7 @@ func DeleteFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
-// @Success      201 {object} object{} "FilesAndDirectoriesCompressed"
+// @Success      200 {object} object{} "FilesAndDirectoriesCompressed"
 // @Success      207 {object} object{} "FilesAndDirectoriesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
