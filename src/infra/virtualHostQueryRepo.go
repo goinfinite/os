@@ -7,15 +7,25 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"golang.org/x/exp/slices"
 	"golang.org/x/net/publicsuffix"
 )
 
 var configurationsDir string = "/app/conf/nginx"
+var mappingsDir string = "/app/conf/nginx/mapping"
 
 type VirtualHostQueryRepo struct {
+}
+
+func (repo VirtualHostQueryRepo) isPrimaryDomain(
+	domain valueObject.Fqdn,
+) bool {
+	primaryDomain, _ := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
+	return domain == primaryDomain
 }
 
 func (repo VirtualHostQueryRepo) vhostsFactory(
@@ -44,9 +54,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		log.Println("InvalidServerName: " + serverNamesParts[0])
 		return vhosts, nil
 	}
-
-	primaryDomain, _ := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
-	isPrimaryDomain := firstDomain == primaryDomain
+	isPrimaryDomain := repo.isPrimaryDomain(firstDomain)
 
 	for _, serverName := range serverNamesParts {
 		serverName, err := valueObject.NewFqdn(serverName)
@@ -150,4 +158,250 @@ func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 	}
 
 	return vhostsList, nil
+}
+
+func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
+	vhostName valueObject.Fqdn,
+) (valueObject.UnixFilePath, error) {
+	mappingFileName := vhostName.String() + ".conf"
+	if repo.isPrimaryDomain(vhostName) {
+		mappingFileName = "primary.conf"
+	}
+
+	mappingFilePath, err := valueObject.NewUnixFilePath(
+		mappingsDir + "/" + mappingFileName,
+	)
+	if err != nil {
+		return mappingFilePath, err
+	}
+
+	return mappingFilePath, nil
+}
+
+func (repo VirtualHostQueryRepo) locationBlockToMapping(
+	locationBlockIndex int,
+	locationBlockParts []string,
+	servicesList []entity.Service,
+) (valueObject.Mapping, error) {
+	var mapping valueObject.Mapping
+
+	if len(locationBlockParts) < 3 {
+		return mapping, errors.New("GetLocationBlockPartsFailed")
+	}
+
+	modifierAndPath := locationBlockParts[1]
+	modifierAndPathParts := strings.Split(modifierAndPath, " ")
+	if len(modifierAndPathParts) == 0 {
+		return mapping, errors.New("GetModifierAndPathPartsFailed")
+	}
+
+	modifier := ""
+	pathStr := modifierAndPathParts[0]
+	if len(modifierAndPathParts) == 2 {
+		modifier = modifierAndPathParts[0]
+		pathStr = modifierAndPathParts[1]
+	}
+
+	validModifiers := []string{"=", "~"}
+	isModifierEmpty := modifier == ""
+	isModifierValid := slices.Contains(validModifiers, modifier)
+
+	if !isModifierEmpty && !isModifierValid {
+		return mapping, errors.New("InvalidModifier: " + modifier)
+	}
+
+	matchPatternStr := "beginsWith"
+	isModifierEquals := modifier == "="
+	if isModifierEquals {
+		matchPatternStr = "equals"
+	}
+
+	isModifierRegex := modifier == "~"
+	if isModifierRegex {
+		matchPatternStr = "contains"
+
+		lastPathCharIsDollarSign := strings.HasSuffix(pathStr, "$")
+		if lastPathCharIsDollarSign {
+			pathStr = strings.TrimSuffix(pathStr, "$")
+			matchPatternStr = "endsWith"
+		}
+	}
+
+	matchPattern, err := valueObject.NewMappingMatchPattern(matchPatternStr)
+	if err != nil {
+		return mapping, errors.New("InvalidMatchPattern: " + matchPatternStr)
+	}
+
+	path, err := valueObject.NewMappingPath(pathStr)
+	if err != nil {
+		return mapping, errors.New("InvalidMappingPath: " + pathStr)
+	}
+
+	blockContent := locationBlockParts[2]
+	blockContentFirstLine := strings.Split(blockContent, "\n")[0]
+	blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
+	if len(blockContentFirstLineParts) == 0 {
+		return mapping, errors.New("GetLocationBlockContentPartsFailed")
+	}
+
+	directive := blockContentFirstLineParts[0]
+	if len(directive) == 0 {
+		return mapping, errors.New("GetLocationDirectiveFailed")
+	}
+
+	targetTypeStr := "service"
+	isReturn := directive == "return"
+	var targetUrlPtr *valueObject.Url
+	var targetResponseCodePtr *valueObject.HttpResponseCode
+	if isReturn {
+		responseCodeStr := blockContentFirstLineParts[1]
+		if len(responseCodeStr) == 0 {
+			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
+		}
+
+		responseCode, err := valueObject.NewHttpResponseCode(responseCodeStr)
+		if err != nil {
+			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
+		}
+		targetResponseCodePtr = &responseCode
+
+		targetTypeStr = "responseCode"
+
+		hasUrl := len(blockContentFirstLineParts) == 3
+		if hasUrl {
+			targetTypeStr = "url"
+
+			urlStr := blockContentFirstLineParts[2]
+			url, err := valueObject.NewUrl(urlStr)
+			if err != nil {
+				return mapping, errors.New("InvalidReturnUrl: " + urlStr)
+			}
+			targetUrlPtr = &url
+		}
+	}
+	targetType, err := valueObject.NewMappingTargetType(targetTypeStr)
+	if err != nil {
+		return mapping, errors.New("InvalidTargetType: " + targetTypeStr)
+	}
+
+	var targetServiceNamePtr *valueObject.ServiceName
+	isService := directive == "proxy_pass"
+	if isService {
+		serviceUrlStr := blockContentFirstLineParts[1]
+		serviceUrl, err := valueObject.NewUrl(serviceUrlStr)
+		if err != nil {
+			return mapping, errors.New("InvalidServiceProxyPassUrl: " + serviceUrlStr)
+		}
+
+		servicePort, err := serviceUrl.GetPort()
+		if err != nil {
+			return mapping, errors.New("InvalidServicePort: " + serviceUrlStr)
+		}
+
+		for _, service := range servicesList {
+			if !slices.Contains(service.Ports, servicePort) {
+				continue
+			}
+			targetServiceNamePtr = &service.Name
+		}
+
+		if targetServiceNamePtr == nil {
+			return mapping, errors.New("ServiceNotFound: " + serviceUrlStr)
+		}
+	}
+
+	mappingId, err := valueObject.NewMappingId(locationBlockIndex)
+	if err != nil {
+		return mapping, err
+	}
+
+	return valueObject.NewMapping(
+		mappingId,
+		path,
+		matchPattern,
+		targetType,
+		targetServiceNamePtr,
+		targetUrlPtr,
+		targetResponseCodePtr,
+	), nil
+}
+
+func (repo VirtualHostQueryRepo) getVirtualHostMappings(
+	vhostName valueObject.Fqdn,
+) ([]valueObject.Mapping, error) {
+	mappings := []valueObject.Mapping{}
+
+	mappingFilePath, err := repo.GetVirtualHostMappingsFilePath(vhostName)
+	if err != nil {
+		return mappings, err
+	}
+
+	fileContent, err := infraHelper.GetFileContent(mappingFilePath.String())
+	if err != nil {
+		return mappings, err
+	}
+
+	locationBlocksRegex := regexp.MustCompile(
+		`(?m)^\s*location\s(?P<modifierAndPath>.+)\s{\n\s+(?P<content>[^}]+)*;\n}`,
+	)
+	locationBlocks := locationBlocksRegex.FindAllStringSubmatch(fileContent, -1)
+	if len(locationBlocks) == 0 {
+		return mappings, errors.New("GetLocationsBlockFailed")
+	}
+
+	servicesList, err := ServicesQueryRepo{}.Get()
+	if err != nil {
+		return mappings, errors.New("GetServicesListFailed")
+	}
+
+	for locationBlockIndex, locationBlockContent := range locationBlocks {
+		mapping, err := repo.locationBlockToMapping(
+			locationBlockIndex,
+			locationBlockContent,
+			servicesList,
+		)
+		if err != nil {
+			log.Printf("[LocationIndex: %d] %s", locationBlockIndex, err.Error())
+			continue
+		}
+
+		mappings = append(mappings, mapping)
+	}
+
+	return mappings, nil
+}
+
+func (repo VirtualHostQueryRepo) GetWithMappings() ([]dto.VirtualHostWithMappings, error) {
+	vhostsWithMappings := []dto.VirtualHostWithMappings{}
+
+	vhosts, err := repo.Get()
+	if err != nil {
+		return vhostsWithMappings, err
+	}
+
+	for _, vhost := range vhosts {
+		isAliases := vhost.Type.String() == "alias"
+		if isAliases {
+			continue
+		}
+
+		mappings, err := repo.getVirtualHostMappings(vhost.Hostname)
+		if err != nil {
+			log.Printf(
+				"[%s] GetMappingsFailed: %s",
+				vhost.Hostname.String(),
+				err.Error(),
+			)
+		}
+
+		vhostsWithMappings = append(
+			vhostsWithMappings,
+			dto.NewVirtualHostWithMappings(
+				vhost,
+				mappings,
+			),
+		)
+	}
+
+	return vhostsWithMappings, nil
 }
