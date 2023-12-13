@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 
 	"golang.org/x/exp/slices"
 )
@@ -10,14 +9,13 @@ import (
 type MappingMatchPattern string
 
 var ValidMappingMatchPatterns = []string{
+	"beginsWith",
 	"contains",
 	"equals",
-	"beginsWith",
 	"endsWith",
 }
 
 func NewMappingMatchPattern(value string) (MappingMatchPattern, error) {
-	value = strings.ToLower(value)
 	if !slices.Contains(ValidMappingMatchPatterns, value) {
 		return "", errors.New("InvalidMappingMatchPattern")
 	}
