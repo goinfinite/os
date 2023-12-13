@@ -160,6 +160,25 @@ func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 	return vhostsList, nil
 }
 
+func (repo VirtualHostQueryRepo) GetByHostname(
+	hostname valueObject.Fqdn,
+) (entity.VirtualHost, error) {
+	var virtualHost entity.VirtualHost
+
+	vhosts, err := repo.Get()
+	if err != nil {
+		return virtualHost, err
+	}
+
+	for _, vhost := range vhosts {
+		if vhost.Hostname == hostname {
+			return vhost, nil
+		}
+	}
+
+	return virtualHost, errors.New("VirtualHostNotFound")
+}
+
 func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 	vhostName valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
