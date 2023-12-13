@@ -14,7 +14,6 @@ var ValidVirtualHostTypes = []string{
 	"subdomain",
 	"wildcard",
 	"alias",
-	"redirect",
 }
 
 func NewVirtualHostType(value string) (VirtualHostType, error) {
