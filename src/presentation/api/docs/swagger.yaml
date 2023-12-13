@@ -155,6 +155,21 @@ definitions:
       version:
         type: string
     type: object
+  dto.VirtualHostWithMappings:
+    properties:
+      hostname:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/valueObject.Mapping'
+        type: array
+      parentHostname:
+        type: string
+      rootDirectory:
+        type: string
+      type:
+        type: string
+    type: object
   entity.AccessToken:
     properties:
       expiresIn:
@@ -356,6 +371,23 @@ definitions:
         type: integer
       storageTotal:
         type: integer
+    type: object
+  valueObject.Mapping:
+    properties:
+      id:
+        type: integer
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetService:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
+        type: string
     type: object
   valueObject.RuntimeContext:
     enum:
@@ -1041,6 +1073,25 @@ paths:
       security:
       - Bearer: []
       summary: GetVirtualHosts
+      tags:
+      - vhosts
+  /vhosts/mapping/:
+    get:
+      consumes:
+      - application/json
+      description: List virtual hosts with mappings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.VirtualHostWithMappings'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetVirtualHostsWithMappings
       tags:
       - vhosts
 securityDefinitions:

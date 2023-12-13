@@ -86,6 +86,8 @@ func sslRoutes(baseRoute *echo.Group) {
 func vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
 	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
+
+	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {

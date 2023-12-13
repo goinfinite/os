@@ -1059,6 +1059,37 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vhosts/mapping/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List virtual hosts with mappings.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "GetVirtualHostsWithMappings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.VirtualHostWithMappings"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1297,6 +1328,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VirtualHostWithMappings": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.Mapping"
+                    }
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "rootDirectory": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -1607,6 +1661,32 @@ const docTemplate = `{
                 },
                 "storageTotal": {
                     "type": "integer"
+                }
+            }
+        },
+        "valueObject.Mapping": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetService": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "type": "string"
                 }
             }
         },

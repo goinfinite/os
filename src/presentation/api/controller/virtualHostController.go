@@ -27,3 +27,22 @@ func GetVirtualHostsController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
+
+// GetVirtualHostsWithMappings	 godoc
+// @Summary      GetVirtualHostsWithMappings
+// @Description  List virtual hosts with mappings.
+// @Tags         vhosts
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Success      200 {array} dto.VirtualHostWithMappings
+// @Router       /vhosts/mapping/ [get]
+func GetVirtualHostsWithMappingsController(c echo.Context) error {
+	vhostsQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostsQueryRepo)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
+}
