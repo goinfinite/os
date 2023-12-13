@@ -3,6 +3,7 @@ package infra
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -226,6 +227,29 @@ func (repo FilesCmdRepo) Delete(
 	if err != nil {
 		log.Printf("DeleteFileError: %s", err)
 		return errors.New("DeleteFileError")
+	}
+
+	return nil
+}
+
+func (repo FilesCmdRepo) Upload(
+	unixFileDestinationPath valueObject.UnixFilePath,
+	multipartFile valueObject.MultipartFile,
+) error {
+	destinationFileName := unixFileDestinationPath.String() + "/" + multipartFile.GetFileName().String()
+	destinationEmptyFile, err := os.Create(destinationFileName)
+	if err != nil {
+		log.Printf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
+		return errors.New("CreateEmptyFileToStoreUploadFileError")
+	}
+	defer destinationEmptyFile.Close()
+
+	multipartFileInstance, err := multipartFile.Open()
+
+	_, err = io.Copy(destinationEmptyFile, multipartFileInstance)
+	if err != nil {
+		log.Printf("CopyMultipartFileContentToDestinationFileError: %s", err.Error())
+		return errors.New("CopyMultipartFileContentToDestinationFileError")
 	}
 
 	return nil
