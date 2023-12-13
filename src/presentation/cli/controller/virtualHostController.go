@@ -24,3 +24,21 @@ func GetVirtualHostsController() *cobra.Command {
 
 	return cmd
 }
+
+func GetVirtualHostsWithMappingsController() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "GetVirtualHostsWithMappings",
+		Run: func(cmd *cobra.Command, args []string) {
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, vhostsList)
+		},
+	}
+
+	return cmd
+}
