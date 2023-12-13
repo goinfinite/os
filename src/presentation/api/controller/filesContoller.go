@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"errors"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 
@@ -357,4 +358,55 @@ func ExtractFilesController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ExtractFilesAndDirectories")
+}
+
+// UploadFiles    godoc
+// @Summary      UploadFiles
+// @Description  Upload files.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        destinationPath	path	string	true	"DestinationPath"
+// @Param        file	formData	file	true	"FileToUpload"
+// @Success      200 {object} object{} "FilesUploaded"
+// @Success      207 {object} object{} "FilesPartialUploaded"
+// @Router       /files/upload/ [post]
+func UploadFilesController(c echo.Context) error {
+	requiredParams := []string{"destinationPath", "files"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
+
+	var filesToUpload []valueObject.MultipartFile
+	for _, requestBodyFile := range requestBody["files"].(map[string]*multipart.FileHeader) {
+		multipartFile := valueObject.NewMultipartFilePanic(requestBodyFile)
+		filesToUpload = append(filesToUpload, multipartFile)
+	}
+
+	uploadUnixFilesDto := dto.NewUploadUnixFiles(destinationPath, filesToUpload)
+
+	filesQueryRepo := infra.FilesQueryRepo{}
+	filesCmdRepo := infra.FilesCmdRepo{}
+
+	uploadProcessInfo, err := useCase.UploadUnixFiles(
+		filesQueryRepo,
+		filesCmdRepo,
+		uploadUnixFilesDto,
+	)
+
+	httpStatus := http.StatusCreated
+
+	if err != nil {
+		httpStatus = http.StatusInternalServerError
+	}
+
+	isMultiStatus := len(uploadProcessInfo.Failure) > 0
+	if isMultiStatus {
+		httpStatus = http.StatusMultiStatus
+	}
+
+	return apiHelper.ResponseWrapper(c, httpStatus, uploadProcessInfo)
 }
