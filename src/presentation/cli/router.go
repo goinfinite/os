@@ -130,6 +130,7 @@ func virtualHostRoutes() {
 
 	rootCmd.AddCommand(vhostCmd)
 	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
+	vhostCmd.AddCommand(cliController.AddVirtualHostController())
 
 	var mappingCmd = &cobra.Command{
 		Use:   "mapping",
