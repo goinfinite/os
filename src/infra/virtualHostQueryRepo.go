@@ -356,8 +356,8 @@ func (repo VirtualHostQueryRepo) getVirtualHostMappings(
 	}
 
 	fileContent, err := infraHelper.GetFileContent(mappingFilePath.String())
-	if err != nil {
-		return mappings, err
+	if err != nil || len(fileContent) == 0 {
+		return mappings, nil
 	}
 
 	locationBlocksRegex := regexp.MustCompile(
