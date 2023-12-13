@@ -3,9 +3,11 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const urlRegex string = `^(?P<schema>https?:\/\/)(?P<fqdn>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9])+)(?P<port>:\d{1,6})?(?P<path>\/[a-z0-9\/\_\.\-]*)?(?P<query>\?[\w\/#=&%\-]*)?$`
+const urlRegex string = `^(?P<schema>https?:\/\/)(?P<hostname>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9])*)(:(?P<port>\d{1,6}))?(?P<path>\/[a-z0-9\/\_\.\-]*)?(?P<query>\?[\w\/#=&%\-]*)?$`
 
 type Url string
 
@@ -37,4 +39,17 @@ func (Url) isValid(value string) bool {
 
 func (url Url) String() string {
 	return string(url)
+}
+
+func (url Url) getParts() map[string]string {
+	return voHelper.GetRegexNamedGroups(urlRegex, url.String())
+}
+
+func (url Url) GetPort() (NetworkPort, error) {
+	portStr, exists := url.getParts()["port"]
+	if !exists {
+		return 0, errors.New("PortNotFound")
+	}
+
+	return NewNetworkPort(portStr)
 }
