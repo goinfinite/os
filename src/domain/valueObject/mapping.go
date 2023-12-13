@@ -2,17 +2,17 @@ package valueObject
 
 type Mapping struct {
 	Id                     MappingId           `json:"id"`
-	Path                   UrlPath             `json:"path"`
+	Path                   MappingPath         `json:"path"`
 	MatchPattern           MappingMatchPattern `json:"matchPattern"`
 	TargetType             MappingTargetType   `json:"targetType"`
-	TargetService          *ServiceName        `json:"targetService"`
-	TargetUrl              *Url                `json:"targetUrl"`
-	TargetHttpResponseCode *HttpResponseCode   `json:"targetHttpResponseCode"`
+	TargetService          *ServiceName        `json:"targetService,omitempty"`
+	TargetUrl              *Url                `json:"targetUrl,omitempty"`
+	TargetHttpResponseCode *HttpResponseCode   `json:"targetHttpResponseCode,omitempty"`
 }
 
 func NewMapping(
 	id MappingId,
-	path UrlPath,
+	path MappingPath,
 	matchPattern MappingMatchPattern,
 	targetType MappingTargetType,
 	targetService *ServiceName,
