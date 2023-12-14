@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -81,6 +82,40 @@ func AddVirtualHostController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "VirtualHostCreated")
+}
+
+// DeleteVirtualHost godoc
+// @Summary      DeleteVirtualHost
+// @Description  Delete a vhost.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        hostname path string true "VirtualHostHostname"
+// @Success      200 {object} object{} "VirtualHostDeleted"
+// @Router       /vhosts/{hostname}/ [delete]
+func DeleteVirtualHostController(c echo.Context) error {
+	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+
+	vhostsQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostsCmdRepo := infra.VirtualHostCmdRepo{}
+
+	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		panic("PrimaryHostnameNotFound")
+	}
+
+	err = useCase.DeleteVirtualHost(
+		vhostsQueryRepo,
+		vhostsCmdRepo,
+		primaryHostname,
+		hostname,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "VirtualHostDeleted")
 }
 
 // GetVirtualHostsWithMappings	 godoc

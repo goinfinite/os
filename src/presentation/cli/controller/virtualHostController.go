@@ -5,6 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -80,6 +81,42 @@ func AddVirtualHostController() *cobra.Command {
 	cmd.Flags().StringVarP(
 		&parentHostnameStr, "parent", "p", "", "ParentHostname",
 	)
+	return cmd
+}
+
+func DeleteVirtualHostController() *cobra.Command {
+	var hostnameStr string
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteVirtualHost",
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname := valueObject.NewFqdnPanic(hostnameStr)
+
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+
+			primaryHostname, err := infraHelper.GetPrimaryHostname()
+			if err != nil {
+				panic("PrimaryHostnameNotFound")
+			}
+
+			err = useCase.DeleteVirtualHost(
+				vhostQueryRepo,
+				vhostCmdRepo,
+				primaryHostname,
+				hostname,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "VirtualHostDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.MarkFlagRequired("hostname")
 	return cmd
 }
 

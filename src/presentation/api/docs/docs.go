@@ -1127,6 +1127,43 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vhosts/{hostname}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteVirtualHost",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VirtualHostHostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "VirtualHostDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

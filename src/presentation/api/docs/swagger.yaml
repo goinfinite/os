@@ -1107,6 +1107,29 @@ paths:
       summary: AddNewVirtualHost
       tags:
       - vhosts
+  /vhosts/{hostname}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vhost.
+      parameters:
+      - description: VirtualHostHostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: VirtualHostDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteVirtualHost
+      tags:
+      - vhosts
   /vhosts/mapping/:
     get:
       consumes:
