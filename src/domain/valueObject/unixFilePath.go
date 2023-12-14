@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"mime"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -74,6 +75,23 @@ func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
 	}
 
 	return NewUnixFileExtension(unixFileExtensionStr)
+}
+
+func (unixFilePath UnixFilePath) GetFileMimeType() (MimeType, error) {
+	mimeTypeStr := "generic"
+
+	unixFileExtension, err := unixFilePath.GetFileExtension()
+	if err != nil {
+		return NewMimeType("directory")
+	}
+
+	mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
+	if len(mimeTypeWithCharset) > 1 {
+		mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
+		mimeTypeStr = mimeTypeOnly
+	}
+
+	return NewMimeType(mimeTypeStr)
 }
 
 func (unixFilePath UnixFilePath) GetFileDir() (UnixFilePath, error) {
