@@ -80,6 +80,15 @@ func (unixFilePath UnixFilePath) GetFileDir() (UnixFilePath, error) {
 	return NewUnixFilePath(filepath.Dir(string(unixFilePath)))
 }
 
+func (unixFilePath UnixFilePath) GetFileSize() (Byte, error) {
+	pathInfo, err := os.Stat(string(unixFilePath))
+	if err != nil {
+		return 0, err
+	}
+
+	return Byte(pathInfo.Size()), nil
+}
+
 func (unixFilePath UnixFilePath) String() string {
 	return string(unixFilePath)
 }
