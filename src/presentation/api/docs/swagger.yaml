@@ -71,6 +71,15 @@ definitions:
       key:
         type: string
     type: object
+  dto.AddVirtualHost:
+    properties:
+      hostname:
+        type: string
+      parentHostname:
+        type: string
+      type:
+        type: string
+    type: object
   dto.Login:
     properties:
       password:
@@ -1073,6 +1082,29 @@ paths:
       security:
       - Bearer: []
       summary: GetVirtualHosts
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Add a new vhost.
+      parameters:
+      - description: NewVirtualHost
+        in: body
+        name: addVirtualHostDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddVirtualHost'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: VirtualHostCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewVirtualHost
       tags:
       - vhosts
   /vhosts/mapping/:

@@ -1058,6 +1058,43 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "AddNewVirtualHost",
+                "parameters": [
+                    {
+                        "description": "NewVirtualHost",
+                        "name": "addVirtualHostDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddVirtualHost"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "VirtualHostCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "/vhosts/mapping/": {
@@ -1199,6 +1236,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddVirtualHost": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
