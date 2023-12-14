@@ -39,4 +39,23 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
+
+	t.Run("DeleteTopLevelAndAliases", func(t *testing.T) {
+		hostnames := []valueObject.Fqdn{
+			valueObject.NewFqdnPanic("speedia.com"),
+			valueObject.NewFqdnPanic("speedia.org"),
+		}
+
+		for _, hostname := range hostnames {
+			vhostEntity, err := VirtualHostQueryRepo{}.GetByHostname(hostname)
+			if err != nil {
+				t.Errorf("ExpectedNoErrorButGot: %v", err)
+			}
+
+			err = VirtualHostCmdRepo{}.Delete(vhostEntity)
+			if err != nil {
+				t.Errorf("ExpectedNoErrorButGot: %v", err)
+			}
+		}
+	})
 }

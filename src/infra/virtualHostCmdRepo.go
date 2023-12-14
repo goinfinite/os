@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
@@ -31,19 +33,31 @@ func (repo VirtualHostCmdRepo) reloadWebServer() error {
 	return nil
 }
 
-func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
-	vhostFileStr := "/app/conf/nginx/" + addDto.ParentHostname.String() + ".conf"
+func (repo VirtualHostCmdRepo) getAliasConfigFile(
+	parentHostname valueObject.Fqdn,
+) (valueObject.UnixFilePath, error) {
+	vhostFileStr := "/app/conf/nginx/" + parentHostname.String() + ".conf"
 
 	isParentPrimaryDomain := VirtualHostQueryRepo{}.IsVirtualHostPrimaryDomain(
-		*addDto.ParentHostname,
+		parentHostname,
 	)
 	if isParentPrimaryDomain {
 		vhostFileStr = "/app/conf/nginx/primary.conf"
 	}
 
+	return valueObject.UnixFilePath(vhostFileStr), nil
+}
+
+func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
+	vhostFile, err := repo.getAliasConfigFile(*addDto.ParentHostname)
+	if err != nil {
+		return errors.New("GetAliasConfigFileFailed")
+	}
+	vhostFileStr := vhostFile.String()
+
 	hostnameStr := addDto.Hostname.String()
 
-	_, err := infraHelper.RunCmd(
+	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
 		`/server_name/ s/;$/ `+hostnameStr+` www.`+hostnameStr+`;/`,
@@ -145,6 +159,50 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		if err != nil {
 			return errors.New("ChownNecessaryDirectoriesFailed")
 		}
+	}
+
+	return repo.reloadWebServer()
+}
+
+func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
+	vhostFile, err := repo.getAliasConfigFile(*vhost.ParentHostname)
+	if err != nil {
+		return errors.New("GetAliasConfigFileFailed")
+	}
+	vhostFileStr := vhostFile.String()
+
+	hostnameStr := vhost.Hostname.String()
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		`/server_name/ s/ `+hostnameStr+` www.`+hostnameStr+`//`,
+		vhostFileStr,
+	)
+	if err != nil {
+		return errors.New("DeleteAliasFailed")
+	}
+
+	return repo.reloadWebServer()
+}
+
+func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
+	hostnameStr := vhost.Hostname.String()
+	if vhost.Type.String() == "alias" {
+		return repo.deleteAlias(vhost)
+	}
+
+	_, err := infraHelper.RunCmd(
+		"rm",
+		"-rf",
+		"/app/html/"+hostnameStr,
+		"/app/conf/nginx/"+hostnameStr+".conf",
+		"/app/conf/pki/"+hostnameStr+".crt",
+		"/app/conf/pki/"+hostnameStr+".key",
+		"/app/conf/nginx/mapping/"+hostnameStr+".conf",
+	)
+	if err != nil {
+		return errors.New("DeleteVirtualHostFailed")
 	}
 
 	return repo.reloadWebServer()
