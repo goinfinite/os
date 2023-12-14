@@ -101,7 +101,7 @@ func (unixFilePath UnixFilePath) GetFileDir() (UnixFilePath, error) {
 func (unixFilePath UnixFilePath) GetFileSize() (Byte, error) {
 	pathInfo, err := os.Stat(string(unixFilePath))
 	if err != nil {
-		return 0, err
+		return 0, errors.New("UnableToGetPathInfo")
 	}
 
 	return Byte(pathInfo.Size()), nil
