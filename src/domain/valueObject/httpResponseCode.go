@@ -26,7 +26,7 @@ func NewHttpResponseCode(value interface{}) (HttpResponseCode, error) {
 	return responseCode, nil
 }
 
-func NewHttpResponseCodePanic(value string) HttpResponseCode {
+func NewHttpResponseCodePanic(value interface{}) HttpResponseCode {
 	responseCode, err := NewHttpResponseCode(value)
 	if err != nil {
 		panic(err)
