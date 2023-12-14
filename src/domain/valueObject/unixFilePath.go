@@ -70,7 +70,7 @@ func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
 func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
 	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
 	if len(unixFileExtensionStr) < 1 {
-		return "", nil
+		return "", errors.New("UnixFileHasNoExtension")
 	}
 
 	return NewUnixFileExtension(unixFileExtensionStr)
