@@ -346,10 +346,15 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 }
 
 func (repo VirtualHostQueryRepo) getVirtualHostMappings(
-	vhostName valueObject.Fqdn,
+	vhost entity.VirtualHost,
 ) ([]valueObject.Mapping, error) {
 	mappings := []valueObject.Mapping{}
 
+	if vhost.Type.String() == "alias" {
+		return mappings, nil
+	}
+
+	vhostName := vhost.Hostname
 	mappingFilePath, err := repo.GetVirtualHostMappingsFilePath(vhostName)
 	if err != nil {
 		return mappings, err
@@ -399,12 +404,7 @@ func (repo VirtualHostQueryRepo) GetWithMappings() ([]dto.VirtualHostWithMapping
 	}
 
 	for _, vhost := range vhosts {
-		isAliases := vhost.Type.String() == "alias"
-		if isAliases {
-			continue
-		}
-
-		mappings, err := repo.getVirtualHostMappings(vhost.Hostname)
+		mappings, err := repo.getVirtualHostMappings(vhost)
 		if err != nil {
 			log.Printf(
 				"[%s] GetMappingsFailed: %s",
