@@ -10,8 +10,60 @@ import (
 type VirtualHostCmdRepo struct {
 }
 
+func (repo VirtualHostCmdRepo) reloadWebServer() error {
+	_, err := infraHelper.RunCmd(
+		"nginx",
+		"-t",
+	)
+	if err != nil {
+		return errors.New("NginxConfigTestFailed")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"nginx",
+		"-s",
+		"reload",
+	)
+	if err != nil {
+		return errors.New("NginxReloadFailed")
+	}
+
+	return nil
+}
+
+func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
+	vhostFileStr := "/app/conf/nginx/" + addDto.ParentHostname.String() + ".conf"
+
+	isParentPrimaryDomain := VirtualHostQueryRepo{}.IsVirtualHostPrimaryDomain(
+		*addDto.ParentHostname,
+	)
+	if isParentPrimaryDomain {
+		vhostFileStr = "/app/conf/nginx/primary.conf"
+	}
+
+	hostnameStr := addDto.Hostname.String()
+
+	_, err := infraHelper.RunCmd(
+		"sed",
+		"-i",
+		`/server_name/ s/;$/ `+hostnameStr+` www.`+hostnameStr+`;/`,
+		vhostFileStr,
+	)
+	if err != nil {
+		return errors.New("AddAliasFailed")
+	}
+
+	// TODO: Regenerate cert for primary domain to include new alias
+
+	return repo.reloadWebServer()
+}
+
 func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 	hostnameStr := addDto.Hostname.String()
+
+	if addDto.Type.String() == "alias" {
+		return repo.addAlias(addDto)
+	}
 
 	publicDir := "/app/html/" + hostnameStr
 	certPath := "/app/conf/pki/" + hostnameStr + ".crt"
@@ -95,22 +147,5 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		}
 	}
 
-	_, err = infraHelper.RunCmd(
-		"nginx",
-		"-t",
-	)
-	if err != nil {
-		return errors.New("NginxConfigTestFailed")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"nginx",
-		"-s",
-		"reload",
-	)
-	if err != nil {
-		return errors.New("NginxReloadFailed")
-	}
-
-	return nil
+	return repo.reloadWebServer()
 }
