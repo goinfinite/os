@@ -24,7 +24,11 @@ type VirtualHostQueryRepo struct {
 func (repo VirtualHostQueryRepo) IsVirtualHostPrimaryDomain(
 	domain valueObject.Fqdn,
 ) bool {
-	primaryDomain, _ := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
+	primaryDomain, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return false
+	}
+
 	return domain == primaryDomain
 }
 
