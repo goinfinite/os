@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strings"
 
 	"golang.org/x/exp/slices"
 )
@@ -11,10 +12,11 @@ type MappingTargetType string
 var ValidMappingTargetTypes = []string{
 	"url",
 	"service",
-	"responseCode",
+	"response-code",
 }
 
 func NewMappingTargetType(value string) (MappingTargetType, error) {
+	value = strings.ToLower(value)
 	if !slices.Contains(ValidMappingTargetTypes, value) {
 		return "", errors.New("InvalidMappingTargetType")
 	}

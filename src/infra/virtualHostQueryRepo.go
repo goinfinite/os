@@ -233,7 +233,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		return mapping, errors.New("InvalidModifier: " + modifier)
 	}
 
-	matchPatternStr := "beginsWith"
+	matchPatternStr := "begins-with"
 	isModifierEquals := modifier == "="
 	if isModifierEquals {
 		matchPatternStr = "equals"
@@ -246,7 +246,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		lastPathCharIsDollarSign := strings.HasSuffix(pathStr, "$")
 		if lastPathCharIsDollarSign {
 			pathStr = strings.TrimSuffix(pathStr, "$")
-			matchPatternStr = "endsWith"
+			matchPatternStr = "ends-with"
 		}
 	}
 
@@ -288,7 +288,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		}
 		targetResponseCodePtr = &responseCode
 
-		targetTypeStr = "responseCode"
+		targetTypeStr = "response-code"
 
 		hasUrl := len(blockContentFirstLineParts) == 3
 		if hasUrl {
