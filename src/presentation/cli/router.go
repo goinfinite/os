@@ -141,6 +141,7 @@ func virtualHostRoutes() {
 	vhostCmd.AddCommand(mappingCmd)
 	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
 	mappingCmd.AddCommand(cliController.AddVirtualHostMappingController())
+	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
 }
 
 func registerCliRoutes() {

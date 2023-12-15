@@ -226,3 +226,38 @@ func AddVirtualHostMappingController() *cobra.Command {
 	)
 	return cmd
 }
+
+func DeleteVirtualHostMappingController() *cobra.Command {
+	var hostnameStr string
+	var mappingIdUint uint
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteMapping",
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname := valueObject.NewFqdnPanic(hostnameStr)
+			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
+
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+
+			err := useCase.DeleteMapping(
+				vhostQueryRepo,
+				vhostCmdRepo,
+				hostname,
+				mappingId,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "MappingDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHost Hostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().UintVarP(&mappingIdUint, "id", "i", 0, "MappingId")
+	cmd.MarkFlagRequired("id")
+	return cmd
+}
