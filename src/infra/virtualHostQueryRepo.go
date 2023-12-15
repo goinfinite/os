@@ -186,37 +186,26 @@ func (repo VirtualHostQueryRepo) GetByHostname(
 func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 	vhostName valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
+	var mappingFilePath valueObject.UnixFilePath
+
 	mappingFileName := vhostName.String() + ".conf"
+
+	vhostEntity, err := repo.GetByHostname(vhostName)
+	if err != nil {
+		return mappingFilePath, errors.New("VirtualHostNotFound")
+	}
+
+	isAlias := vhostEntity.Type.String() == "alias"
+	if isAlias {
+		parentHostname := *vhostEntity.ParentHostname
+		mappingFileName = parentHostname.String() + ".conf"
+	}
+
 	if repo.IsVirtualHostPrimaryDomain(vhostName) {
 		mappingFileName = "primary.conf"
 	}
 
-	mappingFilePath, err := valueObject.NewUnixFilePath(
-		mappingsDir + "/" + mappingFileName,
-	)
-	if err != nil {
-		return mappingFilePath, err
-	}
-
-	if !infraHelper.FileExists(mappingFilePath.String()) {
-		vhostEntity, err := repo.GetByHostname(vhostName)
-		if err != nil {
-			return mappingFilePath, errors.New("VirtualHostNotFound")
-		}
-
-		isAlias := vhostEntity.Type.String() == "alias"
-		if isAlias {
-			parentHostname := *vhostEntity.ParentHostname
-			mappingFilePath, err = valueObject.NewUnixFilePath(
-				mappingsDir + "/" + parentHostname.String() + ".conf",
-			)
-			if err != nil {
-				return mappingFilePath, err
-			}
-		}
-	}
-
-	return mappingFilePath, nil
+	return valueObject.NewUnixFilePath(mappingsDir + "/" + mappingFileName)
 }
 
 func (repo VirtualHostQueryRepo) locationBlockToMapping(
