@@ -207,3 +207,80 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 
 	return repo.reloadWebServer()
 }
+
+func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
+	matchPatternStr := addMapping.MatchPattern.String()
+	modifier := ""
+	switch matchPatternStr {
+	case "contains", "ends-with":
+		modifier = "~"
+	case "equals":
+		modifier = "="
+	}
+
+	pathStr := addMapping.Path.String()
+	if matchPatternStr == "ends-with" {
+		pathStr += "$"
+	}
+
+	locationUri := pathStr
+	if modifier != "" {
+		locationUri = modifier + " " + pathStr
+	}
+
+	url := ""
+	if addMapping.TargetUrl != nil {
+		url = addMapping.TargetUrl.String()
+	}
+	if addMapping.TargetType.String() == "service" {
+		servicesList, err := ServicesQueryRepo{}.Get()
+		if err != nil {
+			return errors.New("GetServicesListFailed")
+		}
+
+		for _, service := range servicesList {
+			if service.Name.String() != addMapping.TargetService.String() {
+				continue
+			}
+			// TODO: Add support for protocol and thus multiple ports
+			url = "http://" + service.Name.String() + ":" + service.Ports[0].String()
+		}
+	}
+
+	responseCode := ""
+	if addMapping.TargetHttpResponseCode != nil {
+		responseCode = addMapping.TargetHttpResponseCode.String()
+	}
+
+	directiveWithValue := "proxy_pass " + url
+	switch addMapping.TargetType.String() {
+	case "response-code":
+		directiveWithValue = "return " + responseCode
+	case "url":
+		directiveWithValue = "return " + responseCode + " " + url
+	}
+
+	mapping := `location ` + locationUri + ` {
+    ` + directiveWithValue + `;
+}
+`
+
+	vhostQueryRepo := VirtualHostQueryRepo{}
+	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
+		addMapping.Hostname,
+	)
+	if err != nil {
+		return errors.New("GetVirtualHostMappingsFilePathFailed")
+	}
+
+	err = infraHelper.UpdateFile(
+		mappingFilePath.String(),
+		mapping,
+		false,
+	)
+	if err != nil {
+		return errors.New("AddMappingFailed")
+	}
+
+	return repo.reloadWebServer()
+}
