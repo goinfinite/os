@@ -330,17 +330,17 @@ func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 		mapping.Hostname,
 	)
 	if err != nil {
-		return errors.New("GetVirtualHostMappingsFilePathFailed")
+		return err
 	}
 
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		`/location `+locationUri+`/,/}/d`,
+		`\#location `+locationUri+` {#,/}/d`,
 		mappingFilePath.String(),
 	)
 	if err != nil {
-		return errors.New("DeleteMappingFailed")
+		return err
 	}
 
 	return repo.reloadWebServer()
