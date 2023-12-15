@@ -51,7 +51,7 @@ func AddMapping(
 	}
 
 	isServiceTarget := addMapping.TargetType.String() == "service"
-	if isServiceTarget && addMapping.TargetService == nil {
+	if isServiceTarget && addMapping.TargetServiceName == nil {
 		return errors.New("TargetServiceNameRequired")
 	}
 

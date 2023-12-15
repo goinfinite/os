@@ -259,7 +259,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 		url = addMapping.TargetUrl.String()
 	}
 	if addMapping.TargetType.String() == "service" {
-		svcUrl, err := repo.getServiceUrl(*addMapping.TargetService)
+		svcUrl, err := repo.getServiceUrl(*addMapping.TargetServiceName)
 		if err != nil {
 			return errors.New("GetServiceUrlFailed")
 		}

@@ -5,7 +5,7 @@ type Mapping struct {
 	Path                   MappingPath         `json:"path"`
 	MatchPattern           MappingMatchPattern `json:"matchPattern"`
 	TargetType             MappingTargetType   `json:"targetType"`
-	TargetService          *ServiceName        `json:"targetService,omitempty"`
+	TargetServiceName      *ServiceName        `json:"targetServiceName,omitempty"`
 	TargetUrl              *Url                `json:"targetUrl,omitempty"`
 	TargetHttpResponseCode *HttpResponseCode   `json:"targetHttpResponseCode,omitempty"`
 }
@@ -15,7 +15,7 @@ func NewMapping(
 	path MappingPath,
 	matchPattern MappingMatchPattern,
 	targetType MappingTargetType,
-	targetService *ServiceName,
+	targetServiceName *ServiceName,
 	targetUrl *Url,
 	targetHttpResponseCode *HttpResponseCode,
 ) Mapping {
@@ -24,7 +24,7 @@ func NewMapping(
 		Path:                   path,
 		MatchPattern:           matchPattern,
 		TargetType:             targetType,
-		TargetService:          targetService,
+		TargetServiceName:      targetServiceName,
 		TargetUrl:              targetUrl,
 		TargetHttpResponseCode: targetHttpResponseCode,
 	}
