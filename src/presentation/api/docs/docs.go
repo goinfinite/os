@@ -1126,6 +1126,43 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "AddMapping",
+                "parameters": [
+                    {
+                        "description": "AddMapping",
+                        "name": "addMappingDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddMapping"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "MappingAdded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "/vhosts/{hostname}/": {
@@ -1259,6 +1296,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddMapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetService": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
                     "type": "string"
                 }
             }

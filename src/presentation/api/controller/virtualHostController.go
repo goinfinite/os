@@ -136,3 +136,79 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
+
+// AddMapping godoc
+// @Summary      AddMapping
+// @Description  Add a new vhost mapping.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        addMappingDto	body dto.AddMapping	true	"AddMapping"
+// @Success      201 {object} object{} "MappingAdded"
+// @Router       /vhosts/mapping/ [post]
+func AddMappingController(c echo.Context) error {
+	requiredParams := []string{"hostname", "path", "targetType"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
+	path := valueObject.NewMappingPathPanic(requestBody["path"].(string))
+	targetType := valueObject.NewMappingTargetTypePanic(
+		requestBody["targetType"].(string),
+	)
+
+	matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
+	if requestBody["matchPattern"] != nil {
+		matchPattern = valueObject.NewMappingMatchPatternPanic(
+			requestBody["matchPattern"].(string),
+		)
+	}
+
+	var targetServicePtr *valueObject.ServiceName
+	if requestBody["targetService"] != nil {
+		targetService := valueObject.NewServiceNamePanic(
+			requestBody["targetService"].(string),
+		)
+		targetServicePtr = &targetService
+	}
+
+	var targetUrlPtr *valueObject.Url
+	if requestBody["targetUrl"] != nil {
+		targetUrl := valueObject.NewUrlPanic(requestBody["targetUrl"].(string))
+		targetUrlPtr = &targetUrl
+	}
+
+	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	if requestBody["targetHttpResponseCode"] != nil {
+		targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
+			requestBody["targetHttpResponseCode"],
+		)
+		targetHttpResponseCodePtr = &targetHttpResponseCode
+	}
+
+	addMappingDto := dto.NewAddMapping(
+		hostname,
+		path,
+		matchPattern,
+		targetType,
+		targetServicePtr,
+		targetUrlPtr,
+		targetHttpResponseCodePtr,
+	)
+
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
+
+	err := useCase.AddMapping(
+		vhostQueryRepo,
+		vhostCmdRepo,
+		addMappingDto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingAdded")
+}

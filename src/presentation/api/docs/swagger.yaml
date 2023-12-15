@@ -62,6 +62,23 @@ definitions:
       version:
         type: string
     type: object
+  dto.AddMapping:
+    properties:
+      hostname:
+        type: string
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetService:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
+        type: string
+    type: object
   dto.AddSslPair:
     properties:
       certificate:
@@ -1147,6 +1164,29 @@ paths:
       security:
       - Bearer: []
       summary: GetVirtualHostsWithMappings
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Add a new vhost mapping.
+      parameters:
+      - description: AddMapping
+        in: body
+        name: addMappingDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddMapping'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: MappingAdded
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddMapping
       tags:
       - vhosts
 securityDefinitions:

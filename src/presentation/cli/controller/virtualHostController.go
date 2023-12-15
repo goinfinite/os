@@ -137,3 +137,92 @@ func GetVirtualHostsWithMappingsController() *cobra.Command {
 
 	return cmd
 }
+
+func AddVirtualHostMappingController() *cobra.Command {
+	var hostnameStr string
+	var pathStr string
+	var matchPatternStr string
+	var targetTypeStr string
+	var targetServiceStr string
+	var targetUrlStr string
+	var targetHttpResponseCode uint
+
+	cmd := &cobra.Command{
+		Use:   "add",
+		Short: "AddMapping",
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname := valueObject.NewFqdnPanic(hostnameStr)
+			path := valueObject.NewMappingPathPanic(pathStr)
+			targetType := valueObject.NewMappingTargetTypePanic(targetTypeStr)
+
+			matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
+			if matchPatternStr != "" {
+				matchPattern = valueObject.NewMappingMatchPatternPanic(matchPatternStr)
+			}
+
+			var targetServicePtr *valueObject.ServiceName
+			if targetServiceStr != "" {
+				targetService := valueObject.NewServiceNamePanic(targetServiceStr)
+				targetServicePtr = &targetService
+			}
+
+			var targetUrlPtr *valueObject.Url
+			if targetUrlStr != "" {
+				targetUrl := valueObject.NewUrlPanic(targetUrlStr)
+				targetUrlPtr = &targetUrl
+			}
+
+			var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+			if targetHttpResponseCode != 0 {
+				targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
+					targetHttpResponseCode,
+				)
+				targetHttpResponseCodePtr = &targetHttpResponseCode
+			}
+
+			addMappingDto := dto.NewAddMapping(
+				hostname,
+				path,
+				matchPattern,
+				targetType,
+				targetServicePtr,
+				targetUrlPtr,
+				targetHttpResponseCodePtr,
+			)
+
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+
+			err := useCase.AddMapping(
+				vhostQueryRepo,
+				vhostCmdRepo,
+				addMappingDto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "MappingAdded")
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(&pathStr, "path", "p", "", "MappingPath")
+	cmd.MarkFlagRequired("path")
+	cmd.Flags().StringVarP(&matchPatternStr, "match", "m", "", "MatchPattern (begins-with|contains|ends-with)")
+	cmd.Flags().StringVarP(
+		&targetTypeStr, "type", "t", "", "MappingTargetType (service|url|response-code)",
+	)
+	cmd.MarkFlagRequired("type")
+	cmd.Flags().StringVarP(
+		&targetServiceStr, "service", "s", "", "TargetServiceName",
+	)
+	cmd.Flags().StringVarP(
+		&targetUrlStr, "url", "u", "", "TargetUrl",
+	)
+	cmd.Flags().UintVarP(
+		&targetHttpResponseCode, "response-code", "r", 0, "TargetHttpResponseCode",
+	)
+	return cmd
+}
