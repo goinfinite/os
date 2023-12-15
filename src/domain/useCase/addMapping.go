@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -21,13 +20,11 @@ func AddMapping(
 		return errors.New("GetVirtualHostsInfraError")
 	}
 
-	var vhost *entity.VirtualHost
-	for _, vhostWithMapping := range vhostWithMappings {
+	vhostIndex := -1
+	for vhostWithMappingIndex, vhostWithMapping := range vhostWithMappings {
 		if vhostWithMapping.Hostname != addMapping.Hostname {
 			continue
 		}
-
-		vhost = &vhostWithMapping.VirtualHost
 
 		for _, mapping := range vhostWithMapping.Mappings {
 			if mapping.MatchPattern != addMapping.MatchPattern {
@@ -40,13 +37,15 @@ func AddMapping(
 
 			return errors.New("MappingAlreadyExists")
 		}
+
+		vhostIndex = vhostWithMappingIndex
 	}
 
-	if vhost == nil {
+	if vhostIndex == -1 {
 		return errors.New("VirtualHostNotFound")
 	}
 
-	if vhost.Type.String() == "alias" {
+	if vhostWithMappings[vhostIndex].Type.String() == "alias" {
 		return errors.New("AliasCannotHaveMappings")
 	}
 
@@ -75,8 +74,6 @@ func AddMapping(
 		log.Printf("AddMappingError: %s", err.Error())
 		return errors.New("AddMappingInfraError")
 	}
-
-	log.Printf("Mapping '%s' added.", addMapping.Hostname)
 
 	return nil
 }
