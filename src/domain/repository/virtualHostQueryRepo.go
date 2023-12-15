@@ -10,4 +10,8 @@ type VirtualHostQueryRepo interface {
 	Get() ([]entity.VirtualHost, error)
 	GetByHostname(hostname valueObject.Fqdn) (entity.VirtualHost, error)
 	GetWithMappings() ([]dto.VirtualHostWithMappings, error)
+	GetMappingById(
+		vhostHostname valueObject.Fqdn,
+		id valueObject.MappingId,
+	) (entity.Mapping, error)
 }
