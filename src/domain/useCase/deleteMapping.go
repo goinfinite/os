@@ -14,12 +14,12 @@ func DeleteMapping(
 	vhostHostname valueObject.Fqdn,
 	mappingId valueObject.MappingId,
 ) error {
-	_, err := queryRepo.GetMappingById(vhostHostname, mappingId)
+	mappingEntity, err := queryRepo.GetMappingById(vhostHostname, mappingId)
 	if err != nil {
 		return errors.New("MappingNotFound")
 	}
 
-	err = cmdRepo.DeleteMapping(vhostHostname, mappingId)
+	err = cmdRepo.DeleteMapping(mappingEntity)
 	if err != nil {
 		log.Printf("DeleteMappingError: %v", err)
 		return errors.New("DeleteMappingInfraError")
