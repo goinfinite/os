@@ -208,6 +208,32 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 	return repo.reloadWebServer()
 }
 
+func (repo VirtualHostCmdRepo) getServiceUrl(
+	name valueObject.ServiceName,
+) (valueObject.Url, error) {
+	var url valueObject.Url
+
+	servicesList, err := ServicesQueryRepo{}.Get()
+	if err != nil {
+		return url, errors.New("GetServicesListFailed")
+	}
+
+	urlStr := ""
+	for _, service := range servicesList {
+		if service.Name != name {
+			continue
+		}
+		// TODO: Add support for protocol and thus multiple ports
+		urlStr = "http://localhost:" + service.Ports[0].String()
+	}
+
+	if urlStr == "" {
+		return url, errors.New("ServiceNotFound")
+	}
+
+	return valueObject.NewUrl(urlStr)
+}
+
 func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	matchPatternStr := addMapping.MatchPattern.String()
 	modifier := ""
@@ -233,18 +259,12 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 		url = addMapping.TargetUrl.String()
 	}
 	if addMapping.TargetType.String() == "service" {
-		servicesList, err := ServicesQueryRepo{}.Get()
+		svcUrl, err := repo.getServiceUrl(*addMapping.TargetService)
 		if err != nil {
-			return errors.New("GetServicesListFailed")
+			return errors.New("GetServiceUrlFailed")
 		}
 
-		for _, service := range servicesList {
-			if service.Name.String() != addMapping.TargetService.String() {
-				continue
-			}
-			// TODO: Add support for protocol and thus multiple ports
-			url = "http://" + service.Name.String() + ":" + service.Ports[0].String()
-		}
+		url = svcUrl.String()
 	}
 
 	responseCode := ""
