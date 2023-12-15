@@ -208,6 +208,30 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 	return repo.reloadWebServer()
 }
 
+func (repo VirtualHostCmdRepo) mappingToLocationUri(
+	mapping valueObject.Mapping,
+) string {
+	modifier := ""
+	switch mapping.MatchPattern.String() {
+	case "contains", "ends-with":
+		modifier = "~"
+	case "equals":
+		modifier = "="
+	}
+
+	pathStr := mapping.Path.String()
+	if mapping.MatchPattern.String() == "ends-with" {
+		pathStr += "$"
+	}
+
+	locationUri := pathStr
+	if modifier != "" {
+		locationUri = modifier + " " + pathStr
+	}
+
+	return locationUri
+}
+
 func (repo VirtualHostCmdRepo) getServiceUrl(
 	name valueObject.ServiceName,
 ) (valueObject.Url, error) {
@@ -235,24 +259,16 @@ func (repo VirtualHostCmdRepo) getServiceUrl(
 }
 
 func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
-	matchPatternStr := addMapping.MatchPattern.String()
-	modifier := ""
-	switch matchPatternStr {
-	case "contains", "ends-with":
-		modifier = "~"
-	case "equals":
-		modifier = "="
-	}
-
-	pathStr := addMapping.Path.String()
-	if matchPatternStr == "ends-with" {
-		pathStr += "$"
-	}
-
-	locationUri := pathStr
-	if modifier != "" {
-		locationUri = modifier + " " + pathStr
-	}
+	mappingEntity := valueObject.NewMapping(
+		valueObject.NewMappingIdPanic(0),
+		addMapping.Path,
+		addMapping.MatchPattern,
+		addMapping.TargetType,
+		addMapping.TargetServiceName,
+		addMapping.TargetUrl,
+		addMapping.TargetHttpResponseCode,
+	)
+	locationUri := repo.mappingToLocationUri(mappingEntity)
 
 	url := ""
 	if addMapping.TargetUrl != nil {
@@ -300,6 +316,33 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	)
 	if err != nil {
 		return errors.New("AddMappingFailed")
+	}
+
+	return repo.reloadWebServer()
+}
+
+func (repo VirtualHostCmdRepo) DeleteMapping(
+	hostname valueObject.Fqdn,
+	mapping valueObject.Mapping,
+) error {
+	locationUri := repo.mappingToLocationUri(mapping)
+
+	vhostQueryRepo := VirtualHostQueryRepo{}
+	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
+		hostname,
+	)
+	if err != nil {
+		return errors.New("GetVirtualHostMappingsFilePathFailed")
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		`/location `+locationUri+`/,/}/d`,
+		mappingFilePath.String(),
+	)
+	if err != nil {
+		return errors.New("DeleteMappingFailed")
 	}
 
 	return repo.reloadWebServer()

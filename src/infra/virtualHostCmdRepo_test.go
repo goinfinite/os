@@ -54,7 +54,25 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 		)
 
 		err := VirtualHostCmdRepo{}.AddMapping(addDto)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %v", err)
+		}
+	})
 
+	t.Run("DeleteMapping", func(t *testing.T) {
+		hostname := valueObject.NewFqdnPanic("speedia.org")
+		responseCode := valueObject.NewHttpResponseCodePanic(403)
+		mapping := valueObject.NewMapping(
+			valueObject.NewMappingIdPanic(0),
+			valueObject.NewMappingPathPanic("/"),
+			valueObject.NewMappingMatchPatternPanic("begins-with"),
+			valueObject.NewMappingTargetTypePanic("response-code"),
+			nil,
+			nil,
+			&responseCode,
+		)
+
+		err := VirtualHostCmdRepo{}.DeleteMapping(hostname, mapping)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
