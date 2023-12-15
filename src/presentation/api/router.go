@@ -90,7 +90,11 @@ func vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
 
 	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
-	vhostsGroup.POST("/mapping/", apiController.AddMappingController)
+	vhostsGroup.POST("/mapping/", apiController.AddVirtualHostMappingController)
+	vhostsGroup.DELETE(
+		"/mapping/:hostname/:mappingId/",
+		apiController.DeleteVirtualHostMappingController,
+	)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {

@@ -1165,6 +1165,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/vhosts/mapping/{hostname}/{id}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteMapping",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VirtualHost Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Mapping Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/vhosts/{hostname}/": {
             "delete": {
                 "security": [
@@ -1186,7 +1230,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "VirtualHostHostname",
+                        "description": "VirtualHost Hostname",
                         "name": "hostname",
                         "in": "path",
                         "required": true
@@ -1315,7 +1359,7 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetService": {
+                "targetServiceName": {
                     "type": "string"
                 },
                 "targetType": {
@@ -1492,7 +1536,7 @@ const docTemplate = `{
                 "mappings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/valueObject.Mapping"
+                        "$ref": "#/definitions/entity.Mapping"
                     }
                 },
                 "parentHostname": {
@@ -1605,6 +1649,35 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "entity.Mapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -1812,32 +1885,6 @@ const docTemplate = `{
                 },
                 "storageTotal": {
                     "type": "integer"
-                }
-            }
-        },
-        "valueObject.Mapping": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetService": {
-                    "type": "string"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetUrl": {
-                    "type": "string"
                 }
             }
         },

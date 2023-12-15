@@ -91,7 +91,7 @@ func AddVirtualHostController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "VirtualHostHostname"
+// @Param        hostname path string true "VirtualHost Hostname"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /vhosts/{hostname}/ [delete]
 func DeleteVirtualHostController(c echo.Context) error {
@@ -147,7 +147,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Param        addMappingDto	body dto.AddMapping	true	"AddMapping"
 // @Success      201 {object} object{} "MappingAdded"
 // @Router       /vhosts/mapping/ [post]
-func AddMappingController(c echo.Context) error {
+func AddVirtualHostMappingController(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -211,4 +211,35 @@ func AddMappingController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingAdded")
+}
+
+// DeleteVirtualHost godoc
+// @Summary      DeleteMapping
+// @Description  Delete a vhost mapping.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        hostname path string true "VirtualHost Hostname"
+// @Param        id path uint true "Mapping Id"
+// @Success      200 {object} object{} "MappingDeleted"
+// @Router       /vhosts/mapping/{hostname}/{id}/ [delete]
+func DeleteVirtualHostMappingController(c echo.Context) error {
+	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+	mappingId := valueObject.NewMappingIdPanic(c.Param("id"))
+
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
+
+	err := useCase.DeleteMapping(
+		vhostQueryRepo,
+		vhostCmdRepo,
+		hostname,
+		mappingId,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "MappingDeleted")
 }

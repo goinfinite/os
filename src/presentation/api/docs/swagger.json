@@ -1158,6 +1158,50 @@
                 }
             }
         },
+        "/vhosts/mapping/{hostname}/{id}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteMapping",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VirtualHost Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Mapping Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/vhosts/{hostname}/": {
             "delete": {
                 "security": [
@@ -1179,7 +1223,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "VirtualHostHostname",
+                        "description": "VirtualHost Hostname",
                         "name": "hostname",
                         "in": "path",
                         "required": true
@@ -1308,7 +1352,7 @@
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetService": {
+                "targetServiceName": {
                     "type": "string"
                 },
                 "targetType": {
@@ -1485,7 +1529,7 @@
                 "mappings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/valueObject.Mapping"
+                        "$ref": "#/definitions/entity.Mapping"
                     }
                 },
                 "parentHostname": {
@@ -1598,6 +1642,35 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "entity.Mapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -1805,32 +1878,6 @@
                 },
                 "storageTotal": {
                     "type": "integer"
-                }
-            }
-        },
-        "valueObject.Mapping": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetService": {
-                    "type": "string"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetUrl": {
-                    "type": "string"
                 }
             }
         },

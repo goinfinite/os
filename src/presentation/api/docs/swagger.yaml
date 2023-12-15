@@ -72,7 +72,7 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetService:
+      targetServiceName:
         type: string
       targetType:
         type: string
@@ -187,7 +187,7 @@ definitions:
         type: string
       mappings:
         items:
-          $ref: '#/definitions/valueObject.Mapping'
+          $ref: '#/definitions/entity.Mapping'
         type: array
       parentHostname:
         type: string
@@ -261,6 +261,25 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  entity.Mapping:
+    properties:
+      hostname:
+        type: string
+      id:
+        type: integer
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetServiceName:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
+        type: string
     type: object
   entity.O11yOverview:
     properties:
@@ -397,23 +416,6 @@ definitions:
         type: integer
       storageTotal:
         type: integer
-    type: object
-  valueObject.Mapping:
-    properties:
-      id:
-        type: integer
-      matchPattern:
-        type: string
-      path:
-        type: string
-      targetHttpResponseCode:
-        type: integer
-      targetService:
-        type: string
-      targetType:
-        type: string
-      targetUrl:
-        type: string
     type: object
   valueObject.RuntimeContext:
     enum:
@@ -1130,7 +1132,7 @@ paths:
       - application/json
       description: Delete a vhost.
       parameters:
-      - description: VirtualHostHostname
+      - description: VirtualHost Hostname
         in: path
         name: hostname
         required: true
@@ -1187,6 +1189,34 @@ paths:
       security:
       - Bearer: []
       summary: AddMapping
+      tags:
+      - vhosts
+  /vhosts/mapping/{hostname}/{id}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vhost mapping.
+      parameters:
+      - description: VirtualHost Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      - description: Mapping Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteMapping
       tags:
       - vhosts
 securityDefinitions:
