@@ -198,6 +198,24 @@ func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 		return mappingFilePath, err
 	}
 
+	if !infraHelper.FileExists(mappingFilePath.String()) {
+		vhostEntity, err := repo.GetByHostname(vhostName)
+		if err != nil {
+			return mappingFilePath, errors.New("VirtualHostNotFound")
+		}
+
+		isAlias := vhostEntity.Type.String() == "alias"
+		if isAlias {
+			parentHostname := *vhostEntity.ParentHostname
+			mappingFilePath, err = valueObject.NewUnixFilePath(
+				mappingsDir + "/" + parentHostname.String() + ".conf",
+			)
+			if err != nil {
+				return mappingFilePath, err
+			}
+		}
+	}
+
 	return mappingFilePath, nil
 }
 
