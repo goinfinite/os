@@ -209,7 +209,7 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) mappingToLocationUri(
-	mapping valueObject.Mapping,
+	mapping entity.Mapping,
 ) string {
 	modifier := ""
 	switch mapping.MatchPattern.String() {
@@ -259,8 +259,9 @@ func (repo VirtualHostCmdRepo) getServiceUrl(
 }
 
 func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
-	mappingEntity := valueObject.NewMapping(
+	mappingEntity := entity.NewMapping(
 		valueObject.NewMappingIdPanic(0),
+		addMapping.Hostname,
 		addMapping.Path,
 		addMapping.MatchPattern,
 		addMapping.TargetType,
@@ -321,15 +322,12 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) DeleteMapping(
-	hostname valueObject.Fqdn,
-	mapping valueObject.Mapping,
-) error {
+func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 	locationUri := repo.mappingToLocationUri(mapping)
 
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
-		hostname,
+		mapping.Hostname,
 	)
 	if err != nil {
 		return errors.New("GetVirtualHostMappingsFilePathFailed")

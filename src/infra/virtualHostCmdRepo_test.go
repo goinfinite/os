@@ -5,6 +5,7 @@ import (
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -62,8 +63,9 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	t.Run("DeleteMapping", func(t *testing.T) {
 		hostname := valueObject.NewFqdnPanic("speedia.org")
 		responseCode := valueObject.NewHttpResponseCodePanic(403)
-		mapping := valueObject.NewMapping(
+		mapping := entity.NewMapping(
 			valueObject.NewMappingIdPanic(0),
+			hostname,
 			valueObject.NewMappingPathPanic("/"),
 			valueObject.NewMappingMatchPatternPanic("begins-with"),
 			valueObject.NewMappingTargetTypePanic("response-code"),
@@ -72,7 +74,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			&responseCode,
 		)
 
-		err := VirtualHostCmdRepo{}.DeleteMapping(hostname, mapping)
+		err := VirtualHostCmdRepo{}.DeleteMapping(mapping)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
