@@ -449,3 +449,28 @@ func (repo VirtualHostQueryRepo) GetWithMappings() ([]dto.VirtualHostWithMapping
 
 	return vhostsWithMappings, nil
 }
+
+func (repo VirtualHostQueryRepo) GetMappingById(
+	vhostHostname valueObject.Fqdn,
+	id valueObject.MappingId,
+) (entity.Mapping, error) {
+	var mapping entity.Mapping
+
+	vhost, err := repo.GetByHostname(vhostHostname)
+	if err != nil {
+		return mapping, err
+	}
+
+	mappings, err := repo.getVirtualHostMappings(vhost)
+	if err != nil {
+		return mapping, err
+	}
+
+	for _, mapping := range mappings {
+		if mapping.Id == id {
+			return mapping, nil
+		}
+	}
+
+	return mapping, errors.New("MappingNotFound")
+}
