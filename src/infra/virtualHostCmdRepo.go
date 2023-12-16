@@ -210,18 +210,21 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) mappingToLocationUri(
-	mapping entity.Mapping,
+	matchPattern valueObject.MappingMatchPattern,
+	path valueObject.MappingPath,
 ) string {
+	matchPatternStr := matchPattern.String()
+
 	modifier := ""
-	switch mapping.MatchPattern.String() {
+	switch matchPatternStr {
 	case "contains", "ends-with":
 		modifier = "~"
 	case "equals":
 		modifier = "="
 	}
 
-	pathStr := mapping.Path.String()
-	if mapping.MatchPattern.String() == "ends-with" {
+	pathStr := path.String()
+	if matchPatternStr == "ends-with" {
 		pathStr += "$"
 	}
 
@@ -233,73 +236,209 @@ func (repo VirtualHostCmdRepo) mappingToLocationUri(
 	return locationUri
 }
 
-func (repo VirtualHostCmdRepo) getServiceUrl(
-	name valueObject.ServiceName,
-) (valueObject.Url, error) {
-	var url valueObject.Url
-
-	servicesList, err := servicesInfra.ServicesQueryRepo{}.Get()
+func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
+	addMapping dto.AddMapping,
+) (string, error) {
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	serviceEntity, err := servicesQueryRepo.GetByName(*addMapping.TargetServiceName)
 	if err != nil {
-		return url, errors.New("GetServicesListFailed")
+		return "", errors.New("GetServiceByNameFailed")
 	}
 
-	urlStr := ""
-	for _, service := range servicesList {
-		if service.Name != name {
-			continue
-		}
-		// TODO: Add support for protocol and thus multiple ports
-		urlStr = "http://localhost:" + service.Ports[0].String()
+	protocolPortsMap := map[string]string{}
+	for _, svcPortBinding := range serviceEntity.PortBindings {
+		protocolPortsMap[svcPortBinding.Protocol.String()] = svcPortBinding.Port.String()
 	}
 
-	if urlStr == "" {
-		return url, errors.New("ServiceNotFound")
+	locationContent := ""
+	isHttpSupported := protocolPortsMap["http"] != ""
+	if isHttpSupported {
+		locationContent += `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["http"] + `";
+`
 	}
 
-	return valueObject.NewUrl(urlStr)
+	isHttpsSupported := protocolPortsMap["https"] != ""
+	if isHttpsSupported {
+		locationContent += `
+	set $protocol "https";
+	set $backend "localhost:` + protocolPortsMap["https"] + `";
+`
+	}
+
+	if isHttpSupported && isHttpsSupported {
+		locationContent = `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["http"] + `";
+
+	if ($scheme = https) {
+		set $protocol "https";
+		set $backend "localhost:` + protocolPortsMap["https"] + `";
+	}
+`
+	}
+
+	isHttpOrHttpsSupported := isHttpSupported || isHttpsSupported
+
+	isGrpcSupported := protocolPortsMap["grpc"] != ""
+	if isGrpcSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "grpc";
+	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+`
+	}
+
+	if isGrpcSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	if ($scheme = grpc) {
+		set $protocol "grpc";
+		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	}
+		`
+	}
+
+	isGrpcsSupported := protocolPortsMap["grpcs"] != ""
+	if isGrpcsSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "grpcs";
+	set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+`
+	}
+
+	if isGrpcsSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	if ($scheme = grpcs) {
+		set $protocol "grpcs";
+		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	}
+		`
+	}
+
+	isGrpcAndGrpcsSupported := isGrpcSupported && isGrpcsSupported
+	if isGrpcAndGrpcsSupported && !isHttpOrHttpsSupported {
+		locationContent = `
+	set $protocol "grpc";
+	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+
+	if ($scheme = grpcs) {
+		set $protocol "grpcs";
+		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	}
+`
+	}
+
+	if isGrpcAndGrpcsSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	if ($scheme = grpc) {
+		set $protocol "grpc";
+		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	}
+
+	if ($scheme = grpcs) {
+		set $protocol "grpcs";
+		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	}
+`
+	}
+
+	isGrpcOrGrpcsSupported := isGrpcSupported || isGrpcsSupported
+	if isGrpcOrGrpcsSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	grpc_set_header Host $host;
+	grpc_pass $protocol://$backend;
+`
+	}
+
+	if isGrpcOrGrpcsSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	if ($protocol = grpc) {
+		grpc_set_header Host $host;
+		grpc_pass $protocol://$backend;
+	}
+
+	if ($protocol = grpcs) {
+		grpc_set_header Host $host;
+		grpc_pass $protocol://$backend;
+	}
+`
+	}
+
+	isWsSupported := protocolPortsMap["ws"] != ""
+	if isWsSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+`
+	}
+
+	isWssSupported := protocolPortsMap["wss"] != ""
+	if !isWsSupported && isWssSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "https";
+	set $backend "localhost:` + protocolPortsMap["wss"] + `";
+`
+	}
+
+	isWsAndWssSupported := isWsSupported && isWssSupported
+	if isWsAndWssSupported && !isHttpOrHttpsSupported {
+		locationContent = `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+
+	if ($scheme = https) {
+		set $protocol "https";
+		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+	}
+
+	proxy_pass $protocol://$backend;
+	proxy_set_header Host $host;
+`
+	}
+
+	isWsOrWssSupported := isWsSupported || isWssSupported
+	if isWsOrWssSupported {
+		locationContent += `
+	proxy_http_version 1.1;
+	proxy_set_header Upgrade $http_upgrade;
+	proxy_set_header Connection $connection_upgrade;
+`
+	}
+
+	if isHttpOrHttpsSupported {
+		locationContent += `
+	proxy_pass $protocol://$backend;
+	proxy_set_header Host $host;
+`
+	}
+
+	return locationContent, nil
 }
 
 func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
-	mappingEntity := entity.NewMapping(
-		valueObject.NewMappingIdPanic(0),
-		addMapping.Hostname,
-		addMapping.Path,
-		addMapping.MatchPattern,
-		addMapping.TargetType,
-		addMapping.TargetServiceName,
-		addMapping.TargetUrl,
-		addMapping.TargetHttpResponseCode,
-	)
-	locationUri := repo.mappingToLocationUri(mappingEntity)
+	locationUri := repo.mappingToLocationUri(addMapping.MatchPattern, addMapping.Path)
 
-	url := ""
-	if addMapping.TargetUrl != nil {
-		url = addMapping.TargetUrl.String()
-	}
-	if addMapping.TargetType.String() == "service" {
-		svcUrl, err := repo.getServiceUrl(*addMapping.TargetServiceName)
-		if err != nil {
-			return errors.New("GetServiceUrlFailed")
-		}
-
-		url = svcUrl.String()
-	}
-
-	responseCode := ""
+	responseCodeStr := ""
 	if addMapping.TargetHttpResponseCode != nil {
-		responseCode = addMapping.TargetHttpResponseCode.String()
+		responseCodeStr = addMapping.TargetHttpResponseCode.String()
 	}
 
-	directiveWithValue := "proxy_pass " + url
-	switch addMapping.TargetType.String() {
-	case "response-code":
-		directiveWithValue = "return " + responseCode
-	case "url":
-		directiveWithValue = "return " + responseCode + " " + url
+	locationContent := "	return " + responseCodeStr
+	if addMapping.TargetType.String() == "url" {
+		locationContent += " " + addMapping.TargetUrl.String()
+	}
+	locationContent += ";"
+
+	if addMapping.TargetType.String() == "service" {
+		var err error
+		locationContent, err = repo.serviceLocationContentFactory(addMapping)
+		if err != nil {
+			return errors.New("ServiceLocationContentFactoryFailed")
+		}
 	}
 
-	mapping := `location ` + locationUri + ` {
-    ` + directiveWithValue + `;
+	locationBlock := `location ` + locationUri + ` {
+` + locationContent + `
 }
 `
 
@@ -313,7 +452,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 
 	err = infraHelper.UpdateFile(
 		mappingFilePath.String(),
-		mapping,
+		locationBlock,
 		false,
 	)
 	if err != nil {
@@ -324,7 +463,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 }
 
 func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
-	locationUri := repo.mappingToLocationUri(mapping)
+	locationUri := repo.mappingToLocationUri(mapping.MatchPattern, mapping.Path)
 
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
