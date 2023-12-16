@@ -56,3 +56,7 @@ func (portBinding PortBinding) GetPort() NetworkPort {
 func (portBinding PortBinding) GetProtocol() NetworkProtocol {
 	return portBinding.Protocol
 }
+
+func (portBinding PortBinding) String() string {
+	return portBinding.Port.String() + "/" + portBinding.Protocol.String()
+}
