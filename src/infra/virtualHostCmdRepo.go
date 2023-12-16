@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -432,6 +433,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 `
 	}
 
+	locationContent = strings.Trim(locationContent, "\n")
 	return locationContent, nil
 }
 
@@ -453,7 +455,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 		var err error
 		locationContent, err = repo.serviceLocationContentFactory(addMapping)
 		if err != nil {
-			return errors.New("ServiceLocationContentFactoryFailed")
+			return errors.New("ServiceLocationContentFactoryFailed: " + err.Error())
 		}
 	}
 
