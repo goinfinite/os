@@ -12,7 +12,6 @@ type NetworkProtocol string
 var ValidNetworkProtocols = []string{
 	"http",
 	"https",
-	"unix",
 	"ws",
 	"wss",
 	"grpc",
