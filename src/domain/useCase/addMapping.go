@@ -54,6 +54,8 @@ func AddMapping(
 		return errors.New("TargetServiceNameRequired")
 	}
 
+	// TODO: Check if service exposes any ports before adding mapping
+
 	isUrlTarget := addMapping.TargetType.String() == "url"
 	if isUrlTarget && addMapping.TargetUrl == nil {
 		return errors.New("TargetUrlRequired")

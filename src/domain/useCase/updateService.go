@@ -60,5 +60,7 @@ func UpdateService(
 		return errors.New("SoloServicesVersionCannotBeChanged")
 	}
 
+	// TODO: Recreate any mapping pointing to the service if bindings changed.
+
 	return cmdRepo.Update(updateDto)
 }
