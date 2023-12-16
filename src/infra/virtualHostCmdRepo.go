@@ -295,7 +295,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		set $protocol "grpc";
 		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
 	}
-		`
+`
 	}
 
 	isGrpcsSupported := protocolPortsMap["grpcs"] != ""
@@ -315,6 +315,24 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		`
 	}
 
+	if isGrpcSupported && !isGrpcsSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	grpc_set_header Host $host;
+	if ($protocol = grpc) {	
+		grpc_pass $protocol://$backend;
+	}
+`
+	}
+
+	if !isGrpcSupported && isGrpcsSupported && isHttpOrHttpsSupported {
+		locationContent += `
+	grpc_set_header Host $host;
+	if ($protocol = grpcs) {	
+		grpc_pass $protocol://$backend;
+	}
+`
+	}
+
 	isGrpcAndGrpcsSupported := isGrpcSupported && isGrpcsSupported
 	if isGrpcAndGrpcsSupported && !isHttpOrHttpsSupported {
 		locationContent = `
@@ -330,14 +348,13 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 
 	if isGrpcAndGrpcsSupported && isHttpOrHttpsSupported {
 		locationContent += `
-	if ($scheme = grpc) {
-		set $protocol "grpc";
-		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	grpc_set_header Host $host;
+	if ($protocol = grpc) {
+		grpc_pass $protocol://$backend;
 	}
 
-	if ($scheme = grpcs) {
-		set $protocol "grpcs";
-		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	if ($protocol = grpcs) {
+		grpc_pass $protocol://$backend;
 	}
 `
 	}
@@ -347,20 +364,6 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	grpc_set_header Host $host;
 	grpc_pass $protocol://$backend;
-`
-	}
-
-	if isGrpcOrGrpcsSupported && isHttpOrHttpsSupported {
-		locationContent += `
-	if ($protocol = grpc) {
-		grpc_set_header Host $host;
-		grpc_pass $protocol://$backend;
-	}
-
-	if ($protocol = grpcs) {
-		grpc_set_header Host $host;
-		grpc_pass $protocol://$backend;
-	}
 `
 	}
 
@@ -401,7 +404,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	proxy_http_version 1.1;
 	proxy_set_header Upgrade $http_upgrade;
-	proxy_set_header Connection $connection_upgrade;
+	proxy_set_header Connection "Upgrade";
 `
 	}
 
