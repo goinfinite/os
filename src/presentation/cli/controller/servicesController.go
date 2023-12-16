@@ -49,7 +49,7 @@ func AddInstallableServiceController() *cobra.Command {
 	var nameStr string
 	var versionStr string
 	var startupFileStr string
-	var portsSlice []uint
+	var portBindingsSlice []string
 
 	cmd := &cobra.Command{
 		Use:   "add-installable",
@@ -69,16 +69,20 @@ func AddInstallableServiceController() *cobra.Command {
 				startupFilePtr = &startupFile
 			}
 
-			var ports []valueObject.NetworkPort
-			for _, port := range portsSlice {
-				ports = append(ports, valueObject.NewNetworkPortPanic(port))
+			var portBindings []valueObject.PortBinding
+			for _, portBinding := range portBindingsSlice {
+				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				portBindings = append(portBindings, svcPortBinding)
 			}
 
 			addInstallableServiceDto := dto.NewAddInstallableService(
 				svcName,
 				svcVersionPtr,
 				startupFilePtr,
-				ports,
+				portBindings,
 			)
 
 			servicesQueryRepo := infra.ServicesQueryRepo{}
@@ -101,7 +105,9 @@ func AddInstallableServiceController() *cobra.Command {
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
-	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
+	cmd.Flags().StringSliceVarP(
+		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
 	return cmd
 }
 
@@ -110,7 +116,7 @@ func AddCustomServiceController() *cobra.Command {
 	var typeStr string
 	var commandStr string
 	var versionStr string
-	var portsSlice []uint
+	var portBindingsSlice []string
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
@@ -126,9 +132,13 @@ func AddCustomServiceController() *cobra.Command {
 				svcVersionPtr = &svcVersion
 			}
 
-			var ports []valueObject.NetworkPort
-			for _, port := range portsSlice {
-				ports = append(ports, valueObject.NewNetworkPortPanic(port))
+			var portBindings []valueObject.PortBinding
+			for _, portBinding := range portBindingsSlice {
+				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				portBindings = append(portBindings, svcPortBinding)
 			}
 
 			addCustomServiceDto := dto.NewAddCustomService(
@@ -136,7 +146,7 @@ func AddCustomServiceController() *cobra.Command {
 				svcType,
 				svcCommand,
 				svcVersionPtr,
-				ports,
+				portBindings,
 			)
 
 			servicesQueryRepo := infra.ServicesQueryRepo{}
@@ -162,7 +172,9 @@ func AddCustomServiceController() *cobra.Command {
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
 	cmd.MarkFlagRequired("command")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
-	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
+	cmd.Flags().StringSliceVarP(
+		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
 	return cmd
 }
 
@@ -173,7 +185,7 @@ func UpdateServiceController() *cobra.Command {
 	var statusStr string
 	var versionStr string
 	var startupFileStr string
-	var portsSlice []uint
+	var portBindingsSlice []string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -211,9 +223,13 @@ func UpdateServiceController() *cobra.Command {
 				svcStartupFilePtr = &svcStartupFile
 			}
 
-			var ports []valueObject.NetworkPort
-			for _, port := range portsSlice {
-				ports = append(ports, valueObject.NewNetworkPortPanic(port))
+			var portBindings []valueObject.PortBinding
+			for _, portBinding := range portBindingsSlice {
+				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				portBindings = append(portBindings, svcPortBinding)
 			}
 
 			updateSvcDto := dto.NewUpdateService(
@@ -223,7 +239,7 @@ func UpdateServiceController() *cobra.Command {
 				svcStatusPtr,
 				svcVersionPtr,
 				svcStartupFilePtr,
-				ports,
+				portBindings,
 			)
 
 			servicesQueryRepo := infra.ServicesQueryRepo{}
@@ -249,7 +265,9 @@ func UpdateServiceController() *cobra.Command {
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
-	cmd.Flags().UintSliceVarP(&portsSlice, "ports", "p", []uint{}, "Ports")
+	cmd.Flags().StringSliceVarP(
+		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
 	return cmd
 }
 

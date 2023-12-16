@@ -49,6 +49,25 @@ func GetInstallableServicesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
 }
 
+func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
+	var svcPortBindings []valueObject.PortBinding
+	for _, portBinding := range bindings {
+		portBindingMap := portBinding.(map[string]interface{})
+		svcPort := valueObject.NewNetworkPortPanic(
+			portBindingMap["port"],
+		)
+		svcProtocol := valueObject.NewNetworkProtocolPanic(
+			portBindingMap["protocol"].(string),
+		)
+		svcPortBinding := valueObject.NewPortBinding(
+			svcPort,
+			svcProtocol,
+		)
+		svcPortBindings = append(svcPortBindings, svcPortBinding)
+	}
+	return svcPortBindings
+}
+
 // AddInstallableService godoc
 // @Summary      AddInstallableService
 // @Description  Install a new installable service.
@@ -83,19 +102,18 @@ func AddInstallableServiceController(c echo.Context) error {
 		svcStartupFilePtr = &svcStartupFile
 	}
 
-	var svcPorts []valueObject.NetworkPort
-	if requestBody["ports"] != nil {
-		for _, port := range requestBody["ports"].([]interface{}) {
-			svcPort := valueObject.NewNetworkPortPanic(port)
-			svcPorts = append(svcPorts, svcPort)
-		}
+	var svcPortBindings []valueObject.PortBinding
+	if requestBody["portBindings"] != nil {
+		svcPortBindings = parsePortBindings(
+			requestBody["portBindings"].([]interface{}),
+		)
 	}
 
 	addInstallableServiceDto := dto.NewAddInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
-		svcPorts,
+		svcPortBindings,
 	)
 
 	servicesQueryRepo := infra.ServicesQueryRepo{}
@@ -142,12 +160,11 @@ func AddCustomServiceController(c echo.Context) error {
 		svcVersionPtr = &svcVersion
 	}
 
-	var svcPorts []valueObject.NetworkPort
-	if requestBody["ports"] != nil {
-		for _, port := range requestBody["ports"].([]interface{}) {
-			svcPort := valueObject.NewNetworkPortPanic(port)
-			svcPorts = append(svcPorts, svcPort)
-		}
+	var svcPortBindings []valueObject.PortBinding
+	if requestBody["portBindings"] != nil {
+		svcPortBindings = parsePortBindings(
+			requestBody["portBindings"].([]interface{}),
+		)
 	}
 
 	addCustomServiceDto := dto.NewAddCustomService(
@@ -155,7 +172,7 @@ func AddCustomServiceController(c echo.Context) error {
 		svcType,
 		svcCommand,
 		svcVersionPtr,
-		svcPorts,
+		svcPortBindings,
 	)
 
 	servicesQueryRepo := infra.ServicesQueryRepo{}
@@ -232,12 +249,11 @@ func UpdateServiceController(c echo.Context) error {
 		svcStartupFilePtr = &svcStartupFile
 	}
 
-	var svcPorts []valueObject.NetworkPort
-	if requestBody["ports"] != nil {
-		for _, port := range requestBody["ports"].([]interface{}) {
-			svcPort := valueObject.NewNetworkPortPanic(port)
-			svcPorts = append(svcPorts, svcPort)
-		}
+	var svcPortBindings []valueObject.PortBinding
+	if requestBody["portBindings"] != nil {
+		svcPortBindings = parsePortBindings(
+			requestBody["portBindings"].([]interface{}),
+		)
 	}
 
 	updateSvcDto := dto.NewUpdateService(
@@ -247,7 +263,7 @@ func UpdateServiceController(c echo.Context) error {
 		svcStatusPtr,
 		svcVersionPtr,
 		svcStartupFilePtr,
-		svcPorts,
+		svcPortBindings,
 	)
 
 	servicesQueryRepo := infra.ServicesQueryRepo{}

@@ -22,9 +22,9 @@ definitions:
         type: string
       name:
         type: string
-      ports:
+      portBindings:
         items:
-          type: integer
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       type:
         type: string
@@ -53,9 +53,9 @@ definitions:
     properties:
       name:
         type: string
-      ports:
+      portBindings:
         items:
-          type: integer
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startupFile:
         type: string
@@ -114,9 +114,9 @@ definitions:
         type: string
       nature:
         type: string
-      ports:
+      portBindings:
         items:
-          type: integer
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startupFile:
         type: string
@@ -168,9 +168,9 @@ definitions:
         type: string
       name:
         type: string
-      ports:
+      portBindings:
         items:
-          type: integer
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startupFile:
         type: string
@@ -416,6 +416,13 @@ definitions:
         type: integer
       storageTotal:
         type: integer
+    type: object
+  valueObject.PortBinding:
+    properties:
+      port:
+        type: integer
+      protocol:
+        type: string
     type: object
   valueObject.RuntimeContext:
     enum:

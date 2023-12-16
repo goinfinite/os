@@ -1275,10 +1275,10 @@
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "type": {
@@ -1323,10 +1323,10 @@
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1417,10 +1417,10 @@
                 "nature": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1500,10 +1500,10 @@
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1878,6 +1878,17 @@
                 },
                 "storageTotal": {
                     "type": "integer"
+                }
+            }
+        },
+        "valueObject.PortBinding": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
                 }
             }
         },

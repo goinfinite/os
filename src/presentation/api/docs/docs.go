@@ -1282,10 +1282,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "type": {
@@ -1330,10 +1330,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1424,10 +1424,10 @@ const docTemplate = `{
                 "nature": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1507,10 +1507,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "ports": {
+                "portBindings": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
                 "startupFile": {
@@ -1885,6 +1885,17 @@ const docTemplate = `{
                 },
                 "storageTotal": {
                     "type": "integer"
+                }
+            }
+        },
+        "valueObject.PortBinding": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
                 }
             }
         },
