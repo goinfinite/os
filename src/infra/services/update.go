@@ -45,9 +45,9 @@ func Update(
 		svcStartupFile = updateDto.StartupFile
 	}
 
-	svcPorts := serviceEntity.Ports
-	if len(updateDto.Ports) > 0 {
-		svcPorts = updateDto.Ports
+	svcPortBindings := serviceEntity.PortBindings
+	if len(updateDto.PortBindings) > 0 {
+		svcPortBindings = updateDto.PortBindings
 	}
 
 	err = SupervisordFacade{}.AddConf(
@@ -57,7 +57,7 @@ func Update(
 		svcVersion,
 		svcCommand,
 		svcStartupFile,
-		svcPorts,
+		svcPortBindings,
 	)
 	if err != nil {
 		return errors.New("ReAddServiceConfError")

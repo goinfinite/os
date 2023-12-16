@@ -140,7 +140,7 @@ func (facade SupervisordFacade) AddConf(
 	svcVersion valueObject.ServiceVersion,
 	svcCmd valueObject.UnixCommand,
 	startupFile *valueObject.UnixFilePath,
-	svcPorts []valueObject.NetworkPort,
+	svcPortBindings []valueObject.PortBinding,
 ) error {
 	svcNameStr := svcName.String()
 
@@ -171,12 +171,15 @@ func (facade SupervisordFacade) AddConf(
 	}
 
 	svcPortsStr := ""
-	if len(svcPorts) > 0 {
-		portsStrSlice := []string{}
-		for _, port := range svcPorts {
-			portsStrSlice = append(portsStrSlice, port.String())
+	if len(svcPortBindings) > 0 {
+		portBindingsStrSlice := []string{}
+		for _, portBinding := range svcPortBindings {
+			portBindingsStrSlice = append(
+				portBindingsStrSlice,
+				portBinding.String(),
+			)
 		}
-		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portsStrSlice, ",") + "\""
+		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portBindingsStrSlice, ",") + "\""
 	}
 
 	logFilePath := "/app/logs/" + svcNameStr + "/" + svcNameStr + ".log"

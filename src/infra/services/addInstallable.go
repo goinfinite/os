@@ -193,6 +193,19 @@ func addPhp() error {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
 
+	httpPortBinding := valueObject.NewPortBinding(
+		valueObject.NewNetworkPortPanic(8080),
+		valueObject.NewNetworkProtocolPanic("http"),
+	)
+	httpsPortBinding := valueObject.NewPortBinding(
+		valueObject.NewNetworkPortPanic(8443),
+		valueObject.NewNetworkProtocolPanic("https"),
+	)
+	portBindings := []valueObject.PortBinding{
+		httpPortBinding,
+		httpsPortBinding,
+	}
+
 	err = SupervisordFacade{}.AddConf(
 		valueObject.NewServiceNamePanic("php"),
 		valueObject.NewServiceNaturePanic("solo"),
@@ -200,10 +213,7 @@ func addPhp() error {
 		valueObject.NewServiceVersionPanic("latest"),
 		valueObject.NewUnixCommandPanic("/usr/local/lsws/bin/litespeed -d"),
 		nil,
-		[]valueObject.NetworkPort{
-			valueObject.NewNetworkPortPanic(8080),
-			valueObject.NewNetworkPortPanic(8443),
-		},
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError: " + err.Error())
@@ -261,11 +271,14 @@ func addNode(addDto dto.AddInstallableService) error {
 		}
 	}
 
-	ports := []valueObject.NetworkPort{
-		valueObject.NewNetworkPortPanic(3000),
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(3000),
+			valueObject.NewNetworkProtocolPanic("http"),
+		),
 	}
-	if len(addDto.Ports) > 0 {
-		ports = addDto.Ports
+	if len(addDto.PortBindings) > 0 {
+		portBindings = addDto.PortBindings
 	}
 
 	startupFileBytes := []byte(startupFile.String())
@@ -284,7 +297,7 @@ func addNode(addDto dto.AddInstallableService) error {
 			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
 		),
 		&startupFile,
-		ports,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -394,11 +407,11 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		return errors.New("StopMysqldSafeError: " + err.Error())
 	}
 
-	ports := []valueObject.NetworkPort{
-		valueObject.NewNetworkPortPanic(3306),
-	}
-	if len(addDto.Ports) > 0 {
-		ports = addDto.Ports
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(3306),
+			valueObject.NewNetworkProtocolPanic("tcp"),
+		),
 	}
 
 	err = SupervisordFacade{}.AddConf(
@@ -408,7 +421,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/mariadbd-safe"),
 		nil,
-		ports,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -507,6 +520,13 @@ func addRedis(addDto dto.AddInstallableService) error {
 		return errors.New("InstallServiceError")
 	}
 
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(6379),
+			valueObject.NewNetworkProtocolPanic("tcp"),
+		),
+	}
+
 	err = SupervisordFacade{}.AddConf(
 		addDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
@@ -514,9 +534,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
 		nil,
-		[]valueObject.NetworkPort{
-			valueObject.NewNetworkPortPanic(6379),
-		},
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -558,7 +576,7 @@ func AddInstallableSimplified(serviceName string) error {
 		valueObject.NewServiceNamePanic(serviceName),
 		nil,
 		nil,
-		[]valueObject.NetworkPort{},
+		[]valueObject.PortBinding{},
 	)
 	return AddInstallable(dto)
 }

@@ -14,17 +14,23 @@ func TestAddCustom(t *testing.T) {
 	t.Run("AddCustomService", func(t *testing.T) {
 		t.Skip("SkipAddCustomServiceTest")
 
+		portBinding, err := valueObject.NewPortBindingFromString(
+			"8000/http",
+		)
+		if err != nil {
+			t.Errorf("NewPortBindingFromStringFailed : %v", err)
+			return
+		}
+
 		dto := dto.NewAddCustomService(
 			valueObject.NewServiceNamePanic("python-ws"),
 			valueObject.NewServiceTypePanic("webserver"),
 			valueObject.NewUnixCommandPanic("python3 -m http.server"),
 			nil,
-			[]valueObject.NetworkPort{
-				valueObject.NewNetworkPortPanic("8000"),
-			},
+			[]valueObject.PortBinding{portBinding},
 		)
 
-		err := AddCustom(dto)
+		err = AddCustom(dto)
 		if err != nil {
 			t.Errorf("AddCustomServiceFailed : %v", err)
 			return

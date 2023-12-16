@@ -20,6 +20,6 @@ func AddCustom(
 		svcVersion,
 		addDto.Command,
 		nil,
-		addDto.Ports,
+		addDto.PortBindings,
 	)
 }
