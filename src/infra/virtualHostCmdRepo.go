@@ -281,6 +281,64 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 
 	isHttpOrHttpsSupported := isHttpSupported || isHttpsSupported
 
+	isWsSupported := protocolPortsMap["ws"] != ""
+	isWssSupported := protocolPortsMap["wss"] != ""
+	if isWsSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+`
+	}
+
+	if isWsSupported && !isWssSupported && !isHttpSupported {
+		locationContent += `
+	if ($scheme = http) {
+		set $protocol "http";
+		set $backend "localhost:` + protocolPortsMap["ws"] + `";
+	}
+`
+	}
+
+	if !isWsSupported && isWssSupported && !isHttpOrHttpsSupported {
+		locationContent += `
+	set $protocol "https";
+	set $backend "localhost:` + protocolPortsMap["wss"] + `";
+`
+	}
+
+	if !isWsSupported && isWssSupported && !isHttpsSupported {
+		locationContent += `
+	if ($scheme = https) {
+		set $protocol "https";
+		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+	}
+`
+	}
+
+	isWsAndWssSupported := isWsSupported && isWssSupported
+	if isWsAndWssSupported && !isHttpOrHttpsSupported {
+		locationContent = `
+	set $protocol "http";
+	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+
+	if ($scheme = https) {
+		set $protocol "https";
+		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+	}
+`
+	}
+
+	isWsOrWssSupported := isWsSupported || isWssSupported
+	if isWsOrWssSupported {
+		locationContent += `
+	proxy_http_version 1.1;
+	proxy_set_header Upgrade $http_upgrade;
+	proxy_set_header Connection "Upgrade";
+`
+	}
+
+	isHttpOrHttpsSupported = isHttpOrHttpsSupported || isWsOrWssSupported
+
 	isGrpcSupported := protocolPortsMap["grpc"] != ""
 	if isGrpcSupported && !isHttpOrHttpsSupported {
 		locationContent += `
@@ -364,47 +422,6 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	grpc_set_header Host $host;
 	grpc_pass $protocol://$backend;
-`
-	}
-
-	isWsSupported := protocolPortsMap["ws"] != ""
-	if isWsSupported && !isHttpOrHttpsSupported {
-		locationContent += `
-	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
-`
-	}
-
-	isWssSupported := protocolPortsMap["wss"] != ""
-	if !isWsSupported && isWssSupported && !isHttpOrHttpsSupported {
-		locationContent += `
-	set $protocol "https";
-	set $backend "localhost:` + protocolPortsMap["wss"] + `";
-`
-	}
-
-	isWsAndWssSupported := isWsSupported && isWssSupported
-	if isWsAndWssSupported && !isHttpOrHttpsSupported {
-		locationContent = `
-	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
-
-	if ($scheme = https) {
-		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["wss"] + `";
-	}
-
-	proxy_pass $protocol://$backend;
-	proxy_set_header Host $host;
-`
-	}
-
-	isWsOrWssSupported := isWsSupported || isWssSupported
-	if isWsOrWssSupported {
-		locationContent += `
-	proxy_http_version 1.1;
-	proxy_set_header Upgrade $http_upgrade;
-	proxy_set_header Connection "Upgrade";
 `
 	}
 
