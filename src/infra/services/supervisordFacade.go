@@ -170,7 +170,7 @@ func (facade SupervisordFacade) AddConf(
 		startupFileStr = ",SVC_STARTUP_FILE=\"" + startupFile.String() + "\""
 	}
 
-	svcPortsStr := ""
+	svcPortBindingsStr := ""
 	if len(svcPortBindings) > 0 {
 		portBindingsStrSlice := []string{}
 		for _, portBinding := range svcPortBindings {
@@ -179,7 +179,8 @@ func (facade SupervisordFacade) AddConf(
 				portBinding.String(),
 			)
 		}
-		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portBindingsStrSlice, ",") + "\""
+		svcPortBindingsStr = ",SVC_PORT_BINDINGS=\"" +
+			strings.Join(portBindingsStrSlice, ",") + "\""
 	}
 
 	logFilePath := "/app/logs/" + svcNameStr + "/" + svcNameStr + ".log"
@@ -198,7 +199,7 @@ stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
 stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
-environment=` + svcNatureStr + svcTypeStr + svcVersionStr + startupFileStr + svcPortsStr + `
+environment=` + svcNatureStr + svcTypeStr + svcVersionStr + startupFileStr + svcPortBindingsStr + `
 `
 	// cSpell:enable
 
