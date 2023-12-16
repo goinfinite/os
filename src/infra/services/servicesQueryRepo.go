@@ -224,25 +224,22 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 			svcStartupFilePtr = &svcStartupFile
 		}
 
-		svcPortsStr, exists := svcEnvs["SVC_PORTS"]
+		svcPortBindingsStr, exists := svcEnvs["SVC_PORT_BINDINGS"]
 		if !exists {
-			svcPortsStr = "0"
+			svcPortBindingsStr = ""
 		}
-		svcPortsParts := strings.Split(svcPortsStr, ",")
-		if len(svcPortsParts) == 0 {
-			continue
-		}
-		svcPorts := []valueObject.NetworkPort{}
-		for _, svcPortStr := range svcPortsParts {
-			if svcPortStr == "0" {
+		svcPortBindingsParts := strings.Split(svcPortBindingsStr, ",")
+		svcPortBindings := []valueObject.PortBinding{}
+		for _, svcPortBindingStr := range svcPortBindingsParts {
+			if svcPortBindingStr == "" {
 				continue
 			}
 
-			svcPort, err := valueObject.NewNetworkPort(svcPortStr)
+			svcPortBinding, err := valueObject.NewPortBindingFromString(svcPortBindingStr)
 			if err != nil {
 				continue
 			}
-			svcPorts = append(svcPorts, svcPort)
+			svcPortBindings = append(svcPortBindings, svcPortBinding)
 		}
 
 		svcStatus := stoppedStatus
@@ -260,7 +257,7 @@ func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
 				svcCmd,
 				svcStatus,
 				svcStartupFilePtr,
-				svcPorts,
+				svcPortBindings,
 			),
 		)
 	}
