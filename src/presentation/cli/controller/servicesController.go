@@ -4,7 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +14,7 @@ func GetServicesController() *cobra.Command {
 		Use:   "get",
 		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := infra.ServicesQueryRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -32,7 +32,7 @@ func GetInstallableServicesController() *cobra.Command {
 		Use:   "get-installables",
 		Short: "GetInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := infra.ServicesQueryRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -85,8 +85,8 @@ func AddInstallableServiceController() *cobra.Command {
 				portBindings,
 			)
 
-			servicesQueryRepo := infra.ServicesQueryRepo{}
-			servicesCmdRepo := infra.ServicesCmdRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 			err := useCase.AddInstallableService(
 				servicesQueryRepo,
@@ -149,8 +149,8 @@ func AddCustomServiceController() *cobra.Command {
 				portBindings,
 			)
 
-			servicesQueryRepo := infra.ServicesQueryRepo{}
-			servicesCmdRepo := infra.ServicesCmdRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 			err := useCase.AddCustomService(
 				servicesQueryRepo,
@@ -242,8 +242,8 @@ func UpdateServiceController() *cobra.Command {
 				portBindings,
 			)
 
-			servicesQueryRepo := infra.ServicesQueryRepo{}
-			servicesCmdRepo := infra.ServicesCmdRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 			err := useCase.UpdateService(
 				servicesQueryRepo,
@@ -280,8 +280,8 @@ func DeleteServiceController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
-			servicesQueryRepo := infra.ServicesQueryRepo{}
-			servicesCmdRepo := infra.ServicesCmdRepo{}
+			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 			err := useCase.DeleteService(
 				servicesQueryRepo,

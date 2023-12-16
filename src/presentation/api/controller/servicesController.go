@@ -7,7 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success      200 {array} dto.ServiceWithMetrics
 // @Router       /services/ [get]
 func GetServicesController(c echo.Context) error {
-	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -40,7 +40,7 @@ func GetServicesController(c echo.Context) error {
 // @Success      200 {array} entity.InstallableService
 // @Router       /services/installables/ [get]
 func GetInstallableServicesController(c echo.Context) error {
-	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -116,8 +116,8 @@ func AddInstallableServiceController(c echo.Context) error {
 		svcPortBindings,
 	)
 
-	servicesQueryRepo := infra.ServicesQueryRepo{}
-	servicesCmdRepo := infra.ServicesCmdRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 	err := useCase.AddInstallableService(
 		servicesQueryRepo,
@@ -175,8 +175,8 @@ func AddCustomServiceController(c echo.Context) error {
 		svcPortBindings,
 	)
 
-	servicesQueryRepo := infra.ServicesQueryRepo{}
-	servicesCmdRepo := infra.ServicesCmdRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 	err := useCase.AddCustomService(
 		servicesQueryRepo,
@@ -266,8 +266,8 @@ func UpdateServiceController(c echo.Context) error {
 		svcPortBindings,
 	)
 
-	servicesQueryRepo := infra.ServicesQueryRepo{}
-	servicesCmdRepo := infra.ServicesCmdRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 	err := useCase.UpdateService(
 		servicesQueryRepo,
@@ -294,8 +294,8 @@ func UpdateServiceController(c echo.Context) error {
 func DeleteServiceController(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
 
-	servicesQueryRepo := infra.ServicesQueryRepo{}
-	servicesCmdRepo := infra.ServicesCmdRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 	err := useCase.DeleteService(
 		servicesQueryRepo,

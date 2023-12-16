@@ -11,6 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/publicsuffix"
 )
@@ -386,7 +387,7 @@ func (repo VirtualHostQueryRepo) getVirtualHostMappings(
 		return mappings, errors.New("GetLocationsBlockFailed")
 	}
 
-	servicesList, err := ServicesQueryRepo{}.Get()
+	servicesList, err := servicesInfra.ServicesQueryRepo{}.Get()
 	if err != nil {
 		return mappings, errors.New("GetServicesListFailed")
 	}

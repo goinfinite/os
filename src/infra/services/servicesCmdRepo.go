@@ -1,9 +1,8 @@
-package infra
+package servicesInfra
 
 import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type ServicesCmdRepo struct {
@@ -12,12 +11,12 @@ type ServicesCmdRepo struct {
 func (repo ServicesCmdRepo) AddInstallable(
 	addDto dto.AddInstallableService,
 ) error {
-	err := servicesInfra.AddInstallable(addDto)
+	err := AddInstallable(addDto)
 	if err != nil {
 		return err
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Reload()
+	err = SupervisordFacade{}.Reload()
 	if err != nil {
 		return err
 	}
@@ -28,12 +27,12 @@ func (repo ServicesCmdRepo) AddInstallable(
 func (repo ServicesCmdRepo) AddCustom(
 	addDto dto.AddCustomService,
 ) error {
-	err := servicesInfra.AddCustom(addDto)
+	err := AddCustom(addDto)
 	if err != nil {
 		return err
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Reload()
+	err = SupervisordFacade{}.Reload()
 	if err != nil {
 		return err
 	}
@@ -42,15 +41,15 @@ func (repo ServicesCmdRepo) AddCustom(
 }
 
 func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	return servicesInfra.SupervisordFacade{}.Start(name)
+	return SupervisordFacade{}.Start(name)
 }
 
 func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	return servicesInfra.SupervisordFacade{}.Stop(name)
+	return SupervisordFacade{}.Stop(name)
 }
 
 func (repo ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	return servicesInfra.SupervisordFacade{}.Restart(name)
+	return SupervisordFacade{}.Restart(name)
 }
 
 func (repo ServicesCmdRepo) Update(
@@ -66,12 +65,12 @@ func (repo ServicesCmdRepo) Update(
 		return err
 	}
 
-	err = servicesInfra.Update(serviceEntity, updateDto)
+	err = Update(serviceEntity, updateDto)
 	if err != nil {
 		return err
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Reload()
+	err = SupervisordFacade{}.Reload()
 	if err != nil {
 		return err
 	}
@@ -87,12 +86,12 @@ func (repo ServicesCmdRepo) Uninstall(
 		return err
 	}
 
-	err = servicesInfra.Uninstall(name)
+	err = Uninstall(name)
 	if err != nil {
 		return err
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Reload()
+	err = SupervisordFacade{}.Reload()
 	if err != nil {
 		return err
 	}

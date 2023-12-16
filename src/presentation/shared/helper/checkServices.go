@@ -4,11 +4,11 @@ import (
 	"errors"
 
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func CheckServices(serviceNameStr string) error {
-	servicesQueryRepo := infra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 	serviceName, err := valueObject.NewServiceName(serviceNameStr)
 	if err != nil {

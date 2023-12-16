@@ -7,6 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type VirtualHostCmdRepo struct {
@@ -237,7 +238,7 @@ func (repo VirtualHostCmdRepo) getServiceUrl(
 ) (valueObject.Url, error) {
 	var url valueObject.Url
 
-	servicesList, err := ServicesQueryRepo{}.Get()
+	servicesList, err := servicesInfra.ServicesQueryRepo{}.Get()
 	if err != nil {
 		return url, errors.New("GetServicesListFailed")
 	}
