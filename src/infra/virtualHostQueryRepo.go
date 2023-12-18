@@ -213,7 +213,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 	locationBlockIndex int,
 	locationBlockParts []string,
 	vhostHost valueObject.Fqdn,
-	servicesList []entity.Service,
+	serviceNamePortsMap map[string][]string,
 ) (entity.Mapping, error) {
 	var mapping entity.Mapping
 
@@ -270,22 +270,26 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 	}
 
 	blockContent := locationBlockParts[2]
-	blockContentFirstLine := strings.Split(blockContent, "\n")[0]
-	blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
-	if len(blockContentFirstLineParts) == 0 {
-		return mapping, errors.New("GetLocationBlockContentPartsFailed")
-	}
-
-	directive := blockContentFirstLineParts[0]
-	if len(directive) == 0 {
-		return mapping, errors.New("GetLocationDirectiveFailed")
-	}
+	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
 
 	targetTypeStr := "service"
-	isReturn := directive == "return"
 	var targetUrlPtr *valueObject.Url
 	var targetResponseCodePtr *valueObject.HttpResponseCode
-	if isReturn {
+
+	if isUrlOrResponseCode {
+		blockContentFirstLine := strings.Split(blockContent, "\n")[0]
+		blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
+		if len(blockContentFirstLineParts) == 0 {
+			return mapping, errors.New("GetLocationBlockContentPartsFailed")
+		}
+
+		directive := blockContentFirstLineParts[0]
+		if directive != "return" {
+			return mapping, errors.New("GetLocationDirectiveFailed")
+		}
+
+		targetTypeStr = "response-code"
+
 		responseCodeStr := blockContentFirstLineParts[1]
 		if len(responseCodeStr) == 0 {
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
@@ -296,8 +300,6 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
 		}
 		targetResponseCodePtr = &responseCode
-
-		targetTypeStr = "response-code"
 
 		hasUrl := len(blockContentFirstLineParts) == 3
 		if hasUrl {
@@ -311,34 +313,39 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 			targetUrlPtr = &url
 		}
 	}
+
 	targetType, err := valueObject.NewMappingTargetType(targetTypeStr)
 	if err != nil {
 		return mapping, errors.New("InvalidTargetType: " + targetTypeStr)
 	}
 
 	var targetServiceNamePtr *valueObject.ServiceName
-	isService := directive == "proxy_pass"
-	if isService {
-		serviceUrlStr := blockContentFirstLineParts[1]
-		serviceUrl, err := valueObject.NewUrl(serviceUrlStr)
-		if err != nil {
-			return mapping, errors.New("InvalidServiceProxyPassUrl: " + serviceUrlStr)
+	if targetTypeStr == "service" {
+		hostnamePortRegex := regexp.MustCompile(`(?m)localhost:\d{1,5}`)
+		hostnamePortMatches := hostnamePortRegex.FindStringSubmatch(blockContent)
+		if len(hostnamePortMatches) == 0 {
+			return mapping, errors.New("GetServicePortsFailed")
 		}
 
-		servicePort, err := serviceUrl.GetPort()
-		if err != nil {
-			return mapping, errors.New("InvalidServicePort: " + serviceUrlStr)
-		}
-
-		for _, service := range servicesList {
-			if !slices.Contains(service.Ports, servicePort) {
+		for _, hostnamePortMatch := range hostnamePortMatches {
+			hostnamePortParts := strings.Split(hostnamePortMatch, ":")
+			if len(hostnamePortParts) != 2 {
 				continue
 			}
-			targetServiceNamePtr = &service.Name
-		}
 
-		if targetServiceNamePtr == nil {
-			return mapping, errors.New("ServiceNotFound: " + serviceUrlStr)
+			port := hostnamePortParts[1]
+			for serviceName, ports := range serviceNamePortsMap {
+				if !slices.Contains(ports, port) {
+					continue
+				}
+				serviceName, _ := valueObject.NewServiceName(serviceName)
+				targetServiceNamePtr = &serviceName
+				break
+			}
+
+			if targetServiceNamePtr != nil {
+				break
+			}
 		}
 	}
 
@@ -380,7 +387,7 @@ func (repo VirtualHostQueryRepo) getVirtualHostMappings(
 	}
 
 	locationBlocksRegex := regexp.MustCompile(
-		`(?m)^\s*location\s(?P<modifierAndPath>.+)\s{\n\s+(?P<content>[^}]+)*;\n}`,
+		`(?m)^\s*location\s(?P<modifierAndPath>.+)\s{(?P<content>[\s\S]*?\n)}`,
 	)
 	locationBlocks := locationBlocksRegex.FindAllStringSubmatch(fileContent, -1)
 	if len(locationBlocks) == 0 {
@@ -392,12 +399,23 @@ func (repo VirtualHostQueryRepo) getVirtualHostMappings(
 		return mappings, errors.New("GetServicesListFailed")
 	}
 
+	serviceNamePortsMap := map[string][]string{}
+	for _, service := range servicesList {
+		svcNameStr := service.Name.String()
+		svcPorts := []string{}
+		for _, portBinding := range service.PortBindings {
+			svcPorts = append(svcPorts, portBinding.Port.String())
+		}
+
+		serviceNamePortsMap[svcNameStr] = svcPorts
+	}
+
 	for locationBlockIndex, locationBlockContent := range locationBlocks {
 		mapping, err := repo.locationBlockToMapping(
 			locationBlockIndex,
 			locationBlockContent,
 			vhostName,
-			servicesList,
+			serviceNamePortsMap,
 		)
 		if err != nil {
 			log.Printf("[LocationIndex: %d] %s", locationBlockIndex, err.Error())
