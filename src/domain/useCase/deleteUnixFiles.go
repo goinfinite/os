@@ -26,7 +26,7 @@ func DeleteUnixFiles(
 
 		isDir, err := filesQueryRepo.IsDir(filePath)
 		if err != nil {
-			log.Printf("PathIsDirError: %v", err)
+			log.Printf(err.Error())
 			continue
 		}
 
