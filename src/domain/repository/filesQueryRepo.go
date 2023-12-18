@@ -6,7 +6,7 @@ import (
 )
 
 type FilesQueryRepo interface {
-	Exists(unixFilePath valueObject.UnixFilePath) bool
+	Exists(unixFilePath valueObject.UnixFilePath) (bool, error)
 	IsDir(unixFilePath valueObject.UnixFilePath) (bool, error)
 	Get(unixFilePath valueObject.UnixFilePath) ([]entity.UnixFile, error)
 }
