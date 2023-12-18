@@ -111,6 +111,12 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileSize := valueObject.Byte(fileInfo.Size())
 	unixFileUpdatedAt := valueObject.UnixTime(fileInfo.ModTime().Unix())
 
+	unixFileStreamPtr, err := os.Open(filePath.String())
+	if err != nil {
+		log.Printf("OpenFileError: %s", err.Error())
+		return unixFile, err
+	}
+
 	unixFile = entity.NewUnixFile(
 		unixFileUid,
 		unixFileUsername,
@@ -123,9 +129,23 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFilePermissions,
 		unixFileSize,
 		unixFileUpdatedAt,
+		unixFileStreamPtr,
 	)
 
 	return unixFile, nil
+}
+
+func (repo FilesQueryRepo) Exists(
+	unixFilePath valueObject.UnixFilePath,
+) (bool, error) {
+	unixFileExists := true
+
+	_, err := os.Stat(unixFilePath.String())
+	if os.IsNotExist(err) {
+		unixFileExists = false
+	}
+
+	return unixFileExists, nil
 }
 
 func (repo FilesQueryRepo) Get(
