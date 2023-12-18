@@ -137,15 +137,16 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 func (repo FilesQueryRepo) Exists(
 	unixFilePath valueObject.UnixFilePath,
-) (bool, error) {
+) bool {
 	unixFileExists := true
 
 	_, err := os.Stat(unixFilePath.String())
 	if os.IsNotExist(err) {
+		log.Printf("ExistsError: %s", err.Error())
 		unixFileExists = false
 	}
 
-	return unixFileExists, nil
+	return unixFileExists
 }
 
 func (repo FilesQueryRepo) Get(

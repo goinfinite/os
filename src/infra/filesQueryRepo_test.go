@@ -35,9 +35,9 @@ func TestFilesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("Exists", func(t *testing.T) {
-		_, err := filesQueryRepo.Exists(unixFilePath)
-		if err != nil {
-			t.Errorf("FilesQueryRepo.Exists() should not return: %s", err)
+		fileExists := filesQueryRepo.Exists(unixFilePath)
+		if !fileExists {
+			t.Errorf("FilesQueryRepo.Exists() should return TRUE")
 		}
 	})
 }
