@@ -116,6 +116,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		log.Printf("OpenFileError: %s", err.Error())
 		return unixFile, err
 	}
+	defer unixFileStreamPtr.Close()
 
 	unixFile = entity.NewUnixFile(
 		unixFileUid,
