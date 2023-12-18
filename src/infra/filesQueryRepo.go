@@ -149,6 +149,18 @@ func (repo FilesQueryRepo) Exists(
 	return unixFileExists
 }
 
+func (repo FilesQueryRepo) IsDir(
+	unixFilePath valueObject.UnixFilePath,
+) (bool, error) {
+	unixFileInfo, err := os.Stat(unixFilePath.String())
+	if err != nil {
+		log.Printf("UnableToGetPathInfo: %s", err.Error())
+		return false, err
+	}
+
+	return unixFileInfo.IsDir(), nil
+}
+
 func (repo FilesQueryRepo) Get(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
