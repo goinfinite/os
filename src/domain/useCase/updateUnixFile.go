@@ -16,16 +16,19 @@ func UpdateUnixFile(
 ) error {
 	filePath := updateUnixFile.Path
 
-	unixFiles, err := filesQueryRepo.Get(filePath)
-	if err != nil || len(unixFiles) < 1 {
-		return errors.New("PathDoesNotExists")
+	unixFileExists, err := filesQueryRepo.Exists(filePath)
+	if err != nil {
+		return err
+	}
+
+	if unixFileExists {
+		return errors.New("FileDoesNotExists")
 	}
 
 	fileType := "File"
-	fileIsDir, err := filePath.IsDir()
+	fileIsDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
-		log.Printf("PathIsDirError: %s", err)
-		return errors.New("PathIsDirError")
+		return err
 	}
 
 	if fileIsDir {
