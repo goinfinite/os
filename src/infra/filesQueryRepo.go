@@ -82,22 +82,29 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileMimeType, _ := valueObject.NewMimeType("directory")
+	fileTypeStr := "directory"
+	isDir := fileInfo.IsDir()
+	if !isDir {
+		fileTypeStr = "file"
+	}
 
-	if !fileInfo.IsDir() {
-		mimeType := "generic"
+	unixFileType, _ := valueObject.NewUnixFileType(fileTypeStr)
+
+	mimeTypeStr := "directory"
+	if !isDir {
+		mimeTypeStr = "generic"
 
 		mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
 		if len(mimeTypeWithCharset) > 1 {
 			mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
-			mimeType = mimeTypeOnly
+			mimeTypeStr = mimeTypeOnly
 		}
+	}
 
-		unixFileMimeType, err = valueObject.NewMimeType(mimeType)
-		if err != nil {
-			log.Print(err)
-			return unixFile, err
-		}
+	unixFileMimeType, err := valueObject.NewMimeType(mimeTypeStr)
+	if err != nil {
+		log.Print(err)
+		return unixFile, err
 	}
 
 	filePermissions := fileInfo.Mode().Perm()
@@ -123,6 +130,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileUsername,
 		unixFileGid,
 		unixFileGroup,
+		unixFileType,
 		unixFileMimeType,
 		unixFileName,
 		unixFilePath,
@@ -141,12 +149,12 @@ func (repo FilesQueryRepo) Exists(
 ) (bool, error) {
 	_, err := os.Stat(unixFilePath.String())
 	if os.IsNotExist(err) {
-		log.Printf("FileDoesNotExists: %s", unixFilePath.String())
+		log.Printf("PathDoesNotExists: %s", unixFilePath.String())
 		return false, nil
 	}
 
 	if err != nil {
-		log.Printf("FileExistsError: %s", err.Error())
+		log.Printf("PathExistsError: %s", err.Error())
 		return false, err
 	}
 
@@ -158,7 +166,7 @@ func (repo FilesQueryRepo) IsDir(
 ) (bool, error) {
 	unixFileInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
-		log.Printf("UnableToGetPathInfo: %s", err.Error())
+		log.Printf("PathIsDirError: %s", err.Error())
 		return false, err
 	}
 
@@ -170,13 +178,26 @@ func (repo FilesQueryRepo) Get(
 ) ([]entity.UnixFile, error) {
 	unixFileList := []entity.UnixFile{}
 
-	filePathInfo, err := os.Stat(unixFilePath.String())
+	exists, err := repo.Exists(unixFilePath)
 	if err != nil {
-		return unixFileList, errors.New("UnableToGetPathInfo")
+		return unixFileList, err
+	}
+	if !exists {
+		return unixFileList, errors.New("PathDoesNotExists")
 	}
 
-	if !filePathInfo.IsDir() {
-		unixFile, err := repo.unixFileFactory(unixFilePath, filePathInfo)
+	isDir, err := repo.IsDir(unixFilePath)
+	if err != nil {
+		return unixFileList, err
+	}
+
+	if isDir {
+		dirInfo, err := os.Stat(unixFilePath.String())
+		if err != nil {
+			return unixFileList, errors.New("UnableToGetPathInfo")
+		}
+
+		unixFile, err := repo.unixFileFactory(unixFilePath, dirInfo)
 		if err == nil {
 			unixFileList = append(unixFileList, unixFile)
 		}
