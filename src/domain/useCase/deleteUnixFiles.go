@@ -13,13 +13,18 @@ func DeleteUnixFiles(
 	unixFilePaths []valueObject.UnixFilePath,
 ) {
 	for _, filePath := range unixFilePaths {
-		unixFiles, err := filesQueryRepo.Get(filePath)
-		if err != nil || len(unixFiles) < 1 {
-			log.Printf("PathDoesNotExists: %v", err)
+		unixFileExists, err := filesQueryRepo.Exists(filePath)
+		if err != nil {
+			log.Printf(err.Error())
 			continue
 		}
 
-		isDir, err := filePath.IsDir()
+		if !unixFileExists {
+			log.Printf("PathDoesNotExists: %s", filePath.String())
+			continue
+		}
+
+		isDir, err := filesQueryRepo.IsDir(filePath)
 		if err != nil {
 			log.Printf("PathIsDirError: %v", err)
 			continue
