@@ -15,20 +15,14 @@ func AddUnixFileCopy(
 ) error {
 	filePath := addUnixFileCopy.OriginPath
 
-	unixFiles, err := filesQueryRepo.Get(filePath)
+	fileIsDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
-		return errors.New("PathDoesNotExists")
-	}
-
-	fileIsDir, err := filePath.IsDir()
-	if err != nil {
-		log.Printf("PathIsDirError: %s", err)
 		return errors.New("PathIsDirError")
 	}
 
-	fileExists := !fileIsDir && len(unixFiles) < 1
+	fileExists, err := filesQueryRepo.Exists(filePath)
 	if fileExists {
-		return errors.New("FileDoesNotExists")
+		return errors.New("PathExistsError")
 	}
 
 	fileType := "File"
