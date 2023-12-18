@@ -141,7 +141,12 @@ func (repo FilesQueryRepo) Exists(
 ) (bool, error) {
 	_, err := os.Stat(unixFilePath.String())
 	if os.IsNotExist(err) {
-		log.Printf("ExistsError: %s", err.Error())
+		log.Printf("FileDoesNotExists: %s", unixFilePath.String())
+		return false, nil
+	}
+
+	if err != nil {
+		log.Printf("FileExistsError: %s", err.Error())
 		return false, err
 	}
 
