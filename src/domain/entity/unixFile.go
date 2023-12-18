@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"os"
+
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -16,6 +18,7 @@ type UnixFile struct {
 	Permissions valueObject.UnixFilePermissions `json:"permissions"`
 	Size        valueObject.Byte                `json:"size"`
 	UpdatedAt   valueObject.UnixTime            `json:"updatedAt"`
+	Stream      *os.File                        `json:"-"`
 }
 
 func NewUnixFile(
@@ -30,6 +33,7 @@ func NewUnixFile(
 	Permissions valueObject.UnixFilePermissions,
 	Size valueObject.Byte,
 	UpdatedAt valueObject.UnixTime,
+	Stream *os.File,
 ) UnixFile {
 	return UnixFile{
 		Uid:         Uid,
@@ -43,5 +47,6 @@ func NewUnixFile(
 		Permissions: Permissions,
 		Size:        Size,
 		UpdatedAt:   UpdatedAt,
+		Stream:      Stream,
 	}
 }
