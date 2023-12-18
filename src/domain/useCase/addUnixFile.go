@@ -15,12 +15,16 @@ func AddUnixFile(
 ) error {
 	fileType := addUnixFile.Type.GetWithFirstLetterUpperCase()
 
-	unixFileExists := filesQueryRepo.Exists(addUnixFile.Path)
+	unixFileExists, err := filesQueryRepo.Exists(addUnixFile.Path)
+	if err != nil {
+		return err
+	}
+
 	if unixFileExists {
 		return errors.New(fileType + "AlreadyExists")
 	}
 
-	err := filesCmdRepo.Add(addUnixFile)
+	err = filesCmdRepo.Add(addUnixFile)
 	if err != nil {
 		return errors.New("Add" + fileType + "Error")
 	}
