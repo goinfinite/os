@@ -14,10 +14,13 @@ import (
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
-func getInodeNameByFilePath(filePath valueObject.UnixFilePath) string {
-	fileIsDir, _ := filePath.IsDir()
+func getInodeNameByFilePath(
+	filesQueryRepo infra.FilesQueryRepo,
+	filePath valueObject.UnixFilePath,
+) string {
+	isDir, _ := filesQueryRepo.IsDir(filePath)
 	inodeName := "File"
-	if fileIsDir {
+	if isDir {
 		inodeName = "Directory"
 	}
 
@@ -169,7 +172,7 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	inodeName := getInodeNameByFilePath(filePath)
+	inodeName := getInodeNameByFilePath(filesQueryRepo, filePath)
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, inodeName+"Updated")
 }
@@ -243,7 +246,7 @@ func AddFileCopyController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	inodeName := getInodeNameByFilePath(filePath)
+	inodeName := getInodeNameByFilePath(filesQueryRepo, filePath)
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"CopyCreated")
 }
