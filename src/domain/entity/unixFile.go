@@ -11,6 +11,7 @@ type UnixFile struct {
 	Owner       valueObject.Username            `json:"owner"`
 	Gid         valueObject.GroupId             `json:"gid"`
 	Group       valueObject.GroupName           `json:"group"`
+	Type        valueObject.UnixFileType        `json:"type"`
 	MimeType    valueObject.MimeType            `json:"mimeType"`
 	Name        valueObject.UnixFileName        `json:"name"`
 	Path        valueObject.UnixFilePath        `json:"path"`
@@ -22,31 +23,33 @@ type UnixFile struct {
 }
 
 func NewUnixFile(
-	Uid valueObject.UnixUid,
-	Owner valueObject.Username,
-	Gid valueObject.GroupId,
-	Group valueObject.GroupName,
-	MimeType valueObject.MimeType,
-	Name valueObject.UnixFileName,
-	Path valueObject.UnixFilePath,
-	Extension *valueObject.UnixFileExtension,
-	Permissions valueObject.UnixFilePermissions,
-	Size valueObject.Byte,
-	UpdatedAt valueObject.UnixTime,
-	Stream *os.File,
+	uid valueObject.UnixUid,
+	owner valueObject.Username,
+	gid valueObject.GroupId,
+	group valueObject.GroupName,
+	inodeType valueObject.UnixFileType,
+	mimeType valueObject.MimeType,
+	name valueObject.UnixFileName,
+	path valueObject.UnixFilePath,
+	extension *valueObject.UnixFileExtension,
+	permissions valueObject.UnixFilePermissions,
+	size valueObject.Byte,
+	updatedAt valueObject.UnixTime,
+	stream *os.File,
 ) UnixFile {
 	return UnixFile{
-		Uid:         Uid,
-		Owner:       Owner,
-		Gid:         Gid,
-		Group:       Group,
-		MimeType:    MimeType,
-		Name:        Name,
-		Path:        Path,
-		Extension:   Extension,
-		Permissions: Permissions,
-		Size:        Size,
-		UpdatedAt:   UpdatedAt,
-		Stream:      Stream,
+		Uid:         uid,
+		Owner:       owner,
+		Gid:         gid,
+		Group:       group,
+		Type:        inodeType,
+		MimeType:    mimeType,
+		Name:        name,
+		Path:        path,
+		Extension:   extension,
+		Permissions: permissions,
+		Size:        size,
+		UpdatedAt:   updatedAt,
+		Stream:      stream,
 	}
 }
