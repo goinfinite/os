@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"os"
-
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -46,8 +44,4 @@ func NewUnixFile(
 		Size:        Size,
 		UpdatedAt:   UpdatedAt,
 	}
-}
-
-func (unixFile UnixFile) Open() (*os.File, error) {
-	return os.Open(unixFile.Path.String())
 }
