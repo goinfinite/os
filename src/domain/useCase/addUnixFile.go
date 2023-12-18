@@ -15,9 +15,8 @@ func AddUnixFile(
 ) error {
 	fileType := addUnixFile.Type.GetWithFirstLetterUpperCase()
 
-	unixFiles, _ := filesQueryRepo.Get(addUnixFile.Path)
-
-	if len(unixFiles) > 0 {
+	unixFileExists := filesQueryRepo.Exists(addUnixFile.Path)
+	if unixFileExists {
 		return errors.New(fileType + "AlreadyExists")
 	}
 
