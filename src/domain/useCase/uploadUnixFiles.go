@@ -37,7 +37,7 @@ func UploadUnixFiles(
 
 	}
 
-	fileIsDir, err := fileDestinationPath.IsDir()
+	fileIsDir, err := filesQueryRepo.IsDir(fileDestinationPath)
 	if err != nil {
 		log.Printf("PathIsDirError: %s", err)
 		return uploadProcessInfo, errors.New("PathIsDirError")

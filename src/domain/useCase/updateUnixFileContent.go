@@ -26,7 +26,6 @@ func UpdateUnixFileContent(
 
 	isDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
-		log.Printf("PathIsDirError: %s", err)
 		return errors.New("PathIsDirError")
 	}
 
