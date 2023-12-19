@@ -49,7 +49,7 @@ func UploadUnixFiles(
 	}
 
 	if !fileIsDir {
-		return uploadProcessInfo, errors.New("PathIsFile")
+		return uploadProcessInfo, errors.New("PathCannotBeAFile")
 	}
 
 	for _, multipartFile := range uploadUnixFiles.MultipartFiles {
