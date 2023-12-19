@@ -18,6 +18,11 @@ func DeleteUnixFiles(
 			continue
 		}
 
+		err = filesCmdRepo.Delete(filePath)
+		if err != nil {
+			continue
+		}
+
 		isDir, err := filesQueryRepo.IsDir(filePath)
 		if err != nil {
 			continue
@@ -26,12 +31,6 @@ func DeleteUnixFiles(
 		inodeName := "File"
 		if isDir {
 			inodeName = "Directory"
-		}
-
-		err = filesCmdRepo.Delete(filePath)
-		if err != nil {
-			log.Printf("Delete%sError: %v", inodeName, err)
-			continue
 		}
 
 		log.Printf("%s '%s' deleted.", inodeName, filePath.String())
