@@ -43,7 +43,7 @@ func (repo AccQueryRepo) Get() ([]entity.Account, error) {
 	}
 
 	usernames := strings.Split(string(output), "\n")
-	var accsDetails []entity.Account
+	accsListWithDetails := []entity.Account{}
 	for _, username := range usernames {
 		username, err := valueObject.NewUsername(username)
 		if err != nil {
@@ -61,10 +61,10 @@ func (repo AccQueryRepo) Get() ([]entity.Account, error) {
 			continue
 		}
 
-		accsDetails = append(accsDetails, accDetails)
+		accsListWithDetails = append(accsListWithDetails, accDetails)
 	}
 
-	return accsDetails, nil
+	return accsListWithDetails, nil
 }
 
 func (repo AccQueryRepo) GetByUsername(
