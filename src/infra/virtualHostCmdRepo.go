@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -210,7 +211,7 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) mappingToLocationUri(
+func (repo VirtualHostCmdRepo) mappingToLocationStartBlock(
 	matchPattern valueObject.MappingMatchPattern,
 	path valueObject.MappingPath,
 ) string {
@@ -234,7 +235,7 @@ func (repo VirtualHostCmdRepo) mappingToLocationUri(
 		locationUri = modifier + " " + pathStr
 	}
 
-	return locationUri
+	return "location " + locationUri + " {"
 }
 
 func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
@@ -438,7 +439,10 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 }
 
 func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
-	locationUri := repo.mappingToLocationUri(addMapping.MatchPattern, addMapping.Path)
+	locationStartBlock := repo.mappingToLocationStartBlock(
+		addMapping.MatchPattern,
+		addMapping.Path,
+	)
 
 	responseCodeStr := ""
 	if addMapping.TargetHttpResponseCode != nil {
@@ -459,7 +463,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 		}
 	}
 
-	locationBlock := `location ` + locationUri + ` {
+	locationBlock := locationStartBlock + `
 ` + locationContent + `
 }
 `
@@ -485,8 +489,6 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 }
 
 func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
-	locationUri := repo.mappingToLocationUri(mapping.MatchPattern, mapping.Path)
-
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
 		mapping.Hostname,
@@ -495,14 +497,32 @@ func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		`\#location `+locationUri+` {#,/}/d`,
-		mappingFilePath.String(),
-	)
+	fileContent, err := infraHelper.GetFileContent(mappingFilePath.String())
 	if err != nil {
 		return err
+	}
+
+	locationStartBlock := repo.mappingToLocationStartBlock(
+		mapping.MatchPattern,
+		mapping.Path,
+	)
+	locationStartBlock = strings.ReplaceAll(locationStartBlock, "$", "\\$")
+	locationBlockRegex := regexp.MustCompile(
+		`(?m)^` + locationStartBlock + `(?P<content>[\s\S]*?\n)}\n?`,
+	)
+
+	fileContentWithoutLocationBlock := locationBlockRegex.ReplaceAllString(
+		fileContent,
+		"",
+	)
+
+	err = infraHelper.UpdateFile(
+		mappingFilePath.String(),
+		fileContentWithoutLocationBlock,
+		true,
+	)
+	if err != nil {
+		return errors.New("DeleteMappingFailed")
 	}
 
 	return repo.reloadWebServer()
