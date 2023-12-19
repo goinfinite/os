@@ -21,8 +21,12 @@ func AddUnixFileCopy(
 	}
 
 	fileExists, err := filesQueryRepo.Exists(filePath)
-	if fileExists {
+	if err != nil {
 		return errors.New("PathExistsError")
+	}
+
+	if fileExists {
+		return errors.New("PathAlreadyExists")
 	}
 
 	fileType := "File"

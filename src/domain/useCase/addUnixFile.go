@@ -17,7 +17,7 @@ func AddUnixFile(
 
 	unixFileExists, err := filesQueryRepo.Exists(addUnixFile.Path)
 	if err != nil {
-		return err
+		return errors.New("PathExistsError")
 	}
 
 	if unixFileExists {

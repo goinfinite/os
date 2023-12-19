@@ -45,7 +45,7 @@ func CompressUnixFiles(
 
 	unixFileExists, err := filesQueryRepo.Exists(fileDestinationPath)
 	if err != nil {
-		return compressionProcessInfo, err
+		return compressionProcessInfo, errors.New("PathExistsError")
 	}
 
 	if unixFileExists {
