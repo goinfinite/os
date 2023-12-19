@@ -22,11 +22,11 @@ type CompressionProcessInfo struct {
 
 func compressionProcessFailureFactory(
 	filePath valueObject.UnixFilePath,
-	err error,
+	errMessage string,
 ) CompressionProcessFailure {
 	return CompressionProcessFailure{
 		FilePath: filePath.String(),
-		Reason:   err.Error(),
+		Reason:   errMessage,
 	}
 }
 
@@ -43,22 +43,25 @@ func CompressUnixFiles(
 		Destination: fileDestinationPath.String(),
 	}
 
-	unixFiles, _ := filesQueryRepo.Get(fileDestinationPath)
+	unixFileExists, err := filesQueryRepo.Exists(fileDestinationPath)
+	if err != nil {
+		return compressionProcessInfo, err
+	}
 
-	if len(unixFiles) > 0 {
-		log.Print("PathAlreadyExists")
-
+	if unixFileExists {
 		return compressionProcessInfo, errors.New("PathAlreadyExists")
 	}
 
 	var filesToCompress []valueObject.UnixFilePath
 	for _, filePath := range compressUnixFiles.Paths {
-		unixDestinationFiles, err := filesQueryRepo.Get(filePath)
+		unixDestinationFileExists, err := filesQueryRepo.Exists(filePath)
+		if !unixDestinationFileExists {
+			errMessage := "PathDoesNotExists"
+			if err != nil {
+				errMessage = err.Error()
+			}
 
-		if err != nil || len(unixDestinationFiles) < 1 {
-			log.Printf("PathDoesNotExists: %v", err)
-
-			compressionProcessFailure := compressionProcessFailureFactory(filePath, err)
+			compressionProcessFailure := compressionProcessFailureFactory(filePath, errMessage)
 			compressionProcessInfo.Failure = append(
 				compressionProcessInfo.Failure,
 				compressionProcessFailure,
@@ -79,7 +82,7 @@ func CompressUnixFiles(
 		return compressionProcessInfo, errors.New("UnableToCompressFilesAndDirectories")
 	}
 
-	err := filesCmdRepo.Compress(
+	err = filesCmdRepo.Compress(
 		filesToCompress,
 		fileDestinationPath,
 		compressUnixFiles.CompressionType,
@@ -88,7 +91,7 @@ func CompressUnixFiles(
 		log.Printf("UnableToCompressFilesAndDirectories: %s", err.Error())
 
 		for _, filePath := range filesToCompress {
-			compressionProcessFailure := compressionProcessFailureFactory(filePath, err)
+			compressionProcessFailure := compressionProcessFailureFactory(filePath, err.Error())
 			compressionProcessInfo.Failure = append(
 				compressionProcessInfo.Failure,
 				compressionProcessFailure,
