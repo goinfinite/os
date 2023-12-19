@@ -144,7 +144,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addMappingDto	body dto.AddMapping	true	"CreateMapping. 'hostname', 'path' and 'targetType' are required, as well as the 'targetUrl' if 'targetType' is 'url', 'targetServiceName' if 'targetType' is 'service' and so on."
+// @Param        addMappingDto	body dto.AddMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func AddVirtualHostMappingController(c echo.Context) error {
