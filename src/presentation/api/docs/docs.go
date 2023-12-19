@@ -1165,7 +1165,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/mapping/{hostname}/{id}/": {
+        "/vhosts/mapping/{hostname}/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1186,15 +1186,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "VirtualHost Hostname",
+                        "description": "Hostname",
                         "name": "hostname",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "Mapping Id",
-                        "name": "id",
+                        "description": "MappingId",
+                        "name": "mappingId",
                         "in": "path",
                         "required": true
                     }
@@ -1230,7 +1230,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "VirtualHost Hostname",
+                        "description": "Hostname",
                         "name": "hostname",
                         "in": "path",
                         "required": true

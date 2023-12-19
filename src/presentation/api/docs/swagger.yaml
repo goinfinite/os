@@ -1139,7 +1139,7 @@ paths:
       - application/json
       description: Delete a vhost.
       parameters:
-      - description: VirtualHost Hostname
+      - description: Hostname
         in: path
         name: hostname
         required: true
@@ -1201,20 +1201,20 @@ paths:
       summary: CreateMapping
       tags:
       - vhosts
-  /vhosts/mapping/{hostname}/{id}/:
+  /vhosts/mapping/{hostname}/{mappingId}/:
     delete:
       consumes:
       - application/json
       description: Delete a vhost mapping.
       parameters:
-      - description: VirtualHost Hostname
+      - description: Hostname
         in: path
         name: hostname
         required: true
         type: string
-      - description: Mapping Id
+      - description: MappingId
         in: path
-        name: id
+        name: mappingId
         required: true
         type: integer
       produces:

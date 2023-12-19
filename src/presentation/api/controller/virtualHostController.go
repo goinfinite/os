@@ -91,7 +91,7 @@ func AddVirtualHostController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "VirtualHost Hostname"
+// @Param        hostname path string true "Hostname"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /vhosts/{hostname}/ [delete]
 func DeleteVirtualHostController(c echo.Context) error {
@@ -220,13 +220,13 @@ func AddVirtualHostMappingController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "VirtualHost Hostname"
-// @Param        id path uint true "Mapping Id"
+// @Param        hostname path string true "Hostname"
+// @Param        mappingId path uint true "MappingId"
 // @Success      200 {object} object{} "MappingDeleted"
-// @Router       /vhosts/mapping/{hostname}/{id}/ [delete]
+// @Router       /vhosts/mapping/{hostname}/{mappingId}/ [delete]
 func DeleteVirtualHostMappingController(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
-	mappingId := valueObject.NewMappingIdPanic(c.Param("id"))
+	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 
 	vhostQueryRepo := infra.VirtualHostQueryRepo{}
 	vhostCmdRepo := infra.VirtualHostCmdRepo{}
