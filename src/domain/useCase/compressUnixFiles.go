@@ -88,8 +88,6 @@ func CompressUnixFiles(
 		compressUnixFiles.CompressionType,
 	)
 	if err != nil {
-		log.Printf("UnableToCompressFilesAndDirectories: %s", err.Error())
-
 		for _, filePath := range filesToCompress {
 			compressionProcessFailure := compressionProcessFailureFactory(filePath, err.Error())
 			compressionProcessInfo.Failure = append(
