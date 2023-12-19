@@ -45,8 +45,7 @@ func UploadUnixFiles(
 
 	fileIsDir, err := filesQueryRepo.IsDir(fileDestinationPath)
 	if err != nil {
-		log.Printf("PathIsDirError: %s", err)
-		return uploadProcessInfo, errors.New("PathIsDirError")
+		return uploadProcessInfo, err
 	}
 
 	if !fileIsDir {
@@ -73,8 +72,6 @@ func UploadUnixFiles(
 
 		err := filesCmdRepo.Upload(fileDestinationPath, multipartFile)
 		if err != nil {
-			log.Printf("UploadFileError: %v", err)
-
 			uploadProcessFailure := uploadProcessFailureFactory(
 				multipartFile.GetFileName(),
 				err.Error(),
