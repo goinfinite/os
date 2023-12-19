@@ -6,7 +6,7 @@ import (
 
 type VirtualHostWithMappings struct {
 	entity.VirtualHost
-	Mappings []entity.Mapping `json:"mappings,omitempty"`
+	Mappings []entity.Mapping `json:"mappings"`
 }
 
 func NewVirtualHostWithMappings(
