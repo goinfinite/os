@@ -32,9 +32,7 @@ func NewUnixFileExtensionPanic(value string) UnixFileExtension {
 
 func (unixFileExtension UnixFileExtension) isValid() bool {
 	unixFileExtensionRegex := regexp.MustCompile(unixFileExtensionRegexExpression)
-	isValidFormat := unixFileExtensionRegex.MatchString(string(unixFileExtension))
-
-	return isValidFormat
+	return unixFileExtensionRegex.MatchString(string(unixFileExtension))
 }
 
 func (unixFileExtension UnixFileExtension) String() string {
