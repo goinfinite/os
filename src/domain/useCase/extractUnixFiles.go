@@ -13,14 +13,22 @@ func ExtractUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
 	extractUnixFiles dto.ExtractUnixFiles,
 ) error {
-	unixFiles, err := filesQueryRepo.Get(extractUnixFiles.Path)
-	if err != nil || len(unixFiles) < 1 {
-		return errors.New("FileDoesNotExists")
+	unixFileToExtractExists, err := filesQueryRepo.Exists(extractUnixFiles.Path)
+	if err != nil {
+		return err
 	}
 
-	unixDestinationFiles, err := filesQueryRepo.Get(extractUnixFiles.DestinationPath)
-	if err == nil || len(unixDestinationFiles) > 0 {
-		return errors.New("DestinationAlreadyExists")
+	if !unixFileToExtractExists {
+		return errors.New("PathDoesNotExists")
+	}
+
+	unixDestinationFileExists, err := filesQueryRepo.Exists(extractUnixFiles.DestinationPath)
+	if err != nil {
+		return err
+	}
+
+	if !unixDestinationFileExists {
+		return errors.New("DestinationPathAlreadyExists")
 	}
 
 	err = filesCmdRepo.Extract(
@@ -28,7 +36,7 @@ func ExtractUnixFiles(
 		extractUnixFiles.DestinationPath,
 	)
 	if err != nil {
-		return errors.New("UnableToExtractFilesAndDirectories")
+		return err
 	}
 
 	log.Printf(

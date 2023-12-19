@@ -18,7 +18,7 @@ func UpdateUnixFile(
 
 	unixFileExists, err := filesQueryRepo.Exists(filePath)
 	if err != nil {
-		return errors.New("PathExistsError")
+		return err
 	}
 
 	if unixFileExists {
@@ -28,7 +28,7 @@ func UpdateUnixFile(
 	fileType := "File"
 	fileIsDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
-		return errors.New("PathIsDirError")
+		return err
 	}
 
 	if fileIsDir {

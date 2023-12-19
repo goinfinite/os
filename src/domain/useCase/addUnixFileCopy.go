@@ -17,12 +17,12 @@ func AddUnixFileCopy(
 
 	fileIsDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
-		return errors.New("PathIsDirError")
+		return err
 	}
 
 	fileExists, err := filesQueryRepo.Exists(filePath)
 	if err != nil {
-		return errors.New("PathExistsError")
+		return err
 	}
 
 	if fileExists {
