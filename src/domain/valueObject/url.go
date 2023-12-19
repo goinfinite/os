@@ -42,7 +42,7 @@ func (url Url) String() string {
 }
 
 func (url Url) getParts() map[string]string {
-	return voHelper.GetRegexNamedGroups(urlRegex, url.String())
+	return voHelper.FindNamedGroupsMatches(urlRegex, url.String())
 }
 
 func (url Url) GetPort() (NetworkPort, error) {
