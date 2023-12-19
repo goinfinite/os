@@ -39,8 +39,8 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 
 	err := os.MkdirAll(addUnixFile.Path.String(), addUnixFile.Permissions.GetFileMode())
 	if err != nil {
-		log.Printf("CreateUnixFileError: %s", err)
-		return errors.New("CreateUnixFileError")
+		log.Printf("CreateUnixDirectoryError: %s", err)
+		return errors.New("CreateUnixDirectoryError")
 	}
 
 	return nil
