@@ -270,6 +270,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 	}
 
 	blockContent := locationBlockParts[2]
+	blockContent = strings.TrimSpace(blockContent)
 	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
 
 	targetTypeStr := "service"
@@ -279,7 +280,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 	if isUrlOrResponseCode {
 		blockContentFirstLine := strings.Split(blockContent, "\n")[0]
 		blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
-		if len(blockContentFirstLineParts) == 0 {
+		if len(blockContentFirstLineParts) < 2 {
 			return mapping, errors.New("GetLocationBlockContentPartsFailed")
 		}
 
@@ -306,6 +307,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 			targetTypeStr = "url"
 
 			urlStr := blockContentFirstLineParts[2]
+			urlStr = strings.TrimSuffix(urlStr, ";")
 			url, err := valueObject.NewUrl(urlStr)
 			if err != nil {
 				return mapping, errors.New("InvalidReturnUrl: " + urlStr)
