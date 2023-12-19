@@ -14,6 +14,13 @@ import (
 )
 
 type FilesCmdRepo struct {
+	filesQueryRepo FilesQueryRepo
+}
+
+func NewFilesCmdRepo() FilesCmdRepo {
+	return FilesCmdRepo{
+		filesQueryRepo: FilesQueryRepo{},
+	}
 }
 
 func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
@@ -49,7 +56,7 @@ func (repo FilesCmdRepo) Move(
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := originPath.IsDir()
+		fileIsDir, _ := repo.filesQueryRepo.IsDir(originPath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
@@ -72,7 +79,7 @@ func (repo FilesCmdRepo) Copy(addUnixFileCopy dto.AddUnixFileCopy) error {
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := addUnixFileCopy.OriginPath.IsDir()
+		fileIsDir, _ := repo.filesQueryRepo.IsDir(addUnixFileCopy.OriginPath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
@@ -130,7 +137,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := unixFilePath.IsDir()
+		fileIsDir, _ := repo.filesQueryRepo.IsDir(unixFilePath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
