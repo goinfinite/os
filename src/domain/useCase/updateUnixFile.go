@@ -22,7 +22,7 @@ func UpdateUnixFile(
 	}
 
 	if unixFileExists {
-		return errors.New("FileDoesNotExists")
+		return errors.New("PathDoesNotExists")
 	}
 
 	fileType := "File"
