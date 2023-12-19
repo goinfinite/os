@@ -714,7 +714,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: DatabaseAdded
+          description: DatabaseCreated
           schema:
             type: object
       security:
@@ -782,7 +782,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: DatabaseUserAdded
+          description: DatabaseUserCreated
           schema:
             type: object
       security:
@@ -975,7 +975,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: ServiceInstalled
+          description: CustomServiceCreated
           schema:
             type: object
       security:
@@ -999,7 +999,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: ServiceInstalled
+          description: InstallableServiceCreated
           schema:
             type: object
       security:
@@ -1115,7 +1115,7 @@ paths:
       - application/json
       description: Add a new vhost.
       parameters:
-      - description: NewVirtualHost
+      - description: NewVirtualHost (only hostname is required).
         in: body
         name: addVirtualHostDto
         required: true
@@ -1178,9 +1178,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new vhost mapping.
+      description: Create a new vhost mapping.
       parameters:
-      - description: AddMapping
+      - description: hostname, path and targetType are required. If targetType is
+          'url', targetUrl is required and so on.<br />targetType may be 'service',
+          'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains',
+          'equals', 'ends-with' or empty.
         in: body
         name: addMappingDto
         required: true
@@ -1190,12 +1193,12 @@ paths:
       - application/json
       responses:
         "201":
-          description: MappingAdded
+          description: MappingCreated
           schema:
             type: object
       security:
       - Bearer: []
-      summary: AddMapping
+      summary: CreateMapping
       tags:
       - vhosts
   /vhosts/mapping/{hostname}/{id}/:

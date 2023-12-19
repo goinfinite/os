@@ -433,7 +433,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseAdded",
+                        "description": "DatabaseCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -538,7 +538,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseUserAdded",
+                        "description": "DatabaseUserCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -809,7 +809,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "ServiceInstalled",
+                        "description": "CustomServiceCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -848,7 +848,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "ServiceInstalled",
+                        "description": "InstallableServiceCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -1078,7 +1078,7 @@ const docTemplate = `{
                 "summary": "AddNewVirtualHost",
                 "parameters": [
                     {
-                        "description": "NewVirtualHost",
+                        "description": "NewVirtualHost (only hostname is required).",
                         "name": "addVirtualHostDto",
                         "in": "body",
                         "required": true,
@@ -1133,7 +1133,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new vhost mapping.",
+                "description": "Create a new vhost mapping.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1143,10 +1143,10 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "AddMapping",
+                "summary": "CreateMapping",
                 "parameters": [
                     {
-                        "description": "AddMapping",
+                        "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
                         "name": "addMappingDto",
                         "in": "body",
                         "required": true,
@@ -1157,7 +1157,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "MappingAdded",
+                        "description": "MappingCreated",
                         "schema": {
                             "type": "object"
                         }

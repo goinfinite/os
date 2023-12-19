@@ -426,7 +426,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseAdded",
+                        "description": "DatabaseCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -531,7 +531,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseUserAdded",
+                        "description": "DatabaseUserCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -802,7 +802,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "ServiceInstalled",
+                        "description": "CustomServiceCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -841,7 +841,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "ServiceInstalled",
+                        "description": "InstallableServiceCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -1071,7 +1071,7 @@
                 "summary": "AddNewVirtualHost",
                 "parameters": [
                     {
-                        "description": "NewVirtualHost",
+                        "description": "NewVirtualHost (only hostname is required).",
                         "name": "addVirtualHostDto",
                         "in": "body",
                         "required": true,
@@ -1126,7 +1126,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new vhost mapping.",
+                "description": "Create a new vhost mapping.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1136,10 +1136,10 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "AddMapping",
+                "summary": "CreateMapping",
                 "parameters": [
                     {
-                        "description": "AddMapping",
+                        "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
                         "name": "addMappingDto",
                         "in": "body",
                         "required": true,
@@ -1150,7 +1150,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "MappingAdded",
+                        "description": "MappingCreated",
                         "schema": {
                             "type": "object"
                         }
