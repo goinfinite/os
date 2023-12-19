@@ -31,6 +31,6 @@ COPY /bin/sos /speedia/sos
 RUN chmod +x /speedia/sos \
     && ln -s /speedia/sos /usr/bin/sos
 
-EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 10000/tcp
+EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 5432/tcp 6379/tcp 1618/tcp
 
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/speedia/supervisord.conf"]
