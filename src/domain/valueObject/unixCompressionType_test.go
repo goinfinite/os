@@ -6,7 +6,7 @@ func TestUnixCompressionType(t *testing.T) {
 	t.Run("ValidUnixCompressionType", func(t *testing.T) {
 		validUnixCompressionTypes := []string{
 			"gzip",
-			"gzip",
+			"zip",
 		}
 		for _, extension := range validUnixCompressionTypes {
 			_, err := NewUnixCompressionType(extension)
