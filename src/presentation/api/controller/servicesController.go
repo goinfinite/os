@@ -76,7 +76,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Produce      json
 // @Security     Bearer
 // @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
-// @Success      201 {object} object{} "ServiceInstalled"
+// @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installable/ [post]
 func AddInstallableServiceController(c echo.Context) error {
 	requiredParams := []string{"name"}
@@ -129,7 +129,7 @@ func AddInstallableServiceController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ServiceInstalled")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "InstallableServiceCreated")
 }
 
 // AddCustomService godoc
@@ -140,7 +140,7 @@ func AddInstallableServiceController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        addCustomServiceDto	body dto.AddCustomService	true	"AddCustomService"
-// @Success      201 {object} object{} "ServiceInstalled"
+// @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /services/custom/ [post]
 func AddCustomServiceController(c echo.Context) error {
 	requiredParams := []string{"name", "type", "command"}
@@ -188,7 +188,7 @@ func AddCustomServiceController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ServiceInstalled")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "CustomServiceCreated")
 }
 
 // UpdateService godoc

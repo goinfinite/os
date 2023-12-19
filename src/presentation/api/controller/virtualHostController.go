@@ -38,7 +38,7 @@ func GetVirtualHostsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addVirtualHostDto 	  body    dto.AddVirtualHost  true  "NewVirtualHost"
+// @Param        addVirtualHostDto 	  body    dto.AddVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
 func AddVirtualHostController(c echo.Context) error {
@@ -145,7 +145,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        addMappingDto	body dto.AddMapping	true	"AddMapping"
-// @Success      201 {object} object{} "MappingAdded"
+// @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func AddVirtualHostMappingController(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
@@ -210,7 +210,7 @@ func AddVirtualHostMappingController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingAdded")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingCreated")
 }
 
 // DeleteVirtualHost godoc
