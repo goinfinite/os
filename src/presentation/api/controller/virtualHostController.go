@@ -137,14 +137,14 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
 
-// AddMapping godoc
-// @Summary      AddMapping
-// @Description  Add a new vhost mapping.
+// CreateMapping godoc
+// @Summary      CreateMapping
+// @Description  Create a new vhost mapping.
 // @Tags         vhosts
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addMappingDto	body dto.AddMapping	true	"AddMapping"
+// @Param        addMappingDto	body dto.AddMapping	true	"CreateMapping. 'hostname', 'path' and 'targetType' are required, as well as the 'targetUrl' if 'targetType' is 'url', 'targetServiceName' if 'targetType' is 'service' and so on."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func AddVirtualHostMappingController(c echo.Context) error {
