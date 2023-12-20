@@ -64,7 +64,7 @@ func TestFilesCmdRepo(t *testing.T) {
 	t.Run("UpdateUnixFileContent", func(t *testing.T) {
 		updateUnixFileContent := dto.NewUpdateUnixFileContent(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest_.txt"),
-			valueObject.NewUnixFileContentPanic("Q29udGVudCB0byB0ZXN0"),
+			valueObject.NewEncodedBase64ContentPanic("Q29udGVudCB0byB0ZXN0"),
 		)
 
 		err := filesCmdRepo.UpdateContent(updateUnixFileContent)

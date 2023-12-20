@@ -197,7 +197,7 @@ func UpdateFileContentController(c echo.Context) error {
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
-	fileContent := valueObject.NewUnixFileContentPanic(requestBody["encodedFileContent"].(string))
+	fileContent := valueObject.NewEncodedBase64ContentPanic(requestBody["encodedFileContent"].(string))
 
 	updateUnixFileContentDto := dto.NewUpdateUnixFileContent(filePath, fileContent)
 
