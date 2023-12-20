@@ -11,7 +11,6 @@ type UnixFile struct {
 	Owner       valueObject.Username            `json:"owner"`
 	Gid         valueObject.GroupId             `json:"gid"`
 	Group       valueObject.GroupName           `json:"group"`
-	Type        valueObject.UnixFileType        `json:"type"`
 	MimeType    valueObject.MimeType            `json:"mimeType"`
 	Name        valueObject.UnixFileName        `json:"name"`
 	Path        valueObject.UnixFilePath        `json:"path"`
@@ -27,7 +26,6 @@ func NewUnixFile(
 	owner valueObject.Username,
 	gid valueObject.GroupId,
 	group valueObject.GroupName,
-	inodeType valueObject.UnixFileType,
 	mimeType valueObject.MimeType,
 	name valueObject.UnixFileName,
 	path valueObject.UnixFilePath,
@@ -42,7 +40,6 @@ func NewUnixFile(
 		Owner:       owner,
 		Gid:         gid,
 		Group:       group,
-		Type:        inodeType,
 		MimeType:    mimeType,
 		Name:        name,
 		Path:        path,

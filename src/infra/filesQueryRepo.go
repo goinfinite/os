@@ -82,15 +82,8 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	fileTypeStr := "directory"
-	isDir := fileInfo.IsDir()
-	if !isDir {
-		fileTypeStr = "file"
-	}
-
-	unixFileType, _ := valueObject.NewUnixFileType(fileTypeStr)
-
 	mimeTypeStr := "directory"
+	isDir := fileInfo.IsDir()
 	if !isDir {
 		mimeTypeStr = "generic"
 
@@ -130,7 +123,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileUsername,
 		unixFileGid,
 		unixFileGroup,
-		unixFileType,
 		unixFileMimeType,
 		unixFileName,
 		unixFilePath,
