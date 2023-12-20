@@ -84,12 +84,15 @@ func GetFilesController(c echo.Context) error {
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
 func AddFileController(c echo.Context) error {
-	requiredParams := []string{"filePath", "type"}
+	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	fileType := valueObject.NewUnixFileTypePanic(requestBody["type"].(string))
+	fileType := valueObject.NewUnixFileTypePanic("file")
+	if requestBody["type"] != nil {
+		fileType = valueObject.NewUnixFileTypePanic(requestBody["type"].(string))
+	}
 
 	successResponse := "FileCreated"
 
