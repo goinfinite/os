@@ -217,16 +217,16 @@ func UpdateFileContentController(c echo.Context) error {
 }
 
 // AddFileCopy    godoc
-// @Summary      AddFileCopy
-// @Description  Add a new dir/file copy.
+// @Summary      CopyFile
+// @Description  Copy a dir/file.
 // @Tags         files
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addFileCopyDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
-// @Success      201 {object} object{} "FileCopyCreated/DirectoryCopyCreated"
+// @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
+// @Success      201 {object} object{} "FileCopied/DirectoryCopied"
 // @Router       /files/copy/ [post]
-func AddFileCopyController(c echo.Context) error {
+func CopyFileController(c echo.Context) error {
 	requiredParams := []string{"filePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -251,7 +251,7 @@ func AddFileCopyController(c echo.Context) error {
 
 	inodeName := getInodeNameByFilePath(filesQueryRepo, filePath)
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"CopyCreated")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"Copied")
 }
 
 // DeleteFiles godoc
