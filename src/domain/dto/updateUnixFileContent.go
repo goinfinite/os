@@ -3,13 +3,13 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type UpdateUnixFileContent struct {
-	Path    valueObject.UnixFilePath         `json:"path"`
-	Content valueObject.EncodedBase64Content `json:"content"`
+	Path    valueObject.UnixFilePath   `json:"path"`
+	Content valueObject.EncodedContent `json:"content"`
 }
 
 func NewUpdateUnixFileContent(
 	path valueObject.UnixFilePath,
-	content valueObject.EncodedBase64Content,
+	content valueObject.EncodedContent,
 ) UpdateUnixFileContent {
 	return UpdateUnixFileContent{
 		Path:    path,
