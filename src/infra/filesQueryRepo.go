@@ -119,16 +119,16 @@ func (repo FilesQueryRepo) unixFileFactory(
 	defer unixFileStreamPtr.Close()
 
 	unixFile = entity.NewUnixFile(
+		unixFileName,
+		unixFilePath,
+		unixFileMimeType,
+		unixFilePermissions,
+		unixFileSize,
+		&unixFileExtension,
 		unixFileUid,
 		unixFileUsername,
 		unixFileGid,
 		unixFileGroup,
-		unixFileMimeType,
-		unixFileName,
-		unixFilePath,
-		&unixFileExtension,
-		unixFilePermissions,
-		unixFileSize,
 		unixFileUpdatedAt,
 		unixFileStreamPtr,
 	)
