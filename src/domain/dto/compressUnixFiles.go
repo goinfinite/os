@@ -9,13 +9,13 @@ type CompressUnixFiles struct {
 }
 
 func NewCompressUnixFiles(
-	Paths []valueObject.UnixFilePath,
-	DestinationPath valueObject.UnixFilePath,
-	CompressionType valueObject.UnixCompressionType,
+	paths []valueObject.UnixFilePath,
+	destinationPath valueObject.UnixFilePath,
+	compressionType valueObject.UnixCompressionType,
 ) CompressUnixFiles {
 	return CompressUnixFiles{
-		Paths:           Paths,
-		DestinationPath: DestinationPath,
-		CompressionType: CompressionType,
+		Paths:           paths,
+		DestinationPath: destinationPath,
+		CompressionType: compressionType,
 	}
 }
