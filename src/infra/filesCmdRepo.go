@@ -46,17 +46,14 @@ func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
 	return nil
 }
 
-func (repo FilesCmdRepo) Move(
-	originPath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
-) error {
+func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 	err := os.Rename(
-		originPath.String(),
-		destinationPath.String(),
+		updateUnixFile.Path.String(),
+		updateUnixFile.DestinationPath.String(),
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := repo.filesQueryRepo.IsDir(originPath)
+		fileIsDir, _ := repo.filesQueryRepo.IsDir(updateUnixFile.Path)
 		if fileIsDir {
 			fileType = "Directory"
 		}

@@ -62,7 +62,7 @@ func UpdateUnixFile(
 
 		toBeRenamed := fileDir.String() == fileDestinationDir.String()
 
-		err = filesCmdRepo.Move(updateUnixFile.Path, fileDestinationPath)
+		err = filesCmdRepo.Move(updateUnixFile)
 		if err != nil {
 			processToBeExecuted := "Move"
 			if toBeRenamed {
