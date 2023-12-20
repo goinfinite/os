@@ -8,12 +8,12 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddUnixFileCopy(
+func CopyUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	addUnixFileCopy dto.AddUnixFileCopy,
+	copyUnixFile dto.CopyUnixFile,
 ) error {
-	filePath := addUnixFileCopy.OriginPath
+	filePath := copyUnixFile.OriginPath
 
 	fileIsDir, err := filesQueryRepo.IsDir(filePath)
 	if err != nil {
@@ -34,15 +34,15 @@ func AddUnixFileCopy(
 		fileType = "Dir"
 	}
 
-	err = filesCmdRepo.Copy(addUnixFileCopy)
+	err = filesCmdRepo.Copy(copyUnixFile)
 	if err != nil {
 		return errors.New("Add" + fileType + "CopyError")
 	}
 
-	fileName, _ := addUnixFileCopy.OriginPath.GetFileName()
-	fileDir, _ := addUnixFileCopy.OriginPath.GetFileDir()
+	fileName, _ := copyUnixFile.OriginPath.GetFileName()
+	fileDir, _ := copyUnixFile.OriginPath.GetFileDir()
 
-	fileDestinationPath := addUnixFileCopy.DestinationPath
+	fileDestinationPath := copyUnixFile.DestinationPath
 	fileDestinationName, _ := fileDestinationPath.GetFileName()
 	fileDestinationDir, _ := fileDestinationPath.GetFileDir()
 	log.Printf(

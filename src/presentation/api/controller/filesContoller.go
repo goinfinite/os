@@ -223,7 +223,7 @@ func UpdateFileContentController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addFileCopyDto 	  body    dto.AddUnixFileCopy  true  "NewFileCopy"
+// @Param        addFileCopyDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
 // @Success      201 {object} object{} "FileCopyCreated/DirectoryCopyCreated"
 // @Router       /files/copy/ [post]
 func AddFileCopyController(c echo.Context) error {
@@ -235,15 +235,15 @@ func AddFileCopyController(c echo.Context) error {
 	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 
-	addUnixFileCopyDto := dto.NewAddUnixFileCopy(filePath, destinationPath)
+	copyUnixFileDto := dto.NewCopyUnixFile(filePath, destinationPath)
 
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.NewFilesCmdRepo()
 
-	err := useCase.AddUnixFileCopy(
+	err := useCase.CopyUnixFile(
 		filesQueryRepo,
 		filesCmdRepo,
-		addUnixFileCopyDto,
+		copyUnixFileDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

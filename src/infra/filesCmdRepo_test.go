@@ -100,24 +100,24 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CopyUnixDirectory", func(t *testing.T) {
-		addUnixFileCopyDto := dto.NewAddUnixFileCopy(
+		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
 		)
 
-		err := filesCmdRepo.Copy(addUnixFileCopyDto)
+		err := filesCmdRepo.Copy(copyUnixFileDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("CopyUnixFile", func(t *testing.T) {
-		addUnixFileCopyDto := dto.NewAddUnixFileCopy(
+		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/testDir_/filesCmdRepoTest_.txt"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/testDir_/filesCmdRepoTest.txt"),
 		)
 
-		err := filesCmdRepo.Copy(addUnixFileCopyDto)
+		err := filesCmdRepo.Copy(copyUnixFileDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}

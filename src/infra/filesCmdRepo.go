@@ -70,16 +70,16 @@ func (repo FilesCmdRepo) Move(
 	return nil
 }
 
-func (repo FilesCmdRepo) Copy(addUnixFileCopy dto.AddUnixFileCopy) error {
+func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 	_, err := infraHelper.RunCmd(
 		"rsync",
 		"-avq",
-		addUnixFileCopy.OriginPath.String(),
-		addUnixFileCopy.DestinationPath.String(),
+		copyUnixFile.OriginPath.String(),
+		copyUnixFile.DestinationPath.String(),
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := repo.filesQueryRepo.IsDir(addUnixFileCopy.OriginPath)
+		fileIsDir, _ := repo.filesQueryRepo.IsDir(copyUnixFile.OriginPath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
