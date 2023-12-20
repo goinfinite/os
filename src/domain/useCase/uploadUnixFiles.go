@@ -52,14 +52,14 @@ func UploadUnixFiles(
 		return uploadProcessInfo, errors.New("PathCannotBeAFile")
 	}
 
-	for _, multipartFile := range uploadUnixFiles.MultipartFiles {
-		multipartFileSizeInGB := multipartFile.GetFileSize().ToGiB()
-		if multipartFileSizeInGB > 5 {
+	for _, fileStreamHandler := range uploadUnixFiles.FileStreamHandlers {
+		fileStreamHandlerSizeInGB := fileStreamHandler.GetFileSize().ToGiB()
+		if fileStreamHandlerSizeInGB > 5 {
 			errMessage := "File size in greater than 5 GB"
 			log.Printf("UploadFileError: %s", errMessage)
 
 			uploadProcessFailure := uploadProcessFailureFactory(
-				multipartFile.GetFileName(),
+				fileStreamHandler.GetFileName(),
 				errMessage,
 			)
 			uploadProcessInfo.Failure = append(
@@ -70,10 +70,10 @@ func UploadUnixFiles(
 			continue
 		}
 
-		err := filesCmdRepo.Upload(fileDestinationPath, multipartFile)
+		err := filesCmdRepo.Upload(fileDestinationPath, fileStreamHandler)
 		if err != nil {
 			uploadProcessFailure := uploadProcessFailureFactory(
-				multipartFile.GetFileName(),
+				fileStreamHandler.GetFileName(),
 				err.Error(),
 			)
 			uploadProcessInfo.Failure = append(
@@ -86,12 +86,12 @@ func UploadUnixFiles(
 
 		uploadProcessInfo.Success = append(
 			uploadProcessInfo.Success,
-			multipartFile.GetFileName().String(),
+			fileStreamHandler.GetFileName().String(),
 		)
 
 		log.Printf(
 			"File '%s' content upload to '%s'.",
-			multipartFile.GetFileName().String(),
+			fileStreamHandler.GetFileName().String(),
 			fileDestinationPath.String(),
 		)
 	}

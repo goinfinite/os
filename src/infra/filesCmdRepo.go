@@ -241,9 +241,9 @@ func (repo FilesCmdRepo) Delete(
 
 func (repo FilesCmdRepo) Upload(
 	unixFileDestinationPath valueObject.UnixFilePath,
-	multipartFile valueObject.MultipartFile,
+	fileStreamHandler valueObject.FileStreamHandler,
 ) error {
-	destinationFileName := unixFileDestinationPath.String() + "/" + multipartFile.GetFileName().String()
+	destinationFileName := unixFileDestinationPath.String() + "/" + fileStreamHandler.GetFileName().String()
 	destinationEmptyFile, err := os.Create(destinationFileName)
 	if err != nil {
 		log.Printf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
@@ -251,12 +251,12 @@ func (repo FilesCmdRepo) Upload(
 	}
 	defer destinationEmptyFile.Close()
 
-	multipartFileInstance, err := multipartFile.Open()
+	fileStreamHandlerInstance, err := fileStreamHandler.Open()
 
-	_, err = io.Copy(destinationEmptyFile, multipartFileInstance)
+	_, err = io.Copy(destinationEmptyFile, fileStreamHandlerInstance)
 	if err != nil {
-		log.Printf("CopyMultipartFileContentToDestinationFileError: %s", err.Error())
-		return errors.New("CopyMultipartFileContentToDestinationFileError")
+		log.Printf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
+		return errors.New("CopyFileStreamHandlerContentToDestinationFileError")
 	}
 
 	return nil

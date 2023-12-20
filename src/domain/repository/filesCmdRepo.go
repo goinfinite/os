@@ -21,5 +21,5 @@ type FilesCmdRepo interface {
 		valueObject.UnixCompressionType,
 	) error
 	Extract(valueObject.UnixFilePath, valueObject.UnixFilePath) error
-	Upload(valueObject.UnixFilePath, valueObject.MultipartFile) error
+	Upload(valueObject.UnixFilePath, valueObject.FileStreamHandler) error
 }

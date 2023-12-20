@@ -386,10 +386,10 @@ func UploadFilesController(c echo.Context) error {
 
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 
-	var filesToUpload []valueObject.MultipartFile
+	var filesToUpload []valueObject.FileStreamHandler
 	for _, requestBodyFile := range requestBody["files"].(map[string]*multipart.FileHeader) {
-		multipartFile := valueObject.NewMultipartFilePanic(requestBodyFile)
-		filesToUpload = append(filesToUpload, multipartFile)
+		fileStreamHandler := valueObject.NewFileStreamHandlerPanic(requestBodyFile)
+		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 
 	uploadUnixFilesDto := dto.NewUploadUnixFiles(destinationPath, filesToUpload)

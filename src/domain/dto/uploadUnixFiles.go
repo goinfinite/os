@@ -5,16 +5,16 @@ import (
 )
 
 type UploadUnixFiles struct {
-	DestinationPath valueObject.UnixFilePath    `json:"destinationPath"`
-	MultipartFiles  []valueObject.MultipartFile `json:"multipartFiles"`
+	DestinationPath    valueObject.UnixFilePath        `json:"destinationPath"`
+	FileStreamHandlers []valueObject.FileStreamHandler `json:"fileStreamHandlers"`
 }
 
 func NewUploadUnixFiles(
 	destinationPath valueObject.UnixFilePath,
-	multipartFiles []valueObject.MultipartFile,
+	fileStreamHandlers []valueObject.FileStreamHandler,
 ) UploadUnixFiles {
 	return UploadUnixFiles{
-		DestinationPath: destinationPath,
-		MultipartFiles:  multipartFiles,
+		DestinationPath:    destinationPath,
+		FileStreamHandlers: fileStreamHandlers,
 	}
 }
