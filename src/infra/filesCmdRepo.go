@@ -238,7 +238,7 @@ func (repo FilesCmdRepo) Extract(
 	err := infraHelper.MakeDir(unixFileDestinationPath.String())
 	if err != nil {
 		log.Printf("CreateExtractDirectoryError: %s", err.Error())
-		return errors.New("CreateExtractDirectoryError")
+		return err
 	}
 
 	_, err = infraHelper.RunCmd(
