@@ -144,7 +144,6 @@ func (repo FilesQueryRepo) Exists(
 		log.Printf("PathDoesNotExists: %s", unixFilePath.String())
 		return false, nil
 	}
-
 	if err != nil {
 		log.Printf("PathExistsError: %s", err.Error())
 		return false, errors.New("PathExistsError")
@@ -182,7 +181,6 @@ func (repo FilesQueryRepo) Get(
 	if err != nil {
 		return unixFileList, err
 	}
-
 	if isDir {
 		dirInfo, err := os.Stat(unixFilePath.String())
 		if err != nil {
@@ -233,7 +231,6 @@ func (repo FilesQueryRepo) GetOnlyFile(
 	if err != nil {
 		return unixFile, err
 	}
-
 	if isDir {
 		return unixFile, errors.New("PathIsNotAFile")
 	}
