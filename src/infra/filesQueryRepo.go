@@ -215,3 +215,33 @@ func (repo FilesQueryRepo) Get(
 
 	return unixFileList, nil
 }
+
+func (repo FilesQueryRepo) GetOnlyFile(
+	unixFilePath valueObject.UnixFilePath,
+) (entity.UnixFile, error) {
+	var unixFile entity.UnixFile
+
+	exists, err := repo.Exists(unixFilePath)
+	if err != nil {
+		return unixFile, err
+	}
+	if !exists {
+		return unixFile, errors.New("FileDoesNotExists")
+	}
+
+	isDir, err := repo.IsDir(unixFilePath)
+	if err != nil {
+		return unixFile, err
+	}
+
+	if isDir {
+		return unixFile, errors.New("PathIsNotAFile")
+	}
+
+	fileInfo, err := os.Stat(unixFilePath.String())
+	if err != nil {
+		return unixFile, errors.New("UnableToGetFileInfo")
+	}
+
+	return repo.unixFileFactory(unixFilePath, fileInfo)
+}
