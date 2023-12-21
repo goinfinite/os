@@ -15,11 +15,7 @@ type FilesCmdRepo interface {
 		valueObject.UnixFilePermissions,
 	) error
 	Delete(valueObject.UnixFilePath) error
-	Compress(
-		[]valueObject.UnixFilePath,
-		valueObject.UnixFilePath,
-		valueObject.UnixCompressionType,
-	) error
+	Compress(dto.CompressUnixFiles) (dto.CompressionProcessReport, error)
 	Extract(valueObject.UnixFilePath, valueObject.UnixFilePath) error
 	Upload(valueObject.UnixFilePath, valueObject.FileStreamHandler) error
 }

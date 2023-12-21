@@ -149,42 +149,75 @@ func (repo FilesCmdRepo) UpdatePermissions(
 }
 
 func (repo FilesCmdRepo) Compress(
-	unixFilePaths []valueObject.UnixFilePath,
-	unixFileDestinationPath valueObject.UnixFilePath,
-	unixCompressionType valueObject.UnixCompressionType,
-) error {
+	compressUnixFiles dto.CompressUnixFiles,
+) (dto.CompressionProcessReport, error) {
+	_, err := repo.filesQueryRepo.GetOnlyFile(compressUnixFiles.DestinationPath)
+	if err != nil {
+		return dto.CompressionProcessReport{}, err
+	}
+
 	compressBinary := "tar"
 	compressBinaryFlag := "-czf"
-	if unixCompressionType.String() == "zip" {
+	if compressUnixFiles.CompressionType.String() == "zip" {
 		compressBinary = "zip"
 		compressBinaryFlag = "-qr"
 	}
 
-	filesToCompressStr := unixFilePaths[0].String()
-	if len(unixFilePaths) > 1 {
+	failedToCompressList := []valueObject.CompressionProcessFailure{}
+
+	filesToCompressStr := compressUnixFiles.Paths[0].String()
+	if len(compressUnixFiles.Paths) > 1 {
 		var filesToCompressStrSlice []string
-		for _, filePath := range unixFilePaths {
+		for _, filePath := range compressUnixFiles.Paths {
+			_, err := repo.filesQueryRepo.GetOnlyFile(filePath)
+			if err != nil {
+				compressionProcessFailure := valueObject.NewCompressionProcessFailure(
+					filePath,
+					err.Error(),
+				)
+				failedToCompressList = append(failedToCompressList, compressionProcessFailure)
+
+				continue
+			}
+
 			filesToCompressStrSlice = append(filesToCompressStrSlice, filePath.String())
 		}
 
 		filesToCompressStr = strings.Join(filesToCompressStrSlice, " ")
 	}
 
-	compressedFilePathWithoutExt := strings.Split(unixFileDestinationPath.String(), ".")[0]
-	compressedFilePathWithCompressionTypeAsExt := compressedFilePathWithoutExt + "." + unixCompressionType.String()
-	_, err := infraHelper.RunCmd(
+	compressedFilePathWithoutExt := strings.Split(compressUnixFiles.DestinationPath.String(), ".")[0]
+	compressedFilePathWithCompressionTypeAsExt := compressedFilePathWithoutExt + "." + compressUnixFiles.CompressionType.String()
+	_, err = infraHelper.RunCmd(
 		compressBinary,
 		compressBinaryFlag,
 		compressedFilePathWithCompressionTypeAsExt,
 		filesToCompressStr,
 	)
 
+	compressedFilesList := compressUnixFiles.Paths
+
 	if err != nil {
-		log.Printf("CompressFilesError: %s", err.Error())
-		return errors.New("CompressFilesError")
+		compressedFilesList = []valueObject.UnixFilePath{}
+
+		errMessage := fmt.Sprintf("CompressFilesError: %s", err.Error())
+
+		log.Printf(errMessage)
+
+		for _, filePath := range compressUnixFiles.Paths {
+			compressionProcessFailure := valueObject.NewCompressionProcessFailure(
+				filePath,
+				errMessage,
+			)
+			failedToCompressList = append(failedToCompressList, compressionProcessFailure)
+		}
 	}
 
-	return nil
+	return dto.NewCompressionProcessReport(
+		compressedFilesList,
+		failedToCompressList,
+		compressUnixFiles.DestinationPath,
+	), nil
 }
 
 func (repo FilesCmdRepo) Extract(
