@@ -13,15 +13,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
-type FilesCmdRepo struct {
-	filesQueryRepo FilesQueryRepo
-}
-
-func NewFilesCmdRepo() FilesCmdRepo {
-	return FilesCmdRepo{
-		filesQueryRepo: FilesQueryRepo{},
-	}
-}
+type FilesCmdRepo struct{}
 
 func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 	if !addUnixFile.Type.IsDir() {
@@ -47,13 +39,15 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
+	queryRepo := FilesQueryRepo{}
+
 	err := os.Rename(
 		updateUnixFile.Path.String(),
 		updateUnixFile.DestinationPath.String(),
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := repo.filesQueryRepo.IsDir(updateUnixFile.Path)
+		fileIsDir, _ := queryRepo.IsDir(updateUnixFile.Path)
 		if fileIsDir {
 			fileType = "Directory"
 		}
@@ -68,6 +62,8 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
+	queryRepo := FilesQueryRepo{}
+
 	_, err := infraHelper.RunCmd(
 		"rsync",
 		"-avq",
@@ -76,7 +72,7 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 	)
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := repo.filesQueryRepo.IsDir(copyUnixFile.OriginPath)
+		fileIsDir, _ := queryRepo.IsDir(copyUnixFile.OriginPath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
@@ -104,10 +100,12 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
 ) error {
+	queryRepo := FilesQueryRepo{}
+
 	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 	if err != nil {
 		fileType := "File"
-		fileIsDir, _ := repo.filesQueryRepo.IsDir(unixFilePath)
+		fileIsDir, _ := queryRepo.IsDir(unixFilePath)
 		if fileIsDir {
 			fileType = "Directory"
 		}
@@ -124,7 +122,9 @@ func (repo FilesCmdRepo) UpdatePermissions(
 func (repo FilesCmdRepo) Compress(
 	compressUnixFiles dto.CompressUnixFiles,
 ) (dto.CompressionProcessReport, error) {
-	_, err := repo.filesQueryRepo.GetOnlyFile(compressUnixFiles.DestinationPath)
+	queryRepo := FilesQueryRepo{}
+
+	_, err := queryRepo.GetOnlyFile(compressUnixFiles.DestinationPath)
 	if err != nil {
 		return dto.CompressionProcessReport{}, err
 	}
@@ -142,7 +142,7 @@ func (repo FilesCmdRepo) Compress(
 	if len(compressUnixFiles.Paths) > 1 {
 		var filesToCompressStrSlice []string
 		for _, filePath := range compressUnixFiles.Paths {
-			_, err := repo.filesQueryRepo.GetOnlyFile(filePath)
+			_, err := queryRepo.GetOnlyFile(filePath)
 			if err != nil {
 				compressionProcessFailure := valueObject.NewCompressionProcessFailure(
 					filePath,

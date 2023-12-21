@@ -10,7 +10,7 @@ import (
 )
 
 func TestFilesCmdRepo(t *testing.T) {
-	filesCmdRepo := NewFilesCmdRepo()
+	filesCmdRepo := FilesCmdRepo{}
 
 	currentUser, _ := user.Current()
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
