@@ -20,6 +20,6 @@ func (ut UnixTime) GetTimeOnly() string {
 	return time.Unix(int64(ut), 0).UTC().Format("15:04:05")
 }
 
-func (ut UnixTime) GetUTC() time.Time {
+func (ut UnixTime) GetUtc() time.Time {
 	return time.Unix(int64(ut), 0).UTC()
 }
