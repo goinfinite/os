@@ -93,38 +93,11 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 func (repo FilesCmdRepo) UpdateContent(
 	updateUnixFileContent dto.UpdateUnixFileContent,
 ) error {
-	file, err := os.OpenFile(updateUnixFileContent.Path.String(), os.O_WRONLY, 0777)
-	if err != nil {
-		log.Printf("OpenFileError: %s", err)
-		return errors.New("OpenFileError")
-	}
-	defer file.Close()
-
-	err = file.Truncate(0)
-	if err != nil {
-		log.Printf("TruncateFileError: %s", err)
-		return errors.New("TruncateFileError")
-	}
-
-	_, err = file.Seek(0, 0)
-	if err != nil {
-		log.Printf("SeekFileError: %s", err)
-		return errors.New("SeekFileError")
-	}
-
-	_, err = file.WriteString(updateUnixFileContent.Content.GetDecodedContent())
-	if err != nil {
-		log.Printf("WriteFileError: %s", err)
-		return errors.New("WriteFileError")
-	}
-
-	err = file.Sync()
-	if err != nil {
-		log.Printf("FileSyncError: %s", err)
-		return errors.New("FileSyncError")
-	}
-
-	return nil
+	return infraHelper.UpdateFile(
+		updateUnixFileContent.Path.String(),
+		updateUnixFileContent.Content.GetDecodedContent(),
+		true,
+	)
 }
 
 func (repo FilesCmdRepo) UpdatePermissions(
