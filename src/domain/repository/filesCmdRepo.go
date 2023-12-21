@@ -6,7 +6,7 @@ import (
 )
 
 type FilesCmdRepo interface {
-	Add(dto.AddUnixFile) error
+	Create(dto.AddUnixFile) error
 	Move(dto.UpdateUnixFile) error
 	Copy(dto.CopyUnixFile) error
 	UpdateContent(dto.UpdateUnixFileContent) error

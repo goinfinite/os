@@ -23,7 +23,7 @@ func NewFilesCmdRepo() FilesCmdRepo {
 	}
 }
 
-func (repo FilesCmdRepo) Add(addUnixFile dto.AddUnixFile) error {
+func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 	if !addUnixFile.Type.IsDir() {
 		_, err := os.Create(addUnixFile.Path.String())
 		if err != nil {

@@ -24,14 +24,14 @@ func AddUnixFile(
 		return errors.New(fileType + "AlreadyExists")
 	}
 
-	err = filesCmdRepo.Add(addUnixFile)
+	err = filesCmdRepo.Create(addUnixFile)
 	if err != nil {
-		return errors.New("Add" + fileType + "Error")
+		return errors.New("Create" + fileType + "Error")
 	}
 
 	fileName, _ := addUnixFile.Path.GetFileName()
 	fileDir, _ := addUnixFile.Path.GetFileDir()
-	log.Printf("%s '%s' added to '%s'.", fileType, fileName.String(), fileDir.String())
+	log.Printf("%s '%s' created to '%s'.", fileType, fileName.String(), fileDir.String())
 
 	return nil
 }
