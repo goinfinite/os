@@ -55,45 +55,47 @@ func UpdateUnixFile(
 		)
 	}
 
-	if updateUnixFile.DestinationPath != nil {
-		fileDestinationPath := *updateUnixFile.DestinationPath
+	if updateUnixFile.DestinationPath == nil {
+		return nil
+	}
 
-		fileDestinationDir, _ := fileDestinationPath.GetFileDir()
+	fileDestinationPath := *updateUnixFile.DestinationPath
 
-		toBeRenamed := fileDir.String() == fileDestinationDir.String()
+	fileDestinationDir, _ := fileDestinationPath.GetFileDir()
 
-		err = filesCmdRepo.Move(updateUnixFile)
-		if err != nil {
-			processToBeExecuted := "Move"
-			if toBeRenamed {
-				processToBeExecuted = "Rename"
-			}
+	toBeRenamed := fileDir.String() == fileDestinationDir.String()
 
-			log.Printf("%s%sError: %s", processToBeExecuted, fileType, err.Error())
-
-			failureMessage := fmt.Sprintf("%s%sError", processToBeExecuted, fileType)
-			return errors.New(failureMessage)
+	err = filesCmdRepo.Move(updateUnixFile)
+	if err != nil {
+		processToBeExecuted := "Move"
+		if toBeRenamed {
+			processToBeExecuted = "Rename"
 		}
 
-		successMessage := fmt.Sprintf(
-			"%s '%s' moved from %s to '%s'.",
+		log.Printf("%s%sError: %s", processToBeExecuted, fileType, err.Error())
+
+		failureMessage := fmt.Sprintf("%s%sError", processToBeExecuted, fileType)
+		return errors.New(failureMessage)
+	}
+
+	successMessage := fmt.Sprintf(
+		"%s '%s' moved from %s to '%s'.",
+		fileType,
+		fileName.String(),
+		fileDir.String(),
+		fileDestinationDir.String(),
+	)
+
+	if toBeRenamed {
+		fileDestinationName, _ := fileDestinationPath.GetFileName()
+		successMessage = fmt.Sprintf(
+			"%s '%s' renamed to '%s'.",
 			fileType,
 			fileName.String(),
-			fileDir.String(),
-			fileDestinationDir.String(),
+			fileDestinationName.String(),
 		)
-
-		if toBeRenamed {
-			fileDestinationName, _ := fileDestinationPath.GetFileName()
-			successMessage = fmt.Sprintf(
-				"%s '%s' renamed to '%s'.",
-				fileType,
-				fileName.String(),
-				fileDestinationName.String(),
-			)
-		}
-		log.Printf(successMessage)
 	}
+	log.Printf(successMessage)
 
 	return nil
 }
