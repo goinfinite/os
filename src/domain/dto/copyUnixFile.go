@@ -3,7 +3,7 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type CopyUnixFile struct {
-	OriginPath      valueObject.UnixFilePath `json:"path"`
+	OriginPath      valueObject.UnixFilePath `json:"originPath"`
 	DestinationPath valueObject.UnixFilePath `json:"destinationPath"`
 }
 
