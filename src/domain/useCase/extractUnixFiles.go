@@ -36,7 +36,8 @@ func ExtractUnixFiles(
 		extractUnixFiles.DestinationPath,
 	)
 	if err != nil {
-		return err
+		log.Printf("ExtractUnixFilesError: %s", err.Error())
+		return errors.New("ExtractUnixFilesError")
 	}
 
 	log.Printf(

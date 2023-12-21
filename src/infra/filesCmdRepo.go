@@ -84,23 +84,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
 ) error {
-	queryRepo := FilesQueryRepo{}
-
-	err := os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
-	if err != nil {
-		fileType := "File"
-		fileIsDir, _ := queryRepo.IsDir(unixFilePath)
-		if fileIsDir {
-			fileType = "Directory"
-		}
-
-		chmodErrorStr := fmt.Sprintf("ChmodUnix%sError", fileType)
-
-		log.Printf("%s: %s", chmodErrorStr, err)
-		return errors.New(chmodErrorStr)
-	}
-
-	return nil
+	return os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 }
 
 func (repo FilesCmdRepo) Compress(
