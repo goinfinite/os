@@ -163,7 +163,6 @@ func (repo FilesCmdRepo) Extract(
 
 	err := infraHelper.MakeDir(unixFileDestinationPath.String())
 	if err != nil {
-		log.Printf("CreateExtractDirectoryError: %s", err.Error())
 		return err
 	}
 
@@ -175,12 +174,7 @@ func (repo FilesCmdRepo) Extract(
 		unixFileDestinationPath.String(),
 	)
 
-	if err != nil {
-		log.Printf("ExtractFilesError: %s", err.Error())
-		return errors.New("ExtractFilesError")
-	}
-
-	return nil
+	return err
 }
 
 func (repo FilesCmdRepo) Delete(
