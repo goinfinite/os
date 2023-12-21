@@ -46,28 +46,13 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
-	queryRepo := FilesQueryRepo{}
-
 	_, err := infraHelper.RunCmd(
 		"rsync",
 		"-avq",
 		copyUnixFile.OriginPath.String(),
 		copyUnixFile.DestinationPath.String(),
 	)
-	if err != nil {
-		fileType := "File"
-		fileIsDir, _ := queryRepo.IsDir(copyUnixFile.OriginPath)
-		if fileIsDir {
-			fileType = "Directory"
-		}
-
-		moveErrorStr := fmt.Sprintf("CopyUnix%sError", fileType)
-
-		log.Printf("%s: %s", moveErrorStr, err)
-		return errors.New(moveErrorStr)
-	}
-
-	return nil
+	return err
 }
 
 func (repo FilesCmdRepo) UpdateContent(

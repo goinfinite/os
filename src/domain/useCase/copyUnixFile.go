@@ -36,6 +36,7 @@ func CopyUnixFile(
 
 	err = filesCmdRepo.Copy(copyUnixFile)
 	if err != nil {
+		log.Printf("Add%sCopyError: %s", fileType, err.Error())
 		return errors.New("Add" + fileType + "CopyError")
 	}
 
