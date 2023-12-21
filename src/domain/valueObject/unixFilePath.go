@@ -8,7 +8,7 @@ import (
 )
 
 const unixFilePathRegexExpression = `^\/?[^\n\r\t\f\0\?\[\]\<\>]+$`
-const unixFileRelativePathRegexExpression = `(\.\.\/)|^\.\/|^\/\.\/`
+const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
