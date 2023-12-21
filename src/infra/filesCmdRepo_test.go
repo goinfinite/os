@@ -22,7 +22,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			valueObject.NewUnixFileTypePanic("directory"),
 		)
 
-		err := filesCmdRepo.Add(addUnixFile)
+		err := filesCmdRepo.Create(addUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -35,7 +35,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			valueObject.NewUnixFileTypePanic("file"),
 		)
 
-		err := filesCmdRepo.Add(addUnixFile)
+		err := filesCmdRepo.Create(addUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
