@@ -129,7 +129,7 @@ func AddFileController(c echo.Context) error {
 
 // UpdateFile godoc
 // @Summary      UpdateFile
-// @Description  Update a dir/file path, name and/or permissions (ONly filePath is required).
+// @Description  Update a dir/file path, name and/or permissions (Only filePath is required).
 // @Tags         files
 // @Accept       json
 // @Produce      json
