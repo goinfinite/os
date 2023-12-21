@@ -49,12 +49,8 @@ func (unixFilePath UnixFilePath) isRelative() bool {
 }
 
 func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
-	var unixFileName UnixFileName
-
 	unixFileBase := filepath.Base(string(unixFilePath))
-	unixFileName, err := NewUnixFileName(unixFileBase)
-
-	return unixFileName, err
+	return NewUnixFileName(unixFileBase)
 }
 
 func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
