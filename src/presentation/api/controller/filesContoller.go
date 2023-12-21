@@ -261,7 +261,7 @@ func CopyFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        deleteFilesDto 	  body    dto.DeleteUnixFiles  true  "DeleteFile"
+// @Param        filePaths	body	string[]	true	"UnixFilePath"
 // @Success      200 {object} object{} "DirectoriesAndFilesDeleted"
 // @Router       /files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
