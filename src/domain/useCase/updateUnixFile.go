@@ -69,6 +69,8 @@ func UpdateUnixFile(
 				processToBeExecuted = "Rename"
 			}
 
+			log.Printf("%s%sError: %s", processToBeExecuted, fileType, err.Error())
+
 			failureMessage := fmt.Sprintf("%s%sError", processToBeExecuted, fileType)
 			return errors.New(failureMessage)
 		}

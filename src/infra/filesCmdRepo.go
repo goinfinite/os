@@ -39,26 +39,10 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
-	queryRepo := FilesQueryRepo{}
-
-	err := os.Rename(
+	return os.Rename(
 		updateUnixFile.Path.String(),
 		updateUnixFile.DestinationPath.String(),
 	)
-	if err != nil {
-		fileType := "File"
-		fileIsDir, _ := queryRepo.IsDir(updateUnixFile.Path)
-		if fileIsDir {
-			fileType = "Directory"
-		}
-
-		moveErrorStr := fmt.Sprintf("MoveUnix%sError", fileType)
-
-		log.Printf("%s: %s", moveErrorStr, err)
-		return errors.New(moveErrorStr)
-	}
-
-	return nil
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
