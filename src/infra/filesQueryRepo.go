@@ -242,8 +242,7 @@ func (repo FilesQueryRepo) Get(
 	return unixFileList, nil
 }
 
-// TODO: Trocar o nome GetOnlyFile para GetOnly.
-func (repo FilesQueryRepo) GetOnlyFile(
+func (repo FilesQueryRepo) GetOnly(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
