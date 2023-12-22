@@ -13,10 +13,11 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	t.Skip("SkipRuntimeQueryRepoTest")
 	testHelpers.LoadEnvVars()
 
-	servicesInfra.Install(
-		valueObject.NewServiceNamePanic("openlitespeed"),
-		nil,
-	)
+	err := servicesInfra.AddInstallableSimplified("php")
+	if err != nil {
+		t.Errorf("InstallDependenciesFail: %v", err)
+		return
+	}
 
 	repo := RuntimeQueryRepo{}
 

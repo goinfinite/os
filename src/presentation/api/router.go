@@ -82,7 +82,11 @@ func runtimeRoutes(baseRoute *echo.Group) {
 func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
+	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
+	servicesGroup.POST("/installables/", apiController.AddInstallableServiceController)
+	servicesGroup.POST("/custom/", apiController.AddCustomServiceController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
+	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
 }
 
 func sslRoutes(baseRoute *echo.Group) {
@@ -90,6 +94,20 @@ func sslRoutes(baseRoute *echo.Group) {
 	sslGroup.GET("/", apiController.GetSslPairsController)
 	sslGroup.POST("/", apiController.AddSslPairController)
 	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
+}
+
+func vhostsRoutes(baseRoute *echo.Group) {
+	vhostsGroup := baseRoute.Group("/vhosts")
+	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
+	vhostsGroup.POST("/", apiController.AddVirtualHostController)
+	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
+
+	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
+	vhostsGroup.POST("/mapping/", apiController.AddVirtualHostMappingController)
+	vhostsGroup.DELETE(
+		"/mapping/:hostname/:mappingId/",
+		apiController.DeleteVirtualHostMappingController,
+	)
 }
 
 func registerApiRoutes(baseRoute *echo.Group) {
@@ -103,4 +121,5 @@ func registerApiRoutes(baseRoute *echo.Group) {
 	runtimeRoutes(baseRoute)
 	servicesRoutes(baseRoute)
 	sslRoutes(baseRoute)
+	vhostsRoutes(baseRoute)
 }

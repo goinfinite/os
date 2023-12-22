@@ -16,6 +16,21 @@ definitions:
       schedule:
         type: string
     type: object
+  dto.AddCustomService:
+    properties:
+      command:
+        type: string
+      name:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      type:
+        type: string
+      version:
+        type: string
+    type: object
   dto.AddDatabase:
     properties:
       dbName:
@@ -34,6 +49,36 @@ definitions:
       username:
         type: string
     type: object
+  dto.AddInstallableService:
+    properties:
+      name:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      startupFile:
+        type: string
+      version:
+        type: string
+    type: object
+  dto.AddMapping:
+    properties:
+      hostname:
+        type: string
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetServiceName:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
+        type: string
+    type: object
   dto.AddSslPair:
     properties:
       certificate:
@@ -43,11 +88,43 @@ definitions:
       key:
         type: string
     type: object
+  dto.AddVirtualHost:
+    properties:
+      hostname:
+        type: string
+      parentHostname:
+        type: string
+      type:
+        type: string
+    type: object
   dto.Login:
     properties:
       password:
         type: string
       username:
+        type: string
+    type: object
+  dto.ServiceWithMetrics:
+    properties:
+      command:
+        type: string
+      metrics:
+        $ref: '#/definitions/valueObject.ServiceMetrics'
+      name:
+        type: string
+      nature:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      startupFile:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      version:
         type: string
     type: object
   dto.UpdateAccount:
@@ -85,13 +162,38 @@ definitions:
       version:
         type: string
     type: object
-  dto.UpdateSvcStatus:
+  dto.UpdateService:
     properties:
+      command:
+        type: string
       name:
         type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      startupFile:
+        type: string
       status:
-        $ref: '#/definitions/valueObject.ServiceStatus'
+        type: string
+      type:
+        type: string
       version:
+        type: string
+    type: object
+  dto.VirtualHostWithMappings:
+    properties:
+      hostname:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
+      parentHostname:
+        type: string
+      rootDirectory:
+        type: string
+      type:
         type: string
     type: object
   entity.AccessToken:
@@ -147,6 +249,36 @@ definitions:
           type: string
         type: array
       username:
+        type: string
+    type: object
+  entity.InstallableService:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      versions:
+        items:
+          type: string
+        type: array
+    type: object
+  entity.Mapping:
+    properties:
+      hostname:
+        type: string
+      id:
+        type: integer
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetServiceName:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
         type: string
     type: object
   entity.O11yOverview:
@@ -206,23 +338,6 @@ definitions:
       value:
         type: string
     type: object
-  entity.Service:
-    properties:
-      cpuUsagePercent:
-        type: number
-      memUsagePercent:
-        type: number
-      name:
-        type: string
-      pids:
-        items:
-          type: integer
-        type: array
-      status:
-        $ref: '#/definitions/valueObject.ServiceStatus'
-      uptimeSecs:
-        type: integer
-    type: object
   entity.SslCertificate:
     properties:
       certificate:
@@ -251,6 +366,17 @@ definitions:
       key:
         type: string
       sslPairId:
+        type: string
+    type: object
+  entity.VirtualHost:
+    properties:
+      hostname:
+        type: string
+      parentHostname:
+        type: string
+      rootDirectory:
+        type: string
+      type:
         type: string
     type: object
   valueObject.AccessTokenType:
@@ -291,6 +417,13 @@ definitions:
       storageTotal:
         type: integer
     type: object
+  valueObject.PortBinding:
+    properties:
+      port:
+        type: integer
+      protocol:
+        type: string
+    type: object
   valueObject.RuntimeContext:
     enum:
     - container
@@ -301,19 +434,20 @@ definitions:
     - container
     - vm
     - bareMetal
-  valueObject.ServiceStatus:
-    enum:
-    - running
-    - stopped
-    - uninstalled
-    - installed
-    type: string
-    x-enum-varnames:
-    - running
-    - stopped
-    - uninstalled
-    - installed
-host: localhost:10000
+  valueObject.ServiceMetrics:
+    properties:
+      cpuUsagePercent:
+        type: number
+      memUsagePercent:
+        type: number
+      pids:
+        items:
+          type: integer
+        type: array
+      uptimeSecs:
+        type: integer
+    type: object
+host: localhost:1618
 info:
   contact:
     email: eng+swagger@speedia.net
@@ -324,7 +458,7 @@ info:
     name: Eclipse Public License v2.0
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
-  title: SamApi
+  title: SosApi
   version: 0.0.1
 paths:
   /account/:
@@ -580,7 +714,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: DatabaseAdded
+          description: DatabaseCreated
           schema:
             type: object
       security:
@@ -648,7 +782,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: DatabaseUserAdded
+          description: DatabaseUserCreated
           schema:
             type: object
       security:
@@ -764,7 +898,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List services and their status.
+      description: List installed services and their status.
       produces:
       - application/json
       responses:
@@ -772,7 +906,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.Service'
+              $ref: '#/definitions/dto.ServiceWithMetrics'
             type: array
       security:
       - Bearer: []
@@ -782,24 +916,114 @@ paths:
     put:
       consumes:
       - application/json
-      description: Start, stop, install or uninstall a service.
+      description: Update service details.
       parameters:
-      - description: UpdateServiceStatusDetails
+      - description: UpdateServiceDetails
         in: body
-        name: updateSvcStatusDto
+        name: updateServiceDto
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateSvcStatus'
+          $ref: '#/definitions/dto.UpdateService'
       produces:
       - application/json
       responses:
         "200":
-          description: ServiceStatusUpdated
+          description: ServiceUpdated
           schema:
             type: object
       security:
       - Bearer: []
-      summary: UpdateServiceStatus
+      summary: UpdateService
+      tags:
+      - services
+  /services/{svcName}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete/Uninstall a service.
+      parameters:
+      - description: ServiceName
+        in: path
+        name: svcName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ServiceDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteService
+      tags:
+      - services
+  /services/custom/:
+    post:
+      consumes:
+      - application/json
+      description: Install a new custom service.
+      parameters:
+      - description: AddCustomService
+        in: body
+        name: addCustomServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddCustomService'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: CustomServiceCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddCustomService
+      tags:
+      - services
+  /services/installable/:
+    post:
+      consumes:
+      - application/json
+      description: Install a new installable service.
+      parameters:
+      - description: AddInstallableService
+        in: body
+        name: addInstallableServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddInstallableService'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: InstallableServiceCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddInstallableService
+      tags:
+      - services
+  /services/installables/:
+    get:
+      consumes:
+      - application/json
+      description: List installable services.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.InstallableService'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetInstallableServices
       tags:
       - services
   /ssl/:
@@ -867,6 +1091,144 @@ paths:
       summary: DeleteSslPair
       tags:
       - ssl
+  /vhosts/:
+    get:
+      consumes:
+      - application/json
+      description: List virtual hosts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.VirtualHost'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetVirtualHosts
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Add a new vhost.
+      parameters:
+      - description: NewVirtualHost (only hostname is required).
+        in: body
+        name: addVirtualHostDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddVirtualHost'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: VirtualHostCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewVirtualHost
+      tags:
+      - vhosts
+  /vhosts/{hostname}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vhost.
+      parameters:
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: VirtualHostDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteVirtualHost
+      tags:
+      - vhosts
+  /vhosts/mapping/:
+    get:
+      consumes:
+      - application/json
+      description: List virtual hosts with mappings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.VirtualHostWithMappings'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetVirtualHostsWithMappings
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Create a new vhost mapping.
+      parameters:
+      - description: hostname, path and targetType are required. If targetType is
+          'url', targetUrl is required and so on.<br />targetType may be 'service',
+          'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains',
+          'equals', 'ends-with' or empty.
+        in: body
+        name: addMappingDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddMapping'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: MappingCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreateMapping
+      tags:
+      - vhosts
+  /vhosts/mapping/{hostname}/{mappingId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vhost mapping.
+      parameters:
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      - description: MappingId
+        in: path
+        name: mappingId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteMapping
+      tags:
+      - vhosts
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.

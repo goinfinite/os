@@ -94,11 +94,6 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			"mysqladmin",
 			"shutdown",
 		)
-	case "node":
-		_, _ = infraHelper.RunCmd(
-			"pkill",
-			"node",
-		)
 	}
 
 	err = facade.toggleAutoStart(name, false)
@@ -139,12 +134,17 @@ func (facade SupervisordFacade) Reload() error {
 }
 
 func (facade SupervisordFacade) AddConf(
-	svcName string,
-	svcCmd string,
-	svcType string,
-	svcPorts []int,
+	svcName valueObject.ServiceName,
+	svcNature valueObject.ServiceNature,
+	svcType valueObject.ServiceType,
+	svcVersion valueObject.ServiceVersion,
+	svcCmd valueObject.UnixCommand,
+	startupFile *valueObject.UnixFilePath,
+	svcPortBindings []valueObject.PortBinding,
 ) error {
-	err := infraHelper.MakeDir("/app/logs/" + svcName)
+	svcNameStr := svcName.String()
+
+	err := infraHelper.MakeDir("/app/logs/" + svcNameStr)
 	if err != nil {
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
@@ -153,28 +153,42 @@ func (facade SupervisordFacade) AddConf(
 		"chown",
 		"-R",
 		"nobody:nogroup",
-		"/app/logs/"+svcName,
+		"/app/logs/"+svcNameStr,
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
 
-	svcType = "SVC_TYPE=\"" + svcType + "\""
+	svcNatureStr := "SVC_NATURE=\"" + svcNature.String() + "\""
 
-	svcPortsStr := ""
-	if len(svcPorts) > 0 {
-		portsStrSlice := []string{}
-		for _, port := range svcPorts {
-			portsStrSlice = append(portsStrSlice, strconv.Itoa(port))
-		}
-		svcPortsStr = ",SVC_PORTS=\"" + strings.Join(portsStrSlice, ",") + "\""
+	svcTypeStr := ",SVC_TYPE=\"" + svcType.String() + "\""
+
+	svcVersionStr := ",SVC_VERSION=\"" + svcVersion.String() + "\""
+
+	startupFileStr := ""
+	if startupFile != nil {
+		startupFileStr = ",SVC_STARTUP_FILE=\"" + startupFile.String() + "\""
 	}
 
-	logFilePath := "/app/logs/" + svcName + "/" + svcName + ".log"
+	svcPortBindingsStr := ""
+	if len(svcPortBindings) > 0 {
+		portBindingsStrSlice := []string{}
+		for _, portBinding := range svcPortBindings {
+			portBindingsStrSlice = append(
+				portBindingsStrSlice,
+				portBinding.String(),
+			)
+		}
+		svcPortBindingsStr = ",SVC_PORT_BINDINGS=\"" +
+			strings.Join(portBindingsStrSlice, ",") + "\""
+	}
 
+	logFilePath := "/app/logs/" + svcNameStr + "/" + svcNameStr + ".log"
+
+	// cSpell:disable
 	svcConf := `
-[program:` + svcName + `]
-command=` + svcCmd + `
+[program:` + svcNameStr + `]
+command=` + svcCmd.String() + `
 user=root
 directory=/speedia
 autostart=true
@@ -185,8 +199,9 @@ stdout_logfile=` + logFilePath + `
 stdout_logfile_maxbytes=10MB
 stderr_logfile=` + logFilePath + `
 stderr_logfile_maxbytes=10MB
-environment=` + svcType + svcPortsStr + `
+environment=` + svcNatureStr + svcTypeStr + svcVersionStr + startupFileStr + svcPortBindingsStr + `
 `
+	// cSpell:enable
 
 	f, err := os.OpenFile(supervisordConf, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -201,14 +216,14 @@ environment=` + svcType + svcPortsStr + `
 	return nil
 }
 
-func (facade SupervisordFacade) RemoveConf(svcName string) error {
+func (facade SupervisordFacade) RemoveConf(svcName valueObject.ServiceName) error {
 	fileContent, err := os.ReadFile(supervisordConf)
 	if err != nil {
 		return errors.New("OpenSupervisorConfError: " + err.Error())
 	}
 
 	re := regexp.MustCompile(
-		`\n?\[program:` + svcName + `\][\s\S]*?stderr_logfile_maxbytes=0\n?`,
+		`\n?\[program:` + svcName.String() + `\][\s\S]*?environment=[^\n]*\n?`,
 	)
 	updatedContent := re.ReplaceAll(fileContent, []byte{})
 

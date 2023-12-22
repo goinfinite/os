@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetServices(
+func GetInstallableServices(
 	servicesQueryRepo repository.ServicesQueryRepo,
-) ([]entity.Service, error) {
-	return servicesQueryRepo.Get()
+) ([]entity.InstallableService, error) {
+	return servicesQueryRepo.GetInstallables()
 }

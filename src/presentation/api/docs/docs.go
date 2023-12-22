@@ -433,7 +433,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseAdded",
+                        "description": "DatabaseCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -538,7 +538,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "DatabaseUserAdded",
+                        "description": "DatabaseUserCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -717,7 +717,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "List services and their status.",
+                "description": "List installed services and their status.",
                 "consumes": [
                     "application/json"
                 ],
@@ -734,7 +734,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Service"
+                                "$ref": "#/definitions/dto.ServiceWithMetrics"
                             }
                         }
                     }
@@ -746,7 +746,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Start, stop, install or uninstall a service.",
+                "description": "Update service details.",
                 "consumes": [
                     "application/json"
                 ],
@@ -756,21 +756,167 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "UpdateServiceStatus",
+                "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "UpdateServiceStatusDetails",
-                        "name": "updateSvcStatusDto",
+                        "description": "UpdateServiceDetails",
+                        "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateSvcStatus"
+                            "$ref": "#/definitions/dto.UpdateService"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "ServiceStatusUpdated",
+                        "description": "ServiceUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/custom/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new custom service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddCustomService",
+                "parameters": [
+                    {
+                        "description": "AddCustomService",
+                        "name": "addCustomServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddCustomService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "CustomServiceCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/installable/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Install a new installable service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "AddInstallableService",
+                "parameters": [
+                    {
+                        "description": "AddInstallableService",
+                        "name": "addInstallableServiceDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddInstallableService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "InstallableServiceCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/services/installables/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List installable services.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "GetInstallableServices",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.InstallableService"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/services/{svcName}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete/Uninstall a service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "services"
+                ],
+                "summary": "DeleteService",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ServiceName",
+                        "name": "svcName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ServiceDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -882,6 +1028,223 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vhosts/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List virtual hosts.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "GetVirtualHosts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.VirtualHost"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "AddNewVirtualHost",
+                "parameters": [
+                    {
+                        "description": "NewVirtualHost (only hostname is required).",
+                        "name": "addVirtualHostDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddVirtualHost"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "VirtualHostCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/vhosts/mapping/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List virtual hosts with mappings.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "GetVirtualHostsWithMappings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.VirtualHostWithMappings"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "CreateMapping",
+                "parameters": [
+                    {
+                        "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
+                        "name": "addMappingDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddMapping"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "MappingCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/vhosts/mapping/{hostname}/{mappingId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteMapping",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "MappingId",
+                        "name": "mappingId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/vhosts/{hostname}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteVirtualHost",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "VirtualHostDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -906,6 +1269,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "schedule": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddCustomService": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -938,6 +1324,52 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AddInstallableService": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddMapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddSslPair": {
             "type": "object",
             "properties": {
@@ -952,6 +1384,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AddVirtualHost": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Login": {
             "type": "object",
             "properties": {
@@ -959,6 +1405,41 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ServiceWithMetrics": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "metrics": {
+                    "$ref": "#/definitions/valueObject.ServiceMetrics"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -1017,16 +1498,54 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateSvcStatus": {
+        "dto.UpdateService": {
             "type": "object",
             "properties": {
+                "command": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
                 "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VirtualHostWithMappings": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Mapping"
+                    }
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "rootDirectory": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -1112,6 +1631,52 @@ const docTemplate = `{
                     }
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.InstallableService": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "entity.Mapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
                     "type": "string"
                 }
             }
@@ -1204,32 +1769,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.Service": {
-            "type": "object",
-            "properties": {
-                "cpuUsagePercent": {
-                    "type": "number"
-                },
-                "memUsagePercent": {
-                    "type": "number"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "pids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "status": {
-                    "$ref": "#/definitions/valueObject.ServiceStatus"
-                },
-                "uptimeSecs": {
-                    "type": "integer"
-                }
-            }
-        },
         "entity.SslCertificate": {
             "type": "object",
             "properties": {
@@ -1272,6 +1811,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sslPairId": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.VirtualHost": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "rootDirectory": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -1332,6 +1888,17 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.PortBinding": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
         "valueObject.RuntimeContext": {
             "type": "string",
             "enum": [
@@ -1345,20 +1912,25 @@ const docTemplate = `{
                 "bareMetal"
             ]
         },
-        "valueObject.ServiceStatus": {
-            "type": "string",
-            "enum": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
-            ],
-            "x-enum-varnames": [
-                "running",
-                "stopped",
-                "uninstalled",
-                "installed"
-            ]
+        "valueObject.ServiceMetrics": {
+            "type": "object",
+            "properties": {
+                "cpuUsagePercent": {
+                    "type": "number"
+                },
+                "memUsagePercent": {
+                    "type": "number"
+                },
+                "pids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "uptimeSecs": {
+                    "type": "integer"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -1374,10 +1946,10 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.1",
-	Host:             "localhost:10000",
+	Host:             "localhost:1618",
 	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "SamApi",
+	Title:            "SosApi",
 	Description:      "Speedia OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

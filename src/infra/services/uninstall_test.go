@@ -10,46 +10,46 @@ import (
 func TestUninstall(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("UninstallOls", func(t *testing.T) {
-		t.Skip("Skip ols uninstall test")
+	t.Run("UninstallPhp", func(t *testing.T) {
+		t.Skip("SkipPhpUninstallTest")
 		err := Uninstall(
-			valueObject.NewServiceNamePanic("openlitespeed"),
+			valueObject.NewServiceNamePanic("php"),
 		)
 		if err != nil {
-			t.Errorf("Uninstall() error = %v", err)
+			t.Errorf("PhpUninstallFailed : %v", err)
 			return
 		}
 	})
 
-	t.Run("UninstallMysql", func(t *testing.T) {
-		t.Skip("Skip mysql uninstall test")
+	t.Run("UninstallMariadb", func(t *testing.T) {
+		t.Skip("SkipMariadbUninstallTest")
 		err := Uninstall(
-			valueObject.NewServiceNamePanic("mysql"),
+			valueObject.NewServiceNamePanic("mariadb"),
 		)
 		if err != nil {
-			t.Errorf("Uninstall() error = %v", err)
+			t.Errorf("MariadbUninstallFailed : %v", err)
 			return
 		}
 	})
 
 	t.Run("UninstallNode", func(t *testing.T) {
-		t.Skip("Skip node uninstall test")
+		t.Skip("SkipNodeUninstallTest")
 		err := Uninstall(
 			valueObject.NewServiceNamePanic("node"),
 		)
 		if err != nil {
-			t.Errorf("Uninstall() error = %v", err)
+			t.Errorf("NodeUninstallFailed : %v", err)
 			return
 		}
 	})
 
 	t.Run("UninstallRedis", func(t *testing.T) {
-		t.Skip("Skip redis uninstall test")
+		t.Skip("SkipRedisUninstallTest")
 		err := Uninstall(
 			valueObject.NewServiceNamePanic("redis"),
 		)
 		if err != nil {
-			t.Errorf("Uninstall() error = %v", err)
+			t.Errorf("RedisUninstallFailed : %v", err)
 			return
 		}
 	})

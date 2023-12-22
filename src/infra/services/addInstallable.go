@@ -1,7 +1,9 @@
 package servicesInfra
 
 import (
+	"crypto/md5"
 	"embed"
+	"encoding/hex"
 	"errors"
 	"io"
 	"log"
@@ -10,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
@@ -55,10 +58,6 @@ var MariaDbPackages = []string{
 	"mariadb-server",
 }
 
-var NodePackages = []string{
-	"nodejs",
-}
-
 var RedisPackages = []string{
 	"redis-server",
 }
@@ -88,7 +87,7 @@ func copyAssets(srcPath string, dstPath string) error {
 	return nil
 }
 
-func installPhp() error {
+func addPhp() error {
 	repoFilePath := "/speedia/repo.litespeed.sh"
 
 	err := infraHelper.DownloadFile(
@@ -194,19 +193,27 @@ func installPhp() error {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
 
-	err = copyAssets(
-		"php/ols-entrypoint.sh",
-		"/speedia/ols-entrypoint.sh",
+	httpPortBinding := valueObject.NewPortBinding(
+		valueObject.NewNetworkPortPanic(8080),
+		valueObject.NewNetworkProtocolPanic("http"),
 	)
-	if err != nil {
-		return errors.New("CopyAssetsError: " + err.Error())
+	httpsPortBinding := valueObject.NewPortBinding(
+		valueObject.NewNetworkPortPanic(8443),
+		valueObject.NewNetworkProtocolPanic("https"),
+	)
+	portBindings := []valueObject.PortBinding{
+		httpPortBinding,
+		httpsPortBinding,
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"php",
-		"bash /speedia/ols-entrypoint.sh",
-		"runtime",
-		[]int{8080, 8443},
+		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewServiceVersionPanic("latest"),
+		valueObject.NewUnixCommandPanic("/usr/local/lsws/bin/litespeed -d"),
+		nil,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError: " + err.Error())
@@ -215,90 +222,91 @@ func installPhp() error {
 	return nil
 }
 
-func installNode(version *valueObject.ServiceVersion) error {
-	nodeSvcName, _ := valueObject.NewServiceName("node")
-	repoFilePath := "/speedia/repo.node.sh"
-
-	repoUrl := "https://deb.nodesource.com/setup_lts.x"
-	if version != nil {
-		re := regexp.MustCompile(supportedServicesVersion[nodeSvcName.String()])
-		isVersionAllowed := re.MatchString(version.String())
+func addNode(addDto dto.AddInstallableService) error {
+	versionStr := "lts"
+	if addDto.Version != nil {
+		versionStr = addDto.Version.String()
+		re := regexp.MustCompile(supportedServicesVersion["node"])
+		isVersionAllowed := re.MatchString(versionStr)
 
 		if !isVersionAllowed {
-			log.Printf("InvalidNodeVersion: %s", version.String())
-			return errors.New("InvalidNodeVersion")
+			return errors.New("InvalidNodeVersion: " + versionStr)
 		}
-
-		repoUrl = "https://deb.nodesource.com/setup_" + version.String() + ".x"
 	}
 
-	err := infraHelper.DownloadFile(
-		repoUrl,
-		repoFilePath,
+	_, err := infraHelper.RunCmdWithSubShell(
+		"rtx install node@" + versionStr,
 	)
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"bash",
-		repoFilePath,
-	)
-	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
-	}
-
-	err = os.Remove(repoFilePath)
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
-	}
-
-	err = infraHelper.InstallPkgs(NodePackages)
-	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
+		return errors.New("InstallNodeError: " + err.Error())
 	}
 
 	appHtmlDir := "/app/html"
 	err = infraHelper.MakeDir(appHtmlDir)
 	if err != nil {
-		log.Printf("CreateBaseDirError: %s", err)
-		return errors.New("CreateBaseDirError")
+		return errors.New("CreateBaseDirError: " + err.Error())
 	}
 
-	indexJsFilePath := appHtmlDir + "/index.js"
-	err = copyAssets(
-		"nodejs/base-index.js",
-		indexJsFilePath,
-	)
-	if err != nil {
-		log.Printf("CopyAssetsError: %s", err)
-		return errors.New("CopyAssetsError")
+	startupFile := valueObject.NewUnixFilePathPanic(appHtmlDir + "/index.js")
+	if addDto.StartupFile != nil {
+		startupFile = *addDto.StartupFile
 	}
+
+	if !infraHelper.FileExists(startupFile.String()) {
+		err = copyAssets(
+			"nodejs/base-index.js",
+			startupFile.String(),
+		)
+		if err != nil {
+			return errors.New("CopyAssetsError: " + err.Error())
+		}
+
+		_, err = infraHelper.RunCmd(
+			"chown",
+			"nobody:nogroup",
+			startupFile.String(),
+		)
+		if err != nil {
+			return errors.New("ChownDummyIndexError: " + err.Error())
+		}
+	}
+
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(3000),
+			valueObject.NewNetworkProtocolPanic("http"),
+		),
+	}
+	if len(addDto.PortBindings) > 0 {
+		portBindings = addDto.PortBindings
+	}
+
+	startupFileBytes := []byte(startupFile.String())
+	startupFileHash := md5.Sum(startupFileBytes)
+	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
+	startupFileShortHashStr := startupFileHashStr[:12]
+
+	svcNameWithSuffix := addDto.Name.String() + "-" + startupFileShortHashStr
 
 	err = SupervisordFacade{}.AddConf(
-		"node",
-		"/usr/bin/node "+indexJsFilePath+" &",
-		"database",
-		[]int{3000},
+		valueObject.NewServiceNamePanic(svcNameWithSuffix),
+		valueObject.NewServiceNaturePanic("multi"),
+		valueObject.NewServiceTypePanic("runtime"),
+		valueObject.NewServiceVersionPanic(versionStr),
+		valueObject.NewUnixCommandPanic(
+			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
+		),
+		&startupFile,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
 	}
 
-	err = SupervisordFacade{}.Start(nodeSvcName)
-	if err != nil {
-		log.Printf("RunNodeJsServiceError: %s", err)
-		return errors.New("RunNodeJsServiceError")
-	}
-
 	return nil
 }
 
-func installMariaDb(version *valueObject.ServiceVersion) error {
+func addMariaDb(addDto dto.AddInstallableService) error {
 	repoFilePath := "/speedia/repo.mariadb.sh"
 
 	err := infraHelper.DownloadFile(
@@ -306,21 +314,21 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 		repoFilePath,
 	)
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
+		return errors.New("DownloadRepoFileError: " + err.Error())
 	}
 
 	versionFlag := ""
-	if version != nil {
+	versionStr := "latest"
+	if addDto.Version != nil {
+		versionStr = addDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["mariadb"])
-		isVersionAllowed := re.MatchString(version.String())
+		isVersionAllowed := re.MatchString(versionStr)
 
 		if !isVersionAllowed {
-			log.Printf("InvalidMysqlVersion: %s", version.String())
-			return errors.New("InvalidMysqlVersion")
+			return errors.New("InvalidMysqlVersion: " + versionStr)
 		}
 
-		versionFlag = "--mariadb-server-version=" + version.String()
+		versionFlag = "--mariadb-server-version=" + versionStr
 	}
 
 	_, err = infraHelper.RunCmd(
@@ -329,42 +337,29 @@ func installMariaDb(version *valueObject.ServiceVersion) error {
 		versionFlag,
 	)
 	if err != nil {
-		log.Printf("RepoAddError: %s", err)
-		return errors.New("RepoAddError")
+		return errors.New("RepoAddError: " + err.Error())
 	}
 
 	err = os.Remove(repoFilePath)
 	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
+		return errors.New("RemoveRepoFileError: " + err.Error())
 	}
 
 	err = infraHelper.InstallPkgs(MariaDbPackages)
 	if err != nil {
-		log.Printf("InstallServiceError: %s", err)
-		return errors.New("InstallServiceError")
+		return errors.New("InstallServiceError: " + err.Error())
 	}
 
 	os.Symlink("/usr/bin/mariadb", "/usr/bin/mysql")
 	os.Symlink("/usr/bin/mariadb-admin", "/usr/bin/mysqladmin")
 	os.Symlink("/usr/bin/mariadbd-safe", "/usr/bin/mysqld_safe")
 
-	return nil
-}
-
-func installMysql(version *valueObject.ServiceVersion) error {
-	err := installMariaDb(version)
-	if err != nil {
-		return errors.New("InstallMariaDbError")
-	}
-
 	_, err = infraHelper.RunCmd(
-		"/usr/bin/mysqld_safe",
+		"mariadbd-safe",
 		"--no-watch",
 	)
 	if err != nil {
-		log.Printf("StartMysqldSafeError: %s", err)
-		return errors.New("StartMysqldSafeError")
+		return errors.New("StartMysqldSafeError: " + err.Error())
 	}
 
 	time.Sleep(5 * time.Second)
@@ -380,13 +375,12 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	}
 	postInstallQueriesJoined := strings.Join(postInstallQueries, "; ")
 	_, err = infraHelper.RunCmd(
-		"mysql",
+		"mariadb",
 		"-e",
 		postInstallQueriesJoined,
 	)
 	if err != nil {
-		log.Printf("PostInstallQueryError: %s", err)
-		return errors.New("PostInstallQueryError")
+		return errors.New("PostInstallQueryError: " + err.Error())
 	}
 
 	err = infraHelper.UpdateFile(
@@ -395,30 +389,39 @@ func installMysql(version *valueObject.ServiceVersion) error {
 		true,
 	)
 	if err != nil {
-		log.Printf("CreateMyCnfError: %s", err)
-		return errors.New("CreateMyCnfError")
+		return errors.New("CreateMyCnfError: " + err.Error())
 	}
 
 	err = os.Chmod("/root/.my.cnf", 0400)
 	if err != nil {
-		log.Printf("ChmodMyCnfError: %s", err)
-		return errors.New("ChmodMyCnfError")
+		return errors.New("ChmodMyCnfError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"mysqladmin",
+		"mariadb-admin",
+		"--user=root",
+		"--password="+rootPass,
 		"shutdown",
 	)
 	if err != nil {
-		log.Printf("StopMysqldSafeError: %s", err)
-		return errors.New("StopMysqldSafeError")
+		return errors.New("StopMysqldSafeError: " + err.Error())
+	}
+
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(3306),
+			valueObject.NewNetworkProtocolPanic("tcp"),
+		),
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		"mysql",
-		"/usr/bin/mysqld_safe",
-		"database",
-		[]int{3306},
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
+		valueObject.NewServiceVersionPanic(versionStr),
+		valueObject.NewUnixCommandPanic("/usr/bin/mariadbd-safe"),
+		nil,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -427,14 +430,16 @@ func installMysql(version *valueObject.ServiceVersion) error {
 	return nil
 }
 
-func installRedis(version *valueObject.ServiceVersion) error {
+func addRedis(addDto dto.AddInstallableService) error {
 	versionFlag := ""
-	if version != nil {
+	versionStr := "latest"
+	if addDto.Version != nil {
+		versionStr = addDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["redis"])
-		isVersionAllowed := re.MatchString(version.String())
+		isVersionAllowed := re.MatchString(versionStr)
 
 		if !isVersionAllowed {
-			log.Printf("InvalidRedisVersion: %s", version.String())
+			log.Printf("InvalidRedisVersion: %s", versionStr)
 			return errors.New("InvalidRedisVersion")
 		}
 	}
@@ -493,8 +498,8 @@ func installRedis(version *valueObject.ServiceVersion) error {
 		return errors.New("CreateRepoFileError")
 	}
 
-	if version != nil {
-		versionStr := version.String()
+	if addDto.Version != nil {
+		versionStr := addDto.Version.String()
 		latestVersion, err := infraHelper.GetPkgLatestVersion(
 			"redis-server",
 			&versionStr,
@@ -515,11 +520,21 @@ func installRedis(version *valueObject.ServiceVersion) error {
 		return errors.New("InstallServiceError")
 	}
 
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(6379),
+			valueObject.NewNetworkProtocolPanic("tcp"),
+		),
+	}
+
 	err = SupervisordFacade{}.AddConf(
-		"redis",
-		"/usr/bin/redis-server /etc/redis/redis.conf",
-		"database",
-		[]int{6379},
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.ServiceType("database"),
+		valueObject.NewServiceVersionPanic(versionStr),
+		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
+		nil,
+		portBindings,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -539,20 +554,29 @@ func installRedis(version *valueObject.ServiceVersion) error {
 	return nil
 }
 
-func Install(
-	name valueObject.ServiceName,
-	version *valueObject.ServiceVersion,
+func AddInstallable(
+	addDto dto.AddInstallableService,
 ) error {
-	switch name.String() {
+	switch addDto.Name.String() {
 	case "php":
-		return installPhp()
+		return addPhp()
 	case "node":
-		return installNode(version)
-	case "mysql":
-		return installMysql(version)
+		return addNode(addDto)
+	case "mariadb":
+		return addMariaDb(addDto)
 	case "redis":
-		return installRedis(version)
+		return addRedis(addDto)
 	default:
-		return errors.New("ServiceNotImplemented: " + name.String())
+		return errors.New("UnknownInstallableService")
 	}
+}
+
+func AddInstallableSimplified(serviceName string) error {
+	dto := dto.NewAddInstallableService(
+		valueObject.NewServiceNamePanic(serviceName),
+		nil,
+		nil,
+		[]valueObject.PortBinding{},
+	)
+	return AddInstallable(dto)
 }

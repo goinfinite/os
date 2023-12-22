@@ -14,10 +14,11 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	t.Skip("SkipRuntimeCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	servicesInfra.Install(
-		valueObject.NewServiceNamePanic("openlitespeed"),
-		nil,
-	)
+	err := servicesInfra.AddInstallableSimplified("php")
+	if err != nil {
+		t.Errorf("InstallDependenciesFail: %v", err)
+		return
+	}
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
 		err := RuntimeCmdRepo{}.UpdatePhpVersion(

@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const serviceVersionRegex string = `^[\d\.\_\-]{1,20}$`
+const serviceVersionRegex string = `^([\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`
 
 type ServiceVersion string
 
@@ -18,9 +18,9 @@ func NewServiceVersion(value string) (ServiceVersion, error) {
 }
 
 func NewServiceVersionPanic(value string) ServiceVersion {
-	version := ServiceVersion(value)
-	if !version.isValid() {
-		panic("InvalidServiceVersion")
+	version, err := NewServiceVersion(value)
+	if err != nil {
+		panic(err)
 	}
 	return version
 }

@@ -11,7 +11,7 @@ func UpdateFile(filePath string, content string, shouldOverwrite bool) error {
 		fileFlags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	}
 
-	file, err := os.OpenFile(filePath, fileFlags, 0600)
+	file, err := os.OpenFile(filePath, fileFlags, 0644)
 	if err != nil {
 		return err
 	}

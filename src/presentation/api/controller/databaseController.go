@@ -43,7 +43,7 @@ func GetDatabasesController(c echo.Context) error {
 // @Security     Bearer
 // @Param        dbType path valueObject.DatabaseType true "DatabaseType"
 // @Param        addDatabaseDto body dto.AddDatabase true "AddDatabase"
-// @Success      201 {object} object{} "DatabaseAdded"
+// @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /database/{dbType}/ [post]
 func AddDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
@@ -67,7 +67,7 @@ func AddDatabaseController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseAdded")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseCreated")
 }
 
 // DeleteDatabase godoc
@@ -110,7 +110,7 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Param        dbType path valueObject.DatabaseType true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Param        addDatabaseUserDto body dto.AddDatabaseUser true "AddDatabaseUser"
-// @Success      201 {object} object{} "DatabaseUserAdded"
+// @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /database/{dbType}/{dbName}/user/ [post]
 func AddDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
@@ -150,7 +150,7 @@ func AddDatabaseUserController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseUserAdded")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "DatabaseUserCreated")
 }
 
 // DeleteDatabaseUser godoc

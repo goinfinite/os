@@ -103,7 +103,11 @@ func servicesRoutes() {
 
 	rootCmd.AddCommand(servicesCmd)
 	servicesCmd.AddCommand(cliController.GetServicesController())
+	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
+	servicesCmd.AddCommand(cliController.AddInstallableServiceController())
+	servicesCmd.AddCommand(cliController.AddCustomServiceController())
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
+	servicesCmd.AddCommand(cliController.DeleteServiceController())
 }
 
 func sslRoutes() {
@@ -118,6 +122,28 @@ func sslRoutes() {
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
+func virtualHostRoutes() {
+	var vhostCmd = &cobra.Command{
+		Use:   "vhost",
+		Short: "VirtualHostManagement",
+	}
+
+	rootCmd.AddCommand(vhostCmd)
+	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
+	vhostCmd.AddCommand(cliController.AddVirtualHostController())
+	vhostCmd.AddCommand(cliController.DeleteVirtualHostController())
+
+	var mappingCmd = &cobra.Command{
+		Use:   "mapping",
+		Short: "MappingManagement",
+	}
+
+	vhostCmd.AddCommand(mappingCmd)
+	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
+	mappingCmd.AddCommand(cliController.AddVirtualHostMappingController())
+	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
+}
+
 func registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
@@ -128,4 +154,5 @@ func registerCliRoutes() {
 	runtimeRoutes()
 	servicesRoutes()
 	sslRoutes()
+	virtualHostRoutes()
 }

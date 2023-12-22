@@ -9,13 +9,24 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
 )
 
 type RuntimeCmdRepo struct {
 }
 
-func (r RuntimeCmdRepo) UpdatePhpVersion(
+func (repo RuntimeCmdRepo) restartPhp() error {
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	err := servicesCmdRepo.Restart(valueObject.NewServiceNamePanic("php"))
+	if err != nil {
+		return errors.New("RestartWebServerFailed")
+	}
+
+	return nil
+}
+
+func (repo RuntimeCmdRepo) UpdatePhpVersion(
 	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
@@ -40,15 +51,10 @@ func (r RuntimeCmdRepo) UpdatePhpVersion(
 		return errors.New("UpdatePhpVersionFailed")
 	}
 
-	err = ServicesCmdRepo{}.Restart(valueObject.NewServiceNamePanic("openlitespeed"))
-	if err != nil {
-		return errors.New("RestartWebServerFailed")
-	}
-
-	return nil
+	return repo.restartPhp()
 }
 
-func (r RuntimeCmdRepo) UpdatePhpSettings(
+func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
@@ -72,15 +78,10 @@ func (r RuntimeCmdRepo) UpdatePhpSettings(
 		}
 	}
 
-	err := ServicesCmdRepo{}.Restart(valueObject.NewServiceNamePanic("openlitespeed"))
-	if err != nil {
-		return errors.New("RestartWebServerFailed")
-	}
-
-	return nil
+	return repo.restartPhp()
 }
 
-func (r RuntimeCmdRepo) EnablePhpModule(
+func (repo RuntimeCmdRepo) EnablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
@@ -182,7 +183,7 @@ func (r RuntimeCmdRepo) EnablePhpModule(
 	return nil
 }
 
-func (r RuntimeCmdRepo) DisablePhpModule(
+func (repo RuntimeCmdRepo) DisablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
@@ -219,7 +220,7 @@ func (r RuntimeCmdRepo) DisablePhpModule(
 	return nil
 }
 
-func (r RuntimeCmdRepo) UpdatePhpModules(
+func (repo RuntimeCmdRepo) UpdatePhpModules(
 	hostname valueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
@@ -247,23 +248,18 @@ func (r RuntimeCmdRepo) UpdatePhpModules(
 		}
 
 		if module.Status {
-			err := r.EnablePhpModule(phpVersion.Value, module)
+			err := repo.EnablePhpModule(phpVersion.Value, module)
 			if err != nil {
 				continue
 			}
 			continue
 		}
 
-		err := r.DisablePhpModule(phpVersion.Value, module)
+		err := repo.DisablePhpModule(phpVersion.Value, module)
 		if err != nil {
 			continue
 		}
 	}
 
-	err = ServicesCmdRepo{}.Restart(valueObject.NewServiceNamePanic("openlitespeed"))
-	if err != nil {
-		return errors.New("RestartWebServerFailed")
-	}
-
-	return nil
+	return repo.restartPhp()
 }
