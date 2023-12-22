@@ -33,3 +33,7 @@ func (mimeType MimeType) isValid() bool {
 func (mimeType MimeType) String() string {
 	return string(mimeType)
 }
+
+func (mimeType MimeType) IsDir() bool {
+	return mimeType == "directory"
+}
