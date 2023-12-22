@@ -3,7 +3,6 @@ package infra
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"log"
 	"mime"
 	"os"
@@ -14,15 +13,21 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type FilesQueryRepo struct{}
 
+// ENHANCEMENT: Adicionar as outras flags de find no RunCmd e usar o retorno para montar o UnixFile dentro da factory.
 func (repo FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
-	fileInfo fs.FileInfo,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
+
+	fileInfo, err := os.Stat(filePath.String())
+	if err != nil {
+		return unixFile, err
+	}
 
 	fileSysInfo := fileInfo.Sys().(*syscall.Stat_t)
 
@@ -136,6 +141,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	return unixFile, nil
 }
 
+// TODO: Remover esse método e alterar todos os lugares onde chamam ele para usar para usar o Get ou o GetOnlyFile.
 func (repo FilesQueryRepo) Exists(
 	unixFilePath valueObject.UnixFilePath,
 ) (bool, error) {
@@ -152,6 +158,7 @@ func (repo FilesQueryRepo) Exists(
 	return true, nil
 }
 
+// TODO: Remover o IsDir() e utilizar o Get e o GetOnlyFile para validar se é diretório ou não.
 func (repo FilesQueryRepo) IsDir(
 	unixFilePath valueObject.UnixFilePath,
 ) (bool, error) {
@@ -177,34 +184,55 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, errors.New("PathDoesNotExists")
 	}
 
+	filesToFactory := []valueObject.UnixFilePath{
+		unixFilePath,
+	}
+
 	isDir, err := repo.IsDir(unixFilePath)
 	if err != nil {
 		return unixFileList, err
 	}
-	if !isDir {
-		fileInfo, err := os.Stat(unixFilePath.String())
+
+	if isDir {
+		filesToFactoryWithoutDir := filesToFactory[1:]
+		filesToFactory = filesToFactoryWithoutDir
+
+		filesToFactoryStr, err := infraHelper.RunCmd(
+			"find",
+			unixFilePath.String(),
+			"-maxdepth",
+			"1",
+			"-printf",
+			"%p\n",
+		)
 		if err != nil {
-			return unixFileList, errors.New("UnableToGetPathInfo")
+			return unixFileList, err
+		}
+		if len(filesToFactoryStr) == 0 {
+			return unixFileList, errors.New("UnableToGetDirFiles")
 		}
 
-		unixFile, err := repo.unixFileFactory(unixFilePath, fileInfo)
-		if err == nil {
-			unixFileList = append(unixFileList, unixFile)
+		filesToFactoryStrList := strings.Split(filesToFactoryStr, "\n")
+		for _, fileToFactoryStr := range filesToFactoryStrList {
+			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
+			if err != nil {
+				log.Printf("FileToFactoryError: %s", err.Error())
+				continue
+			}
+
+			filesToFactory = append(filesToFactory, filePath)
 		}
-
-		return unixFileList, nil
 	}
 
-	dirEntriesToAnalyzeList, err := os.ReadDir(unixFilePath.String())
-	if err != nil {
-		log.Printf("UnableToGetDirInfo: %s", err)
-		return unixFileList, errors.New("UnableToGetDirInfo")
-	}
+	for _, fileToFactory := range filesToFactory {
+		unixFile, err := repo.unixFileFactory(fileToFactory)
 
-	for _, dirEntry := range dirEntriesToAnalyzeList {
-		inodeInfo, _ := dirEntry.Info()
-		unixFile, err := repo.unixFileFactory(unixFilePath, inodeInfo)
 		if err != nil {
+			log.Printf(
+				"UnixFileFactoryError (%s): %s",
+				fileToFactory.String(),
+				err.Error(),
+			)
 			continue
 		}
 
@@ -214,6 +242,7 @@ func (repo FilesQueryRepo) Get(
 	return unixFileList, nil
 }
 
+// TODO: Trocar o nome GetOnlyFile para GetOnly.
 func (repo FilesQueryRepo) GetOnlyFile(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
@@ -235,10 +264,5 @@ func (repo FilesQueryRepo) GetOnlyFile(
 		return unixFile, errors.New("PathIsNotAFile")
 	}
 
-	fileInfo, err := os.Stat(unixFilePath.String())
-	if err != nil {
-		return unixFile, errors.New("UnableToGetFileInfo")
-	}
-
-	return repo.unixFileFactory(unixFilePath, fileInfo)
+	return repo.unixFileFactory(unixFilePath)
 }
