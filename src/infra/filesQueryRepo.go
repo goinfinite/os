@@ -82,9 +82,11 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
+	var unixFileExtensionPtr *valueObject.UnixFileExtension
 	unixFileExtension, err := unixFilePath.GetFileExtension()
+	unixFileExtensionPtr = &unixFileExtension
 	if err != nil {
-		return unixFile, err
+		unixFileExtensionPtr = nil
 	}
 
 	mimeTypeStr := "directory"
@@ -129,7 +131,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileMimeType,
 		unixFilePermissions,
 		unixFileSize,
-		&unixFileExtension,
+		unixFileExtensionPtr,
 		unixFileUid,
 		unixFileUsername,
 		unixFileGid,
@@ -247,14 +249,6 @@ func (repo FilesQueryRepo) GetOnly(
 	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
 		return unixFile, errors.New("FileDoesNotExists")
-	}
-
-	isDir, err := repo.IsDir(unixFilePath)
-	if err != nil {
-		return unixFile, err
-	}
-	if isDir {
-		return unixFile, errors.New("PathIsNotAFile")
 	}
 
 	return repo.unixFileFactory(unixFilePath)
