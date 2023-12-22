@@ -176,10 +176,7 @@ func (repo FilesQueryRepo) Get(
 ) ([]entity.UnixFile, error) {
 	unixFileList := []entity.UnixFile{}
 
-	exists, err := repo.Exists(unixFilePath)
-	if err != nil {
-		return unixFileList, err
-	}
+	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
 		return unixFileList, errors.New("PathDoesNotExists")
 	}
@@ -247,10 +244,7 @@ func (repo FilesQueryRepo) GetOnly(
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
 
-	exists, err := repo.Exists(unixFilePath)
-	if err != nil {
-		return unixFile, err
-	}
+	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
 		return unixFile, errors.New("FileDoesNotExists")
 	}
