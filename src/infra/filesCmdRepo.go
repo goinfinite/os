@@ -241,14 +241,13 @@ func (repo FilesCmdRepo) Upload(
 	}
 	defer destinationEmptyFile.Close()
 
-	// TODO: Mudar o nome da variável para fileToUploadStream
-	fileStreamHandlerInstance, err := fileStreamHandler.Open()
+	fileToUploadStream, err := fileStreamHandler.Open()
 	if err != nil {
 		log.Printf("UnableToOpenFileStream: %s", err.Error())
 		return errors.New("UnableToOpenFileStream")
 	}
 
-	_, err = io.Copy(destinationEmptyFile, fileStreamHandlerInstance)
+	_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 	if err != nil {
 		log.Printf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
 		return errors.New("CopyFileStreamHandlerContentToDestinationFileError")
