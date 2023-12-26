@@ -210,15 +210,23 @@ func (repo FilesCmdRepo) Extract(
 }
 
 func (repo FilesCmdRepo) Delete(
-	unixFilePath valueObject.UnixFilePath,
-) error {
-	err := os.RemoveAll(unixFilePath.String())
-	if err != nil {
-		log.Printf("DeleteFileError: %s", err)
-		return errors.New("DeleteFileError")
-	}
+	unixFilePath []valueObject.UnixFilePath,
+) {
+	for _, fileToDelete := range unixFilePath {
+		fileExists := infraHelper.FileExists(fileToDelete.String())
+		if !fileExists {
+			log.Printf("DeleteFileError: FileDoesNotExists")
+			continue
+		}
 
-	return nil
+		err := os.RemoveAll(fileToDelete.String())
+		if err != nil {
+			log.Printf("DeleteFileError: %s", err)
+			continue
+		}
+
+		log.Printf("File '%s' deleted.", fileToDelete.String())
+	}
 }
 
 func (repo FilesCmdRepo) Upload(
@@ -233,6 +241,7 @@ func (repo FilesCmdRepo) Upload(
 	}
 	defer destinationEmptyFile.Close()
 
+	// TODO: Mudar o nome da variável para fileToUploadStream
 	fileStreamHandlerInstance, err := fileStreamHandler.Open()
 	if err != nil {
 		log.Printf("UnableToOpenFileStream: %s", err.Error())

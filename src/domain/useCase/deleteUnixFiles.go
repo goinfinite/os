@@ -12,27 +12,23 @@ func DeleteUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
 	unixFilePaths []valueObject.UnixFilePath,
 ) {
-	for _, filePath := range unixFilePaths {
-		unixFileExists, err := filesQueryRepo.Exists(filePath)
-		if err != nil || !unixFileExists {
+	for fileToDeleteIndex, fileToDelete := range unixFilePaths {
+		isRootPath := fileToDelete.String() == "/"
+		if !isRootPath {
 			continue
 		}
 
-		err = filesCmdRepo.Delete(filePath)
-		if err != nil {
-			continue
-		}
+		log.Printf("Path '/' is not allowed to delete.")
 
-		isDir, err := filesQueryRepo.IsDir(filePath)
-		if err != nil {
-			continue
-		}
+		filesToDeleteBeforeNotAllowedPath := unixFilePaths[:fileToDeleteIndex]
+		filesToDeleteAfterNotAllowedPath := unixFilePaths[fileToDeleteIndex+1:]
+		filesToDeleteWithoutNotAllowedPath := append(
+			filesToDeleteBeforeNotAllowedPath,
+			filesToDeleteAfterNotAllowedPath...,
+		)
 
-		inodeName := "File"
-		if isDir {
-			inodeName = "Directory"
-		}
-
-		log.Printf("%s '%s' deleted.", inodeName, filePath.String())
+		unixFilePaths = filesToDeleteWithoutNotAllowedPath
 	}
+
+	filesCmdRepo.Delete(unixFilePaths)
 }
