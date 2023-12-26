@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	"errors"
 	"mime/multipart"
 	"net/http"
 	"reflect"
@@ -19,19 +18,24 @@ func getFilePathSliceFromBody(
 ) []valueObject.UnixFilePath {
 	var filePaths []valueObject.UnixFilePath
 
-	filePathsIsList := reflect.TypeOf(filePathBodyInput).Kind() == reflect.Slice
-	if !filePathsIsList {
-		panic(errors.New("FilePathIsNotASlice"))
-	}
+	filePathBodyInputType := reflect.TypeOf(filePathBodyInput).Kind()
 
-	for _, filePathInterface := range filePathBodyInput.([]interface{}) {
-		filePathStr := filePathInterface.(string)
-		filePath, err := valueObject.NewUnixFilePath(filePathStr)
-		if err != nil {
-			continue
+	switch filePathBodyInputType {
+	case reflect.String:
+		filePaths = append(
+			filePaths,
+			valueObject.NewUnixFilePathPanic(filePathBodyInput.(string)),
+		)
+	case reflect.Slice:
+		for _, filePathInterface := range filePathBodyInput.([]interface{}) {
+			filePathStr := filePathInterface.(string)
+			filePath, err := valueObject.NewUnixFilePath(filePathStr)
+			if err != nil {
+				continue
+			}
+
+			filePaths = append(filePaths, filePath)
 		}
-
-		filePaths = append(filePaths, filePath)
 	}
 
 	return filePaths
@@ -244,16 +248,16 @@ func CopyFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        filePaths	body	string[]	true	"UnixFilePath"
+// @Param        filePath	body	[]string	true	"UnixFilePath"
 // @Success      200 {object} object{} "DirectoriesAndFilesDeleted"
 // @Router       /files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
-	requiredParams := []string{"filePaths"}
+	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePaths := getFilePathSliceFromBody(requestBody["filePaths"])
+	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
 
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
@@ -279,12 +283,12 @@ func DeleteFileController(c echo.Context) error {
 // @Success      207 {object} object{} "FilesAndDirectoriesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
-	requiredParams := []string{"filePaths", "destinationPath", "compressionType"}
+	requiredParams := []string{"filePath", "destinationPath", "compressionType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePaths := getFilePathSliceFromBody(requestBody["filePaths"])
+	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 	compressionUnixType := valueObject.NewUnixCompressionTypePanic(requestBody["compressionType"].(string))
 
