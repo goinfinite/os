@@ -242,7 +242,6 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 		compressDestinationFlag,
 		destinationPath.String(),
 	)
-
 	return err
 }
 
