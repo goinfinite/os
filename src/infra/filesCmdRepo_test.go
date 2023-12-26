@@ -19,7 +19,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		addUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
-			valueObject.NewUnixFileTypePanic("directory"),
+			valueObject.NewMimeTypePanic("directory"),
 		)
 
 		err := filesCmdRepo.Create(addUnixFile)
@@ -32,7 +32,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		addUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
-			valueObject.NewUnixFileTypePanic("file"),
+			valueObject.NewMimeTypePanic("file"),
 		)
 
 		err := filesCmdRepo.Create(addUnixFile)

@@ -80,9 +80,9 @@ func AddFileController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	fileType := valueObject.NewUnixFileTypePanic("file")
+	fileType := valueObject.NewMimeTypePanic("generic")
 	if requestBody["type"] != nil {
-		fileType = valueObject.NewUnixFileTypePanic(requestBody["type"].(string))
+		fileType = valueObject.NewMimeTypePanic(requestBody["type"].(string))
 	}
 
 	successResponse := "FileCreated"

@@ -164,7 +164,7 @@ func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
 		return errors.New("PathAlreadyExists")
 	}
 
-	if !createUnixFile.Type.IsDir() {
+	if !createUnixFile.MimeType.IsDir() {
 		_, err := os.Create(createUnixFile.SourcePath.String())
 		if err != nil {
 			return err
