@@ -7,12 +7,12 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddUnixFile(
+func CreateUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	addUnixFile dto.AddUnixFile,
+	createUnixFile dto.CreateUnixFile,
 ) error {
-	err := filesCmdRepo.Create(addUnixFile)
+	err := filesCmdRepo.Create(createUnixFile)
 	if err != nil {
 		log.Printf("CreateFileError: %s", err.Error())
 		return err
@@ -20,8 +20,8 @@ func AddUnixFile(
 
 	log.Printf(
 		"File '%s' created in '%s'.",
-		addUnixFile.SourcePath.GetFileName().String(),
-		addUnixFile.SourcePath.GetFileDir().String(),
+		createUnixFile.SourcePath.GetFileName().String(),
+		createUnixFile.SourcePath.GetFileDir().String(),
 	)
 
 	return nil

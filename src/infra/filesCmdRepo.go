@@ -46,25 +46,25 @@ func uploadProcessReportFailureListFactory(
 	return uploadProcessReportFailureList
 }
 
-func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
-	filesExists := infraHelper.FileExists(addUnixFile.SourcePath.String())
+func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
+	filesExists := infraHelper.FileExists(createUnixFile.SourcePath.String())
 	if filesExists {
 		return errors.New("PathAlreadyExists")
 	}
 
-	if !addUnixFile.Type.IsDir() {
-		_, err := os.Create(addUnixFile.SourcePath.String())
+	if !createUnixFile.Type.IsDir() {
+		_, err := os.Create(createUnixFile.SourcePath.String())
 		if err != nil {
 			return err
 		}
 
 		return repo.UpdatePermissions(
-			addUnixFile.SourcePath,
-			addUnixFile.Permissions,
+			createUnixFile.SourcePath,
+			createUnixFile.Permissions,
 		)
 	}
 
-	err := os.MkdirAll(addUnixFile.SourcePath.String(), addUnixFile.Permissions.GetFileMode())
+	err := os.MkdirAll(createUnixFile.SourcePath.String(), createUnixFile.Permissions.GetFileMode())
 	if err != nil {
 		return err
 	}

@@ -97,7 +97,7 @@ func AddFileController(c echo.Context) error {
 		filePermissions = valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
 	}
 
-	addUnixFileDto := dto.NewAddUnixFile(
+	addUnixFileDto := dto.NewCreateUnixFile(
 		valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string)),
 		filePermissions,
 		fileType,
@@ -106,7 +106,7 @@ func AddFileController(c echo.Context) error {
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
 
-	err := useCase.AddUnixFile(
+	err := useCase.CreateUnixFile(
 		filesQueryRepo,
 		filesCmdRepo,
 		addUnixFileDto,
