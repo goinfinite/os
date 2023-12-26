@@ -36,13 +36,13 @@ func (encodedBaseContent EncodedContent) isValid() bool {
 	return encodedBaseContentRegex.MatchString(string(encodedBaseContent)) && !isEmpty
 }
 
-func (encodedBaseContent EncodedContent) GetDecodedContent() string {
+func (encodedBaseContent EncodedContent) GetDecodedContent() (string, error) {
 	decodedContent, err := base64.StdEncoding.DecodeString(string(encodedBaseContent))
 	if err != nil {
-		return ""
+		return "", err
 	}
 
-	return string(decodedContent)
+	return string(decodedContent), nil
 }
 
 func (encodedBaseContent EncodedContent) String() string {

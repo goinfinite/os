@@ -123,9 +123,14 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("PathIsADir")
 	}
 
+	decodedContent, err := updateUnixFileContent.Content.GetDecodedContent()
+	if err != nil {
+		return err
+	}
+
 	return infraHelper.UpdateFile(
 		updateUnixFileContent.SourcePath.String(),
-		updateUnixFileContent.Content.GetDecodedContent(),
+		decodedContent,
 		true,
 	)
 }
