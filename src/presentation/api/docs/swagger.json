@@ -594,6 +594,374 @@
                 }
             }
         },
+        "/files/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List dir/files.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "GetFiles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UnixFilePath",
+                        "name": "unixFilePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.UnixFile"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a dir/file path, name and/or permissions (Only filePath is required).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "UpdateFile",
+                "parameters": [
+                    {
+                        "description": "UpdateFile",
+                        "name": "updateUnixFileDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUnixFile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "FileUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new dir/file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "AddNewFile",
+                "parameters": [
+                    {
+                        "description": "NewFile",
+                        "name": "addFileDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddUnixFile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "FileCreated/DirectoryCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/compress/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Compress directories and files.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "CompressFiles",
+                "parameters": [
+                    {
+                        "description": "CompressFiles",
+                        "name": "compressFilesDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CompressUnixFiles"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "FilesAndDirectoriesCompressed",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "207": {
+                        "description": "FilesAndDirectoriesArePartialCompressed",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/content/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a file content.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "UpdateFileContent",
+                "parameters": [
+                    {
+                        "description": "UpdateFileContent",
+                        "name": "updateUnixFileContentDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUnixFileContent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "FileContentUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/copy/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Copy a dir/file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "CopyFile",
+                "parameters": [
+                    {
+                        "description": "NewFileCopy",
+                        "name": "copyFileDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CopyUnixFile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "FileCopied",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/delete/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete one or more directories/files.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DeleteFiles",
+                "parameters": [
+                    {
+                        "description": "UnixFilePath",
+                        "name": "filePath",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "DirectoriesAndFilesDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/extract/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Extract directories and files.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "ExtractFiles",
+                "parameters": [
+                    {
+                        "description": "ExtractFiles",
+                        "name": "extractFilesDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ExtractUnixFiles"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ExtractFilesAndDirectories",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Upload files.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "UploadFiles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DestinationPath",
+                        "name": "destinationPath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "FileToUpload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "FilesUploaded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "207": {
+                        "description": "FilesPartialUploaded",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
@@ -1377,6 +1745,20 @@
                 }
             }
         },
+        "dto.AddUnixFile": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddVirtualHost": {
             "type": "object",
             "properties": {
@@ -1387,6 +1769,45 @@
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CompressUnixFiles": {
+            "type": "object",
+            "properties": {
+                "compressionType": {
+                    "type": "string"
+                },
+                "destinationPath": {
+                    "type": "string"
+                },
+                "paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dto.CopyUnixFile": {
+            "type": "object",
+            "properties": {
+                "destinationPath": {
+                    "type": "string"
+                },
+                "originPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ExtractUnixFiles": {
+            "type": "object",
+            "properties": {
+                "destinationPath": {
+                    "type": "string"
+                },
+                "path": {
                     "type": "string"
                 }
             }
@@ -1516,6 +1937,31 @@
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateUnixFile": {
+            "type": "object",
+            "properties": {
+                "destinationPath": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateUnixFileContent": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "path": {
                     "type": "string"
                 }
             }
@@ -1805,6 +2251,44 @@
                 },
                 "sslPairId": {
                     "type": "string"
+                }
+            }
+        },
+        "entity.UnixFile": {
+            "type": "object",
+            "properties": {
+                "extension": {
+                    "type": "string"
+                },
+                "gid": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "integer"
                 }
             }
         },
