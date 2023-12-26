@@ -39,6 +39,16 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
+	fileToMoveExists := infraHelper.FileExists(updateUnixFile.Path.String())
+	if !fileToMoveExists {
+		return errors.New("FileToMoveDoesNotExists")
+	}
+
+	destinationFileExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
+	if destinationFileExists {
+		return errors.New("DestinationPathAlreadyExists")
+	}
+
 	return os.Rename(
 		updateUnixFile.Path.String(),
 		updateUnixFile.DestinationPath.String(),
@@ -69,6 +79,13 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	unixFilePath valueObject.UnixFilePath,
 	unixFilePermissions valueObject.UnixFilePermissions,
 ) error {
+	queryRepo := FilesQueryRepo{}
+
+	_, err := queryRepo.Get(unixFilePath)
+	if err != nil {
+		return err
+	}
+
 	return os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 }
 
@@ -77,7 +94,7 @@ func (repo FilesCmdRepo) Compress(
 ) (dto.CompressionProcessReport, error) {
 	queryRepo := FilesQueryRepo{}
 
-	_, err := queryRepo.GetOnlyFile(compressUnixFiles.DestinationPath)
+	_, err := queryRepo.GetOnly(compressUnixFiles.DestinationPath)
 	if err != nil {
 		return dto.CompressionProcessReport{}, err
 	}
@@ -95,7 +112,7 @@ func (repo FilesCmdRepo) Compress(
 	if len(compressUnixFiles.Paths) > 1 {
 		var filesToCompressStrSlice []string
 		for _, filePath := range compressUnixFiles.Paths {
-			_, err := queryRepo.GetOnlyFile(filePath)
+			_, err := queryRepo.GetOnly(filePath)
 			if err != nil {
 				compressionProcessFailure := valueObject.NewCompressionProcessFailure(
 					filePath,
