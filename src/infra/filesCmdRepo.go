@@ -40,7 +40,7 @@ func uploadProcessReportFailureListFactory(
 		failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
 		uploadProcessReportFailureList = append(
 			uploadProcessReportFailureList,
-			valueObject.NewUploadProcessFailure(fileStreamHandler.GetFileName(), failureReason),
+			valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),
 		)
 	}
 
@@ -338,7 +338,7 @@ func (repo FilesCmdRepo) Upload(
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
-		destinationFilePath := destinationPath.String() + "/" + fileToUpload.GetFileName().String()
+		destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
 		destinationEmptyFile, err := os.Create(destinationFilePath)
 		if err != nil {
 			errMessage := fmt.Sprintf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
