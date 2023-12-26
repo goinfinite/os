@@ -9,92 +9,48 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type UploadProcessFailure struct {
-	FileName string `json:"fileName"`
-	Reason   string `json:"reason"`
-}
-
-type UploadProcessInfo struct {
-	Success     []string               `json:"success"`
-	Failure     []UploadProcessFailure `json:"failure"`
-	Destination string                 `json:"destination"`
-}
-
-func uploadProcessFailureFactory(
-	fileName valueObject.UnixFileName,
-	errMessage string,
-) UploadProcessFailure {
-	return UploadProcessFailure{
-		FileName: fileName.String(),
-		Reason:   errMessage,
-	}
-}
-
 func UploadUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	uploadUnixFiles dto.UploadUnixFiles,
-) (UploadProcessInfo, error) {
-	fileDestinationPath := uploadUnixFiles.DestinationPath
-
-	uploadProcessInfo := UploadProcessInfo{
-		Success:     []string{},
-		Failure:     []UploadProcessFailure{},
-		Destination: fileDestinationPath.String(),
-	}
-
-	fileIsDir, err := filesQueryRepo.IsDir(fileDestinationPath)
-	if err != nil {
-		return uploadProcessInfo, err
-	}
-
-	if !fileIsDir {
-		return uploadProcessInfo, errors.New("PathCannotBeAFile")
-	}
-
-	for _, fileStreamHandler := range uploadUnixFiles.FileStreamHandlers {
-		fileStreamHandlerSizeInGB := fileStreamHandler.GetFileSize().ToGiB()
+) (dto.UploadProcessReport, error) {
+	filesLargerThanAllowed := []valueObject.FileStreamHandler{}
+	filesWithAllowedSizes := []valueObject.FileStreamHandler{}
+	largerFileErrMessage := "File size is greater than 5 GB"
+	for _, fileToUploadStream := range uploadUnixFiles.FileStreamHandlers {
+		fileStreamHandlerSizeInGB := fileToUploadStream.GetFileSize().ToGiB()
 		if fileStreamHandlerSizeInGB > 5 {
-			errMessage := "File size in greater than 5 GB"
-			log.Printf("UploadFileError: %s", errMessage)
+			log.Printf("UploadFileError: %s", largerFileErrMessage)
 
-			uploadProcessFailure := uploadProcessFailureFactory(
-				fileStreamHandler.GetFileName(),
-				errMessage,
-			)
-			uploadProcessInfo.Failure = append(
-				uploadProcessInfo.Failure,
-				uploadProcessFailure,
-			)
+			filesLargerThanAllowed = append(filesLargerThanAllowed, fileToUploadStream)
 
 			continue
 		}
 
-		err := filesCmdRepo.Upload(fileDestinationPath, fileStreamHandler)
-		if err != nil {
-			uploadProcessFailure := uploadProcessFailureFactory(
-				fileStreamHandler.GetFileName(),
-				err.Error(),
-			)
-			uploadProcessInfo.Failure = append(
-				uploadProcessInfo.Failure,
-				uploadProcessFailure,
-			)
+		filesWithAllowedSizes = append(filesWithAllowedSizes, fileToUploadStream)
+	}
 
-			continue
-		}
+	uploadUnixFiles.FileStreamHandlers = filesWithAllowedSizes
 
-		uploadProcessInfo.Success = append(
-			uploadProcessInfo.Success,
-			fileStreamHandler.GetFileName().String(),
-		)
+	uploadProcessReport := filesCmdRepo.Upload(uploadUnixFiles)
 
-		log.Printf(
-			"File '%s' content upload to '%s'.",
-			fileStreamHandler.GetFileName().String(),
-			fileDestinationPath.String(),
+	for _, largeFile := range filesLargerThanAllowed {
+		uploadProcessReport.Failure = append(
+			uploadProcessReport.Failure,
+			valueObject.NewUploadProcessFailure(largeFile.GetFileName(), largerFileErrMessage),
 		)
 	}
 
-	return uploadProcessInfo, nil
+	allFilesFailedToUpload := len(uploadProcessReport.Failure) == len(uploadUnixFiles.FileStreamHandlers)
+	if allFilesFailedToUpload {
+		log.Printf(
+			"UnableToUploadFiles: Files were not uploaded to the '%s'.",
+			uploadUnixFiles.DestinationPath,
+		)
+		return uploadProcessReport, errors.New("UnableToUploadAnyFile")
+	}
+
+	log.Printf("Files uploaded to '%s'.", uploadUnixFiles.DestinationPath)
+
+	return uploadProcessReport, nil
 }

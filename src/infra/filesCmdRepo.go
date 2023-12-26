@@ -2,6 +2,7 @@ package infra
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -13,6 +14,37 @@ import (
 )
 
 type FilesCmdRepo struct{}
+
+func fillUploadProcessReportFailure(
+	currentUploadProcessReportList []valueObject.UploadProcessFailure,
+	errMessage string,
+	fileStreamHandlers []valueObject.FileStreamHandler,
+) []valueObject.UploadProcessFailure {
+	uploadProcessReportList := currentUploadProcessReportList
+
+	uploadProcessReportList = append(
+		uploadProcessReportList,
+		uploadProcessReportFailureListFactory(errMessage, fileStreamHandlers)...,
+	)
+
+	return uploadProcessReportList
+}
+
+func uploadProcessReportFailureListFactory(
+	errMessage string,
+	fileStreamHandlers []valueObject.FileStreamHandler,
+) []valueObject.UploadProcessFailure {
+	uploadProcessReportFailureList := []valueObject.UploadProcessFailure{}
+
+	for _, fileStreamHandler := range fileStreamHandlers {
+		uploadProcessReportFailureList = append(
+			uploadProcessReportFailureList,
+			valueObject.NewUploadProcessFailure(fileStreamHandler.GetFileName(), errMessage),
+		)
+	}
+
+	return uploadProcessReportFailureList
+}
 
 func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 	filesExists := infraHelper.FileExists(addUnixFile.Path.String())
@@ -263,28 +295,80 @@ func (repo FilesCmdRepo) Delete(
 }
 
 func (repo FilesCmdRepo) Upload(
-	unixFileDestinationPath valueObject.UnixFilePath,
-	fileStreamHandler valueObject.FileStreamHandler,
-) error {
-	destinationFileName := unixFileDestinationPath.String() + "/" + fileStreamHandler.GetFileName().String()
-	destinationEmptyFile, err := os.Create(destinationFileName)
-	if err != nil {
-		log.Printf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
-		return errors.New("CreateEmptyFileToStoreUploadFileError")
-	}
-	defer destinationEmptyFile.Close()
+	uploadUnixFiles dto.UploadUnixFiles,
+) dto.UploadProcessReport {
+	queryRepo := FilesQueryRepo{}
 
-	fileToUploadStream, err := fileStreamHandler.Open()
+	destinationPath := uploadUnixFiles.DestinationPath
+
+	uploadProcessReport := dto.NewUploadProcessReport(
+		[]valueObject.UnixFileName{},
+		[]valueObject.UploadProcessFailure{},
+		destinationPath,
+	)
+
+	destinationFile, err := queryRepo.GetOnly(destinationPath)
 	if err != nil {
-		log.Printf("UnableToOpenFileStream: %s", err.Error())
-		return errors.New("UnableToOpenFileStream")
+		uploadProcessReport.Failure = fillUploadProcessReportFailure(
+			uploadProcessReport.Failure,
+			err.Error(),
+			uploadUnixFiles.FileStreamHandlers,
+		)
+
+		return uploadProcessReport
 	}
 
-	_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
-	if err != nil {
-		log.Printf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
-		return errors.New("CopyFileStreamHandlerContentToDestinationFileError")
+	if !destinationFile.MimeType.IsDir() {
+		uploadProcessReport.Failure = fillUploadProcessReportFailure(
+			uploadProcessReport.Failure,
+			"DestinationPathCannotBeAFile",
+			uploadUnixFiles.FileStreamHandlers,
+		)
+
+		return uploadProcessReport
 	}
 
-	return nil
+	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
+		destinationFilePath := destinationPath.String() + "/" + fileToUpload.GetFileName().String()
+		destinationEmptyFile, err := os.Create(destinationFilePath)
+		if err != nil {
+			errMessage := fmt.Sprintf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
+			uploadProcessReport.Failure = fillUploadProcessReportFailure(
+				uploadProcessReport.Failure,
+				errMessage,
+				uploadUnixFiles.FileStreamHandlers,
+			)
+
+			continue
+		}
+		defer destinationEmptyFile.Close()
+
+		fileToUploadStream, err := fileToUpload.Open()
+		if err != nil {
+			errMessage := fmt.Sprintf("UnableToOpenFileStream: %s", err.Error())
+			uploadProcessReport.Failure = fillUploadProcessReportFailure(
+				uploadProcessReport.Failure,
+				errMessage,
+				uploadUnixFiles.FileStreamHandlers,
+			)
+
+			continue
+		}
+
+		_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
+		if err != nil {
+			errMessage := fmt.Sprintf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
+			uploadProcessReport.Failure = fillUploadProcessReportFailure(
+				uploadProcessReport.Failure,
+				errMessage,
+				uploadUnixFiles.FileStreamHandlers,
+			)
+
+			continue
+		}
+
+		uploadProcessReport.Success = append(uploadProcessReport.Success, fileToUpload.GetFileName())
+	}
+
+	return uploadProcessReport
 }
