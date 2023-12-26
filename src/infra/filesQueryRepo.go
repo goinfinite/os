@@ -18,7 +18,6 @@ import (
 
 type FilesQueryRepo struct{}
 
-// ENHANCEMENT: Adicionar as outras flags de find no RunCmd e usar o retorno para montar o UnixFile dentro da factory.
 func (repo FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
@@ -135,23 +134,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 	)
 
 	return unixFile, nil
-}
-
-// TODO: Remover esse método e alterar todos os lugares onde chamam ele para usar para usar o Get ou o GetOnlyFile.
-func (repo FilesQueryRepo) Exists(
-	unixFilePath valueObject.UnixFilePath,
-) (bool, error) {
-	_, err := os.Stat(unixFilePath.String())
-	if os.IsNotExist(err) {
-		log.Printf("PathDoesNotExists: %s", unixFilePath.String())
-		return false, nil
-	}
-	if err != nil {
-		log.Printf("PathExistsError: %s", err.Error())
-		return false, errors.New("PathExistsError")
-	}
-
-	return true, nil
 }
 
 // TODO: Remover o IsDir() e utilizar o Get e o GetOnlyFile para validar se é diretório ou não.
