@@ -14,19 +14,6 @@ import (
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
-func getInodeNameByFilePath(
-	filesQueryRepo infra.FilesQueryRepo,
-	filePath valueObject.UnixFilePath,
-) string {
-	isDir, _ := filesQueryRepo.IsDir(filePath)
-	inodeName := "File"
-	if isDir {
-		inodeName = "Directory"
-	}
-
-	return inodeName
-}
-
 func getFilePathSliceFromBody(
 	filePathBodyInput interface{},
 ) []valueObject.UnixFilePath {
@@ -135,7 +122,7 @@ func AddFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        updateUnixFileDto 	  body dto.UpdateUnixFile  true  "UpdateFile"
-// @Success      200 {object} object{} "FileUpdated/DirectoryUpdate"
+// @Success      200 {object} object{} "FileUpdated"
 // @Router       /files/ [put]
 func UpdateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
@@ -175,9 +162,7 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	inodeName := getInodeNameByFilePath(filesQueryRepo, filePath)
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, inodeName+"Updated")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
 }
 
 // UpdateFile godoc
@@ -224,7 +209,7 @@ func UpdateFileContentController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
-// @Success      201 {object} object{} "FileCopied/DirectoryCopied"
+// @Success      201 {object} object{} "FileCopied"
 // @Router       /files/copy/ [post]
 func CopyFileController(c echo.Context) error {
 	requiredParams := []string{"filePath", "destinationPath"}
@@ -249,9 +234,7 @@ func CopyFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	inodeName := getInodeNameByFilePath(filesQueryRepo, filePath)
-
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, inodeName+"Copied")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FileCopied")
 }
 
 // DeleteFiles godoc
