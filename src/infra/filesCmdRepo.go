@@ -219,6 +219,10 @@ func (repo FilesCmdRepo) Upload(
 	defer destinationEmptyFile.Close()
 
 	fileStreamHandlerInstance, err := fileStreamHandler.Open()
+	if err != nil {
+		log.Printf("UnableToOpenFileStream: %s", err.Error())
+		return errors.New("UnableToOpenFileStream")
+	}
 
 	_, err = io.Copy(destinationEmptyFile, fileStreamHandlerInstance)
 	if err != nil {
