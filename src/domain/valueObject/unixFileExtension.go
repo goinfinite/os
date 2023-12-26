@@ -35,6 +35,10 @@ func (unixFileExtension UnixFileExtension) isValid() bool {
 	return unixFileExtensionRegex.MatchString(string(unixFileExtension))
 }
 
+func (unixFileExtension UnixFileExtension) IsEmpty() bool {
+	return string(unixFileExtension) == "empty"
+}
+
 func (unixFileExtension UnixFileExtension) String() string {
 	return string(unixFileExtension)
 }
