@@ -37,9 +37,10 @@ func uploadProcessReportFailureListFactory(
 	uploadProcessReportFailureList := []valueObject.UploadProcessFailure{}
 
 	for _, fileStreamHandler := range fileStreamHandlers {
+		failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
 		uploadProcessReportFailureList = append(
 			uploadProcessReportFailureList,
-			valueObject.NewUploadProcessFailure(fileStreamHandler.GetFileName(), errMessage),
+			valueObject.NewUploadProcessFailure(fileStreamHandler.GetFileName(), failureReason),
 		)
 	}
 
@@ -99,9 +100,10 @@ func (repo FilesCmdRepo) Compress(
 	if destinationPathExists {
 		errMessage := "DestinationPathAlreadyExists"
 		for _, failedFile := range compressUnixFiles.SourcePaths {
+			failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
 			compressionProcessReport.FilePathsThatFailedToCompressWithReason = append(
 				compressionProcessReport.FilePathsThatFailedToCompressWithReason,
-				valueObject.NewCompressionProcessFailure(failedFile, errMessage),
+				valueObject.NewCompressionProcessFailure(failedFile, failureReason),
 			)
 		}
 
@@ -143,9 +145,10 @@ func (repo FilesCmdRepo) Compress(
 
 	if err != nil {
 		for _, fileThatFailedCompression := range compressionProcessReport.FilePathsSuccessfullyCompressed {
+			failureReason, _ := valueObject.NewProcessFileFailure(err.Error())
 			compressionProcessReport.FilePathsThatFailedToCompressWithReason = append(
 				compressionProcessReport.FilePathsThatFailedToCompressWithReason,
-				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, err.Error()),
+				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, failureReason),
 			)
 		}
 

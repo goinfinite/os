@@ -22,11 +22,13 @@ func UploadUnixFiles(
 		if fileStreamHandlerSizeInGB > 5 {
 			log.Printf("UploadUnixFileError: %s", largerFileErrMessage)
 
+			failureReason, _ := valueObject.NewProcessFileFailure(largerFileErrMessage)
+
 			filesLargerThanAllowedFailure = append(
 				filesLargerThanAllowedFailure,
 				valueObject.NewUploadProcessFailure(
 					fileToUploadStream.GetFileName(),
-					largerFileErrMessage,
+					failureReason,
 				),
 			)
 

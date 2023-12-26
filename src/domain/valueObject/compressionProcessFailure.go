@@ -1,13 +1,13 @@
 package valueObject
 
 type CompressionProcessFailure struct {
-	FilePath UnixFilePath `json:"filePath"`
-	Reason   string       `json:"reason"`
+	FilePath UnixFilePath       `json:"filePath"`
+	Reason   ProcessFileFailure `json:"reason"`
 }
 
 func NewCompressionProcessFailure(
 	filePath UnixFilePath,
-	reason string,
+	reason ProcessFileFailure,
 ) CompressionProcessFailure {
 	return CompressionProcessFailure{
 		FilePath: filePath,

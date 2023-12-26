@@ -1,13 +1,13 @@
 package valueObject
 
 type UploadProcessFailure struct {
-	FileName UnixFileName `json:"fileName"`
-	Reason   string       `json:"reason"`
+	FileName UnixFileName       `json:"fileName"`
+	Reason   ProcessFileFailure `json:"reason"`
 }
 
 func NewUploadProcessFailure(
 	fileName UnixFileName,
-	reason string,
+	reason ProcessFileFailure,
 ) UploadProcessFailure {
 	return UploadProcessFailure{
 		FileName: fileName,
