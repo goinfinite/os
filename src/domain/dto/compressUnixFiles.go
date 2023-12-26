@@ -3,18 +3,18 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type CompressUnixFiles struct {
-	Paths           []valueObject.UnixFilePath      `json:"paths"`
+	SourcePaths     []valueObject.UnixFilePath      `json:"sourcePaths"`
 	DestinationPath valueObject.UnixFilePath        `json:"destinationPath"`
 	CompressionType valueObject.UnixCompressionType `json:"compressionType"`
 }
 
 func NewCompressUnixFiles(
-	paths []valueObject.UnixFilePath,
+	sourcePaths []valueObject.UnixFilePath,
 	destinationPath valueObject.UnixFilePath,
 	compressionType valueObject.UnixCompressionType,
 ) CompressUnixFiles {
 	return CompressUnixFiles{
-		Paths:           paths,
+		SourcePaths:     sourcePaths,
 		DestinationPath: destinationPath,
 		CompressionType: compressionType,
 	}
