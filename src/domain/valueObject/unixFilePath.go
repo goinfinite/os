@@ -54,13 +54,14 @@ func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
 	return unixFileName
 }
 
-func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
+func (unixFilePath UnixFilePath) GetFileExtension() UnixFileExtension {
 	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
 	if len(unixFileExtensionStr) < 1 {
-		return "", errors.New("UnixFileHasNoExtension")
+		unixFileExtensionStr = "empty"
 	}
 
-	return NewUnixFileExtension(unixFileExtensionStr)
+	unixFileExtension, _ := NewUnixFileExtension(unixFileExtensionStr)
+	return unixFileExtension
 }
 
 func (unixFilePath UnixFilePath) GetFileDir() UnixFilePath {

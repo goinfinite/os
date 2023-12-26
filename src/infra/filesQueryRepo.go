@@ -76,9 +76,9 @@ func (repo FilesQueryRepo) unixFileFactory(
 	}
 
 	var unixFileExtensionPtr *valueObject.UnixFileExtension
-	unixFileExtension, err := unixFilePath.GetFileExtension()
+	unixFileExtension := unixFilePath.GetFileExtension()
 	unixFileExtensionPtr = &unixFileExtension
-	if err != nil {
+	if unixFileExtension.IsEmpty() {
 		unixFileExtensionPtr = nil
 	}
 
