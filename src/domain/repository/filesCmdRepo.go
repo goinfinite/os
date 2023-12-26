@@ -6,16 +6,16 @@ import (
 )
 
 type FilesCmdRepo interface {
-	Create(dto.AddUnixFile) error
-	Move(dto.UpdateUnixFile) error
-	Copy(dto.CopyUnixFile) error
-	UpdateContent(dto.UpdateUnixFileContent) error
+	Create(addUnixFile dto.AddUnixFile) error
+	Move(updateUnixFile dto.UpdateUnixFile) error
+	Copy(copyUnixFile dto.CopyUnixFile) error
+	UpdateContent(updateUnixFileContent dto.UpdateUnixFileContent) error
 	UpdatePermissions(
-		valueObject.UnixFilePath,
-		valueObject.UnixFilePermissions,
+		unixFilePath valueObject.UnixFilePath,
+		unixFilePermissions valueObject.UnixFilePermissions,
 	) error
-	Delete([]valueObject.UnixFilePath)
-	Compress(dto.CompressUnixFiles) dto.CompressionProcessReport
-	Extract(dto.ExtractUnixFiles) error
+	Compress(compressUnixFiles dto.CompressUnixFiles) dto.CompressionProcessReport
+	Extract(extractUnixFiles dto.ExtractUnixFiles) error
+	Delete(unixFilePathList []valueObject.UnixFilePath)
 	Upload(uploadUnixFiles dto.UploadUnixFiles) dto.UploadProcessReport
 }

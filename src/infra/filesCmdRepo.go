@@ -275,9 +275,9 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 }
 
 func (repo FilesCmdRepo) Delete(
-	unixFilePath []valueObject.UnixFilePath,
+	unixFilePathList []valueObject.UnixFilePath,
 ) {
-	for _, fileToDelete := range unixFilePath {
+	for _, fileToDelete := range unixFilePathList {
 		fileExists := infraHelper.FileExists(fileToDelete.String())
 		if !fileExists {
 			log.Printf("DeleteFileError: FileDoesNotExists")
