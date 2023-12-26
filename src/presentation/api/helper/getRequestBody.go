@@ -34,18 +34,18 @@ func GetRequestBody(c echo.Context) (map[string]interface{}, error) {
 			return nil, echo.NewHTTPError(http.StatusBadRequest, "InvalidMultipartFormData")
 		}
 
-		for valueK, valueV := range multipartFormData.Value {
-			if valueV != nil && len(valueV) > 0 {
-				requestData[valueK] = valueV[0]
+		for k, v := range multipartFormData.Value {
+			if len(v) > 0 {
+				requestData[k] = v[0]
 			}
 		}
 
 		if len(multipartFormData.File) > 0 {
 			requestDataFiles := map[string]*multipart.FileHeader{}
 
-			for fileK, fileV := range multipartFormData.File {
-				if fileV != nil && len(fileV) > 0 {
-					requestDataFiles[fileK] = fileV[0]
+			for k, v := range multipartFormData.File {
+				if len(v) > 0 {
+					requestDataFiles[k] = v[0]
 				}
 			}
 
