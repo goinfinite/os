@@ -145,7 +145,7 @@ func (repo FilesCmdRepo) Compress(
 
 		errMessage := fmt.Sprintf("CompressFilesError: %s", err.Error())
 
-		log.Printf(errMessage)
+		log.Print(errMessage)
 
 		for _, filePath := range compressUnixFiles.Paths {
 			compressionProcessFailure := valueObject.NewCompressionProcessFailure(
