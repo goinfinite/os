@@ -3,16 +3,16 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type CopyUnixFile struct {
-	OriginPath      valueObject.UnixFilePath `json:"originPath"`
+	SourcePath      valueObject.UnixFilePath `json:"sourcePath"`
 	DestinationPath valueObject.UnixFilePath `json:"destinationPath"`
 }
 
 func NewCopyUnixFile(
-	originPath valueObject.UnixFilePath,
+	sourcePath valueObject.UnixFilePath,
 	destinationPath valueObject.UnixFilePath,
 ) CopyUnixFile {
 	return CopyUnixFile{
-		OriginPath:      originPath,
+		SourcePath:      sourcePath,
 		DestinationPath: destinationPath,
 	}
 }
