@@ -178,22 +178,33 @@ func (repo FilesCmdRepo) Compress(
 	), nil
 }
 
-func (repo FilesCmdRepo) Extract(
-	unixFilePath valueObject.UnixFilePath,
-	unixFileDestinationPath valueObject.UnixFilePath,
-) error {
+func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
+	fileToExtract := extractUnixFiles.Path
+
+	fileToExtractExists := infraHelper.FileExists(fileToExtract.String())
+	if !fileToExtractExists {
+		return errors.New("FileToExtractDoesNotExists")
+	}
+
+	destinationPath := extractUnixFiles.DestinationPath
+
+	destinationPathExists := infraHelper.FileExists(destinationPath.String())
+	if destinationPathExists {
+		return errors.New("DEstinationPathAlreadyExists")
+	}
+
 	compressBinary := "tar"
 	compressBinaryFlag := "-xf"
 	compressDestinationFlag := "-C"
 
-	unixFilePathExtension, _ := unixFilePath.GetFileExtension()
+	unixFilePathExtension, _ := fileToExtract.GetFileExtension()
 	if unixFilePathExtension.String() == "zip" {
 		compressBinary = "unzip"
 		compressBinaryFlag = "-qq"
 		compressDestinationFlag = "-d"
 	}
 
-	err := infraHelper.MakeDir(unixFileDestinationPath.String())
+	err := infraHelper.MakeDir(destinationPath.String())
 	if err != nil {
 		return err
 	}
@@ -201,9 +212,9 @@ func (repo FilesCmdRepo) Extract(
 	_, err = infraHelper.RunCmd(
 		compressBinary,
 		compressBinaryFlag,
-		unixFilePath.String(),
+		fileToExtract.String(),
 		compressDestinationFlag,
-		unixFileDestinationPath.String(),
+		destinationPath.String(),
 	)
 
 	return err

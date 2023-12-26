@@ -16,6 +16,6 @@ type FilesCmdRepo interface {
 	) error
 	Delete([]valueObject.UnixFilePath)
 	Compress(dto.CompressUnixFiles) (dto.CompressionProcessReport, error)
-	Extract(valueObject.UnixFilePath, valueObject.UnixFilePath) error
+	Extract(dto.ExtractUnixFiles) error
 	Upload(valueObject.UnixFilePath, valueObject.FileStreamHandler) error
 }

@@ -155,10 +155,12 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("ExtractUnixFile", func(t *testing.T) {
-		err := filesCmdRepo.Extract(
+		extractFileDto := dto.NewExtractUnixFiles(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress.gzip"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirExtracted"),
 		)
+
+		err := filesCmdRepo.Extract(extractFileDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
