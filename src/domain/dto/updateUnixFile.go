@@ -3,18 +3,18 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type UpdateUnixFile struct {
-	Path            valueObject.UnixFilePath         `json:"path"`
+	SourcePath      valueObject.UnixFilePath         `json:"sourcePath"`
 	DestinationPath *valueObject.UnixFilePath        `json:"destinationPath"`
 	Permissions     *valueObject.UnixFilePermissions `json:"permissions"`
 }
 
 func NewUpdateUnixFile(
-	path valueObject.UnixFilePath,
+	sourcePath valueObject.UnixFilePath,
 	destinationPath *valueObject.UnixFilePath,
 	permissions *valueObject.UnixFilePermissions,
 ) UpdateUnixFile {
 	return UpdateUnixFile{
-		Path:            path,
+		SourcePath:      sourcePath,
 		DestinationPath: destinationPath,
 		Permissions:     permissions,
 	}
