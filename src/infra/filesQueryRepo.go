@@ -200,7 +200,7 @@ func (repo FilesQueryRepo) Get(
 	return unixFileList, nil
 }
 
-func (repo FilesQueryRepo) GetOnly(
+func (repo FilesQueryRepo) GetOne(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile

@@ -265,7 +265,7 @@ func (repo FilesCmdRepo) UpdateContent(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.SourcePath)
+	fileToUpdateContent, err := queryRepo.GetOne(updateUnixFileContent.SourcePath)
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (repo FilesCmdRepo) Upload(
 		destinationPath,
 	)
 
-	destinationFile, err := queryRepo.GetOnly(destinationPath)
+	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
 		uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
 			uploadProcessReport.FilePathsThatFailedToUploadWithReason,

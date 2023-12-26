@@ -39,8 +39,8 @@ func TestFilesQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("GetOnly", func(t *testing.T) {
-		_, err := filesQueryRepo.GetOnly(unixDirPath)
+	t.Run("GetOne", func(t *testing.T) {
+		_, err := filesQueryRepo.GetOne(unixDirPath)
 		if err != nil {
 			t.Errorf("FilesQueryRepo.GetOnly() should not return: %s", err)
 		}
