@@ -46,49 +46,6 @@ func uploadProcessReportFailureListFactory(
 	return uploadProcessReportFailureList
 }
 
-func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
-	filesExists := infraHelper.FileExists(createUnixFile.SourcePath.String())
-	if filesExists {
-		return errors.New("PathAlreadyExists")
-	}
-
-	if !createUnixFile.Type.IsDir() {
-		_, err := os.Create(createUnixFile.SourcePath.String())
-		if err != nil {
-			return err
-		}
-
-		return repo.UpdatePermissions(
-			createUnixFile.SourcePath,
-			createUnixFile.Permissions,
-		)
-	}
-
-	err := os.MkdirAll(createUnixFile.SourcePath.String(), createUnixFile.Permissions.GetFileMode())
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
-	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
-	if !fileToMoveExists {
-		return errors.New("FileToMoveDoesNotExists")
-	}
-
-	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
-	if destinationPathExists {
-		return errors.New("DestinationPathAlreadyExists")
-	}
-
-	return os.Rename(
-		updateUnixFile.SourcePath.String(),
-		updateUnixFile.DestinationPath.String(),
-	)
-}
-
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 	fileToCopyExists := infraHelper.FileExists(copyUnixFile.SourcePath.String())
 	if !fileToCopyExists {
@@ -107,46 +64,6 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 		copyUnixFile.DestinationPath.String(),
 	)
 	return err
-}
-
-func (repo FilesCmdRepo) UpdateContent(
-	updateUnixFileContent dto.UpdateUnixFileContent,
-) error {
-	queryRepo := FilesQueryRepo{}
-
-	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.SourcePath)
-	if err != nil {
-		return err
-	}
-
-	if fileToUpdateContent.MimeType.IsDir() {
-		return errors.New("PathIsADir")
-	}
-
-	decodedContent, err := updateUnixFileContent.Content.GetDecodedContent()
-	if err != nil {
-		return err
-	}
-
-	return infraHelper.UpdateFile(
-		updateUnixFileContent.SourcePath.String(),
-		decodedContent,
-		true,
-	)
-}
-
-func (repo FilesCmdRepo) UpdatePermissions(
-	unixFilePath valueObject.UnixFilePath,
-	unixFilePermissions valueObject.UnixFilePermissions,
-) error {
-	queryRepo := FilesQueryRepo{}
-
-	_, err := queryRepo.Get(unixFilePath)
-	if err != nil {
-		return err
-	}
-
-	return os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 }
 
 func (repo FilesCmdRepo) Compress(
@@ -238,6 +155,52 @@ func (repo FilesCmdRepo) Compress(
 	return compressionProcessReport
 }
 
+func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
+	filesExists := infraHelper.FileExists(createUnixFile.SourcePath.String())
+	if filesExists {
+		return errors.New("PathAlreadyExists")
+	}
+
+	if !createUnixFile.Type.IsDir() {
+		_, err := os.Create(createUnixFile.SourcePath.String())
+		if err != nil {
+			return err
+		}
+
+		return repo.UpdatePermissions(
+			createUnixFile.SourcePath,
+			createUnixFile.Permissions,
+		)
+	}
+
+	err := os.MkdirAll(createUnixFile.SourcePath.String(), createUnixFile.Permissions.GetFileMode())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo FilesCmdRepo) Delete(
+	unixFilePathList []valueObject.UnixFilePath,
+) {
+	for _, fileToDelete := range unixFilePathList {
+		fileExists := infraHelper.FileExists(fileToDelete.String())
+		if !fileExists {
+			log.Printf("DeleteFileError: FileDoesNotExists")
+			continue
+		}
+
+		err := os.RemoveAll(fileToDelete.String())
+		if err != nil {
+			log.Printf("DeleteFileError: %s", err)
+			continue
+		}
+
+		log.Printf("File '%s' deleted.", fileToDelete.String())
+	}
+}
+
 func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	fileToExtract := extractUnixFiles.SourcePath
 
@@ -280,24 +243,61 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	return err
 }
 
-func (repo FilesCmdRepo) Delete(
-	unixFilePathList []valueObject.UnixFilePath,
-) {
-	for _, fileToDelete := range unixFilePathList {
-		fileExists := infraHelper.FileExists(fileToDelete.String())
-		if !fileExists {
-			log.Printf("DeleteFileError: FileDoesNotExists")
-			continue
-		}
-
-		err := os.RemoveAll(fileToDelete.String())
-		if err != nil {
-			log.Printf("DeleteFileError: %s", err)
-			continue
-		}
-
-		log.Printf("File '%s' deleted.", fileToDelete.String())
+func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
+	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
+	if !fileToMoveExists {
+		return errors.New("FileToMoveDoesNotExists")
 	}
+
+	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
+	if destinationPathExists {
+		return errors.New("DestinationPathAlreadyExists")
+	}
+
+	return os.Rename(
+		updateUnixFile.SourcePath.String(),
+		updateUnixFile.DestinationPath.String(),
+	)
+}
+
+func (repo FilesCmdRepo) UpdateContent(
+	updateUnixFileContent dto.UpdateUnixFileContent,
+) error {
+	queryRepo := FilesQueryRepo{}
+
+	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.SourcePath)
+	if err != nil {
+		return err
+	}
+
+	if fileToUpdateContent.MimeType.IsDir() {
+		return errors.New("PathIsADir")
+	}
+
+	decodedContent, err := updateUnixFileContent.Content.GetDecodedContent()
+	if err != nil {
+		return err
+	}
+
+	return infraHelper.UpdateFile(
+		updateUnixFileContent.SourcePath.String(),
+		decodedContent,
+		true,
+	)
+}
+
+func (repo FilesCmdRepo) UpdatePermissions(
+	unixFilePath valueObject.UnixFilePath,
+	unixFilePermissions valueObject.UnixFilePermissions,
+) error {
+	queryRepo := FilesQueryRepo{}
+
+	_, err := queryRepo.Get(unixFilePath)
+	if err != nil {
+		return err
+	}
+
+	return os.Chmod(unixFilePath.String(), unixFilePermissions.GetFileMode())
 }
 
 func (repo FilesCmdRepo) Upload(
