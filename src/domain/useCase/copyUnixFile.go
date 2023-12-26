@@ -17,7 +17,7 @@ func CopyUnixFile(
 		return err
 	}
 
-	fileOriginPath := copyUnixFile.OriginPath
+	fileOriginPath := copyUnixFile.SourcePath
 	fileDestinationPath := copyUnixFile.DestinationPath
 	log.Printf(
 		"File '%s' (%s) copy added to '%s' with name '%s'.",

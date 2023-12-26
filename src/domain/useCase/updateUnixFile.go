@@ -13,7 +13,7 @@ func UpdateUnixFile(
 	filesCmdRepo repository.FilesCmdRepo,
 	updateUnixFile dto.UpdateUnixFile,
 ) error {
-	filePath := updateUnixFile.Path
+	filePath := updateUnixFile.SourcePath
 
 	fileName := filePath.GetFileName()
 	fileDir := filePath.GetFileDir()

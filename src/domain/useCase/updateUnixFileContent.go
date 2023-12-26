@@ -19,7 +19,7 @@ func UpdateUnixFileContent(
 
 	log.Printf(
 		"File '%s' content updated.",
-		updateUnixFileContent.Path.GetFileName().String(),
+		updateUnixFileContent.SourcePath.GetFileName().String(),
 	)
 
 	return nil

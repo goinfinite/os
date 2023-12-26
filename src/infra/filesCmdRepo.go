@@ -47,24 +47,24 @@ func uploadProcessReportFailureListFactory(
 }
 
 func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
-	filesExists := infraHelper.FileExists(addUnixFile.Path.String())
+	filesExists := infraHelper.FileExists(addUnixFile.SourcePath.String())
 	if filesExists {
 		return errors.New("PathAlreadyExists")
 	}
 
 	if !addUnixFile.Type.IsDir() {
-		_, err := os.Create(addUnixFile.Path.String())
+		_, err := os.Create(addUnixFile.SourcePath.String())
 		if err != nil {
 			return err
 		}
 
 		return repo.UpdatePermissions(
-			addUnixFile.Path,
+			addUnixFile.SourcePath,
 			addUnixFile.Permissions,
 		)
 	}
 
-	err := os.MkdirAll(addUnixFile.Path.String(), addUnixFile.Permissions.GetFileMode())
+	err := os.MkdirAll(addUnixFile.SourcePath.String(), addUnixFile.Permissions.GetFileMode())
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
-	fileToMoveExists := infraHelper.FileExists(updateUnixFile.Path.String())
+	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
 	if !fileToMoveExists {
 		return errors.New("FileToMoveDoesNotExists")
 	}
@@ -84,13 +84,13 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 	}
 
 	return os.Rename(
-		updateUnixFile.Path.String(),
+		updateUnixFile.SourcePath.String(),
 		updateUnixFile.DestinationPath.String(),
 	)
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
-	fileToCopyExists := infraHelper.FileExists(copyUnixFile.OriginPath.String())
+	fileToCopyExists := infraHelper.FileExists(copyUnixFile.SourcePath.String())
 	if !fileToCopyExists {
 		return errors.New("FileToCopyDoesNotExists")
 	}
@@ -103,7 +103,7 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 	_, err := infraHelper.RunCmd(
 		"rsync",
 		"-avq",
-		copyUnixFile.OriginPath.String(),
+		copyUnixFile.SourcePath.String(),
 		copyUnixFile.DestinationPath.String(),
 	)
 	return err
@@ -114,7 +114,7 @@ func (repo FilesCmdRepo) UpdateContent(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.Path)
+	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.SourcePath)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (repo FilesCmdRepo) UpdateContent(
 	}
 
 	return infraHelper.UpdateFile(
-		updateUnixFileContent.Path.String(),
+		updateUnixFileContent.SourcePath.String(),
 		updateUnixFileContent.Content.GetDecodedContent(),
 		true,
 	)
@@ -176,7 +176,7 @@ func (repo FilesCmdRepo) Compress(
 	destinationPathExists := infraHelper.FileExists(destinationPathWithCompressionTypeAsExtStr)
 	if destinationPathExists {
 		errMessage := "DestinationPathAlreadyExists"
-		for _, failedFile := range compressUnixFiles.Paths {
+		for _, failedFile := range compressUnixFiles.SourcePaths {
 			compressionProcessReport.Failure = append(
 				compressionProcessReport.Failure,
 				valueObject.NewCompressionProcessFailure(failedFile, errMessage),
@@ -188,7 +188,7 @@ func (repo FilesCmdRepo) Compress(
 
 	filesToCompressStrList := []string{}
 
-	for _, fileToCompress := range compressUnixFiles.Paths {
+	for _, fileToCompress := range compressUnixFiles.SourcePaths {
 		fileToCompressExists := infraHelper.FileExists(fileToCompress.String())
 		if !fileToCompressExists {
 			compressionProcessReport.Failure = append(
@@ -231,7 +231,7 @@ func (repo FilesCmdRepo) Compress(
 }
 
 func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
-	fileToExtract := extractUnixFiles.Path
+	fileToExtract := extractUnixFiles.SourcePath
 
 	fileToExtractExists := infraHelper.FileExists(fileToExtract.String())
 	if !fileToExtractExists {

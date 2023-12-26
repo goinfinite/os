@@ -21,7 +21,7 @@ func ExtractUnixFiles(
 
 	log.Printf(
 		"File '%s' extracted to '%s'.",
-		extractUnixFiles.Path.String(),
+		extractUnixFiles.SourcePath.String(),
 		extractUnixFiles.DestinationPath.String(),
 	)
 

@@ -15,7 +15,7 @@ func CompressUnixFiles(
 ) (dto.CompressionProcessReport, error) {
 	compressionProcessReport := filesCmdRepo.Compress(compressUnixFiles)
 
-	allPathsFailedCompression := len(compressionProcessReport.Failure) == len(compressUnixFiles.Paths)
+	allPathsFailedCompression := len(compressionProcessReport.Failure) == len(compressUnixFiles.SourcePaths)
 	if allPathsFailedCompression {
 		log.Printf(
 			"UnableToCompressFilesAndDirectories: File compressed %s wasn't created.",
