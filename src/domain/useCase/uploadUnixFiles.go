@@ -18,7 +18,7 @@ func UploadUnixFiles(
 	filesWithAllowedSizes := []valueObject.FileStreamHandler{}
 	largerFileErrMessage := "File size is greater than 5 GB"
 	for _, fileToUploadStream := range uploadUnixFiles.FileStreamHandlers {
-		fileStreamHandlerSizeInGB := fileToUploadStream.GetFileSize().ToGiB()
+		fileStreamHandlerSizeInGB := fileToUploadStream.Size.ToGiB()
 		if fileStreamHandlerSizeInGB > 5 {
 			log.Printf("UploadUnixFileError: %s", largerFileErrMessage)
 
@@ -27,7 +27,7 @@ func UploadUnixFiles(
 			filesLargerThanAllowedFailure = append(
 				filesLargerThanAllowedFailure,
 				valueObject.NewUploadProcessFailure(
-					fileToUploadStream.GetFileName(),
+					fileToUploadStream.Name,
 					failureReason,
 				),
 			)

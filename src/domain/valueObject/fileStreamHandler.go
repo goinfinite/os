@@ -6,8 +6,8 @@ import (
 )
 
 type FileStreamHandler struct {
-	name UnixFileName
-	size Byte
+	Name UnixFileName
+	Size Byte
 	Open func() (multipart.File, error)
 }
 
@@ -18,13 +18,14 @@ func NewFileStreamHandler(value *multipart.FileHeader) (FileStreamHandler, error
 	}
 
 	fileSize := Byte(value.Size)
-	if isTooBig(fileSize) {
+	isTooBig := fileSize.ToGiB() > 5
+	if isTooBig {
 		return FileStreamHandler{}, errors.New("FileIsTooBig")
 	}
 
 	return FileStreamHandler{
-		name: fileName,
-		size: fileSize,
+		Name: fileName,
+		Size: fileSize,
 		Open: value.Open,
 	}, nil
 }
@@ -36,16 +37,4 @@ func NewFileStreamHandlerPanic(value *multipart.FileHeader) FileStreamHandler {
 	}
 
 	return fileStreamHandler
-}
-
-func isTooBig(fileSize Byte) bool {
-	return fileSize.ToGiB() > 5
-}
-
-func (fileStreamHandler FileStreamHandler) GetFileName() UnixFileName {
-	return fileStreamHandler.name
-}
-
-func (fileStreamHandler FileStreamHandler) GetFileSize() Byte {
-	return fileStreamHandler.size
 }

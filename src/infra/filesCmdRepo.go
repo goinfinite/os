@@ -378,7 +378,7 @@ func (repo FilesCmdRepo) Upload(
 
 		uploadProcessReport.FilePathsSuccessfullyUploaded = append(
 			uploadProcessReport.FilePathsSuccessfullyUploaded,
-			fileToUpload.GetFileName(),
+			fileToUpload.Name,
 		)
 	}
 
