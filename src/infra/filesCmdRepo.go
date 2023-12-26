@@ -315,8 +315,8 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOnly(destinationPath)
 	if err != nil {
-		uploadProcessReport.Failure = fillUploadProcessReportFailure(
-			uploadProcessReport.Failure,
+		uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 			err.Error(),
 			uploadUnixFiles.FileStreamHandlers,
 		)
@@ -325,8 +325,8 @@ func (repo FilesCmdRepo) Upload(
 	}
 
 	if !destinationFile.MimeType.IsDir() {
-		uploadProcessReport.Failure = fillUploadProcessReportFailure(
-			uploadProcessReport.Failure,
+		uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 			"DestinationPathCannotBeAFile",
 			uploadUnixFiles.FileStreamHandlers,
 		)
@@ -339,8 +339,8 @@ func (repo FilesCmdRepo) Upload(
 		destinationEmptyFile, err := os.Create(destinationFilePath)
 		if err != nil {
 			errMessage := fmt.Sprintf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
-			uploadProcessReport.Failure = fillUploadProcessReportFailure(
-				uploadProcessReport.Failure,
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)
@@ -352,8 +352,8 @@ func (repo FilesCmdRepo) Upload(
 		fileToUploadStream, err := fileToUpload.Open()
 		if err != nil {
 			errMessage := fmt.Sprintf("UnableToOpenFileStream: %s", err.Error())
-			uploadProcessReport.Failure = fillUploadProcessReportFailure(
-				uploadProcessReport.Failure,
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)
@@ -364,8 +364,8 @@ func (repo FilesCmdRepo) Upload(
 		_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 		if err != nil {
 			errMessage := fmt.Sprintf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
-			uploadProcessReport.Failure = fillUploadProcessReportFailure(
-				uploadProcessReport.Failure,
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)
@@ -373,7 +373,10 @@ func (repo FilesCmdRepo) Upload(
 			continue
 		}
 
-		uploadProcessReport.Success = append(uploadProcessReport.Success, fileToUpload.GetFileName())
+		uploadProcessReport.FilePathsSuccessfullyUploaded = append(
+			uploadProcessReport.FilePathsSuccessfullyUploaded,
+			fileToUpload.GetFileName(),
+		)
 	}
 
 	return uploadProcessReport

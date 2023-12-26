@@ -35,13 +35,13 @@ func UploadUnixFiles(
 	uploadProcessReport := filesCmdRepo.Upload(uploadUnixFiles)
 
 	for _, largeFile := range filesLargerThanAllowed {
-		uploadProcessReport.Failure = append(
-			uploadProcessReport.Failure,
+		uploadProcessReport.FilePathsThatFailedToUploadWithReason = append(
+			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
 			valueObject.NewUploadProcessFailure(largeFile.GetFileName(), largerFileErrMessage),
 		)
 	}
 
-	allFilesFailedToUpload := len(uploadProcessReport.Failure) == len(uploadUnixFiles.FileStreamHandlers)
+	allFilesFailedToUpload := len(uploadProcessReport.FilePathsThatFailedToUploadWithReason) == len(uploadUnixFiles.FileStreamHandlers)
 	if allFilesFailedToUpload {
 		log.Printf(
 			"UnableToUploadFiles: Files were not uploaded to the '%s'.",

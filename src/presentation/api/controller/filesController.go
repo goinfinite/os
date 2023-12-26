@@ -398,7 +398,7 @@ func UploadFilesController(c echo.Context) error {
 		httpStatus = http.StatusInternalServerError
 	}
 
-	isMultiStatus := len(uploadProcessInfo.Failure) > 0
+	isMultiStatus := len(uploadProcessInfo.FilePathsThatFailedToUploadWithReason) > 0
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}
