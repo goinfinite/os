@@ -19,7 +19,7 @@ func AddUnixFile(
 	}
 
 	log.Printf(
-		"File '%s' created to '%s'.",
+		"File '%s' created in '%s'.",
 		addUnixFile.SourcePath.GetFileName().String(),
 		addUnixFile.SourcePath.GetFileDir().String(),
 	)
