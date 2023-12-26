@@ -1,15 +1,25 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"strings"
+
+	"golang.org/x/exp/slices"
+)
 
 type UnixCompressionType string
 
+var validUnixCompressionTypes = []string{
+	"gzip",
+	"zip",
+}
+
 func NewUnixCompressionType(value string) (UnixCompressionType, error) {
-	unixCompressionType := UnixCompressionType(value)
-	if !unixCompressionType.isValid() {
+	value = strings.ToLower(value)
+	if !slices.Contains(validUnixCompressionTypes, value) {
 		return "", errors.New("InvalidUnixCompressionType")
 	}
-	return unixCompressionType, nil
+	return UnixCompressionType(value), nil
 }
 
 func NewUnixCompressionTypePanic(value string) UnixCompressionType {
@@ -18,11 +28,6 @@ func NewUnixCompressionTypePanic(value string) UnixCompressionType {
 		panic(err)
 	}
 	return unixCompressionType
-}
-
-func (unixCompressionType UnixCompressionType) isValid() bool {
-	unixCompressionTypeStr := string(unixCompressionType)
-	return unixCompressionTypeStr == "gzip" || unixCompressionTypeStr == "zip"
 }
 
 func (unixCompressionType UnixCompressionType) String() string {
