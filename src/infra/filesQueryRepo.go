@@ -65,8 +65,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	fileAbsPathStr := filePath.String() + "/" + fileInfo.Name()
-	unixFileAbsPath, err := filepath.Abs(fileAbsPathStr)
+	unixFileAbsPath, err := filepath.Abs(filePath.String())
 	if err != nil {
 		log.Printf("UnableToGetFileAbsolutePath: %s", err)
 		return unixFile, errors.New("UnableToGetFileAbsolutePath")
