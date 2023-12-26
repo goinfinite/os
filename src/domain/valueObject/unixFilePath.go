@@ -48,9 +48,10 @@ func (unixFilePath UnixFilePath) isRelative() bool {
 	return isOnlyFileName || unixFileRelativePathRegex.MatchString(unixFilePathStr)
 }
 
-func (unixFilePath UnixFilePath) GetFileName() (UnixFileName, error) {
+func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
 	unixFileBase := filepath.Base(string(unixFilePath))
-	return NewUnixFileName(unixFileBase)
+	unixFileName, _ := NewUnixFileName(unixFileBase)
+	return unixFileName
 }
 
 func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
@@ -62,8 +63,9 @@ func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
 	return NewUnixFileExtension(unixFileExtensionStr)
 }
 
-func (unixFilePath UnixFilePath) GetFileDir() (UnixFilePath, error) {
-	return NewUnixFilePath(filepath.Dir(string(unixFilePath)))
+func (unixFilePath UnixFilePath) GetFileDir() UnixFilePath {
+	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(unixFilePath)))
+	return unixFileDirPath
 }
 
 func (unixFilePath UnixFilePath) String() string {

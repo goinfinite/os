@@ -38,8 +38,10 @@ func UpdateUnixFileContent(
 		return err
 	}
 
-	fileName, _ := updateUnixFileContent.Path.GetFileName()
-	log.Printf("File '%s' content updated.", fileName.String())
+	log.Printf(
+		"File '%s' content updated.",
+		updateUnixFileContent.Path.GetFileName().String(),
+	)
 
 	return nil
 }

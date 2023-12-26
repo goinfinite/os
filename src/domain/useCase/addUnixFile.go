@@ -29,9 +29,12 @@ func AddUnixFile(
 		return errors.New("Create" + fileType + "Error")
 	}
 
-	fileName, _ := addUnixFile.Path.GetFileName()
-	fileDir, _ := addUnixFile.Path.GetFileDir()
-	log.Printf("%s '%s' created to '%s'.", fileType, fileName.String(), fileDir.String())
+	log.Printf(
+		"%s '%s' created to '%s'.",
+		fileType,
+		addUnixFile.Path.GetFileName().String(),
+		addUnixFile.Path.GetFileDir().String(),
+	)
 
 	return nil
 }

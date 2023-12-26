@@ -40,19 +40,15 @@ func CopyUnixFile(
 		return errors.New("Add" + fileType + "CopyError")
 	}
 
-	fileName, _ := copyUnixFile.OriginPath.GetFileName()
-	fileDir, _ := copyUnixFile.OriginPath.GetFileDir()
-
+	fileOriginPath := copyUnixFile.OriginPath
 	fileDestinationPath := copyUnixFile.DestinationPath
-	fileDestinationName, _ := fileDestinationPath.GetFileName()
-	fileDestinationDir, _ := fileDestinationPath.GetFileDir()
 	log.Printf(
 		"%s '%s' (%s) copy added to '%s' with name '%s'.",
 		fileType,
-		fileName.String(),
-		fileDir.String(),
-		fileDestinationDir.String(),
-		fileDestinationName.String(),
+		fileOriginPath.GetFileName().String(),
+		fileOriginPath.GetFileDir().String(),
+		fileDestinationPath.GetFileName().String(),
+		fileDestinationPath.GetFileDir().String(),
 	)
 
 	return nil

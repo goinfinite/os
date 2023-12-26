@@ -76,11 +76,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileName, err := unixFilePath.GetFileName()
-	if err != nil {
-		return unixFile, err
-	}
-
 	var unixFileExtensionPtr *valueObject.UnixFileExtension
 	unixFileExtension, err := unixFilePath.GetFileExtension()
 	unixFileExtensionPtr = &unixFileExtension
@@ -125,7 +120,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	defer unixFileStreamPtr.Close()
 
 	unixFile = entity.NewUnixFile(
-		unixFileName,
+		unixFilePath.GetFileName(),
 		unixFilePath,
 		unixFileMimeType,
 		unixFilePermissions,

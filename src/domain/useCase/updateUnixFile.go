@@ -15,8 +15,8 @@ func UpdateUnixFile(
 ) error {
 	filePath := updateUnixFile.Path
 
-	fileName, _ := filePath.GetFileName()
-	fileDir, _ := filePath.GetFileDir()
+	fileName := filePath.GetFileName()
+	fileDir := filePath.GetFileDir()
 
 	filePermissions := updateUnixFile.Permissions
 	if filePermissions != nil {
@@ -44,12 +44,11 @@ func UpdateUnixFile(
 		return errors.New("MoveFileError")
 	}
 
-	fileDestinationDir, _ := updateUnixFile.DestinationPath.GetFileDir()
 	log.Printf(
 		"File '%s' moved from %s to '%s'.",
 		fileName.String(),
 		fileDir.String(),
-		fileDestinationDir.String(),
+		updateUnixFile.DestinationPath.GetFileDir().String(),
 	)
 
 	return nil
