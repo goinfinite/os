@@ -49,8 +49,8 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 		return errors.New("FileToMoveDoesNotExists")
 	}
 
-	destinationFileExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
-	if destinationFileExists {
+	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
+	if destinationPathExists {
 		return errors.New("DestinationPathAlreadyExists")
 	}
 
@@ -61,6 +61,16 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
+	fileToCopyExists := infraHelper.FileExists(copyUnixFile.OriginPath.String())
+	if !fileToCopyExists {
+		return errors.New("FileToCopyDoesNotExists")
+	}
+
+	destinationPathExists := infraHelper.FileExists(copyUnixFile.DestinationPath.String())
+	if destinationPathExists {
+		return errors.New("DestinationPathAlreadyExists")
+	}
+
 	_, err := infraHelper.RunCmd(
 		"rsync",
 		"-avq",
