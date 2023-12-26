@@ -11,6 +11,10 @@ const unixFilePermissionsRegexExpression = `^[0-7]{3,4}$`
 
 type UnixFilePermissions string
 
+/**
+ * The "interfaceToUint" helper was not used due to the problem of octal
+ * base vs decimal base in file permissions in C-like language.
+ */
 func NewUnixFilePermissions(value string) (UnixFilePermissions, error) {
 	unixFilePermissions := UnixFilePermissions(value)
 	if !unixFilePermissions.isValid() {
