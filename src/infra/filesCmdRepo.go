@@ -83,8 +83,8 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathExtension := compressUnixFiles.DestinationPath.GetFileExtension()
 	if !destinationPathExtension.IsEmpty() {
-		destinationPathWithoutExt := strings.Split(destinationPathStr, ".")[0]
-		destinationPathStr = destinationPathWithoutExt
+		destinationPathWithoutExt := compressUnixFiles.DestinationPath.GetFileNameWithoutExtension()
+		destinationPathStr = destinationPathWithoutExt.String()
 	}
 
 	destinationPathWithCompressionTypeAsExtStr := destinationPathStr + compressExtFile

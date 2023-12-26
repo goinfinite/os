@@ -54,6 +54,13 @@ func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
 	return unixFileName
 }
 
+func (unixFilePath UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
+	unixFileNameStr := unixFilePath.GetFileName().String()
+	unixFileNameWithoutExtStr := strings.Split(unixFileNameStr, ".")[0]
+	unixFileNameWithoutExt, _ := NewUnixFileName(unixFileNameWithoutExtStr)
+	return unixFileNameWithoutExt
+}
+
 func (unixFilePath UnixFilePath) GetFileExtension() UnixFileExtension {
 	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
 	if len(unixFileExtensionStr) < 1 {
