@@ -136,19 +136,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 	return unixFile, nil
 }
 
-// TODO: Remover o IsDir() e utilizar o Get e o GetOnlyFile para validar se é diretório ou não.
-func (repo FilesQueryRepo) IsDir(
-	unixFilePath valueObject.UnixFilePath,
-) (bool, error) {
-	unixFileInfo, err := os.Stat(unixFilePath.String())
-	if err != nil {
-		log.Printf("PathIsDirError: %s", err.Error())
-		return false, errors.New("PathIsDirError")
-	}
-
-	return unixFileInfo.IsDir(), nil
-}
-
 func (repo FilesQueryRepo) Get(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
@@ -163,12 +150,8 @@ func (repo FilesQueryRepo) Get(
 		unixFilePath,
 	}
 
-	isDir, err := repo.IsDir(unixFilePath)
-	if err != nil {
-		return unixFileList, err
-	}
-
-	if isDir {
+	fileInfo, _ := os.Stat(unixFilePath.String())
+	if fileInfo.IsDir() {
 		filesToFactoryWithoutDir := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutDir
 
