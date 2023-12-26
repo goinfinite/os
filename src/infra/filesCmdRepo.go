@@ -16,6 +16,11 @@ import (
 type FilesCmdRepo struct{}
 
 func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
+	filesExists := infraHelper.FileExists(addUnixFile.Path.String())
+	if filesExists {
+		return errors.New("PathAlreadyExists")
+	}
+
 	if !addUnixFile.Type.IsDir() {
 		_, err := os.Create(addUnixFile.Path.String())
 		if err != nil {
