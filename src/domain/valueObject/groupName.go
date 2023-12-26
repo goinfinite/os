@@ -11,7 +11,6 @@ type GroupName string
 
 func NewGroupName(value string) (GroupName, error) {
 	groupName := GroupName(value)
-
 	if !groupName.isValid() {
 		return "", errors.New("InvalidGroupName")
 	}
