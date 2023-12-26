@@ -2,6 +2,7 @@ package useCase
 
 import (
 	"log"
+	"slices"
 
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -20,11 +21,11 @@ func DeleteUnixFiles(
 
 		log.Printf("Path '/' is not allowed to delete.")
 
-		filesToDeleteBeforeNotAllowedPath := unixFilePaths[:fileToDeleteIndex]
-		filesToDeleteAfterNotAllowedPath := unixFilePaths[fileToDeleteIndex+1:]
-		filesToDeleteWithoutNotAllowedPath := append(
-			filesToDeleteBeforeNotAllowedPath,
-			filesToDeleteAfterNotAllowedPath...,
+		fileToDeleteAfterNotAllowedPathIndex := fileToDeleteIndex + 1
+		filesToDeleteWithoutNotAllowedPath := slices.Delete(
+			unixFilePaths,
+			fileToDeleteIndex,
+			fileToDeleteAfterNotAllowedPathIndex,
 		)
 
 		unixFilePaths = filesToDeleteWithoutNotAllowedPath
