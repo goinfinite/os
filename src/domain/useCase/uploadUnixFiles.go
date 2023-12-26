@@ -37,11 +37,18 @@ func UploadUnixFiles(
 	for _, largeFile := range filesLargerThanAllowed {
 		uploadProcessReport.FilePathsThatFailedToUploadWithReason = append(
 			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
-			valueObject.NewUploadProcessFailure(largeFile.GetFileName(), largerFileErrMessage),
+			valueObject.NewUploadProcessFailure(
+				largeFile.GetFileName(),
+				largerFileErrMessage,
+			),
 		)
 	}
 
-	allFilesFailedToUpload := len(uploadProcessReport.FilePathsThatFailedToUploadWithReason) == len(uploadUnixFiles.FileStreamHandlers)
+	filePathsThatFailedToUploadWithReasonLen := len(
+		uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+	)
+	fileStreamHandlersLen := len(uploadUnixFiles.FileStreamHandlers)
+	allFilesFailedToUpload := filePathsThatFailedToUploadWithReasonLen == fileStreamHandlersLen
 	if allFilesFailedToUpload {
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
