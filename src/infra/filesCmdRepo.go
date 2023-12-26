@@ -182,8 +182,8 @@ func (repo FilesCmdRepo) Compress(
 	if destinationPathExists {
 		errMessage := "DestinationPathAlreadyExists"
 		for _, failedFile := range compressUnixFiles.SourcePaths {
-			compressionProcessReport.Failure = append(
-				compressionProcessReport.Failure,
+			compressionProcessReport.FilePathsThatFailedToProcessWithReason = append(
+				compressionProcessReport.FilePathsThatFailedToProcessWithReason,
 				valueObject.NewCompressionProcessFailure(failedFile, errMessage),
 			)
 		}
@@ -196,19 +196,22 @@ func (repo FilesCmdRepo) Compress(
 	for _, fileToCompress := range compressUnixFiles.SourcePaths {
 		fileToCompressExists := infraHelper.FileExists(fileToCompress.String())
 		if !fileToCompressExists {
-			compressionProcessReport.Failure = append(
-				compressionProcessReport.Failure,
+			compressionProcessReport.FilePathsThatFailedToProcessWithReason = append(
+				compressionProcessReport.FilePathsThatFailedToProcessWithReason,
 				valueObject.NewCompressionProcessFailure(fileToCompress, "FileDoesNotExists"),
 			)
 
 			continue
 		}
 
-		compressionProcessReport.Success = append(compressionProcessReport.Success, fileToCompress)
+		compressionProcessReport.FilePathsSuccessfullyProcessed = append(
+			compressionProcessReport.FilePathsSuccessfullyProcessed,
+			fileToCompress,
+		)
 		filesToCompressStrList = append(filesToCompressStrList, fileToCompress.String())
 	}
 
-	if len(compressionProcessReport.Success) < 1 {
+	if len(compressionProcessReport.FilePathsSuccessfullyProcessed) < 1 {
 		return compressionProcessReport
 	}
 
@@ -222,14 +225,14 @@ func (repo FilesCmdRepo) Compress(
 	)
 
 	if err != nil {
-		for _, fileThatFailedCompression := range compressionProcessReport.Success {
-			compressionProcessReport.Failure = append(
-				compressionProcessReport.Failure,
+		for _, fileThatFailedCompression := range compressionProcessReport.FilePathsSuccessfullyProcessed {
+			compressionProcessReport.FilePathsThatFailedToProcessWithReason = append(
+				compressionProcessReport.FilePathsThatFailedToProcessWithReason,
 				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, err.Error()),
 			)
 		}
 
-		compressionProcessReport.Success = []valueObject.UnixFilePath{}
+		compressionProcessReport.FilePathsSuccessfullyProcessed = []valueObject.UnixFilePath{}
 	}
 
 	return compressionProcessReport

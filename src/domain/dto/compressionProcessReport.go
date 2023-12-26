@@ -3,19 +3,19 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type CompressionProcessReport struct {
-	Success     []valueObject.UnixFilePath              `json:"success"`
-	Failure     []valueObject.CompressionProcessFailure `json:"failure"`
-	Destination valueObject.UnixFilePath                `json:"destination"`
+	FilePathsSuccessfullyProcessed         []valueObject.UnixFilePath              `json:"filePathsSuccessfullyProcessed"`
+	FilePathsThatFailedToProcessWithReason []valueObject.CompressionProcessFailure `json:"filePathsThatFailedToProcessWithReason"`
+	DestinationPath                        valueObject.UnixFilePath                `json:"destinationPath"`
 }
 
 func NewCompressionProcessReport(
-	success []valueObject.UnixFilePath,
-	failure []valueObject.CompressionProcessFailure,
-	destination valueObject.UnixFilePath,
+	filePathsSuccessfullyProcessed []valueObject.UnixFilePath,
+	filePathsThatFailedToProcessWithReason []valueObject.CompressionProcessFailure,
+	destinationPath valueObject.UnixFilePath,
 ) CompressionProcessReport {
 	return CompressionProcessReport{
-		Success:     success,
-		Failure:     failure,
-		Destination: destination,
+		FilePathsSuccessfullyProcessed:         filePathsSuccessfullyProcessed,
+		FilePathsThatFailedToProcessWithReason: filePathsThatFailedToProcessWithReason,
+		DestinationPath:                        destinationPath,
 	}
 }
