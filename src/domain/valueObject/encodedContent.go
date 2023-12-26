@@ -11,29 +11,27 @@ const encodedContentRegexExpression = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{
 type EncodedContent string
 
 func NewEncodedContent(value string) (EncodedContent, error) {
-	encodedBaseContent := EncodedContent(value)
-	if !encodedBaseContent.isValid() {
+	isEmpty := len(value) < 1
+	if isEmpty {
 		return "", errors.New("InvalidEncodedContent")
-	}
-	return encodedBaseContent, nil
-}
-
-func NewEncodedContentPanic(value string) EncodedContent {
-	encodedBaseContent, err := NewEncodedContent(value)
-	if err != nil {
-		panic(err)
-	}
-	return encodedBaseContent
-}
-
-func (encodedBaseContent EncodedContent) isValid() bool {
-	isEmpty := false
-	if len(encodedBaseContent) < 1 {
-		isEmpty = true
 	}
 
 	encodedBaseContentRegex := regexp.MustCompile(encodedContentRegexExpression)
-	return encodedBaseContentRegex.MatchString(string(encodedBaseContent)) && !isEmpty
+	isValid := encodedBaseContentRegex.MatchString(value)
+
+	if !isValid {
+		return "", errors.New("InvalidEncodedContent")
+	}
+
+	return EncodedContent(value), nil
+}
+
+func NewEncodedContentPanic(value string) EncodedContent {
+	encodedContent, err := NewEncodedContent(value)
+	if err != nil {
+		panic(err)
+	}
+	return encodedContent
 }
 
 func (encodedBaseContent EncodedContent) GetDecodedContent() (string, error) {
