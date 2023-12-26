@@ -18,13 +18,13 @@ func CompressUnixFiles(
 	allPathsFailedCompression := len(compressionProcessReport.FilePathsThatFailedToProcessWithReason) == len(compressUnixFiles.SourcePaths)
 	if allPathsFailedCompression {
 		log.Printf(
-			"UnableToCompressFilesAndDirectories: File compressed %s wasn't created.",
+			"UnableToCompressFilesAndDirectories: Compressed file %s wasn't created.",
 			compressUnixFiles.DestinationPath,
 		)
 		return compressionProcessReport, errors.New("UnableToCompressFilesAndDirectories")
 	}
 
-	log.Printf("File compressed %s created.", compressUnixFiles.DestinationPath)
+	log.Printf("Compressed file %s created.", compressUnixFiles.DestinationPath)
 
 	return compressionProcessReport, nil
 }
