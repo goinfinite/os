@@ -55,8 +55,7 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 	if !addUnixFile.Type.IsDir() {
 		_, err := os.Create(addUnixFile.Path.String())
 		if err != nil {
-			log.Printf("CreateUnixFileError: %s", err)
-			return errors.New("CreateUnixFileError")
+			return err
 		}
 
 		return repo.UpdatePermissions(
@@ -67,8 +66,7 @@ func (repo FilesCmdRepo) Create(addUnixFile dto.AddUnixFile) error {
 
 	err := os.MkdirAll(addUnixFile.Path.String(), addUnixFile.Permissions.GetFileMode())
 	if err != nil {
-		log.Printf("CreateUnixDirectoryError: %s", err)
-		return errors.New("CreateUnixDirectoryError")
+		return err
 	}
 
 	return nil

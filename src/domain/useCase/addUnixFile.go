@@ -14,6 +14,7 @@ func AddUnixFile(
 ) error {
 	err := filesCmdRepo.Create(addUnixFile)
 	if err != nil {
+		log.Printf("CreateFileError: %s", err.Error())
 		return err
 	}
 
