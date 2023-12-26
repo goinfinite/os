@@ -83,6 +83,17 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 func (repo FilesCmdRepo) UpdateContent(
 	updateUnixFileContent dto.UpdateUnixFileContent,
 ) error {
+	queryRepo := FilesQueryRepo{}
+
+	fileToUpdateContent, err := queryRepo.GetOnly(updateUnixFileContent.Path)
+	if err != nil {
+		return err
+	}
+
+	if fileToUpdateContent.MimeType.IsDir() {
+		return errors.New("PathIsADir")
+	}
+
 	return infraHelper.UpdateFile(
 		updateUnixFileContent.Path.String(),
 		updateUnixFileContent.Content.GetDecodedContent(),
