@@ -14,7 +14,7 @@ func UploadUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
 	uploadUnixFiles dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
-	filesLargerThanAllowed := []valueObject.FileStreamHandler{}
+	filesLargerThanAllowedFailure := []valueObject.UploadProcessFailure{}
 	filesWithAllowedSizes := []valueObject.FileStreamHandler{}
 	largerFileErrMessage := "File size is greater than 5 GB"
 	for _, fileToUploadStream := range uploadUnixFiles.FileStreamHandlers {
@@ -22,7 +22,13 @@ func UploadUnixFiles(
 		if fileStreamHandlerSizeInGB > 5 {
 			log.Printf("UploadUnixFileError: %s", largerFileErrMessage)
 
-			filesLargerThanAllowed = append(filesLargerThanAllowed, fileToUploadStream)
+			filesLargerThanAllowedFailure = append(
+				filesLargerThanAllowedFailure,
+				valueObject.NewUploadProcessFailure(
+					fileToUploadStream.GetFileName(),
+					largerFileErrMessage,
+				),
+			)
 
 			continue
 		}
@@ -34,15 +40,10 @@ func UploadUnixFiles(
 
 	uploadProcessReport := filesCmdRepo.Upload(uploadUnixFiles)
 
-	for _, largeFile := range filesLargerThanAllowed {
-		uploadProcessReport.FilePathsThatFailedToUploadWithReason = append(
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
-			valueObject.NewUploadProcessFailure(
-				largeFile.GetFileName(),
-				largerFileErrMessage,
-			),
-		)
-	}
+	uploadProcessReport.FilePathsThatFailedToUploadWithReason = append(
+		uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+		filesLargerThanAllowedFailure...,
+	)
 
 	filePathsThatFailedToUploadWithReasonLen := len(
 		uploadProcessReport.FilePathsThatFailedToUploadWithReason,
