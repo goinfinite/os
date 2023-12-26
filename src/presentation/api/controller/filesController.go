@@ -309,7 +309,7 @@ func CompressFilesController(c echo.Context) error {
 		httpStatus = http.StatusInternalServerError
 	}
 
-	isMultiStatus := len(compressionProcessInfo.Failure) > 0
+	isMultiStatus := len(compressionProcessInfo.Success) > 0 && len(compressionProcessInfo.Failure) > 0
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}

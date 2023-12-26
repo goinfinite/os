@@ -13,23 +13,18 @@ func CompressUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
 	compressUnixFiles dto.CompressUnixFiles,
 ) (dto.CompressionProcessReport, error) {
-	fileDestinationPath := compressUnixFiles.DestinationPath
-
-	compressionProcessReport, err := filesCmdRepo.Compress(compressUnixFiles)
-	if err != nil {
-		return compressionProcessReport, err
-	}
+	compressionProcessReport := filesCmdRepo.Compress(compressUnixFiles)
 
 	allPathsFailedCompression := len(compressionProcessReport.Failure) == len(compressUnixFiles.Paths)
 	if allPathsFailedCompression {
 		log.Printf(
 			"UnableToCompressFilesAndDirectories: File compressed %s wasn't created.",
-			fileDestinationPath,
+			compressUnixFiles.DestinationPath,
 		)
 		return compressionProcessReport, errors.New("UnableToCompressFilesAndDirectories")
 	}
 
-	log.Printf("File compressed %s created.", fileDestinationPath)
+	log.Printf("File compressed %s created.", compressUnixFiles.DestinationPath)
 
 	return compressionProcessReport, nil
 }

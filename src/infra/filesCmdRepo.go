@@ -2,7 +2,6 @@ package infra
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -117,76 +116,88 @@ func (repo FilesCmdRepo) UpdatePermissions(
 
 func (repo FilesCmdRepo) Compress(
 	compressUnixFiles dto.CompressUnixFiles,
-) (dto.CompressionProcessReport, error) {
-	queryRepo := FilesQueryRepo{}
-
-	_, err := queryRepo.GetOnly(compressUnixFiles.DestinationPath)
-	if err != nil {
-		return dto.CompressionProcessReport{}, err
-	}
-
+) dto.CompressionProcessReport {
 	compressBinary := "tar"
 	compressBinaryFlag := "-czf"
+	compressExtFile := ".tar.gz"
 	if compressUnixFiles.CompressionType.String() == "zip" {
 		compressBinary = "zip"
 		compressBinaryFlag = "-qr"
+		compressExtFile = ".zip"
 	}
 
-	failedToCompressList := []valueObject.CompressionProcessFailure{}
+	destinationPathStr := compressUnixFiles.DestinationPath.String()
 
-	filesToCompressStr := compressUnixFiles.Paths[0].String()
-	if len(compressUnixFiles.Paths) > 1 {
-		var filesToCompressStrSlice []string
-		for _, filePath := range compressUnixFiles.Paths {
-			_, err := queryRepo.GetOnly(filePath)
-			if err != nil {
-				compressionProcessFailure := valueObject.NewCompressionProcessFailure(
-					filePath,
-					err.Error(),
-				)
-				failedToCompressList = append(failedToCompressList, compressionProcessFailure)
+	destinationPathExtension := compressUnixFiles.DestinationPath.GetFileExtension()
+	if !destinationPathExtension.IsEmpty() {
+		destinationPathWithoutExt := strings.Split(destinationPathStr, ".")[0]
+		destinationPathStr = destinationPathWithoutExt
+	}
 
-				continue
-			}
+	destinationPathWithCompressionTypeAsExtStr := destinationPathStr + compressExtFile
+	destinationPathWithCompressionTypeAsExt, _ := valueObject.NewUnixFilePath(destinationPathWithCompressionTypeAsExtStr)
 
-			filesToCompressStrSlice = append(filesToCompressStrSlice, filePath.String())
+	compressionProcessReport := dto.NewCompressionProcessReport(
+		[]valueObject.UnixFilePath{},
+		[]valueObject.CompressionProcessFailure{},
+		destinationPathWithCompressionTypeAsExt,
+	)
+
+	destinationPathExists := infraHelper.FileExists(destinationPathWithCompressionTypeAsExtStr)
+	if destinationPathExists {
+		errMessage := "DestinationPathAlreadyExists"
+		for _, failedFile := range compressUnixFiles.Paths {
+			compressionProcessReport.Failure = append(
+				compressionProcessReport.Failure,
+				valueObject.NewCompressionProcessFailure(failedFile, errMessage),
+			)
 		}
 
-		filesToCompressStr = strings.Join(filesToCompressStrSlice, " ")
+		return compressionProcessReport
 	}
 
-	compressedFilePathWithoutExt := strings.Split(compressUnixFiles.DestinationPath.String(), ".")[0]
-	compressedFilePathWithCompressionTypeAsExt := compressedFilePathWithoutExt + "." + compressUnixFiles.CompressionType.String()
-	_, err = infraHelper.RunCmd(
+	filesToCompressStrList := []string{}
+
+	for _, fileToCompress := range compressUnixFiles.Paths {
+		fileToCompressExists := infraHelper.FileExists(fileToCompress.String())
+		if !fileToCompressExists {
+			compressionProcessReport.Failure = append(
+				compressionProcessReport.Failure,
+				valueObject.NewCompressionProcessFailure(fileToCompress, "FileDoesNotExists"),
+			)
+
+			continue
+		}
+
+		compressionProcessReport.Success = append(compressionProcessReport.Success, fileToCompress)
+		filesToCompressStrList = append(filesToCompressStrList, fileToCompress.String())
+	}
+
+	if len(compressionProcessReport.Success) < 1 {
+		return compressionProcessReport
+	}
+
+	filesToCompressStr := strings.Join(filesToCompressStrList, " ")
+
+	_, err := infraHelper.RunCmd(
 		compressBinary,
 		compressBinaryFlag,
-		compressedFilePathWithCompressionTypeAsExt,
+		destinationPathWithCompressionTypeAsExtStr,
 		filesToCompressStr,
 	)
 
-	compressedFilesList := compressUnixFiles.Paths
-
 	if err != nil {
-		compressedFilesList = []valueObject.UnixFilePath{}
-
-		errMessage := fmt.Sprintf("CompressFilesError: %s", err.Error())
-
-		log.Print(errMessage)
-
-		for _, filePath := range compressUnixFiles.Paths {
-			compressionProcessFailure := valueObject.NewCompressionProcessFailure(
-				filePath,
-				errMessage,
+		for _, fileThatFailedCompression := range compressionProcessReport.Success {
+			compressionProcessReport.Failure = append(
+				compressionProcessReport.Failure,
+				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, err.Error()),
 			)
-			failedToCompressList = append(failedToCompressList, compressionProcessFailure)
 		}
+
+		compressionProcessReport.Success = []valueObject.UnixFilePath{}
 	}
 
-	return dto.NewCompressionProcessReport(
-		compressedFilesList,
-		failedToCompressList,
-		compressUnixFiles.DestinationPath,
-	), nil
+	return compressionProcessReport
 }
 
 func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
@@ -208,7 +219,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	compressBinaryFlag := "-xf"
 	compressDestinationFlag := "-C"
 
-	unixFilePathExtension, _ := fileToExtract.GetFileExtension()
+	unixFilePathExtension := fileToExtract.GetFileExtension()
 	if unixFilePathExtension.String() == "zip" {
 		compressBinary = "unzip"
 		compressBinaryFlag = "-qq"
