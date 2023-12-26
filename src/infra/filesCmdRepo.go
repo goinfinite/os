@@ -247,7 +247,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 
 	destinationPathExists := infraHelper.FileExists(destinationPath.String())
 	if destinationPathExists {
-		return errors.New("DEstinationPathAlreadyExists")
+		return errors.New("DestinationPathAlreadyExists")
 	}
 
 	compressBinary := "tar"
