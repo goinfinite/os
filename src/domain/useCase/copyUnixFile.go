@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -14,7 +15,8 @@ func CopyUnixFile(
 ) error {
 	err := filesCmdRepo.Copy(copyUnixFile)
 	if err != nil {
-		return err
+		log.Printf("CopyUnixFileInfraError: %s", err.Error())
+		return errors.New("CopyUnixFileInfraError")
 	}
 
 	fileOriginPath := copyUnixFile.SourcePath

@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -14,8 +15,8 @@ func CreateUnixFile(
 ) error {
 	err := filesCmdRepo.Create(createUnixFile)
 	if err != nil {
-		log.Printf("CreateFileError: %s", err.Error())
-		return err
+		log.Printf("CreateUnixFileInfraError: %s", err.Error())
+		return errors.New("CreateUnixFileInfraError")
 	}
 
 	log.Printf(

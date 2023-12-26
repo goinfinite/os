@@ -20,7 +20,7 @@ func UploadUnixFiles(
 	for _, fileToUploadStream := range uploadUnixFiles.FileStreamHandlers {
 		fileStreamHandlerSizeInGB := fileToUploadStream.GetFileSize().ToGiB()
 		if fileStreamHandlerSizeInGB > 5 {
-			log.Printf("UploadFileError: %s", largerFileErrMessage)
+			log.Printf("UploadUnixFileError: %s", largerFileErrMessage)
 
 			filesLargerThanAllowed = append(filesLargerThanAllowed, fileToUploadStream)
 
@@ -43,11 +43,7 @@ func UploadUnixFiles(
 
 	allFilesFailedToUpload := len(uploadProcessReport.FilePathsThatFailedToUploadWithReason) == len(uploadUnixFiles.FileStreamHandlers)
 	if allFilesFailedToUpload {
-		log.Printf(
-			"UnableToUploadFiles: Files were not uploaded to the '%s'.",
-			uploadUnixFiles.DestinationPath,
-		)
-		return uploadProcessReport, errors.New("UnableToUploadAnyFile")
+		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 
 	log.Printf("Files uploaded to '%s'.", uploadUnixFiles.DestinationPath)

@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -14,7 +15,8 @@ func UpdateUnixFileContent(
 ) error {
 	err := filesCmdRepo.UpdateContent(updateUnixFileContent)
 	if err != nil {
-		return err
+		log.Printf("UpdateUnixFileContentInfraError: %s", err.Error())
+		return errors.New("UpdateUnixFileContentInfraError")
 	}
 
 	log.Printf(

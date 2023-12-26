@@ -15,8 +15,8 @@ func ExtractUnixFiles(
 ) error {
 	err := filesCmdRepo.Extract(extractUnixFiles)
 	if err != nil {
-		log.Printf("ExtractUnixFilesError: %s", err.Error())
-		return errors.New("ExtractUnixFilesError")
+		log.Printf("ExtractUnixFilesInfraError: %s", err.Error())
+		return errors.New("ExtractUnixFilesInfraError")
 	}
 
 	log.Printf(

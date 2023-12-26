@@ -22,8 +22,8 @@ func UpdateUnixFile(
 	if filePermissions != nil {
 		err := filesCmdRepo.UpdatePermissions(filePath, *filePermissions)
 		if err != nil {
-			log.Printf("UpdateFilePermissionsError: %s", err.Error())
-			return errors.New("UpdateFilePermissionsError")
+			log.Printf("UpdateUnixFilePermissionsInfraError: %s", err.Error())
+			return errors.New("UpdateUnixFilePermissionsInfraError")
 		}
 
 		log.Printf(
@@ -40,8 +40,8 @@ func UpdateUnixFile(
 
 	err := filesCmdRepo.Move(updateUnixFile)
 	if err != nil {
-		log.Printf("MoveFileError: %s", err.Error())
-		return errors.New("MoveFileError")
+		log.Printf("MoveUnixFileInfraError: %s", err.Error())
+		return errors.New("MoveUnixFileInfraError")
 	}
 
 	log.Printf(
