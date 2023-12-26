@@ -3,14 +3,14 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type UploadProcessReport struct {
-	Success     []valueObject.UnixFilePath              `json:"success"`
-	Failure     []valueObject.CompressionProcessFailure `json:"failure"`
-	Destination valueObject.UnixFilePath                `json:"destination"`
+	Success     []valueObject.UnixFileName         `json:"success"`
+	Failure     []valueObject.UploadProcessFailure `json:"failure"`
+	Destination valueObject.UnixFilePath           `json:"destination"`
 }
 
 func NewUploadProcessReport(
-	success []valueObject.UnixFilePath,
-	failure []valueObject.CompressionProcessFailure,
+	success []valueObject.UnixFileName,
+	failure []valueObject.UploadProcessFailure,
 	destination valueObject.UnixFilePath,
 ) UploadProcessReport {
 	return UploadProcessReport{
