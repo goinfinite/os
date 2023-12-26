@@ -310,7 +310,7 @@ func CompressFilesController(c echo.Context) error {
 	}
 
 	hasFilePathsSuccessfullyProcessed := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
-	hasFilePathsThatFailedToProcessWithReason := len(compressionProcessInfo.FilePathsThatFailedToCompressWithReason) > 0
+	hasFilePathsThatFailedToProcessWithReason := len(compressionProcessInfo.FailedPathsWithReason) > 0
 	isMultiStatus := hasFilePathsSuccessfullyProcessed && hasFilePathsThatFailedToProcessWithReason
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
@@ -398,7 +398,7 @@ func UploadFilesController(c echo.Context) error {
 		httpStatus = http.StatusInternalServerError
 	}
 
-	isMultiStatus := len(uploadProcessInfo.FilePathsThatFailedToUploadWithReason) > 0
+	isMultiStatus := len(uploadProcessInfo.FailedPathsWithReason) > 0
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}

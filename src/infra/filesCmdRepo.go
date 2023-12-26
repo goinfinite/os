@@ -101,8 +101,8 @@ func (repo FilesCmdRepo) Compress(
 		errMessage := "DestinationPathAlreadyExists"
 		for _, failedFile := range compressUnixFiles.SourcePaths {
 			failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
-			compressionProcessReport.FilePathsThatFailedToCompressWithReason = append(
-				compressionProcessReport.FilePathsThatFailedToCompressWithReason,
+			compressionProcessReport.FailedPathsWithReason = append(
+				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(failedFile, failureReason),
 			)
 		}
@@ -115,8 +115,8 @@ func (repo FilesCmdRepo) Compress(
 	for _, fileToCompress := range compressUnixFiles.SourcePaths {
 		fileToCompressExists := infraHelper.FileExists(fileToCompress.String())
 		if !fileToCompressExists {
-			compressionProcessReport.FilePathsThatFailedToCompressWithReason = append(
-				compressionProcessReport.FilePathsThatFailedToCompressWithReason,
+			compressionProcessReport.FailedPathsWithReason = append(
+				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(fileToCompress, "FileDoesNotExists"),
 			)
 
@@ -146,8 +146,8 @@ func (repo FilesCmdRepo) Compress(
 	if err != nil {
 		for _, fileThatFailedCompression := range compressionProcessReport.FilePathsSuccessfullyCompressed {
 			failureReason, _ := valueObject.NewProcessFileFailure(err.Error())
-			compressionProcessReport.FilePathsThatFailedToCompressWithReason = append(
-				compressionProcessReport.FilePathsThatFailedToCompressWithReason,
+			compressionProcessReport.FailedPathsWithReason = append(
+				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, failureReason),
 			)
 		}
@@ -318,8 +318,8 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
-		uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+		uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
+			uploadProcessReport.FailedPathsWithReason,
 			err.Error(),
 			uploadUnixFiles.FileStreamHandlers,
 		)
@@ -328,8 +328,8 @@ func (repo FilesCmdRepo) Upload(
 	}
 
 	if !destinationFile.MimeType.IsDir() {
-		uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+		uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
+			uploadProcessReport.FailedPathsWithReason,
 			"DestinationPathCannotBeAFile",
 			uploadUnixFiles.FileStreamHandlers,
 		)
@@ -342,8 +342,8 @@ func (repo FilesCmdRepo) Upload(
 		destinationEmptyFile, err := os.Create(destinationFilePath)
 		if err != nil {
 			errMessage := fmt.Sprintf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)
@@ -355,8 +355,8 @@ func (repo FilesCmdRepo) Upload(
 		fileToUploadStream, err := fileToUpload.Open()
 		if err != nil {
 			errMessage := fmt.Sprintf("UnableToOpenFileStream: %s", err.Error())
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)
@@ -367,8 +367,8 @@ func (repo FilesCmdRepo) Upload(
 		_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 		if err != nil {
 			errMessage := fmt.Sprintf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
-			uploadProcessReport.FilePathsThatFailedToUploadWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
+				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
 				uploadUnixFiles.FileStreamHandlers,
 			)

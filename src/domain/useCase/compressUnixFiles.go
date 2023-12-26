@@ -15,7 +15,9 @@ func CompressUnixFiles(
 ) (dto.CompressionProcessReport, error) {
 	compressionProcessReport := filesCmdRepo.Compress(compressUnixFiles)
 
-	allPathsFailedCompression := len(compressionProcessReport.FilePathsThatFailedToCompressWithReason) == len(compressUnixFiles.SourcePaths)
+	failedPathsWithReasonLen := len(compressionProcessReport.FailedPathsWithReason)
+	sourcePathsLen := len(compressUnixFiles.SourcePaths)
+	allPathsFailedCompression := failedPathsWithReasonLen == sourcePathsLen
 	if allPathsFailedCompression {
 		return compressionProcessReport, errors.New("CompressUnixFilesInfraError")
 	}

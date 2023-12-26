@@ -42,16 +42,14 @@ func UploadUnixFiles(
 
 	uploadProcessReport := filesCmdRepo.Upload(uploadUnixFiles)
 
-	uploadProcessReport.FilePathsThatFailedToUploadWithReason = append(
-		uploadProcessReport.FilePathsThatFailedToUploadWithReason,
+	uploadProcessReport.FailedPathsWithReason = append(
+		uploadProcessReport.FailedPathsWithReason,
 		filesLargerThanAllowedFailure...,
 	)
 
-	filePathsThatFailedToUploadWithReasonLen := len(
-		uploadProcessReport.FilePathsThatFailedToUploadWithReason,
-	)
+	failedPathsWithReasonLen := len(uploadProcessReport.FailedPathsWithReason)
 	fileStreamHandlersLen := len(uploadUnixFiles.FileStreamHandlers)
-	allFilesFailedToUpload := filePathsThatFailedToUploadWithReasonLen == fileStreamHandlersLen
+	allFilesFailedToUpload := failedPathsWithReasonLen == fileStreamHandlersLen
 	if allFilesFailedToUpload {
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}

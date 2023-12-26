@@ -149,10 +149,10 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		compressionProcessReport := filesCmdRepo.Compress(compressUnixFiles)
-		if len(compressionProcessReport.FilePathsThatFailedToCompressWithReason) > 0 {
+		if len(compressionProcessReport.FailedPathsWithReason) > 0 {
 			t.Errorf(
 				"UnexpectedError: %v",
-				compressionProcessReport.FilePathsThatFailedToCompressWithReason[0].Reason,
+				compressionProcessReport.FailedPathsWithReason[0].Reason,
 			)
 		}
 	})
