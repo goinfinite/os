@@ -4,6 +4,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -81,8 +82,14 @@ func AddFileController(c echo.Context) error {
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	fileType := valueObject.NewMimeTypePanic("generic")
+	isDirType := false
 	if requestBody["type"] != nil {
-		fileType = valueObject.NewMimeTypePanic(requestBody["type"].(string))
+		fileTypeStr := requestBody["type"].(string)
+		isDirType = strings.ToLower(fileTypeStr) == "directory"
+	}
+
+	if isDirType {
+		fileType = valueObject.NewMimeTypePanic("directory")
 	}
 
 	successResponse := "FileCreated"
