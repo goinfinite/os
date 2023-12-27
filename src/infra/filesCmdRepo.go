@@ -2,7 +2,6 @@ package infra
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -314,7 +313,7 @@ func (repo FilesCmdRepo) Upload(
 		destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
 		destinationEmptyFile, err := os.Create(destinationFilePath)
 		if err != nil {
-			errMessage := fmt.Sprintf("CreateEmptyFileToStoreUploadFileError: %s", err.Error())
+			errMessage := "CreateEmptyFileToStoreUploadFileError: " + err.Error()
 			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
 				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
@@ -327,7 +326,7 @@ func (repo FilesCmdRepo) Upload(
 
 		fileToUploadStream, err := fileToUpload.Open()
 		if err != nil {
-			errMessage := fmt.Sprintf("UnableToOpenFileStream: %s", err.Error())
+			errMessage := "UnableToOpenFileStream: " + err.Error()
 			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
 				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
@@ -339,7 +338,7 @@ func (repo FilesCmdRepo) Upload(
 
 		_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 		if err != nil {
-			errMessage := fmt.Sprintf("CopyFileStreamHandlerContentToDestinationFileError: %s", err.Error())
+			errMessage := "CopyFileStreamHandlerContentToDestinationFileError: " + err.Error()
 			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
 				uploadProcessReport.FailedPathsWithReason,
 				errMessage,
