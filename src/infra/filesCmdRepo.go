@@ -190,13 +190,13 @@ func (repo FilesCmdRepo) Delete(
 	for _, fileToDelete := range unixFilePathList {
 		fileExists := infraHelper.FileExists(fileToDelete.String())
 		if !fileExists {
-			log.Printf("DeleteFileError: FileDoesNotExists")
+			log.Printf("DeleteFileError (%s): FileDoesNotExists", fileToDelete.String())
 			continue
 		}
 
 		err := os.RemoveAll(fileToDelete.String())
 		if err != nil {
-			log.Printf("DeleteFileError: %s", err)
+			log.Printf("DeleteFileError (%s): %s", fileToDelete.String(), err)
 			continue
 		}
 
