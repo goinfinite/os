@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"mime"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -80,23 +79,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileExtensionPtr = nil
 	}
 
-	mimeTypeStr := "directory"
-	if !fileInfo.IsDir() {
-		mimeTypeStr = "generic"
-
-		mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
-		if len(mimeTypeWithCharset) > 1 {
-			mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
-			mimeTypeStr = mimeTypeOnly
-		}
-	}
-
-	unixFileMimeType, err := valueObject.NewMimeType(mimeTypeStr)
-	if err != nil {
-		log.Print(err)
-		return unixFile, err
-	}
-
 	filePermissions := fileInfo.Mode().Perm()
 	filePermissionsStr := fmt.Sprintf("%o", filePermissions)
 	unixFilePermissions, err := valueObject.NewUnixFilePermissions(filePermissionsStr)
@@ -118,7 +100,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFile = entity.NewUnixFile(
 		unixFilePath.GetFileName(),
 		unixFilePath,
-		unixFileMimeType,
+		unixFileExtension.GetMimeType(),
 		unixFilePermissions,
 		unixFileSize,
 		unixFileExtensionPtr,
