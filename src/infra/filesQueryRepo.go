@@ -134,7 +134,7 @@ func (repo FilesQueryRepo) Get(
 		filesToFactoryWithoutDir := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutDir
 
-		filesToFactoryStr, err := infraHelper.RunCmd(
+		rawDirectoryFiles, err := infraHelper.RunCmd(
 			"find",
 			unixFilePath.String(),
 			"-maxdepth",
@@ -145,12 +145,12 @@ func (repo FilesQueryRepo) Get(
 		if err != nil {
 			return unixFileList, err
 		}
-		if len(filesToFactoryStr) == 0 {
+		if len(rawDirectoryFiles) == 0 {
 			return unixFileList, errors.New("UnableToGetDirFiles")
 		}
 
-		filesToFactoryStrList := strings.Split(filesToFactoryStr, "\n")
-		for _, fileToFactoryStr := range filesToFactoryStrList {
+		rawDirectoryFilesList := strings.Split(rawDirectoryFiles, "\n")
+		for _, fileToFactoryStr := range rawDirectoryFilesList {
 			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
 			if err != nil {
 				log.Printf("FileToFactoryError: %s", err.Error())
