@@ -14,20 +14,7 @@ import (
 
 type FilesCmdRepo struct{}
 
-func fillUploadProcessReportFailure(
-	currentUploadProcessReportList []valueObject.UploadProcessFailure,
-	errMessage string,
-	fileStreamHandlers []valueObject.FileStreamHandler,
-) []valueObject.UploadProcessFailure {
-	uploadProcessReportList := currentUploadProcessReportList
-
-	uploadProcessReportList = append(
-		uploadProcessReportList,
-		uploadProcessReportFailureListFactory(errMessage, fileStreamHandlers)...,
-	)
-
-	return uploadProcessReportList
-}
+var uploadProcessReport dto.UploadProcessReport
 
 func uploadProcessReportFailureListFactory(
 	errMessage string,
@@ -44,6 +31,61 @@ func uploadProcessReportFailureListFactory(
 	}
 
 	return uploadProcessReportFailureList
+}
+
+func uploadSingleFile(
+	destinationPath valueObject.UnixFilePath,
+	fileToUpload valueObject.FileStreamHandler,
+	fileStreamHandlers []valueObject.FileStreamHandler,
+) {
+	destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
+	destinationEmptyFile, err := os.Create(destinationFilePath)
+	if err != nil {
+		errMessage := "CreateEmptyFileToStoreUploadFileError: " + err.Error()
+		uploadProcessReport.FailedPathsWithReason = append(
+			uploadProcessReport.FailedPathsWithReason,
+			uploadProcessReportFailureListFactory(
+				errMessage,
+				fileStreamHandlers,
+			)...,
+		)
+
+		return
+	}
+	defer destinationEmptyFile.Close()
+
+	fileToUploadStream, err := fileToUpload.Open()
+	if err != nil {
+		errMessage := "UnableToOpenFileStream: " + err.Error()
+		uploadProcessReport.FailedPathsWithReason = append(
+			uploadProcessReport.FailedPathsWithReason,
+			uploadProcessReportFailureListFactory(
+				errMessage,
+				fileStreamHandlers,
+			)...,
+		)
+
+		return
+	}
+
+	_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
+	if err != nil {
+		errMessage := "CopyFileStreamHandlerContentToDestinationFileError: " + err.Error()
+		uploadProcessReport.FailedPathsWithReason = append(
+			uploadProcessReport.FailedPathsWithReason,
+			uploadProcessReportFailureListFactory(
+				errMessage,
+				fileStreamHandlers,
+			)...,
+		)
+
+		return
+	}
+
+	uploadProcessReport.FilePathsSuccessfullyUploaded = append(
+		uploadProcessReport.FilePathsSuccessfullyUploaded,
+		fileToUpload.Name,
+	)
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
@@ -294,7 +336,7 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationPath := uploadUnixFiles.DestinationPath
 
-	uploadProcessReport := dto.NewUploadProcessReport(
+	uploadProcessReport = dto.NewUploadProcessReport(
 		[]valueObject.UnixFileName{},
 		[]valueObject.UploadProcessFailure{},
 		destinationPath,
@@ -310,47 +352,10 @@ func (repo FilesCmdRepo) Upload(
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
-		destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
-		destinationEmptyFile, err := os.Create(destinationFilePath)
-		if err != nil {
-			errMessage := "CreateEmptyFileToStoreUploadFileError: " + err.Error()
-			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FailedPathsWithReason,
-				errMessage,
-				uploadUnixFiles.FileStreamHandlers,
-			)
-
-			continue
-		}
-		defer destinationEmptyFile.Close()
-
-		fileToUploadStream, err := fileToUpload.Open()
-		if err != nil {
-			errMessage := "UnableToOpenFileStream: " + err.Error()
-			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FailedPathsWithReason,
-				errMessage,
-				uploadUnixFiles.FileStreamHandlers,
-			)
-
-			continue
-		}
-
-		_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
-		if err != nil {
-			errMessage := "CopyFileStreamHandlerContentToDestinationFileError: " + err.Error()
-			uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
-				uploadProcessReport.FailedPathsWithReason,
-				errMessage,
-				uploadUnixFiles.FileStreamHandlers,
-			)
-
-			continue
-		}
-
-		uploadProcessReport.FilePathsSuccessfullyUploaded = append(
-			uploadProcessReport.FilePathsSuccessfullyUploaded,
-			fileToUpload.Name,
+		uploadSingleFile(
+			destinationPath,
+			fileToUpload,
+			uploadUnixFiles.FileStreamHandlers,
 		)
 	}
 
