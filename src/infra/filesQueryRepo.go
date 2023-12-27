@@ -30,13 +30,12 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	fileSysInfo := fileInfo.Sys().(*syscall.Stat_t)
 
-	fileUidStr := fmt.Sprint(fileSysInfo.Uid)
 	unixFileUid, err := valueObject.NewUnixUid(fileSysInfo.Uid)
 	if err != nil {
 		return unixFile, err
 	}
 
-	fileOwner, err := user.LookupId(fileUidStr)
+	fileOwner, err := user.LookupId(unixFileUid.String())
 	if err != nil {
 		log.Printf("UnableToGetFileGroupName: %s", err)
 		return unixFile, errors.New("UnableToGetFileGroupName")
@@ -47,13 +46,12 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	fileGidStr := fmt.Sprint(fileSysInfo.Gid)
 	unixFileGid, err := valueObject.NewGroupId(fileSysInfo.Gid)
 	if err != nil {
 		return unixFile, err
 	}
 
-	fileGroupName, err := user.LookupGroupId(fileGidStr)
+	fileGroupName, err := user.LookupGroupId(unixFileGid.String())
 	if err != nil {
 		log.Printf("UnableToGetFileGroupName: %s", err)
 		return unixFile, errors.New("UnableToGetFileGroupName")
