@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"mime"
 	"regexp"
 	"strings"
 )
@@ -39,8 +40,18 @@ func (unixFileExtension UnixFileExtension) IsEmpty() bool {
 	return string(unixFileExtension) == "empty"
 }
 
-func (unixFileExtension UnixFileExtension) GetWithLeadingDot() string {
-	return "." + string(unixFileExtension)
+func (unixFileExtension UnixFileExtension) GetMimeType() MimeType {
+	mimeTypeStr := "generic"
+
+	fileExtWithLeadingDot := "." + string(unixFileExtension)
+	mimeTypeWithCharset := mime.TypeByExtension(fileExtWithLeadingDot)
+	if len(mimeTypeWithCharset) > 1 {
+		mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
+		mimeTypeStr = mimeTypeOnly
+	}
+
+	mimeType, _ := NewMimeType(mimeTypeStr)
+	return mimeType
 }
 
 func (unixFileExtension UnixFileExtension) String() string {
