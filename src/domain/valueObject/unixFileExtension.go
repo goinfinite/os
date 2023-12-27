@@ -39,6 +39,10 @@ func (unixFileExtension UnixFileExtension) IsEmpty() bool {
 	return string(unixFileExtension) == "empty"
 }
 
+func (unixFileExtension UnixFileExtension) GetWithLeadingDot() string {
+	return "." + string(unixFileExtension)
+}
+
 func (unixFileExtension UnixFileExtension) String() string {
 	return string(unixFileExtension)
 }
