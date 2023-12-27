@@ -153,7 +153,11 @@ func (repo FilesQueryRepo) Get(
 		for _, fileToFactoryStr := range rawDirectoryFilesList {
 			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
 			if err != nil {
-				log.Printf("FileToFactoryError: %s", err.Error())
+				log.Printf(
+					"FileToFactoryError (%s): %s",
+					filePath.String(),
+					err.Error(),
+				)
 				continue
 			}
 
