@@ -69,7 +69,7 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 
 func (repo FilesCmdRepo) Compress(
 	compressUnixFiles dto.CompressUnixFiles,
-) dto.CompressionProcessReport {
+) (dto.CompressionProcessReport, error) {
 	compressBinary := "tar"
 	compressBinaryFlag := "-czf"
 	compressExtFile := ".tar.gz"
@@ -88,7 +88,10 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	destinationPathWithCompressionTypeAsExtStr := destinationPathStr + compressExtFile
-	destinationPathWithCompressionTypeAsExt, _ := valueObject.NewUnixFilePath(destinationPathWithCompressionTypeAsExtStr)
+	destinationPathWithCompressionTypeAsExt, err := valueObject.NewUnixFilePath(destinationPathWithCompressionTypeAsExtStr)
+	if err != nil {
+		return dto.CompressionProcessReport{}, err
+	}
 
 	compressionProcessReport := dto.NewCompressionProcessReport(
 		[]valueObject.UnixFilePath{},
@@ -98,16 +101,7 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathExists := infraHelper.FileExists(destinationPathWithCompressionTypeAsExtStr)
 	if destinationPathExists {
-		errMessage := "DestinationPathAlreadyExists"
-		for _, failedFile := range compressUnixFiles.SourcePaths {
-			failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
-			compressionProcessReport.FailedPathsWithReason = append(
-				compressionProcessReport.FailedPathsWithReason,
-				valueObject.NewCompressionProcessFailure(failedFile, failureReason),
-			)
-		}
-
-		return compressionProcessReport
+		return compressionProcessReport, errors.New("DestinationPathAlreadyExists")
 	}
 
 	filesToCompressStrList := []string{}
@@ -131,12 +125,12 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	if len(compressionProcessReport.FilePathsSuccessfullyCompressed) < 1 {
-		return compressionProcessReport
+		return compressionProcessReport, nil
 	}
 
 	filesToCompressStr := strings.Join(filesToCompressStrList, " ")
 
-	_, err := infraHelper.RunCmd(
+	_, err = infraHelper.RunCmd(
 		compressBinary,
 		compressBinaryFlag,
 		destinationPathWithCompressionTypeAsExtStr,
@@ -144,18 +138,10 @@ func (repo FilesCmdRepo) Compress(
 	)
 
 	if err != nil {
-		for _, fileThatFailedCompression := range compressionProcessReport.FilePathsSuccessfullyCompressed {
-			failureReason, _ := valueObject.NewProcessFileFailure(err.Error())
-			compressionProcessReport.FailedPathsWithReason = append(
-				compressionProcessReport.FailedPathsWithReason,
-				valueObject.NewCompressionProcessFailure(fileThatFailedCompression, failureReason),
-			)
-		}
-
-		compressionProcessReport.FilePathsSuccessfullyCompressed = []valueObject.UnixFilePath{}
+		return compressionProcessReport, err
 	}
 
-	return compressionProcessReport
+	return compressionProcessReport, nil
 }
 
 func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
@@ -304,7 +290,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 
 func (repo FilesCmdRepo) Upload(
 	uploadUnixFiles dto.UploadUnixFiles,
-) dto.UploadProcessReport {
+) (dto.UploadProcessReport, error) {
 	queryRepo := FilesQueryRepo{}
 
 	destinationPath := uploadUnixFiles.DestinationPath
@@ -317,23 +303,11 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
-		uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
-			uploadProcessReport.FailedPathsWithReason,
-			err.Error(),
-			uploadUnixFiles.FileStreamHandlers,
-		)
-
-		return uploadProcessReport
+		return uploadProcessReport, err
 	}
 
 	if !destinationFile.MimeType.IsDir() {
-		uploadProcessReport.FailedPathsWithReason = fillUploadProcessReportFailure(
-			uploadProcessReport.FailedPathsWithReason,
-			"DestinationPathCannotBeAFile",
-			uploadUnixFiles.FileStreamHandlers,
-		)
-
-		return uploadProcessReport
+		return uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
@@ -381,5 +355,5 @@ func (repo FilesCmdRepo) Upload(
 		)
 	}
 
-	return uploadProcessReport
+	return uploadProcessReport, nil
 }

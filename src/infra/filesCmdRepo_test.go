@@ -148,12 +148,9 @@ func TestFilesCmdRepo(t *testing.T) {
 			valueObject.NewUnixCompressionTypePanic("gzip"),
 		)
 
-		compressionProcessReport := filesCmdRepo.Compress(compressUnixFiles)
-		if len(compressionProcessReport.FailedPathsWithReason) > 0 {
-			t.Errorf(
-				"UnexpectedError: %v",
-				compressionProcessReport.FailedPathsWithReason[0].Reason,
-			)
+		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 

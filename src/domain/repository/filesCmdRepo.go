@@ -7,7 +7,7 @@ import (
 
 type FilesCmdRepo interface {
 	Copy(copyUnixFile dto.CopyUnixFile) error
-	Compress(compressUnixFiles dto.CompressUnixFiles) dto.CompressionProcessReport
+	Compress(compressUnixFiles dto.CompressUnixFiles) (dto.CompressionProcessReport, error)
 	Create(createUnixFile dto.CreateUnixFile) error
 	Delete(unixFilePathList []valueObject.UnixFilePath)
 	Extract(extractUnixFiles dto.ExtractUnixFiles) error
@@ -17,5 +17,5 @@ type FilesCmdRepo interface {
 		unixFilePath valueObject.UnixFilePath,
 		unixFilePermissions valueObject.UnixFilePermissions,
 	) error
-	Upload(uploadUnixFiles dto.UploadUnixFiles) dto.UploadProcessReport
+	Upload(uploadUnixFiles dto.UploadUnixFiles) (dto.UploadProcessReport, error)
 }
