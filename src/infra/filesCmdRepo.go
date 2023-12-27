@@ -195,7 +195,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 
 	fileToExtractExists := infraHelper.FileExists(fileToExtract.String())
 	if !fileToExtractExists {
-		return errors.New("FileToExtractDoesNotExists")
+		return errors.New("FileDoesNotExists")
 	}
 
 	destinationPath := extractUnixFiles.DestinationPath
