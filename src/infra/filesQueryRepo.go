@@ -81,8 +81,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	}
 
 	mimeTypeStr := "directory"
-	isDir := fileInfo.IsDir()
-	if !isDir {
+	if !fileInfo.IsDir() {
 		mimeTypeStr = "generic"
 
 		mimeTypeWithCharset := mime.TypeByExtension("." + unixFileExtension.String())
