@@ -61,7 +61,6 @@ func filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/", apiController.AddFileController)
 	filesGroup.PUT("/", apiController.UpdateFileController)
 	filesGroup.POST("/copy/", apiController.CopyFileController)
-	filesGroup.PUT("/content/", apiController.UpdateFileContentController)
 	filesGroup.PUT("/delete/", apiController.DeleteFileController)
 	filesGroup.POST("/compress/", apiController.CompressFilesController)
 	filesGroup.PUT("/extract/", apiController.ExtractFilesController)

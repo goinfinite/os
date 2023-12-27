@@ -155,10 +155,17 @@ func UpdateFileController(c echo.Context) error {
 		permissionsPtr = &permissions
 	}
 
+	var encodedContentPtr *valueObject.EncodedContent
+	if requestBody["encodedContent"] != nil {
+		encodedContent := valueObject.NewEncodedContentPanic(requestBody["encodedContent"].(string))
+		encodedContentPtr = &encodedContent
+	}
+
 	updateUnixFileDto := dto.NewUpdateUnixFile(
 		filePath,
 		destinationPathPtr,
 		permissionsPtr,
+		encodedContentPtr,
 	)
 
 	filesQueryRepo := infra.FilesQueryRepo{}
@@ -174,42 +181,6 @@ func UpdateFileController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
-}
-
-// UpdateFile godoc
-// @Summary      UpdateFileContent
-// @Description  Update a file content.
-// @Tags         files
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        updateUnixFileContentDto 	  body dto.UpdateUnixFileContent  true  "UpdateFileContent"
-// @Success      200 {object} object{} "FileContentUpdated"
-// @Router       /files/content/ [put]
-func UpdateFileContentController(c echo.Context) error {
-	requiredParams := []string{"filePath", "encodedFileContent"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
-	fileContent := valueObject.NewEncodedContentPanic(requestBody["encodedFileContent"].(string))
-
-	updateUnixFileContentDto := dto.NewUpdateUnixFileContent(filePath, fileContent)
-
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
-
-	err := useCase.UpdateUnixFileContent(
-		filesQueryRepo,
-		filesCmdRepo,
-		updateUnixFileContentDto,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileContentUpdated")
 }
 
 // CopyFile    godoc

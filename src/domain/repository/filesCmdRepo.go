@@ -12,7 +12,7 @@ type FilesCmdRepo interface {
 	Delete(unixFilePathList []valueObject.UnixFilePath)
 	Extract(extractUnixFiles dto.ExtractUnixFiles) error
 	Move(updateUnixFile dto.UpdateUnixFile) error
-	UpdateContent(updateUnixFileContent dto.UpdateUnixFileContent) error
+	UpdateContent(updateUnixFile dto.UpdateUnixFile) error
 	UpdatePermissions(
 		unixFilePath valueObject.UnixFilePath,
 		unixFilePermissions valueObject.UnixFilePermissions,

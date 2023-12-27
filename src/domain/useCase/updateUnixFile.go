@@ -34,22 +34,33 @@ func UpdateUnixFile(
 		)
 	}
 
-	if updateUnixFile.DestinationPath == nil {
+	destinationPath := updateUnixFile.DestinationPath
+	if destinationPath != nil {
+		err := filesCmdRepo.Move(updateUnixFile)
+		if err != nil {
+			log.Printf("MoveUnixFileInfraError: %s", err.Error())
+			return errors.New("MoveUnixFileInfraError")
+		}
+
+		log.Printf(
+			"File '%s' moved from %s to '%s'.",
+			fileName.String(),
+			fileDir.String(),
+			destinationPath.GetFileDir().String(),
+		)
+	}
+
+	if updateUnixFile.EncodedContent == nil {
 		return nil
 	}
 
-	err := filesCmdRepo.Move(updateUnixFile)
+	err := filesCmdRepo.UpdateContent(updateUnixFile)
 	if err != nil {
-		log.Printf("MoveUnixFileInfraError: %s", err.Error())
-		return errors.New("MoveUnixFileInfraError")
+		log.Printf("UpdateUnixFileContentInfraError: %s", err.Error())
+		return errors.New("UpdateUnixFileContentInfraError")
 	}
 
-	log.Printf(
-		"File '%s' moved from %s to '%s'.",
-		fileName.String(),
-		fileDir.String(),
-		updateUnixFile.DestinationPath.GetFileDir().String(),
-	)
+	log.Printf("File '%s' content updated.", fileName.String())
 
 	return nil
 }
