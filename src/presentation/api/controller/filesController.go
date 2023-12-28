@@ -72,7 +72,7 @@ func GetFilesController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addFileDto 	  body    dto.AddUnixFile  true  "NewFile"
+// @Param        createFileDto 	  body    dto.CreateUnixFile  true  "NewFile"
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
 func AddFileController(c echo.Context) error {

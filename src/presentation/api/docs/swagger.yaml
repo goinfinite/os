@@ -88,15 +88,6 @@ definitions:
       key:
         type: string
     type: object
-  dto.AddUnixFile:
-    properties:
-      path:
-        type: string
-      permissions:
-        type: string
-      type:
-        type: string
-    type: object
   dto.AddVirtualHost:
     properties:
       hostname:
@@ -112,7 +103,7 @@ definitions:
         type: string
       destinationPath:
         type: string
-      paths:
+      sourcePaths:
         items:
           type: string
         type: array
@@ -121,14 +112,23 @@ definitions:
     properties:
       destinationPath:
         type: string
-      originPath:
+      sourcePath:
+        type: string
+    type: object
+  dto.CreateUnixFile:
+    properties:
+      mimeType:
+        type: string
+      permissions:
+        type: string
+      sourcePath:
         type: string
     type: object
   dto.ExtractUnixFiles:
     properties:
       destinationPath:
         type: string
-      path:
+      sourcePath:
         type: string
     type: object
   dto.Login:
@@ -219,16 +219,11 @@ definitions:
     properties:
       destinationPath:
         type: string
-      path:
+      encodedContent:
         type: string
       permissions:
         type: string
-    type: object
-  dto.UpdateUnixFileContent:
-    properties:
-      content:
-        type: string
-      path:
+      sourcePath:
         type: string
     type: object
   dto.VirtualHostWithMappings:
@@ -933,10 +928,10 @@ paths:
       parameters:
       - description: NewFile
         in: body
-        name: addFileDto
+        name: createFileDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddUnixFile'
+          $ref: '#/definitions/dto.CreateUnixFile'
       produces:
       - application/json
       responses:
@@ -999,30 +994,6 @@ paths:
       security:
       - Bearer: []
       summary: CompressFiles
-      tags:
-      - files
-  /files/content/:
-    put:
-      consumes:
-      - application/json
-      description: Update a file content.
-      parameters:
-      - description: UpdateFileContent
-        in: body
-        name: updateUnixFileContentDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateUnixFileContent'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: FileContentUpdated
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: UpdateFileContent
       tags:
       - files
   /files/copy/:

@@ -696,11 +696,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "NewFile",
-                        "name": "addFileDto",
+                        "name": "createFileDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddUnixFile"
+                            "$ref": "#/definitions/dto.CreateUnixFile"
                         }
                     }
                 ],
@@ -752,45 +752,6 @@ const docTemplate = `{
                     },
                     "207": {
                         "description": "FilesAndDirectoriesArePartialCompressed",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/files/content/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update a file content.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "UpdateFileContent",
-                "parameters": [
-                    {
-                        "description": "UpdateFileContent",
-                        "name": "updateUnixFileContentDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateUnixFileContent"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FileContentUpdated",
                         "schema": {
                             "type": "object"
                         }
@@ -1751,20 +1712,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AddUnixFile": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.AddVirtualHost": {
             "type": "object",
             "properties": {
@@ -1788,7 +1735,7 @@ const docTemplate = `{
                 "destinationPath": {
                     "type": "string"
                 },
-                "paths": {
+                "sourcePaths": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1802,7 +1749,21 @@ const docTemplate = `{
                 "destinationPath": {
                     "type": "string"
                 },
-                "originPath": {
+                "sourcePath": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateUnixFile": {
+            "type": "object",
+            "properties": {
+                "mimeType": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "sourcePath": {
                     "type": "string"
                 }
             }
@@ -1813,7 +1774,7 @@ const docTemplate = `{
                 "destinationPath": {
                     "type": "string"
                 },
-                "path": {
+                "sourcePath": {
                     "type": "string"
                 }
             }
@@ -1953,21 +1914,13 @@ const docTemplate = `{
                 "destinationPath": {
                     "type": "string"
                 },
-                "path": {
+                "encodedContent": {
                     "type": "string"
                 },
                 "permissions": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.UpdateUnixFileContent": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
                 },
-                "path": {
+                "sourcePath": {
                     "type": "string"
                 }
             }
