@@ -32,7 +32,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		addUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePermissionsPanic("0777"),
-			valueObject.NewMimeTypePanic("file"),
+			valueObject.NewMimeTypePanic("generic"),
 		)
 
 		err := filesCmdRepo.Create(addUnixFile)
@@ -45,7 +45,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		encodedContent := valueObject.NewEncodedContentPanic("Q29udGVudCB0byB0ZXN0")
 
 		updateUnixFile := dto.NewUpdateUnixFile(
-			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
 			nil,
 			nil,
 			&encodedContent,
@@ -141,11 +141,41 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("CompressUnixFile", func(t *testing.T) {
+	t.Run("CompressUnixFile (with compression type)", func(t *testing.T) {
+		var compressionTypePtr *valueObject.UnixCompressionType
+		compressionType := valueObject.NewUnixCompressionTypePanic("gzip")
+		compressionTypePtr = &compressionType
+
 		compressUnixFiles := dto.NewCompressUnixFiles(
 			[]valueObject.UnixFilePath{valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")},
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress"),
-			valueObject.NewUnixCompressionTypePanic("gzip"),
+			compressionTypePtr,
+		)
+
+		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("CompressUnixFile (without compression type)", func(t *testing.T) {
+		compressUnixFiles := dto.NewCompressUnixFiles(
+			[]valueObject.UnixFilePath{valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")},
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress_"),
+			nil,
+		)
+
+		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("CompressUnixFile (with compression type in file path)", func(t *testing.T) {
+		compressUnixFiles := dto.NewCompressUnixFiles(
+			[]valueObject.UnixFilePath{valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")},
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress_.gzip"),
+			nil,
 		)
 
 		_, err := filesCmdRepo.Compress(compressUnixFiles)
@@ -156,7 +186,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("ExtractUnixFile", func(t *testing.T) {
 		extractFileDto := dto.NewExtractUnixFiles(
-			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress.gzip"),
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirCompress.tar.gz"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/testDirExtracted"),
 		)
 
