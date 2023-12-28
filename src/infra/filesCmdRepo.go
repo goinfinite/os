@@ -37,56 +37,30 @@ func uploadProcessReportFailureListFactory(
 func uploadSingleFile(
 	destinationPath valueObject.UnixFilePath,
 	fileToUpload valueObject.FileStreamHandler,
-	fileStreamHandlers []valueObject.FileStreamHandler,
-) {
+) error {
 	destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
 	destinationEmptyFile, err := os.Create(destinationFilePath)
 	if err != nil {
-		errMessage := "CreateEmptyFileToStoreUploadFileError: " + err.Error()
-		uploadProcessReport.FailedPathsWithReason = append(
-			uploadProcessReport.FailedPathsWithReason,
-			uploadProcessReportFailureListFactory(
-				errMessage,
-				fileStreamHandlers,
-			)...,
-		)
-
-		return
+		return errors.New("CreateEmptyFileToStoreUploadFileError: " + err.Error())
 	}
 	defer destinationEmptyFile.Close()
 
 	fileToUploadStream, err := fileToUpload.Open()
 	if err != nil {
-		errMessage := "UnableToOpenFileStream: " + err.Error()
-		uploadProcessReport.FailedPathsWithReason = append(
-			uploadProcessReport.FailedPathsWithReason,
-			uploadProcessReportFailureListFactory(
-				errMessage,
-				fileStreamHandlers,
-			)...,
-		)
-
-		return
+		return errors.New("UnableToOpenFileStream: " + err.Error())
 	}
 
 	_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 	if err != nil {
-		errMessage := "CopyFileStreamHandlerContentToDestinationFileError: " + err.Error()
-		uploadProcessReport.FailedPathsWithReason = append(
-			uploadProcessReport.FailedPathsWithReason,
-			uploadProcessReportFailureListFactory(
-				errMessage,
-				fileStreamHandlers,
-			)...,
-		)
-
-		return
+		return errors.New("CopyFileStreamHandlerContentToDestinationFileError: " + err.Error())
 	}
 
 	uploadProcessReport.FilePathsSuccessfullyUploaded = append(
 		uploadProcessReport.FilePathsSuccessfullyUploaded,
 		fileToUpload.Name,
 	)
+
+	return nil
 }
 
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
@@ -369,11 +343,19 @@ func (repo FilesCmdRepo) Upload(
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
-		uploadSingleFile(
+		err := uploadSingleFile(
 			destinationPath,
 			fileToUpload,
-			uploadUnixFiles.FileStreamHandlers,
 		)
+		if err != nil {
+			uploadProcessReport.FailedPathsWithReason = append(
+				uploadProcessReport.FailedPathsWithReason,
+				uploadProcessReportFailureListFactory(
+					err.Error(),
+					uploadUnixFiles.FileStreamHandlers,
+				)...,
+			)
+		}
 	}
 
 	return uploadProcessReport, nil
