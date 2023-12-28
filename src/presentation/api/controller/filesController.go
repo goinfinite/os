@@ -261,16 +261,24 @@ func DeleteFileController(c echo.Context) error {
 // @Success      207 {object} object{} "FilesAndDirectoriesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
-	requiredParams := []string{"filePath", "destinationPath", "compressionType"}
+	requiredParams := []string{"filePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
-	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
-	compressionUnixType := valueObject.NewUnixCompressionTypePanic(requestBody["compressionType"].(string))
 
-	compressUnixFilesDto := dto.NewCompressUnixFiles(filePaths, destinationPath, compressionUnixType)
+	var compressionUnixTypePtr *valueObject.UnixCompressionType
+	if requestBody["compressionType"] != nil {
+		compressionUnixType := valueObject.NewUnixCompressionTypePanic(requestBody["compressionType"].(string))
+		compressionUnixTypePtr = &compressionUnixType
+	}
+
+	compressUnixFilesDto := dto.NewCompressUnixFiles(
+		filePaths,
+		valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string)),
+		compressionUnixTypePtr,
+	)
 
 	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
@@ -280,16 +288,15 @@ func CompressFilesController(c echo.Context) error {
 		filesCmdRepo,
 		compressUnixFilesDto,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
 	httpStatus := http.StatusCreated
 
-	if err != nil {
-		httpStatus = http.StatusInternalServerError
-	}
-
-	hasFilePathsSuccessfullyProcessed := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
-	hasFilePathsThatFailedToProcessWithReason := len(compressionProcessInfo.FailedPathsWithReason) > 0
-	isMultiStatus := hasFilePathsSuccessfullyProcessed && hasFilePathsThatFailedToProcessWithReason
+	hasFilePathsSuccessfullyCompressed := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
+	hasFailedPathsWithReason := len(compressionProcessInfo.FailedPathsWithReason) > 0
+	isMultiStatus := hasFilePathsSuccessfullyCompressed && hasFailedPathsWithReason
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}
@@ -369,14 +376,15 @@ func UploadFilesController(c echo.Context) error {
 		filesCmdRepo,
 		uploadUnixFilesDto,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
 	httpStatus := http.StatusCreated
 
-	if err != nil {
-		httpStatus = http.StatusInternalServerError
-	}
-
-	isMultiStatus := len(uploadProcessInfo.FailedPathsWithReason) > 0
+	hasFilePathsSuccessfullyUploaded := len(uploadProcessInfo.FilePathsSuccessfullyUploaded) > 0
+	hasFailedPathsWithReason := len(uploadProcessInfo.FailedPathsWithReason) > 0
+	isMultiStatus := hasFilePathsSuccessfullyUploaded && hasFailedPathsWithReason
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}
