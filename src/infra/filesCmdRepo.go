@@ -80,7 +80,7 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 func (repo FilesCmdRepo) Compress(
 	compressUnixFiles dto.CompressUnixFiles,
 ) (dto.CompressionProcessReport, error) {
-	sourcePathsThatExists := []string{}
+	existingFiles := []string{}
 	for _, sourcePath := range compressUnixFiles.SourcePaths {
 		sourcePathExists := infraHelper.FileExists(sourcePath.String())
 		if !sourcePathExists {
@@ -88,10 +88,10 @@ func (repo FilesCmdRepo) Compress(
 			continue
 		}
 
-		sourcePathsThatExists = append(sourcePathsThatExists, sourcePath.String())
+		existingFiles = append(existingFiles, sourcePath.String())
 	}
 
-	if len(sourcePathsThatExists) < 1 {
+	if len(existingFiles) < 1 {
 		return dto.CompressionProcessReport{}, errors.New("NoExistingFilesToCompress")
 	}
 
@@ -134,7 +134,7 @@ func (repo FilesCmdRepo) Compress(
 		return dto.CompressionProcessReport{}, errors.New("DestinationPathAlreadyExists")
 	}
 
-	filesToCompress := strings.Join(sourcePathsThatExists, " ")
+	filesToCompress := strings.Join(existingFiles, " ")
 	_, err = infraHelper.RunCmd(
 		compressBinary,
 		compressBinaryFlag,
@@ -151,7 +151,7 @@ func (repo FilesCmdRepo) Compress(
 		destinationPathWithCompressionTypeAsExt,
 	)
 	for _, sourcePath := range compressUnixFiles.SourcePaths {
-		if !slices.Contains(sourcePathsThatExists, sourcePath.String()) {
+		if !slices.Contains(existingFiles, sourcePath.String()) {
 			compressionProcessReport.FailedPathsWithReason = append(
 				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(
