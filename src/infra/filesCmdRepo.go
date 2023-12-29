@@ -13,9 +13,9 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
-type FilesCmdRepo struct{}
-
-var uploadProcessReport dto.UploadProcessReport
+type FilesCmdRepo struct {
+	uploadProcessReport dto.UploadProcessReport
+}
 
 func uploadProcessReportFailureListFactory(
 	errMessage string,
@@ -34,7 +34,7 @@ func uploadProcessReportFailureListFactory(
 	return uploadProcessReportFailureList
 }
 
-func uploadSingleFile(
+func (repo FilesCmdRepo) uploadSingleFile(
 	destinationPath valueObject.UnixFilePath,
 	fileToUpload valueObject.FileStreamHandler,
 ) error {
@@ -55,8 +55,8 @@ func uploadSingleFile(
 		return errors.New("CopyFileStreamHandlerContentToDestinationFileError: " + err.Error())
 	}
 
-	uploadProcessReport.FileNamesSuccessfullyUploaded = append(
-		uploadProcessReport.FileNamesSuccessfullyUploaded,
+	repo.uploadProcessReport.FileNamesSuccessfullyUploaded = append(
+		repo.uploadProcessReport.FileNamesSuccessfullyUploaded,
 		fileToUpload.Name,
 	)
 
@@ -327,7 +327,7 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationPath := uploadUnixFiles.DestinationPath
 
-	uploadProcessReport = dto.NewUploadProcessReport(
+	repo.uploadProcessReport = dto.NewUploadProcessReport(
 		[]valueObject.UnixFileName{},
 		[]valueObject.UploadProcessFailure{},
 		destinationPath,
@@ -335,21 +335,21 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
-		return uploadProcessReport, err
+		return repo.uploadProcessReport, err
 	}
 
 	if !destinationFile.MimeType.IsDir() {
-		return uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
+		return repo.uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
-		err := uploadSingleFile(
+		err := repo.uploadSingleFile(
 			destinationPath,
 			fileToUpload,
 		)
 		if err != nil {
-			uploadProcessReport.FailedNamesWithReason = append(
-				uploadProcessReport.FailedNamesWithReason,
+			repo.uploadProcessReport.FailedNamesWithReason = append(
+				repo.uploadProcessReport.FailedNamesWithReason,
 				uploadProcessReportFailureListFactory(
 					err.Error(),
 					uploadUnixFiles.FileStreamHandlers,
@@ -358,5 +358,5 @@ func (repo FilesCmdRepo) Upload(
 		}
 	}
 
-	return uploadProcessReport, nil
+	return repo.uploadProcessReport, nil
 }
