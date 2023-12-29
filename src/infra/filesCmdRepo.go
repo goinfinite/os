@@ -105,7 +105,7 @@ func (repo FilesCmdRepo) Compress(
 	if compressionTypePtr == nil {
 		destinationPathExt := compressUnixFiles.DestinationPath.GetFileExtension()
 		destinationPathExtStr := destinationPathExt.String()
-		if destinationPathExt.IsEmpty() {
+		if destinationPathExt.String() == "" {
 			destinationPathExtStr = "zip"
 		}
 

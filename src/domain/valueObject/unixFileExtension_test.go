@@ -5,6 +5,7 @@ import "testing"
 func TestUnixFileExtension(t *testing.T) {
 	t.Run("ValidUnixFileExtension", func(t *testing.T) {
 		validUnixFileExtensions := []string{
+			"",
 			".png",
 			"png",
 			".c",
@@ -25,7 +26,6 @@ func TestUnixFileExtension(t *testing.T) {
 
 	t.Run("InvalidUnixFileExtension", func(t *testing.T) {
 		invalidUnixFileExtensions := []string{
-			"",
 			"file.php?blabla",
 			"@<php52.sandbox.ntorga.com>.php",
 			"../file.php",

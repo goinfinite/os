@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const unixFileExtensionRegexExpression = `^[\w\_\-]{1,15}$`
+const unixFileExtensionRegexExpression = `^[\w\_\-]{0,15}$`
 
 type UnixFileExtension string
 
@@ -34,10 +34,6 @@ func NewUnixFileExtensionPanic(value string) UnixFileExtension {
 func (unixFileExtension UnixFileExtension) isValid() bool {
 	unixFileExtensionRegex := regexp.MustCompile(unixFileExtensionRegexExpression)
 	return unixFileExtensionRegex.MatchString(string(unixFileExtension))
-}
-
-func (unixFileExtension UnixFileExtension) IsEmpty() bool {
-	return string(unixFileExtension) == "empty"
 }
 
 func (unixFileExtension UnixFileExtension) GetMimeType() MimeType {
