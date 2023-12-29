@@ -19,12 +19,12 @@ func CopyUnixFile(
 		return errors.New("CopyUnixFileInfraError")
 	}
 
-	fileOriginPath := copyUnixFile.SourcePath
+	fileSourcePath := copyUnixFile.SourcePath
 	fileDestinationPath := copyUnixFile.DestinationPath
 	log.Printf(
 		"File '%s' (%s) copy added to '%s' with name '%s'.",
-		fileOriginPath.GetFileName().String(),
-		fileOriginPath.GetFileDir().String(),
+		fileSourcePath.GetFileName().String(),
+		fileSourcePath.GetFileDir().String(),
 		fileDestinationPath.GetFileName().String(),
 		fileDestinationPath.GetFileDir().String(),
 	)
