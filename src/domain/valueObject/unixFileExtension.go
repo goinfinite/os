@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const unixFileExtensionRegexExpression = `^[\w\_\-]{0,15}$`
+const unixFileExtensionRegexExpression = `^[\w\_\-]{1,15}$`
 
 type UnixFileExtension string
 
