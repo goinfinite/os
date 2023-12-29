@@ -55,8 +55,8 @@ func uploadSingleFile(
 		return errors.New("CopyFileStreamHandlerContentToDestinationFileError: " + err.Error())
 	}
 
-	uploadProcessReport.FilePathsSuccessfullyUploaded = append(
-		uploadProcessReport.FilePathsSuccessfullyUploaded,
+	uploadProcessReport.FileNamesSuccessfullyUploaded = append(
+		uploadProcessReport.FileNamesSuccessfullyUploaded,
 		fileToUpload.Name,
 	)
 
@@ -348,8 +348,8 @@ func (repo FilesCmdRepo) Upload(
 			fileToUpload,
 		)
 		if err != nil {
-			uploadProcessReport.FailedPathsWithReason = append(
-				uploadProcessReport.FailedPathsWithReason,
+			uploadProcessReport.FailedNamesWithReason = append(
+				uploadProcessReport.FailedNamesWithReason,
 				uploadProcessReportFailureListFactory(
 					err.Error(),
 					uploadUnixFiles.FileStreamHandlers,

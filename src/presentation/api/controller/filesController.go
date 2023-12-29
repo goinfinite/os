@@ -382,9 +382,9 @@ func UploadFilesController(c echo.Context) error {
 
 	httpStatus := http.StatusCreated
 
-	hasFilePathsSuccessfullyUploaded := len(uploadProcessInfo.FilePathsSuccessfullyUploaded) > 0
-	hasFailedPathsWithReason := len(uploadProcessInfo.FailedPathsWithReason) > 0
-	isMultiStatus := hasFilePathsSuccessfullyUploaded && hasFailedPathsWithReason
+	hasFileNamesSuccessfullyUploaded := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
+	hasFailedNamesWithReason := len(uploadProcessInfo.FailedNamesWithReason) > 0
+	isMultiStatus := hasFileNamesSuccessfullyUploaded && hasFailedNamesWithReason
 	if isMultiStatus {
 		httpStatus = http.StatusMultiStatus
 	}

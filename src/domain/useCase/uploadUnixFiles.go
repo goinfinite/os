@@ -45,8 +45,8 @@ func UploadUnixFiles(
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 
-	uploadProcessReport.FailedPathsWithReason = append(
-		uploadProcessReport.FailedPathsWithReason,
+	uploadProcessReport.FailedNamesWithReason = append(
+		uploadProcessReport.FailedNamesWithReason,
 		filesLargerThanAllowedFailure...,
 	)
 
