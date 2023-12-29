@@ -168,14 +168,10 @@ func UpdateFileController(c echo.Context) error {
 		encodedContentPtr,
 	)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
 	filesCmdRepo := infra.FilesCmdRepo{}
 
-	err := useCase.UpdateUnixFile(
-		filesQueryRepo,
-		filesCmdRepo,
-		updateUnixFileDto,
-	)
+	updateUnixFileUc := useCase.NewUpdateUnixFile(filesCmdRepo)
+	err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
