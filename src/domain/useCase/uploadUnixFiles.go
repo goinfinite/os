@@ -12,45 +12,44 @@ import (
 func UploadUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	uploadUnixFiles dto.UploadUnixFiles,
+	uploadDto dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
-	filesLargerThanAllowedFailure := []valueObject.UploadProcessFailure{}
-	filesWithAllowedSizes := []valueObject.FileStreamHandler{}
-	largerFileErrMessage := "File size is greater than 5 GB"
-	for _, fileToUploadStream := range uploadUnixFiles.FileStreamHandlers {
-		fileStreamHandlerSizeInGB := fileToUploadStream.Size.ToGiB()
-		if fileStreamHandlerSizeInGB > 5 {
-			log.Printf("UploadUnixFileError: %s", largerFileErrMessage)
+	maxFileSizeInGb := int64(5)
 
-			failureReason, _ := valueObject.NewProcessFileFailure(largerFileErrMessage)
+	tooBigFiles := []valueObject.UploadProcessFailure{}
+	filesToUpload := []valueObject.FileStreamHandler{}
 
-			filesLargerThanAllowedFailure = append(
-				filesLargerThanAllowedFailure,
-				valueObject.NewUploadProcessFailure(
-					fileToUploadStream.Name,
-					failureReason,
-				),
-			)
-
+	for _, fileStream := range uploadDto.FileStreamHandlers {
+		fileSizeInGb := fileStream.Size.ToGiB()
+		if fileSizeInGb < maxFileSizeInGb {
+			filesToUpload = append(filesToUpload, fileStream)
 			continue
 		}
 
-		filesWithAllowedSizes = append(filesWithAllowedSizes, fileToUploadStream)
+		failureReason, _ := valueObject.NewProcessFileFailure("FileTooBig")
+		processFailure := valueObject.NewUploadProcessFailure(
+			fileStream.Name,
+			failureReason,
+		)
+		tooBigFiles = append(tooBigFiles, processFailure)
+
+		log.Printf("FileTooBig: %s", fileStream.Name)
 	}
 
-	uploadUnixFiles.FileStreamHandlers = filesWithAllowedSizes
+	uploadDto.FileStreamHandlers = filesToUpload
 
-	uploadProcessReport, err := filesCmdRepo.Upload(uploadUnixFiles)
+	uploadProcessReport, err := filesCmdRepo.Upload(uploadDto)
 	if err != nil {
+		log.Printf("UploadUnixFileInfraError: %s", err.Error())
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 
 	uploadProcessReport.FailedNamesWithReason = append(
 		uploadProcessReport.FailedNamesWithReason,
-		filesLargerThanAllowedFailure...,
+		tooBigFiles...,
 	)
 
-	log.Printf("Files uploaded to '%s'.", uploadUnixFiles.DestinationPath)
+	log.Printf("Files uploaded to '%s'.", uploadDto.DestinationPath)
 
 	return uploadProcessReport, nil
 }
