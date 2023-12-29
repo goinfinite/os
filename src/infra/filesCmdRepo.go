@@ -17,21 +17,15 @@ type FilesCmdRepo struct {
 	uploadProcessReport dto.UploadProcessReport
 }
 
-func uploadProcessReportFailureListFactory(
+func (repo FilesCmdRepo) addUploadFailure(
 	errMessage string,
-	fileStreamHandlers []valueObject.FileStreamHandler,
-) []valueObject.UploadProcessFailure {
-	uploadProcessReportFailureList := []valueObject.UploadProcessFailure{}
-
-	for _, fileStreamHandler := range fileStreamHandlers {
-		failureReason, _ := valueObject.NewFileProcessingFailure(errMessage)
-		uploadProcessReportFailureList = append(
-			uploadProcessReportFailureList,
-			valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),
-		)
-	}
-
-	return uploadProcessReportFailureList
+	fileStreamHandler valueObject.FileStreamHandler,
+) {
+	failureReason, _ := valueObject.NewFileProcessingFailure(errMessage)
+	repo.uploadProcessReport.FailedNamesWithReason = append(
+		repo.uploadProcessReport.FailedNamesWithReason,
+		valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),
+	)
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
@@ -348,13 +342,9 @@ func (repo FilesCmdRepo) Upload(
 			fileToUpload,
 		)
 		if err != nil {
-			repo.uploadProcessReport.FailedNamesWithReason = append(
-				repo.uploadProcessReport.FailedNamesWithReason,
-				uploadProcessReportFailureListFactory(
-					err.Error(),
-					uploadUnixFiles.FileStreamHandlers,
-				)...,
-			)
+			for _, fileStreamHandler := range uploadUnixFiles.FileStreamHandlers {
+				repo.addUploadFailure(err.Error(), fileStreamHandler)
+			}
 		}
 	}
 
