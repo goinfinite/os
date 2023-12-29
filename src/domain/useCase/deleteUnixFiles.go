@@ -19,7 +19,7 @@ func DeleteUnixFiles(
 			continue
 		}
 
-		log.Printf("DeleteUnixFilesError: Path '/' is not allowed to delete.")
+		log.Printf("DeleteUnixFilesError: Path '/' cannot be deleted.")
 
 		fileToDeleteAfterNotAllowedPathIndex := fileToDeleteIndex + 1
 		filesToDeleteWithoutNotAllowedPath := slices.Delete(
