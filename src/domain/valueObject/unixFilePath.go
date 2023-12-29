@@ -62,10 +62,6 @@ func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
 
 func (unixFilePath UnixFilePath) GetFileExtension() UnixFileExtension {
 	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
-	if len(unixFileExtensionStr) < 1 {
-		unixFileExtensionStr = "empty"
-	}
-
 	unixFileExtension, _ := NewUnixFileExtension(unixFileExtensionStr)
 	return unixFileExtension
 }
