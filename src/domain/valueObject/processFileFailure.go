@@ -23,11 +23,8 @@ func NewFileProcessingFailurePanic(value string) FileProcessingFailure {
 }
 
 func (fileProcessingFailure FileProcessingFailure) isValid() bool {
-	isTooShort := len(string(fileProcessingFailure)) < 1
-
-	size5MBInBytes := (1024 * 1024) * 5
-	isTooLong := len(string(fileProcessingFailure)) > size5MBInBytes
-
+	isTooShort := len(string(fileProcessingFailure)) < 2
+	isTooLong := len(string(fileProcessingFailure)) > 512
 	return !isTooShort && !isTooLong
 }
 
