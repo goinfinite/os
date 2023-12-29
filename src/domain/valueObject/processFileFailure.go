@@ -4,33 +4,33 @@ import (
 	"errors"
 )
 
-type ProcessFileFailure string
+type FileProcessingFailure string
 
-func NewProcessFileFailure(value string) (ProcessFileFailure, error) {
-	processFileFailure := ProcessFileFailure(value)
-	if !processFileFailure.isValid() {
-		return "", errors.New("InvalidProcessFileFailure")
+func NewFileProcessingFailure(value string) (FileProcessingFailure, error) {
+	fileProcessingFailure := FileProcessingFailure(value)
+	if !fileProcessingFailure.isValid() {
+		return "", errors.New("InvalidFileProcessingFailure")
 	}
-	return processFileFailure, nil
+	return fileProcessingFailure, nil
 }
 
-func NewProcessFileFailurePanic(value string) ProcessFileFailure {
-	processFileFailure, err := NewProcessFileFailure(value)
+func NewFileProcessingFailurePanic(value string) FileProcessingFailure {
+	fileProcessingFailure, err := NewFileProcessingFailure(value)
 	if err != nil {
 		panic(err)
 	}
-	return processFileFailure
+	return fileProcessingFailure
 }
 
-func (processFileFailure ProcessFileFailure) isValid() bool {
-	isTooShort := len(string(processFileFailure)) < 1
+func (fileProcessingFailure FileProcessingFailure) isValid() bool {
+	isTooShort := len(string(fileProcessingFailure)) < 1
 
 	size5MBInBytes := (1024 * 1024) * 5
-	isTooLong := len(string(processFileFailure)) > size5MBInBytes
+	isTooLong := len(string(fileProcessingFailure)) > size5MBInBytes
 
 	return !isTooShort && !isTooLong
 }
 
-func (processFileFailure ProcessFileFailure) String() string {
-	return string(processFileFailure)
+func (fileProcessingFailure FileProcessingFailure) String() string {
+	return string(fileProcessingFailure)
 }

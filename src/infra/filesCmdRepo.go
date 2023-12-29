@@ -24,7 +24,7 @@ func uploadProcessReportFailureListFactory(
 	uploadProcessReportFailureList := []valueObject.UploadProcessFailure{}
 
 	for _, fileStreamHandler := range fileStreamHandlers {
-		failureReason, _ := valueObject.NewProcessFileFailure(errMessage)
+		failureReason, _ := valueObject.NewFileProcessingFailure(errMessage)
 		uploadProcessReportFailureList = append(
 			uploadProcessReportFailureList,
 			valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),

@@ -26,7 +26,7 @@ func UploadUnixFiles(
 			continue
 		}
 
-		failureReason, _ := valueObject.NewProcessFileFailure("FileTooBig")
+		failureReason, _ := valueObject.NewFileProcessingFailure("FileTooBig")
 		processFailure := valueObject.NewUploadProcessFailure(
 			fileStream.Name,
 			failureReason,
