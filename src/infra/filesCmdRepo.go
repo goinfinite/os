@@ -97,8 +97,8 @@ func (repo FilesCmdRepo) Compress(
 
 	compressionTypeStr := "zip"
 
-	destinationPathExt := compressUnixFiles.DestinationPath.GetFileExtension()
-	if destinationPathExt.String() != "" {
+	destinationPathExt, err := compressUnixFiles.DestinationPath.GetFileExtension()
+	if err == nil {
 		compressionTypeStr = destinationPathExt.String()
 
 		if compressUnixFiles.CompressionType != nil {
@@ -235,14 +235,18 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	compressBinaryFlag := "-xf"
 	compressDestinationFlag := "-C"
 
-	unixFilePathExtension := fileToExtract.GetFileExtension()
+	unixFilePathExtension, err := fileToExtract.GetFileExtension()
+	if err != nil {
+		return err
+	}
+
 	if unixFilePathExtension.String() == "zip" {
 		compressBinary = "unzip"
 		compressBinaryFlag = "-qq"
 		compressDestinationFlag = "-d"
 	}
 
-	err := infraHelper.MakeDir(destinationPath.String())
+	err = infraHelper.MakeDir(destinationPath.String())
 	if err != nil {
 		return err
 	}
