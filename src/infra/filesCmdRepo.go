@@ -283,12 +283,12 @@ func (repo FilesCmdRepo) UpdateContent(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdateContent, err := queryRepo.GetOne(updateUnixFile.SourcePath)
+	fileToUpdate, err := queryRepo.GetOne(updateUnixFile.SourcePath)
 	if err != nil {
 		return err
 	}
 
-	if fileToUpdateContent.MimeType.IsDir() {
+	if fileToUpdate.MimeType.IsDir() {
 		return errors.New("PathIsADir")
 	}
 
