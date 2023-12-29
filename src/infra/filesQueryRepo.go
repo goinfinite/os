@@ -36,8 +36,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	fileOwner, err := user.LookupId(unixFileUid.String())
 	if err != nil {
-		log.Printf("UnableToGetFileGroupName: %s", err)
-		return unixFile, errors.New("UnableToGetFileGroupName")
+		return unixFile, err
 	}
 
 	unixFileUsername, err := valueObject.NewUsername(fileOwner.Username)
@@ -52,8 +51,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	fileGroupName, err := user.LookupGroupId(unixFileGid.String())
 	if err != nil {
-		log.Printf("UnableToGetFileGroupName: %s", err)
-		return unixFile, errors.New("UnableToGetFileGroupName")
+		return unixFile, err
 	}
 
 	unixFileGroup, err := valueObject.NewGroupName(fileGroupName.Name)
@@ -63,8 +61,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	unixFileAbsPath, err := filepath.Abs(filePath.String())
 	if err != nil {
-		log.Printf("UnableToGetFileAbsolutePath: %s", err)
-		return unixFile, errors.New("UnableToGetFileAbsolutePath")
+		return unixFile, err
 	}
 
 	unixFilePath, err := valueObject.NewUnixFilePath(unixFileAbsPath)
@@ -96,7 +93,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	unixFileStreamPtr, err := os.Open(filePath.String())
 	if err != nil {
-		log.Printf("OpenFileError: %s", err.Error())
 		return unixFile, err
 	}
 	defer unixFileStreamPtr.Close()
