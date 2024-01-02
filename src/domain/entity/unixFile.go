@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"os"
-
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -18,7 +16,6 @@ type UnixFile struct {
 	Gid         valueObject.GroupId             `json:"gid"`
 	Group       valueObject.GroupName           `json:"group"`
 	UpdatedAt   valueObject.UnixTime            `json:"updatedAt"`
-	Stream      *os.File                        `json:"-"`
 }
 
 func NewUnixFile(
@@ -33,7 +30,6 @@ func NewUnixFile(
 	gid valueObject.GroupId,
 	group valueObject.GroupName,
 	updatedAt valueObject.UnixTime,
-	stream *os.File,
 ) UnixFile {
 	return UnixFile{
 		Name:        name,
@@ -47,6 +43,5 @@ func NewUnixFile(
 		Gid:         gid,
 		Group:       group,
 		UpdatedAt:   updatedAt,
-		Stream:      stream,
 	}
 }
