@@ -223,7 +223,7 @@ func CopyFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        filePath	body	[]string	true	"UnixFilePath"
-// @Success      200 {object} object{} "DirectoriesAndFilesDeleted"
+// @Success      200 {object} object{} "FilesDeleted"
 // @Router       /files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
@@ -242,7 +242,7 @@ func DeleteFileController(c echo.Context) error {
 		filePaths,
 	)
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "DirectoriesAndFilesDeleted")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "FilesDeleted")
 }
 
 // CompressFiles    godoc
@@ -253,8 +253,8 @@ func DeleteFileController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
-// @Success      200 {object} object{} "FilesAndDirectoriesCompressed"
-// @Success      207 {object} object{} "FilesAndDirectoriesArePartialCompressed"
+// @Success      200 {object} object{} "FilesCompressed"
+// @Success      207 {object} object{} "FilesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
 	requiredParams := []string{"filePath", "destinationPath"}
@@ -308,7 +308,7 @@ func CompressFilesController(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "ExtractFiles"
-// @Success      200 {object} object{} "ExtractFilesAndDirectories"
+// @Success      200 {object} object{} "FilesExtracted"
 // @Router       /files/extract/ [put]
 func ExtractFilesController(c echo.Context) error {
 	requiredParams := []string{"filePath", "destinationPath"}
@@ -333,7 +333,7 @@ func ExtractFilesController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "ExtractFilesAndDirectories")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FilesExtracted")
 }
 
 // UploadFiles    godoc
