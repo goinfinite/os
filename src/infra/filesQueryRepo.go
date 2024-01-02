@@ -84,7 +84,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 	filePermissionsStr := fmt.Sprintf("%o", filePermissions)
 	unixFilePermissions, err := valueObject.NewUnixFilePermissions(filePermissionsStr)
 	if err != nil {
-		log.Print(err)
 		return unixFile, err
 	}
 
