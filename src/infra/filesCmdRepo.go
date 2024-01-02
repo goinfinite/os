@@ -35,7 +35,7 @@ func (repo FilesCmdRepo) uploadSingleFile(
 	destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
 	destinationEmptyFile, err := os.Create(destinationFilePath)
 	if err != nil {
-		return errors.New("CreateEmptyFileToStoreUploadFileError: " + err.Error())
+		return errors.New("CreateEmptyFileError: " + err.Error())
 	}
 	defer destinationEmptyFile.Close()
 
@@ -46,7 +46,7 @@ func (repo FilesCmdRepo) uploadSingleFile(
 
 	_, err = io.Copy(destinationEmptyFile, fileToUploadStream)
 	if err != nil {
-		return errors.New("CopyFileStreamHandlerContentToDestinationFileError: " + err.Error())
+		return errors.New("CopyFileContentToDestinationError: " + err.Error())
 	}
 
 	repo.uploadProcessReport.FileNamesSuccessfullyUploaded = append(
