@@ -20,12 +20,18 @@ type FilesCmdRepo struct {
 func (repo FilesCmdRepo) addUploadFailure(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
-) {
-	failureReason, _ := valueObject.NewFileProcessingFailure(errMessage)
+) error {
+	failureReason, err := valueObject.NewFileProcessingFailure(errMessage)
+	if err != nil {
+		return err
+	}
+
 	repo.uploadProcessReport.FailedNamesWithReason = append(
 		repo.uploadProcessReport.FailedNamesWithReason,
 		valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),
 	)
+
+	return nil
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
@@ -347,7 +353,10 @@ func (repo FilesCmdRepo) Upload(
 		)
 		if err != nil {
 			for _, fileStreamHandler := range uploadUnixFiles.FileStreamHandlers {
-				repo.addUploadFailure(err.Error(), fileStreamHandler)
+				err := repo.addUploadFailure(err.Error(), fileStreamHandler)
+				if err != nil {
+					log.Printf("AddUploadFailureError: %s", err.Error())
+				}
 			}
 		}
 	}
