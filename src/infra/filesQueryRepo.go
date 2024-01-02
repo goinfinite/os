@@ -91,12 +91,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileSize := valueObject.Byte(fileInfo.Size())
 	unixFileUpdatedAt := valueObject.UnixTime(fileInfo.ModTime().Unix())
 
-	unixFileStreamPtr, err := os.Open(filePath.String())
-	if err != nil {
-		return unixFile, err
-	}
-	defer unixFileStreamPtr.Close()
-
 	unixFile = entity.NewUnixFile(
 		unixFilePath.GetFileName(),
 		unixFilePath,
@@ -109,7 +103,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileGid,
 		unixFileGroup,
 		unixFileUpdatedAt,
-		unixFileStreamPtr,
 	)
 
 	return unixFile, nil
