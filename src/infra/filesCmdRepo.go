@@ -333,7 +333,7 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
-		return repo.uploadProcessReport, err
+		return repo.uploadProcessReport, errors.New("DestinationFileNotFound")
 	}
 
 	if !destinationFile.MimeType.IsDir() {
