@@ -745,13 +745,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "FilesAndDirectoriesCompressed",
+                        "description": "FilesCompressed",
                         "schema": {
                             "type": "object"
                         }
                     },
                     "207": {
-                        "description": "FilesAndDirectoriesArePartialCompressed",
+                        "description": "FilesArePartialCompressed",
                         "schema": {
                             "type": "object"
                         }
@@ -832,7 +832,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "DirectoriesAndFilesDeleted",
+                        "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -871,7 +871,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ExtractFilesAndDirectories",
+                        "description": "FilesExtracted",
                         "schema": {
                             "type": "object"
                         }
