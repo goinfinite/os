@@ -8,10 +8,10 @@ func TestUnixCompressionType(t *testing.T) {
 			"gzip",
 			"zip",
 		}
-		for _, extension := range validUnixCompressionTypes {
-			_, err := NewUnixCompressionType(extension)
+		for _, unixCompressionType := range validUnixCompressionTypes {
+			_, err := NewUnixCompressionType(unixCompressionType)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", extension, err)
+				t.Errorf("Expected no error for %s, got %v", unixCompressionType, err)
 			}
 		}
 	})
@@ -22,10 +22,10 @@ func TestUnixCompressionType(t *testing.T) {
 			"jpeg",
 			"pdf",
 		}
-		for _, extension := range invalidUnixCompressionTypes {
-			_, err := NewUnixCompressionType(extension)
+		for _, unixCompressionType := range invalidUnixCompressionTypes {
+			_, err := NewUnixCompressionType(unixCompressionType)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", extension)
+				t.Errorf("Expected error for %s, got nil", unixCompressionType)
 			}
 		}
 	})
