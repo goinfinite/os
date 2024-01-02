@@ -1,13 +1,23 @@
 package valueObject
 
+import "errors"
+
 type FileProcessingFailure string
 
 func NewFileProcessingFailure(value string) (FileProcessingFailure, error) {
 	maxProcessingFailureSize := 256
 
-	maxProcessingFailureSizeIndex := maxProcessingFailureSize - 1
-	partialProcessingFailure := value[:maxProcessingFailureSizeIndex]
-	return FileProcessingFailure(partialProcessingFailure), nil
+	if len(value) < 1 {
+		return "", errors.New("EmptyProcessingFailure")
+	}
+
+	if len(value) > maxProcessingFailureSize {
+		maxProcessingFailureSizeIndex := maxProcessingFailureSize - 1
+		partialProcessingFailure := value[:maxProcessingFailureSizeIndex]
+		value = partialProcessingFailure
+	}
+
+	return FileProcessingFailure(value), nil
 }
 
 func NewFileProcessingFailurePanic(value string) FileProcessingFailure {
