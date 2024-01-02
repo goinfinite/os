@@ -645,7 +645,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Update a dir/file path, name and/or permissions (Only filePath is required).",
+                "description": "Move a dir/file, update name and/or permissions (Only filePath is required).",
                 "consumes": [
                     "application/json"
                 ],
