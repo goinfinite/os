@@ -60,7 +60,7 @@ func (repo FilesCmdRepo) uploadSingleFile(
 func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 	fileToCopyExists := infraHelper.FileExists(copyUnixFile.SourcePath.String())
 	if !fileToCopyExists {
-		return errors.New("FileToCopyDoesNotExists")
+		return errors.New("FileToCopyNotFound")
 	}
 
 	destinationPathExists := infraHelper.FileExists(copyUnixFile.DestinationPath.String())
@@ -84,7 +84,7 @@ func (repo FilesCmdRepo) Compress(
 	for _, sourcePath := range compressUnixFiles.SourcePaths {
 		sourcePathExists := infraHelper.FileExists(sourcePath.String())
 		if !sourcePathExists {
-			log.Printf("SourcePathDoesNotExists: %s", sourcePath.String())
+			log.Printf("SourcePathNotFound: %s", sourcePath.String())
 			continue
 		}
 
@@ -156,7 +156,7 @@ func (repo FilesCmdRepo) Compress(
 				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(
 					sourcePath,
-					"SourcePathDoesNotExists",
+					"SourcePathNotFound",
 				),
 			)
 		}
@@ -202,7 +202,7 @@ func (repo FilesCmdRepo) Delete(
 	for _, fileToDelete := range unixFilePathList {
 		fileExists := infraHelper.FileExists(fileToDelete.String())
 		if !fileExists {
-			log.Printf("DeleteFileError (%s): FileDoesNotExists", fileToDelete.String())
+			log.Printf("DeleteFileError (%s): FileNotFound", fileToDelete.String())
 			continue
 		}
 
@@ -221,7 +221,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 
 	fileToExtractExists := infraHelper.FileExists(fileToExtract.String())
 	if !fileToExtractExists {
-		return errors.New("FileDoesNotExists")
+		return errors.New("FileNotFound")
 	}
 
 	destinationPath := extractUnixFiles.DestinationPath
@@ -264,7 +264,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
 	if !fileToMoveExists {
-		return errors.New("FileToMoveDoesNotExists")
+		return errors.New("FileToMoveNotFound")
 	}
 
 	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())

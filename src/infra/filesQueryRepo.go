@@ -122,7 +122,7 @@ func (repo FilesQueryRepo) Get(
 
 	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
-		return unixFileList, errors.New("PathDoesNotExists")
+		return unixFileList, errors.New("PathNotFound")
 	}
 
 	filesToFactory := []valueObject.UnixFilePath{
@@ -190,7 +190,7 @@ func (repo FilesQueryRepo) GetOne(
 
 	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
-		return unixFile, errors.New("FileDoesNotExists")
+		return unixFile, errors.New("FileNotFound")
 	}
 
 	return repo.unixFileFactory(unixFilePath)
