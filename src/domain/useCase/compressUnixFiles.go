@@ -19,7 +19,7 @@ func CompressUnixFiles(
 		return compressionProcessReport, errors.New("CompressUnixFilesInfraError")
 	}
 
-	log.Printf("Compressed file %s created.", compressUnixFiles.DestinationPath)
+	log.Printf("Compressed file '%s' created.", compressUnixFiles.DestinationPath)
 
 	return compressionProcessReport, nil
 }
