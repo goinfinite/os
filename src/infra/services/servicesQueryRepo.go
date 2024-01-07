@@ -462,6 +462,18 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 		},
 	)
 
+	postgresql := entity.NewInstallableService(
+		valueObject.NewServiceNamePanic("postgresql"),
+		valueObject.NewServiceTypePanic("database"),
+		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("16"),
+			valueObject.NewServiceVersionPanic("15"),
+			valueObject.NewServiceVersionPanic("14"),
+			valueObject.NewServiceVersionPanic("13"),
+			valueObject.NewServiceVersionPanic("12"),
+		},
+	)
+
 	redisService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("redis"),
 		valueObject.NewServiceTypePanic("database"),
@@ -476,6 +488,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 		phpService,
 		nodeService,
 		mariadbService,
+		postgresql,
 		redisService,
 	}, nil
 }
