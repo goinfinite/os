@@ -12,6 +12,7 @@ import (
 func AddMapping(
 	queryRepo repository.VirtualHostQueryRepo,
 	cmdRepo repository.VirtualHostCmdRepo,
+	svcsQueryRepo repository.ServicesQueryRepo,
 	addMapping dto.AddMapping,
 ) error {
 	vhostWithMappings, err := queryRepo.GetWithMappings()
