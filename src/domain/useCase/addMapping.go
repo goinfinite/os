@@ -51,11 +51,20 @@ func AddMapping(
 	}
 
 	isServiceTarget := addMapping.TargetType.String() == "service"
-	if isServiceTarget && addMapping.TargetServiceName == nil {
-		return errors.New("TargetServiceNameRequired")
-	}
+	if isServiceTarget {
+		if addMapping.TargetServiceName == nil {
+			return errors.New("TargetServiceNameRequired")
+		}
 
-	// TODO: Check if service exposes any ports before adding mapping
+		service, err := svcsQueryRepo.GetByName(*addMapping.TargetServiceName)
+		if err != nil {
+			return err
+		}
+
+		if len(service.PortBindings) == 0 {
+			return errors.New("ServiceDoesNotExposesAnyPorts")
+		}
+	}
 
 	isUrlTarget := addMapping.TargetType.String() == "url"
 	if isUrlTarget && addMapping.TargetUrl == nil {
