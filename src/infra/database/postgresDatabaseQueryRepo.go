@@ -9,11 +9,7 @@ type PostgresDatabaseQueryRepo struct {
 }
 
 func PostgresqlCmd(cmd string) (string, error) {
-	return infraHelper.RunCmd(
-		"psql",
-		"-tAc",
-		cmd,
-	)
+	return infraHelper.RunCmd("psql", "-tAc", cmd)
 }
 
 func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
