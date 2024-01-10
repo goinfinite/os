@@ -2,7 +2,6 @@ package databaseInfra
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -17,7 +16,6 @@ func (repo PostgresDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 		"CREATE DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("AddDatabaseError: %v", err)
 		return errors.New("AddDatabaseError")
 	}
 
@@ -29,7 +27,6 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 		"DROP DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("DeleteDatabaseError: %v", err)
 		return errors.New("DeleteDatabaseError")
 	}
 
@@ -55,7 +52,6 @@ func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser)
 			"';",
 	)
 	if err != nil {
-		log.Printf("AddDatabaseUserError: %v", err)
 		return errors.New("AddDatabaseUserError")
 	}
 
@@ -74,7 +70,6 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 			"'@'%';",
 	)
 	if err != nil {
-		log.Printf("DeleteDatabaseUserError: %v", err)
 		return errors.New("DeleteDatabaseUserError")
 	}
 
