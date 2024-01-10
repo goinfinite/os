@@ -64,6 +64,14 @@ func AddMapping(
 		if len(service.PortBindings) == 0 {
 			return errors.New("ServiceDoesNotExposesAnyPorts")
 		}
+
+		for _, portBinding := range service.PortBindings {
+			isTcp := portBinding.Protocol.String() == "tcp"
+			isUdp := portBinding.Protocol.String() == "udp"
+			if isTcp || isUdp {
+				return errors.New("ProtocolUnsupportedToHaveMappings")
+			}
+		}
 	}
 
 	isUrlTarget := addMapping.TargetType.String() == "url"
