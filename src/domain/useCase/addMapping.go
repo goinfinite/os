@@ -62,7 +62,7 @@ func AddMapping(
 		}
 
 		if len(service.PortBindings) == 0 {
-			return errors.New("ServiceDoesNotExposesAnyPorts")
+			return errors.New("ServiceDoesNotExposeAnyPorts")
 		}
 
 		for _, portBinding := range service.PortBindings {
