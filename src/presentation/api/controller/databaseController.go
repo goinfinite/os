@@ -7,7 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -24,7 +24,7 @@ import (
 func GetDatabasesController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 
-	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
+	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
 	databasesList, err := useCase.GetDatabases(databaseQueryRepo)
 	if err != nil {
@@ -55,8 +55,8 @@ func AddDatabaseController(c echo.Context) error {
 	dbName := valueObject.NewDatabaseNamePanic(requestBody["dbName"].(string))
 	addDatabaseDto := dto.NewAddDatabase(dbName)
 
-	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err := useCase.AddDatabase(
 		databaseQueryRepo,
@@ -85,8 +85,8 @@ func DeleteDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
-	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err := useCase.DeleteDatabase(
 		databaseQueryRepo,
@@ -138,8 +138,8 @@ func AddDatabaseUserController(c echo.Context) error {
 		privileges,
 	)
 
-	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err := useCase.AddDatabaseUser(
 		databaseQueryRepo,
@@ -170,8 +170,8 @@ func DeleteDatabaseUserController(c echo.Context) error {
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 	dbUser := valueObject.NewDatabaseUsernamePanic(c.Param("dbUser"))
 
-	databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-	databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err := useCase.DeleteDatabaseUser(
 		databaseQueryRepo,

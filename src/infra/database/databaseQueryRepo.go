@@ -1,11 +1,10 @@
-package infra
+package databaseInfra
 
 import (
 	"errors"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	databaseInfra "github.com/speedianet/os/src/infra/database"
 )
 
 type DatabaseQueryRepo struct {
@@ -23,9 +22,9 @@ func NewDatabaseQueryRepo(
 func (repo DatabaseQueryRepo) Get() ([]entity.Database, error) {
 	switch repo.dbType {
 	case "mysql":
-		return databaseInfra.MysqlDatabaseQueryRepo{}.Get()
+		return MysqlDatabaseQueryRepo{}.Get()
 	case "postgres":
-		return databaseInfra.PostgresDatabaseQueryRepo{}.Get()
+		return PostgresDatabaseQueryRepo{}.Get()
 	default:
 		return []entity.Database{}, errors.New("DatabaseTypeNotSupported")
 	}
