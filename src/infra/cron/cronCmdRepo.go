@@ -1,4 +1,4 @@
-package infra
+package cronInfra
 
 import (
 	"os"
