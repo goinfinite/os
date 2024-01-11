@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,7 @@ func GetPhpConfigsController() *cobra.Command {
 			}
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -87,8 +88,8 @@ func UpdatePhpConfigController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			wsQueryRepo := infra.WsQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
@@ -149,8 +150,8 @@ func UpdatePhpSettingController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			wsQueryRepo := infra.WsQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
@@ -208,8 +209,8 @@ func UpdatePhpModuleController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			wsQueryRepo := infra.WsQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(

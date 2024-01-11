@@ -11,6 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -27,7 +28,7 @@ import (
 func GetPhpConfigsController(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
-	runtimeQueryRepo := infra.RuntimeQueryRepo{}
+	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -155,8 +156,8 @@ func UpdatePhpConfigsController(c echo.Context) error {
 		phpSettings,
 	)
 
-	runtimeQueryRepo := infra.RuntimeQueryRepo{}
-	runtimeCmdRepo := infra.RuntimeCmdRepo{}
+	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+	runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 	wsQueryRepo := infra.WsQueryRepo{}
 
 	err = useCase.UpdatePhpConfigs(
