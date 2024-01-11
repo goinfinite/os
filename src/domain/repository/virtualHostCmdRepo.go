@@ -10,4 +10,5 @@ type VirtualHostCmdRepo interface {
 	Delete(vhost entity.VirtualHost) error
 	AddMapping(addMapping dto.AddMapping) error
 	DeleteMapping(mapping entity.Mapping) error
+	RecreateMapping(mapping entity.Mapping) error
 }
