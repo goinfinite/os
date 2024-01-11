@@ -8,8 +8,8 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	wsInfra "github.com/speedianet/os/src/infra/webServer"
 	"golang.org/x/exp/slices"
 )
 
@@ -49,7 +49,7 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 func (r RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	vhconfFile := infra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	vhconfFile := wsInfra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
@@ -175,7 +175,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 func (r RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	vhconfFile := infra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	vhconfFile := wsInfra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
 	output, err := infraHelper.RunCmd(
 		"sed",
 		"-n",

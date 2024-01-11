@@ -8,9 +8,9 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	wsInfra "github.com/speedianet/os/src/infra/webServer"
 	"golang.org/x/exp/slices"
 )
 
@@ -40,7 +40,7 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	vhconfFile := infra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	vhconfFile := wsInfra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
 	_, err = infraHelper.RunCmd(
 		"sed",
@@ -59,7 +59,7 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	vhconfFile := infra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	vhconfFile := wsInfra.WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
 	for _, setting := range settings {
 		name := setting.Name.String()
 		value := setting.Value.String()

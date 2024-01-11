@@ -10,8 +10,8 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
+	wsInfra "github.com/speedianet/os/src/infra/webServer"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -158,7 +158,7 @@ func UpdatePhpConfigsController(c echo.Context) error {
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-	wsQueryRepo := infra.WsQueryRepo{}
+	wsQueryRepo := wsInfra.WsQueryRepo{}
 
 	err = useCase.UpdatePhpConfigs(
 		runtimeQueryRepo,
