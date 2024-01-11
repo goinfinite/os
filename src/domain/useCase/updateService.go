@@ -38,6 +38,8 @@ func updateServiceStatus(
 func UpdateService(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
 	serviceEntity, err := queryRepo.GetByName(updateDto.Name)
