@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
+	accountInfra "github.com/speedianet/os/src/infra/account"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -34,7 +35,7 @@ func AuthLoginController(c echo.Context) error {
 
 	authQueryRepo := infra.AuthQueryRepo{}
 	authCmdRepo := infra.AuthCmdRepo{}
-	accQueryRepo := infra.AccQueryRepo{}
+	accQueryRepo := accountInfra.AccQueryRepo{}
 
 	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
 
