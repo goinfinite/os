@@ -90,7 +90,7 @@ func UpdateService(
 		for _, mappingToRecreate := range mappingsToRecreate {
 			err = vhostCmdRepo.RecreateMapping(mappingToRecreate)
 			if err != nil {
-				log.Printf("RecreateMapping: %s", err.Error())
+				log.Printf("RecreateMappingError: %s", err.Error())
 			}
 		}
 	}
