@@ -69,7 +69,7 @@ func AddMapping(
 			isTcp := portBinding.Protocol.String() == "tcp"
 			isUdp := portBinding.Protocol.String() == "udp"
 			if isTcp || isUdp {
-				return errors.New("ProtocolUnsupportedToHaveMappings")
+				return errors.New("Layer4MappingNotSupportedYet")
 			}
 		}
 	}
