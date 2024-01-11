@@ -544,10 +544,5 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		mapping.TargetHttpResponseCode,
 	)
 
-	err = repo.AddMapping(mappingDto)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.AddMapping(mappingDto)
 }
