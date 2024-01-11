@@ -83,7 +83,6 @@ func UpdateService(
 				}
 
 				mappingsToRecreate = append(mappingsToRecreate, vhostMapping)
-				break
 			}
 		}
 
