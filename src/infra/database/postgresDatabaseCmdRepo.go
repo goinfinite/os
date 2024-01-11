@@ -52,7 +52,7 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 	dbName valueObject.DatabaseName,
 	dbUser valueObject.DatabaseUsername,
 ) error {
-	_, err := MysqlCmd(
+	_, err := PostgresqlCmd(
 		"REVOKE ALL PRIVILEGES ON " +
 			dbName.String() +
 			".* FROM '" +
