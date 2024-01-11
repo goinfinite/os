@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +16,7 @@ func GetSslPairsController() *cobra.Command {
 		Use:   "list",
 		Short: "GetSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslQueryRepo := infra.SslQueryRepo{}
+			sslQueryRepo := sslInfra.SslQueryRepo{}
 			sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -58,7 +58,7 @@ func AddSslPairController() *cobra.Command {
 				sslPrivateKey,
 			)
 
-			sslCmdRepo := infra.SslCmdRepo{}
+			sslCmdRepo := sslInfra.SslCmdRepo{}
 
 			err = useCase.AddSslPair(
 				sslCmdRepo,
@@ -90,8 +90,8 @@ func DeleteSslPairController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
-			cronQueryRepo := infra.SslQueryRepo{}
-			cronCmdRepo := infra.SslCmdRepo{}
+			cronQueryRepo := sslInfra.SslQueryRepo{}
+			cronCmdRepo := sslInfra.SslCmdRepo{}
 
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,
