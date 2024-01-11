@@ -7,8 +7,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -22,7 +22,7 @@ import (
 // @Success      200 {array} entity.VirtualHost
 // @Router       /vhosts/ [get]
 func GetVirtualHostsController(c echo.Context) error {
-	vhostsQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -69,8 +69,8 @@ func AddVirtualHostController(c echo.Context) error {
 		parentHostnamePtr,
 	)
 
-	vhostQueryRepo := infra.VirtualHostQueryRepo{}
-	vhostCmdRepo := infra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.AddVirtualHost(
 		vhostQueryRepo,
@@ -97,8 +97,8 @@ func AddVirtualHostController(c echo.Context) error {
 func DeleteVirtualHostController(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
-	vhostsQueryRepo := infra.VirtualHostQueryRepo{}
-	vhostsCmdRepo := infra.VirtualHostCmdRepo{}
+	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostsCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	primaryHostname, err := infraHelper.GetPrimaryHostname()
 	if err != nil {
@@ -128,7 +128,7 @@ func DeleteVirtualHostController(c echo.Context) error {
 // @Success      200 {array} dto.VirtualHostWithMappings
 // @Router       /vhosts/mapping/ [get]
 func GetVirtualHostsWithMappingsController(c echo.Context) error {
-	vhostsQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostsQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -198,8 +198,8 @@ func AddVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr,
 	)
 
-	vhostQueryRepo := infra.VirtualHostQueryRepo{}
-	vhostCmdRepo := infra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.AddMapping(
 		vhostQueryRepo,
@@ -228,8 +228,8 @@ func DeleteVirtualHostMappingController(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 
-	vhostQueryRepo := infra.VirtualHostQueryRepo{}
-	vhostCmdRepo := infra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.DeleteMapping(
 		vhostQueryRepo,

@@ -4,8 +4,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +15,7 @@ func GetVirtualHostsController() *cobra.Command {
 		Use:   "get",
 		Short: "GetVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostsList, err := useCase.GetVirtualHosts(vhostQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -57,8 +57,8 @@ func AddVirtualHostController() *cobra.Command {
 				parentHostnamePtr,
 			)
 
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.AddVirtualHost(
 				vhostQueryRepo,
@@ -93,8 +93,8 @@ func DeleteVirtualHostController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			primaryHostname, err := infraHelper.GetPrimaryHostname()
 			if err != nil {
@@ -125,7 +125,7 @@ func GetVirtualHostsWithMappingsController() *cobra.Command {
 		Use:   "get",
 		Short: "GetVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -190,8 +190,8 @@ func AddVirtualHostMappingController() *cobra.Command {
 				targetHttpResponseCodePtr,
 			)
 
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.AddMapping(
 				vhostQueryRepo,
@@ -238,8 +238,8 @@ func DeleteVirtualHostMappingController() *cobra.Command {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
 
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.DeleteMapping(
 				vhostQueryRepo,
