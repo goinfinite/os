@@ -6,11 +6,48 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
+
+func serviceMappingFactory(
+	primaryHostname valueObject.Fqdn,
+	svcName valueObject.ServiceName,
+) (dto.AddMapping, error) {
+	var serviceMapping dto.AddMapping
+
+	svcMappingPath, err := valueObject.NewMappingPath("/")
+	if err != nil {
+		return serviceMapping, err
+	}
+
+	svcMappingMatchPattern, err := valueObject.NewMappingMatchPattern("begins-with")
+	if err != nil {
+		return serviceMapping, err
+	}
+
+	svcMappingTargetType, err := valueObject.NewMappingTargetType("service")
+	if err != nil {
+		return serviceMapping, err
+	}
+
+	serviceMapping = dto.NewAddMapping(
+		primaryHostname,
+		svcMappingPath,
+		svcMappingMatchPattern,
+		svcMappingTargetType,
+		&svcName,
+		nil,
+		nil,
+	)
+
+	return serviceMapping, nil
+}
 
 func AddCustomService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	addDto dto.AddCustomService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(addDto.Name)
@@ -22,6 +59,46 @@ func AddCustomService(
 	if err != nil {
 		log.Printf("AddCustomServiceError: %v", err)
 		return errors.New("AddCustomServiceInfraError")
+	}
+
+	defaultAutoCreateMapping := true
+	if addDto.AutoCreateMapping == nil {
+		addDto.AutoCreateMapping = &defaultAutoCreateMapping
+	}
+
+	isRuntimeSvc := addDto.Type.String() == "runtime"
+	isApplicationSvc := addDto.Type.String() == "application"
+	if !isRuntimeSvc && !isApplicationSvc {
+		return nil
+	}
+
+	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+	if err != nil {
+		return errors.New("GetVhostsWithMappingsInfraError")
+	}
+
+	if len(vhostsWithMappings) == 0 {
+		return errors.New("VhostsNotFound")
+	}
+
+	primaryVhostWithMapping := vhostsWithMappings[0]
+	if len(primaryVhostWithMapping.Mappings) != 0 {
+		return nil
+	}
+
+	serviceMapping, err := serviceMappingFactory(
+		primaryVhostWithMapping.Hostname,
+		addDto.Name,
+	)
+	if err != nil {
+		log.Printf("AddServiceMappingError: %s", err.Error())
+		return errors.New("AddServiceMappingError")
+	}
+
+	err = vhostCmdRepo.AddMapping(serviceMapping)
+	if err != nil {
+		log.Printf("AddServiceMappingError: %s", err.Error())
+		return errors.New("AddServiceMappingInfraError")
 	}
 
 	return nil
