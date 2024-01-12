@@ -28,7 +28,7 @@ func TestAddCustom(t *testing.T) {
 			valueObject.NewUnixCommandPanic("python3 -m http.server"),
 			nil,
 			[]valueObject.PortBinding{portBinding},
-			false,
+			nil,
 		)
 
 		err = AddCustom(dto)
