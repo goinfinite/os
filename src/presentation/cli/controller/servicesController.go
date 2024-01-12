@@ -117,6 +117,7 @@ func AddCustomServiceController() *cobra.Command {
 	var commandStr string
 	var versionStr string
 	var portBindingsSlice []string
+	var autoCreateMapping *bool
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
@@ -147,6 +148,7 @@ func AddCustomServiceController() *cobra.Command {
 				svcCommand,
 				svcVersionPtr,
 				portBindings,
+				autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
@@ -174,6 +176,13 @@ func AddCustomServiceController() *cobra.Command {
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
+	cmd.Flags().BoolVarP(
+		autoCreateMapping,
+		"auto-create-mapping",
+		"a",
+		true,
+		"AutoCreateMapping",
 	)
 	return cmd
 }
