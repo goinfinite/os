@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -168,20 +169,43 @@ func AddCustomServiceController(c echo.Context) error {
 		)
 	}
 
+	var autoCreateMappingPtr *bool
+	if requestBody["autoCreateMapping"] != nil {
+		autoCreateMapping, assertOk := requestBody["autoCreateMapping"].(bool)
+		if !assertOk {
+			var err error
+			autoCreateMapping, err = strconv.ParseBool(
+				requestBody["autoCreateMapping"].(string),
+			)
+			if err != nil {
+				return apiHelper.ResponseWrapper(
+					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
+				)
+			}
+		}
+
+		autoCreateMappingPtr = &autoCreateMapping
+	}
+
 	addCustomServiceDto := dto.NewAddCustomService(
 		svcName,
 		svcType,
 		svcCommand,
 		svcVersionPtr,
 		svcPortBindings,
+		autoCreateMappingPtr,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 	err := useCase.AddCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		addCustomServiceDto,
 	)
 
