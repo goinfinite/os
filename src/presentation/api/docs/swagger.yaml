@@ -1259,7 +1259,25 @@ paths:
       summary: AddCustomService
       tags:
       - services
-  /services/installable/:
+  /services/installables/:
+    get:
+      consumes:
+      - application/json
+      description: List installable services.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.InstallableService'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetInstallableServices
+      tags:
+      - services
     post:
       consumes:
       - application/json
@@ -1281,25 +1299,6 @@ paths:
       security:
       - Bearer: []
       summary: AddInstallableService
-      tags:
-      - services
-  /services/installables/:
-    get:
-      consumes:
-      - application/json
-      description: List installable services.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.InstallableService'
-            type: array
-      security:
-      - Bearer: []
-      summary: GetInstallableServices
       tags:
       - services
   /ssl/:

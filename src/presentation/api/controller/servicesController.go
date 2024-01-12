@@ -77,7 +77,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Security     Bearer
 // @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
-// @Router       /services/installable/ [post]
+// @Router       /services/installables/ [post]
 func AddInstallableServiceController(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
