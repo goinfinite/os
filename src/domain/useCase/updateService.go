@@ -2,6 +2,7 @@ package useCase
 
 import (
 	"errors"
+	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -38,6 +39,8 @@ func updateServiceStatus(
 func UpdateService(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
 	serviceEntity, err := queryRepo.GetByName(updateDto.Name)
@@ -60,7 +63,36 @@ func UpdateService(
 		return errors.New("SoloServicesVersionCannotBeChanged")
 	}
 
-	// TODO: Recreate any mapping pointing to the service if bindings changed.
+	err = cmdRepo.Update(updateDto)
+	if err != nil {
+		log.Printf("UpdateServiceError: %s", err.Error())
+		return errors.New("UpdateServiceInfraError")
+	}
 
-	return cmdRepo.Update(updateDto)
+	if len(updateDto.PortBindings) > 0 {
+		vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+		if err != nil {
+			return err
+		}
+
+		var mappingsToRecreate []entity.Mapping
+		for _, vhostWithMapping := range vhostsWithMappings {
+			for _, vhostMapping := range vhostWithMapping.Mappings {
+				if vhostMapping.TargetServiceName.String() != updateDto.Name.String() {
+					continue
+				}
+
+				mappingsToRecreate = append(mappingsToRecreate, vhostMapping)
+			}
+		}
+
+		for _, mappingToRecreate := range mappingsToRecreate {
+			err = vhostCmdRepo.RecreateMapping(mappingToRecreate)
+			if err != nil {
+				log.Printf("RecreateMappingError: %s", err.Error())
+			}
+		}
+	}
+
+	return nil
 }
