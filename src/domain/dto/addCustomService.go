@@ -8,7 +8,7 @@ type AddCustomService struct {
 	Command           valueObject.UnixCommand     `json:"command"`
 	Version           *valueObject.ServiceVersion `json:"version,omitempty"`
 	PortBindings      []valueObject.PortBinding   `json:"portBindings,omitempty"`
-	AutoCreateMapping bool                        `json:"autoCreateMapping"`
+	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
 }
 
 func NewAddCustomService(
@@ -17,7 +17,7 @@ func NewAddCustomService(
 	command valueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
 	portBindings []valueObject.PortBinding,
-	autoCreateMapping bool,
+	autoCreateMapping *bool,
 ) AddCustomService {
 	return AddCustomService{
 		Name:              name,
