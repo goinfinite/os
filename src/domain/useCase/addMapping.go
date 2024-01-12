@@ -12,6 +12,7 @@ import (
 func AddMapping(
 	queryRepo repository.VirtualHostQueryRepo,
 	cmdRepo repository.VirtualHostCmdRepo,
+	svcsQueryRepo repository.ServicesQueryRepo,
 	addMapping dto.AddMapping,
 ) error {
 	vhostWithMappings, err := queryRepo.GetWithMappings()
@@ -50,11 +51,28 @@ func AddMapping(
 	}
 
 	isServiceTarget := addMapping.TargetType.String() == "service"
-	if isServiceTarget && addMapping.TargetServiceName == nil {
-		return errors.New("TargetServiceNameRequired")
-	}
+	if isServiceTarget {
+		if addMapping.TargetServiceName == nil {
+			return errors.New("TargetServiceNameRequired")
+		}
 
-	// TODO: Check if service exposes any ports before adding mapping
+		service, err := svcsQueryRepo.GetByName(*addMapping.TargetServiceName)
+		if err != nil {
+			return err
+		}
+
+		if len(service.PortBindings) == 0 {
+			return errors.New("ServiceDoesNotExposeAnyPorts")
+		}
+
+		for _, portBinding := range service.PortBindings {
+			isTcp := portBinding.Protocol.String() == "tcp"
+			isUdp := portBinding.Protocol.String() == "udp"
+			if isTcp || isUdp {
+				return errors.New("Layer4MappingNotSupportedYet")
+			}
+		}
+	}
 
 	isUrlTarget := addMapping.TargetType.String() == "url"
 	if isUrlTarget && addMapping.TargetUrl == nil {
