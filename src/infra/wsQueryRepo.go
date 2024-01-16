@@ -13,18 +13,6 @@ import (
 type WsQueryRepo struct {
 }
 
-func (ws WsQueryRepo) GetVirtualHostConfFilePath(
-	hostname valueObject.Fqdn,
-) string {
-	vhconfFile := "/app/conf/vhconf.conf"
-	mainVirtualHost := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
-	if hostname != mainVirtualHost {
-		vhconfFile = "/app/domains/" + string(hostname) + "/conf/vhconf.conf"
-	}
-
-	return vhconfFile
-}
-
 func (ws WsQueryRepo) GetVirtualHosts() ([]valueObject.Fqdn, error) {
 	olsConfigFile := "/usr/local/lsws/conf/httpd_config.conf"
 	output, err := infraHelper.RunCmd(
