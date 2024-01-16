@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -13,6 +14,18 @@ import (
 )
 
 type RuntimeQueryRepo struct {
+}
+
+func (r RuntimeQueryRepo) GetPhpPrimaryConfFilePath(
+	hostname valueObject.Fqdn,
+) string {
+	primaryConfFile := "/app/conf/php/primary.conf"
+	mainVirtualHost := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
+	if hostname != mainVirtualHost {
+		primaryConfFile = "/app/domains/" + string(hostname) + "/conf/php/primary.conf"
+	}
+
+	return primaryConfFile
 }
 
 func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
@@ -48,11 +61,11 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 func (r RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	vhconfFile := WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	primaryConfFilePath := r.GetPhpPrimaryConfFilePath(hostname)
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		vhconfFile,
+		primaryConfFilePath,
 	)
 	if err != nil {
 		log.Printf("FailedToGetPhpVersion: %v", err)
@@ -174,12 +187,12 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 func (r RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	vhconfFile := WsQueryRepo{}.GetVirtualHostConfFilePath(hostname)
+	primaryConfFilePath := r.GetPhpPrimaryConfFilePath(hostname)
 	output, err := infraHelper.RunCmd(
 		"sed",
 		"-n",
 		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-		vhconfFile,
+		primaryConfFilePath,
 	)
 	if err != nil || output == "" {
 		log.Printf("FailedToGetPhpSettings: %v", err)
