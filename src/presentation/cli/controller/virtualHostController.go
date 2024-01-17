@@ -6,6 +6,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -192,10 +193,12 @@ func AddVirtualHostMappingController() *cobra.Command {
 
 			vhostQueryRepo := infra.VirtualHostQueryRepo{}
 			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 			err := useCase.AddMapping(
 				vhostQueryRepo,
 				vhostCmdRepo,
+				svcsQueryRepo,
 				addMappingDto,
 			)
 			if err != nil {

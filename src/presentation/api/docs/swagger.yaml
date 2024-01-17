@@ -97,6 +97,40 @@ definitions:
       type:
         type: string
     type: object
+  dto.CompressUnixFiles:
+    properties:
+      compressionType:
+        type: string
+      destinationPath:
+        type: string
+      sourcePaths:
+        items:
+          type: string
+        type: array
+    type: object
+  dto.CopyUnixFile:
+    properties:
+      destinationPath:
+        type: string
+      sourcePath:
+        type: string
+    type: object
+  dto.CreateUnixFile:
+    properties:
+      mimeType:
+        type: string
+      permissions:
+        type: string
+      sourcePath:
+        type: string
+    type: object
+  dto.ExtractUnixFiles:
+    properties:
+      destinationPath:
+        type: string
+      sourcePath:
+        type: string
+    type: object
   dto.Login:
     properties:
       password:
@@ -179,6 +213,17 @@ definitions:
       type:
         type: string
       version:
+        type: string
+    type: object
+  dto.UpdateUnixFile:
+    properties:
+      destinationPath:
+        type: string
+      encodedContent:
+        type: string
+      permissions:
+        type: string
+      sourcePath:
         type: string
     type: object
   dto.VirtualHostWithMappings:
@@ -367,6 +412,31 @@ definitions:
         type: string
       sslPairId:
         type: string
+    type: object
+  entity.UnixFile:
+    properties:
+      extension:
+        type: string
+      gid:
+        type: integer
+      group:
+        type: string
+      mimeType:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+      permissions:
+        type: string
+      size:
+        type: integer
+      uid:
+        type: integer
+      updatedAt:
+        type: integer
     type: object
   entity.VirtualHost:
     properties:
@@ -826,6 +896,212 @@ paths:
       summary: DeleteDatabaseUser
       tags:
       - database
+  /files/:
+    get:
+      consumes:
+      - application/json
+      description: List dir/files.
+      parameters:
+      - description: UnixFilePath
+        in: query
+        name: unixFilePath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.UnixFile'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetFiles
+      tags:
+      - files
+    post:
+      consumes:
+      - application/json
+      description: Add a new dir/file.
+      parameters:
+      - description: NewFile
+        in: body
+        name: createFileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUnixFile'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: FileCreated/DirectoryCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: AddNewFile
+      tags:
+      - files
+    put:
+      consumes:
+      - application/json
+      description: Move a dir/file, update name and/or permissions (Only filePath
+        is required).
+      parameters:
+      - description: UpdateFile
+        in: body
+        name: updateUnixFileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUnixFile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FileUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateFile
+      tags:
+      - files
+  /files/compress/:
+    post:
+      consumes:
+      - application/json
+      description: Compress directories and files.
+      parameters:
+      - description: CompressFiles
+        in: body
+        name: compressFilesDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CompressUnixFiles'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FilesCompressed
+          schema:
+            type: object
+        "207":
+          description: FilesArePartialCompressed
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CompressFiles
+      tags:
+      - files
+  /files/copy/:
+    post:
+      consumes:
+      - application/json
+      description: Copy a dir/file.
+      parameters:
+      - description: NewFileCopy
+        in: body
+        name: copyFileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CopyUnixFile'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: FileCopied
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CopyFile
+      tags:
+      - files
+  /files/delete/:
+    put:
+      consumes:
+      - application/json
+      description: Delete one or more directories/files.
+      parameters:
+      - description: UnixFilePath
+        in: body
+        name: filePath
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FilesDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteFiles
+      tags:
+      - files
+  /files/extract/:
+    put:
+      consumes:
+      - application/json
+      description: Extract directories and files.
+      parameters:
+      - description: ExtractFiles
+        in: body
+        name: extractFilesDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ExtractUnixFiles'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FilesExtracted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: ExtractFiles
+      tags:
+      - files
+  /files/upload/:
+    post:
+      consumes:
+      - application/json
+      description: Upload files.
+      parameters:
+      - description: DestinationPath
+        in: path
+        name: destinationPath
+        required: true
+        type: string
+      - description: FileToUpload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FilesUploaded
+          schema:
+            type: object
+        "207":
+          description: FilesPartialUploaded
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UploadFiles
+      tags:
+      - files
   /o11y/overview/:
     get:
       consumes:
@@ -983,7 +1259,25 @@ paths:
       summary: AddCustomService
       tags:
       - services
-  /services/installable/:
+  /services/installables/:
+    get:
+      consumes:
+      - application/json
+      description: List installable services.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.InstallableService'
+            type: array
+      security:
+      - Bearer: []
+      summary: GetInstallableServices
+      tags:
+      - services
     post:
       consumes:
       - application/json
@@ -1005,25 +1299,6 @@ paths:
       security:
       - Bearer: []
       summary: AddInstallableService
-      tags:
-      - services
-  /services/installables/:
-    get:
-      consumes:
-      - application/json
-      description: List installable services.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.InstallableService'
-            type: array
-      security:
-      - Bearer: []
-      summary: GetInstallableServices
       tags:
       - services
   /ssl/:

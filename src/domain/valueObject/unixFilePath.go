@@ -2,23 +2,32 @@ package valueObject
 
 import (
 	"errors"
+	"path/filepath"
 	"regexp"
+	"strings"
 )
 
-const unixFilePathRegexExpression = `^\/(?:[\w\p{Latin}\. \-]+\/)*[\w\p{Latin}\. \-]+$`
+const unixFilePathRegexExpression = `^\/?[^\n\r\t\f\0\?\[\]\<\>]+$`
+const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
-func NewUnixFilePath(unixFilePathStr string) (UnixFilePath, error) {
-	unixFilePath := UnixFilePath(unixFilePathStr)
+func NewUnixFilePath(value string) (UnixFilePath, error) {
+	unixFilePath := UnixFilePath(value)
+
 	if !unixFilePath.isValid() {
 		return "", errors.New("InvalidUnixFilePath")
 	}
+
+	if unixFilePath.isRelative() {
+		return "", errors.New("RelativePathNotAllowed")
+	}
+
 	return unixFilePath, nil
 }
 
-func NewUnixFilePathPanic(unixFilePathStr string) UnixFilePath {
-	unixFilePath, err := NewUnixFilePath(unixFilePathStr)
+func NewUnixFilePathPanic(value string) UnixFilePath {
+	unixFilePath, err := NewUnixFilePath(value)
 	if err != nil {
 		panic(err)
 	}
@@ -26,8 +35,39 @@ func NewUnixFilePathPanic(unixFilePathStr string) UnixFilePath {
 }
 
 func (unixFilePath UnixFilePath) isValid() bool {
-	unixFilePathRegexRegex := regexp.MustCompile(unixFilePathRegexExpression)
-	return unixFilePathRegexRegex.MatchString(string(unixFilePath))
+	unixFilePathRegex := regexp.MustCompile(unixFilePathRegexExpression)
+	return unixFilePathRegex.MatchString(string(unixFilePath))
+}
+
+func (unixFilePath UnixFilePath) isRelative() bool {
+	unixFilePathStr := string(unixFilePath)
+
+	isOnlyFileName := !strings.Contains(unixFilePathStr, "/")
+
+	unixFileRelativePathRegex := regexp.MustCompile(unixFileRelativePathRegexExpression)
+	return isOnlyFileName || unixFileRelativePathRegex.MatchString(unixFilePathStr)
+}
+
+func (unixFilePath UnixFilePath) GetWithoutExtension() UnixFilePath {
+	unixFilePathWithoutExtStr := strings.Split(string(unixFilePath), ".")[0]
+	unixFilePathWithoutExt, _ := NewUnixFilePath(unixFilePathWithoutExtStr)
+	return unixFilePathWithoutExt
+}
+
+func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
+	unixFileBase := filepath.Base(string(unixFilePath))
+	unixFileName, _ := NewUnixFileName(unixFileBase)
+	return unixFileName
+}
+
+func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
+	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
+	return NewUnixFileExtension(unixFileExtensionStr)
+}
+
+func (unixFilePath UnixFilePath) GetFileDir() UnixFilePath {
+	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(unixFilePath)))
+	return unixFileDirPath
 }
 
 func (unixFilePath UnixFilePath) String() string {

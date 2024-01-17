@@ -25,7 +25,8 @@ var NativeSvcNamesWithAliases = map[string][]string{
 		"perconadb",
 		"percona-server-mysqld",
 	},
-	"redis": {"redis-server"},
+	"postgresql": {"postgres"},
+	"redis":      {"redis-server"},
 }
 
 func NewServiceName(value string) (ServiceName, error) {
