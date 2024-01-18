@@ -18,9 +18,10 @@ import (
 )
 
 var supportedServicesVersion = map[string]string{
-	"mariadb": `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`,
-	"node":    `^(1[2-9]|20)$`,
-	"redis":   `^6\.(0|2)|^7\.0$`,
+	"mariadb":    `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`,
+	"postgresql": `^(1[2-6])$`,
+	"node":       `^(1[2-9]|20)$`,
+	"redis":      `^6\.(0|2)|^7\.0$`,
 }
 
 var OlsPackages = []string{
@@ -430,6 +431,83 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	return nil
 }
 
+func addPostgresqlDb(addDto dto.AddInstallableService) error {
+	versionStr := "16"
+	if addDto.Version != nil {
+		versionStr = addDto.Version.String()
+		re := regexp.MustCompile(supportedServicesVersion["postgresql"])
+		isVersionAllowed := re.MatchString(versionStr)
+
+		if !isVersionAllowed {
+			return errors.New("InvalidPostgresqlVersion: " + versionStr)
+		}
+	}
+
+	_, err := infraHelper.RunCmd("apt", "update")
+	if err != nil {
+		return errors.New("AptUpdateError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"apt",
+		"install",
+		"-y",
+		"postgresql-common",
+	)
+	if err != nil {
+		return errors.New("InstallRequiredPackageError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"bash",
+		"-c",
+		"echo | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh",
+	)
+	if err != nil {
+		return errors.New("RepoAddError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"apt",
+		"install",
+		"-y",
+		"postgresql-"+versionStr,
+	)
+	if err != nil {
+		return errors.New("RepoAddError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"pg_dropcluster",
+		versionStr,
+		"main",
+	)
+	if err != nil {
+		return errors.New("DropDefaultClusterError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"pg_createcluster",
+		versionStr,
+		"main",
+		"--start",
+	)
+	if err != nil {
+		return errors.New("CreateAndStartMainClusterError: " + err.Error())
+	}
+
+	// TODO: Configurar o usuário dentro do banco (postInstallQueries)
+
+	// TODO: Adicionar configuração semelhante ao .my.cnf do PostgreSQL, o ~/.pgpass
+	// TODO: formato do .pgpass: hostname:port:database:username:password
+
+	// TODO: Desligar o PostgreSQL
+
+	// TODO: Adicionar o PostgreSQL ao Supervisord
+
+	return nil
+}
+
 func addRedis(addDto dto.AddInstallableService) error {
 	versionFlag := ""
 	versionStr := "latest"
@@ -564,6 +642,8 @@ func AddInstallable(
 		return addNode(addDto)
 	case "mariadb":
 		return addMariaDb(addDto)
+	case "postgresql":
+		return addPostgresqlDb(addDto)
 	case "redis":
 		return addRedis(addDto)
 	default:

@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
@@ -200,10 +201,12 @@ func AddVirtualHostMappingController(c echo.Context) error {
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 	err := useCase.AddMapping(
 		vhostQueryRepo,
 		vhostCmdRepo,
+		svcsQueryRepo,
 		addMappingDto,
 	)
 	if err != nil {

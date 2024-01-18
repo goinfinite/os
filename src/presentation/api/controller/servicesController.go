@@ -2,11 +2,13 @@ package apiController
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
@@ -77,7 +79,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Security     Bearer
 // @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
-// @Router       /services/installable/ [post]
+// @Router       /services/installables/ [post]
 func AddInstallableServiceController(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -167,20 +169,43 @@ func AddCustomServiceController(c echo.Context) error {
 		)
 	}
 
+	var autoCreateMappingPtr *bool
+	if requestBody["autoCreateMapping"] != nil {
+		autoCreateMapping, assertOk := requestBody["autoCreateMapping"].(bool)
+		if !assertOk {
+			var err error
+			autoCreateMapping, err = strconv.ParseBool(
+				requestBody["autoCreateMapping"].(string),
+			)
+			if err != nil {
+				return apiHelper.ResponseWrapper(
+					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
+				)
+			}
+		}
+
+		autoCreateMappingPtr = &autoCreateMapping
+	}
+
 	addCustomServiceDto := dto.NewAddCustomService(
 		svcName,
 		svcType,
 		svcCommand,
 		svcVersionPtr,
 		svcPortBindings,
+		autoCreateMappingPtr,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 	err := useCase.AddCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		addCustomServiceDto,
 	)
 
@@ -268,10 +293,14 @@ func UpdateServiceController(c echo.Context) error {
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 	err := useCase.UpdateService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		updateSvcDto,
 	)
 	if err != nil {

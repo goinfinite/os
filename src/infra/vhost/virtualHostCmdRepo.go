@@ -527,3 +527,22 @@ func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 
 	return repo.reloadWebServer()
 }
+
+func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
+	err := repo.DeleteMapping(mapping)
+	if err != nil {
+		return err
+	}
+
+	mappingDto := dto.NewAddMapping(
+		mapping.Hostname,
+		mapping.Path,
+		mapping.MatchPattern,
+		mapping.TargetType,
+		mapping.TargetServiceName,
+		mapping.TargetUrl,
+		mapping.TargetHttpResponseCode,
+	)
+
+	return repo.AddMapping(mappingDto)
+}

@@ -4,6 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/speedianet/os/src/infra"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
@@ -117,6 +118,7 @@ func AddCustomServiceController() *cobra.Command {
 	var commandStr string
 	var versionStr string
 	var portBindingsSlice []string
+	var autoCreateMapping *bool
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
@@ -147,14 +149,19 @@ func AddCustomServiceController() *cobra.Command {
 				svcCommand,
 				svcVersionPtr,
 				portBindings,
+				autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 			err := useCase.AddCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				vhostQueryRepo,
+				vhostCmdRepo,
 				addCustomServiceDto,
 			)
 			if err != nil {
@@ -174,6 +181,13 @@ func AddCustomServiceController() *cobra.Command {
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
+	cmd.Flags().BoolVarP(
+		autoCreateMapping,
+		"auto-create-mapping",
+		"a",
+		true,
+		"AutoCreateMapping",
 	)
 	return cmd
 }
@@ -244,10 +258,14 @@ func UpdateServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 			err := useCase.UpdateService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				vhostQueryRepo,
+				vhostCmdRepo,
 				updateSvcDto,
 			)
 			if err != nil {
