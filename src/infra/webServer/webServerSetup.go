@@ -153,7 +153,7 @@ func WebServerOnStartSetup() {
 	}
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
-	if err != nil {
+	if err == nil {
 		updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,
 		)
