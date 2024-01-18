@@ -3,6 +3,8 @@ package apiInit
 import webServerInfra "github.com/speedianet/os/src/infra/webServer"
 
 func WebServerSetup() {
-	webServerInfra.WebServerFirstSetup()
-	webServerInfra.WebServerOnStartSetup()
+	ws := webServerInfra.WebServerSetup{}
+
+	ws.FirstSetup()
+	ws.OnStartSetup()
 }

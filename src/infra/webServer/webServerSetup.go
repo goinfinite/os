@@ -11,6 +11,8 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
+type WebServerSetup struct {}
+
 func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxChildProcesses...")
 
@@ -37,7 +39,7 @@ func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	}
 }
 
-func WebServerFirstSetup() {
+func (ws WebServerSetup) FirstSetup() {
 	_, err := os.Stat("/etc/nginx/dhparam.pem")
 	if err == nil {
 		return
@@ -109,7 +111,7 @@ func WebServerFirstSetup() {
 	}
 }
 
-func WebServerOnStartSetup() {
+func (ws WebServerSetup) OnStartSetup() {
 	defaultLogPreffix := "WsonStartupSetup"
 
 	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
