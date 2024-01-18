@@ -4,7 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	cronInfra "github.com/speedianet/os/src/infra/cron"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +14,7 @@ func GetCronsController() *cobra.Command {
 		Use:   "list",
 		Short: "GetCrons",
 		Run: func(cmd *cobra.Command, args []string) {
-			cronQueryRepo := infra.CronQueryRepo{}
+			cronQueryRepo := cronInfra.CronQueryRepo{}
 
 			cronsList, err := useCase.GetCrons(cronQueryRepo)
 			if err != nil {
@@ -48,7 +48,7 @@ func AddCronControler() *cobra.Command {
 				commentPtr,
 			)
 
-			cronCmdRepo, err := infra.NewCronCmdRepo()
+			cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -108,8 +108,8 @@ func UpdateCronController() *cobra.Command {
 				commentPtr,
 			)
 
-			cronQueryRepo := infra.CronQueryRepo{}
-			cronCmdRepo, err := infra.NewCronCmdRepo()
+			cronQueryRepo := cronInfra.CronQueryRepo{}
+			cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -144,8 +144,8 @@ func DeleteCronController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			cronId := valueObject.NewCronIdPanic(cronIdStr)
 
-			cronQueryRepo := infra.CronQueryRepo{}
-			cronCmdRepo, err := infra.NewCronCmdRepo()
+			cronQueryRepo := cronInfra.CronQueryRepo{}
+			cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}

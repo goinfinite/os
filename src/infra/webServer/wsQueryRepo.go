@@ -1,4 +1,4 @@
-package infra
+package wsInfra
 
 import (
 	"errors"

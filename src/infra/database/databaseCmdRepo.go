@@ -1,11 +1,10 @@
-package infra
+package databaseInfra
 
 import (
 	"errors"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
-	databaseInfra "github.com/speedianet/os/src/infra/database"
 )
 
 type DatabaseCmdRepo struct {
@@ -23,9 +22,9 @@ func NewDatabaseCmdRepo(
 func (repo DatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 	switch repo.dbType {
 	case "mysql":
-		return databaseInfra.MysqlDatabaseCmdRepo{}.Add(dbName)
+		return MysqlDatabaseCmdRepo{}.Add(dbName)
 	case "postgres":
-		return databaseInfra.PostgresDatabaseCmdRepo{}.Add(dbName)
+		return PostgresDatabaseCmdRepo{}.Add(dbName)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}
@@ -34,9 +33,9 @@ func (repo DatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	switch repo.dbType {
 	case "mysql":
-		return databaseInfra.MysqlDatabaseCmdRepo{}.Delete(dbName)
+		return MysqlDatabaseCmdRepo{}.Delete(dbName)
 	case "postgres":
-		return databaseInfra.PostgresDatabaseCmdRepo{}.Delete(dbName)
+		return PostgresDatabaseCmdRepo{}.Delete(dbName)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}
@@ -45,9 +44,9 @@ func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
 	switch repo.dbType {
 	case "mysql":
-		return databaseInfra.MysqlDatabaseCmdRepo{}.AddUser(addDatabaseUser)
+		return MysqlDatabaseCmdRepo{}.AddUser(addDatabaseUser)
 	case "postgres":
-		return databaseInfra.PostgresDatabaseCmdRepo{}.AddUser(addDatabaseUser)
+		return PostgresDatabaseCmdRepo{}.AddUser(addDatabaseUser)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}
@@ -59,9 +58,9 @@ func (repo DatabaseCmdRepo) DeleteUser(
 ) error {
 	switch repo.dbType {
 	case "mysql":
-		return databaseInfra.MysqlDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
+		return MysqlDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
 	case "postgres":
-		return databaseInfra.PostgresDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
+		return PostgresDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}

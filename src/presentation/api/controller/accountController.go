@@ -7,7 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	accountInfra "github.com/speedianet/os/src/infra/account"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success      200 {array} entity.Account
 // @Router       /account/ [get]
 func GetAccountsController(c echo.Context) error {
-	accountsQueryRepo := infra.AccQueryRepo{}
+	accountsQueryRepo := accountInfra.AccQueryRepo{}
 	accountsList, err := useCase.GetAccounts(accountsQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -51,8 +51,8 @@ func AddAccountController(c echo.Context) error {
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
 	)
 
-	accQueryRepo := infra.AccQueryRepo{}
-	accCmdRepo := infra.AccCmdRepo{}
+	accQueryRepo := accountInfra.AccQueryRepo{}
+	accCmdRepo := accountInfra.AccCmdRepo{}
 
 	err := useCase.AddAccount(
 		accQueryRepo,
@@ -79,8 +79,8 @@ func AddAccountController(c echo.Context) error {
 func DeleteAccountController(c echo.Context) error {
 	accountId := valueObject.NewAccountIdFromStringPanic(c.Param("accountId"))
 
-	accQueryRepo := infra.AccQueryRepo{}
-	accCmdRepo := infra.AccCmdRepo{}
+	accQueryRepo := accountInfra.AccQueryRepo{}
+	accCmdRepo := accountInfra.AccCmdRepo{}
 
 	err := useCase.DeleteAccount(
 		accQueryRepo,
@@ -136,8 +136,8 @@ func UpdateAccountController(c echo.Context) error {
 		shouldUpdateApiKeyPtr,
 	)
 
-	accQueryRepo := infra.AccQueryRepo{}
-	accCmdRepo := infra.AccCmdRepo{}
+	accQueryRepo := accountInfra.AccQueryRepo{}
+	accCmdRepo := accountInfra.AccCmdRepo{}
 
 	if updateAccountDto.Password != nil {
 		useCase.UpdateAccountPassword(

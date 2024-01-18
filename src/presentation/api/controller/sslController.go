@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -22,7 +22,7 @@ import (
 // @Success      200 {array} entity.SslPair
 // @Router       /ssl/ [get]
 func GetSslPairsController(c echo.Context) error {
-	sslQueryRepo := infra.SslQueryRepo{}
+	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -57,7 +57,7 @@ func AddSslPairController(c echo.Context) error {
 		sslPrivateKey,
 	)
 
-	sslCmdRepo := infra.SslCmdRepo{}
+	sslCmdRepo := sslInfra.SslCmdRepo{}
 
 	err := useCase.AddSslPair(
 		sslCmdRepo,
@@ -83,8 +83,8 @@ func AddSslPairController(c echo.Context) error {
 func DeleteSslPairController(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
-	sslQueryRepo := infra.SslQueryRepo{}
-	sslCmdRepo := infra.SslCmdRepo{}
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.SslCmdRepo{}
 
 	err := useCase.DeleteSslPair(
 		sslQueryRepo,

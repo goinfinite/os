@@ -7,7 +7,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	accountInfra "github.com/speedianet/os/src/infra/account"
+	authInfra "github.com/speedianet/os/src/infra/auth"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -32,9 +33,9 @@ func AuthLoginController(c echo.Context) error {
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
 	)
 
-	authQueryRepo := infra.AuthQueryRepo{}
-	authCmdRepo := infra.AuthCmdRepo{}
-	accQueryRepo := infra.AccQueryRepo{}
+	authQueryRepo := authInfra.AuthQueryRepo{}
+	authCmdRepo := authInfra.AuthCmdRepo{}
+	accQueryRepo := accountInfra.AccQueryRepo{}
 
 	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
 

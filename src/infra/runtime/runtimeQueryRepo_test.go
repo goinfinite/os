@@ -1,4 +1,4 @@
-package infra
+package runtimeInfra
 
 import (
 	"os"

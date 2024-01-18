@@ -7,7 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	cronInfra "github.com/speedianet/os/src/infra/cron"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success      200 {array} entity.Cron
 // @Router       /cron/ [get]
 func GetCronsController(c echo.Context) error {
-	cronQueryRepo := infra.CronQueryRepo{}
+	cronQueryRepo := cronInfra.CronQueryRepo{}
 	cronsList, err := useCase.GetCrons(cronQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -58,7 +58,7 @@ func AddCronController(c echo.Context) error {
 		cronCommentPtr,
 	)
 
-	cronCmdRepo, err := infra.NewCronCmdRepo()
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -115,8 +115,8 @@ func UpdateCronController(c echo.Context) error {
 		cronCommentPtr,
 	)
 
-	cronQueryRepo := infra.CronQueryRepo{}
-	cronCmdRepo, err := infra.NewCronCmdRepo()
+	cronQueryRepo := cronInfra.CronQueryRepo{}
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -146,8 +146,8 @@ func UpdateCronController(c echo.Context) error {
 func DeleteCronController(c echo.Context) error {
 	cronId := valueObject.NewCronIdPanic(c.Param("cronId"))
 
-	cronQueryRepo := infra.CronQueryRepo{}
-	cronCmdRepo, err := infra.NewCronCmdRepo()
+	cronQueryRepo := cronInfra.CronQueryRepo{}
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
