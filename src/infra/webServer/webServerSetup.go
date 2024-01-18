@@ -11,31 +11,29 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func updatePhpMaxChildProcesses(
-	memoryTotal valueObject.Byte,
-) {
+func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxChildProcesses...")
 
 	maxChildProcesses := int64(300)
 	childProcessPerGb := int64(5)
 
 	memoryInGb := memoryTotal.ToGiB()
-	targetChildProcesses := memoryInGb * childProcessPerGb
-	if targetChildProcesses > maxChildProcesses {
-		targetChildProcesses = maxChildProcesses
+	desiredChildProcesses := memoryInGb * childProcessPerGb
+	if desiredChildProcesses > maxChildProcesses {
+		desiredChildProcesses = maxChildProcesses
 	}
-	targetChildProcessesStr := strconv.FormatInt(targetChildProcesses, 10)
 
+	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
 	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	_, err := infraHelper.RunCmd(
 		"sed",
 		"-i",
 		"-e",
-		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+targetChildProcessesStr+";/g",
+		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+desiredChildProcessesStr+";/g",
 		httpdConfFilePath,
 	)
 	if err != nil {
-		log.Fatal("WsOnStartupSetupUpdateMaxChildProcessesFailed")
+		return errors.New("UpdateMaxChildProcessesFailed")
 	}
 }
 
@@ -112,9 +110,11 @@ func WebServerFirstSetup() {
 }
 
 func WebServerOnStartSetup() {
+	defaultLogPreffix := "WsonStartupSetup"
+
 	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupGetContainerResourcesFailed")
+		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPreffix)
 	}
 
 	cpuCores := containerResources.HardwareSpecs.CpuCores
@@ -127,7 +127,7 @@ func WebServerOnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupGetNginxWorkersCountFailed")
+		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPreffix)
 	}
 
 	if workerCount == cpuCoresStr {
@@ -144,18 +144,21 @@ func WebServerOnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupUpdateNginxWorkersCountFailed")
+		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPreffix)
 	}
 
 	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupRestartNginxFailed")
+		log.Fatalf("%sRestartNginxFailed", defaultLogPreffix)
 	}
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err == nil {
-		updatePhpMaxChildProcesses(
+		err = updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,
 		)
+		if err != nil {
+			log.Fatalf("%s%s", defaultLogPreffix, err.Error())
+		}
 	}
 }
