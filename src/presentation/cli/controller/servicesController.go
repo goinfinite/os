@@ -4,8 +4,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -154,8 +154,8 @@ func AddCustomServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.AddCustomService(
 				servicesQueryRepo,
@@ -258,8 +258,8 @@ func UpdateServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
-			vhostCmdRepo := infra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.UpdateService(
 				servicesQueryRepo,
