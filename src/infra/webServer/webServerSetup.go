@@ -11,6 +11,34 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
+func updatePhpMaxChildProcesses(
+	memoryTotal valueObject.Byte,
+) {
+	log.Print("UpdatingMaxChildProcesses...")
+
+	maxChildProcesses := int64(300)
+	childProcessPerGb := int64(5)
+
+	memoryInGb := memoryTotal.ToGiB()
+	targetChildProcesses := memoryInGb * childProcessPerGb
+	if targetChildProcesses > maxChildProcesses {
+		targetChildProcesses = maxChildProcesses
+	}
+	targetChildProcessesStr := strconv.FormatInt(targetChildProcesses, 10)
+
+	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	_, err := infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+targetChildProcessesStr+";/g",
+		httpdConfFilePath,
+	)
+	if err != nil {
+		log.Fatal("WsOnStartupSetupUpdateMaxChildProcessesFailed")
+	}
+}
+
 func WebServerFirstSetup() {
 	_, err := os.Stat("/etc/nginx/dhparam.pem")
 	if err == nil {
@@ -122,5 +150,12 @@ func WebServerOnStartSetup() {
 	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
 	if err != nil {
 		log.Fatalf("WsOnStartupSetupRestartNginxFailed")
+	}
+
+	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
+	if err != nil {
+		updatePhpMaxChildProcesses(
+			containerResources.HardwareSpecs.MemoryTotal,
+		)
 	}
 }
