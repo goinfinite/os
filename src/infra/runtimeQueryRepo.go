@@ -15,7 +15,7 @@ import (
 type RuntimeQueryRepo struct {
 }
 
-func (r RuntimeQueryRepo) GetPhpPrimaryConfFilePath(
+func (r RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
 ) (string, error) {
 	mainVirtualHost, err := infraHelper.GetPrimaryHostname()
@@ -64,7 +64,7 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 func (r RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	primaryConfFilePath, err := r.GetPhpPrimaryConfFilePath(hostname)
+	primaryConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return entity.PhpVersion{}, err
 	}
@@ -192,7 +192,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 func (r RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	primaryConfFilePath, err := r.GetPhpPrimaryConfFilePath(hostname)
+	primaryConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return []entity.PhpSetting{}, err
 	}
