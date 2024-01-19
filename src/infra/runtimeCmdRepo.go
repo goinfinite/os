@@ -17,8 +17,8 @@ type RuntimeCmdRepo struct {
 }
 
 func (repo RuntimeCmdRepo) restartPhp() error {
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	err := servicesCmdRepo.Restart(valueObject.NewServiceNamePanic("php"))
+	phpSvcName, _ := valueObject.NewServiceName("php")
+	err := servicesInfra.ServicesCmdRepo{}.Restart(phpSvcName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed")
 	}
