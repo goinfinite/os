@@ -169,9 +169,10 @@ func AddCustomServiceController(c echo.Context) error {
 		)
 	}
 
-	var autoCreateMappingPtr *bool
+	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
-		autoCreateMapping, assertOk := requestBody["autoCreateMapping"].(bool)
+		var assertOk bool
+		autoCreateMapping, assertOk = requestBody["autoCreateMapping"].(bool)
 		if !assertOk {
 			var err error
 			autoCreateMapping, err = strconv.ParseBool(
@@ -183,8 +184,6 @@ func AddCustomServiceController(c echo.Context) error {
 				)
 			}
 		}
-
-		autoCreateMappingPtr = &autoCreateMapping
 	}
 
 	addCustomServiceDto := dto.NewAddCustomService(
@@ -193,7 +192,7 @@ func AddCustomServiceController(c echo.Context) error {
 		svcCommand,
 		svcVersionPtr,
 		svcPortBindings,
-		autoCreateMappingPtr,
+		autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}

@@ -118,7 +118,7 @@ func AddCustomServiceController() *cobra.Command {
 	var commandStr string
 	var versionStr string
 	var portBindingsSlice []string
-	var autoCreateMapping *bool
+	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
@@ -183,7 +183,7 @@ func AddCustomServiceController() *cobra.Command {
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
 	)
 	cmd.Flags().BoolVarP(
-		autoCreateMapping,
+		&autoCreateMapping,
 		"auto-create-mapping",
 		"a",
 		true,
