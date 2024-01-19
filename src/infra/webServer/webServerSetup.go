@@ -14,7 +14,7 @@ import (
 
 type WebServerSetup struct{}
 
-func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
+func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
 
 	maxChildProcesses := int64(300)
@@ -159,7 +159,7 @@ func (ws WebServerSetup) OnStartSetup() {
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err == nil {
-		err = updatePhpMaxChildProcesses(
+		err = ws.updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,
 		)
 		if err != nil {
