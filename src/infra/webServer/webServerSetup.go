@@ -52,14 +52,13 @@ func (ws WebServerSetup) FirstSetup() {
 
 	vhost, err := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
 	if err != nil {
-		log.Fatalf("VirtualHostEnvInvalidValue")
+		log.Fatal("VirtualHostEnvInvalidValue")
 	}
 	vhostStr := vhost.String()
 
 	log.Print("UpdatingVhost...")
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
-
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
@@ -67,7 +66,7 @@ func (ws WebServerSetup) FirstSetup() {
 		primaryConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("UpdateVhostFailed")
+		log.Fatal("UpdateVhostFailed")
 	}
 
 	log.Print("GeneratingDhparam...")
@@ -81,7 +80,7 @@ func (ws WebServerSetup) FirstSetup() {
 		"2048",
 	)
 	if err != nil {
-		log.Fatalf("GenerateDhparamFailed")
+		log.Fatal("GenerateDhparamFailed")
 	}
 
 	log.Print("GeneratingSelfSignedCert...")
@@ -103,14 +102,14 @@ func (ws WebServerSetup) FirstSetup() {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhostStr,
 	)
 	if err != nil {
-		log.Fatalf("GenerateSelfSignedCertFailed")
+		log.Fatal("GenerateSelfSignedCertFailed")
 	}
 
 	log.Print("WebServerConfigured!")
 
 	err = servicesInfra.SupervisordFacade{}.Start("nginx")
 	if err != nil {
-		log.Fatalf("StartNginxFailed")
+		log.Fatal("StartNginxFailed")
 	}
 }
 
