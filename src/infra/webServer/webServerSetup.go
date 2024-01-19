@@ -115,7 +115,7 @@ func (ws WebServerSetup) FirstSetup() {
 }
 
 func (ws WebServerSetup) OnStartSetup() {
-	defaultLogPreffix := "WsonStartupSetup"
+	defaultLogPreffix := "WsOnStartupSetup"
 
 	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
