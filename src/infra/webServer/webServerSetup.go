@@ -1,6 +1,7 @@
 package webServerInfra
 
 import (
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -11,10 +12,10 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-type WebServerSetup struct {}
+type WebServerSetup struct{}
 
 func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
-	log.Print("UpdatingMaxChildProcesses...")
+	log.Print("UpdatingMaxPhpChildProcesses...")
 
 	maxChildProcesses := int64(300)
 	childProcessPerGb := int64(5)
@@ -37,6 +38,8 @@ func updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	if err != nil {
 		return errors.New("UpdateMaxChildProcessesFailed")
 	}
+
+	return nil
 }
 
 func (ws WebServerSetup) FirstSetup() {
