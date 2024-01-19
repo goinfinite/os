@@ -41,7 +41,11 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	vhconfFile := queryRepo.GetPhpPrimaryConfFilePath(hostname)
+	vhconfFile, err := queryRepo.GetPhpPrimaryConfFilePath(hostname)
+	if err != nil {
+		return err
+	}
+
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
 	_, err = infraHelper.RunCmd(
 		"sed",
@@ -60,7 +64,11 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	vhconfFile := RuntimeQueryRepo{}.GetPhpPrimaryConfFilePath(hostname)
+	vhconfFile, err := RuntimeQueryRepo{}.GetPhpPrimaryConfFilePath(hostname)
+	if err != nil {
+		return err
+	}
+
 	for _, setting := range settings {
 		name := setting.Name.String()
 		value := setting.Value.String()

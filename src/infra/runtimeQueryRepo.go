@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -18,14 +17,18 @@ type RuntimeQueryRepo struct {
 
 func (r RuntimeQueryRepo) GetPhpPrimaryConfFilePath(
 	hostname valueObject.Fqdn,
-) string {
+) (string, error) {
+	mainVirtualHost, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return "", errors.New("PrimaryHostnameNotFound")
+	}
+
 	primaryConfFile := "/app/conf/php/primary.conf"
-	mainVirtualHost := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
 	if hostname != mainVirtualHost {
 		primaryConfFile = "/app/domains/" + string(hostname) + "/conf/php/primary.conf"
 	}
 
-	return primaryConfFile
+	return primaryConfFile, nil
 }
 
 func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
@@ -61,14 +64,17 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 func (r RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	primaryConfFilePath := r.GetPhpPrimaryConfFilePath(hostname)
+	primaryConfFilePath, err := r.GetPhpPrimaryConfFilePath(hostname)
+	if err != nil {
+		return entity.PhpVersion{}, err
+	}
+
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
 		primaryConfFilePath,
 	)
 	if err != nil {
-		log.Printf("FailedToGetPhpVersion: %v", err)
 		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
 	}
 
@@ -92,15 +98,13 @@ func (r RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 		"echo json_encode(DateTimeZone::listIdentifiers());",
 	)
 	if err != nil {
-		log.Printf("FailedToGetPhpTimezones: %v", err)
-		return nil, errors.New("FailedToGetPhpTimezones")
+		return nil, err
 	}
 
 	var timezones []string
 	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
 	if err != nil {
-		log.Printf("FailedToGetPhpTimezones: %v", err)
-		return nil, errors.New("FailedToGetPhpTimezones")
+		return nil, err
 	}
 
 	return timezones, nil
@@ -168,6 +172,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 	case "date.timezone":
 		valuesToInject, err = r.getPhpTimezones()
 		if err != nil {
+			log.Printf("FailedToGetPhpTimezones: %s", err.Error())
 			valuesToInject = []string{}
 		}
 	}
@@ -187,7 +192,11 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 func (r RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	primaryConfFilePath := r.GetPhpPrimaryConfFilePath(hostname)
+	primaryConfFilePath, err := r.GetPhpPrimaryConfFilePath(hostname)
+	if err != nil {
+		return []entity.PhpSetting{}, err
+	}
+
 	output, err := infraHelper.RunCmd(
 		"sed",
 		"-n",
