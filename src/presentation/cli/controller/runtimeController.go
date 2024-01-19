@@ -89,12 +89,12 @@ func UpdatePhpConfigController() *cobra.Command {
 
 			runtimeQueryRepo := infra.RuntimeQueryRepo{}
 			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			wsQueryRepo := infra.WsQueryRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {
@@ -151,12 +151,12 @@ func UpdatePhpSettingController() *cobra.Command {
 
 			runtimeQueryRepo := infra.RuntimeQueryRepo{}
 			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			wsQueryRepo := infra.WsQueryRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {
@@ -210,12 +210,12 @@ func UpdatePhpModuleController() *cobra.Command {
 
 			runtimeQueryRepo := infra.RuntimeQueryRepo{}
 			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			wsQueryRepo := infra.WsQueryRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {

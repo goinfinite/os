@@ -2,6 +2,7 @@ package useCase
 
 import (
 	"errors"
+	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -26,28 +27,10 @@ func isPhpInstalled(
 	return false
 }
 
-func virtualHostExists(
-	wsQueryRepo repository.WsQueryRepo,
-	hostname valueObject.Fqdn,
-) bool {
-	hosts, err := wsQueryRepo.GetVirtualHosts()
-	if err != nil {
-		return false
-	}
-
-	for _, host := range hosts {
-		if host == hostname {
-			return true
-		}
-	}
-
-	return false
-}
-
 func UpdatePhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	runtimeCmdRepo repository.RuntimeCmdRepo,
-	wsQueryRepo repository.WsQueryRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
 	updatePhpConfigsDto dto.UpdatePhpConfigs,
 ) error {
 	isPhpInstalled := isPhpInstalled(
@@ -58,15 +41,15 @@ func UpdatePhpConfigs(
 		return errors.New("PhpVersionNotInstalled")
 	}
 
-	hostnameExists := virtualHostExists(
-		wsQueryRepo,
+	_, err := vhostQueryRepo.GetByHostname(
 		updatePhpConfigsDto.Hostname,
 	)
-	if !hostnameExists {
+	if err != nil {
+		log.Printf("HostnameNotFound: %s", err.Error())
 		return errors.New("HostnameNotFound")
 	}
 
-	err := runtimeCmdRepo.UpdatePhpVersion(
+	err = runtimeCmdRepo.UpdatePhpVersion(
 		updatePhpConfigsDto.Hostname,
 		updatePhpConfigsDto.PhpVersion,
 	)
