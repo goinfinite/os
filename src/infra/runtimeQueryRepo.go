@@ -25,7 +25,8 @@ func (r RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 
 	primaryConfFile := "/app/conf/php/primary.conf"
 	if hostname != mainVirtualHost {
-		primaryConfFile = "/app/domains/" + string(hostname) + "/conf/php/primary.conf"
+		primaryConfFile = "/app/domains/" + string(hostname) + "/conf/php/" +
+			hostname.String() + ".conf"
 	}
 
 	return primaryConfFile, nil
