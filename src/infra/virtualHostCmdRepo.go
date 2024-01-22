@@ -75,7 +75,7 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) addOlsVhost(hostname valueObject.Fqdn) error {
+func (repo VirtualHostCmdRepo) addOlsVirtualHost(hostname valueObject.Fqdn) error {
 	olsVhostConfig := `virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
   configFile              /app/conf/php/primary.conf
@@ -190,7 +190,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err == nil {
-		return repo.addOlsVhost(addDto.Hostname)
+		return repo.addOlsVirtualHost(addDto.Hostname)
 	}
 
 	return nil
