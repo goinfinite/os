@@ -75,26 +75,47 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) addOlsVirtualHost(hostname valueObject.Fqdn) error {
-	hostnameStr := hostname.String()
-	olsVhostConfig := `
-virtualhost ` + hostnameStr + ` {
+func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
+	phpVhostConfFilePath := "/app/conf/php/" + hostname.String() + ".conf"
+	templatePhpConfFilePath := "/app/conf/php/template"
+	_, err := infraHelper.RunCmd(
+		"cp",
+		templatePhpConfFilePath,
+		phpVhostConfFilePath,
+	)
+	if err != nil {
+		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/speedia.net/"+hostname.String()+"/g",
+		phpVhostConfFilePath,
+	)
+	if err != nil {
+		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	phpVhostConfig := `
+virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
-  configFile              /app/domains/` + hostnameStr + `conf/php/` + hostnameStr + `.conf
+  configFile              ` + phpVhostConfFilePath + `
   allowSymbolLink         1
   enableScript            1
   restrained              0
   setUIDMode              0
 }
 `
-	olsHttpdConfigFilePath := "/usr/local/lsws/conf/httpd_config.conf"
-	err := infraHelper.UpdateFile(
-		olsHttpdConfigFilePath,
-		olsVhostConfig,
+	phpHttpdConfigFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	err = infraHelper.UpdateFile(
+		phpHttpdConfigFilePath,
+		phpVhostConfig,
 		false,
 	)
 	if err != nil {
-		return errors.New("CreateOlsVirtualHostError: " + err.Error())
+		return errors.New("CreatePhpVirtualHostError: " + err.Error())
 	}
 
 	return nil
@@ -193,7 +214,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err == nil {
-		return repo.addOlsVirtualHost(addDto.Hostname)
+		return repo.addPhpVirtualHost(addDto.Hostname)
 	}
 
 	return nil
