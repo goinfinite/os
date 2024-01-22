@@ -75,8 +75,8 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) addOlsVhost(addDto dto.AddVirtualHost) error {
-	olsVhostConfig := `virtualhost ` + addDto.Hostname.String() + ` {
+func (repo VirtualHostCmdRepo) addOlsVhost(hostname valueObject.Fqdn) error {
+	olsVhostConfig := `virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
   configFile              /app/conf/php/primary.conf
   allowSymbolLink         1
@@ -190,7 +190,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err == nil {
-		return repo.addOlsVhost(addDto)
+		return repo.addOlsVhost(addDto.Hostname)
 	}
 
 	return nil
