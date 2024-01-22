@@ -75,6 +75,28 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 	return repo.reloadWebServer()
 }
 
+func (repo VirtualHostCmdRepo) addOlsVhost(addDto dto.AddVirtualHost) error {
+	olsVhostConfig := `virtualhost ` + addDto.Hostname.String() + ` {
+  vhRoot                  /app/
+  configFile              /app/conf/php/primary.conf
+  allowSymbolLink         1
+  enableScript            1
+  restrained              0
+  setUIDMode              0
+}`
+	olsHttpdConfigFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	err := infraHelper.UpdateFile(
+		olsHttpdConfigFilePath,
+		"\n"+olsVhostConfig+"\n",
+		false,
+	)
+	if err != nil {
+		return errors.New("CreateOlsVirtualHostError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 	hostnameStr := addDto.Hostname.String()
 
@@ -164,7 +186,14 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		}
 	}
 
-	return repo.reloadWebServer()
+	repo.reloadWebServer()
+
+	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
+	if err == nil {
+		return repo.addOlsVhost(addDto)
+	}
+
+	return nil
 }
 
 func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
