@@ -76,10 +76,11 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) addOlsVirtualHost(hostname valueObject.Fqdn) error {
+	hostnameStr := hostname.String()
 	olsVhostConfig := `
-virtualhost ` + hostname.String() + ` {
+virtualhost ` + hostnameStr + ` {
   vhRoot                  /app/
-  configFile              /app/conf/php/primary.conf
+  configFile              /app/domains/` + hostnameStr + `conf/php/` + hostnameStr + `.conf
   allowSymbolLink         1
   enableScript            1
   restrained              0
