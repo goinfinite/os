@@ -76,18 +76,20 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) addOlsVirtualHost(hostname valueObject.Fqdn) error {
-	olsVhostConfig := `virtualhost ` + hostname.String() + ` {
+	olsVhostConfig := `
+virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
   configFile              /app/conf/php/primary.conf
   allowSymbolLink         1
   enableScript            1
   restrained              0
   setUIDMode              0
-}`
+}
+`
 	olsHttpdConfigFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	err := infraHelper.UpdateFile(
 		olsHttpdConfigFilePath,
-		"\n"+olsVhostConfig+"\n",
+		olsVhostConfig,
 		false,
 	)
 	if err != nil {
