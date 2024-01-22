@@ -153,6 +153,14 @@ func addPhp() error {
 
 	err = copyAssets(
 		"php/primary.conf",
+		"/app/conf/php/template",
+	)
+	if err != nil {
+		return errors.New("CopyAssetsError: " + err.Error())
+	}
+
+	err = copyAssets(
+		"php/primary.conf",
 		"/app/conf/php/primary.conf",
 	)
 	if err != nil {
