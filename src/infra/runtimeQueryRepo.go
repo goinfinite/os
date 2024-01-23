@@ -39,8 +39,7 @@ func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion
 		olsConfigFile,
 	)
 	if err != nil {
-		log.Printf("FailedToGetPhpVersions: %v", err)
-		return nil, errors.New("FailedToGetPhpVersions")
+		return nil, errors.New("FailedToGetPhpVersions: " + err.Error())
 	}
 
 	phpVersions := []valueObject.PhpVersion{}
@@ -75,17 +74,17 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 		phpConfFilePath,
 	)
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
+		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
 	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
+		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
 	phpVersions, err := repo.GetPhpVersionsInstalled()
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
+		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
 	return entity.NewPhpVersion(currentPhpVersion, phpVersions), nil
@@ -204,8 +203,7 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 		phpConfFilePath,
 	)
 	if err != nil || output == "" {
-		log.Printf("FailedToGetPhpSettings: %v", err)
-		return nil, errors.New("FailedToGetPhpSettings")
+		return nil, errors.New("FailedToGetPhpSettings: " + err.Error())
 	}
 
 	phpSettings := []entity.PhpSetting{}
@@ -229,8 +227,7 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 		"-m",
 	)
 	if err != nil {
-		log.Printf("GetActivePhpModulesFailed: %v", err)
-		return nil, errors.New("GetActivePhpModulesFailed")
+		return nil, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}
 
 	activeModules := []string{}
