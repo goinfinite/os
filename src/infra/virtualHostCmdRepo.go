@@ -211,11 +211,6 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 
 	repo.reloadWebServer()
 
-	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
-	if err == nil {
-		return repo.addPhpVirtualHost(addDto.Hostname)
-	}
-
 	return nil
 }
 
@@ -507,7 +502,8 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	}
 	locationContent += ";"
 
-	if addMapping.TargetType.String() == "service" {
+	isService := addMapping.TargetType.String() == "service"
+	if isService {
 		var err error
 		locationContent, err = repo.serviceLocationContentFactory(addMapping)
 		if err != nil {
@@ -526,6 +522,14 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	)
 	if err != nil {
 		return errors.New("GetVirtualHostMappingsFilePathFailed")
+	}
+
+	isPhpService := isService && addMapping.TargetServiceName.String() == "php"
+	if isPhpService {
+		err := repo.addPhpVirtualHost(addMapping.Hostname)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = infraHelper.UpdateFile(
