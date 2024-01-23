@@ -111,11 +111,29 @@ func AddInstallableServiceController(c echo.Context) error {
 		)
 	}
 
+	autoCreateMapping := true
+	if requestBody["autoCreateMapping"] != nil {
+		var assertOk bool
+		autoCreateMapping, assertOk = requestBody["autoCreateMapping"].(bool)
+		if !assertOk {
+			var err error
+			autoCreateMapping, err = strconv.ParseBool(
+				requestBody["autoCreateMapping"].(string),
+			)
+			if err != nil {
+				return apiHelper.ResponseWrapper(
+					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
+				)
+			}
+		}
+	}
+
 	addInstallableServiceDto := dto.NewAddInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
 		svcPortBindings,
+		autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}

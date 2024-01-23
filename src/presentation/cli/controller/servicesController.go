@@ -51,6 +51,7 @@ func AddInstallableServiceController() *cobra.Command {
 	var versionStr string
 	var startupFileStr string
 	var portBindingsSlice []string
+	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
 		Use:   "add-installable",
@@ -84,6 +85,7 @@ func AddInstallableServiceController() *cobra.Command {
 				svcVersionPtr,
 				startupFilePtr,
 				portBindings,
+				autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
@@ -112,6 +114,13 @@ func AddInstallableServiceController() *cobra.Command {
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
+	cmd.Flags().BoolVarP(
+		&autoCreateMapping,
+		"auto-create-mapping",
+		"a",
+		true,
+		"AutoCreateMapping",
 	)
 	return cmd
 }
