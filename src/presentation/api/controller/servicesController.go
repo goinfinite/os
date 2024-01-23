@@ -120,10 +120,14 @@ func AddInstallableServiceController(c echo.Context) error {
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 	err := useCase.AddInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		addInstallableServiceDto,
 	)
 

@@ -88,10 +88,14 @@ func AddInstallableServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 			err := useCase.AddInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				vhostQueryRepo,
+				vhostCmdRepo,
 				addInstallableServiceDto,
 			)
 			if err != nil {

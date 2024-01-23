@@ -11,6 +11,8 @@ import (
 func AddInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	addDto dto.AddInstallableService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(addDto.Name)
