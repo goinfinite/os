@@ -98,13 +98,13 @@ func (r RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 		"echo json_encode(DateTimeZone::listIdentifiers());",
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("FailedToGetPhpTimezones: " + err.Error())
 	}
 
 	var timezones []string
 	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("FailedToGetPhpTimezones: " + err.Error())
 	}
 
 	return timezones, nil
