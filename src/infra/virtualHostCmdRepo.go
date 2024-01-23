@@ -97,7 +97,7 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
 	}
 
-	phpVhostConfig := `
+	phpVhostHttpdConf := `
 virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
   configFile              ` + phpVhostConfFilePath + `
@@ -107,10 +107,10 @@ virtualhost ` + hostname.String() + ` {
   setUIDMode              0
 }
 `
-	phpHttpdConfigFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	err = infraHelper.UpdateFile(
-		phpHttpdConfigFilePath,
-		phpVhostConfig,
+		phpHttpdConfFilePath,
+		phpVhostHttpdConf,
 		false,
 	)
 	if err != nil {
