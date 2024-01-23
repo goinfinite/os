@@ -76,10 +76,9 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
-	phpVhostConfFilePath := "/app/conf/php/" + hostname.String() + ".conf"
 	templatePhpConfFilePath := "/app/conf/php/template"
-	_, err := infraHelper.RunCmd(
-		"cp",
+	phpVhostConfFilePath := "/app/conf/php/" + hostname.String() + ".conf"
+	err := infraHelper.CopyFile(
 		templatePhpConfFilePath,
 		phpVhostConfFilePath,
 	)
