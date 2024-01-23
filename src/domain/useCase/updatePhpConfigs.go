@@ -54,6 +54,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpVersion,
 	)
 	if err != nil {
+		log.Printf("UpdatePhpVersionError: %s", err.Error())
 		return errors.New("UpdatePhpVersionInfraError")
 	}
 
@@ -62,6 +63,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpSettings,
 	)
 	if err != nil {
+		log.Printf("UpdatePhpSettingsError: %s", err.Error())
 		return errors.New("UpdatePhpSettingsInfraError")
 	}
 
@@ -70,6 +72,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpModules,
 	)
 	if err != nil {
+		log.Printf("UpdatePhpModulesError: %s", err.Error())
 		return errors.New("UpdatePhpModulesInfraError")
 	}
 
