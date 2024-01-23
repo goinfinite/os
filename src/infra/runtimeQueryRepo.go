@@ -192,7 +192,7 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 func (repo RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	primaryConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return []entity.PhpSetting{}, err
 	}
@@ -201,7 +201,7 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 		"sed",
 		"-n",
 		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-		primaryConfFilePath,
+		phpConfFilePath,
 	)
 	if err != nil || output == "" {
 		log.Printf("FailedToGetPhpSettings: %v", err)
