@@ -78,7 +78,7 @@ func AddCustomService(
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
 	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
-	if shouldCreateFirstMapping {
+	if !shouldCreateFirstMapping {
 		return nil
 	}
 
