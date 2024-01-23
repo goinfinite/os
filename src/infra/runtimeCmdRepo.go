@@ -225,12 +225,14 @@ func (repo RuntimeCmdRepo) UpdatePhpModules(
 	hostname valueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
-	phpVersion, err := RuntimeQueryRepo{}.GetPhpVersion(hostname)
+	queryRepo := RuntimeQueryRepo{}
+
+	phpVersion, err := queryRepo.GetPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
 
-	allModules, err := RuntimeQueryRepo{}.GetPhpModules(phpVersion.Value)
+	allModules, err := queryRepo.GetPhpModules(phpVersion.Value)
 	if err != nil {
 		return err
 	}
