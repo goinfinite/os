@@ -18,18 +18,17 @@ type RuntimeQueryRepo struct {
 func (r RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
 ) (string, error) {
-	mainVirtualHost, err := infraHelper.GetPrimaryHostname()
+	mainHostname, err := infraHelper.GetPrimaryHostname()
 	if err != nil {
 		return "", errors.New("PrimaryHostnameNotFound")
 	}
 
-	primaryConfFile := "/app/conf/php/primary.conf"
-	if hostname != mainVirtualHost {
-		primaryConfFile = "/app/domains/" + string(hostname) + "/conf/php/" +
-			hostname.String() + ".conf"
+	phpConfFile := "/app/conf/php/primary.conf"
+	if hostname != mainHostname {
+		phpConfFile = "/app/conf/php/" + hostname.String() + ".conf"
 	}
 
-	return primaryConfFile, nil
+	return phpConfFile, nil
 }
 
 func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
