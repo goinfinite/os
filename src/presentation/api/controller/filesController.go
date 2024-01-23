@@ -340,10 +340,10 @@ func ExtractFilesController(c echo.Context) error {
 // @Summary      UploadFiles
 // @Description  Upload files.
 // @Tags         files
-// @Accept       json
+// @Accept       mpfd
 // @Produce      json
 // @Security     Bearer
-// @Param        destinationPath	path	string	true	"DestinationPath"
+// @Param        destinationPath	formData	string	true	"DestinationPath"
 // @Param        file	formData	file	true	"FileToUpload"
 // @Success      200 {object} object{} "FilesUploaded"
 // @Success      207 {object} object{} "FilesPartialUploaded"
