@@ -20,7 +20,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 ) (string, error) {
 	mainHostname, err := infraHelper.GetPrimaryHostname()
 	if err != nil {
-		return "", errors.New("PrimaryHostnameNotFound")
+		return "", errors.New("MainHostnameNotFound")
 	}
 
 	phpConfFile := "/app/conf/php/primary.conf"
