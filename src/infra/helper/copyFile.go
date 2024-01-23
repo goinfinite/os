@@ -3,7 +3,6 @@ package infraHelper
 import (
 	"errors"
 	"io"
-	"log"
 	"os"
 )
 
@@ -12,20 +11,19 @@ func CopyFile(srcPath string, dstPath string) error {
 
 	srcFile, err := os.OpenFile(dstPath, fileFlags, 0644)
 	if err != nil {
-		return errors.New("OpenSourceFileError: " + err.Error())
+		return errors.New("CopyFileError: " + err.Error())
 	}
 	defer srcFile.Close()
 
 	dstFile, err := os.OpenFile(dstPath, fileFlags, 0644)
 	if err != nil {
-		return errors.New("OpenDestinationFileError: " + err.Error())
+		return errors.New("CopyFileError: " + err.Error())
 	}
 	defer dstFile.Close()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
-		log.Printf("CopyFileError: %s", err)
-		return errors.New("CopyFileError")
+		return errors.New("CopyFileError: " + err.Error())
 	}
 
 	return nil
