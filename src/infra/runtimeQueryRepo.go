@@ -64,7 +64,7 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 func (r RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	primaryConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return entity.PhpVersion{}, err
 	}
@@ -72,7 +72,7 @@ func (r RuntimeQueryRepo) GetPhpVersion(
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		primaryConfFilePath,
+		phpConfFilePath,
 	)
 	if err != nil {
 		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
