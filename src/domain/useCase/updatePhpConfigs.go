@@ -54,7 +54,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpVersion,
 	)
 	if err != nil {
-		return errors.New("UpdatePhpVersionError")
+		return errors.New("UpdatePhpVersionInfraError")
 	}
 
 	err = runtimeCmdRepo.UpdatePhpSettings(
@@ -62,7 +62,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpSettings,
 	)
 	if err != nil {
-		return errors.New("UpdatePhpSettingsError")
+		return errors.New("UpdatePhpSettingsInfraError")
 	}
 
 	err = runtimeCmdRepo.UpdatePhpModules(
@@ -70,7 +70,7 @@ func UpdatePhpConfigs(
 		updatePhpConfigsDto.PhpModules,
 	)
 	if err != nil {
-		return errors.New("UpdatePhpModulesError")
+		return errors.New("UpdatePhpModulesInfraError")
 	}
 
 	return nil
