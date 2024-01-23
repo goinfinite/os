@@ -19,7 +19,7 @@ var versionCmd = &cobra.Command{
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Start the SOS server (default to port 10000)",
+	Short: "Start the SOS server (default to port 1618)",
 	Run: func(cmd *cobra.Command, args []string) {
 		api.ApiInit()
 	},
