@@ -665,6 +665,7 @@ func AddInstallableSimplified(serviceName string) error {
 		nil,
 		nil,
 		[]valueObject.PortBinding{},
+		true,
 	)
 	return AddInstallable(dto)
 }
