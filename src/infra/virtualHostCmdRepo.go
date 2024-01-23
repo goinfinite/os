@@ -209,9 +209,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		}
 	}
 
-	repo.reloadWebServer()
-
-	return nil
+	return repo.reloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
