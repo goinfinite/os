@@ -15,7 +15,7 @@ import (
 type RuntimeQueryRepo struct {
 }
 
-func (r RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
+func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
 ) (string, error) {
 	mainHostname, err := infraHelper.GetPrimaryHostname()
@@ -31,7 +31,7 @@ func (r RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	return phpConfFile, nil
 }
 
-func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
+func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
 	olsConfigFile := "/usr/local/lsws/conf/httpd_config.conf"
 	output, err := infraHelper.RunCmd(
 		"awk",
@@ -61,10 +61,10 @@ func (r RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, e
 	return phpVersions, nil
 }
 
-func (r RuntimeQueryRepo) GetPhpVersion(
+func (repo RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
-	phpConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return entity.PhpVersion{}, err
 	}
@@ -83,7 +83,7 @@ func (r RuntimeQueryRepo) GetPhpVersion(
 		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
 	}
 
-	phpVersions, err := r.GetPhpVersionsInstalled()
+	phpVersions, err := repo.GetPhpVersionsInstalled()
 	if err != nil {
 		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion")
 	}
@@ -91,7 +91,7 @@ func (r RuntimeQueryRepo) GetPhpVersion(
 	return entity.NewPhpVersion(currentPhpVersion, phpVersions), nil
 }
 
-func (r RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
+func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 	timezonesRaw, err := infraHelper.RunCmd(
 		"php",
 		"-r",
@@ -110,7 +110,7 @@ func (r RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 	return timezones, nil
 }
 
-func (r RuntimeQueryRepo) phpSettingFactory(
+func (repo RuntimeQueryRepo) phpSettingFactory(
 	setting string,
 ) (entity.PhpSetting, error) {
 	if setting == "" {
@@ -170,7 +170,7 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 			"E_ERROR|E_CORE_ERROR|E_COMPILE_ERROR",
 		}
 	case "date.timezone":
-		valuesToInject, err = r.getPhpTimezones()
+		valuesToInject, err = repo.getPhpTimezones()
 		if err != nil {
 			log.Printf("FailedToGetPhpTimezones: %s", err.Error())
 			valuesToInject = []string{}
@@ -189,10 +189,10 @@ func (r RuntimeQueryRepo) phpSettingFactory(
 	return entity.NewPhpSetting(settingName, settingValue, settingOptions), nil
 }
 
-func (r RuntimeQueryRepo) GetPhpSettings(
+func (repo RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
-	primaryConfFilePath, err := r.GetVirtualHostPhpConfFilePath(hostname)
+	primaryConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return []entity.PhpSetting{}, err
 	}
@@ -210,7 +210,7 @@ func (r RuntimeQueryRepo) GetPhpSettings(
 
 	phpSettings := []entity.PhpSetting{}
 	for _, setting := range strings.Split(output, "\n") {
-		phpSetting, err := r.phpSettingFactory(setting)
+		phpSetting, err := repo.phpSettingFactory(setting)
 		if err != nil {
 			continue
 		}
@@ -221,7 +221,7 @@ func (r RuntimeQueryRepo) GetPhpSettings(
 	return phpSettings, nil
 }
 
-func (r RuntimeQueryRepo) GetPhpModules(
+func (repo RuntimeQueryRepo) GetPhpModules(
 	version valueObject.PhpVersion,
 ) ([]entity.PhpModule, error) {
 	activeModuleList, err := infraHelper.RunCmd(
@@ -271,20 +271,20 @@ func (r RuntimeQueryRepo) GetPhpModules(
 	return phpModules, nil
 }
 
-func (r RuntimeQueryRepo) GetPhpConfigs(
+func (repo RuntimeQueryRepo) GetPhpConfigs(
 	hostname valueObject.Fqdn,
 ) (entity.PhpConfigs, error) {
-	phpVersion, err := r.GetPhpVersion(hostname)
+	phpVersion, err := repo.GetPhpVersion(hostname)
 	if err != nil {
 		return entity.PhpConfigs{}, err
 	}
 
-	phpSettings, err := r.GetPhpSettings(hostname)
+	phpSettings, err := repo.GetPhpSettings(hostname)
 	if err != nil {
 		return entity.PhpConfigs{}, err
 	}
 
-	phpModules, err := r.GetPhpModules(phpVersion.Value)
+	phpModules, err := repo.GetPhpModules(phpVersion.Value)
 	if err != nil {
 		return entity.PhpConfigs{}, err
 	}
