@@ -27,7 +27,6 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	}
 
 	primaryPhpVhostConfFilePathStr := "/app/conf/php/primary.conf"
-
 	phpVhostConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	if vhostQueryRepo.IsVirtualHostPrimaryDomain(hostname) {
