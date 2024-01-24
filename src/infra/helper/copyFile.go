@@ -7,15 +7,13 @@ import (
 )
 
 func CopyFile(srcPath string, dstPath string) error {
-	fileFlags := os.O_RDWR | os.O_CREATE | os.O_TRUNC
-
-	srcFile, err := os.OpenFile(dstPath, fileFlags, 0644)
+	srcFile, err := os.OpenFile(srcPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return errors.New("CopyFileError: " + err.Error())
 	}
 	defer srcFile.Close()
 
-	dstFile, err := os.OpenFile(dstPath, fileFlags, 0644)
+	dstFile, err := os.OpenFile(dstPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return errors.New("CopyFileError: " + err.Error())
 	}
