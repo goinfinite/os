@@ -484,3 +484,19 @@ func (repo VirtualHostQueryRepo) GetMappingById(
 
 	return mapping, errors.New("MappingNotFound")
 }
+
+func (repo VirtualHostQueryRepo) VirtualHostExistsInPhpConf(
+	hostname valueObject.Fqdn,
+) bool {
+	_, err := servicesInfra.ServicesQueryRepo{}.GetByName("php")
+	if err != nil {
+		return false
+	}
+
+	phpVhostConfFilePath := "/app/conf/php/" + hostname.String() + ".conf"
+	if repo.IsVirtualHostPrimaryDomain(hostname) {
+		phpVhostConfFilePath = "/app/conf/php/primary.conf"
+	}
+
+	return infraHelper.FileExists(phpVhostConfFilePath)
+}
