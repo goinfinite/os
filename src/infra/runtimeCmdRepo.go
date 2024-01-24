@@ -41,7 +41,7 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	vhconfFile, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpVhostConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 		"sed",
 		"-i",
 		"s/lsapi:lsphp[0-9][0-9]/"+newLsapiLine+"/g",
-		vhconfFile,
+		phpVhostConfFilePath.String(),
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
@@ -64,7 +64,7 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	vhconfFile, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
+	phpVhostConfFilePath, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 			"sed",
 			"-i",
 			"s/"+name+" .*/"+name+" "+value+"/g",
-			vhconfFile,
+			phpVhostConfFilePath.String(),
 		)
 		if err != nil {
 			log.Printf("UpdatePhpSettingFailed: %s", err.Error())

@@ -77,10 +77,14 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 
 func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
 	templatePhpConfFilePath := "/app/conf/php/template"
-	phpVhostConfFilePath := "/app/conf/php/" + hostname.String() + ".conf"
-	err := infraHelper.CopyFile(
+	phpVhostConfFilePath, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
+	if err != nil && err.Error() != "VirtualHostNotFound" {
+		return err
+	}
+
+	err = infraHelper.CopyFile(
 		templatePhpConfFilePath,
-		phpVhostConfFilePath,
+		phpVhostConfFilePath.String(),
 	)
 	if err != nil {
 		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
@@ -91,7 +95,7 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		"-i",
 		"-e",
 		"s/speedia.net/"+hostname.String()+"/g",
-		phpVhostConfFilePath,
+		phpVhostConfFilePath.String(),
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
@@ -100,7 +104,7 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 	phpVhostHttpdConf := `
 virtualhost ` + hostname.String() + ` {
   vhRoot                  /app/
-  configFile              ` + phpVhostConfFilePath + `
+  configFile              ` + phpVhostConfFilePath.String() + `
   allowSymbolLink         1
   enableScript            1
   restrained              0
@@ -524,12 +528,9 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 
 	isPhpService := isService && addMapping.TargetServiceName.String() == "php"
 	if isPhpService {
-		virtualHostExists := vhostQueryRepo.VirtualHostExistsInPhpConf(addMapping.Hostname)
-		if !virtualHostExists {
-			err = repo.addPhpVirtualHost(addMapping.Hostname)
-			if err != nil {
-				return err
-			}
+		err = repo.addPhpVirtualHost(addMapping.Hostname)
+		if err != nil {
+			return err
 		}
 	}
 

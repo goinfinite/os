@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
 )
 
@@ -17,18 +18,32 @@ type RuntimeQueryRepo struct {
 
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
-) (string, error) {
-	mainHostname, err := infraHelper.GetPrimaryHostname()
+) (valueObject.UnixFilePath, error) {
+	var phpVhostConfFilePath valueObject.UnixFilePath
+
+	_, err := servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err != nil {
-		return "", errors.New("MainHostnameNotFound")
+		return phpVhostConfFilePath, errors.New("PhpServiceNotFound: " + err.Error())
 	}
 
-	phpConfFile := "/app/conf/php/primary.conf"
-	if hostname != mainHostname {
-		phpConfFile = "/app/conf/php/" + hostname.String() + ".conf"
+	primaryPhpVhostConfFilePathStr := "/app/conf/php/primary.conf"
+
+	phpVhostConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
+	vhostQueryRepo := VirtualHostQueryRepo{}
+	if vhostQueryRepo.IsVirtualHostPrimaryDomain(hostname) {
+		phpVhostConfFilePathStr = primaryPhpVhostConfFilePathStr
 	}
 
-	return phpConfFile, nil
+	phpVhostConfFilePath, err = valueObject.NewUnixFilePath(phpVhostConfFilePathStr)
+	if err != nil {
+		return phpVhostConfFilePath, err
+	}
+
+	if !infraHelper.FileExists(phpVhostConfFilePathStr) {
+		return phpVhostConfFilePath, errors.New("VirtualHostNotFound")
+	}
+
+	return phpVhostConfFilePath, nil
 }
 
 func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
@@ -71,7 +86,7 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		phpConfFilePath,
+		phpConfFilePath.String(),
 	)
 	if err != nil {
 		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
@@ -193,14 +208,14 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 ) ([]entity.PhpSetting, error) {
 	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
-		return []entity.PhpSetting{}, err
+		return nil, err
 	}
 
 	output, err := infraHelper.RunCmd(
 		"sed",
 		"-n",
 		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-		phpConfFilePath,
+		phpConfFilePath.String(),
 	)
 	if err != nil || output == "" {
 		return nil, errors.New("FailedToGetPhpSettings: " + err.Error())
