@@ -82,6 +82,34 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		return err
 	}
 
+	vhostsWithMappings, err := VirtualHostQueryRepo{}.GetWithMappings()
+	if err != nil {
+		return err
+	}
+
+	var targetVhostWithMapping dto.VirtualHostWithMappings
+	for _, vhostWithMapping := range vhostsWithMappings {
+		if vhostWithMapping.Hostname.String() != hostname.String() {
+			continue
+		}
+
+		targetVhostWithMapping = vhostWithMapping
+		break
+	}
+
+	shouldCreatePhpVhostConf := true
+	for _, targetVhostMapping := range targetVhostWithMapping.Mappings {
+		isServiceMapping := targetVhostMapping.TargetType.String() == "service"
+		isPhpService := targetVhostMapping.TargetServiceName.String() == "php"
+		if isServiceMapping && isPhpService {
+			shouldCreatePhpVhostConf = false
+		}
+	}
+
+	if !shouldCreatePhpVhostConf {
+		return nil
+	}
+
 	err = infraHelper.CopyFile(
 		templatePhpConfFilePath,
 		phpVhostConfFilePath.String(),
