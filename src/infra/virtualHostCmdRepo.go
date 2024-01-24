@@ -524,9 +524,12 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 
 	isPhpService := isService && addMapping.TargetServiceName.String() == "php"
 	if isPhpService {
-		err := repo.addPhpVirtualHost(addMapping.Hostname)
-		if err != nil {
-			return err
+		virtualHostExists := vhostQueryRepo.VirtualHostExistsInPhpConf(addMapping.Hostname)
+		if !virtualHostExists {
+			err = repo.addPhpVirtualHost(addMapping.Hostname)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
