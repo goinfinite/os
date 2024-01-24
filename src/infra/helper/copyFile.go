@@ -7,7 +7,7 @@ import (
 )
 
 func CopyFile(srcPath string, dstPath string) error {
-	srcFile, err := os.OpenFile(srcPath, os.O_RDWR|os.O_CREATE, 0644)
+	srcFile, err := os.OpenFile(srcPath, os.O_RDWR, 0644)
 	if err != nil {
 		return errors.New("CopyFileError: " + err.Error())
 	}
