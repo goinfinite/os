@@ -140,10 +140,11 @@ virtualhost ` + hostname.String() + ` {
 }
 `
 	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	shouldOverwrite := true
 	err = infraHelper.UpdateFile(
 		phpHttpdConfFilePath,
 		phpVhostHttpdConf,
-		false,
+		shouldOverwrite,
 	)
 	if err != nil {
 		return errors.New("CreatePhpVirtualHostError: " + err.Error())
