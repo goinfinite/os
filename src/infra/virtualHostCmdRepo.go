@@ -81,31 +81,8 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		return err
 	}
 
-	vhostsWithMappings, err := VirtualHostQueryRepo{}.GetWithMappings()
-	if err != nil {
-		return err
-	}
-
-	var targetVhostWithMappings dto.VirtualHostWithMappings
-	for _, vhostWithMapping := range vhostsWithMappings {
-		if vhostWithMapping.Hostname.String() != hostname.String() {
-			continue
-		}
-
-		targetVhostWithMappings = vhostWithMapping
-		break
-	}
-
-	shouldCreatePhpVhostConf := true
-	for _, targetVhostMapping := range targetVhostWithMappings.Mappings {
-		isServiceMapping := targetVhostMapping.TargetType.String() == "service"
-		isPhpService := targetVhostMapping.TargetServiceName.String() == "php"
-		if isServiceMapping && isPhpService {
-			shouldCreatePhpVhostConf = false
-		}
-	}
-
-	if !shouldCreatePhpVhostConf {
+	vhostAlreadyExists := vhostPhpConfFilePath.String() != "" && err == nil
+	if vhostAlreadyExists {
 		return nil
 	}
 
@@ -140,7 +117,7 @@ virtualhost ` + hostname.String() + ` {
 }
 `
 	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
-	shouldOverwrite := true
+	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
 		phpHttpdConfFilePath,
 		phpVhostHttpdConf,
