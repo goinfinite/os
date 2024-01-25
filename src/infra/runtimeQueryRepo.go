@@ -77,9 +77,11 @@ func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion
 func (repo RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
 ) (entity.PhpVersion, error) {
+	var phpVersion entity.PhpVersion
+
 	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
-		return entity.PhpVersion{}, err
+		return phpVersion, err
 	}
 
 	currentPhpVersionStr, err := infraHelper.RunCmd(
@@ -88,20 +90,21 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 		phpConfFilePath.String(),
 	)
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
 	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
 	phpVersions, err := repo.GetPhpVersionsInstalled()
 	if err != nil {
-		return entity.PhpVersion{}, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
 	}
 
-	return entity.NewPhpVersion(currentPhpVersion, phpVersions), nil
+	phpVersion = entity.NewPhpVersion(currentPhpVersion, phpVersions)
+	return phpVersion, nil
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
