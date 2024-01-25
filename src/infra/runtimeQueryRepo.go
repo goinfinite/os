@@ -9,7 +9,6 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
 )
 
@@ -21,11 +20,6 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 ) (valueObject.UnixFilePath, error) {
 	var vhostPhpConfFilePath valueObject.UnixFilePath
 
-	_, err := servicesInfra.ServicesQueryRepo{}.GetByName("php")
-	if err != nil {
-		return vhostPhpConfFilePath, errors.New("PhpServiceNotFound: " + err.Error())
-	}
-
 	primaryVhostPhpConfFilePathStr := "/app/conf/php/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
 	vhostQueryRepo := VirtualHostQueryRepo{}
@@ -33,7 +27,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 
-	vhostPhpConfFilePath, err = valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
+	vhostPhpConfFilePath, err := valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
 	if err != nil {
 		return vhostPhpConfFilePath, err
 	}
