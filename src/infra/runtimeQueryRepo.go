@@ -289,25 +289,29 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 func (repo RuntimeQueryRepo) GetPhpConfigs(
 	hostname valueObject.Fqdn,
 ) (entity.PhpConfigs, error) {
+	var phpConfigs entity.PhpConfigs
+
 	phpVersion, err := repo.GetPhpVersion(hostname)
 	if err != nil {
-		return entity.PhpConfigs{}, err
+		return phpConfigs, err
 	}
 
 	phpSettings, err := repo.GetPhpSettings(hostname)
 	if err != nil {
-		return entity.PhpConfigs{}, err
+		return phpConfigs, err
 	}
 
 	phpModules, err := repo.GetPhpModules(phpVersion.Value)
 	if err != nil {
-		return entity.PhpConfigs{}, err
+		return phpConfigs, err
 	}
 
-	return entity.NewPhpConfigs(
+	phpConfigs = entity.NewPhpConfigs(
 		hostname,
 		phpVersion,
 		phpSettings,
 		phpModules,
-	), nil
+	)
+
+	return phpConfigs, nil
 }
