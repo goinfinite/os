@@ -19,30 +19,30 @@ type RuntimeQueryRepo struct {
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
-	var phpVhostConfFilePath valueObject.UnixFilePath
+	var vhostPhpConfFilePath valueObject.UnixFilePath
 
 	_, err := servicesInfra.ServicesQueryRepo{}.GetByName("php")
 	if err != nil {
-		return phpVhostConfFilePath, errors.New("PhpServiceNotFound: " + err.Error())
+		return vhostPhpConfFilePath, errors.New("PhpServiceNotFound: " + err.Error())
 	}
 
-	primaryPhpVhostConfFilePathStr := "/app/conf/php/primary.conf"
-	phpVhostConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
+	primaryVhostPhpConfFilePathStr := "/app/conf/php/primary.conf"
+	vhostPhpConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	if vhostQueryRepo.IsVirtualHostPrimaryDomain(hostname) {
-		phpVhostConfFilePathStr = primaryPhpVhostConfFilePathStr
+		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 
-	phpVhostConfFilePath, err = valueObject.NewUnixFilePath(phpVhostConfFilePathStr)
+	vhostPhpConfFilePath, err = valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
 	if err != nil {
-		return phpVhostConfFilePath, err
+		return vhostPhpConfFilePath, err
 	}
 
-	if !infraHelper.FileExists(phpVhostConfFilePathStr) {
-		return phpVhostConfFilePath, errors.New("VirtualHostNotFound")
+	if !infraHelper.FileExists(vhostPhpConfFilePathStr) {
+		return vhostPhpConfFilePath, errors.New("VirtualHostNotFound")
 	}
 
-	return phpVhostConfFilePath, nil
+	return vhostPhpConfFilePath, nil
 }
 
 func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
@@ -79,7 +79,7 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 ) (entity.PhpVersion, error) {
 	var phpVersion entity.PhpVersion
 
-	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpVersion, err
 	}
@@ -87,7 +87,7 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 	currentPhpVersionStr, err := infraHelper.RunCmd(
 		"awk",
 		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		phpConfFilePath.String(),
+		vhostPhpConfFilePath.String(),
 	)
 	if err != nil {
 		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
@@ -210,7 +210,7 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 ) ([]entity.PhpSetting, error) {
 	phpSettings := []entity.PhpSetting{}
 
-	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpSettings, err
 	}
@@ -219,7 +219,7 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 		"sed",
 		"-n",
 		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-		phpConfFilePath.String(),
+		vhostPhpConfFilePath.String(),
 	)
 	if err != nil || output == "" {
 		return phpSettings, errors.New("FailedToGetPhpSettings: " + err.Error())
