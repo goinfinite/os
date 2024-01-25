@@ -108,19 +108,20 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
+	var timezones []string
+
 	timezonesRaw, err := infraHelper.RunCmd(
 		"php",
 		"-r",
 		"echo json_encode(DateTimeZone::listIdentifiers());",
 	)
 	if err != nil {
-		return nil, errors.New("FailedToGetPhpTimezones: " + err.Error())
+		return timezones, errors.New("FailedToGetPhpTimezones: " + err.Error())
 	}
 
-	var timezones []string
 	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
 	if err != nil {
-		return nil, errors.New("FailedToGetPhpTimezones: " + err.Error())
+		return timezones, errors.New("FailedToGetPhpTimezones: " + err.Error())
 	}
 
 	return timezones, nil
@@ -129,29 +130,31 @@ func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 func (repo RuntimeQueryRepo) phpSettingFactory(
 	setting string,
 ) (entity.PhpSetting, error) {
+	var phpSetting entity.PhpSetting
+
 	if setting == "" {
-		return entity.PhpSetting{}, errors.New("InvalidPhpSetting")
+		return phpSetting, errors.New("InvalidPhpSetting")
 	}
 
 	settingParts := strings.Split(setting, " ")
 	if len(settingParts) != 2 {
-		return entity.PhpSetting{}, errors.New("InvalidPhpSetting")
+		return phpSetting, errors.New("InvalidPhpSetting")
 	}
 
 	settingNameStr := settingParts[0]
 	settingValueStr := settingParts[1]
 	if settingNameStr == "" || settingValueStr == "" {
-		return entity.PhpSetting{}, errors.New("InvalidPhpSetting")
+		return phpSetting, errors.New("InvalidPhpSetting")
 	}
 
 	settingName, err := valueObject.NewPhpSettingName(settingNameStr)
 	if err != nil {
-		return entity.PhpSetting{}, errors.New("InvalidPhpSettingName")
+		return phpSetting, errors.New("InvalidPhpSettingName")
 	}
 
 	settingValue, err := valueObject.NewPhpSettingValue(settingValueStr)
 	if err != nil {
-		return entity.PhpSetting{}, errors.New("InvalidPhpSettingValue")
+		return phpSetting, errors.New("InvalidPhpSettingValue")
 	}
 
 	settingOptions := []valueObject.PhpSettingOption{}
@@ -240,12 +243,14 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 func (repo RuntimeQueryRepo) GetPhpModules(
 	version valueObject.PhpVersion,
 ) ([]entity.PhpModule, error) {
+	phpModules := []entity.PhpModule{}
+
 	activeModuleList, err := infraHelper.RunCmd(
 		"/usr/local/lsws/lsphp"+version.GetWithoutDots()+"/bin/php",
 		"-m",
 	)
 	if err != nil {
-		return nil, errors.New("GetActivePhpModulesFailed: " + err.Error())
+		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}
 
 	activeModules := []string{}
@@ -265,7 +270,6 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 		activeModules = append(activeModules, phpModule.String())
 	}
 
-	phpModules := []entity.PhpModule{}
 	for _, moduleName := range valueObject.ValidPhpModuleNames {
 		isModuleInstalled := false
 		if slices.Contains(activeModules, moduleName) {
@@ -306,12 +310,10 @@ func (repo RuntimeQueryRepo) GetPhpConfigs(
 		return phpConfigs, err
 	}
 
-	phpConfigs = entity.NewPhpConfigs(
+	return entity.NewPhpConfigs(
 		hostname,
 		phpVersion,
 		phpSettings,
 		phpModules,
-	)
-
-	return phpConfigs, nil
+	), nil
 }

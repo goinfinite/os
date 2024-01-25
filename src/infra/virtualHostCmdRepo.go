@@ -48,7 +48,7 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 		vhostFileStr = "/app/conf/nginx/primary.conf"
 	}
 
-	return valueObject.UnixFilePath(vhostFileStr), nil
+	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
 func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
