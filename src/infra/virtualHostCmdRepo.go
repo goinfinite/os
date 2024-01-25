@@ -76,7 +76,6 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
-	templatePhpConfFilePath := "/app/conf/php/template"
 	phpVhostConfFilePath, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil && err.Error() != "VirtualHostNotFound" {
 		return err
@@ -87,18 +86,18 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		return err
 	}
 
-	var targetVhostWithMapping dto.VirtualHostWithMappings
+	var targetVhostWithMappings dto.VirtualHostWithMappings
 	for _, vhostWithMapping := range vhostsWithMappings {
 		if vhostWithMapping.Hostname.String() != hostname.String() {
 			continue
 		}
 
-		targetVhostWithMapping = vhostWithMapping
+		targetVhostWithMappings = vhostWithMapping
 		break
 	}
 
 	shouldCreatePhpVhostConf := true
-	for _, targetVhostMapping := range targetVhostWithMapping.Mappings {
+	for _, targetVhostMapping := range targetVhostWithMappings.Mappings {
 		isServiceMapping := targetVhostMapping.TargetType.String() == "service"
 		isPhpService := targetVhostMapping.TargetServiceName.String() == "php"
 		if isServiceMapping && isPhpService {
@@ -110,6 +109,7 @@ func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) erro
 		return nil
 	}
 
+	templatePhpConfFilePath := "/app/conf/php/template"
 	err = infraHelper.CopyFile(
 		templatePhpConfFilePath,
 		phpVhostConfFilePath.String(),
