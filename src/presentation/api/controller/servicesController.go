@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -113,18 +112,14 @@ func AddInstallableServiceController(c echo.Context) error {
 
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
-		var assertOk bool
-		autoCreateMapping, assertOk = requestBody["autoCreateMapping"].(bool)
-		if !assertOk {
-			var err error
-			autoCreateMapping, err = strconv.ParseBool(
-				requestBody["autoCreateMapping"].(string),
+		var err error
+		autoCreateMapping, err = apiHelper.ParseBodyParam(
+			requestBody["autoCreateMapping"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidAutoCreateMapping",
 			)
-			if err != nil {
-				return apiHelper.ResponseWrapper(
-					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
-				)
-			}
 		}
 	}
 
@@ -193,18 +188,14 @@ func AddCustomServiceController(c echo.Context) error {
 
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
-		var assertOk bool
-		autoCreateMapping, assertOk = requestBody["autoCreateMapping"].(bool)
-		if !assertOk {
-			var err error
-			autoCreateMapping, err = strconv.ParseBool(
-				requestBody["autoCreateMapping"].(string),
+		var err error
+		autoCreateMapping, err = apiHelper.ParseBodyParam(
+			requestBody["autoCreateMapping"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidAutoCreateMapping",
 			)
-			if err != nil {
-				return apiHelper.ResponseWrapper(
-					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
-				)
-			}
 		}
 	}
 
