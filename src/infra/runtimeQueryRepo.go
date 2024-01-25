@@ -208,9 +208,11 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 func (repo RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
 ) ([]entity.PhpSetting, error) {
+	phpSettings := []entity.PhpSetting{}
+
 	phpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
-		return nil, err
+		return phpSettings, err
 	}
 
 	output, err := infraHelper.RunCmd(
@@ -220,10 +222,9 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 		phpConfFilePath.String(),
 	)
 	if err != nil || output == "" {
-		return nil, errors.New("FailedToGetPhpSettings: " + err.Error())
+		return phpSettings, errors.New("FailedToGetPhpSettings: " + err.Error())
 	}
 
-	phpSettings := []entity.PhpSetting{}
 	for _, setting := range strings.Split(output, "\n") {
 		phpSetting, err := repo.phpSettingFactory(setting)
 		if err != nil {
