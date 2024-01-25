@@ -64,7 +64,8 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	vhostPhpConfFilePath, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
+	queryRepo := RuntimeQueryRepo{}
+	vhostPhpConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
