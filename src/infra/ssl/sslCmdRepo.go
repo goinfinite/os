@@ -43,12 +43,12 @@ vhssl {
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname)
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.VirtualHost)
 	if err != nil {
 		return err
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + addSslPair.Hostname.String()
+	sslBaseDirPath := "/speedia/pki/" + addSslPair.VirtualHost.String()
 	sslKeyFilePath := sslBaseDirPath + "/ssl.key"
 	sslCertFilePath := sslBaseDirPath + "/ssl.crt"
 
@@ -76,7 +76,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	}
 
 	newSsl, err := sslQueryRepo.SslPairFactory(
-		addSslPair.Hostname,
+		addSslPair.VirtualHost,
 		addSslPair.Key,
 		sslCertificates,
 	)
@@ -106,7 +106,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.Hostname)
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.VirtualHost)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return err
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
+	sslBaseDirPath := "/speedia/pki/" + sslToDelete.VirtualHost.String()
 	err = os.RemoveAll(sslBaseDirPath)
 	if err != nil {
 		return err

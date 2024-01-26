@@ -19,9 +19,9 @@ func AddSslPair(
 	}
 
 	log.Printf(
-		"SSL '%v' added in '%v' hostname.",
+		"SSL '%v' added in '%v' virtual host.",
 		addSslPair.Certificate.Id.String(),
-		addSslPair.Hostname.String(),
+		addSslPair.VirtualHost.String(),
 	)
 
 	return nil
