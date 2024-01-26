@@ -11,7 +11,7 @@ type SslPrivateKey string
 func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
 	sslPrivateKey := SslPrivateKey(privateKey)
 	if !sslPrivateKey.isValid() {
-		return "", errors.New("SslPrivateKeyError")
+		return "", errors.New("InvalidSslPrivateKey")
 	}
 
 	return sslPrivateKey, nil
