@@ -30,7 +30,7 @@ func (sslPrivateKey SslPrivateKey) isValid() bool {
 	if block == nil {
 		return false
 	}
-	_, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	_, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	return err == nil
 }
 
