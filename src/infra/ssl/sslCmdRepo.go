@@ -48,7 +48,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return err
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + addSslPair.VirtualHost.String()
+	sslBaseDirPath := "/app/conf/pki/" + addSslPair.VirtualHost.String()
 	sslKeyFilePath := sslBaseDirPath + "/ssl.key"
 	sslCertFilePath := sslBaseDirPath + "/ssl.crt"
 
