@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -78,7 +79,7 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
 	vhostExists := true
 
-	runtimeQueryRepo := RuntimeQueryRepo{}
+	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	vhostPhpConfFilePath, err := runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		if err.Error() != "VirtualHostNotFound" {
