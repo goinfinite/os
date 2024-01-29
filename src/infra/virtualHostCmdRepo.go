@@ -76,13 +76,18 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
-	vhostPhpConfFilePath, err := RuntimeQueryRepo{}.GetVirtualHostPhpConfFilePath(hostname)
-	if err != nil && err.Error() != "VirtualHostNotFound" {
-		return err
+	vhostExists := true
+
+	runtimeQueryRepo := RuntimeQueryRepo{}
+	vhostPhpConfFilePath, err := runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	if err != nil {
+		if err.Error() != "VirtualHostNotFound" {
+			return err
+		}
+		vhostExists = false
 	}
 
-	vhostAlreadyExists := vhostPhpConfFilePath.String() != "" && err == nil
-	if vhostAlreadyExists {
+	if vhostExists {
 		return nil
 	}
 
