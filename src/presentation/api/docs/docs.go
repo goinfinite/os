@@ -888,7 +888,7 @@ const docTemplate = `{
                 ],
                 "description": "Upload files.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -902,7 +902,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "DestinationPath",
                         "name": "destinationPath",
-                        "in": "path",
+                        "in": "formData",
                         "required": true
                     },
                     {
@@ -1602,6 +1602,9 @@ const docTemplate = `{
         "dto.AddCustomService": {
             "type": "object",
             "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
                 "command": {
                     "type": "string"
                 },
@@ -1653,6 +1656,9 @@ const docTemplate = `{
         "dto.AddInstallableService": {
             "type": "object",
             "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },

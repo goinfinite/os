@@ -61,11 +61,6 @@ func AddCustomService(
 		return errors.New("AddCustomServiceInfraError")
 	}
 
-	defaultAutoCreateMapping := true
-	if addDto.AutoCreateMapping == nil {
-		addDto.AutoCreateMapping = &defaultAutoCreateMapping
-	}
-
 	isRuntimeSvc := addDto.Type.String() == "runtime"
 	isApplicationSvc := addDto.Type.String() == "application"
 	if !isRuntimeSvc && !isApplicationSvc {
@@ -82,7 +77,8 @@ func AddCustomService(
 	}
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
-	if len(primaryVhostWithMapping.Mappings) != 0 {
+	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
+	if !shouldCreateFirstMapping {
 		return nil
 	}
 

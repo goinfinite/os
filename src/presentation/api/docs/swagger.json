@@ -882,7 +882,7 @@
                 ],
                 "description": "Upload files.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -896,7 +896,7 @@
                         "type": "string",
                         "description": "DestinationPath",
                         "name": "destinationPath",
-                        "in": "path",
+                        "in": "formData",
                         "required": true
                     },
                     {
@@ -1596,6 +1596,9 @@
         "dto.AddCustomService": {
             "type": "object",
             "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
                 "command": {
                     "type": "string"
                 },
@@ -1647,6 +1650,9 @@
         "dto.AddInstallableService": {
             "type": "object",
             "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },

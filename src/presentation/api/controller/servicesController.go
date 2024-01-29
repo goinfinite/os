@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -111,19 +110,37 @@ func AddInstallableServiceController(c echo.Context) error {
 		)
 	}
 
+	autoCreateMapping := true
+	if requestBody["autoCreateMapping"] != nil {
+		var err error
+		autoCreateMapping, err = apiHelper.ParseBoolParam(
+			requestBody["autoCreateMapping"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidAutoCreateMapping",
+			)
+		}
+	}
+
 	addInstallableServiceDto := dto.NewAddInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
 		svcPortBindings,
+		autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	vhostQueryRepo := infra.VirtualHostQueryRepo{}
+	vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 	err := useCase.AddInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		addInstallableServiceDto,
 	)
 
@@ -169,22 +186,17 @@ func AddCustomServiceController(c echo.Context) error {
 		)
 	}
 
-	var autoCreateMappingPtr *bool
+	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
-		autoCreateMapping, assertOk := requestBody["autoCreateMapping"].(bool)
-		if !assertOk {
-			var err error
-			autoCreateMapping, err = strconv.ParseBool(
-				requestBody["autoCreateMapping"].(string),
+		var err error
+		autoCreateMapping, err = apiHelper.ParseBoolParam(
+			requestBody["autoCreateMapping"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidAutoCreateMapping",
 			)
-			if err != nil {
-				return apiHelper.ResponseWrapper(
-					c, http.StatusBadRequest, "InvalidAutoCreateMapping",
-				)
-			}
 		}
-
-		autoCreateMappingPtr = &autoCreateMapping
 	}
 
 	addCustomServiceDto := dto.NewAddCustomService(
@@ -193,7 +205,7 @@ func AddCustomServiceController(c echo.Context) error {
 		svcCommand,
 		svcVersionPtr,
 		svcPortBindings,
-		autoCreateMappingPtr,
+		autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
