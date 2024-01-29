@@ -11,7 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
-	wsInfra "github.com/speedianet/os/src/infra/webServer"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -158,12 +158,12 @@ func UpdatePhpConfigsController(c echo.Context) error {
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-	wsQueryRepo := wsInfra.WsQueryRepo{}
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	err = useCase.UpdatePhpConfigs(
 		runtimeQueryRepo,
 		runtimeCmdRepo,
-		wsQueryRepo,
+		vhostQueryRepo,
 		updatePhpConfigsDto,
 	)
 	if err != nil {

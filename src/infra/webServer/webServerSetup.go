@@ -1,6 +1,7 @@
 package wsInfra
 
 import (
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -11,7 +12,37 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func WebServerFirstSetup() {
+type WebServerSetup struct{}
+
+func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
+	log.Print("UpdatingMaxPhpChildProcesses...")
+
+	maxChildProcesses := int64(300)
+	childProcessPerGb := int64(5)
+
+	memoryInGb := memoryTotal.ToGiB()
+	desiredChildProcesses := memoryInGb * childProcessPerGb
+	if desiredChildProcesses > maxChildProcesses {
+		desiredChildProcesses = maxChildProcesses
+	}
+
+	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
+	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	_, err := infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+desiredChildProcessesStr+";/g",
+		httpdConfFilePath,
+	)
+	if err != nil {
+		return errors.New("UpdateMaxChildProcessesFailed")
+	}
+
+	return nil
+}
+
+func (ws WebServerSetup) FirstSetup() {
 	_, err := os.Stat("/etc/nginx/dhparam.pem")
 	if err == nil {
 		return
@@ -21,14 +52,13 @@ func WebServerFirstSetup() {
 
 	vhost, err := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
 	if err != nil {
-		log.Fatalf("VirtualHostEnvInvalidValue")
+		log.Fatal("VirtualHostEnvInvalidValue")
 	}
 	vhostStr := vhost.String()
 
 	log.Print("UpdatingVhost...")
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
-
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
@@ -36,7 +66,7 @@ func WebServerFirstSetup() {
 		primaryConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("UpdateVhostFailed")
+		log.Fatal("UpdateVhostFailed")
 	}
 
 	log.Print("GeneratingDhparam...")
@@ -50,7 +80,7 @@ func WebServerFirstSetup() {
 		"2048",
 	)
 	if err != nil {
-		log.Fatalf("GenerateDhparamFailed")
+		log.Fatal("GenerateDhparamFailed")
 	}
 
 	log.Print("GeneratingSelfSignedCert...")
@@ -72,21 +102,23 @@ func WebServerFirstSetup() {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhostStr,
 	)
 	if err != nil {
-		log.Fatalf("GenerateSelfSignedCertFailed")
+		log.Fatal("GenerateSelfSignedCertFailed")
 	}
 
 	log.Print("WebServerConfigured!")
 
 	err = servicesInfra.SupervisordFacade{}.Start("nginx")
 	if err != nil {
-		log.Fatalf("StartNginxFailed")
+		log.Fatal("StartNginxFailed")
 	}
 }
 
-func WebServerOnStartSetup() {
+func (ws WebServerSetup) OnStartSetup() {
+	defaultLogPreffix := "WsOnStartupSetup"
+
 	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupGetContainerResourcesFailed")
+		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPreffix)
 	}
 
 	cpuCores := containerResources.HardwareSpecs.CpuCores
@@ -99,7 +131,7 @@ func WebServerOnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupGetNginxWorkersCountFailed")
+		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPreffix)
 	}
 
 	if workerCount == cpuCoresStr {
@@ -116,11 +148,21 @@ func WebServerOnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupUpdateNginxWorkersCountFailed")
+		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPreffix)
 	}
 
 	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
 	if err != nil {
-		log.Fatalf("WsOnStartupSetupRestartNginxFailed")
+		log.Fatalf("%sRestartNginxFailed", defaultLogPreffix)
+	}
+
+	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
+	if err == nil {
+		err = ws.updatePhpMaxChildProcesses(
+			containerResources.HardwareSpecs.MemoryTotal,
+		)
+		if err != nil {
+			log.Fatalf("%s%s", defaultLogPreffix, err.Error())
+		}
 	}
 }

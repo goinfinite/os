@@ -51,6 +51,7 @@ func AddInstallableServiceController() *cobra.Command {
 	var versionStr string
 	var startupFileStr string
 	var portBindingsSlice []string
+	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
 		Use:   "add-installable",
@@ -84,14 +85,19 @@ func AddInstallableServiceController() *cobra.Command {
 				svcVersionPtr,
 				startupFilePtr,
 				portBindings,
+				autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			vhostCmdRepo := infra.VirtualHostCmdRepo{}
 
 			err := useCase.AddInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				vhostQueryRepo,
+				vhostCmdRepo,
 				addInstallableServiceDto,
 			)
 			if err != nil {
@@ -109,6 +115,13 @@ func AddInstallableServiceController() *cobra.Command {
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
 	)
+	cmd.Flags().BoolVarP(
+		&autoCreateMapping,
+		"auto-create-mapping",
+		"a",
+		true,
+		"AutoCreateMapping",
+	)
 	return cmd
 }
 
@@ -118,7 +131,7 @@ func AddCustomServiceController() *cobra.Command {
 	var commandStr string
 	var versionStr string
 	var portBindingsSlice []string
-	var autoCreateMapping *bool
+	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
@@ -183,7 +196,7 @@ func AddCustomServiceController() *cobra.Command {
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
 	)
 	cmd.Flags().BoolVarP(
-		autoCreateMapping,
+		&autoCreateMapping,
 		"auto-create-mapping",
 		"a",
 		true,

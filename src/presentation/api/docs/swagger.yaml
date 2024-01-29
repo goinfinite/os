@@ -18,6 +18,8 @@ definitions:
     type: object
   dto.AddCustomService:
     properties:
+      autoCreateMapping:
+        type: boolean
       command:
         type: string
       name:
@@ -51,6 +53,8 @@ definitions:
     type: object
   dto.AddInstallableService:
     properties:
+      autoCreateMapping:
+        type: boolean
       name:
         type: string
       portBindings:
@@ -1073,11 +1077,11 @@ paths:
   /files/upload/:
     post:
       consumes:
-      - application/json
+      - multipart/form-data
       description: Upload files.
       parameters:
       - description: DestinationPath
-        in: path
+        in: formData
         name: destinationPath
         required: true
         type: string

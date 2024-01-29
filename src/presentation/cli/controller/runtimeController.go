@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
-	wsInfra "github.com/speedianet/os/src/infra/webServer"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -90,12 +90,12 @@ func UpdatePhpConfigController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-			wsQueryRepo := wsInfra.WsQueryRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {
@@ -152,12 +152,12 @@ func UpdatePhpSettingController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-			wsQueryRepo := wsInfra.WsQueryRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {
@@ -211,12 +211,12 @@ func UpdatePhpModuleController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-			wsQueryRepo := wsInfra.WsQueryRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
-				wsQueryRepo,
+				vhostQueryRepo,
 				updatePhpConfigsDto,
 			)
 			if err != nil {
