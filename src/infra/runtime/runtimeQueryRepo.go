@@ -9,7 +9,6 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	"golang.org/x/exp/slices"
 )
 
@@ -23,12 +22,17 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 
 	primaryVhostPhpConfFilePathStr := "/app/conf/php/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	if vhostQueryRepo.IsVirtualHostPrimaryDomain(hostname) {
+
+	primaryVhost, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return vhostPhpConfFilePath, errors.New("PrimaryVhostNotFound: " + err.Error())
+	}
+
+	if hostname.String() == primaryVhost.String() {
 		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 
-	vhostPhpConfFilePath, err := valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
+	vhostPhpConfFilePath, err = valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
 	if err != nil {
 		return vhostPhpConfFilePath, err
 	}
