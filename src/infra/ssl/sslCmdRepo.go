@@ -43,7 +43,7 @@ vhssl {
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.VirtualHost)
+	vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(addSslPair.VirtualHost)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		sslKeyFilePath,
 		isChainedCert,
 	)
-	err = infraHelper.UpdateFile(vhostConfigFilePath.String(), vhsslConfig, false)
+	err = infraHelper.UpdateFile(vhostConfFilePath.String(), vhsslConfig, false)
 	return err
 }
 
@@ -106,7 +106,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.VirtualHost)
+	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfFilePath(sslToDelete.VirtualHost)
 	if err != nil {
 		return err
 	}
