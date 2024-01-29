@@ -113,7 +113,7 @@ func AddInstallableServiceController(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBodyParam(
+		autoCreateMapping, err = apiHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
@@ -189,7 +189,7 @@ func AddCustomServiceController(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBodyParam(
+		autoCreateMapping, err = apiHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {

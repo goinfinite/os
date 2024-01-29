@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func ParseBodyParam(value interface{}) (bool, error) {
+func ParseBoolParam(value interface{}) (bool, error) {
 	defaultErr := errors.New("InvalidBool")
 
 	var output bool
