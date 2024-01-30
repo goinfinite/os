@@ -4,7 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	accountInfra "github.com/speedianet/os/src/infra/account"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +14,7 @@ func GetAccountsController() *cobra.Command {
 		Use:   "get",
 		Short: "GetAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
-			accQueryRepo := infra.AccQueryRepo{}
+			accQueryRepo := accountInfra.AccQueryRepo{}
 			accsList, err := useCase.GetAccounts(accQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -40,8 +40,8 @@ func AddAccountController() *cobra.Command {
 
 			addAccountDto := dto.NewAddAccount(username, password)
 
-			accQueryRepo := infra.AccQueryRepo{}
-			accCmdRepo := infra.AccCmdRepo{}
+			accQueryRepo := accountInfra.AccQueryRepo{}
+			accCmdRepo := accountInfra.AccCmdRepo{}
 
 			err := useCase.AddAccount(
 				accQueryRepo,
@@ -72,8 +72,8 @@ func DeleteAccountController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			accountId := valueObject.NewAccountIdFromStringPanic(accountIdStr)
 
-			accQueryRepo := infra.AccQueryRepo{}
-			accCmdRepo := infra.AccCmdRepo{}
+			accQueryRepo := accountInfra.AccQueryRepo{}
+			accCmdRepo := accountInfra.AccCmdRepo{}
 
 			err := useCase.DeleteAccount(
 				accQueryRepo,
@@ -121,8 +121,8 @@ func UpdateAccountController() *cobra.Command {
 				shouldUpdateApiKeyPtr,
 			)
 
-			accQueryRepo := infra.AccQueryRepo{}
-			accCmdRepo := infra.AccCmdRepo{}
+			accQueryRepo := accountInfra.AccQueryRepo{}
+			accCmdRepo := accountInfra.AccCmdRepo{}
 
 			if updateAccountDto.Password != nil {
 				useCase.UpdateAccountPassword(

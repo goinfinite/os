@@ -9,14 +9,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	authInfra "github.com/speedianet/os/src/infra/auth"
 )
 
 func getAccountIdFromAccessToken(
 	accessToken valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
-	authQueryRepo := infra.AuthQueryRepo{}
+	authQueryRepo := authInfra.AuthQueryRepo{}
 
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
 	var trustedIps []valueObject.IpAddress

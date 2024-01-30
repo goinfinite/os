@@ -1,4 +1,4 @@
-package webServerInfra
+package wsInfra
 
 import (
 	"errors"

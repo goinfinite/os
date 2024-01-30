@@ -7,7 +7,8 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,7 @@ func GetPhpConfigsController() *cobra.Command {
 			}
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -87,9 +88,9 @@ func UpdatePhpConfigController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
@@ -149,9 +150,9 @@ func UpdatePhpSettingController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
@@ -208,9 +209,9 @@ func UpdatePhpModuleController() *cobra.Command {
 				phpSettings,
 			)
 
-			runtimeQueryRepo := infra.RuntimeQueryRepo{}
-			runtimeCmdRepo := infra.RuntimeCmdRepo{}
-			vhostQueryRepo := infra.VirtualHostQueryRepo{}
+			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err := useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,

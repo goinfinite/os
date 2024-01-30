@@ -4,7 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ func GetDatabasesController() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
 
-			databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
+			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
 			databasesList, err := useCase.GetDatabases(databaseQueryRepo)
 			if err != nil {
@@ -47,8 +47,8 @@ func AddDatabaseController() *cobra.Command {
 
 			addDatabaseDto := dto.NewAddDatabase(dbName)
 
-			databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-			databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 			err := useCase.AddDatabase(
 				databaseQueryRepo,
@@ -81,8 +81,8 @@ func DeleteDatabaseController() *cobra.Command {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
-			databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-			databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 			err := useCase.DeleteDatabase(
 				databaseQueryRepo,
@@ -135,8 +135,8 @@ func AddDatabaseUserController() *cobra.Command {
 				privileges,
 			)
 
-			databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-			databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 			err := useCase.AddDatabaseUser(
 				databaseQueryRepo,
@@ -183,8 +183,8 @@ func DeleteDatabaseUserController() *cobra.Command {
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 			dbUser := valueObject.NewDatabaseUsernamePanic(dbUserStr)
 
-			databaseQueryRepo := infra.NewDatabaseQueryRepo(dbType)
-			databaseCmdRepo := infra.NewDatabaseCmdRepo(dbType)
+			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
+			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 			err := useCase.DeleteDatabaseUser(
 				databaseQueryRepo,
