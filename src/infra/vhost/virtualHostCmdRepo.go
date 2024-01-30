@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -48,7 +49,7 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 		vhostFileStr = "/app/conf/nginx/primary.conf"
 	}
 
-	return valueObject.UnixFilePath(vhostFileStr), nil
+	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
 func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
@@ -73,6 +74,66 @@ func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
 	// TODO: Regenerate cert for primary domain to include new alias
 
 	return repo.reloadWebServer()
+}
+
+func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
+	vhostExists := true
+
+	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+	vhostPhpConfFilePath, err := runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	if err != nil {
+		if err.Error() != "VirtualHostNotFound" {
+			return err
+		}
+		vhostExists = false
+	}
+
+	if vhostExists {
+		return nil
+	}
+
+	templatePhpVhostConfFilePath := "/app/conf/php/template"
+	err = infraHelper.CopyFile(
+		templatePhpVhostConfFilePath,
+		vhostPhpConfFilePath.String(),
+	)
+	if err != nil {
+		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/speedia.net/"+hostname.String()+"/g",
+		vhostPhpConfFilePath.String(),
+	)
+	if err != nil {
+		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	phpVhostHttpdConf := `
+virtualhost ` + hostname.String() + ` {
+  vhRoot                  /app/
+  configFile              ` + vhostPhpConfFilePath.String() + `
+  allowSymbolLink         1
+  enableScript            1
+  restrained              0
+  setUIDMode              0
+}
+`
+	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	shouldOverwrite := false
+	err = infraHelper.UpdateFile(
+		phpHttpdConfFilePath,
+		phpVhostHttpdConf,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return errors.New("CreatePhpVirtualHostError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
@@ -455,7 +516,8 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	}
 	locationContent += ";"
 
-	if addMapping.TargetType.String() == "service" {
+	isService := addMapping.TargetType.String() == "service"
+	if isService {
 		var err error
 		locationContent, err = repo.serviceLocationContentFactory(addMapping)
 		if err != nil {
@@ -474,6 +536,14 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 	)
 	if err != nil {
 		return errors.New("GetVirtualHostMappingsFilePathFailed")
+	}
+
+	isPhpService := isService && addMapping.TargetServiceName.String() == "php"
+	if isPhpService {
+		err = repo.addPhpVirtualHost(addMapping.Hostname)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = infraHelper.UpdateFile(
