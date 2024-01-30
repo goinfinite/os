@@ -106,30 +106,30 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfFilePath(sslToDelete.VirtualHost)
+	vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(sslToDelete.VirtualHost)
 	if err != nil {
 		return err
 	}
 
-	vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
+	vhostConfContentStr, err := infraHelper.GetFileContent(vhostConfFilePath.String())
 	if err != nil {
 		return err
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + sslToDelete.VirtualHost.String()
+	sslBaseDirPath := "/app/conf/pki/" + sslToDelete.VirtualHost.String()
 	err = os.RemoveAll(sslBaseDirPath)
 	if err != nil {
 		return err
 	}
 
-	vhostConfigVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
-	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigContentStr, "")
-	vhostConfigWithoutSpaces := strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)
-	vhostConfigWithBreakLines := vhostConfigWithoutSpaces + "\n\n"
+	vhostConfVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
+	vhostConfWithoutVhssl := vhostConfVhsslMatch.ReplaceAllString(vhostConfContentStr, "")
+	vhostConfWithoutSpaces := strings.TrimRightFunc(vhostConfWithoutVhssl, unicode.IsSpace)
+	vhostConfWithBreakLines := vhostConfWithoutSpaces + "\n\n"
 
 	err = infraHelper.UpdateFile(
-		vhostConfigFilePath.String(),
-		vhostConfigWithBreakLines,
+		vhostConfFilePath.String(),
+		vhostConfWithBreakLines,
 		true,
 	)
 	return err
