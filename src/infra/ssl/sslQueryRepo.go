@@ -22,27 +22,36 @@ type SslCertificates struct {
 
 // TODO: add "getCertFileContentByRegExp(regExp string, vhostConfFilePath string) (string, error)"
 
-func (repo SslQueryRepo) GetVhostConfigFilePath(
+func (repo SslQueryRepo) GetVhostConfFilePath(
 	vhost valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
-	var vhostConfigFilePath valueObject.UnixFilePath
-	httpdContent, err := infraHelper.GetFileContent(configurationsDir)
+	var vhostConfFilePath valueObject.UnixFilePath
+
+	vhostConfFilePathStr := configurationsDir + "/" + vhost.String() + ".conf"
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	if vhostQueryRepo.IsVirtualHostPrimaryDomain(vhost) {
+		vhostConfFilePathStr = configurationsDir + "/primary.conf"
+	}
+
+	vhostConfFileContentStr, err := infraHelper.GetFileContent(vhostConfFilePathStr)
 	if err != nil {
 		return "", err
 	}
 
-	vhostConfigFileExpression := `\s*configFile\s*(.*)`
-	vhostConfigFileMatch, err := infraHelper.GetRegexFirstGroup(httpdContent, vhostConfigFileExpression)
+	vhostConfFileExpression := `\s*configFile\s*(.*)`
+	vhostConfFileMatch, err := infraHelper.GetRegexFirstGroup(
+		vhostConfFileContentStr, vhostConfFileExpression,
+	)
 	if err != nil {
 		return "", err
 	}
 
-	vhostConfigFilePath, err = valueObject.NewUnixFilePath(vhostConfigFileMatch)
+	vhostConfFilePath, err = valueObject.NewUnixFilePath(vhostConfFileMatch)
 	if err != nil {
 		return "", err
 	}
 
-	return vhostConfigFilePath, nil
+	return vhostConfFilePath, nil
 }
 
 func (repo SslQueryRepo) SslCertificatesFactory(
