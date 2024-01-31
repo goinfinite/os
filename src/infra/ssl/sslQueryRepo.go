@@ -86,11 +86,14 @@ func (repo SslQueryRepo) SslPairFactory(
 
 	var chainCertificatesContent []valueObject.SslCertificateContent
 	for _, sslChainCertificate := range chainCertificates {
-		chainCertificatesContent = append(chainCertificatesContent, sslChainCertificate.Certificate)
+		chainCertificatesContent = append(
+			chainCertificatesContent,
+			sslChainCertificate.CertificateContent,
+		)
 	}
 
 	hashId, err := valueObject.NewSslIdFromSslPairContent(
-		certificate.Certificate,
+		certificate.CertificateContent,
 		chainCertificatesContent,
 		sslPrivateKey,
 	)
@@ -109,6 +112,7 @@ func (repo SslQueryRepo) SslPairFactory(
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	var sslPairs []entity.SslPair
+
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	virtualHosts, err := vhostQueryRepo.Get()

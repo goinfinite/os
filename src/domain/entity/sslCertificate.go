@@ -9,12 +9,12 @@ import (
 )
 
 type SslCertificate struct {
-	Id          valueObject.SslId
-	Certificate valueObject.SslCertificateContent
-	CommonName  *valueObject.Fqdn
-	IssuedAt    valueObject.UnixTime
-	ExpiresAt   valueObject.UnixTime
-	IsCA        bool
+	Id                 valueObject.SslId
+	CertificateContent valueObject.SslCertificateContent
+	CommonName         *valueObject.Fqdn
+	IssuedAt           valueObject.UnixTime
+	ExpiresAt          valueObject.UnixTime
+	IsCA               bool
 }
 
 func NewSslCertificate(
@@ -51,12 +51,12 @@ func NewSslCertificate(
 	}
 
 	return SslCertificate{
-		Id:          sslCertificateId,
-		Certificate: sslCertificateContent,
-		CommonName:  commonNamePtr,
-		IssuedAt:    issuedAt,
-		ExpiresAt:   expiresAt,
-		IsCA:        parsedCert.IsCA,
+		Id:                 sslCertificateId,
+		CertificateContent: sslCertificateContent,
+		CommonName:         commonNamePtr,
+		IssuedAt:           issuedAt,
+		ExpiresAt:          expiresAt,
+		IsCA:               parsedCert.IsCA,
 	}, nil
 }
 
@@ -71,5 +71,5 @@ func NewSslCertificatePanic(
 }
 
 func (sslCertificate SslCertificate) String() string {
-	return sslCertificate.Certificate.String()
+	return sslCertificate.CertificateContent.String()
 }
