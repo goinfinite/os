@@ -20,8 +20,6 @@ type SslCertificates struct {
 	ChainedCertificates []entity.SslCertificate
 }
 
-// TODO: add "getCertFileContentByRegExp(regExp string, vhostConfFilePath string) (string, error)"
-
 func (repo SslQueryRepo) GetVhostConfFilePath(
 	vhost valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
@@ -33,22 +31,9 @@ func (repo SslQueryRepo) GetVhostConfFilePath(
 		vhostConfFilePathStr = configurationsDir + "/primary.conf"
 	}
 
-	vhostConfFileContentStr, err := infraHelper.GetFileContent(vhostConfFilePathStr)
+	vhostConfFilePath, err := valueObject.NewUnixFilePath(vhostConfFilePathStr)
 	if err != nil {
-		return "", err
-	}
-
-	vhostConfFileExpression := `\s*configFile\s*(.*)`
-	vhostConfFileMatch, err := infraHelper.GetRegexFirstGroup(
-		vhostConfFileContentStr, vhostConfFileExpression,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	vhostConfFilePath, err = valueObject.NewUnixFilePath(vhostConfFileMatch)
-	if err != nil {
-		return "", err
+		return vhostConfFilePath, err
 	}
 
 	return vhostConfFilePath, nil
@@ -151,15 +136,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		vhostCertKeyFileExp := `ssl_certificate_key\s*(.*);`
-		vhostCertKeyFilePath, err := infraHelper.GetRegexFirstGroup(
-			vhostConfigContentStr,
-			vhostCertKeyFileExp,
-		)
-		if err != nil {
-			log.Printf("FailedToGetCertKeyFilePath (%s): %s", hostnameStr, err.Error())
-			continue
-		}
+		vhostCertKeyFilePath := "/app/conf/pki/" + hostnameStr + ".key"
 		vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
 		if err != nil {
 			log.Printf("FailedToOpenCertKeyFile (%s): %s", hostnameStr, err.Error())
@@ -171,15 +148,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		vhostCertFileExp := `ssl_certificate\s*(.*);`
-		vhostCertFilePath, err := infraHelper.GetRegexFirstGroup(
-			vhostConfigContentStr,
-			vhostCertFileExp,
-		)
-		if err != nil {
-			log.Printf("FailedToGetCertFilePath (%s): %s", hostnameStr, err.Error())
-			continue
-		}
+		vhostCertFilePath := "/app/conf/pki/" + hostnameStr + ".crt"
 		vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
 		if err != nil {
 			log.Printf("FailedToOpenCertFile (%s): %s", hostnameStr, err.Error())
@@ -221,6 +190,29 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 
 	for _, ssl := range sslPairs {
 		if ssl.Id.String() != sslId.String() {
+			continue
+		}
+
+		return ssl, nil
+	}
+
+	return entity.SslPair{}, errors.New("SslPairNotFound")
+}
+
+func (repo SslQueryRepo) GetSslPairByVirtualHost(
+	virtualHost valueObject.Fqdn,
+) (entity.SslPair, error) {
+	sslPairs, err := repo.GetSslPairs()
+	if err != nil {
+		return entity.SslPair{}, err
+	}
+
+	if len(sslPairs) < 1 {
+		return entity.SslPair{}, errors.New("SslPairNotFound")
+	}
+
+	for _, ssl := range sslPairs {
+		if ssl.VirtualHost.String() != virtualHost.String() {
 			continue
 		}
 
