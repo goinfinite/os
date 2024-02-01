@@ -9,7 +9,7 @@ import (
 func IsSymlink(linkPath string) (bool, error) {
 	fileExists := FileExists(linkPath)
 	if !fileExists {
-		return false, errors.New("FileDoesNotExists")
+		return false, errors.New("FileNotFound")
 	}
 
 	linkInfo, err := os.Lstat(linkPath)
@@ -33,7 +33,7 @@ func IsSymlinkTo(linkPath string, targetPath string) (bool, error) {
 
 	fileExists := FileExists(targetPath)
 	if !fileExists {
-		return false, errors.New("FileDoesNotExists")
+		return false, errors.New("FileNotFound")
 	}
 
 	if !isSymlink {
