@@ -15,56 +15,78 @@ type SslCmdRepo struct{}
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
-
-	vhostThatHasSslHardLink := addSslPair.VirtualHosts[0]
-	sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhostThatHasSslHardLink)
-	if err == nil {
-		err = repo.Delete(sslPair.Id)
-		if err != nil {
-			return err
+	// Laço em cima do addSslPair.VirtualHosts
+	// Para cada vhost:
+	vhostSymlinkOf := addSslPair.VirtualHosts[0]
+	for vhostIndex, vhost := range addSslPair.VirtualHosts {
+		// Verificar se o SSL já existe.
+		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
+		// Caso dê erro que não seja "NotFound", logar e dar continue.
+		if err != nil && err.Error() != "SslPairNotFound" {
+			log.Printf("FailedToValidateSslPairExistence (%s): %s", vhost.String(), err.Error())
+			continue
 		}
-	}
-
-	vhostThatHasSslHardLinkStr := vhostThatHasSslHardLink.String()
-	shouldOverwrite := true
-
-	vhostCertFilePath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".crt"
-	err = infraHelper.UpdateFile(vhostCertFilePath, addSslPair.Certificate.String(), shouldOverwrite)
-	if err != nil {
-		return err
-	}
-
-	vhostCertKeyFilePath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".key"
-	err = infraHelper.UpdateFile(vhostCertKeyFilePath, addSslPair.Key.String(), shouldOverwrite)
-	if err != nil {
-		return err
-	}
-
-	isSymlink := false
-	for _, vhost := range addSslPair.VirtualHosts {
-		if vhost.String() != vhostThatHasSslHardLinkStr {
-			isSymlink = true
+		// Se existir, chamar o Delete().
+		sslPairExists := sslPair.Certificate.String() != ""
+		if sslPairExists {
+			err := repo.Delete(sslPair.Id)
+			// Caso dê erro, logar e dar continue.
+			if err != nil {
+				log.Printf("FailedToDeleteTheOldSslPair (%s): %s", vhost.String(), err.Error())
+				continue
+			}
 		}
-
+		// Verificar se é o primeiro vhost
+		isSymlink := vhostIndex != 0
+		// Se não for, é um symlink
 		if isSymlink {
-			vhostCertSymlinkPath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".crt"
-			err = os.Symlink(vhostCertFilePath, vhostCertSymlinkPath)
+			// Sendo um symlink, deve-se criar um symlink pro cert
+			vhostCertToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".crt"
+			vhostCertSymlinkPath := "/app/conf/pki/" + vhost.String() + ".crt"
+			err = os.Symlink(vhostCertToSymlinkPath, vhostCertSymlinkPath)
+			// Caso dê erro, logar e dar continue
 			if err != nil {
-				log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
+				log.Printf("FailedToAddSslCertSymlink (%s): %s", vhost.String(), err.Error())
+				continue
 			}
 
-			vhostCertKeySymlinkPath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".key"
-			err = os.Symlink(vhostCertKeyFilePath, vhostCertKeySymlinkPath)
+			// Sendo um symlink, deve-se criar um symlink pra key
+			vhostKeyToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".key"
+			vhostCertKeySymlinkPath := "/app/conf/pki/" + vhost.String() + ".key"
+			err = os.Symlink(vhostKeyToSymlinkPath, vhostCertKeySymlinkPath)
+			// Caso dê erro, logar e dar continue
 			if err != nil {
-				log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
+				log.Printf("FailedToAddSslKeySymlink (%s): %s", vhost.String(), err.Error())
+				continue
 			}
 		}
 
+		if !isSymlink {
+			shouldOverwrite := true
+			// Usar o UpdateFile para criar ou atualizar o arquivo .crt sem overwrite.
+			vhostCertFilePath := "/app/conf/pki/" + vhost.String() + ".crt"
+			err = infraHelper.UpdateFile(vhostCertFilePath, addSslPair.Certificate.String(), shouldOverwrite)
+			// Caso dê erro, logar e dar continue.
+			if err != nil {
+				return err
+			}
+			// Usar o UpdateFile para criar ou atualizar o arquivo .key sem overwrite.
+			vhostCertKeyFilePath := "/app/conf/pki/" + vhost.String() + ".key"
+			err = infraHelper.UpdateFile(vhostCertKeyFilePath, addSslPair.Key.String(), shouldOverwrite)
+			// Caso dê erro, logar e dar continue.
+			if err != nil {
+				return err
+			}
+		}
+
+		// Pegar o caminho do arquivo de configuração NGINX do vhost
 		vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(vhost)
+		// Caso dê erro, logar e dar continue
 		if err != nil {
-			log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
+			log.Printf("FailedToGetVhostConfFilePath (%s): %s", vhost.String(), err.Error())
+			continue
 		}
-
+		// Usar o sed para atualizar o arquivo de configuração do vhost para adicionar os caminhos do .crt e do .key.
 		_, err = infraHelper.RunCmd(
 			"sed",
 			"-i",
@@ -73,9 +95,18 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 				"    ssl_certificate_key /app/conf/pki/"+vhost.String()+".key;\\n",
 			vhostConfFilePath.String(),
 		)
+		// Caso dê erro, logar e dar continue.
 		if err != nil {
 			log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
+			continue
 		}
+
+		// Logar sucesso se tudo der certo pro vhost.
+		log.Printf(
+			"SSL '%v' added in '%v' virtual host.",
+			addSslPair.Certificate.Id.String(),
+			vhost.String(),
+		)
 	}
 
 	return nil
@@ -130,12 +161,19 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return err
 	}
 
+	log.Printf(
+		"SSL '%s' of '%s' virtual host deleted.",
+		sslId.String(),
+		vhostThatHasSslHardLinkStr,
+	)
+
 	if len(sslPairsToDelete.VirtualHosts) == 1 {
 		return nil
 	}
 
 	for _, sslPairVhostToDelete := range sslPairsToDelete.VirtualHosts {
-		err = repo.deleteSslConfByVhost(vhostThatHasSslHardLink)
+		log.Printf("Host: %s", sslPairVhostToDelete.String())
+		err = repo.deleteSslConfByVhost(sslPairVhostToDelete)
 		if err != nil {
 			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
 			continue
