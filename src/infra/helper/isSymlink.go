@@ -1,11 +1,17 @@
 package infraHelper
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 )
 
 func IsSymlink(linkPath string) (bool, error) {
+	fileExists := FileExists(linkPath)
+	if !fileExists {
+		return false, errors.New("FileDoesNotExists")
+	}
+
 	linkInfo, err := os.Lstat(linkPath)
 	if err != nil {
 		return false, err
@@ -23,6 +29,11 @@ func IsSymlinkTo(linkPath string, targetPath string) (bool, error) {
 	isSymlink, err := IsSymlink(linkPath)
 	if err != nil {
 		return false, err
+	}
+
+	fileExists := FileExists(targetPath)
+	if !fileExists {
+		return false, errors.New("FileDoesNotExists")
 	}
 
 	if !isSymlink {
