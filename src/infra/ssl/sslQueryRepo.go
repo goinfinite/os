@@ -39,7 +39,7 @@ func (repo SslQueryRepo) GetVhostConfFilePath(
 	return vhostConfFilePath, nil
 }
 
-func (repo SslQueryRepo) SslCertificatesFactory(
+func (repo SslQueryRepo) sslCertificatesFactory(
 	sslCertContent valueObject.SslCertificateContent,
 ) (SslCertificates, error) {
 	var certificates SslCertificates
@@ -74,7 +74,7 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 	return certificates, nil
 }
 
-func (repo SslQueryRepo) SslPairFactory(
+func (repo SslQueryRepo) sslPairFactory(
 	sslHostname valueObject.Fqdn,
 	sslPrivateKey valueObject.SslPrivateKey,
 	sslCertificates SslCertificates,
@@ -103,7 +103,7 @@ func (repo SslQueryRepo) SslPairFactory(
 
 	return entity.NewSslPair(
 		hashId,
-		sslHostname,
+		[]valueObject.Fqdn{sslHostname},
 		certificate,
 		sslPrivateKey,
 		chainCertificates,
@@ -164,13 +164,13 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		sslCertificates, err := repo.SslCertificatesFactory(certificate)
+		sslCertificates, err := repo.sslCertificatesFactory(certificate)
 		if err != nil {
 			log.Printf("FailedToGetMainAndChainedCerts (%s): %s", hostnameStr, err.Error())
 			continue
 		}
 
-		ssl, err := repo.SslPairFactory(vhost.Hostname, privateKey, sslCertificates)
+		ssl, err := repo.sslPairFactory(vhost.Hostname, privateKey, sslCertificates)
 		if err != nil {
 			log.Printf("FailedToGetSslPair (%s): %s", hostnameStr, err.Error())
 			continue
@@ -215,12 +215,14 @@ func (repo SslQueryRepo) GetSslPairByVirtualHost(
 		return entity.SslPair{}, errors.New("SslPairNotFound")
 	}
 
-	for _, ssl := range sslPairs {
-		if ssl.VirtualHost.String() != virtualHost.String() {
-			continue
-		}
+	for _, sslPair := range sslPairs {
+		for _, vhost := range sslPair.VirtualHosts {
+			if vhost.String() != virtualHost.String() {
+				continue
+			}
 
-		return ssl, nil
+			return sslPair, nil
+		}
 	}
 
 	return entity.SslPair{}, errors.New("SslPairNotFound")

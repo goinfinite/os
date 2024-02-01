@@ -31,6 +31,21 @@ func GetSslPairsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, sslPairsList)
 }
 
+func parseVirtualHosts(vhosts []interface{}) []valueObject.Fqdn {
+	var virtualHosts []valueObject.Fqdn
+
+	for _, vhost := range vhosts {
+		vhostStr, assertOk := vhost.(string)
+		if !assertOk {
+			panic("InvalidVirtualHosts")
+		}
+
+		virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhostStr))
+	}
+
+	return virtualHosts
+}
+
 // AddSsl    	 godoc
 // @Summary      AddNewSslPair
 // @Description  Add a new ssl pair.
@@ -42,7 +57,7 @@ func GetSslPairsController(c echo.Context) error {
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
 func AddSslPairController(c echo.Context) error {
-	requiredParams := []string{"hostname", "certificate", "key"}
+	requiredParams := []string{"virtualHosts", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
@@ -51,8 +66,13 @@ func AddSslPairController(c echo.Context) error {
 	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
 	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
+	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
+	if !assertOk {
+		panic("InvalidVirtualHosts")
+	}
+
 	addSslPairDto := dto.NewAddSslPair(
-		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
+		parseVirtualHosts(virtualHosts),
 		sslCertificate,
 		sslPrivateKey,
 	)

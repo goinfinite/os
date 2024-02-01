@@ -18,11 +18,13 @@ func AddSslPair(
 		return errors.New("AddSslPairInfraError")
 	}
 
-	log.Printf(
-		"SSL '%v' added in '%v' virtual host.",
-		addSslPair.Certificate.Id.String(),
-		addSslPair.VirtualHost.String(),
-	)
+	for _, vhost := range addSslPair.VirtualHosts {
+		log.Printf(
+			"SSL '%v' added in '%v' virtual host.",
+			addSslPair.Certificate.Id.String(),
+			vhost.String(),
+		)
+	}
 
 	return nil
 }

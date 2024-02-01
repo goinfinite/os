@@ -4,7 +4,7 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type SslPair struct {
 	Id                valueObject.SslId         `json:"sslPairId"`
-	VirtualHost       valueObject.Fqdn          `json:"virtualHost"`
+	VirtualHosts      []valueObject.Fqdn        `json:"virtualHosts"`
 	Certificate       SslCertificate            `json:"certificate"`
 	Key               valueObject.SslPrivateKey `json:"key"`
 	ChainCertificates []SslCertificate          `json:"chainCertificates"`
@@ -12,14 +12,14 @@ type SslPair struct {
 
 func NewSslPair(
 	sslPairId valueObject.SslId,
-	virtualHost valueObject.Fqdn,
+	virtualHosts []valueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,
 	chainCertificates []SslCertificate,
 ) SslPair {
 	return SslPair{
 		Id:                sslPairId,
-		VirtualHost:       virtualHost,
+		VirtualHosts:      virtualHosts,
 		Certificate:       certificate,
 		Key:               key,
 		ChainCertificates: chainCertificates,
