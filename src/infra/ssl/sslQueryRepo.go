@@ -263,13 +263,15 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 func (repo SslQueryRepo) GetSslPairByVirtualHost(
 	virtualHost valueObject.Fqdn,
 ) (entity.SslPair, error) {
+	var sslPair entity.SslPair
+
 	sslPairs, err := repo.GetSslPairs()
 	if err != nil {
-		return entity.SslPair{}, err
+		return sslPair, err
 	}
 
 	if len(sslPairs) < 1 {
-		return entity.SslPair{}, errors.New("SslPairNotFound")
+		return sslPair, errors.New("SslPairNotFound")
 	}
 
 	for _, sslPair := range sslPairs {
@@ -282,5 +284,5 @@ func (repo SslQueryRepo) GetSslPairByVirtualHost(
 		}
 	}
 
-	return entity.SslPair{}, errors.New("SslPairNotFound")
+	return sslPair, errors.New("SslPairNotFound")
 }
