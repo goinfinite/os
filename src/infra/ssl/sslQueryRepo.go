@@ -75,7 +75,7 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 }
 
 func (repo SslQueryRepo) sslPairFactory(
-	sslHostname valueObject.Fqdn,
+	sslVhosts []valueObject.Fqdn,
 	sslPrivateKey valueObject.SslPrivateKey,
 	sslCertificates SslCertificates,
 ) (entity.SslPair, error) {
@@ -103,18 +103,49 @@ func (repo SslQueryRepo) sslPairFactory(
 
 	return entity.NewSslPair(
 		hashId,
-		[]valueObject.Fqdn{sslHostname},
+		sslVhosts,
 		certificate,
 		sslPrivateKey,
 		chainCertificates,
 	), nil
 }
 
+func (repo SslQueryRepo) getSymlinkSslPairVhostsByVhost(
+	targetVhost valueObject.Fqdn,
+) ([]valueObject.Fqdn, error) {
+	var vhostsSymlinkedToTargetVhost []valueObject.Fqdn
+
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	virtualHosts, err := vhostQueryRepo.Get()
+	if err != nil {
+		return vhostsSymlinkedToTargetVhost, err
+	}
+
+	for _, vhost := range virtualHosts {
+		isSymlinkOf, err := infraHelper.IsSymlinkTo(
+			"/app/conf/pki/"+vhost.Hostname.String()+".crt",
+			"/app/conf/pki/"+targetVhost.String()+".crt",
+		)
+		if err != nil {
+			if err.Error() != "FileNotFound" {
+				log.Printf("FailedToCheckIfVhostConfIsSymlinkTo (%s): %s", vhost.Hostname.String(), err.Error())
+			}
+
+			continue
+		}
+
+		if isSymlinkOf {
+			vhostsSymlinkedToTargetVhost = append(vhostsSymlinkedToTargetVhost, vhost.Hostname)
+		}
+	}
+
+	return vhostsSymlinkedToTargetVhost, nil
+}
+
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	var sslPairs []entity.SslPair
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-
 	virtualHosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		return []entity.SslPair{}, err
@@ -141,6 +172,32 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 
 		vhostCertKeyFilePath := "/app/conf/pki/" + hostnameStr + ".key"
+		isSymlink, err := infraHelper.IsSymlink(vhostCertKeyFilePath)
+		if err != nil {
+			if err.Error() != "FileNotFound" {
+				log.Printf(
+					"FailedToCheckIfVhostConfIsSymlink (%s): %s",
+					vhost.Hostname.String(),
+					err.Error(),
+				)
+			}
+
+			continue
+		}
+
+		if isSymlink {
+			continue
+		}
+
+		sslVhosts := []valueObject.Fqdn{vhost.Hostname}
+
+		sslSymlinkVhosts, err := repo.getSymlinkSslPairVhostsByVhost(vhost.Hostname)
+		if err != nil {
+			log.Printf("FailedToGetSymlinkSslPairVhosts (%s): %s", vhost.Hostname.String(), err.Error())
+			continue
+		}
+		sslVhosts = append(sslVhosts, sslSymlinkVhosts...)
+
 		vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
 		if err != nil {
 			log.Printf("FailedToOpenCertKeyFile (%s): %s", hostnameStr, err.Error())
@@ -170,7 +227,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		ssl, err := repo.sslPairFactory(vhost.Hostname, privateKey, sslCertificates)
+		ssl, err := repo.sslPairFactory(sslVhosts, privateKey, sslCertificates)
 		if err != nil {
 			log.Printf("FailedToGetSslPair (%s): %s", hostnameStr, err.Error())
 			continue
