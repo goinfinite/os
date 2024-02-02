@@ -27,7 +27,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			continue
 		}
 		// Se existir, chamar o Delete().
-		sslPairExists := sslPair.Certificate.String() != ""
+		sslPairExists := sslPair.Id != ""
 		if sslPairExists {
 			err := repo.Delete(sslPair.Id)
 			// Caso dê erro, logar e dar continue.
@@ -112,82 +112,53 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	return nil
 }
 
-func (repo SslCmdRepo) deleteSslConfByVhost(vhost valueObject.Fqdn) error {
-	sslQueryRepo := SslQueryRepo{}
-	vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(vhost)
-	if err != nil {
-		return err
-	}
-
-	vhostConfContentStr, err := infraHelper.GetFileContent(vhostConfFilePath.String())
-	if err != nil {
-		return err
-	}
-
-	vhostSslPortConfRegex := regexp.MustCompile(`\s*listen 443 ssl;`)
-	vhostConfWithoutSslPort := vhostSslPortConfRegex.ReplaceAllString(vhostConfContentStr, "")
-	vhostSslConfRegex := regexp.MustCompile(
-		`\s*ssl_certificate\s+[^\n]*\n\s*ssl_certificate_key\s+[^\n]*\n`,
-	)
-	vhostConfWithoutSslConf := vhostSslConfRegex.ReplaceAllString(vhostConfWithoutSslPort, "")
-	return infraHelper.UpdateFile(vhostConfFilePath.String(), vhostConfWithoutSslConf, true)
-}
-
 func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	sslQueryRepo := SslQueryRepo{}
-
 	sslPairsToDelete, err := sslQueryRepo.GetSslPairById(sslId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}
 
-	vhostThatHasSslHardLink := sslPairsToDelete.VirtualHosts[0]
-	err = repo.deleteSslConfByVhost(vhostThatHasSslHardLink)
-	if err != nil {
-		return err
-	}
-
-	vhostThatHasSslHardLinkStr := vhostThatHasSslHardLink.String()
-
-	vhostCertFilePath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".crt"
-	err = os.Remove(vhostCertFilePath)
-	if err != nil {
-		return err
-	}
-
-	vhostCertKeyFilePath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".key"
-	err = os.Remove(vhostCertKeyFilePath)
-	if err != nil {
-		return err
-	}
-
-	log.Printf(
-		"SSL '%s' of '%s' virtual host deleted.",
-		sslId.String(),
-		vhostThatHasSslHardLinkStr,
-	)
-
-	if len(sslPairsToDelete.VirtualHosts) == 1 {
-		return nil
-	}
-
 	for _, sslPairVhostToDelete := range sslPairsToDelete.VirtualHosts {
-		log.Printf("Host: %s", sslPairVhostToDelete.String())
-		err = repo.deleteSslConfByVhost(sslPairVhostToDelete)
+		sslPairVhostToDeleteStr := sslPairVhostToDelete.String()
+
+		vhostCertFilePath := "/app/conf/pki/" + sslPairVhostToDeleteStr + ".crt"
+		err = os.Remove(vhostCertFilePath)
+		if err != nil {
+			log.Printf(
+				"FailedToDeleteCertFile (%s): %s", sslPairVhostToDelete.String(), err.Error(),
+			)
+			continue
+		}
+
+		vhostCertKeyFilePath := "/app/conf/pki/" + sslPairVhostToDeleteStr + ".key"
+		err = os.Remove(vhostCertKeyFilePath)
+		if err != nil {
+			log.Printf(
+				"FailedToDeleteCertKeyFile (%s): %s", sslPairVhostToDelete.String(), err.Error(),
+			)
+			continue
+		}
+
+		vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(sslPairVhostToDelete)
 		if err != nil {
 			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
 			continue
 		}
 
-		vhostCertSymlinkPath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".crt"
-		err = os.Remove(vhostCertSymlinkPath)
+		vhostConfContentStr, err := infraHelper.GetFileContent(vhostConfFilePath.String())
 		if err != nil {
 			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
 			continue
 		}
 
-		vhostCertKeySymlinkPath := "/app/conf/pki/" + vhostThatHasSslHardLinkStr + ".key"
-		err = os.Remove(vhostCertKeySymlinkPath)
+		vhostSslPortConfRegex := regexp.MustCompile(`\s*listen 443 ssl;`)
+		vhostConfWithoutSslPort := vhostSslPortConfRegex.ReplaceAllString(vhostConfContentStr, "")
+		vhostSslConfRegex := regexp.MustCompile(
+			`\s*ssl_certificate\s+[^\n]*\n\s*ssl_certificate_key\s+[^\n]*\n`,
+		)
+		vhostConfWithoutSslConf := vhostSslConfRegex.ReplaceAllString(vhostConfWithoutSslPort, "")
+		err = infraHelper.UpdateFile(vhostConfFilePath.String(), vhostConfWithoutSslConf, true)
 		if err != nil {
 			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
 			continue
