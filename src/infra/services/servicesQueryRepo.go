@@ -1,6 +1,8 @@
 package servicesInfra
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -26,6 +28,32 @@ type supervisordService struct {
 	Status          string
 	MainPid         int32
 	UptimeInSeconds int64
+}
+
+func (repo ServicesQueryRepo) GetMultiServiceName(
+	serviceName valueObject.ServiceName,
+	startupFile *valueObject.UnixFilePath,
+) (valueObject.ServiceName, error) {
+	var startupFilePathStr string
+
+	switch serviceName.String() {
+	case "node":
+		startupFilePathStr = "/app/html/index.js"
+	default:
+		return "", errors.New("UnknownInstallableMultiService")
+	}
+
+	if startupFile != nil {
+		startupFilePathStr = startupFile.String()
+	}
+
+	startupFileBytes := []byte(startupFilePathStr)
+	startupFileHash := md5.Sum(startupFileBytes)
+	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
+	startupFileShortHashStr := startupFileHashStr[:12]
+
+	svcNameWithSuffix := serviceName.String() + "-" + startupFileShortHashStr
+	return valueObject.NewServiceName(svcNameWithSuffix)
 }
 
 func (repo ServicesQueryRepo) getSupervisordServices() ([]supervisordService, error) {

@@ -1,39 +1,12 @@
 package useCase
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
 )
-
-func getDefaultStartupFileByMultiService(
-	serviceName valueObject.ServiceName,
-) (valueObject.UnixFilePath, error) {
-	switch serviceName.String() {
-	case "node":
-		return valueObject.NewUnixFilePath("/app/html/index.js")
-	default:
-		return "", errors.New("UnknownInstallableMultiService")
-	}
-}
-
-func getServiceNameWithSuffix(
-	startupFile valueObject.UnixFilePath,
-	serviceName valueObject.ServiceName,
-) (valueObject.ServiceName, error) {
-	startupFileBytes := []byte(startupFile.String())
-	startupFileHash := md5.Sum(startupFileBytes)
-	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
-	startupFileShortHashStr := startupFileHashStr[:12]
-
-	svcNameWithSuffix := serviceName.String() + "-" + startupFileShortHashStr
-	return valueObject.NewServiceName(svcNameWithSuffix)
-}
 
 func AddInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
@@ -61,16 +34,7 @@ func AddInstallableService(
 	}
 
 	if isNatureMulti {
-		startupFile, err := getDefaultStartupFileByMultiService(addDto.Name)
-		if err != nil {
-			return err
-		}
-
-		if addDto.StartupFile != nil {
-			startupFile = *addDto.StartupFile
-		}
-
-		newSvcName, err := getServiceNameWithSuffix(startupFile, addDto.Name)
+		newSvcName, err := servicesQueryRepo.GetMultiServiceName(addDto.Name, addDto.StartupFile)
 		if err != nil {
 			return err
 		}
