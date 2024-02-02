@@ -244,7 +244,7 @@ func addNode(addDto dto.AddInstallableService) error {
 	}
 
 	_, err := infraHelper.RunCmdWithSubShell(
-		"rtx install node@" + versionStr,
+		"mise install node@" + versionStr,
 	)
 	if err != nil {
 		return errors.New("InstallNodeError: " + err.Error())
@@ -303,7 +303,7 @@ func addNode(addDto dto.AddInstallableService) error {
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic(
-			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
+			"mise x node@"+versionStr+" -- node "+startupFile.String()+" &",
 		),
 		&startupFile,
 		portBindings,
