@@ -1,9 +1,7 @@
 package servicesInfra
 
 import (
-	"crypto/md5"
 	"embed"
-	"encoding/hex"
 	"errors"
 	"io"
 	"log"
@@ -290,15 +288,8 @@ func addNode(addDto dto.AddInstallableService) error {
 		portBindings = addDto.PortBindings
 	}
 
-	startupFileBytes := []byte(startupFile.String())
-	startupFileHash := md5.Sum(startupFileBytes)
-	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
-	startupFileShortHashStr := startupFileHashStr[:12]
-
-	svcNameWithSuffix := addDto.Name.String() + "-" + startupFileShortHashStr
-
 	err = SupervisordFacade{}.AddConf(
-		valueObject.NewServiceNamePanic(svcNameWithSuffix),
+		addDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -643,7 +634,14 @@ func addRedis(addDto dto.AddInstallableService) error {
 func AddInstallable(
 	addDto dto.AddInstallableService,
 ) error {
-	switch addDto.Name.String() {
+	svcNameStr := addDto.Name.String()
+	svcNameHasHash := strings.Contains(svcNameStr, "-")
+	if svcNameHasHash {
+		svcNameWithoutHash := strings.Split(svcNameStr, "-")[0]
+		svcNameStr = svcNameWithoutHash
+	}
+
+	switch svcNameStr {
 	case "php":
 		return addPhp()
 	case "node":
