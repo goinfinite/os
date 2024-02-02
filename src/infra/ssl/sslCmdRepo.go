@@ -15,46 +15,37 @@ type SslCmdRepo struct{}
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
-	// Laço em cima do addSslPair.VirtualHosts
-	// Para cada vhost:
+
 	vhostSymlinkOf := addSslPair.VirtualHosts[0]
 	for vhostIndex, vhost := range addSslPair.VirtualHosts {
-		// Verificar se o SSL já existe.
 		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
-		// Caso dê erro que não seja "NotFound", logar e dar continue.
 		if err != nil && err.Error() != "SslPairNotFound" {
 			log.Printf("FailedToValidateSslPairExistence (%s): %s", vhost.String(), err.Error())
 			continue
 		}
-		// Se existir, chamar o Delete().
+
 		sslPairExists := sslPair.Id != ""
 		if sslPairExists {
 			err := repo.Delete(sslPair.Id)
-			// Caso dê erro, logar e dar continue.
 			if err != nil {
 				log.Printf("FailedToDeleteTheOldSslPair (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 		}
-		// Verificar se é o primeiro vhost
+
 		isSymlink := vhostIndex != 0
-		// Se não for, é um symlink
 		if isSymlink {
-			// Sendo um symlink, deve-se criar um symlink pro cert
 			vhostCertToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".crt"
 			vhostCertSymlinkPath := "/app/conf/pki/" + vhost.String() + ".crt"
 			err = os.Symlink(vhostCertToSymlinkPath, vhostCertSymlinkPath)
-			// Caso dê erro, logar e dar continue
 			if err != nil {
 				log.Printf("FailedToAddSslCertSymlink (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
-			// Sendo um symlink, deve-se criar um symlink pra key
 			vhostKeyToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".key"
 			vhostCertKeySymlinkPath := "/app/conf/pki/" + vhost.String() + ".key"
 			err = os.Symlink(vhostKeyToSymlinkPath, vhostCertKeySymlinkPath)
-			// Caso dê erro, logar e dar continue
 			if err != nil {
 				log.Printf("FailedToAddSslKeySymlink (%s): %s", vhost.String(), err.Error())
 				continue
@@ -63,30 +54,26 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 		if !isSymlink {
 			shouldOverwrite := true
-			// Usar o UpdateFile para criar ou atualizar o arquivo .crt sem overwrite.
+
 			vhostCertFilePath := "/app/conf/pki/" + vhost.String() + ".crt"
 			err = infraHelper.UpdateFile(vhostCertFilePath, addSslPair.Certificate.String(), shouldOverwrite)
-			// Caso dê erro, logar e dar continue.
 			if err != nil {
 				return err
 			}
-			// Usar o UpdateFile para criar ou atualizar o arquivo .key sem overwrite.
+
 			vhostCertKeyFilePath := "/app/conf/pki/" + vhost.String() + ".key"
 			err = infraHelper.UpdateFile(vhostCertKeyFilePath, addSslPair.Key.String(), shouldOverwrite)
-			// Caso dê erro, logar e dar continue.
 			if err != nil {
 				return err
 			}
 		}
 
-		// Pegar o caminho do arquivo de configuração NGINX do vhost
 		vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(vhost)
-		// Caso dê erro, logar e dar continue
 		if err != nil {
 			log.Printf("FailedToGetVhostConfFilePath (%s): %s", vhost.String(), err.Error())
 			continue
 		}
-		// Usar o sed para atualizar o arquivo de configuração do vhost para adicionar os caminhos do .crt e do .key.
+
 		_, err = infraHelper.RunCmd(
 			"sed",
 			"-i",
@@ -95,13 +82,11 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 				"    ssl_certificate_key /app/conf/pki/"+vhost.String()+".key;\\n",
 			vhostConfFilePath.String(),
 		)
-		// Caso dê erro, logar e dar continue.
 		if err != nil {
 			log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
 			continue
 		}
 
-		// Logar sucesso se tudo der certo pro vhost.
 		log.Printf(
 			"SSL '%v' added in '%v' virtual host.",
 			addSslPair.Certificate.Id.String(),
