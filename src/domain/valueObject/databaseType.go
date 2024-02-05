@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 
 	"golang.org/x/exp/maps"
@@ -11,8 +10,6 @@ import (
 
 type DatabaseType string
 
-const databaseTypeRegExp string = `^[a-z0-9\.\_\-]{1,64}$`
-
 var databaseTypesWithAliases = map[string][]string{
 	"mysql":    {"mariadb", "percona"},
 	"postgres": {"postgresql"},
@@ -20,13 +17,12 @@ var databaseTypesWithAliases = map[string][]string{
 
 func NewDatabaseType(value string) (DatabaseType, error) {
 	value = strings.ToLower(value)
-	value = databaseTypeAdapter(value)
-
-	dt := DatabaseType(value)
-	if !dt.isValid() {
+	value, err := databaseTypeAdapter(value)
+	if err != nil {
 		return "", errors.New("InvalidDatabaseType")
 	}
-	return dt, nil
+
+	return DatabaseType(value), nil
 }
 
 func NewDatabaseTypePanic(value string) DatabaseType {
@@ -37,22 +33,21 @@ func NewDatabaseTypePanic(value string) DatabaseType {
 	return dt
 }
 
-func (dt DatabaseType) isValid() bool {
-	databaseTypeRegex := regexp.MustCompile(databaseTypeRegExp)
-	return databaseTypeRegex.MatchString(string(dt))
-}
-
-func databaseTypeAdapter(value string) string {
+func databaseTypeAdapter(value string) (string, error) {
 	databaseTypes := maps.Keys(databaseTypesWithAliases)
+	if slices.Contains(databaseTypes, value) {
+		return value, nil
+	}
+
 	for _, databaseType := range databaseTypes {
 		if !slices.Contains(databaseTypesWithAliases[databaseType], value) {
 			continue
 		}
 
-		return databaseType
+		return databaseType, nil
 	}
 
-	return value
+	return "", errors.New("InvalidDatabaseType")
 }
 
 func (dt DatabaseType) String() string {
