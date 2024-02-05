@@ -441,8 +441,8 @@ func (repo ServicesQueryRepo) GetByName(
 func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, error) {
 	phpService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("php"),
-		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("8.3"),
 			valueObject.NewServiceVersionPanic("8.2"),
@@ -459,8 +459,8 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	nodeService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("node"),
-		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceNaturePanic("multi"),
+		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("21"),
 			valueObject.NewServiceVersionPanic("20"),
@@ -485,8 +485,8 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	mariadbService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("mariadb"),
-		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("10.11"),
 			valueObject.NewServiceVersionPanic("10.6"),
@@ -495,8 +495,8 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	postgresql := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("postgresql"),
-		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("16"),
 			valueObject.NewServiceVersionPanic("15"),
@@ -508,8 +508,8 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	redisService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("redis"),
-		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("7.2"),
 			valueObject.NewServiceVersionPanic("7.0"),
