@@ -11,8 +11,8 @@ import (
 func TestAddCustom(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("AddCustomService", func(t *testing.T) {
-		t.Skip("SkipAddCustomServiceTest")
+	t.Run("CreateCustomService", func(t *testing.T) {
+		t.Skip("SkipCreateCustomServiceTest")
 
 		portBinding, err := valueObject.NewPortBindingFromString(
 			"8000/http",
@@ -22,7 +22,7 @@ func TestAddCustom(t *testing.T) {
 			return
 		}
 
-		dto := dto.NewAddCustomService(
+		dto := dto.NewCreateCustomService(
 			valueObject.NewServiceNamePanic("python-ws"),
 			valueObject.NewServiceTypePanic("webserver"),
 			valueObject.NewUnixCommandPanic("python3 -m http.server"),
@@ -33,7 +33,7 @@ func TestAddCustom(t *testing.T) {
 
 		err = AddCustom(dto)
 		if err != nil {
-			t.Errorf("AddCustomServiceFailed : %v", err)
+			t.Errorf("CreateCustomServiceFailed : %v", err)
 			return
 		}
 	})

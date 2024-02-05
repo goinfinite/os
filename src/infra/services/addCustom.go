@@ -6,7 +6,7 @@ import (
 )
 
 func AddCustom(
-	addDto dto.AddCustomService,
+	addDto dto.CreateCustomService,
 ) error {
 	svcVersion := valueObject.NewServiceVersionPanic("latest")
 	if addDto.Version != nil {

@@ -25,7 +25,7 @@ func (repo ServicesCmdRepo) AddInstallable(
 }
 
 func (repo ServicesCmdRepo) AddCustom(
-	addDto dto.AddCustomService,
+	addDto dto.CreateCustomService,
 ) error {
 	err := AddCustom(addDto)
 	if err != nil {

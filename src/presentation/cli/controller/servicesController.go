@@ -125,7 +125,7 @@ func AddInstallableServiceController() *cobra.Command {
 	return cmd
 }
 
-func AddCustomServiceController() *cobra.Command {
+func CreateCustomServiceController() *cobra.Command {
 	var nameStr string
 	var typeStr string
 	var commandStr string
@@ -135,7 +135,7 @@ func AddCustomServiceController() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add-custom",
-		Short: "AddCustomService",
+		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 			svcType := valueObject.NewServiceTypePanic(typeStr)
@@ -156,7 +156,7 @@ func AddCustomServiceController() *cobra.Command {
 				portBindings = append(portBindings, svcPortBinding)
 			}
 
-			addCustomServiceDto := dto.NewAddCustomService(
+			addCustomServiceDto := dto.NewCreateCustomService(
 				svcName,
 				svcType,
 				svcCommand,
@@ -170,7 +170,7 @@ func AddCustomServiceController() *cobra.Command {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			err := useCase.AddCustomService(
+			err := useCase.CreateCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				vhostQueryRepo,

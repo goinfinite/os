@@ -43,12 +43,12 @@ func serviceMappingFactory(
 	return serviceMapping, nil
 }
 
-func AddCustomService(
+func CreateCustomService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.AddCustomService,
+	addDto dto.CreateCustomService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(addDto.Name)
 	if err == nil {
@@ -57,8 +57,8 @@ func AddCustomService(
 
 	err = servicesCmdRepo.AddCustom(addDto)
 	if err != nil {
-		log.Printf("AddCustomServiceError: %v", err)
-		return errors.New("AddCustomServiceInfraError")
+		log.Printf("CreateCustomServiceError: %v", err)
+		return errors.New("CreateCustomServiceInfraError")
 	}
 
 	isRuntimeSvc := addDto.Type.String() == "runtime"

@@ -83,7 +83,7 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.GET("/", apiController.GetServicesController)
 	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
 	servicesGroup.POST("/installables/", apiController.AddInstallableServiceController)
-	servicesGroup.POST("/custom/", apiController.AddCustomServiceController)
+	servicesGroup.POST("/custom/", apiController.CreateCustomServiceController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
 	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
 }

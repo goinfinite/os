@@ -2,7 +2,7 @@ package dto
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-type AddCustomService struct {
+type CreateCustomService struct {
 	Name              valueObject.ServiceName     `json:"name"`
 	Type              valueObject.ServiceType     `json:"type"`
 	Command           valueObject.UnixCommand     `json:"command"`
@@ -11,15 +11,15 @@ type AddCustomService struct {
 	AutoCreateMapping bool                        `json:"autoCreateMapping"`
 }
 
-func NewAddCustomService(
+func NewCreateCustomService(
 	name valueObject.ServiceName,
 	serviceType valueObject.ServiceType,
 	command valueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
 	portBindings []valueObject.PortBinding,
 	autoCreateMapping bool,
-) AddCustomService {
-	return AddCustomService{
+) CreateCustomService {
+	return CreateCustomService{
 		Name:              name,
 		Type:              serviceType,
 		Command:           command,

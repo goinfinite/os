@@ -105,7 +105,7 @@ func servicesRoutes() {
 	servicesCmd.AddCommand(cliController.GetServicesController())
 	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
 	servicesCmd.AddCommand(cliController.AddInstallableServiceController())
-	servicesCmd.AddCommand(cliController.AddCustomServiceController())
+	servicesCmd.AddCommand(cliController.CreateCustomServiceController())
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
 	servicesCmd.AddCommand(cliController.DeleteServiceController())
 }
