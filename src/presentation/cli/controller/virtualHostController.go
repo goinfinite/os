@@ -29,14 +29,14 @@ func GetVirtualHostsController() *cobra.Command {
 	return cmd
 }
 
-func AddVirtualHostController() *cobra.Command {
+func CreateVirtualHostController() *cobra.Command {
 	var hostnameStr string
 	var typeStr string
 	var parentHostnameStr string
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddVirtualHost",
+		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -52,7 +52,7 @@ func AddVirtualHostController() *cobra.Command {
 				parentHostnamePtr = &parentHostname
 			}
 
-			addVirtualHostDto := dto.NewAddVirtualHost(
+			addVirtualHostDto := dto.NewCreateVirtualHost(
 				hostname,
 				vhostType,
 				parentHostnamePtr,
@@ -61,7 +61,7 @@ func AddVirtualHostController() *cobra.Command {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			err := useCase.AddVirtualHost(
+			err := useCase.CreateVirtualHost(
 				vhostQueryRepo,
 				vhostCmdRepo,
 				addVirtualHostDto,
@@ -139,7 +139,7 @@ func GetVirtualHostsWithMappingsController() *cobra.Command {
 	return cmd
 }
 
-func AddVirtualHostMappingController() *cobra.Command {
+func CreateVirtualHostMappingController() *cobra.Command {
 	var hostnameStr string
 	var pathStr string
 	var matchPatternStr string

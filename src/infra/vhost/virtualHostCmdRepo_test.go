@@ -14,7 +14,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	t.Run("AddAlias", func(t *testing.T) {
 		parentDomain := valueObject.NewFqdnPanic("speedia.net")
 
-		addDto := dto.NewAddVirtualHost(
+		addDto := dto.NewCreateVirtualHost(
 			valueObject.NewFqdnPanic("speedia.com"),
 			valueObject.NewVirtualHostTypePanic("alias"),
 			&parentDomain,
@@ -28,7 +28,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	})
 
 	t.Run("AddTopLevel", func(t *testing.T) {
-		addDto := dto.NewAddVirtualHost(
+		addDto := dto.NewCreateVirtualHost(
 			valueObject.NewFqdnPanic("speedia.org"),
 			valueObject.NewVirtualHostTypePanic("top-level"),
 			nil,

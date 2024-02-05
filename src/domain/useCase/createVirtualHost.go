@@ -8,10 +8,10 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddVirtualHost(
+func CreateVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addVirtualHost dto.AddVirtualHost,
+	addVirtualHost dto.CreateVirtualHost,
 ) error {
 	_, err := vhostQueryRepo.GetByHostname(addVirtualHost.Hostname)
 	if err == nil {
@@ -25,11 +25,11 @@ func AddVirtualHost(
 
 	err = vhostCmdRepo.Add(addVirtualHost)
 	if err != nil {
-		log.Printf("AddVirtualHostError: %s", err.Error())
-		return errors.New("AddVirtualHostInfraError")
+		log.Printf("CreateVirtualHostError: %s", err.Error())
+		return errors.New("CreateVirtualHostInfraError")
 	}
 
-	log.Printf("VirtualHost '%s' added.", addVirtualHost.Hostname)
+	log.Printf("VirtualHost '%s' created.", addVirtualHost.Hostname)
 
 	return nil
 }

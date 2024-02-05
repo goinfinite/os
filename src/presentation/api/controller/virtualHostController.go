@@ -32,17 +32,17 @@ func GetVirtualHostsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
 
-// AddVirtualHost    godoc
+// CreateVirtualHost    godoc
 // @Summary      AddNewVirtualHost
 // @Description  Add a new vhost.
 // @Tags         vhosts
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addVirtualHostDto 	  body    dto.AddVirtualHost  true  "NewVirtualHost (only hostname is required)."
+// @Param        addVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
-func AddVirtualHostController(c echo.Context) error {
+func CreateVirtualHostController(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -64,7 +64,7 @@ func AddVirtualHostController(c echo.Context) error {
 		parentHostnamePtr = &parentHostname
 	}
 
-	addVirtualHostDto := dto.NewAddVirtualHost(
+	addVirtualHostDto := dto.NewCreateVirtualHost(
 		hostname,
 		vhostType,
 		parentHostnamePtr,
@@ -73,7 +73,7 @@ func AddVirtualHostController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	err := useCase.AddVirtualHost(
+	err := useCase.CreateVirtualHost(
 		vhostQueryRepo,
 		vhostCmdRepo,
 		addVirtualHostDto,
@@ -148,7 +148,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Param        addMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
-func AddVirtualHostMappingController(c echo.Context) error {
+func CreateVirtualHostMappingController(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 

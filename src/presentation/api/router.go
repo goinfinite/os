@@ -98,11 +98,11 @@ func sslRoutes(baseRoute *echo.Group) {
 func vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
 	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
-	vhostsGroup.POST("/", apiController.AddVirtualHostController)
+	vhostsGroup.POST("/", apiController.CreateVirtualHostController)
 	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
 
 	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
-	vhostsGroup.POST("/mapping/", apiController.AddVirtualHostMappingController)
+	vhostsGroup.POST("/mapping/", apiController.CreateVirtualHostMappingController)
 	vhostsGroup.DELETE(
 		"/mapping/:hostname/:mappingId/",
 		apiController.DeleteVirtualHostMappingController,

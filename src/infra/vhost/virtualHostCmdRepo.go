@@ -52,7 +52,7 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
-func (repo VirtualHostCmdRepo) addAlias(addDto dto.AddVirtualHost) error {
+func (repo VirtualHostCmdRepo) addAlias(addDto dto.CreateVirtualHost) error {
 	vhostFile, err := repo.getAliasConfigFile(*addDto.ParentHostname)
 	if err != nil {
 		return errors.New("GetAliasConfigFileFailed")
@@ -136,7 +136,7 @@ virtualhost ` + hostname.String() + ` {
 	return nil
 }
 
-func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
+func (repo VirtualHostCmdRepo) Add(addDto dto.CreateVirtualHost) error {
 	hostnameStr := addDto.Hostname.String()
 
 	if addDto.Type.String() == "alias" {

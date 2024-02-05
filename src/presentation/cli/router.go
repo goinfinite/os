@@ -130,7 +130,7 @@ func virtualHostRoutes() {
 
 	rootCmd.AddCommand(vhostCmd)
 	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
-	vhostCmd.AddCommand(cliController.AddVirtualHostController())
+	vhostCmd.AddCommand(cliController.CreateVirtualHostController())
 	vhostCmd.AddCommand(cliController.DeleteVirtualHostController())
 
 	var mappingCmd = &cobra.Command{
@@ -140,7 +140,7 @@ func virtualHostRoutes() {
 
 	vhostCmd.AddCommand(mappingCmd)
 	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
-	mappingCmd.AddCommand(cliController.AddVirtualHostMappingController())
+	mappingCmd.AddCommand(cliController.CreateVirtualHostMappingController())
 	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
 }
 
