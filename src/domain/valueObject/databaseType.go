@@ -3,6 +3,7 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"strings"
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -18,6 +19,7 @@ var databaseTypesWithAliases = map[string][]string{
 }
 
 func NewDatabaseType(value string) (DatabaseType, error) {
+	value = strings.ToLower(value)
 	value = databaseTypeAdapter(value)
 
 	dt := DatabaseType(value)
