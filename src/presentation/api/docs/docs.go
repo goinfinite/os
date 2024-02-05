@@ -115,7 +115,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddAccount"
+                            "$ref": "#/definitions/dto.CreateAccount"
                         }
                     }
                 ],
@@ -1574,7 +1574,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.AddAccount": {
+        "dto.CreateAccount": {
             "type": "object",
             "properties": {
                 "password": {

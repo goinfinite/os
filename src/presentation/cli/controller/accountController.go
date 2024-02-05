@@ -27,7 +27,7 @@ func GetAccountsController() *cobra.Command {
 	return cmd
 }
 
-func AddAccountController() *cobra.Command {
+func CreateAccountController() *cobra.Command {
 	var usernameStr string
 	var passwordStr string
 
@@ -38,12 +38,12 @@ func AddAccountController() *cobra.Command {
 			username := valueObject.NewUsernamePanic(usernameStr)
 			password := valueObject.NewPasswordPanic(passwordStr)
 
-			addAccountDto := dto.NewAddAccount(username, password)
+			addAccountDto := dto.NewCreateAccount(username, password)
 
 			accQueryRepo := accountInfra.AccQueryRepo{}
 			accCmdRepo := accountInfra.AccCmdRepo{}
 
-			err := useCase.AddAccount(
+			err := useCase.CreateAccount(
 				accQueryRepo,
 				accCmdRepo,
 				addAccountDto,

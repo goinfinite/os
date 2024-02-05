@@ -8,10 +8,10 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddAccount(
+func CreateAccount(
 	accQueryRepo repository.AccQueryRepo,
 	accCmdRepo repository.AccCmdRepo,
-	addAccount dto.AddAccount,
+	addAccount dto.CreateAccount,
 ) error {
 	_, err := accQueryRepo.GetByUsername(addAccount.Username)
 	if err == nil {
@@ -20,7 +20,7 @@ func AddAccount(
 
 	err = accCmdRepo.Add(addAccount)
 	if err != nil {
-		return errors.New("AddAccountError")
+		return errors.New("CreateAccountError")
 	}
 
 	log.Printf("Account '%v' added.", addAccount.Username.String())

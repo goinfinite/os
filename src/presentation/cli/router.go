@@ -33,7 +33,7 @@ func accountRoutes() {
 
 	rootCmd.AddCommand(accountCmd)
 	accountCmd.AddCommand(cliController.GetAccountsController())
-	accountCmd.AddCommand(cliController.AddAccountController())
+	accountCmd.AddCommand(cliController.CreateAccountController())
 	accountCmd.AddCommand(cliController.DeleteAccountController())
 	accountCmd.AddCommand(cliController.UpdateAccountController())
 }

@@ -30,23 +30,23 @@ func GetAccountsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, accountsList)
 }
 
-// AddAccount    godoc
+// CreateAccount    godoc
 // @Summary      AddNewAccount
 // @Description  Add a new account.
 // @Tags         account
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addAccountDto 	  body    dto.AddAccount  true  "NewAccount"
+// @Param        addAccountDto 	  body    dto.CreateAccount  true  "NewAccount"
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /account/ [post]
-func AddAccountController(c echo.Context) error {
+func CreateAccountController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	addAccountDto := dto.NewAddAccount(
+	addAccountDto := dto.NewCreateAccount(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
 	)
@@ -54,7 +54,7 @@ func AddAccountController(c echo.Context) error {
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
 
-	err := useCase.AddAccount(
+	err := useCase.CreateAccount(
 		accQueryRepo,
 		accCmdRepo,
 		addAccountDto,

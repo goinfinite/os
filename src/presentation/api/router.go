@@ -24,7 +24,7 @@ func authRoutes(baseRoute *echo.Group) {
 func accountRoutes(baseRoute *echo.Group) {
 	accountGroup := baseRoute.Group("/account")
 	accountGroup.GET("/", apiController.GetAccountsController)
-	accountGroup.POST("/", apiController.AddAccountController)
+	accountGroup.POST("/", apiController.CreateAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
 	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }

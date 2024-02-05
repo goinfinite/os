@@ -13,7 +13,7 @@ func addDummyUser() error {
 	username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
 	password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
 
-	addUser := dto.AddAccount{
+	addUser := dto.CreateAccount{
 		Username: username,
 		Password: password,
 	}
@@ -59,7 +59,7 @@ func TestAccCmdRepo(t *testing.T) {
 		username := valueObject.NewUsernamePanic("root")
 		password := valueObject.NewPasswordPanic("invalid")
 
-		addUser := dto.AddAccount{
+		addUser := dto.CreateAccount{
 			Username: username,
 			Password: password,
 		}
