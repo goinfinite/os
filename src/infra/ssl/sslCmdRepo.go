@@ -38,7 +38,6 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 
 		willBeSymlink := vhostIndex != 0
-
 		if !willBeSymlink {
 			shouldOverwrite := true
 
