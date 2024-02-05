@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type AuthCmdRepo struct {
@@ -18,7 +19,10 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	ipAddress valueObject.IpAddress,
 ) entity.AccessToken {
 	jwtSecret := os.Getenv("JWT_SECRET")
-	apiURL := os.Getenv("VIRTUAL_HOST")
+	apiURL, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		panic("PrimaryHostnameNotFound")
+	}
 
 	now := time.Now()
 	tokenExpiration := time.Unix(expiresIn.Get(), 0)

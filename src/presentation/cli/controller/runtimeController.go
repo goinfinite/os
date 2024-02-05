@@ -1,17 +1,39 @@
 package cliController
 
 import (
-	"os"
+	"errors"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
+
+func getHostname(
+	hostnameStr string,
+) (valueObject.Fqdn, error) {
+	var hostname valueObject.Fqdn
+
+	if hostnameStr != "" {
+		hostname = valueObject.NewFqdnPanic(hostnameStr)
+	}
+
+	if hostnameStr == "" {
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			return "", errors.New("PrimaryHostnameNotFound")
+		}
+
+		hostname = primaryHostname
+	}
+
+	return hostname, nil
+}
 
 func GetPhpConfigsController() *cobra.Command {
 	var hostnameStr string
@@ -20,10 +42,10 @@ func GetPhpConfigsController() *cobra.Command {
 		Use:   "get",
 		Short: "GetPhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
-			if hostnameStr == "" {
-				hostnameStr = os.Getenv("VIRTUAL_HOST")
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
 			}
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
@@ -51,10 +73,10 @@ func UpdatePhpConfigController() *cobra.Command {
 		Use:   "update",
 		Short: "UpdatePhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
-			if hostnameStr == "" {
-				hostnameStr = os.Getenv("VIRTUAL_HOST")
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
 			}
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
 
@@ -92,7 +114,7 @@ func UpdatePhpConfigController() *cobra.Command {
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
-			err := useCase.UpdatePhpConfigs(
+			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
 				vhostQueryRepo,
@@ -126,10 +148,10 @@ func UpdatePhpSettingController() *cobra.Command {
 		Use:   "updateSetting",
 		Short: "UpdatePhpSetting",
 		Run: func(cmd *cobra.Command, args []string) {
-			if hostnameStr == "" {
-				hostnameStr = os.Getenv("VIRTUAL_HOST")
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
 			}
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
 
@@ -154,7 +176,7 @@ func UpdatePhpSettingController() *cobra.Command {
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
-			err := useCase.UpdatePhpConfigs(
+			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
 				vhostQueryRepo,
@@ -186,10 +208,10 @@ func UpdatePhpModuleController() *cobra.Command {
 		Use:   "updateModule",
 		Short: "UpdatePhpModule",
 		Run: func(cmd *cobra.Command, args []string) {
-			if hostnameStr == "" {
-				hostnameStr = os.Getenv("VIRTUAL_HOST")
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
 			}
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
 
@@ -213,7 +235,7 @@ func UpdatePhpModuleController() *cobra.Command {
 			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
-			err := useCase.UpdatePhpConfigs(
+			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
 				runtimeCmdRepo,
 				vhostQueryRepo,
