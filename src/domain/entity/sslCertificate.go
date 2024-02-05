@@ -21,21 +21,23 @@ type SslCertificate struct {
 func NewSslCertificate(
 	sslCertificateContent valueObject.SslCertificateContent,
 ) (SslCertificate, error) {
+	var sslCertificate SslCertificate
+
 	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
 	if block == nil {
-		return SslCertificate{}, errors.New("SslCertificateContentDecodeError")
+		return sslCertificate, errors.New("SslCertificateContentDecodeError")
 	}
 
 	parsedCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return SslCertificate{}, errors.New("SslCertificateContentParseError")
+		return sslCertificate, errors.New("SslCertificateContentParseError")
 	}
 
 	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(
 		sslCertificateContent,
 	)
 	if err != nil {
-		return SslCertificate{}, err
+		return sslCertificate, err
 	}
 
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
@@ -46,7 +48,7 @@ func NewSslCertificate(
 	if !parsedCert.IsCA {
 		commonName, err := valueObject.NewFqdn(parsedCert.Subject.CommonName)
 		if err != nil {
-			return SslCertificate{}, errors.New("InvalidSslCertificateCommonName")
+			return sslCertificate, errors.New("InvalidSslCertificateCommonName")
 		}
 		commonNamePtr = &commonName
 	}
@@ -56,7 +58,7 @@ func NewSslCertificate(
 		for _, certDNSName := range parsedCert.DNSNames {
 			altName, err := valueObject.NewFqdn(certDNSName)
 			if err != nil {
-				continue
+				return sslCertificate, errors.New("InvalidSslCertificateAlternativeName")
 			}
 
 			altNames = append(altNames, altName)
