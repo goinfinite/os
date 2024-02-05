@@ -31,8 +31,8 @@ func GetAccountsController(c echo.Context) error {
 }
 
 // CreateAccount    godoc
-// @Summary      AddNewAccount
-// @Description  Add a new account.
+// @Summary      CreateNewAccount
+// @Description  Create a new account.
 // @Tags         account
 // @Accept       json
 // @Produce      json

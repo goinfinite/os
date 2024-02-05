@@ -36,13 +36,13 @@ func GetDatabasesController(c echo.Context) error {
 
 // CreateDatabase godoc
 // @Summary      CreateDatabase
-// @Description  Add a new database.
+// @Description  Create a new database.
 // @Tags         database
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
 // @Param        dbType path valueObject.DatabaseType true "DatabaseType"
-// @Param        addDatabaseDto body dto.CreateDatabase true "CreateDatabase"
+// @Param        createDatabaseDto body dto.CreateDatabase true "CreateDatabase"
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /database/{dbType}/ [post]
 func CreateDatabaseController(c echo.Context) error {
@@ -53,7 +53,7 @@ func CreateDatabaseController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 	dbName := valueObject.NewDatabaseNamePanic(requestBody["dbName"].(string))
-	addDatabaseDto := dto.NewCreateDatabase(dbName)
+	createDatabaseDto := dto.NewCreateDatabase(dbName)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
@@ -61,7 +61,7 @@ func CreateDatabaseController(c echo.Context) error {
 	err := useCase.CreateDatabase(
 		databaseQueryRepo,
 		databaseCmdRepo,
-		addDatabaseDto,
+		createDatabaseDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

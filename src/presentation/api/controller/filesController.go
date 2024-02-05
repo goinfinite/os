@@ -66,8 +66,8 @@ func GetFilesController(c echo.Context) error {
 }
 
 // AddFile    godoc
-// @Summary      AddNewFile
-// @Description  Add a new dir/file.
+// @Summary      CreateNewFile
+// @Description  Create a new dir/file.
 // @Tags         files
 // @Accept       json
 // @Produce      json
@@ -75,7 +75,7 @@ func GetFilesController(c echo.Context) error {
 // @Param        createFileDto 	  body    dto.CreateUnixFile  true  "NewFile"
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
-func AddFileController(c echo.Context) error {
+func CreateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -104,7 +104,7 @@ func AddFileController(c echo.Context) error {
 		filePermissions = valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
 	}
 
-	addUnixFileDto := dto.NewCreateUnixFile(
+	createUnixFileDto := dto.NewCreateUnixFile(
 		valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string)),
 		filePermissions,
 		fileType,
@@ -116,7 +116,7 @@ func AddFileController(c echo.Context) error {
 	err := useCase.CreateUnixFile(
 		filesQueryRepo,
 		filesCmdRepo,
-		addUnixFileDto,
+		createUnixFileDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

@@ -76,7 +76,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
+// @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installables/ [post]
 func CreateInstallableServiceController(c echo.Context) error {
@@ -123,7 +123,7 @@ func CreateInstallableServiceController(c echo.Context) error {
 		}
 	}
 
-	addInstallableServiceDto := dto.NewCreateInstallableService(
+	createInstallableServiceDto := dto.NewCreateInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
@@ -141,7 +141,7 @@ func CreateInstallableServiceController(c echo.Context) error {
 		servicesCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addInstallableServiceDto,
+		createInstallableServiceDto,
 	)
 
 	if err != nil {
@@ -158,7 +158,7 @@ func CreateInstallableServiceController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
+// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /services/custom/ [post]
 func CreateCustomServiceController(c echo.Context) error {
@@ -199,7 +199,7 @@ func CreateCustomServiceController(c echo.Context) error {
 		}
 	}
 
-	addCustomServiceDto := dto.NewCreateCustomService(
+	createCustomServiceDto := dto.NewCreateCustomService(
 		svcName,
 		svcType,
 		svcCommand,
@@ -218,7 +218,7 @@ func CreateCustomServiceController(c echo.Context) error {
 		servicesCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addCustomServiceDto,
+		createCustomServiceDto,
 	)
 
 	if err != nil {

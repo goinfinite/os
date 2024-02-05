@@ -33,13 +33,13 @@ func GetVirtualHostsController(c echo.Context) error {
 }
 
 // CreateVirtualHost    godoc
-// @Summary      AddNewVirtualHost
-// @Description  Add a new vhost.
+// @Summary      CreateNewVirtualHost
+// @Description  Create a new vhost.
 // @Tags         vhosts
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
+// @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
 func CreateVirtualHostController(c echo.Context) error {
@@ -64,7 +64,7 @@ func CreateVirtualHostController(c echo.Context) error {
 		parentHostnamePtr = &parentHostname
 	}
 
-	addVirtualHostDto := dto.NewCreateVirtualHost(
+	createVirtualHostDto := dto.NewCreateVirtualHost(
 		hostname,
 		vhostType,
 		parentHostnamePtr,
@@ -76,7 +76,7 @@ func CreateVirtualHostController(c echo.Context) error {
 	err := useCase.CreateVirtualHost(
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addVirtualHostDto,
+		createVirtualHostDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -145,7 +145,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
+// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func CreateVirtualHostMappingController(c echo.Context) error {
@@ -189,7 +189,7 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
-	addMappingDto := dto.NewCreateMapping(
+	createMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
 		matchPattern,
@@ -207,7 +207,7 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		vhostQueryRepo,
 		vhostCmdRepo,
 		svcsQueryRepo,
-		addMappingDto,
+		createMappingDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

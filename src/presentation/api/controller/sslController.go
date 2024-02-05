@@ -32,13 +32,13 @@ func GetSslPairsController(c echo.Context) error {
 }
 
 // AddSsl    	 godoc
-// @Summary      AddNewSslPair
-// @Description  Add a new ssl pair.
+// @Summary      CreateNewSslPair
+// @Description  Create a new ssl pair.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
+// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
 func CreateSslPairController(c echo.Context) error {
@@ -51,7 +51,7 @@ func CreateSslPairController(c echo.Context) error {
 	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
 	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
-	addSslPairDto := dto.NewCreateSslPair(
+	createSslPairDto := dto.NewCreateSslPair(
 		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
 		sslCertificate,
 		sslPrivateKey,
@@ -61,7 +61,7 @@ func CreateSslPairController(c echo.Context) error {
 
 	err := useCase.CreateSslPair(
 		sslCmdRepo,
-		addSslPairDto,
+		createSslPairDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
