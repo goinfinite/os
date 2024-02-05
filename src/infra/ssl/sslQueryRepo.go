@@ -128,7 +128,11 @@ func (repo SslQueryRepo) getSymlinkSslPairVhostsByVhost(
 		)
 		if err != nil {
 			if err.Error() != "FileNotFound" {
-				log.Printf("FailedToCheckIfVhostConfIsSymlinkTo (%s): %s", vhost.Hostname.String(), err.Error())
+				log.Printf(
+					"FailedToCheckIfVhostConfIsSymlinkTo (%s): %s",
+					vhost.Hostname.String(),
+					err.Error(),
+				)
 			}
 
 			continue
