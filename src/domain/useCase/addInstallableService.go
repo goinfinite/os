@@ -26,11 +26,15 @@ func AddInstallableService(
 		return errors.New("GetInstallableServicesInfraError")
 	}
 
+	dtoServiceNameStr := addDto.Name.String()
 	isNatureMulti := false
 	for _, installableSvc := range installableSvcs {
-		if installableSvc.Name.String() == addDto.Name.String() {
-			isNatureMulti = installableSvc.Nature.String() == "multi"
+		if installableSvc.Name.String() != dtoServiceNameStr {
+			continue
 		}
+
+		isNatureMulti = installableSvc.Nature.String() == "multi"
+		break
 	}
 
 	if isNatureMulti {
