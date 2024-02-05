@@ -38,6 +38,23 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 
 		willBeSymlink := vhostIndex != 0
+
+		if !willBeSymlink {
+			shouldOverwrite := true
+
+			vhostCertFilePath := "/app/conf/pki/" + vhost.String() + ".crt"
+			err = infraHelper.UpdateFile(vhostCertFilePath, addSslPair.Certificate.String(), shouldOverwrite)
+			if err != nil {
+				return err
+			}
+
+			vhostCertKeyFilePath := "/app/conf/pki/" + vhost.String() + ".key"
+			err = infraHelper.UpdateFile(vhostCertKeyFilePath, addSslPair.Key.String(), shouldOverwrite)
+			if err != nil {
+				return err
+			}
+		}
+
 		if willBeSymlink {
 			vhostCertToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".crt"
 			vhostCertSymlinkPath := "/app/conf/pki/" + vhost.String() + ".crt"
@@ -53,22 +70,6 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			if err != nil {
 				log.Printf("FailedToAddSslKeySymlink (%s): %s", vhost.String(), err.Error())
 				continue
-			}
-		}
-
-		if !willBeSymlink {
-			shouldOverwrite := true
-
-			vhostCertFilePath := "/app/conf/pki/" + vhost.String() + ".crt"
-			err = infraHelper.UpdateFile(vhostCertFilePath, addSslPair.Certificate.String(), shouldOverwrite)
-			if err != nil {
-				return err
-			}
-
-			vhostCertKeyFilePath := "/app/conf/pki/" + vhost.String() + ".key"
-			err = infraHelper.UpdateFile(vhostCertKeyFilePath, addSslPair.Key.String(), shouldOverwrite)
-			if err != nil {
-				return err
 			}
 		}
 
