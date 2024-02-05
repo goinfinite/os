@@ -23,9 +23,9 @@ import (
 type AccCmdRepo struct {
 }
 
-func (repo AccCmdRepo) Add(addAccount dto.CreateAccount) error {
+func (repo AccCmdRepo) Add(createAccount dto.CreateAccount) error {
 	passHash, err := bcrypt.GenerateFromPassword(
-		[]byte(addAccount.Password.String()),
+		[]byte(createAccount.Password.String()),
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
@@ -33,15 +33,15 @@ func (repo AccCmdRepo) Add(addAccount dto.CreateAccount) error {
 		return errors.New("PasswordHashError")
 	}
 
-	addAccountCmd := exec.Command(
+	createAccountCmd := exec.Command(
 		"useradd",
 		"-m",
 		"-s", "/bin/bash",
 		"-p", string(passHash),
-		addAccount.Username.String(),
+		createAccount.Username.String(),
 	)
 
-	err = addAccountCmd.Run()
+	err = createAccountCmd.Run()
 	if err != nil {
 		log.Printf("AccountAddError: %s", err)
 		return errors.New("AccountAddError")

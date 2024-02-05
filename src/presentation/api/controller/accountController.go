@@ -37,7 +37,7 @@ func GetAccountsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addAccountDto 	  body    dto.CreateAccount  true  "NewAccount"
+// @Param        createAccountDto 	  body    dto.CreateAccount  true  "NewAccount"
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /account/ [post]
 func CreateAccountController(c echo.Context) error {
@@ -46,7 +46,7 @@ func CreateAccountController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	addAccountDto := dto.NewCreateAccount(
+	createAccountDto := dto.NewCreateAccount(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
 	)
@@ -57,7 +57,7 @@ func CreateAccountController(c echo.Context) error {
 	err := useCase.CreateAccount(
 		accQueryRepo,
 		accCmdRepo,
-		addAccountDto,
+		createAccountDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

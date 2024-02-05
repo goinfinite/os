@@ -11,19 +11,19 @@ import (
 func CreateAccount(
 	accQueryRepo repository.AccQueryRepo,
 	accCmdRepo repository.AccCmdRepo,
-	addAccount dto.CreateAccount,
+	createAccount dto.CreateAccount,
 ) error {
-	_, err := accQueryRepo.GetByUsername(addAccount.Username)
+	_, err := accQueryRepo.GetByUsername(createAccount.Username)
 	if err == nil {
 		return errors.New("UsernameAlreadyExists")
 	}
 
-	err = accCmdRepo.Add(addAccount)
+	err = accCmdRepo.Add(createAccount)
 	if err != nil {
 		return errors.New("CreateAccountError")
 	}
 
-	log.Printf("Account '%v' added.", addAccount.Username.String())
+	log.Printf("Account '%v' created.", createAccount.Username.String())
 
 	return nil
 }

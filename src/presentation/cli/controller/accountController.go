@@ -38,7 +38,7 @@ func CreateAccountController() *cobra.Command {
 			username := valueObject.NewUsernamePanic(usernameStr)
 			password := valueObject.NewPasswordPanic(passwordStr)
 
-			addAccountDto := dto.NewCreateAccount(username, password)
+			createAccountDto := dto.NewCreateAccount(username, password)
 
 			accQueryRepo := accountInfra.AccQueryRepo{}
 			accCmdRepo := accountInfra.AccCmdRepo{}
@@ -46,7 +46,7 @@ func CreateAccountController() *cobra.Command {
 			err := useCase.CreateAccount(
 				accQueryRepo,
 				accCmdRepo,
-				addAccountDto,
+				createAccountDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
