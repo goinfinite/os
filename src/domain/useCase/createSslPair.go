@@ -8,18 +8,18 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddSslPair(
+func CreateSslPair(
 	sslCmdRepo repository.SslCmdRepo,
-	addSslPair dto.AddSslPair,
+	addSslPair dto.CreateSslPair,
 ) error {
 	err := sslCmdRepo.Add(addSslPair)
 	if err != nil {
-		log.Printf("AddSslPairError: %s", err)
-		return errors.New("AddSslPairInfraError")
+		log.Printf("CreateSslPairError: %s", err)
+		return errors.New("CreateSslPairInfraError")
 	}
 
 	log.Printf(
-		"SSL '%v' added in '%v' hostname.",
+		"SSL '%v' created in '%v' hostname.",
 		addSslPair.Certificate.Id.String(),
 		addSslPair.Hostname.String(),
 	)

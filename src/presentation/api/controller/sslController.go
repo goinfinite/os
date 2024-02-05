@@ -38,10 +38,10 @@ func GetSslPairsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addSslPairDto 	  body    dto.AddSslPair  true  "NewSslPair"
+// @Param        addSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
-func AddSslPairController(c echo.Context) error {
+func CreateSslPairController(c echo.Context) error {
 	requiredParams := []string{"hostname", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -51,7 +51,7 @@ func AddSslPairController(c echo.Context) error {
 	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
 	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
 
-	addSslPairDto := dto.NewAddSslPair(
+	addSslPairDto := dto.NewCreateSslPair(
 		valueObject.NewFqdnPanic(requestBody["hostname"].(string)),
 		sslCertificate,
 		sslPrivateKey,
@@ -59,7 +59,7 @@ func AddSslPairController(c echo.Context) error {
 
 	sslCmdRepo := sslInfra.SslCmdRepo{}
 
-	err := useCase.AddSslPair(
+	err := useCase.CreateSslPair(
 		sslCmdRepo,
 		addSslPairDto,
 	)

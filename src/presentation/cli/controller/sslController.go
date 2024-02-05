@@ -29,7 +29,7 @@ func GetSslPairsController() *cobra.Command {
 	return cmd
 }
 
-func AddSslPairController() *cobra.Command {
+func CreateSslPairController() *cobra.Command {
 	var hostnameStr string
 	var certificateFilePathStr string
 	var keyFilePathStr string
@@ -52,7 +52,7 @@ func AddSslPairController() *cobra.Command {
 			sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
 			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
 
-			addSslDto := dto.NewAddSslPair(
+			addSslDto := dto.NewCreateSslPair(
 				valueObject.NewFqdnPanic(hostnameStr),
 				sslCertificate,
 				sslPrivateKey,
@@ -60,7 +60,7 @@ func AddSslPairController() *cobra.Command {
 
 			sslCmdRepo := sslInfra.SslCmdRepo{}
 
-			err = useCase.AddSslPair(
+			err = useCase.CreateSslPair(
 				sslCmdRepo,
 				addSslDto,
 			)

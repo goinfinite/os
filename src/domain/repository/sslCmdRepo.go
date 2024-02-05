@@ -6,6 +6,6 @@ import (
 )
 
 type SslCmdRepo interface {
-	Add(addSslPair dto.AddSslPair) error
+	Add(addSslPair dto.CreateSslPair) error
 	Delete(sslId valueObject.SslId) error
 }

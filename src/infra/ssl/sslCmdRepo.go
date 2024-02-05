@@ -40,7 +40,7 @@ vhssl {
 	return vhsslConfig
 }
 
-func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
+func (repo SslCmdRepo) Add(addSslPair dto.CreateSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
 	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname)
