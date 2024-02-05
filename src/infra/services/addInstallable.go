@@ -235,7 +235,7 @@ func addPhp() error {
 	return nil
 }
 
-func addNode(addDto dto.AddInstallableService) error {
+func addNode(addDto dto.CreateInstallableService) error {
 	versionStr := "lts"
 	if addDto.Version != nil {
 		versionStr = addDto.Version.String()
@@ -319,7 +319,7 @@ func addNode(addDto dto.AddInstallableService) error {
 	return nil
 }
 
-func addMariaDb(addDto dto.AddInstallableService) error {
+func addMariaDb(addDto dto.CreateInstallableService) error {
 	repoFilePath := "/speedia/repo.mariadb.sh"
 
 	err := infraHelper.DownloadFile(
@@ -443,7 +443,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 	return nil
 }
 
-func addPostgresqlDb(addDto dto.AddInstallableService) error {
+func addPostgresqlDb(addDto dto.CreateInstallableService) error {
 	versionStr := "16"
 	if addDto.Version != nil {
 		versionStr = addDto.Version.String()
@@ -520,7 +520,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 	return nil
 }
 
-func addRedis(addDto dto.AddInstallableService) error {
+func addRedis(addDto dto.CreateInstallableService) error {
 	versionFlag := ""
 	versionStr := "latest"
 	if addDto.Version != nil {
@@ -645,7 +645,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 }
 
 func AddInstallable(
-	addDto dto.AddInstallableService,
+	addDto dto.CreateInstallableService,
 ) error {
 	switch addDto.Name.String() {
 	case "php":
@@ -664,7 +664,7 @@ func AddInstallable(
 }
 
 func AddInstallableSimplified(serviceName string) error {
-	dto := dto.NewAddInstallableService(
+	dto := dto.NewCreateInstallableService(
 		valueObject.NewServiceNamePanic(serviceName),
 		nil,
 		nil,

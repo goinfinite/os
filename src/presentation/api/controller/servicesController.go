@@ -69,17 +69,17 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	return svcPortBindings
 }
 
-// AddInstallableService godoc
-// @Summary      AddInstallableService
+// CreateInstallableService godoc
+// @Summary      CreateInstallableService
 // @Description  Install a new installable service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
+// @Param        addInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installables/ [post]
-func AddInstallableServiceController(c echo.Context) error {
+func CreateInstallableServiceController(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -123,7 +123,7 @@ func AddInstallableServiceController(c echo.Context) error {
 		}
 	}
 
-	addInstallableServiceDto := dto.NewAddInstallableService(
+	addInstallableServiceDto := dto.NewCreateInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
@@ -136,7 +136,7 @@ func AddInstallableServiceController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	err := useCase.AddInstallableService(
+	err := useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		vhostQueryRepo,

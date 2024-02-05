@@ -46,7 +46,7 @@ func GetInstallableServicesController() *cobra.Command {
 	return cmd
 }
 
-func AddInstallableServiceController() *cobra.Command {
+func CreateInstallableServiceController() *cobra.Command {
 	var nameStr string
 	var versionStr string
 	var startupFileStr string
@@ -55,7 +55,7 @@ func AddInstallableServiceController() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add-installable",
-		Short: "AddInstallableService",
+		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
@@ -80,7 +80,7 @@ func AddInstallableServiceController() *cobra.Command {
 				portBindings = append(portBindings, svcPortBinding)
 			}
 
-			addInstallableServiceDto := dto.NewAddInstallableService(
+			addInstallableServiceDto := dto.NewCreateInstallableService(
 				svcName,
 				svcVersionPtr,
 				startupFilePtr,
@@ -93,7 +93,7 @@ func AddInstallableServiceController() *cobra.Command {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			err := useCase.AddInstallableService(
+			err := useCase.CreateInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				vhostQueryRepo,

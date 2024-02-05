@@ -9,7 +9,7 @@ type ServicesCmdRepo struct {
 }
 
 func (repo ServicesCmdRepo) AddInstallable(
-	addDto dto.AddInstallableService,
+	addDto dto.CreateInstallableService,
 ) error {
 	err := AddInstallable(addDto)
 	if err != nil {

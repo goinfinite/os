@@ -8,12 +8,12 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddInstallableService(
+func CreateInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.AddInstallableService,
+	addDto dto.CreateInstallableService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(addDto.Name)
 	if err == nil {
@@ -22,8 +22,8 @@ func AddInstallableService(
 
 	err = servicesCmdRepo.AddInstallable(addDto)
 	if err != nil {
-		log.Printf("AddInstallableServiceError: %v", err)
-		return errors.New("AddInstallableServiceInfraError")
+		log.Printf("CreateInstallableServiceError: %v", err)
+		return errors.New("CreateInstallableServiceInfraError")
 	}
 
 	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
