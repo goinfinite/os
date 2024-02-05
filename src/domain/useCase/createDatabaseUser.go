@@ -31,7 +31,7 @@ func CreateDatabaseUser(
 	}
 
 	log.Printf(
-		"Database user '%s' for '%s' added.",
+		"Database user '%s' for '%s' created.",
 		addDatabaseUser.Username.String(),
 		addDatabaseUser.DatabaseName.String(),
 	)

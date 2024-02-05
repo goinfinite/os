@@ -23,7 +23,7 @@ func CreateDatabase(
 		return errors.New("CreateDatabaseError")
 	}
 
-	log.Printf("Database %s added", addDatabase.DatabaseName)
+	log.Printf("Database %s created", addDatabase.DatabaseName)
 
 	return nil
 }
