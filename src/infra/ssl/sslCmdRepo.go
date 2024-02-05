@@ -16,6 +16,10 @@ type SslCmdRepo struct{}
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
+	if len(addSslPair.VirtualHosts) == 0 {
+		return errors.New("NoVirtualHostsProvidedToAddSslPair")
+	}
+
 	vhostSymlinkOf := addSslPair.VirtualHosts[0]
 	for vhostIndex, vhost := range addSslPair.VirtualHosts {
 		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
@@ -28,7 +32,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		if sslPairExists {
 			err := repo.Delete(sslPair.Id)
 			if err != nil {
-				log.Printf("FailedToDeleteTheOldSslPair (%s): %s", vhost.String(), err.Error())
+				log.Printf("FailedToDeleteOldSslPair (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 		}
