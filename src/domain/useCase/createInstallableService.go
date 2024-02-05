@@ -50,7 +50,7 @@ func CreateInstallableService(
 		return errors.New("AddServiceMappingError")
 	}
 
-	err = vhostCmdRepo.AddMapping(serviceMapping)
+	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
 		log.Printf("AddServiceMappingError: %s", err.Error())
 		return errors.New("AddServiceMappingInfraError")

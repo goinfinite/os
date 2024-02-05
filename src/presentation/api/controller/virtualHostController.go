@@ -145,7 +145,7 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addMappingDto	body dto.AddMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
+// @Param        addMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func AddVirtualHostMappingController(c echo.Context) error {
@@ -189,7 +189,7 @@ func AddVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
-	addMappingDto := dto.NewAddMapping(
+	addMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
 		matchPattern,
@@ -203,7 +203,7 @@ func AddVirtualHostMappingController(c echo.Context) error {
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
-	err := useCase.AddMapping(
+	err := useCase.CreateMapping(
 		vhostQueryRepo,
 		vhostCmdRepo,
 		svcsQueryRepo,

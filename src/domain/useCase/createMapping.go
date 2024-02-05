@@ -9,11 +9,11 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func AddMapping(
+func CreateMapping(
 	queryRepo repository.VirtualHostQueryRepo,
 	cmdRepo repository.VirtualHostCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
-	addMapping dto.AddMapping,
+	addMapping dto.CreateMapping,
 ) error {
 	vhostWithMappings, err := queryRepo.GetWithMappings()
 	if err != nil {
@@ -89,10 +89,10 @@ func AddMapping(
 		return errors.New("TargetHttpResponseCodeRequired")
 	}
 
-	err = cmdRepo.AddMapping(addMapping)
+	err = cmdRepo.CreateMapping(addMapping)
 	if err != nil {
-		log.Printf("AddMappingError: %s", err.Error())
-		return errors.New("AddMappingInfraError")
+		log.Printf("CreateMappingError: %s", err.Error())
+		return errors.New("CreateMappingInfraError")
 	}
 
 	return nil

@@ -300,7 +300,7 @@ func (repo VirtualHostCmdRepo) mappingToLocationStartBlock(
 }
 
 func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
-	addMapping dto.AddMapping,
+	addMapping dto.CreateMapping,
 ) (string, error) {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	serviceEntity, err := servicesQueryRepo.GetByName(*addMapping.TargetServiceName)
@@ -499,7 +499,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	return locationContent, nil
 }
 
-func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
+func (repo VirtualHostCmdRepo) CreateMapping(addMapping dto.CreateMapping) error {
 	locationStartBlock := repo.mappingToLocationStartBlock(
 		addMapping.MatchPattern,
 		addMapping.Path,
@@ -552,7 +552,7 @@ func (repo VirtualHostCmdRepo) AddMapping(addMapping dto.AddMapping) error {
 		false,
 	)
 	if err != nil {
-		return errors.New("AddMappingFailed")
+		return errors.New("CreateMappingFailed")
 	}
 
 	return repo.reloadWebServer()
@@ -604,7 +604,7 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		return err
 	}
 
-	mappingDto := dto.NewAddMapping(
+	mappingDto := dto.NewCreateMapping(
 		mapping.Hostname,
 		mapping.Path,
 		mapping.MatchPattern,
@@ -614,5 +614,5 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		mapping.TargetHttpResponseCode,
 	)
 
-	return repo.AddMapping(mappingDto)
+	return repo.CreateMapping(mappingDto)
 }

@@ -2,7 +2,7 @@ package dto
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-type AddMapping struct {
+type CreateMapping struct {
 	Hostname               valueObject.Fqdn                `json:"hostname"`
 	Path                   valueObject.MappingPath         `json:"path"`
 	MatchPattern           valueObject.MappingMatchPattern `json:"matchPattern"`
@@ -12,7 +12,7 @@ type AddMapping struct {
 	TargetHttpResponseCode *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
 }
 
-func NewAddMapping(
+func NewCreateMapping(
 	hostname valueObject.Fqdn,
 	path valueObject.MappingPath,
 	matchPattern valueObject.MappingMatchPattern,
@@ -20,8 +20,8 @@ func NewAddMapping(
 	targetServiceName *valueObject.ServiceName,
 	targetUrl *valueObject.Url,
 	targetHttpResponseCode *valueObject.HttpResponseCode,
-) AddMapping {
-	return AddMapping{
+) CreateMapping {
+	return CreateMapping{
 		Hostname:               hostname,
 		Path:                   path,
 		MatchPattern:           matchPattern,

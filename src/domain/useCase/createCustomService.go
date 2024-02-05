@@ -12,8 +12,8 @@ import (
 func serviceMappingFactory(
 	primaryHostname valueObject.Fqdn,
 	svcName valueObject.ServiceName,
-) (dto.AddMapping, error) {
-	var serviceMapping dto.AddMapping
+) (dto.CreateMapping, error) {
+	var serviceMapping dto.CreateMapping
 
 	svcMappingPath, err := valueObject.NewMappingPath("/")
 	if err != nil {
@@ -30,7 +30,7 @@ func serviceMappingFactory(
 		return serviceMapping, err
 	}
 
-	serviceMapping = dto.NewAddMapping(
+	serviceMapping = dto.NewCreateMapping(
 		primaryHostname,
 		svcMappingPath,
 		svcMappingMatchPattern,
@@ -91,7 +91,7 @@ func CreateCustomService(
 		return errors.New("AddServiceMappingError")
 	}
 
-	err = vhostCmdRepo.AddMapping(serviceMapping)
+	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
 		log.Printf("AddServiceMappingError: %s", err.Error())
 		return errors.New("AddServiceMappingInfraError")

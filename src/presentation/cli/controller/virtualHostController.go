@@ -150,7 +150,7 @@ func AddVirtualHostMappingController() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddMapping",
+		Short: "CreateMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			path := valueObject.NewMappingPathPanic(pathStr)
@@ -181,7 +181,7 @@ func AddVirtualHostMappingController() *cobra.Command {
 				targetHttpResponseCodePtr = &targetHttpResponseCode
 			}
 
-			addMappingDto := dto.NewAddMapping(
+			addMappingDto := dto.NewCreateMapping(
 				hostname,
 				path,
 				matchPattern,
@@ -195,7 +195,7 @@ func AddVirtualHostMappingController() *cobra.Command {
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 			svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
-			err := useCase.AddMapping(
+			err := useCase.CreateMapping(
 				vhostQueryRepo,
 				vhostCmdRepo,
 				svcsQueryRepo,
