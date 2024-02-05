@@ -36,7 +36,8 @@ func AddInstallableService(
 	if isNatureMulti {
 		newSvcName, err := servicesQueryRepo.GetMultiServiceName(addDto.Name, addDto.StartupFile)
 		if err != nil {
-			return err
+			log.Printf("GetMultiServiceNameError: %s", err.Error())
+			return errors.New("GetMultiServiceNameInfraError")
 		}
 
 		addDto.Name = newSvcName
