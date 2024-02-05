@@ -8,9 +8,9 @@ type Mapping struct {
 	Path                   valueObject.MappingPath         `json:"path"`
 	MatchPattern           valueObject.MappingMatchPattern `json:"matchPattern"`
 	TargetType             valueObject.MappingTargetType   `json:"targetType"`
-	TargetServiceName      *valueObject.ServiceName        `json:"targetServiceName,omitempty"`
-	TargetUrl              *valueObject.Url                `json:"targetUrl,omitempty"`
-	TargetHttpResponseCode *valueObject.HttpResponseCode   `json:"targetHttpResponseCode,omitempty"`
+	TargetServiceName      *valueObject.ServiceName        `json:"targetServiceName"`
+	TargetUrl              *valueObject.Url                `json:"targetUrl"`
+	TargetHttpResponseCode *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
 }
 
 func NewMapping(

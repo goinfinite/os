@@ -6,8 +6,8 @@ type AddCustomService struct {
 	Name              valueObject.ServiceName     `json:"name"`
 	Type              valueObject.ServiceType     `json:"type"`
 	Command           valueObject.UnixCommand     `json:"command"`
-	Version           *valueObject.ServiceVersion `json:"version,omitempty"`
-	PortBindings      []valueObject.PortBinding   `json:"portBindings,omitempty"`
+	Version           *valueObject.ServiceVersion `json:"version"`
+	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
 	AutoCreateMapping bool                        `json:"autoCreateMapping"`
 }
 

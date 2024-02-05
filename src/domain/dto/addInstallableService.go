@@ -4,9 +4,9 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type AddInstallableService struct {
 	Name              valueObject.ServiceName     `json:"name"`
-	Version           *valueObject.ServiceVersion `json:"version,omitempty"`
-	StartupFile       *valueObject.UnixFilePath   `json:"startupFile,omitempty"`
-	PortBindings      []valueObject.PortBinding   `json:"portBindings,omitempty"`
+	Version           *valueObject.ServiceVersion `json:"version"`
+	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
+	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
 	AutoCreateMapping bool                        `json:"autoCreateMapping"`
 }
 

@@ -6,7 +6,7 @@ type Cron struct {
 	Id       valueObject.CronId       `json:"id"`
 	Schedule valueObject.CronSchedule `json:"schedule"`
 	Command  valueObject.UnixCommand  `json:"command"`
-	Comment  *valueObject.CronComment `json:"comment,omitempty"`
+	Comment  *valueObject.CronComment `json:"comment"`
 }
 
 func NewCron(

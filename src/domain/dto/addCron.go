@@ -5,7 +5,7 @@ import "github.com/speedianet/os/src/domain/valueObject"
 type AddCron struct {
 	Schedule valueObject.CronSchedule `json:"schedule"`
 	Command  valueObject.UnixCommand  `json:"command"`
-	Comment  *valueObject.CronComment `json:"comment,omitempty"`
+	Comment  *valueObject.CronComment `json:"comment"`
 }
 
 func NewAddCron(
