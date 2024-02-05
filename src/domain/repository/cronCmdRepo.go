@@ -6,7 +6,7 @@ import (
 )
 
 type CronCmdRepo interface {
-	Add(addCron dto.AddCron) error
+	Add(addCron dto.CreateCron) error
 	Update(updateCron dto.UpdateCron) error
 	Delete(cronId valueObject.CronId) error
 }

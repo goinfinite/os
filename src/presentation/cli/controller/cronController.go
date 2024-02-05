@@ -27,7 +27,7 @@ func GetCronsController() *cobra.Command {
 	return cmd
 }
 
-func AddCronControler() *cobra.Command {
+func CreateCronControler() *cobra.Command {
 	var scheduleStr string
 	var commandStr string
 	var commentStr string
@@ -42,7 +42,7 @@ func AddCronControler() *cobra.Command {
 				commentPtr = &comment
 			}
 
-			addCronDto := dto.NewAddCron(
+			addCronDto := dto.NewCreateCron(
 				valueObject.NewCronSchedulePanic(scheduleStr),
 				valueObject.NewUnixCommandPanic(commandStr),
 				commentPtr,
@@ -53,7 +53,7 @@ func AddCronControler() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			err = useCase.AddCron(
+			err = useCase.CreateCron(
 				cronCmdRepo,
 				addCronDto,
 			)

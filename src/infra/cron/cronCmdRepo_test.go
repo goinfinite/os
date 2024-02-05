@@ -11,12 +11,12 @@ import (
 func TestCronCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("AddCron", func(t *testing.T) {
+	t.Run("CreateCron", func(t *testing.T) {
 		schedule := valueObject.NewCronSchedulePanic("* * * * *")
 		command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
 		comment := valueObject.NewCronCommentPanic("Test cron job")
 
-		addCron := dto.NewAddCron(
+		addCron := dto.NewCreateCron(
 			schedule,
 			command,
 			&comment,

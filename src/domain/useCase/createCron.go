@@ -8,14 +8,14 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddCron(
+func CreateCron(
 	cronCmdRepo repository.CronCmdRepo,
-	addCron dto.AddCron,
+	addCron dto.CreateCron,
 ) error {
 	err := cronCmdRepo.Add(addCron)
 	if err != nil {
-		log.Printf("AddCronError: %s", err)
-		return errors.New("AddCronInfraError")
+		log.Printf("CreateCronError: %s", err)
+		return errors.New("CreateCronInfraError")
 	}
 
 	cronCmdLimitStr := len(addCron.Command.String())
@@ -25,7 +25,7 @@ func AddCron(
 	cronCmdShortVersion := addCron.Command.String()[:cronCmdLimitStr]
 	cronLine := addCron.Schedule.String() + " " + cronCmdShortVersion
 
-	log.Printf("Cron '%v' added.", cronLine)
+	log.Printf("Cron '%v' created.", cronLine)
 
 	return nil
 }

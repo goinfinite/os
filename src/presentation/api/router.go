@@ -32,7 +32,7 @@ func accountRoutes(baseRoute *echo.Group) {
 func cronRoutes(baseRoute *echo.Group) {
 	cronGroup := baseRoute.Group("/cron")
 	cronGroup.GET("/", apiController.GetCronsController)
-	cronGroup.POST("/", apiController.AddCronController)
+	cronGroup.POST("/", apiController.CreateCronController)
 	cronGroup.PUT("/", apiController.UpdateCronController)
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }

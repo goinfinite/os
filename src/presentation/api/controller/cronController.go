@@ -30,17 +30,17 @@ func GetCronsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, cronsList)
 }
 
-// AddCron    godoc
+// CreateCron    godoc
 // @Summary      AddNewCron
 // @Description  Add a new cron.
 // @Tags         cron
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addCronDto 	  body    dto.AddCron  true  "NewCron"
+// @Param        addCronDto 	  body    dto.CreateCron  true  "NewCron"
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /cron/ [post]
-func AddCronController(c echo.Context) error {
+func CreateCronController(c echo.Context) error {
 	requiredParams := []string{"schedule", "command"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -52,7 +52,7 @@ func AddCronController(c echo.Context) error {
 		cronCommentPtr = &cronComment
 	}
 
-	addCronDto := dto.NewAddCron(
+	addCronDto := dto.NewCreateCron(
 		valueObject.NewCronSchedulePanic(requestBody["schedule"].(string)),
 		valueObject.NewUnixCommandPanic(requestBody["command"].(string)),
 		cronCommentPtr,
@@ -63,7 +63,7 @@ func AddCronController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	err = useCase.AddCron(
+	err = useCase.CreateCron(
 		cronCmdRepo,
 		addCronDto,
 	)

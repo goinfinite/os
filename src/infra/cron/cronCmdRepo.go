@@ -68,7 +68,7 @@ func (repo CronCmdRepo) installNewCrontab() error {
 	return os.Remove(repo.tmpCrontabFilename)
 }
 
-func (repo CronCmdRepo) Add(addCron dto.AddCron) error {
+func (repo CronCmdRepo) Add(addCron dto.CreateCron) error {
 	cronsCount := len(repo.currentCrontab)
 	newCronIndex := cronsCount + 1
 
