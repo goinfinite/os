@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const serviceVersionRegex string = `^([\w\-\_\.]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`
+const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`
 
 type ServiceVersion string
 
