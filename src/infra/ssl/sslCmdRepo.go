@@ -103,12 +103,12 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	sslQueryRepo := SslQueryRepo{}
-	sslPairsToDelete, err := sslQueryRepo.GetSslPairById(sslId)
+	sslPairToDelete, err := sslQueryRepo.GetSslPairById(sslId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}
 
-	for _, sslPairVhostToDelete := range sslPairsToDelete.VirtualHosts {
+	for _, sslPairVhostToDelete := range sslPairToDelete.VirtualHosts {
 		sslPairVhostToDeleteStr := sslPairVhostToDelete.String()
 
 		vhostCertFilePath := "/app/conf/pki/" + sslPairVhostToDeleteStr + ".crt"
