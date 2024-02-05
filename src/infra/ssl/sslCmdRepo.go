@@ -87,7 +87,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			vhostConfFilePath.String(),
 		)
 		if err != nil {
-			log.Printf("AddSslPairError (%s): %s", vhost.String(), err.Error())
+			log.Printf("FailedToAddSslPkiFilePathsToVhostConfFile (%s): %s", vhost.String(), err.Error())
 			continue
 		}
 
