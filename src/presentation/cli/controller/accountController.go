@@ -33,7 +33,7 @@ func CreateAccountController() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddNewAccount",
+		Short: "CreateNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			username := valueObject.NewUsernamePanic(usernameStr)
 			password := valueObject.NewPasswordPanic(passwordStr)
@@ -52,7 +52,7 @@ func CreateAccountController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "AccountAdded")
+			cliHelper.ResponseWrapper(true, "AccountCreated")
 		},
 	}
 

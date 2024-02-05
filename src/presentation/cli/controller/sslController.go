@@ -68,7 +68,7 @@ func CreateSslPairController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "SslPairAdded")
+			cliHelper.ResponseWrapper(true, "SslPairCreated")
 		},
 	}
 

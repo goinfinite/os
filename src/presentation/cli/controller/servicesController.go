@@ -104,7 +104,7 @@ func CreateInstallableServiceController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "InstallableServiceAdded")
+			cliHelper.ResponseWrapper(true, "InstallableServiceCreated")
 		},
 	}
 
@@ -181,7 +181,7 @@ func CreateCustomServiceController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "CustomServiceAdded")
+			cliHelper.ResponseWrapper(true, "CustomServiceCreated")
 		},
 	}
 

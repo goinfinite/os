@@ -70,7 +70,7 @@ func CreateVirtualHostController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "VirtualHostAdded")
+			cliHelper.ResponseWrapper(true, "VirtualHostCreated")
 		},
 	}
 
@@ -205,7 +205,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "MappingAdded")
+			cliHelper.ResponseWrapper(true, "MappingCreated")
 		},
 	}
 

@@ -145,7 +145,7 @@ func UpdatePhpSettingController() *cobra.Command {
 	var settingValueStr string
 
 	cmd := &cobra.Command{
-		Use:   "updateSetting",
+		Use:   "update-setting",
 		Short: "UpdatePhpSetting",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
@@ -205,7 +205,7 @@ func UpdatePhpModuleController() *cobra.Command {
 	moduleStatusBool := true
 
 	cmd := &cobra.Command{
-		Use:   "updateModule",
+		Use:   "update-module",
 		Short: "UpdatePhpModule",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)

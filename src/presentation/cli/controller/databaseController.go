@@ -40,12 +40,12 @@ func CreateDatabaseController() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddNewDatabase",
+		Short: "CreateNewDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
-			addDatabaseDto := dto.NewCreateDatabase(dbName)
+			createDatabaseDto := dto.NewCreateDatabase(dbName)
 
 			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
@@ -53,13 +53,13 @@ func CreateDatabaseController() *cobra.Command {
 			err := useCase.CreateDatabase(
 				databaseQueryRepo,
 				databaseCmdRepo,
-				addDatabaseDto,
+				createDatabaseDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "DatabaseAdded")
+			cliHelper.ResponseWrapper(true, "DatabaseCreated")
 		},
 	}
 
@@ -112,7 +112,7 @@ func CreateDatabaseUserController() *cobra.Command {
 	var privilegesSlice []string
 
 	cmd := &cobra.Command{
-		Use:   "addUser",
+		Use:   "add-user",
 		Short: "AddNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
@@ -147,7 +147,7 @@ func CreateDatabaseUserController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "DatabaseUserAdded")
+			cliHelper.ResponseWrapper(true, "DatabaseUserCreated")
 		},
 	}
 
@@ -176,7 +176,7 @@ func DeleteDatabaseUserController() *cobra.Command {
 	var dbUserStr string
 
 	cmd := &cobra.Command{
-		Use:   "deleteUser",
+		Use:   "delete-user",
 		Short: "DeleteDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)

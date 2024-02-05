@@ -97,7 +97,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new account.",
+                "description": "Create a new account.",
                 "consumes": [
                     "application/json"
                 ],
@@ -107,11 +107,11 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "AddNewAccount",
+                "summary": "CreateNewAccount",
                 "parameters": [
                     {
                         "description": "NewAccount",
-                        "name": "addAccountDto",
+                        "name": "createAccountDto",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -279,7 +279,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new cron.",
+                "description": "Create a new cron.",
                 "consumes": [
                     "application/json"
                 ],
@@ -289,15 +289,15 @@ const docTemplate = `{
                 "tags": [
                     "cron"
                 ],
-                "summary": "AddNewCron",
+                "summary": "CreateNewCron",
                 "parameters": [
                     {
                         "description": "NewCron",
-                        "name": "addCronDto",
+                        "name": "createCronDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddCron"
+                            "$ref": "#/definitions/dto.CreateCron"
                         }
                     }
                 ],
@@ -397,7 +397,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new database.",
+                "description": "Create a new database.",
                 "consumes": [
                     "application/json"
                 ],
@@ -407,7 +407,7 @@ const docTemplate = `{
                 "tags": [
                     "database"
                 ],
-                "summary": "AddDatabase",
+                "summary": "CreateDatabase",
                 "parameters": [
                     {
                         "enum": [
@@ -421,12 +421,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "AddDatabase",
-                        "name": "addDatabaseDto",
+                        "description": "CreateDatabase",
+                        "name": "createDatabaseDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddDatabase"
+                            "$ref": "#/definitions/dto.CreateDatabase"
                         }
                     }
                 ],
@@ -505,7 +505,7 @@ const docTemplate = `{
                 "tags": [
                     "database"
                 ],
-                "summary": "AddDatabaseUser",
+                "summary": "CreateDatabaseUser",
                 "parameters": [
                     {
                         "enum": [
@@ -526,12 +526,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "AddDatabaseUser",
+                        "description": "CreateDatabaseUser",
                         "name": "addDatabaseUserDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddDatabaseUser"
+                            "$ref": "#/definitions/dto.CreateDatabaseUser"
                         }
                     }
                 ],
@@ -621,8 +621,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "UnixFilePath",
-                        "name": "unixFilePath",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
                         "in": "query",
                         "required": true
                     }
@@ -645,7 +645,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Move a dir/file, update name and/or permissions (Only filePath is required).",
+                "description": "Move a dir/file, update name and/or permissions (Only sourcePath is required).",
                 "consumes": [
                     "application/json"
                 ],
@@ -682,7 +682,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new dir/file.",
+                "description": "Create a new dir/file.",
                 "consumes": [
                     "application/json"
                 ],
@@ -692,7 +692,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "AddNewFile",
+                "summary": "CreateNewFile",
                 "parameters": [
                     {
                         "description": "NewFile",
@@ -818,8 +818,8 @@ const docTemplate = `{
                 "summary": "DeleteFiles",
                 "parameters": [
                     {
-                        "description": "UnixFilePath",
-                        "name": "filePath",
+                        "description": "SourcePath",
+                        "name": "sourcePaths",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1123,15 +1123,15 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "AddCustomService",
+                "summary": "CreateCustomService",
                 "parameters": [
                     {
-                        "description": "AddCustomService",
-                        "name": "addCustomServiceDto",
+                        "description": "CreateCustomService",
+                        "name": "createCustomServiceDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddCustomService"
+                            "$ref": "#/definitions/dto.CreateCustomService"
                         }
                     }
                 ],
@@ -1191,15 +1191,15 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "AddInstallableService",
+                "summary": "CreateInstallableService",
                 "parameters": [
                     {
-                        "description": "AddInstallableService",
-                        "name": "addInstallableServiceDto",
+                        "description": "CreateInstallableService",
+                        "name": "createInstallableServiceDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddInstallableService"
+                            "$ref": "#/definitions/dto.CreateInstallableService"
                         }
                     }
                 ],
@@ -1286,7 +1286,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new ssl pair.",
+                "description": "Create a new ssl pair.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1296,15 +1296,15 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "AddNewSslPair",
+                "summary": "CreateNewSslPair",
                 "parameters": [
                     {
                         "description": "NewSslPair",
-                        "name": "addSslPairDto",
+                        "name": "createSslPairDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddSslPair"
+                            "$ref": "#/definitions/dto.CreateSslPair"
                         }
                     }
                 ],
@@ -1391,7 +1391,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new vhost.",
+                "description": "Create a new vhost.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1401,15 +1401,15 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "AddNewVirtualHost",
+                "summary": "CreateNewVirtualHost",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
-                        "name": "addVirtualHostDto",
+                        "name": "createVirtualHostDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddVirtualHost"
+                            "$ref": "#/definitions/dto.CreateVirtualHost"
                         }
                     }
                 ],
@@ -1473,11 +1473,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
-                        "name": "addMappingDto",
+                        "name": "createMappingDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.AddMapping"
+                            "$ref": "#/definitions/dto.CreateMapping"
                         }
                     }
                 ],
@@ -1574,162 +1574,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateAccount": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddCron": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "schedule": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddCustomService": {
-            "type": "object",
-            "properties": {
-                "autoCreateMapping": {
-                    "type": "boolean"
-                },
-                "command": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddDatabase": {
-            "type": "object",
-            "properties": {
-                "dbName": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddDatabaseUser": {
-            "type": "object",
-            "properties": {
-                "dbName": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "privileges": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddInstallableService": {
-            "type": "object",
-            "properties": {
-                "autoCreateMapping": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "startupFile": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddMapping": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddSslPair": {
-            "type": "object",
-            "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.SslCertificate"
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddVirtualHost": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "parentHostname": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.CompressUnixFiles": {
             "type": "object",
             "properties": {
@@ -1758,6 +1602,148 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateAccount": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateCron": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateCustomService": {
+            "type": "object",
+            "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
+                "command": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateDatabase": {
+            "type": "object",
+            "properties": {
+                "dbName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateDatabaseUser": {
+            "type": "object",
+            "properties": {
+                "dbName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "privileges": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateInstallableService": {
+            "type": "object",
+            "properties": {
+                "autoCreateMapping": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateMapping": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateSslPair": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.SslCertificate"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateUnixFile": {
             "type": "object",
             "properties": {
@@ -1768,6 +1754,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateVirtualHost": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

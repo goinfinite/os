@@ -34,7 +34,7 @@ func CreateCronControler() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "AddNewCron",
+		Short: "CreateNewCron",
 		Run: func(cmd *cobra.Command, args []string) {
 			var commentPtr *valueObject.CronComment
 			if commentStr != "" {
@@ -42,7 +42,7 @@ func CreateCronControler() *cobra.Command {
 				commentPtr = &comment
 			}
 
-			addCronDto := dto.NewCreateCron(
+			createCronDto := dto.NewCreateCron(
 				valueObject.NewCronSchedulePanic(scheduleStr),
 				valueObject.NewUnixCommandPanic(commandStr),
 				commentPtr,
@@ -55,13 +55,13 @@ func CreateCronControler() *cobra.Command {
 
 			err = useCase.CreateCron(
 				cronCmdRepo,
-				addCronDto,
+				createCronDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "CronAdded")
+			cliHelper.ResponseWrapper(true, "CronCreated")
 		},
 	}
 
@@ -123,7 +123,7 @@ func UpdateCronController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "CronAdded")
+			cliHelper.ResponseWrapper(true, "CronUpdated")
 		},
 	}
 
