@@ -60,9 +60,9 @@ func databaseRoutes() {
 
 	rootCmd.AddCommand(databaseCmd)
 	databaseCmd.AddCommand(cliController.GetDatabasesController())
-	databaseCmd.AddCommand(cliController.AddDatabaseController())
+	databaseCmd.AddCommand(cliController.CreateDatabaseController())
 	databaseCmd.AddCommand(cliController.DeleteDatabaseController())
-	databaseCmd.AddCommand(cliController.AddDatabaseUserController())
+	databaseCmd.AddCommand(cliController.CreateDatabaseUserController())
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 

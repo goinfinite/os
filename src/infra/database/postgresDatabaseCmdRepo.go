@@ -26,7 +26,7 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.CreateDatabaseUser) error {
 	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
 	for i, privilege := range addDatabaseUser.Privileges {
 		privilegesStrList[i] = privilege.String()

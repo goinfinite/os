@@ -8,7 +8,7 @@ import (
 type DatabaseCmdRepo interface {
 	Add(dbName valueObject.DatabaseName) error
 	Delete(dbName valueObject.DatabaseName) error
-	AddUser(addDatabaseUser dto.AddDatabaseUser) error
+	AddUser(addDatabaseUser dto.CreateDatabaseUser) error
 	DeleteUser(
 		dbName valueObject.DatabaseName,
 		dbUser valueObject.DatabaseUsername,

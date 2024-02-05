@@ -8,10 +8,10 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddDatabase(
+func CreateDatabase(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	addDatabase dto.AddDatabase,
+	addDatabase dto.CreateDatabase,
 ) error {
 	_, err := dbQueryRepo.GetByName(addDatabase.DatabaseName)
 	if err == nil {
@@ -20,7 +20,7 @@ func AddDatabase(
 
 	err = dbCmdRepo.Add(addDatabase.DatabaseName)
 	if err != nil {
-		return errors.New("AddDatabaseError")
+		return errors.New("CreateDatabaseError")
 	}
 
 	log.Printf("Database %s added", addDatabase.DatabaseName)

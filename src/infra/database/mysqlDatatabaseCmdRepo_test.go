@@ -27,15 +27,15 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 
-	t.Run("AddDatabase", func(t *testing.T) {
+	t.Run("CreateDatabase", func(t *testing.T) {
 		err := mysqlDatabaseCmdRepo.Add("testing")
 		if err != nil {
 			t.Error("Error adding database")
 		}
 	})
 
-	t.Run("AddDatabaseUser", func(t *testing.T) {
-		addDatabaseUserDto := dto.NewAddDatabaseUser(
+	t.Run("CreateDatabaseUser", func(t *testing.T) {
+		addDatabaseUserDto := dto.NewCreateDatabaseUser(
 			valueObject.NewDatabaseNamePanic("testing"),
 			valueObject.NewDatabaseUsernamePanic("testing"),
 			valueObject.NewPasswordPanic("testing"),

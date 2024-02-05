@@ -34,18 +34,18 @@ func GetDatabasesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, databasesList)
 }
 
-// AddDatabase godoc
-// @Summary      AddDatabase
+// CreateDatabase godoc
+// @Summary      CreateDatabase
 // @Description  Add a new database.
 // @Tags         database
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
 // @Param        dbType path valueObject.DatabaseType true "DatabaseType"
-// @Param        addDatabaseDto body dto.AddDatabase true "AddDatabase"
+// @Param        addDatabaseDto body dto.CreateDatabase true "CreateDatabase"
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /database/{dbType}/ [post]
-func AddDatabaseController(c echo.Context) error {
+func CreateDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 
 	requiredParams := []string{"dbName"}
@@ -53,12 +53,12 @@ func AddDatabaseController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 	dbName := valueObject.NewDatabaseNamePanic(requestBody["dbName"].(string))
-	addDatabaseDto := dto.NewAddDatabase(dbName)
+	addDatabaseDto := dto.NewCreateDatabase(dbName)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err := useCase.AddDatabase(
+	err := useCase.CreateDatabase(
 		databaseQueryRepo,
 		databaseCmdRepo,
 		addDatabaseDto,
@@ -100,8 +100,8 @@ func DeleteDatabaseController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "DatabaseDeleted")
 }
 
-// AddDatabaseUser godoc
-// @Summary      AddDatabaseUser
+// CreateDatabaseUser godoc
+// @Summary      CreateDatabaseUser
 // @Description  Add a new database user.
 // @Tags         database
 // @Accept       json
@@ -109,10 +109,10 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Security     Bearer
 // @Param        dbType path valueObject.DatabaseType true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
-// @Param        addDatabaseUserDto body dto.AddDatabaseUser true "AddDatabaseUser"
+// @Param        addDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /database/{dbType}/{dbName}/user/ [post]
-func AddDatabaseUserController(c echo.Context) error {
+func CreateDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -131,7 +131,7 @@ func AddDatabaseUserController(c echo.Context) error {
 		}
 	}
 
-	addDatabaseUserDto := dto.NewAddDatabaseUser(
+	addDatabaseUserDto := dto.NewCreateDatabaseUser(
 		dbName,
 		username,
 		password,
@@ -141,7 +141,7 @@ func AddDatabaseUserController(c echo.Context) error {
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err := useCase.AddDatabaseUser(
+	err := useCase.CreateDatabaseUser(
 		databaseQueryRepo,
 		databaseCmdRepo,
 		addDatabaseUserDto,

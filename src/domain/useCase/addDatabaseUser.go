@@ -9,10 +9,10 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func AddDatabaseUser(
+func CreateDatabaseUser(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	addDatabaseUser dto.AddDatabaseUser,
+	addDatabaseUser dto.CreateDatabaseUser,
 ) error {
 	_, err := dbQueryRepo.GetByName(addDatabaseUser.DatabaseName)
 	if err != nil {
@@ -27,7 +27,7 @@ func AddDatabaseUser(
 
 	err = dbCmdRepo.AddUser(addDatabaseUser)
 	if err != nil {
-		return errors.New("AddDatabaseUserError")
+		return errors.New("CreateDatabaseUserError")
 	}
 
 	log.Printf(

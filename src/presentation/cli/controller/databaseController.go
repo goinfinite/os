@@ -34,7 +34,7 @@ func GetDatabasesController() *cobra.Command {
 	return cmd
 }
 
-func AddDatabaseController() *cobra.Command {
+func CreateDatabaseController() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 
@@ -45,12 +45,12 @@ func AddDatabaseController() *cobra.Command {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
-			addDatabaseDto := dto.NewAddDatabase(dbName)
+			addDatabaseDto := dto.NewCreateDatabase(dbName)
 
 			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-			err := useCase.AddDatabase(
+			err := useCase.CreateDatabase(
 				databaseQueryRepo,
 				databaseCmdRepo,
 				addDatabaseDto,
@@ -104,7 +104,7 @@ func DeleteDatabaseController() *cobra.Command {
 	return cmd
 }
 
-func AddDatabaseUserController() *cobra.Command {
+func CreateDatabaseUserController() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 	var dbUserStr string
@@ -128,7 +128,7 @@ func AddDatabaseUserController() *cobra.Command {
 				}
 			}
 
-			addDatabaseUserDto := dto.NewAddDatabaseUser(
+			addDatabaseUserDto := dto.NewCreateDatabaseUser(
 				dbName,
 				dbUser,
 				dbPass,
@@ -138,7 +138,7 @@ func AddDatabaseUserController() *cobra.Command {
 			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 			databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-			err := useCase.AddDatabaseUser(
+			err := useCase.CreateDatabaseUser(
 				databaseQueryRepo,
 				databaseCmdRepo,
 				addDatabaseUserDto,

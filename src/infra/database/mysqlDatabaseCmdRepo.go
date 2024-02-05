@@ -17,8 +17,8 @@ func (repo MysqlDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
 		"CREATE DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("AddDatabaseError: %v", err)
-		return errors.New("AddDatabaseError")
+		log.Printf("CreateDatabaseError: %v", err)
+		return errors.New("CreateDatabaseError")
 	}
 
 	return nil
@@ -36,7 +36,7 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	return nil
 }
 
-func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.CreateDatabaseUser) error {
 	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
 	for i, privilege := range addDatabaseUser.Privileges {
 		privilegesStrList[i] = privilege.String()
@@ -56,8 +56,8 @@ func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) er
 			"FLUSH PRIVILEGES;",
 	)
 	if err != nil {
-		log.Printf("AddDatabaseUserError: %v", err)
-		return errors.New("AddDatabaseUserError")
+		log.Printf("CreateDatabaseUserError: %v", err)
+		return errors.New("CreateDatabaseUserError")
 	}
 
 	return nil

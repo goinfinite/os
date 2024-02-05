@@ -41,7 +41,7 @@ func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	}
 }
 
-func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.CreateDatabaseUser) error {
 	switch repo.dbType {
 	case "mysql":
 		return MysqlDatabaseCmdRepo{}.AddUser(addDatabaseUser)
