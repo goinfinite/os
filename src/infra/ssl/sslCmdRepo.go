@@ -147,7 +147,9 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			`\s*ssl_certificate\s+[^\n]*\n\s*ssl_certificate_key\s+[^\n]*\n`,
 		)
 		vhostConfWithoutSslConf := vhostSslConfRegex.ReplaceAllString(vhostConfWithoutSslPort, "")
-		err = infraHelper.UpdateFile(vhostConfFilePath.String(), vhostConfWithoutSslConf, true)
+
+		shouldOverwrite := true
+		err = infraHelper.UpdateFile(vhostConfFilePath.String(), vhostConfWithoutSslConf, shouldOverwrite)
 		if err != nil {
 			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
 			continue
