@@ -37,8 +37,8 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			}
 		}
 
-		isSymlink := vhostIndex != 0
-		if isSymlink {
+		willBeSymlink := vhostIndex != 0
+		if willBeSymlink {
 			vhostCertToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".crt"
 			vhostCertSymlinkPath := "/app/conf/pki/" + vhost.String() + ".crt"
 			err = os.Symlink(vhostCertToSymlinkPath, vhostCertSymlinkPath)
@@ -56,7 +56,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			}
 		}
 
-		if !isSymlink {
+		if !willBeSymlink {
 			shouldOverwrite := true
 
 			vhostCertFilePath := "/app/conf/pki/" + vhost.String() + ".crt"
