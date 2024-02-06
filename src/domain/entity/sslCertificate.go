@@ -55,10 +55,10 @@ func NewSslCertificate(
 
 	altNames := []valueObject.Fqdn{}
 	if len(parsedCert.DNSNames) > 0 {
-		for _, certDNSName := range parsedCert.DNSNames {
-			altName, err := valueObject.NewFqdn(certDNSName)
+		for _, certDnsName := range parsedCert.DNSNames {
+			altName, err := valueObject.NewFqdn(certDnsName)
 			if err != nil {
-				return sslCertificate, errors.New("InvalidSslCertificateAlternativeName")
+				continue
 			}
 
 			altNames = append(altNames, altName)
