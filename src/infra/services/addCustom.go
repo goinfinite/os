@@ -21,5 +21,6 @@ func AddCustom(
 		addDto.Command,
 		nil,
 		addDto.PortBindings,
+		nil,
 	)
 }
