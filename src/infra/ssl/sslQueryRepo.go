@@ -11,7 +11,7 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-const configurationsDir = "/app/conf/nginx"
+const nginxConfDir = "/app/conf/nginx"
 
 type SslQueryRepo struct{}
 
@@ -25,10 +25,10 @@ func (repo SslQueryRepo) GetVhostConfFilePath(
 ) (valueObject.UnixFilePath, error) {
 	var vhostConfFilePath valueObject.UnixFilePath
 
-	vhostConfFilePathStr := configurationsDir + "/" + vhost.String() + ".conf"
+	vhostConfFilePathStr := nginxConfDir + "/" + vhost.String() + ".conf"
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	if vhostQueryRepo.IsVirtualHostPrimaryDomain(vhost) {
-		vhostConfFilePathStr = configurationsDir + "/primary.conf"
+		vhostConfFilePathStr = nginxConfDir + "/primary.conf"
 	}
 
 	vhostConfFilePath, err := valueObject.NewUnixFilePath(vhostConfFilePathStr)
@@ -147,9 +147,9 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	for _, vhost := range virtualHosts {
 		hostnameStr := vhost.Hostname.String()
 
-		vhostConfigFilePath := configurationsDir + "/" + hostnameStr + ".conf"
+		vhostConfigFilePath := nginxConfDir + "/" + hostnameStr + ".conf"
 		if vhostQueryRepo.IsVirtualHostPrimaryDomain(vhost.Hostname) {
-			vhostConfigFilePath = configurationsDir + "/primary.conf"
+			vhostConfigFilePath = nginxConfDir + "/primary.conf"
 		}
 
 		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath)
