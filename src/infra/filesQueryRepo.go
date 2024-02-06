@@ -71,13 +71,13 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	var unixFileExtensionPtr *valueObject.UnixFileExtension
 	unixFileExtension, err := unixFilePath.GetFileExtension()
-	if err != nil {
-		unixFileExtensionPtr = nil
+	if err == nil {
+		unixFileExtensionPtr = &unixFileExtension
 	}
 
-	unixFileExtensionPtr = &unixFileExtension
-	if unixFileExtension.String() == "" {
-		unixFileExtensionPtr = nil
+	unixFileMimeType := unixFileExtension.GetMimeType()
+	if fileInfo.IsDir() {
+		unixFileMimeType, _ = valueObject.NewMimeType("directory")
 	}
 
 	filePermissions := fileInfo.Mode().Perm()
@@ -93,7 +93,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFile = entity.NewUnixFile(
 		unixFilePath.GetFileName(),
 		unixFilePath,
-		unixFileExtension.GetMimeType(),
+		unixFileMimeType,
 		unixFilePermissions,
 		unixFileSize,
 		unixFileExtensionPtr,
