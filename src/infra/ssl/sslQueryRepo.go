@@ -139,12 +139,12 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	virtualHosts, err := vhostQueryRepo.Get()
+	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		return sslPairs, err
 	}
 
-	for _, vhost := range virtualHosts {
+	for _, vhost := range vhosts {
 		hostnameStr := vhost.Hostname.String()
 
 		vhostConfigFilePath, err := vhostQueryRepo.GetVirtualHostConfFilePath(vhost.Hostname)
