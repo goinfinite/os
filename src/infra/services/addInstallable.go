@@ -86,6 +86,38 @@ func copyAssets(srcPath string, dstPath string) error {
 	return nil
 }
 
+func installGpgKey(serviceName string, url string) error {
+	keyTempPath := "/speedia/" + serviceName + ".gpg"
+
+	err := infraHelper.DownloadFile(
+		url,
+		keyTempPath,
+	)
+	if err != nil {
+		return errors.New("DownloadRepoFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"gpg",
+		"--batch",
+		"--yes",
+		"--dearmor",
+		"-o",
+		"/usr/share/keyrings/"+serviceName+"-archive-keyring.gpg",
+		keyTempPath,
+	)
+	if err != nil {
+		return errors.New("GpgImportError: " + err.Error())
+	}
+
+	err = os.Remove(keyTempPath)
+	if err != nil {
+		return errors.New("RemoveRepoFileError: " + err.Error())
+	}
+
+	return nil
+}
+
 func addPhp() error {
 	repoFilePath := "/speedia/repo.litespeed.sh"
 
@@ -447,12 +479,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("AptUpdateError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"apt",
-		"install",
-		"-y",
-		"postgresql-common",
-	)
+	err = infraHelper.InstallPkgs([]string{"postgresql-common"})
 	if err != nil {
 		return errors.New("InstallRequiredPackageError: " + err.Error())
 	}
@@ -535,33 +562,10 @@ func addRedis(addDto dto.AddInstallableService) error {
 		return errors.New("GetOsReleaseError")
 	}
 
-	err = infraHelper.DownloadFile(
-		"https://packages.redis.io/gpg",
-		"/speedia/redis.gpg",
-	)
+	err = installGpgKey("redis", "https://packages.redis.io/gpg")
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"gpg",
-		"--batch",
-		"--yes",
-		"--dearmor",
-		"-o",
-		"/usr/share/keyrings/redis-archive-keyring.gpg",
-		"/speedia/redis.gpg",
-	)
-	if err != nil {
-		log.Printf("GpgImportError: %s", err)
-		return errors.New("GpgImportError")
-	}
-
-	err = os.Remove("/speedia/redis.gpg")
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
+		log.Printf("InstallGpgKeyError: %s", err)
+		return errors.New("InstallGpgKeyError")
 	}
 
 	repoLine := "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb " + osRelease + " main"
