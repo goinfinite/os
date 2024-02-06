@@ -587,9 +587,10 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("SetPostgresPassError: " + err.Error())
 	}
 
+	pgPassFileContent := "*:*:*:postgres:" + rootPass
 	err = infraHelper.UpdateFile(
 		"/root/.pgpass",
-		"*:*:*:postgres:"+rootPass,
+		pgPassFileContent,
 		true,
 	)
 	if err != nil {
@@ -604,7 +605,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 	pgUserPgPassFilePath := "/var/lib/postgresql/.pgpass"
 	err = infraHelper.UpdateFile(
 		pgUserPgPassFilePath,
-		"*:*:*:postgres:"+rootPass,
+		pgPassFileContent,
 		true,
 	)
 	if err != nil {
@@ -634,7 +635,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 
 	err = SupervisordFacade{}.Restart(addDto.Name)
 	if err != nil {
-		return errors.New("StopPostgresqlError: " + err.Error())
+		return errors.New("RestartPostgresqlError: " + err.Error())
 	}
 
 	return nil
