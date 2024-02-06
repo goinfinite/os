@@ -601,8 +601,32 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("ChmodPgPassError: " + err.Error())
 	}
 
+	pgUserPgPassFilePath := "/var/lib/postgresql/.pgpass"
+	err = infraHelper.UpdateFile(
+		pgUserPgPassFilePath,
+		"*:*:*:postgres:"+rootPass,
+		true,
+	)
+	if err != nil {
+		return errors.New("CreatePgPassError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"postgres:postgres",
+		pgUserPgPassFilePath,
+	)
+	if err != nil {
+		return errors.New("ChownPgPassError: " + err.Error())
+	}
+
+	err = os.Chmod(pgUserPgPassFilePath, 0400)
+	if err != nil {
+		return errors.New("ChmodPgPassError: " + err.Error())
+	}
+
 	_, err = infraHelper.RunCmdWithSubShell(
-		"sed -i '1d' " + hbaConfPath,
+		"sed -i '1s/.*/local all postgres scram-sha-256/' " + hbaConfPath,
 	)
 	if err != nil {
 		return errors.New("UpdatePgHbaError: " + err.Error())
