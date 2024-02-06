@@ -68,7 +68,12 @@ func AddSslPairController(c echo.Context) error {
 
 	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
 	if !assertOk {
-		panic("InvalidVirtualHosts")
+		virtualHostStr, assertOk := requestBody["virtualHosts"].(string)
+		if !assertOk {
+			panic("InvalidVirtualHosts")
+		}
+
+		virtualHosts = []interface{}{virtualHostStr}
 	}
 
 	addSslPairDto := dto.NewAddSslPair(
