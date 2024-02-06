@@ -11,6 +11,7 @@ func TestServiceVersion(t *testing.T) {
 			"lts",
 			"alpha",
 			"beta",
+			"version1.0.0",
 		}
 		for _, name := range validVersionsAndAliases {
 			_, err := NewServiceVersion(name)
@@ -24,7 +25,6 @@ func TestServiceVersion(t *testing.T) {
 		invalidVersionsAndAliases := []string{
 			"",
 			"1.0<0",
-			"version1.0.0",
 		}
 		for _, name := range invalidVersionsAndAliases {
 			_, err := NewServiceVersion(name)

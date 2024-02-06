@@ -10,7 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -53,7 +53,7 @@ func getFilePathSliceFromBody(
 // @Success      200 {array} entity.UnixFile
 // @Router       /files/ [get]
 func GetFilesController(c echo.Context) error {
-	filesQueryRepo := infra.FilesQueryRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesList, err := useCase.GetFiles(
 		filesQueryRepo,
 		valueObject.NewUnixFilePathPanic(c.QueryParam("unixFilePath")),
@@ -110,8 +110,8 @@ func AddFileController(c echo.Context) error {
 		fileType,
 	)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	err := useCase.CreateUnixFile(
 		filesQueryRepo,
@@ -168,7 +168,7 @@ func UpdateFileController(c echo.Context) error {
 		encodedContentPtr,
 	)
 
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	updateUnixFileUc := useCase.NewUpdateUnixFile(filesCmdRepo)
 	err := updateUnixFileUc.Execute(updateUnixFileDto)
@@ -200,8 +200,8 @@ func CopyFileController(c echo.Context) error {
 
 	copyUnixFileDto := dto.NewCopyUnixFile(filePath, destinationPath)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	err := useCase.CopyUnixFile(
 		filesQueryRepo,
@@ -233,8 +233,8 @@ func DeleteFileController(c echo.Context) error {
 
 	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	useCase.DeleteUnixFiles(
 		filesQueryRepo,
@@ -276,8 +276,8 @@ func CompressFilesController(c echo.Context) error {
 		compressionUnixTypePtr,
 	)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	compressionProcessInfo, err := useCase.CompressUnixFiles(
 		filesQueryRepo,
@@ -321,8 +321,8 @@ func ExtractFilesController(c echo.Context) error {
 
 	extractUnixFilesDto := dto.NewExtractUnixFiles(filePath, destinationPath)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	err := useCase.ExtractUnixFiles(
 		filesQueryRepo,
@@ -364,8 +364,8 @@ func UploadFilesController(c echo.Context) error {
 
 	uploadUnixFilesDto := dto.NewUploadUnixFiles(destinationPath, filesToUpload)
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	uploadProcessInfo, err := useCase.UploadUnixFiles(
 		filesQueryRepo,

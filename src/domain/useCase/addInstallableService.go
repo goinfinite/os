@@ -20,14 +20,42 @@ func AddInstallableService(
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
+	installableSvcs, err := servicesQueryRepo.GetInstallables()
+	if err != nil {
+		log.Printf("GetInstallableServicesError: %s", err.Error())
+		return errors.New("GetInstallableServicesInfraError")
+	}
+
+	dtoServiceNameStr := addDto.Name.String()
+	isNatureMulti := false
+	for _, installableSvc := range installableSvcs {
+		if installableSvc.Name.String() != dtoServiceNameStr {
+			continue
+		}
+
+		isNatureMulti = installableSvc.Nature.String() == "multi"
+		break
+	}
+
+	if isNatureMulti {
+		newSvcName, err := servicesQueryRepo.GetMultiServiceName(addDto.Name, addDto.StartupFile)
+		if err != nil {
+			log.Printf("GetMultiServiceNameError: %s", err.Error())
+			return errors.New("GetMultiServiceNameInfraError")
+		}
+
+		addDto.Name = newSvcName
+	}
+
 	err = servicesCmdRepo.AddInstallable(addDto)
 	if err != nil {
-		log.Printf("AddInstallableServiceError: %v", err)
+		log.Printf("AddInstallableServiceError: %s", err.Error())
 		return errors.New("AddInstallableServiceInfraError")
 	}
 
 	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
 	if err != nil {
+		log.Printf("GetVhostsWithMappingError: %s", err.Error())
 		return errors.New("GetVhostsWithMappingsInfraError")
 	}
 

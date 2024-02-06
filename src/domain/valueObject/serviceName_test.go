@@ -9,6 +9,7 @@ func TestServiceName(t *testing.T) {
 			"litespeed",
 			"nginx",
 			"node",
+			"mysql",
 			"nodejs",
 			"redis-server",
 		}
