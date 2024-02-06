@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"os"
-	"regexp"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -142,7 +141,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		err = os.Remove(vhostCertFilePath)
 		if err != nil {
 			log.Printf(
-				"FailedToDeleteCertFile (%s): %s", sslPairVhostToDelete.String(), err.Error(),
+				"FailedToDeleteCertFile (%s): %s", sslPairVhostToDeleteStr, err.Error(),
 			)
 			continue
 		}
@@ -151,41 +150,21 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		err = os.Remove(vhostCertKeyFilePath)
 		if err != nil {
 			log.Printf(
-				"FailedToDeleteCertKeyFile (%s): %s", sslPairVhostToDelete.String(), err.Error(),
+				"FailedToDeleteCertKeyFile (%s): %s", sslPairVhostToDeleteStr, err.Error(),
 			)
 			continue
 		}
 
-		vhostConfFilePath, err := sslQueryRepo.GetVhostConfFilePath(sslPairVhostToDelete)
+		err = repo.GenerateSelfSignedCert(sslPairVhostToDelete)
 		if err != nil {
-			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
-			continue
-		}
-
-		vhostConfContentStr, err := infraHelper.GetFileContent(vhostConfFilePath.String())
-		if err != nil {
-			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
-			continue
-		}
-
-		vhostSslPortConfRegex := regexp.MustCompile(`\s*listen 443 ssl;`)
-		vhostConfWithoutSslPort := vhostSslPortConfRegex.ReplaceAllString(vhostConfContentStr, "")
-		vhostSslConfRegex := regexp.MustCompile(
-			`\s*ssl_certificate\s+[^\n]*\n\s*ssl_certificate_key\s+[^\n]*\n`,
-		)
-		vhostConfWithoutSslConf := vhostSslConfRegex.ReplaceAllString(vhostConfWithoutSslPort, "")
-
-		shouldOverwrite := true
-		err = infraHelper.UpdateFile(vhostConfFilePath.String(), vhostConfWithoutSslConf, shouldOverwrite)
-		if err != nil {
-			log.Printf("DeleteSslError (%s): %s", sslPairVhostToDelete.String(), err.Error())
+			log.Printf("%s (%s)", err.Error(), sslPairVhostToDeleteStr)
 			continue
 		}
 
 		log.Printf(
 			"SSL '%s' of '%s' virtual host deleted.",
 			sslId.String(),
-			sslPairVhostToDelete.String(),
+			sslPairVhostToDeleteStr,
 		)
 	}
 
