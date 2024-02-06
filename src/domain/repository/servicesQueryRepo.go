@@ -7,6 +7,10 @@ import (
 )
 
 type ServicesQueryRepo interface {
+	GetMultiServiceName(
+		serviceName valueObject.ServiceName,
+		startupFile *valueObject.UnixFilePath,
+	) (valueObject.ServiceName, error)
 	Get() ([]entity.Service, error)
 	GetWithMetrics() ([]dto.ServiceWithMetrics, error)
 	GetByName(name valueObject.ServiceName) (entity.Service, error)
