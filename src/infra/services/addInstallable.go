@@ -504,6 +504,35 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("InstallServiceError: " + err.Error())
 	}
 
+	_, err = infraHelper.RunCmd(
+		"gpasswd",
+		"-a",
+		"postgres",
+		"ssl-cert",
+	)
+	if err != nil {
+		return errors.New("AddPostgresToSslCertError: " + err.Error())
+	}
+
+	err = os.Chmod("/etc/ssl/private", 0755)
+	if err != nil {
+		return errors.New("ChmodSslPrivateError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"postgres:ssl-cert",
+		"/etc/ssl/private/ssl-cert-snakeoil.key",
+	)
+	if err != nil {
+		return errors.New("ChownSslPrivateCertError: " + err.Error())
+	}
+
+	err = os.Chmod("/etc/ssl/private/ssl-cert-snakeoil.key", 0600)
+	if err != nil {
+		return errors.New("ChmodSslPrivateCertError: " + err.Error())
+	}
+
 	portBindings := []valueObject.PortBinding{
 		valueObject.NewPortBinding(
 			valueObject.NewNetworkPortPanic(5432),
@@ -541,8 +570,6 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 
 	_, err = infraHelper.RunCmd(
 		"psql",
-		"-U",
-		"postgres",
 		"-c",
 		"ALTER USER postgres WITH PASSWORD '"+rootPass+"';",
 	)
