@@ -33,6 +33,28 @@ func (repo VirtualHostQueryRepo) IsVirtualHostPrimaryDomain(
 	return domain == primaryDomain
 }
 
+func (repo VirtualHostQueryRepo) GetVirtualHostConfFilePath(
+	vhost valueObject.Fqdn,
+) (valueObject.UnixFilePath, error) {
+	var vhostConfFilePath valueObject.UnixFilePath
+
+	vhostConfFilePathStr := configurationsDir + "/" + vhost.String() + ".conf"
+	if repo.IsVirtualHostPrimaryDomain(vhost) {
+		vhostConfFilePathStr = configurationsDir + "/primary.conf"
+	}
+
+	if !infraHelper.FileExists(vhostConfFilePathStr) {
+		return vhostConfFilePath, errors.New("VirtualHostNotFound")
+	}
+
+	vhostConfFilePath, err := valueObject.NewUnixFilePath(vhostConfFilePathStr)
+	if err != nil {
+		return vhostConfFilePath, err
+	}
+
+	return vhostConfFilePath, nil
+}
+
 func (repo VirtualHostQueryRepo) vhostsFactory(
 	filePath valueObject.UnixFilePath,
 ) ([]entity.VirtualHost, error) {
