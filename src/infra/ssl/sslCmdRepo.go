@@ -20,7 +20,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return errors.New("NoVirtualHostsProvidedToAddSslPair")
 	}
 
-	vhostSymlinkOf := addSslPair.VirtualHosts[0]
+	firstVhost := addSslPair.VirtualHosts[0]
 	for vhostIndex, vhost := range addSslPair.VirtualHosts {
 		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
 		if err != nil && err.Error() != "SslPairNotFound" {
@@ -55,7 +55,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 
 		if willBeSymlink {
-			vhostCertToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".crt"
+			vhostCertToSymlinkPath := "/app/conf/pki/" + firstVhost.String() + ".crt"
 			vhostCertSymlinkPath := "/app/conf/pki/" + vhost.String() + ".crt"
 			err = os.Symlink(vhostCertToSymlinkPath, vhostCertSymlinkPath)
 			if err != nil {
@@ -63,7 +63,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 				continue
 			}
 
-			vhostKeyToSymlinkPath := "/app/conf/pki/" + vhostSymlinkOf.String() + ".key"
+			vhostKeyToSymlinkPath := "/app/conf/pki/" + firstVhost.String() + ".key"
 			vhostCertKeySymlinkPath := "/app/conf/pki/" + vhost.String() + ".key"
 			err = os.Symlink(vhostKeyToSymlinkPath, vhostCertKeySymlinkPath)
 			if err != nil {
