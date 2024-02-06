@@ -136,23 +136,23 @@ func (repo SslQueryRepo) getSymlinkSslPairVhostsByVhost(
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
-	var sslPairs []entity.SslPair
+	sslPairs := []entity.SslPair{}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	virtualHosts, err := vhostQueryRepo.Get()
 	if err != nil {
-		return []entity.SslPair{}, err
+		return sslPairs, err
 	}
 
 	for _, vhost := range virtualHosts {
 		hostnameStr := vhost.Hostname.String()
 
-		vhostConfigFilePath := nginxConfDir + "/" + hostnameStr + ".conf"
-		if vhostQueryRepo.IsVirtualHostPrimaryDomain(vhost.Hostname) {
-			vhostConfigFilePath = nginxConfDir + "/primary.conf"
+		vhostConfigFilePath, err := vhostQueryRepo.GetVirtualHostConfFilePath(vhost.Hostname)
+		if err != nil {
+			log.Printf("FailedToGetVhostConfFile (%s): %s", hostnameStr, err.Error())
 		}
 
-		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath)
+		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
 		if err != nil {
 			log.Printf("FailedToOpenVhostConfFile (%s): %s", hostnameStr, err.Error())
 			continue
