@@ -560,6 +560,14 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("AddSupervisorConfError: " + err.Error())
 	}
 
+	hbaConfPath := "/etc/postgresql/" + versionStr + "/main/pg_hba.conf"
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i '1ilocal all all trust' " + hbaConfPath,
+	)
+	if err != nil {
+		return errors.New("UpdatePgHbaError: " + err.Error())
+	}
+
 	err = SupervisordFacade{}.Reload()
 	if err != nil {
 		return errors.New("ReloadSupervisorError: " + err.Error())
@@ -570,6 +578,8 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 
 	_, err = infraHelper.RunCmd(
 		"psql",
+		"-U",
+		"postgres",
 		"-c",
 		"ALTER USER postgres WITH PASSWORD '"+rootPass+"';",
 	)
@@ -591,7 +601,14 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("ChmodPgPassError: " + err.Error())
 	}
 
-	err = SupervisordFacade{}.Stop(addDto.Name)
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i '1d' " + hbaConfPath,
+	)
+	if err != nil {
+		return errors.New("UpdatePgHbaError: " + err.Error())
+	}
+
+	err = SupervisordFacade{}.Restart(addDto.Name)
 	if err != nil {
 		return errors.New("StopPostgresqlError: " + err.Error())
 	}
