@@ -57,6 +57,7 @@ func ServiceNameAdapter(value string) string {
 			continue
 		}
 		svcName = nativeSvcName
+		break
 	}
 
 	return svcName

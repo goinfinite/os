@@ -1,6 +1,8 @@
 package servicesInfra
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -26,6 +28,32 @@ type supervisordService struct {
 	Status          string
 	MainPid         int32
 	UptimeInSeconds int64
+}
+
+func (repo ServicesQueryRepo) GetMultiServiceName(
+	serviceName valueObject.ServiceName,
+	startupFile *valueObject.UnixFilePath,
+) (valueObject.ServiceName, error) {
+	var startupFilePathStr string
+
+	switch serviceName.String() {
+	case "node":
+		startupFilePathStr = "/app/html/index.js"
+	default:
+		return "", errors.New("UnknownInstallableMultiService")
+	}
+
+	if startupFile != nil {
+		startupFilePathStr = startupFile.String()
+	}
+
+	startupFileBytes := []byte(startupFilePathStr)
+	startupFileHash := md5.Sum(startupFileBytes)
+	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
+	startupFileShortHashStr := startupFileHashStr[:12]
+
+	svcNameWithSuffix := serviceName.String() + "-" + startupFileShortHashStr
+	return valueObject.NewServiceName(svcNameWithSuffix)
 }
 
 func (repo ServicesQueryRepo) getSupervisordServices() ([]supervisordService, error) {
@@ -413,6 +441,7 @@ func (repo ServicesQueryRepo) GetByName(
 func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, error) {
 	phpService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("8.3"),
@@ -430,6 +459,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	nodeService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("node"),
+		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("21"),
@@ -455,6 +485,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	mariadbService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("mariadb"),
+		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("10.11"),
@@ -464,6 +495,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	postgresql := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("postgresql"),
+		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("16"),
@@ -476,6 +508,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 
 	redisService := entity.NewInstallableService(
 		valueObject.NewServiceNamePanic("redis"),
+		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		[]valueObject.ServiceVersion{
 			valueObject.NewServiceVersionPanic("7.2"),
