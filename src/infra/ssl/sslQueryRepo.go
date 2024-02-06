@@ -122,21 +122,10 @@ func (repo SslQueryRepo) getSymlinkSslPairVhostsByVhost(
 	}
 
 	for _, vhost := range virtualHosts {
-		isSymlinkOf, err := infraHelper.IsSymlinkTo(
+		isSymlinkOf := infraHelper.IsSymlinkTo(
 			"/app/conf/pki/"+vhost.Hostname.String()+".crt",
 			"/app/conf/pki/"+targetVhost.String()+".crt",
 		)
-		if err != nil {
-			if err.Error() != "FileNotFound" {
-				log.Printf(
-					"FailedToCheckIfVhostConfIsSymlinkTo (%s): %s",
-					vhost.Hostname.String(),
-					err.Error(),
-				)
-			}
-
-			continue
-		}
 
 		if isSymlinkOf {
 			vhostsSymlinkedToTargetVhost = append(vhostsSymlinkedToTargetVhost, vhost.Hostname)
@@ -176,18 +165,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		}
 
 		vhostCertKeyFilePath := "/app/conf/pki/" + hostnameStr + ".key"
-		isSymlink, err := infraHelper.IsSymlink(vhostCertKeyFilePath)
-		if err != nil {
-			if err.Error() != "FileNotFound" {
-				log.Printf(
-					"FailedToCheckIfVhostConfIsSymlink (%s): %s",
-					vhost.Hostname.String(),
-					err.Error(),
-				)
-			}
-
-			continue
-		}
+		isSymlink := infraHelper.IsSymlink(vhostCertKeyFilePath)
 
 		if isSymlink {
 			continue

@@ -1,59 +1,44 @@
 package infraHelper
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 )
 
-func IsSymlink(linkPath string) (bool, error) {
-	fileExists := FileExists(linkPath)
-	if !fileExists {
-		return false, errors.New("FileNotFound")
-	}
-
+func IsSymlink(linkPath string) bool {
 	linkInfo, err := os.Lstat(linkPath)
 	if err != nil {
-		return false, err
+		return false
 	}
 
 	isSymlink := linkInfo.Mode()&os.ModeSymlink == os.ModeSymlink
-	if !isSymlink {
-		return false, nil
-	}
-
-	return true, nil
+	return isSymlink
 }
 
-func IsSymlinkTo(linkPath string, targetPath string) (bool, error) {
-	isSymlink, err := IsSymlink(linkPath)
-	if err != nil {
-		return false, err
-	}
-
-	fileExists := FileExists(targetPath)
-	if !fileExists {
-		return false, errors.New("FileNotFound")
+func IsSymlinkTo(linkPath string, targetPath string) bool {
+	isSymlink := IsSymlink(linkPath)
+	if !isSymlink {
+		return false
 	}
 
 	if !isSymlink {
-		return false, nil
+		return false
 	}
 
 	linkTarget, err := os.Readlink(linkPath)
 	if err != nil {
-		return false, err
+		return false
 	}
 
 	absTargetPath, err := filepath.Abs(targetPath)
 	if err != nil {
-		return false, err
+		return false
 	}
 
 	absLinkTarget, err := filepath.Abs(linkTarget)
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return absLinkTarget == absTargetPath, nil
+	return absLinkTarget == absTargetPath
 }
