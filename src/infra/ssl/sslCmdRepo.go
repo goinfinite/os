@@ -13,6 +13,33 @@ import (
 
 type SslCmdRepo struct{}
 
+func (repo SslCmdRepo) GenerateSelfSignedCert(vhost valueObject.Fqdn) error {
+	selfSignedSslKeyPath := "/app/conf/pki/" + vhost.String() + ".key"
+	selfSignedSslCertPath := "/app/conf/pki/" + vhost.String() + ".crt"
+
+	_, err := infraHelper.RunCmd(
+		"openssl",
+		"req",
+		"-x509",
+		"-nodes",
+		"-days",
+		"365",
+		"-newkey",
+		"rsa:2048",
+		"-keyout",
+		selfSignedSslKeyPath,
+		"-out",
+		selfSignedSslCertPath,
+		"-subj",
+		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhost.String(),
+	)
+	if err != nil {
+		return errors.New("GenerateSelfSignedCertFailed: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	sslQueryRepo := SslQueryRepo{}
 
