@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 )
 
-func IsSymlink(linkPath string) bool {
-	linkInfo, err := os.Lstat(linkPath)
+func IsSymlink(sourcePath string) bool {
+	linkInfo, err := os.Lstat(sourcePath)
 	if err != nil {
 		return false
 	}
@@ -15,8 +15,8 @@ func IsSymlink(linkPath string) bool {
 	return isSymlink
 }
 
-func IsSymlinkTo(linkPath string, targetPath string) bool {
-	isSymlink := IsSymlink(linkPath)
+func IsSymlinkTo(sourcePath string, targetPath string) bool {
+	isSymlink := IsSymlink(sourcePath)
 	if !isSymlink {
 		return false
 	}
@@ -25,7 +25,7 @@ func IsSymlinkTo(linkPath string, targetPath string) bool {
 		return false
 	}
 
-	linkTarget, err := os.Readlink(linkPath)
+	linkTarget, err := os.Readlink(sourcePath)
 	if err != nil {
 		return false
 	}
