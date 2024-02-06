@@ -18,6 +18,7 @@ type MysqlDatabaseQueryRepo struct {
 func MysqlCmd(cmd string) (string, error) {
 	return infraHelper.RunCmd(
 		"mysql",
+		"--defaults-file=/root/.my.cnf",
 		"--skip-column-names",
 		"--silent",
 		"--execute",
