@@ -12,10 +12,10 @@ type SslCertificate struct {
 	Id                 valueObject.SslId
 	CertificateContent valueObject.SslCertificateContent
 	CommonName         *valueObject.Fqdn
-	IssuedAt           valueObject.UnixTime
-	ExpiresAt          valueObject.UnixTime
 	IsCA               bool
 	AltNames           []valueObject.Fqdn
+	IssuedAt           valueObject.UnixTime
+	ExpiresAt          valueObject.UnixTime
 }
 
 func NewSslCertificate(
@@ -69,10 +69,10 @@ func NewSslCertificate(
 		Id:                 sslCertificateId,
 		CertificateContent: sslCertificateContent,
 		CommonName:         commonNamePtr,
-		IssuedAt:           issuedAt,
-		ExpiresAt:          expiresAt,
 		IsCA:               parsedCert.IsCA,
 		AltNames:           altNames,
+		IssuedAt:           issuedAt,
+		ExpiresAt:          expiresAt,
 	}, nil
 }
 
