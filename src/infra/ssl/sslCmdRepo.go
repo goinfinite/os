@@ -48,19 +48,10 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
 	for _, vhost := range addSslPair.VirtualHosts {
-		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
+		_, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
 		if err != nil && err.Error() != "SslPairNotFound" {
 			log.Printf("FailedToValidateSslPairExistence (%s): %s", vhost.String(), err.Error())
 			continue
-		}
-
-		sslPairExists := sslPair.Id != ""
-		if sslPairExists {
-			err := repo.Delete(sslPair.Id)
-			if err != nil {
-				log.Printf("FailedToDeleteOldSslPair (%s): %s", vhost.String(), err.Error())
-				continue
-			}
 		}
 
 		vhostStr := vhost.String()
@@ -107,7 +98,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 
 		log.Printf(
-			"SSL '%v' added in '%v' virtual host.",
+			"SSL '%s' created in '%s' virtual host.",
 			addSslPair.Certificate.Id.String(),
 			vhost.String(),
 		)
@@ -123,37 +114,49 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	for _, sslPairVhostToDelete := range sslPairToDelete.VirtualHosts {
-		sslPairVhostToDeleteStr := sslPairVhostToDelete.String()
+	for _, vhost := range sslPairToDelete.VirtualHosts {
+		vhostStr := vhost.String()
 
-		vhostCertFilePath := "/app/conf/pki/" + sslPairVhostToDeleteStr + ".crt"
+		vhostCertFilePath := "/app/conf/pki/" + vhostStr + ".crt"
 		err = os.Remove(vhostCertFilePath)
 		if err != nil {
 			log.Printf(
-				"FailedToDeleteCertFile (%s): %s", sslPairVhostToDeleteStr, err.Error(),
+				"FailedToDeleteCertFile (%s): %s", vhostStr, err.Error(),
 			)
 			continue
 		}
 
-		vhostCertKeyFilePath := "/app/conf/pki/" + sslPairVhostToDeleteStr + ".key"
+		vhostCertKeyFilePath := "/app/conf/pki/" + vhostStr + ".key"
 		err = os.Remove(vhostCertKeyFilePath)
 		if err != nil {
 			log.Printf(
-				"FailedToDeleteCertKeyFile (%s): %s", sslPairVhostToDeleteStr, err.Error(),
+				"FailedToDeleteCertKeyFile (%s): %s", vhostStr, err.Error(),
 			)
-			continue
-		}
-
-		err = repo.GenerateSelfSignedCert(sslPairVhostToDelete)
-		if err != nil {
-			log.Printf("%s (%s)", err.Error(), sslPairVhostToDeleteStr)
 			continue
 		}
 
 		log.Printf(
 			"SSL '%s' of '%s' virtual host deleted.",
 			sslId.String(),
-			sslPairVhostToDeleteStr,
+			vhostStr,
+		)
+
+		err = repo.GenerateSelfSignedCert(vhost)
+		if err != nil {
+			log.Printf("%s (%s)", err.Error(), vhostStr)
+			continue
+		}
+
+		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
+		if err != nil {
+			log.Printf("FailedToGetSelfSignedSsl (%s): %s", vhostStr, err.Error())
+			continue
+		}
+
+		log.Printf(
+			"Self Signed SSL '%s' created in '%s' virtual host.",
+			sslPair.Id.String(),
+			vhostStr,
 		)
 	}
 
