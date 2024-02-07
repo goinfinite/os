@@ -63,7 +63,7 @@ func AddSslPairController() *cobra.Command {
 				sslPrivateKey,
 			)
 
-			sslCmdRepo := sslInfra.SslCmdRepo{}
+			sslCmdRepo := sslInfra.NewSslCmdRepo()
 
 			err = useCase.AddSslPair(
 				sslCmdRepo,
@@ -96,7 +96,7 @@ func DeleteSslPairController() *cobra.Command {
 			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
 			cronQueryRepo := sslInfra.SslQueryRepo{}
-			cronCmdRepo := sslInfra.SslCmdRepo{}
+			cronCmdRepo := sslInfra.NewSslCmdRepo()
 
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,

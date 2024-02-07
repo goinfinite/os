@@ -82,7 +82,7 @@ func AddSslPairController(c echo.Context) error {
 		sslPrivateKey,
 	)
 
-	sslCmdRepo := sslInfra.SslCmdRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
 
 	err := useCase.AddSslPair(
 		sslCmdRepo,
@@ -109,7 +109,7 @@ func DeleteSslPairController(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.SslCmdRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
 
 	err := useCase.DeleteSslPair(
 		sslQueryRepo,

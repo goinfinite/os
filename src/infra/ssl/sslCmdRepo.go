@@ -10,7 +10,15 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
-type SslCmdRepo struct{}
+type SslCmdRepo struct {
+	sslQueryRepo SslQueryRepo
+}
+
+func NewSslCmdRepo() SslCmdRepo {
+	return SslCmdRepo{
+		sslQueryRepo: SslQueryRepo{},
+	}
+}
 
 func (repo SslCmdRepo) GenerateSelfSignedCert(vhost valueObject.Fqdn) error {
 	selfSignedSslKeyPath := "/app/conf/pki/" + vhost.String() + ".key"
@@ -40,15 +48,13 @@ func (repo SslCmdRepo) GenerateSelfSignedCert(vhost valueObject.Fqdn) error {
 }
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
-	sslQueryRepo := SslQueryRepo{}
-
 	if len(addSslPair.VirtualHosts) == 0 {
 		return errors.New("NoVirtualHostsProvidedToAddSslPair")
 	}
 
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
 	for _, vhost := range addSslPair.VirtualHosts {
-		_, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
+		_, err := repo.sslQueryRepo.GetSslPairByVirtualHost(vhost)
 		if err != nil && err.Error() != "SslPairNotFound" {
 			log.Printf("FailedToValidateSslPairExistence (%s): %s", vhost.String(), err.Error())
 			continue
@@ -108,8 +114,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 }
 
 func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
-	sslQueryRepo := SslQueryRepo{}
-	sslPairToDelete, err := sslQueryRepo.GetSslPairById(sslId)
+	sslPairToDelete, err := repo.sslQueryRepo.GetSslPairById(sslId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}
@@ -141,7 +146,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		sslPair, err := sslQueryRepo.GetSslPairByVirtualHost(vhost)
+		sslPair, err := repo.sslQueryRepo.GetSslPairByVirtualHost(vhost)
 		if err != nil {
 			log.Printf("FailedToGetSelfSignedSsl (%s): %s", vhostStr, err.Error())
 			continue

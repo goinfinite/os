@@ -86,7 +86,7 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	sslCmdRepo := sslInfra.SslCmdRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
 	err = sslCmdRepo.GenerateSelfSignedCert(vhost)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
