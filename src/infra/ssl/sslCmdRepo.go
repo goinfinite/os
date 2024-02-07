@@ -135,12 +135,6 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		log.Printf(
-			"SSL '%s' of '%s' virtual host deleted.",
-			sslId.String(),
-			vhostStr,
-		)
-
 		err = repo.GenerateSelfSignedCert(vhost)
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhostStr)
