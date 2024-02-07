@@ -20,25 +20,6 @@ type SslCertificates struct {
 	ChainedCertificates []entity.SslCertificate
 }
 
-func (repo SslQueryRepo) GetVhostConfFilePath(
-	vhost valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostConfFilePath valueObject.UnixFilePath
-
-	vhostConfFilePathStr := nginxConfDir + "/" + vhost.String() + ".conf"
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	if vhostQueryRepo.IsVirtualHostPrimaryDomain(vhost) {
-		vhostConfFilePathStr = nginxConfDir + "/primary.conf"
-	}
-
-	vhostConfFilePath, err := valueObject.NewUnixFilePath(vhostConfFilePathStr)
-	if err != nil {
-		return vhostConfFilePath, err
-	}
-
-	return vhostConfFilePath, nil
-}
-
 func (repo SslQueryRepo) sslCertificatesFactory(
 	sslCertContent valueObject.SslCertificateContent,
 ) (SslCertificates, error) {
