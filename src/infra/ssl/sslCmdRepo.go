@@ -20,7 +20,7 @@ func NewSslCmdRepo() SslCmdRepo {
 	}
 }
 
-func (repo SslCmdRepo) GenerateSelfSignedCert(vhost valueObject.Fqdn) error {
+func (repo SslCmdRepo) SelfSignedCertSwap(vhost valueObject.Fqdn) error {
 	selfSignedSslKeyPath := "/app/conf/pki/" + vhost.String() + ".key"
 	selfSignedSslCertPath := "/app/conf/pki/" + vhost.String() + ".crt"
 
@@ -41,7 +41,7 @@ func (repo SslCmdRepo) GenerateSelfSignedCert(vhost valueObject.Fqdn) error {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhost.String(),
 	)
 	if err != nil {
-		return errors.New("GenerateSelfSignedCertFailed: " + err.Error())
+		return errors.New("SelfSignedCertSwapFailed: " + err.Error())
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		err = repo.GenerateSelfSignedCert(vhost)
+		err = repo.SelfSignedCertSwap(vhost)
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhostStr)
 			continue

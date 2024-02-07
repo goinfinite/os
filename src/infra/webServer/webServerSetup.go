@@ -10,7 +10,6 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
 type WebServerSetup struct{}
@@ -86,8 +85,22 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
-	err = sslCmdRepo.GenerateSelfSignedCert(vhost)
+	_, err = infraHelper.RunCmd(
+		"openssl",
+		"req",
+		"-x509",
+		"-nodes",
+		"-days",
+		"365",
+		"-newkey",
+		"rsa:2048",
+		"-keyout",
+		"/app/conf/pki/"+vhostStr+".key",
+		"-out",
+		"/app/conf/pki/"+vhostStr+".crt",
+		"-subj",
+		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhost.String(),
+	)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}

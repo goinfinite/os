@@ -205,7 +205,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+hostnameStr,
 	)
 	if err != nil {
-		return errors.New("GenerateSelfSignedCertFailed")
+		return errors.New("SelfSignedCertSwapFailed")
 	}
 
 	directories := []string{
