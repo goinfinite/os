@@ -5,6 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	accountInfra "github.com/speedianet/os/src/infra/account"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -42,10 +43,14 @@ func CreateAccountController() *cobra.Command {
 
 			accQueryRepo := accountInfra.AccQueryRepo{}
 			accCmdRepo := accountInfra.AccCmdRepo{}
+			filesQueryRepo := filesInfra.FilesQueryRepo{}
+			filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 			err := useCase.CreateAccount(
 				accQueryRepo,
 				accCmdRepo,
+				filesQueryRepo,
+				filesCmdRepo,
 				createAccountDto,
 			)
 			if err != nil {

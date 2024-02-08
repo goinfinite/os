@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	accountInfra "github.com/speedianet/os/src/infra/account"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -53,10 +54,14 @@ func CreateAccountController(c echo.Context) error {
 
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	err := useCase.CreateAccount(
 		accQueryRepo,
 		accCmdRepo,
+		filesQueryRepo,
+		filesCmdRepo,
 		createAccountDto,
 	)
 	if err != nil {
