@@ -76,15 +76,15 @@ func GetFilesController(c echo.Context) error {
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
 func CreateFileController(c echo.Context) error {
-	requiredParams := []string{"sourcePath"}
+	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	fileType := valueObject.NewMimeTypePanic("generic")
 	isDirType := false
-	if requestBody["type"] != nil {
-		fileTypeStr := requestBody["type"].(string)
+	if requestBody["mimeType"] != nil {
+		fileTypeStr := requestBody["mimeType"].(string)
 		isDirType = strings.ToLower(fileTypeStr) == "directory"
 	}
 
@@ -105,7 +105,7 @@ func CreateFileController(c echo.Context) error {
 	}
 
 	createUnixFileDto := dto.NewCreateUnixFile(
-		valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string)),
+		valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string)),
 		filePermissions,
 		fileType,
 	)
@@ -233,13 +233,26 @@ func DeleteFileController(c echo.Context) error {
 
 	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
 
-	filesQueryRepo := infra.FilesQueryRepo{}
-	filesCmdRepo := infra.FilesCmdRepo{}
+	permanentDelete := false
+	if requestBody["permanentDelete"] != nil {
+		permanentDeleteBool, assertOk := requestBody["permanentDelete"].(bool)
+		if assertOk {
+			permanentDelete = permanentDeleteBool
+		}
+	}
+
+	deleteUnixFilesDto := dto.NewDeleteUnixFile(
+		sourcePaths,
+		permanentDelete,
+	)
+
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	useCase.DeleteUnixFiles(
 		filesQueryRepo,
 		filesCmdRepo,
-		sourcePaths,
+		deleteUnixFilesDto,
 	)
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FilesDeleted")

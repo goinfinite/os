@@ -9,7 +9,7 @@ type FilesCmdRepo interface {
 	Copy(copyUnixFile dto.CopyUnixFile) error
 	Compress(compressUnixFiles dto.CompressUnixFiles) (dto.CompressionProcessReport, error)
 	Create(createUnixFile dto.CreateUnixFile) error
-	Delete(unixFilePathList []valueObject.UnixFilePath)
+	Delete(deleteUnixFiles dto.DeleteUnixFile)
 	Extract(extractUnixFiles dto.ExtractUnixFiles) error
 	Move(updateUnixFile dto.UpdateUnixFile) error
 	UpdateContent(updateUnixFile dto.UpdateUnixFile) error

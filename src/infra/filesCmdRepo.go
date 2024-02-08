@@ -203,9 +203,9 @@ func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Delete(
-	unixFilePathList []valueObject.UnixFilePath,
+	deleteUnixFiles dto.DeleteUnixFile,
 ) {
-	for _, fileToDelete := range unixFilePathList {
+	for _, fileToDelete := range deleteUnixFiles.SourcePaths {
 		fileExists := infraHelper.FileExists(fileToDelete.String())
 		if !fileExists {
 			log.Printf("DeleteFileError (%s): FileNotFound", fileToDelete.String())

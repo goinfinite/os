@@ -4,16 +4,16 @@ import (
 	"log"
 	"slices"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func DeleteUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	unixFilePaths []valueObject.UnixFilePath,
+	deleteUnixFiles dto.DeleteUnixFile,
 ) {
-	for fileToDeleteIndex, fileToDelete := range unixFilePaths {
+	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
 		isRootPath := fileToDelete.String() == "/"
 		if !isRootPath {
 			continue
@@ -23,13 +23,13 @@ func DeleteUnixFiles(
 
 		fileToDeleteAfterNotAllowedPathIndex := fileToDeleteIndex + 1
 		filesToDeleteWithoutNotAllowedPath := slices.Delete(
-			unixFilePaths,
+			deleteUnixFiles.SourcePaths,
 			fileToDeleteIndex,
 			fileToDeleteAfterNotAllowedPathIndex,
 		)
 
-		unixFilePaths = filesToDeleteWithoutNotAllowedPath
+		deleteUnixFiles.SourcePaths = filesToDeleteWithoutNotAllowedPath
 	}
 
-	filesCmdRepo.Delete(unixFilePaths)
+	filesCmdRepo.Delete(deleteUnixFiles)
 }
