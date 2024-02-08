@@ -177,24 +177,24 @@ func (repo FilesCmdRepo) Compress(
 }
 
 func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
-	filesExists := infraHelper.FileExists(createUnixFile.SourcePath.String())
+	filesExists := infraHelper.FileExists(createUnixFile.FilePath.String())
 	if filesExists {
 		return errors.New("PathAlreadyExists")
 	}
 
 	if !createUnixFile.MimeType.IsDir() {
-		_, err := os.Create(createUnixFile.SourcePath.String())
+		_, err := os.Create(createUnixFile.FilePath.String())
 		if err != nil {
 			return err
 		}
 
 		return repo.UpdatePermissions(
-			createUnixFile.SourcePath,
+			createUnixFile.FilePath,
 			createUnixFile.Permissions,
 		)
 	}
 
-	err := os.MkdirAll(createUnixFile.SourcePath.String(), createUnixFile.Permissions.GetFileMode())
+	err := os.MkdirAll(createUnixFile.FilePath.String(), createUnixFile.Permissions.GetFileMode())
 	if err != nil {
 		return err
 	}
