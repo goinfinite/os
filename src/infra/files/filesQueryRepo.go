@@ -78,6 +78,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileMimeType := unixFileExtension.GetMimeType()
 	if fileInfo.IsDir() {
 		unixFileMimeType, _ = valueObject.NewMimeType("directory")
+		unixFileExtensionPtr = nil
 	}
 
 	filePermissions := fileInfo.Mode().Perm()
