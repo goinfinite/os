@@ -7,7 +7,7 @@ import (
 )
 
 func GetPkgLatestVersion(pkgName string, majorVersion *string) (string, error) {
-	RunCmd("apt", "update")
+	_, _ = RunCmd("apt", "update")
 	out, err := RunCmd("apt", "list", "-a", pkgName)
 	if err != nil {
 		return "", err
