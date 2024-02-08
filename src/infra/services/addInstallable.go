@@ -1,9 +1,7 @@
 package servicesInfra
 
 import (
-	"crypto/md5"
 	"embed"
-	"encoding/hex"
 	"errors"
 	"io"
 	"log"
@@ -83,6 +81,38 @@ func copyAssets(srcPath string, dstPath string) error {
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
 		return errors.New("CopyFileError: " + err.Error())
+	}
+
+	return nil
+}
+
+func installGpgKey(serviceName string, url string) error {
+	keyTempPath := "/speedia/" + serviceName + ".gpg"
+
+	err := infraHelper.DownloadFile(
+		url,
+		keyTempPath,
+	)
+	if err != nil {
+		return errors.New("DownloadRepoFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"gpg",
+		"--batch",
+		"--yes",
+		"--dearmor",
+		"-o",
+		"/usr/share/keyrings/"+serviceName+"-archive-keyring.gpg",
+		keyTempPath,
+	)
+	if err != nil {
+		return errors.New("GpgImportError: " + err.Error())
+	}
+
+	err = os.Remove(keyTempPath)
+	if err != nil {
+		return errors.New("RemoveRepoFileError: " + err.Error())
 	}
 
 	return nil
@@ -248,7 +278,7 @@ func addNode(addDto dto.CreateInstallableService) error {
 	}
 
 	_, err := infraHelper.RunCmdWithSubShell(
-		"rtx install node@" + versionStr,
+		"mise install node@" + versionStr,
 	)
 	if err != nil {
 		return errors.New("InstallNodeError: " + err.Error())
@@ -294,20 +324,13 @@ func addNode(addDto dto.CreateInstallableService) error {
 		portBindings = addDto.PortBindings
 	}
 
-	startupFileBytes := []byte(startupFile.String())
-	startupFileHash := md5.Sum(startupFileBytes)
-	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
-	startupFileShortHashStr := startupFileHashStr[:12]
-
-	svcNameWithSuffix := addDto.Name.String() + "-" + startupFileShortHashStr
-
 	err = SupervisordFacade{}.AddConf(
-		valueObject.NewServiceNamePanic(svcNameWithSuffix),
+		addDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
 		valueObject.NewUnixCommandPanic(
-			"rtx x node@"+versionStr+" -- node "+startupFile.String()+" &",
+			"mise x node@"+versionStr+" -- node "+startupFile.String()+" &",
 		),
 		&startupFile,
 		portBindings,
@@ -460,12 +483,7 @@ func addPostgresqlDb(addDto dto.CreateInstallableService) error {
 		return errors.New("AptUpdateError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"apt",
-		"install",
-		"-y",
-		"postgresql-common",
-	)
+	err = infraHelper.InstallPkgs([]string{"postgresql-common"})
 	if err != nil {
 		return errors.New("InstallRequiredPackageError: " + err.Error())
 	}
@@ -548,33 +566,10 @@ func addRedis(addDto dto.CreateInstallableService) error {
 		return errors.New("GetOsReleaseError")
 	}
 
-	err = infraHelper.DownloadFile(
-		"https://packages.redis.io/gpg",
-		"/speedia/redis.gpg",
-	)
+	err = installGpgKey("redis", "https://packages.redis.io/gpg")
 	if err != nil {
-		log.Printf("DownloadRepoFileError: %s", err)
-		return errors.New("DownloadRepoFileError")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"gpg",
-		"--batch",
-		"--yes",
-		"--dearmor",
-		"-o",
-		"/usr/share/keyrings/redis-archive-keyring.gpg",
-		"/speedia/redis.gpg",
-	)
-	if err != nil {
-		log.Printf("GpgImportError: %s", err)
-		return errors.New("GpgImportError")
-	}
-
-	err = os.Remove("/speedia/redis.gpg")
-	if err != nil {
-		log.Printf("RemoveRepoFileError: %s", err)
-		return errors.New("RemoveRepoFileError")
+		log.Printf("InstallGpgKeyError: %s", err)
+		return errors.New("InstallGpgKeyError")
 	}
 
 	repoLine := "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb " + osRelease + " main"
@@ -647,7 +642,14 @@ func addRedis(addDto dto.CreateInstallableService) error {
 func AddInstallable(
 	addDto dto.CreateInstallableService,
 ) error {
-	switch addDto.Name.String() {
+	svcNameStr := addDto.Name.String()
+	svcNameHasHash := strings.Contains(svcNameStr, "-")
+	if svcNameHasHash {
+		svcNameWithoutHash := strings.Split(svcNameStr, "-")[0]
+		svcNameStr = svcNameWithoutHash
+	}
+
+	switch svcNameStr {
 	case "php":
 		return addPhp()
 	case "node":

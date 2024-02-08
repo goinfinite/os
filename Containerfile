@@ -15,10 +15,10 @@ RUN wget -qO supervisord.tar.gz https://github.com/ochinchina/supervisord/releas
     && mv supervisord_*/supervisord /usr/bin/supervisord \
     && rm -rf supervisord*
 
-RUN curl -skL "https://rtx.pub/install.sh" | sh \
-    && ln -s /root/.local/share/rtx/bin/rtx /usr/bin/rtx \
-    && chmod +x /usr/bin/rtx \
-    && echo 'eval "$(/usr/bin/rtx activate bash)"' >> /etc/profile
+RUN curl -skL "https://mise.run" | sh \
+    && ln -s /root/.local/bin/mise /usr/bin/mise \
+    && chmod +x /usr/bin/mise \
+    && echo 'eval "$(/usr/bin/mise activate bash)"' >> /etc/profile
 
 COPY /container/nginx/root/* /etc/nginx/
 

@@ -18,7 +18,7 @@ func (repo CronQueryRepo) cronFactory(
 	cronLine string,
 ) (entity.Cron, error) {
 	cronRegex := `^(?P<frequency>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+) ?){5,7}))(?P<cmd>[^#\r\n]{1,1000})(?P<comment>#(.*)){0,1000}$`
-	namedGroupMap := voHelper.FindNamedGroupsMatches(cronLine, cronRegex)
+	namedGroupMap := voHelper.FindNamedGroupsMatches(cronRegex, cronLine)
 
 	var cron entity.Cron
 	id, err := valueObject.NewCronId(cronIndex)

@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/speedianet/os/src/domain/valueObject"
-	"github.com/speedianet/os/src/infra"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -117,7 +117,7 @@ func (ws WebServerSetup) FirstSetup() {
 func (ws WebServerSetup) OnStartSetup() {
 	defaultLogPreffix := "WsOnStartupSetup"
 
-	containerResources, err := infra.O11yQueryRepo{}.GetOverview()
+	containerResources, err := o11yInfra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
 		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPreffix)
 	}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/infra"
+	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -19,7 +19,7 @@ import (
 // @Success      200 {object} entity.O11yOverview
 // @Router       /o11y/overview/ [get]
 func O11yOverviewController(c echo.Context) error {
-	o11yQueryRepo := infra.O11yQueryRepo{}
+	o11yQueryRepo := o11yInfra.O11yQueryRepo{}
 	o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
