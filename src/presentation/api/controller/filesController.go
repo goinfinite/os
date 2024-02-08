@@ -241,7 +241,7 @@ func DeleteFileController(c echo.Context) error {
 		}
 	}
 
-	deleteUnixFilesDto := dto.NewDeleteUnixFile(
+	deleteUnixFilesDto := dto.NewDeleteUnixFiles(
 		sourcePaths,
 		permanentDelete,
 	)

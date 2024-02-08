@@ -203,7 +203,7 @@ func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Delete(
-	deleteUnixFiles dto.DeleteUnixFile,
+	deleteUnixFiles dto.DeleteUnixFiles,
 ) {
 	for _, fileToDelete := range deleteUnixFiles.SourcePaths {
 		fileExists := infraHelper.FileExists(fileToDelete.String())
