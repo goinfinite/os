@@ -58,6 +58,7 @@ func Update(
 		svcCommand,
 		svcStartupFile,
 		svcPortBindings,
+		nil,
 	)
 	if err != nil {
 		return errors.New("ReAddServiceConfError")
