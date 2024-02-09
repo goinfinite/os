@@ -15,20 +15,20 @@ func AddSslPair(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	addSslPair dto.AddSslPair,
 ) error {
-	vhosts, err := vhostQueryRepo.Get()
+	existingVhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		log.Printf("FailedToGetVhosts: %s", err.Error())
 		return errors.New("FailedToGetVhostsInfraError")
 	}
 
-	if len(vhosts) == 0 {
+	if len(existingVhosts) == 0 {
 		log.Printf("VhostsNotFound")
 		return errors.New("VhostsNotFound")
 	}
 
-	vhostsStr := []string{}
-	for _, vhost := range vhosts {
-		vhostsStr = append(vhostsStr, vhost.Hostname.String())
+	existingVhostsStr := []string{}
+	for _, vhost := range existingVhosts {
+		existingVhostsStr = append(existingVhostsStr, vhost.Hostname.String())
 	}
 
 	shouldReturnVhostError := false
@@ -36,9 +36,9 @@ func AddSslPair(
 		shouldReturnVhostError = true
 	}
 
-	existingVhosts := []valueObject.Fqdn{}
+	validVhosts := []valueObject.Fqdn{}
 	for _, vhost := range addSslPair.VirtualHosts {
-		if !slices.Contains(vhostsStr, vhost.String()) {
+		if !slices.Contains(existingVhostsStr, vhost.String()) {
 			log.Printf("VhostDoesNotExists: %s", vhost.String())
 			if shouldReturnVhostError {
 				return errors.New("VhostDoesNotExists")
@@ -47,10 +47,10 @@ func AddSslPair(
 			continue
 		}
 
-		existingVhosts = append(existingVhosts, vhost)
+		validVhosts = append(validVhosts, vhost)
 	}
 
-	addSslPair.VirtualHosts = existingVhosts
+	addSslPair.VirtualHosts = validVhosts
 
 	err = sslCmdRepo.Add(addSslPair)
 	if err != nil {
