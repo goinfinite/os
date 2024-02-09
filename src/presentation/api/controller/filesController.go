@@ -59,6 +59,10 @@ func GetFilesController(c echo.Context) error {
 		valueObject.NewUnixFilePathPanic(c.QueryParam("sourcePath")),
 	)
 	if err != nil {
+		if err.Error() == "DirPathCannotEndWithSlash" {
+			return apiHelper.ResponseWrapper(c, http.StatusNotFound, err.Error())
+		}
+
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 

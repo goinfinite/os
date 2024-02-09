@@ -124,6 +124,12 @@ func (repo FilesQueryRepo) Get(
 
 	fileInfo, _ := os.Stat(unixFilePath.String())
 	if fileInfo.IsDir() {
+		filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
+		_, err := unixFilePath.GetFileExtension()
+		if filePathEndsWithSlash && err == nil {
+			return unixFileList, errors.New("DirPathCannotEndWithSlash")
+		}
+
 		filesToFactoryWithoutDir := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutDir
 
