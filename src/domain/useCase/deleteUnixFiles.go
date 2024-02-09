@@ -44,9 +44,12 @@ func DeleteUnixFiles(
 			log.Print("TrashNotFound")
 		}
 
+		trashPathWithFileNameStr := trashPath.String() + "/" + fileToMoveToTrash.GetFileName().String()
+		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
+
 		updateUnixFile := dto.NewUpdateUnixFile(
 			fileToMoveToTrash,
-			&trashPath,
+			&trashPathWithFileName,
 			nil,
 			nil,
 		)
@@ -58,6 +61,9 @@ func DeleteUnixFiles(
 				fileToMoveToTrash.String(),
 				err.Error(),
 			)
+			continue
 		}
+
+		log.Printf("File '%s' moved to trash.", fileToMoveToTrash.String())
 	}
 }
