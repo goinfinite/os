@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -83,9 +84,11 @@ func AddSslPairController(c echo.Context) error {
 	)
 
 	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	err := useCase.AddSslPair(
 		sslCmdRepo,
+		vhostQueryRepo,
 		addSslPairDto,
 	)
 	if err != nil {

@@ -54,12 +54,6 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
 	for _, vhost := range addSslPair.VirtualHosts {
-		_, err := repo.sslQueryRepo.GetSslPairByVirtualHost(vhost)
-		if err != nil && err.Error() != "SslPairNotFound" {
-			log.Printf("FailedToValidateSslPairExistence (%s): %s", vhost.String(), err.Error())
-			continue
-		}
-
 		vhostStr := vhost.String()
 		vhostCertFilePath := "/app/conf/pki/" + vhostStr + ".crt"
 		vhostCertKeyFilePath := "/app/conf/pki/" + vhostStr + ".key"
@@ -69,7 +63,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			firstVhostCertFilePath := "/app/conf/pki/" + firstVhostStr + ".crt"
 			firstVhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
 
-			err = os.Symlink(firstVhostCertFilePath, vhostCertFilePath)
+			err := os.Symlink(firstVhostCertFilePath, vhostCertFilePath)
 			if err != nil {
 				log.Printf("AddSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
@@ -85,7 +79,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 
 		shouldOverwrite := true
-		err = infraHelper.UpdateFile(
+		err := infraHelper.UpdateFile(
 			vhostCertFilePath,
 			addSslPair.Certificate.String(),
 			shouldOverwrite,

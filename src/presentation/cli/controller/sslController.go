@@ -7,6 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -64,9 +65,11 @@ func AddSslPairController() *cobra.Command {
 			)
 
 			sslCmdRepo := sslInfra.NewSslCmdRepo()
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.AddSslPair(
 				sslCmdRepo,
+				vhostQueryRepo,
 				addSslDto,
 			)
 			if err != nil {
