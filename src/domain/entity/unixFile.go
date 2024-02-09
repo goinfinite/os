@@ -11,6 +11,7 @@ type UnixFile struct {
 	Permissions valueObject.UnixFilePermissions `json:"permissions"`
 	Size        valueObject.Byte                `json:"size"`
 	Extension   *valueObject.UnixFileExtension  `json:"extension"`
+	Content     *valueObject.UnixFileContent    `json:"content"`
 	Uid         valueObject.UnixUid             `json:"uid"`
 	Owner       valueObject.Username            `json:"owner"`
 	Gid         valueObject.GroupId             `json:"gid"`
@@ -25,6 +26,7 @@ func NewUnixFile(
 	permissions valueObject.UnixFilePermissions,
 	size valueObject.Byte,
 	extension *valueObject.UnixFileExtension,
+	content *valueObject.UnixFileContent,
 	uid valueObject.UnixUid,
 	owner valueObject.Username,
 	gid valueObject.GroupId,
@@ -38,6 +40,7 @@ func NewUnixFile(
 		Permissions: permissions,
 		Size:        size,
 		Extension:   extension,
+		Content:     content,
 		Uid:         uid,
 		Owner:       owner,
 		Gid:         gid,

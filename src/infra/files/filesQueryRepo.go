@@ -19,6 +19,7 @@ type FilesQueryRepo struct{}
 
 func (repo FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
+	shouldReturnContent bool,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
 
@@ -89,6 +90,22 @@ func (repo FilesQueryRepo) unixFileFactory(
 	}
 
 	unixFileSize := valueObject.Byte(fileInfo.Size())
+
+	var unixFileContentPtr *valueObject.UnixFileContent
+	if shouldReturnContent && unixFileSize.ToMiB() <= 5 {
+		unixFileContentStr, err := infraHelper.GetFileContent(filePath.String())
+		if err != nil {
+			return unixFile, errors.New("FailedToGetFileContent: " + err.Error())
+		}
+
+		unixFileContent, err := valueObject.NewUnixFileContent(unixFileContentStr)
+		if err != nil {
+			return unixFile, err
+		}
+
+		unixFileContentPtr = &unixFileContent
+	}
+
 	unixFileUpdatedAt := valueObject.UnixTime(fileInfo.ModTime().Unix())
 
 	unixFile = entity.NewUnixFile(
@@ -98,6 +115,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFilePermissions,
 		unixFileSize,
 		unixFileExtensionPtr,
+		unixFileContentPtr,
 		unixFileUid,
 		unixFileUsername,
 		unixFileGid,
@@ -164,13 +182,18 @@ func (repo FilesQueryRepo) Get(
 		}
 	}
 
+	shouldReturnContent := false
+	if len(filesToFactory) == 1 {
+		shouldReturnContent = true
+	}
+
 	for _, fileToFactory := range filesToFactory {
-		filePathIsDir := fileToFactory.String() == unixFilePath.String()
+		filePathIsDir := fileInfo.IsDir() && (fileToFactory.String() == unixFilePath.String())
 		if filePathIsDir {
 			continue
 		}
 
-		unixFile, err := repo.unixFileFactory(fileToFactory)
+		unixFile, err := repo.unixFileFactory(fileToFactory, shouldReturnContent)
 
 		if err != nil {
 			log.Printf(
@@ -197,5 +220,6 @@ func (repo FilesQueryRepo) GetOne(
 		return unixFile, errors.New("FileNotFound")
 	}
 
-	return repo.unixFileFactory(unixFilePath)
+	shouldReturnContent := false
+	return repo.unixFileFactory(unixFilePath, shouldReturnContent)
 }
