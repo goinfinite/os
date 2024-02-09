@@ -368,10 +368,6 @@ const docTemplate = `{
                 "summary": "GetDatabases",
                 "parameters": [
                     {
-                        "enum": [
-                            "mysql",
-                            "postgres"
-                        ],
                         "type": "string",
                         "description": "DatabaseType",
                         "name": "dbType",
@@ -410,10 +406,6 @@ const docTemplate = `{
                 "summary": "CreateDatabase",
                 "parameters": [
                     {
-                        "enum": [
-                            "mysql",
-                            "postgres"
-                        ],
                         "type": "string",
                         "description": "DatabaseType",
                         "name": "dbType",
@@ -460,10 +452,6 @@ const docTemplate = `{
                 "summary": "DeleteDatabase",
                 "parameters": [
                     {
-                        "enum": [
-                            "mysql",
-                            "postgres"
-                        ],
                         "type": "string",
                         "description": "DatabaseType",
                         "name": "dbType",
@@ -508,10 +496,6 @@ const docTemplate = `{
                 "summary": "CreateDatabaseUser",
                 "parameters": [
                     {
-                        "enum": [
-                            "mysql",
-                            "postgres"
-                        ],
                         "type": "string",
                         "description": "DatabaseType",
                         "name": "dbType",
@@ -565,10 +549,6 @@ const docTemplate = `{
                 "summary": "DeleteDatabaseUser",
                 "parameters": [
                     {
-                        "enum": [
-                            "mysql",
-                            "postgres"
-                        ],
                         "type": "string",
                         "description": "DatabaseType",
                         "name": "dbType",
@@ -1597,6 +1577,9 @@ const docTemplate = `{
                 "destinationPath": {
                     "type": "string"
                 },
+                "shouldOverwrite": {
+                    "type": "boolean"
+                },
                 "sourcePath": {
                     "type": "string"
                 }
@@ -1747,13 +1730,13 @@ const docTemplate = `{
         "dto.CreateUnixFile": {
             "type": "object",
             "properties": {
+                "filePath": {
+                    "type": "string"
+                },
                 "mimeType": {
                     "type": "string"
                 },
                 "permissions": {
-                    "type": "string"
-                },
-                "sourcePath": {
                     "type": "string"
                 }
             }
@@ -2007,7 +1990,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "$ref": "#/definitions/valueObject.DatabaseType"
+                    "type": "string"
                 },
                 "users": {
                     "type": "array",
@@ -2024,7 +2007,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "dbType": {
-                    "$ref": "#/definitions/valueObject.DatabaseType"
+                    "type": "string"
                 },
                 "privileges": {
                     "type": "array",
@@ -2041,6 +2024,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string"
+                },
+                "nature": {
                     "type": "string"
                 },
                 "type": {
@@ -2220,6 +2206,9 @@ const docTemplate = `{
         "entity.UnixFile": {
             "type": "object",
             "properties": {
+                "content": {
+                    "type": "string"
+                },
                 "extension": {
                     "type": "string"
                 },
@@ -2296,17 +2285,6 @@ const docTemplate = `{
                     "type": "number"
                 }
             }
-        },
-        "valueObject.DatabaseType": {
-            "type": "string",
-            "enum": [
-                "mysql",
-                "postgres"
-            ],
-            "x-enum-varnames": [
-                "mysql",
-                "postgres"
-            ]
         },
         "valueObject.HardwareSpecs": {
             "type": "object",

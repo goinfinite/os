@@ -15,6 +15,8 @@ definitions:
     properties:
       destinationPath:
         type: string
+      shouldOverwrite:
+        type: boolean
       sourcePath:
         type: string
     type: object
@@ -112,11 +114,11 @@ definitions:
     type: object
   dto.CreateUnixFile:
     properties:
+      filePath:
+        type: string
       mimeType:
         type: string
       permissions:
-        type: string
-      sourcePath:
         type: string
     type: object
   dto.CreateVirtualHost:
@@ -281,7 +283,7 @@ definitions:
       size:
         type: integer
       type:
-        $ref: '#/definitions/valueObject.DatabaseType'
+        type: string
       users:
         items:
           $ref: '#/definitions/entity.DatabaseUser'
@@ -292,7 +294,7 @@ definitions:
       dbName:
         type: string
       dbType:
-        $ref: '#/definitions/valueObject.DatabaseType'
+        type: string
       privileges:
         items:
           type: string
@@ -303,6 +305,8 @@ definitions:
   entity.InstallableService:
     properties:
       name:
+        type: string
+      nature:
         type: string
       type:
         type: string
@@ -419,6 +423,8 @@ definitions:
     type: object
   entity.UnixFile:
     properties:
+      content:
+        type: string
       extension:
         type: string
       gid:
@@ -470,14 +476,6 @@ definitions:
       storageUsage:
         type: number
     type: object
-  valueObject.DatabaseType:
-    enum:
-    - mysql
-    - postgres
-    type: string
-    x-enum-varnames:
-    - mysql
-    - postgres
   valueObject.HardwareSpecs:
     properties:
       cpuCores:
@@ -744,9 +742,6 @@ paths:
       description: List databases names, users and sizes.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -771,9 +766,6 @@ paths:
       description: Create a new database.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -803,9 +795,6 @@ paths:
       description: Delete a database.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -834,9 +823,6 @@ paths:
       description: Add a new database user.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -871,9 +857,6 @@ paths:
       description: Delete a database user.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true

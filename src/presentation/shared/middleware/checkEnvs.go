@@ -35,7 +35,7 @@ func genSecret() (string, error) {
 }
 
 func CheckEnvs() {
-	envFilePath := "/speedia/.env"
+	envFilePath := ".env"
 
 	envFile, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {

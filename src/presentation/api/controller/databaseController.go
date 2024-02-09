@@ -18,7 +18,7 @@ import (
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Success      200 {array} entity.Database
 // @Router       /database/{dbType}/ [get]
 func GetDatabasesController(c echo.Context) error {
@@ -41,7 +41,7 @@ func GetDatabasesController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        createDatabaseDto body dto.CreateDatabase true "CreateDatabase"
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /database/{dbType}/ [post]
@@ -77,7 +77,7 @@ func CreateDatabaseController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /database/{dbType}/{dbName}/ [delete]
@@ -107,7 +107,7 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Param        addDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
 // @Success      201 {object} object{} "DatabaseUserCreated"
@@ -160,7 +160,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Param        dbUser path string true "DatabaseUsername"
 // @Success      200 {object} object{} "DatabaseUserDeleted"
