@@ -141,6 +141,7 @@ func (facade SupervisordFacade) AddConf(
 	svcCmd valueObject.UnixCommand,
 	startupFile *valueObject.UnixFilePath,
 	svcPortBindings []valueObject.PortBinding,
+	svcUser *valueObject.Username,
 ) error {
 	svcNameStr := svcName.String()
 
@@ -183,13 +184,18 @@ func (facade SupervisordFacade) AddConf(
 			strings.Join(portBindingsStrSlice, ",") + "\""
 	}
 
+	svcUserStr := "root"
+	if svcUser != nil {
+		svcUserStr = svcUser.String()
+	}
+
 	logFilePath := "/app/logs/" + svcNameStr + "/" + svcNameStr + ".log"
 
 	// cSpell:disable
 	svcConf := `
 [program:` + svcNameStr + `]
 command=` + svcCmd.String() + `
-user=root
+user=` + svcUserStr + `
 directory=/speedia
 autostart=true
 autorestart=true

@@ -16,7 +16,7 @@ RUN wget -qO supervisord.tar.gz https://github.com/ochinchina/supervisord/releas
     && rm -rf supervisord*
 
 RUN curl -skL "https://mise.run" | sh \
-    && ln -s /root/.local/bin/mise /usr/bin/mise \
+    && mv /root/.local/bin/mise /usr/bin/mise \
     && chmod +x /usr/bin/mise \
     && echo 'eval "$(/usr/bin/mise activate bash)"' >> /etc/profile
 

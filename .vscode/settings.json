@@ -49,6 +49,7 @@
     "Pkgs",
     "pkill",
     "podman",
+    "postgre",
     "ppid",
     "privs",
     "Procs",

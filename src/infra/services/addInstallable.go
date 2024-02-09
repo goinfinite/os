@@ -253,6 +253,7 @@ func addPhp() error {
 		valueObject.NewUnixCommandPanic("/usr/local/lsws/bin/litespeed -d"),
 		nil,
 		portBindings,
+		nil,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError: " + err.Error())
@@ -330,6 +331,7 @@ func addNode(addDto dto.AddInstallableService) error {
 		),
 		&startupFile,
 		portBindings,
+		nil,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -454,6 +456,7 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		valueObject.NewUnixCommandPanic("/usr/bin/mariadbd-safe"),
 		nil,
 		portBindings,
+		nil,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
@@ -474,62 +477,166 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		}
 	}
 
-	_, err := infraHelper.RunCmd("apt", "update")
+	err := installGpgKey("postgresql", "https://www.postgresql.org/media/keys/ACCC4CF8.asc")
 	if err != nil {
-		return errors.New("AptUpdateError: " + err.Error())
+		return errors.New("InstallGpgKeyError: " + err.Error())
 	}
 
-	err = infraHelper.InstallPkgs([]string{"postgresql-common"})
+	osRelease, err := infraHelper.GetOsRelease()
 	if err != nil {
-		return errors.New("InstallRequiredPackageError: " + err.Error())
+		return errors.New("GetOsReleaseError: " + err.Error())
+	}
+
+	repoLine := "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt " + osRelease + "-pgdg main"
+	err = infraHelper.UpdateFile(
+		"/etc/apt/sources.list.d/pgdg.list",
+		repoLine,
+		true,
+	)
+	if err != nil {
+		return errors.New("CreateRepoFileError: " + err.Error())
+	}
+
+	err = infraHelper.InstallPkgs(
+		[]string{"postgresql-" + versionStr},
+	)
+	if err != nil {
+		return errors.New("InstallServiceError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"bash",
+		"gpasswd",
+		"-a",
+		"postgres",
+		"ssl-cert",
+	)
+	if err != nil {
+		return errors.New("AddPostgresToSslCertError: " + err.Error())
+	}
+
+	err = os.Chmod("/etc/ssl/private", 0755)
+	if err != nil {
+		return errors.New("ChmodSslPrivateError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown",
+		"postgres:ssl-cert",
+		"/etc/ssl/private/ssl-cert-snakeoil.key",
+	)
+	if err != nil {
+		return errors.New("ChownSslPrivateCertError: " + err.Error())
+	}
+
+	err = os.Chmod("/etc/ssl/private/ssl-cert-snakeoil.key", 0600)
+	if err != nil {
+		return errors.New("ChmodSslPrivateCertError: " + err.Error())
+	}
+
+	portBindings := []valueObject.PortBinding{
+		valueObject.NewPortBinding(
+			valueObject.NewNetworkPortPanic(5432),
+			valueObject.NewNetworkProtocolPanic("tcp"),
+		),
+	}
+
+	postgresUser := valueObject.NewUsernamePanic("postgres")
+
+	err = SupervisordFacade{}.AddConf(
+		addDto.Name,
+		valueObject.NewServiceNaturePanic("solo"),
+		valueObject.NewServiceTypePanic("database"),
+		valueObject.NewServiceVersionPanic(versionStr),
+		valueObject.NewUnixCommandPanic(
+			"/usr/lib/postgresql/"+versionStr+"/bin/postgres "+
+				"-D /var/lib/postgresql/"+versionStr+"/main "+
+				"-c config_file=/etc/postgresql/"+versionStr+"/main/postgresql.conf",
+		),
+		nil,
+		portBindings,
+		&postgresUser,
+	)
+	if err != nil {
+		return errors.New("AddSupervisorConfError: " + err.Error())
+	}
+
+	hbaConfPath := "/etc/postgresql/" + versionStr + "/main/pg_hba.conf"
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i '1ilocal all all trust' " + hbaConfPath,
+	)
+	if err != nil {
+		return errors.New("UpdatePgHbaError: " + err.Error())
+	}
+
+	err = SupervisordFacade{}.Reload()
+	if err != nil {
+		return errors.New("ReloadSupervisorError: " + err.Error())
+	}
+
+	time.Sleep(5 * time.Second)
+	rootPass := infraHelper.GenPass(16)
+
+	_, err = infraHelper.RunCmd(
+		"psql",
+		"-U",
+		"postgres",
 		"-c",
-		"echo | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh",
+		"ALTER USER postgres WITH PASSWORD '"+rootPass+"';",
 	)
 	if err != nil {
-		return errors.New("RepoAddError: " + err.Error())
+		return errors.New("SetPostgresPassError: " + err.Error())
+	}
+
+	pgPassFileContent := "*:*:*:postgres:" + rootPass
+	err = infraHelper.UpdateFile(
+		"/root/.pgpass",
+		pgPassFileContent,
+		true,
+	)
+	if err != nil {
+		return errors.New("CreatePgPassError: " + err.Error())
+	}
+
+	err = os.Chmod("/root/.pgpass", 0400)
+	if err != nil {
+		return errors.New("ChmodPgPassError: " + err.Error())
+	}
+
+	pgUserPgPassFilePath := "/var/lib/postgresql/.pgpass"
+	err = infraHelper.UpdateFile(
+		pgUserPgPassFilePath,
+		pgPassFileContent,
+		true,
+	)
+	if err != nil {
+		return errors.New("CreatePgPassError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"apt",
-		"install",
-		"-y",
-		"postgresql-"+versionStr,
+		"chown",
+		"postgres:postgres",
+		pgUserPgPassFilePath,
 	)
 	if err != nil {
-		return errors.New("RepoAddError: " + err.Error())
+		return errors.New("ChownPgPassError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"pg_dropcluster",
-		versionStr,
-		"main",
+	err = os.Chmod(pgUserPgPassFilePath, 0400)
+	if err != nil {
+		return errors.New("ChmodPgPassError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i '1s/.*/local all postgres scram-sha-256/' " + hbaConfPath,
 	)
 	if err != nil {
-		return errors.New("DropDefaultClusterError: " + err.Error())
+		return errors.New("UpdatePgHbaError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"pg_createcluster",
-		versionStr,
-		"main",
-		"--start",
-	)
+	err = SupervisordFacade{}.Restart(addDto.Name)
 	if err != nil {
-		return errors.New("CreateAndStartMainClusterError: " + err.Error())
+		return errors.New("RestartPostgresqlError: " + err.Error())
 	}
-
-	// TODO: Configurar o usuário dentro do banco (postInstallQueries)
-
-	// TODO: Adicionar configuração semelhante ao .my.cnf do PostgreSQL, o ~/.pgpass
-	// TODO: formato do .pgpass: hostname:port:database:username:password
-
-	// TODO: Desligar o PostgreSQL
-
-	// TODO: Adicionar o PostgreSQL ao Supervisord
 
 	return nil
 }
@@ -616,6 +723,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 		valueObject.NewUnixCommandPanic("/usr/bin/redis-server /etc/redis/redis.conf"),
 		nil,
 		portBindings,
+		nil,
 	)
 	if err != nil {
 		return errors.New("AddSupervisorConfError")
