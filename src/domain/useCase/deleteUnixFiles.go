@@ -37,13 +37,21 @@ func DeleteUnixFiles(
 		return
 	}
 
-	for _, fileToMoveToTrash := range deleteUnixFiles.SourcePaths {
-		trashPath, _ := valueObject.NewUnixFilePath("/.trash")
-		_, err := filesQueryRepo.GetOne(trashPath)
-		if err != nil {
-			log.Print("TrashNotFound")
-		}
+	trashPath, _ := valueObject.NewUnixFilePath("/.trash")
+	_, err := filesQueryRepo.GetOne(trashPath)
+	if err != nil {
+		trashDirPermissions, _ := valueObject.NewUnixFilePermissions("775")
+		trashDirMimeType, _ := valueObject.NewMimeType("directory")
+		createTrashDir := dto.NewCreateUnixFile(
+			trashPath,
+			trashDirPermissions,
+			trashDirMimeType,
+		)
 
+		filesCmdRepo.Create(createTrashDir)
+	}
+
+	for _, fileToMoveToTrash := range deleteUnixFiles.SourcePaths {
 		trashPathWithFileNameStr := trashPath.String() + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 
