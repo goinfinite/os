@@ -165,6 +165,11 @@ func (repo FilesQueryRepo) Get(
 	}
 
 	for _, fileToFactory := range filesToFactory {
+		filePathIsDir := fileToFactory.String() == unixFilePath.String()
+		if filePathIsDir {
+			continue
+		}
+
 		unixFile, err := repo.unixFileFactory(fileToFactory)
 
 		if err != nil {
