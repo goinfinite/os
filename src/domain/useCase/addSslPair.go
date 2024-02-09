@@ -14,19 +14,19 @@ func AddSslPair(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	addSslPair dto.AddSslPair,
 ) error {
-	vhosts, err := vhostQueryRepo.Get()
+	allVhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		log.Printf("FailedToGetVhosts: %s", err.Error())
 		return errors.New("FailedToGetVhostsInfraError")
 	}
 
-	if len(vhosts) == 0 {
+	if len(allVhosts) == 0 {
 		log.Printf("VhostsNotFound")
 		return errors.New("VhostsNotFound")
 	}
 
 	existingVhosts := []string{}
-	for _, vhost := range vhosts {
+	for _, vhost := range allVhosts {
 		existingVhosts = append(existingVhosts, vhost.Hostname.String())
 	}
 
