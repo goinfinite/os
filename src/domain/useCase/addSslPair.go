@@ -7,6 +7,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
+	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func AddSslPair(
@@ -35,14 +36,21 @@ func AddSslPair(
 		shouldReturnVhostError = true
 	}
 
+	existingVhosts := []valueObject.Fqdn{}
 	for _, vhost := range addSslPair.VirtualHosts {
 		if !slices.Contains(vhostsStr, vhost.String()) {
 			log.Printf("VhostDoesNotExists: %s", vhost.String())
 			if shouldReturnVhostError {
 				return errors.New("VhostDoesNotExists")
 			}
+
+			continue
 		}
+
+		existingVhosts = append(existingVhosts, vhost)
 	}
+
+	addSslPair.VirtualHosts = existingVhosts
 
 	err = sslCmdRepo.Add(addSslPair)
 	if err != nil {
