@@ -140,17 +140,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		sslPair, err := repo.sslQueryRepo.GetSslPairByVirtualHost(vhost)
-		if err != nil {
-			log.Printf("FailedToGetSelfSignedSsl (%s): %s", vhostStr, err.Error())
-			continue
-		}
-
-		log.Printf(
-			"Self Signed SSL '%s' created in '%s' virtual host.",
-			sslPair.Id.String(),
-			vhostStr,
-		)
+		log.Printf("Self Signed SSL created in '%s' virtual host.", vhostStr)
 	}
 
 	return nil
