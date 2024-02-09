@@ -7,7 +7,6 @@ import (
 )
 
 type VirtualHostQueryRepo interface {
-	GetVirtualHostConfFilePath(vhost valueObject.Fqdn) (valueObject.UnixFilePath, error)
 	Get() ([]entity.VirtualHost, error)
 	GetByHostname(hostname valueObject.Fqdn) (entity.VirtualHost, error)
 	GetWithMappings() ([]dto.VirtualHostWithMappings, error)
