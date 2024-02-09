@@ -39,7 +39,7 @@ func CreateAccount(
 			trashDirMimeType,
 		)
 
-		err = filesCmdRepo.Create(createTrashDir)
+		filesCmdRepo.Create(createTrashDir)
 	}
 
 	return nil
