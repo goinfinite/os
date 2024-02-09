@@ -202,7 +202,15 @@ func CopyFileController(c echo.Context) error {
 	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 
-	copyUnixFileDto := dto.NewCopyUnixFile(sourcePath, destinationPath)
+	shouldOverwrite := false
+	if requestBody["shouldOverwrite"] != nil {
+		shouldOverwriteBool, assertOk := requestBody["shouldOverwrite"].(bool)
+		if assertOk {
+			shouldOverwrite = shouldOverwriteBool
+		}
+	}
+
+	copyUnixFileDto := dto.NewCopyUnixFile(sourcePath, destinationPath, shouldOverwrite)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesCmdRepo := filesInfra.FilesCmdRepo{}

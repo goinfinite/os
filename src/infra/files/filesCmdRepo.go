@@ -69,9 +69,11 @@ func (repo FilesCmdRepo) Copy(copyUnixFile dto.CopyUnixFile) error {
 		return errors.New("FileToCopyNotFound")
 	}
 
-	destinationPathExists := infraHelper.FileExists(copyUnixFile.DestinationPath.String())
-	if destinationPathExists {
-		return errors.New("DestinationPathAlreadyExists")
+	if !copyUnixFile.ShouldOverwrite {
+		destinationPathExists := infraHelper.FileExists(copyUnixFile.DestinationPath.String())
+		if destinationPathExists {
+			return errors.New("DestinationPathAlreadyExists")
+		}
 	}
 
 	_, err := infraHelper.RunCmd(
