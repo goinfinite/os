@@ -121,6 +121,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
+			true,
 		)
 
 		err := filesCmdRepo.Copy(copyUnixFileDto)
@@ -133,6 +134,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
+			true,
 		)
 
 		err := filesCmdRepo.Copy(copyUnixFileDto)
