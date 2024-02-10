@@ -6,7 +6,6 @@ import (
 )
 
 type SslCmdRepo interface {
-	SelfSignedCertSwap(vhost valueObject.Fqdn) error
 	Add(addSslPair dto.AddSslPair) error
 	Delete(sslId valueObject.SslId) error
 }
