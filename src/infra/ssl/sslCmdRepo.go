@@ -20,7 +20,24 @@ func NewSslCmdRepo() SslCmdRepo {
 	}
 }
 
-func (repo SslCmdRepo) SelfSignedCertSwap(vhost valueObject.Fqdn) error {
+func (repo SslCmdRepo) forceSymlink(
+	pkiSourcePath string,
+	pkiTargetPath string,
+) error {
+	err := os.Remove(pkiTargetPath)
+	if err != nil {
+		return errors.New("FailedToDeletePkiFile: " + err.Error())
+	}
+
+	err = os.Symlink(pkiSourcePath, pkiTargetPath)
+	if err != nil {
+		return errors.New("AddPkiSymlinkError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo SslCmdRepo) SwapToSelfSignedCert(vhost valueObject.Fqdn) error {
 	selfSignedSslKeyPath := "/app/conf/pki/" + vhost.String() + ".key"
 	selfSignedSslCertPath := "/app/conf/pki/" + vhost.String() + ".crt"
 
@@ -41,7 +58,7 @@ func (repo SslCmdRepo) SelfSignedCertSwap(vhost valueObject.Fqdn) error {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhost.String(),
 	)
 	if err != nil {
-		return errors.New("SelfSignedCertSwapFailed: " + err.Error())
+		return errors.New("SwapToSelfSignedCertFailed: " + err.Error())
 	}
 
 	return nil
@@ -63,13 +80,13 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 			firstVhostCertFilePath := "/app/conf/pki/" + firstVhostStr + ".crt"
 			firstVhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
 
-			err := os.Symlink(firstVhostCertFilePath, vhostCertFilePath)
+			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
 			if err != nil {
 				log.Printf("AddSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
-			err = os.Symlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
+			err = repo.forceSymlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
 			if err != nil {
 				log.Printf("AddSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
@@ -134,7 +151,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		err = repo.SelfSignedCertSwap(vhost)
+		err = repo.SwapToSelfSignedCert(vhost)
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhostStr)
 			continue
