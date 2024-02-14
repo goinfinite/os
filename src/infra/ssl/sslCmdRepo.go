@@ -72,6 +72,8 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	}
 
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
+	firstVhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
 	for _, vhost := range addSslPair.VirtualHosts {
 		vhostStr := vhost.String()
 		vhostCertFilePath := pkiConfDir + vhostStr + ".crt"
@@ -79,9 +81,6 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
-			firstVhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
-			firstVhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
-
 			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
 			if err != nil {
 				log.Printf("AddSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
