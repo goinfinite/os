@@ -39,11 +39,22 @@ func (repo SslCmdRepo) forceSymlink(
 	return nil
 }
 
-func (repo SslCmdRepo) SwapToSelfSignedCert(vhost valueObject.Fqdn) error {
-	selfSignedSslKeyPath := pkiConfDir + vhost.String() + ".key"
-	selfSignedSslCertPath := pkiConfDir + vhost.String() + ".crt"
+func (repo SslCmdRepo) replaceWithSelfSigned(vhost valueObject.Fqdn) error {
+	vhostStr := vhost.String()
 
-	_, err := infraHelper.RunCmd(
+	vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
+	err := os.Remove(vhostCertFilePath)
+	if err != nil {
+		return errors.New("FailedToDeleteCertFile: " + err.Error())
+	}
+
+	vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
+	err = os.Remove(vhostCertKeyFilePath)
+	if err != nil {
+		return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
 		"openssl",
 		"req",
 		"-x509",
@@ -53,14 +64,14 @@ func (repo SslCmdRepo) SwapToSelfSignedCert(vhost valueObject.Fqdn) error {
 		"-newkey",
 		"rsa:2048",
 		"-keyout",
-		selfSignedSslKeyPath,
+		vhostCertKeyFilePath,
 		"-out",
-		selfSignedSslCertPath,
+		vhostCertFilePath,
 		"-subj",
-		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhost.String(),
+		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhostStr,
 	)
 	if err != nil {
-		return errors.New("SwapToSelfSignedCertFailed: " + err.Error())
+		return errors.New("ReplaceWithSelfSignedFailed: " + err.Error())
 	}
 
 	return nil
@@ -72,12 +83,13 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	}
 
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
-	firstVhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
-	firstVhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
+	firstVhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
+
 	for _, vhost := range addSslPair.VirtualHosts {
 		vhostStr := vhost.String()
-		vhostCertFilePath := pkiConfDir + vhostStr + ".crt"
-		vhostCertKeyFilePath := pkiConfDir + vhostStr + ".key"
+		vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
+		vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
@@ -126,33 +138,13 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	}
 
 	for _, vhost := range sslPairToDelete.VirtualHosts {
-		vhostStr := vhost.String()
-
-		vhostCertFilePath := pkiConfDir + vhostStr + ".crt"
-		err = os.Remove(vhostCertFilePath)
+		err = repo.replaceWithSelfSigned(vhost)
 		if err != nil {
-			log.Printf(
-				"FailedToDeleteCertFile (%s): %s", vhostStr, err.Error(),
-			)
+			log.Printf("%s (%s)", err.Error(), vhost.String())
 			continue
 		}
 
-		vhostCertKeyFilePath := pkiConfDir + vhostStr + ".key"
-		err = os.Remove(vhostCertKeyFilePath)
-		if err != nil {
-			log.Printf(
-				"FailedToDeleteCertKeyFile (%s): %s", vhostStr, err.Error(),
-			)
-			continue
-		}
-
-		err = repo.SwapToSelfSignedCert(vhost)
-		if err != nil {
-			log.Printf("%s (%s)", err.Error(), vhostStr)
-			continue
-		}
-
-		log.Printf("Self Signed SSL created in '%s' virtual host.", vhostStr)
+		log.Printf("Self Signed SSL created in '%s' virtual host.", vhost.String())
 	}
 
 	return nil
