@@ -122,8 +122,8 @@ func (repo SslQueryRepo) getCertFilesPathWithSymlinkVhosts(
 		certFilePathStr := pkiFile.Path.String()
 		isSymlink := infraHelper.IsSymlink(certFilePathStr)
 		if !isSymlink {
-			_, pkiFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[certFilePathStr]
-			if !pkiFilePathAlreadyExistsInMap {
+			_, certFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[certFilePathStr]
+			if !certFilePathAlreadyExistsInMap {
 				certFilesPathWithSymlinkVhostsMap[certFilePathStr] = []valueObject.Fqdn{}
 			}
 
@@ -136,8 +136,8 @@ func (repo SslQueryRepo) getCertFilesPathWithSymlinkVhosts(
 			continue
 		}
 
-		_, crtFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr]
-		if !crtFilePathAlreadyExistsInMap {
+		_, certFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr]
+		if !certFilePathAlreadyExistsInMap {
 			certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr] = []valueObject.Fqdn{}
 		}
 
