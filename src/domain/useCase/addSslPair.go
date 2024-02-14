@@ -31,26 +31,21 @@ func AddSslPair(
 		existingVhostsStr = append(existingVhostsStr, vhost.Hostname.String())
 	}
 
-	shouldReturnVhostError := false
-	if len(addSslPair.VirtualHosts) == 1 {
-		shouldReturnVhostError = true
-	}
-
-	validVhosts := []valueObject.Fqdn{}
+	validSslVirtualHosts := []valueObject.Fqdn{}
 	for _, vhost := range addSslPair.VirtualHosts {
 		if !slices.Contains(existingVhostsStr, vhost.String()) {
 			log.Printf("VhostDoesNotExists: %s", vhost.String())
-			if shouldReturnVhostError {
-				return errors.New("VhostDoesNotExists")
-			}
-
 			continue
 		}
 
-		validVhosts = append(validVhosts, vhost)
+		validSslVirtualHosts = append(validSslVirtualHosts, vhost)
 	}
 
-	addSslPair.VirtualHosts = validVhosts
+	if len(validSslVirtualHosts) == 0 {
+		return errors.New("VhostDoesNotExists")
+	}
+
+	addSslPair.VirtualHosts = validSslVirtualHosts
 
 	err = sslCmdRepo.Add(addSslPair)
 	if err != nil {
