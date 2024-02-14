@@ -13,7 +13,7 @@ type SslCertificate struct {
 	CertificateContent valueObject.SslCertificateContent
 	CommonName         *valueObject.Fqdn
 	IsCA               bool
-	AltNames           []valueObject.Fqdn
+	AltNames           []valueObject.SslHostname
 	IssuedAt           valueObject.UnixTime
 	ExpiresAt          valueObject.UnixTime
 }
@@ -53,10 +53,10 @@ func NewSslCertificate(
 		commonNamePtr = &commonName
 	}
 
-	altNames := []valueObject.Fqdn{}
+	altNames := []valueObject.SslHostname{}
 	if len(parsedCert.DNSNames) > 0 {
 		for _, certDnsName := range parsedCert.DNSNames {
-			altName, err := valueObject.NewFqdn(certDnsName)
+			altName, err := valueObject.NewSslHostname(certDnsName)
 			if err != nil {
 				continue
 			}
