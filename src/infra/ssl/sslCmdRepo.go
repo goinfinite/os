@@ -98,7 +98,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		shouldOverwrite := true
 		err := infraHelper.UpdateFile(
 			vhostCertFilePath,
-			addSslPair.Certificate.String(),
+			addSslPair.Certificate.CertificateContent.String(),
 			shouldOverwrite,
 		)
 		if err != nil {

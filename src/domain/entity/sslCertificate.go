@@ -85,7 +85,3 @@ func NewSslCertificatePanic(
 	}
 	return sslCertificate
 }
-
-func (sslCertificate SslCertificate) String() string {
-	return sslCertificate.CertificateContent.String()
-}
