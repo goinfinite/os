@@ -120,25 +120,26 @@ func (repo SslQueryRepo) getCertFilesPathWithSymlinkVhosts(
 		}
 
 		certFilePathStr := pkiFile.Path.String()
+		targetCertFilePathStr := certFilePathStr
+
 		isSymlink := infraHelper.IsSymlink(certFilePathStr)
-		if !isSymlink {
-			_, certFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[certFilePathStr]
-			if !certFilePathAlreadyExistsInMap {
-				certFilesPathWithSymlinkVhostsMap[certFilePathStr] = []valueObject.Fqdn{}
+		if isSymlink {
+			targetCertFilePathFromSymlink, err := os.Readlink(certFilePathStr)
+			if err != nil {
+				log.Printf("FailedToGetCrtFilePathFromSymlink: %s", err.Error())
+				continue
 			}
 
-			continue
+			targetCertFilePathStr = targetCertFilePathFromSymlink
 		}
 
-		targetCertFilePathStr, err := os.Readlink(certFilePathStr)
-		if err != nil {
-			log.Printf("FailedToGetCrtFilePathBySymlink: %s", err.Error())
-			continue
-		}
-
-		_, certFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr]
-		if !certFilePathAlreadyExistsInMap {
+		_, targetCertFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[certFilePathStr]
+		if !targetCertFilePathAlreadyExistsInMap {
 			certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr] = []valueObject.Fqdn{}
+		}
+
+		if certFilePathStr == targetCertFilePathStr {
+			continue
 		}
 
 		symlinkVhost, err := repo.getHostnameFromCertFilePath(certFilePathStr)
@@ -173,7 +174,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	for targetCertFilePath, symlinkCrtFilePaths := range certFilesPathWithSymlinkVhostsMap {
+	for targetCertFilePath, symlinkVhost := range certFilesPathWithSymlinkVhostsMap {
 		targetVhost, err := repo.getHostnameFromCertFilePath(targetCertFilePath)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), targetCertFilePath)
@@ -229,7 +230,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		sslVhosts := symlinkCrtFilePaths
+		sslVhosts := symlinkVhost
 		sslVhosts = append(sslVhosts, targetVhost)
 
 		ssl, err := repo.sslPairFactory(sslVhosts, privateKey, sslCertificates)
