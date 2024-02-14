@@ -101,11 +101,11 @@ func (ws WebServerSetup) FirstSetup() {
 }
 
 func (ws WebServerSetup) OnStartSetup() {
-	defaultLogPreffix := "WsOnStartupSetup"
+	defaultLogPrefix := "WsOnStartupSetup"
 
 	containerResources, err := o11yInfra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
-		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPreffix)
+		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
 	}
 
 	cpuCores := containerResources.HardwareSpecs.CpuCores
@@ -118,7 +118,7 @@ func (ws WebServerSetup) OnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPreffix)
+		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
 	if workerCount == cpuCoresStr {
@@ -135,12 +135,12 @@ func (ws WebServerSetup) OnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPreffix)
+		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
 	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
 	if err != nil {
-		log.Fatalf("%sRestartNginxFailed", defaultLogPreffix)
+		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
@@ -149,7 +149,7 @@ func (ws WebServerSetup) OnStartSetup() {
 			containerResources.HardwareSpecs.MemoryTotal,
 		)
 		if err != nil {
-			log.Fatalf("%s%s", defaultLogPreffix, err.Error())
+			log.Fatalf("%s%s", defaultLogPrefix, err.Error())
 		}
 	}
 }
