@@ -10,6 +10,8 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
+const pkiConfDir = "/app/conf/pki"
+
 type SslCmdRepo struct {
 	sslQueryRepo SslQueryRepo
 }
@@ -38,8 +40,8 @@ func (repo SslCmdRepo) forceSymlink(
 }
 
 func (repo SslCmdRepo) SwapToSelfSignedCert(vhost valueObject.Fqdn) error {
-	selfSignedSslKeyPath := "/app/conf/pki/" + vhost.String() + ".key"
-	selfSignedSslCertPath := "/app/conf/pki/" + vhost.String() + ".crt"
+	selfSignedSslKeyPath := pkiConfDir + vhost.String() + ".key"
+	selfSignedSslCertPath := pkiConfDir + vhost.String() + ".crt"
 
 	_, err := infraHelper.RunCmd(
 		"openssl",
@@ -72,13 +74,13 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
 	for _, vhost := range addSslPair.VirtualHosts {
 		vhostStr := vhost.String()
-		vhostCertFilePath := "/app/conf/pki/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := "/app/conf/pki/" + vhostStr + ".key"
+		vhostCertFilePath := pkiConfDir + vhostStr + ".crt"
+		vhostCertKeyFilePath := pkiConfDir + vhostStr + ".key"
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
-			firstVhostCertFilePath := "/app/conf/pki/" + firstVhostStr + ".crt"
-			firstVhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
+			firstVhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
+			firstVhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
 
 			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
 			if err != nil {
@@ -133,7 +135,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	for _, vhost := range sslPairToDelete.VirtualHosts {
 		vhostStr := vhost.String()
 
-		vhostCertFilePath := "/app/conf/pki/" + vhostStr + ".crt"
+		vhostCertFilePath := pkiConfDir + vhostStr + ".crt"
 		err = os.Remove(vhostCertFilePath)
 		if err != nil {
 			log.Printf(
@@ -142,7 +144,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			continue
 		}
 
-		vhostCertKeyFilePath := "/app/conf/pki/" + vhostStr + ".key"
+		vhostCertKeyFilePath := pkiConfDir + vhostStr + ".key"
 		err = os.Remove(vhostCertKeyFilePath)
 		if err != nil {
 			log.Printf(
