@@ -60,12 +60,54 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 
 func (repo SslQueryRepo) sslPairFactory(
 	sslVhosts []valueObject.Fqdn,
-	sslPrivateKey valueObject.SslPrivateKey,
-	sslCertificates SslCertificates,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
-	certificate := sslCertificates.MainCertificate
+	firstVhost := sslVhosts[0]
+	firstVhostStr := firstVhost.String()
+
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostConfigFilePath, err := vhostQueryRepo.GetVirtualHostConfFilePath(firstVhost)
+	if err != nil {
+		return ssl, errors.New("FailedToGetVhostConfFile (" + firstVhostStr + "): " + err.Error())
+	}
+
+	vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
+	if err != nil {
+		return ssl, errors.New("FailedToOpenVhostConfFile (" + firstVhostStr + "): " + err.Error())
+	}
+
+	fileIsEmpty := len(vhostConfigContentStr) < 1
+	if fileIsEmpty {
+		return ssl, errors.New("VirtualHostConfFileIsEmpty (" + firstVhostStr + ")")
+	}
+
+	vhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
+	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
+	if err != nil {
+		return ssl, errors.New("FailedToOpenCertKeyFile (" + firstVhostStr + "): " + err.Error())
+	}
+	privateKey, err := valueObject.NewSslPrivateKey(vhostCertKeyContentStr)
+	if err != nil {
+		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
+	}
+
+	vhostCertFilePath := "/app/conf/pki/" + firstVhostStr + ".crt"
+	vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
+	if err != nil {
+		return ssl, errors.New("FailedToOpenCertFile (" + firstVhostStr + "): " + err.Error())
+	}
+	certificate, err := valueObject.NewSslCertificateContent(vhostCertFileContentStr)
+	if err != nil {
+		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
+	}
+
+	sslCertificates, err := repo.sslCertificatesFactory(certificate)
+	if err != nil {
+		return ssl, errors.New("FailedToGetMainAndChainedCerts (" + firstVhostStr + "): " + err.Error())
+	}
+
+	mainCertificate := sslCertificates.MainCertificate
 	chainCertificates := sslCertificates.ChainedCertificates
 
 	var chainCertificatesContent []valueObject.SslCertificateContent
@@ -77,9 +119,9 @@ func (repo SslQueryRepo) sslPairFactory(
 	}
 
 	hashId, err := valueObject.NewSslIdFromSslPairContent(
-		certificate.CertificateContent,
+		mainCertificate.CertificateContent,
 		chainCertificatesContent,
-		sslPrivateKey,
+		privateKey,
 	)
 	if err != nil {
 		return ssl, err
@@ -88,8 +130,8 @@ func (repo SslQueryRepo) sslPairFactory(
 	return entity.NewSslPair(
 		hashId,
 		sslVhosts,
-		certificate,
-		sslPrivateKey,
+		mainCertificate,
+		privateKey,
 		chainCertificates,
 	), nil
 }
@@ -103,10 +145,10 @@ func (repo SslQueryRepo) getHostnameFromCertFilePath(
 	return valueObject.NewFqdn(certFileNameWithoutExt)
 }
 
-func (repo SslQueryRepo) getCertFilesPathWithSymlinkVhosts(
+func (repo SslQueryRepo) getCertFilesPathWithVhosts(
 	pkiFiles []entity.UnixFile,
 ) (map[string][]valueObject.Fqdn, error) {
-	certFilesPathWithSymlinkVhostsMap := map[string][]valueObject.Fqdn{}
+	certFilesPathWithVhostsMap := map[string][]valueObject.Fqdn{}
 	for _, pkiFile := range pkiFiles {
 		// TODO: remove when PR 19 is merged
 		isDirPath := pkiFile.MimeType.IsDir()
@@ -133,28 +175,24 @@ func (repo SslQueryRepo) getCertFilesPathWithSymlinkVhosts(
 			targetCertFilePathStr = targetCertFilePathFromSymlink
 		}
 
-		_, targetCertFilePathAlreadyExistsInMap := certFilesPathWithSymlinkVhostsMap[certFilePathStr]
-		if !targetCertFilePathAlreadyExistsInMap {
-			certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr] = []valueObject.Fqdn{}
+		_, targetVhostAlreadyExistsInMap := certFilesPathWithVhostsMap[targetCertFilePathStr]
+		if !targetVhostAlreadyExistsInMap {
+			certFilesPathWithVhostsMap[targetCertFilePathStr] = []valueObject.Fqdn{}
 		}
 
-		if certFilePathStr == targetCertFilePathStr {
-			continue
-		}
-
-		symlinkVhost, err := repo.getHostnameFromCertFilePath(certFilePathStr)
+		vhost, err := repo.getHostnameFromCertFilePath(certFilePathStr)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), certFilePathStr)
 			continue
 		}
 
-		certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr] = append(
-			certFilesPathWithSymlinkVhostsMap[targetCertFilePathStr],
-			symlinkVhost,
+		certFilesPathWithVhostsMap[targetCertFilePathStr] = append(
+			certFilesPathWithVhostsMap[targetCertFilePathStr],
+			vhost,
 		)
 	}
 
-	return certFilesPathWithSymlinkVhostsMap, nil
+	return certFilesPathWithVhostsMap, nil
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
@@ -168,74 +206,21 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		return sslPairs, errors.New("FailedToGetPkiFiles: " + err.Error())
 	}
 
-	certFilesPathWithSymlinkVhostsMap, err := repo.getCertFilesPathWithSymlinkVhosts(pkiFiles)
+	certFilesPathWithVhostsMap, err := repo.getCertFilesPathWithVhosts(pkiFiles)
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetCertFilesPathWithSymlinksVhosts: " + err.Error())
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	for targetCertFilePath, symlinkVhost := range certFilesPathWithSymlinkVhostsMap {
-		targetVhost, err := repo.getHostnameFromCertFilePath(targetCertFilePath)
+	for certFilePath, sslVhosts := range certFilesPathWithVhostsMap {
+		targetVhost, err := repo.getHostnameFromCertFilePath(certFilePath)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), targetCertFilePath)
+			log.Printf("%s: %s", err.Error(), certFilePath)
 			continue
 		}
 
-		targetVhostStr := targetVhost.String()
-
-		vhostConfigFilePath, err := vhostQueryRepo.GetVirtualHostConfFilePath(targetVhost)
+		ssl, err := repo.sslPairFactory(sslVhosts)
 		if err != nil {
-			log.Printf("FailedToGetVhostConfFile (%s): %s", targetVhostStr, err.Error())
-		}
-
-		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
-		if err != nil {
-			log.Printf("FailedToOpenVhostConfFile (%s): %s", targetVhostStr, err.Error())
-			continue
-		}
-
-		fileIsEmpty := len(vhostConfigContentStr) < 1
-		if fileIsEmpty {
-			log.Printf("VirtualHostConfFileIsEmpty (%s)", targetVhostStr)
-			continue
-		}
-
-		vhostCertKeyFilePath := "/app/conf/pki/" + targetVhostStr + ".key"
-		vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
-		if err != nil {
-			log.Printf("FailedToOpenCertKeyFile (%s): %s", targetVhostStr, err.Error())
-			continue
-		}
-		privateKey, err := valueObject.NewSslPrivateKey(vhostCertKeyContentStr)
-		if err != nil {
-			log.Printf("%s (%s)", err.Error(), targetVhostStr)
-			continue
-		}
-
-		vhostCertFilePath := "/app/conf/pki/" + targetVhostStr + ".crt"
-		vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
-		if err != nil {
-			log.Printf("FailedToOpenCertFile (%s): %s", targetVhostStr, err.Error())
-			continue
-		}
-		certificate, err := valueObject.NewSslCertificateContent(vhostCertFileContentStr)
-		if err != nil {
-			log.Printf("%s (%s)", err.Error(), targetVhostStr)
-			continue
-		}
-
-		sslCertificates, err := repo.sslCertificatesFactory(certificate)
-		if err != nil {
-			log.Printf("FailedToGetMainAndChainedCerts (%s): %s", targetVhostStr, err.Error())
-			continue
-		}
-
-		sslVhosts := symlinkVhost
-		sslVhosts = append(sslVhosts, targetVhost)
-
-		ssl, err := repo.sslPairFactory(sslVhosts, privateKey, sslCertificates)
-		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", targetVhostStr, err.Error())
+			log.Printf("FailedToGetSslPair (%s): %s", targetVhost.String(), err.Error())
 			continue
 		}
 
