@@ -143,8 +143,6 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 			log.Printf("%s (%s)", err.Error(), vhost.String())
 			continue
 		}
-
-		log.Printf("Self Signed SSL created in '%s' virtual host.", vhost.String())
 	}
 
 	return nil
