@@ -114,12 +114,6 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		if err != nil {
 			return err
 		}
-
-		log.Printf(
-			"SSL '%s' created in '%s' virtual host.",
-			addSslPair.Certificate.Id.String(),
-			vhost.String(),
-		)
 	}
 
 	return nil
