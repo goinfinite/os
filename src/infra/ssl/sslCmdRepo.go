@@ -39,22 +39,28 @@ func (repo SslCmdRepo) forceSymlink(
 	return nil
 }
 
-func (repo SslCmdRepo) replaceWithSelfSigned(vhost valueObject.Fqdn) error {
+func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	vhostStr := vhost.String()
 
 	vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
-	err := os.Remove(vhostCertFilePath)
-	if err != nil {
-		return errors.New("FailedToDeleteCertFile: " + err.Error())
+	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
+	if vhostCertFileExists {
+		err := os.Remove(vhostCertFilePath)
+		if err != nil {
+			return errors.New("FailedToDeleteCertFile: " + err.Error())
+		}
 	}
 
 	vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
-	err = os.Remove(vhostCertKeyFilePath)
-	if err != nil {
-		return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
+	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
+	if vhostCertKeyFileExists {
+		err := os.Remove(vhostCertKeyFilePath)
+		if err != nil {
+			return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
+		}
 	}
 
-	_, err = infraHelper.RunCmd(
+	_, err := infraHelper.RunCmd(
 		"openssl",
 		"req",
 		"-x509",
@@ -138,7 +144,7 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	}
 
 	for _, vhost := range sslPairToDelete.VirtualHosts {
-		err = repo.replaceWithSelfSigned(vhost)
+		err = repo.ReplaceWithSelfSigned(vhost)
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhost.String())
 			continue
