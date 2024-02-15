@@ -63,7 +63,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	firstVhost := sslVhosts[0]
 	firstVhostStr := firstVhost.String()
 
-	vhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
+	vhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
 	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
@@ -73,7 +73,7 @@ func (repo SslQueryRepo) sslPairFactory(
 		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
 	}
 
-	vhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
+	vhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
 	vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
