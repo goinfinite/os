@@ -66,7 +66,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	vhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
 	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertKeyFile (" + firstVhostStr + "): " + err.Error())
+		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
 	}
 	privateKey, err := valueObject.NewSslPrivateKey(vhostCertKeyContentStr)
 	if err != nil {
@@ -76,16 +76,16 @@ func (repo SslQueryRepo) sslPairFactory(
 	vhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
 	vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertFile (" + firstVhostStr + "): " + err.Error())
+		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
 	}
 	certificate, err := valueObject.NewSslCertificateContent(vhostCertFileContentStr)
 	if err != nil {
-		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
+		return ssl, err
 	}
 
 	sslCertificates, err := repo.sslCertificatesFactory(certificate)
 	if err != nil {
-		return ssl, errors.New("FailedToGetMainAndChainedCerts (" + firstVhostStr + "): " + err.Error())
+		return ssl, errors.New("FailedToGetMainAndChainedCerts: " + err.Error())
 	}
 
 	mainCertificate := sslCertificates.MainCertificate
