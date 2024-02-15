@@ -11,10 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
-
-const nginxConfDir = "/app/conf/nginx"
 
 type SslQueryRepo struct{}
 
@@ -65,22 +62,6 @@ func (repo SslQueryRepo) sslPairFactory(
 
 	firstVhost := sslVhosts[0]
 	firstVhostStr := firstVhost.String()
-
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostConfigFilePath, err := vhostQueryRepo.GetVirtualHostConfFilePath(firstVhost)
-	if err != nil {
-		return ssl, errors.New("FailedToGetVhostConfFile (" + firstVhostStr + "): " + err.Error())
-	}
-
-	vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
-	if err != nil {
-		return ssl, errors.New("FailedToOpenVhostConfFile (" + firstVhostStr + "): " + err.Error())
-	}
-
-	fileIsEmpty := len(vhostConfigContentStr) < 1
-	if fileIsEmpty {
-		return ssl, errors.New("VirtualHostConfFileIsEmpty (" + firstVhostStr + ")")
-	}
 
 	vhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
 	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
