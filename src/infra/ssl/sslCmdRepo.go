@@ -27,7 +27,7 @@ func (repo SslCmdRepo) forceSymlink(
 	pkiTargetPath string,
 ) error {
 	err := os.Remove(pkiTargetPath)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return errors.New("FailedToDeletePkiFile: " + err.Error())
 	}
 
