@@ -188,22 +188,7 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"openssl",
-		"req",
-		"-x509",
-		"-nodes",
-		"-days",
-		"365",
-		"-newkey",
-		"rsa:2048",
-		"-keyout",
-		keyPath,
-		"-out",
-		certPath,
-		"-subj",
-		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+hostnameStr,
-	)
+	err = infraHelper.CreateSelfSignedSsl(hostnameStr)
 	if err != nil {
 		return errors.New("SelfSignedCertSwapFailed")
 	}

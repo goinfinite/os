@@ -60,27 +60,7 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	_, err := infraHelper.RunCmd(
-		"openssl",
-		"req",
-		"-x509",
-		"-nodes",
-		"-days",
-		"365",
-		"-newkey",
-		"rsa:2048",
-		"-keyout",
-		vhostCertKeyFilePath,
-		"-out",
-		vhostCertFilePath,
-		"-subj",
-		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhostStr,
-	)
-	if err != nil {
-		return errors.New("ReplaceWithSelfSignedFailed: " + err.Error())
-	}
-
-	return nil
+	return infraHelper.CreateSelfSignedSsl(vhostStr)
 }
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
