@@ -21,10 +21,6 @@ func IsSymlinkTo(sourcePath string, targetPath string) bool {
 		return false
 	}
 
-	if !isSymlink {
-		return false
-	}
-
 	linkTarget, err := os.Readlink(sourcePath)
 	if err != nil {
 		return false
