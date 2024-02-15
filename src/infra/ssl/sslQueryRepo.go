@@ -63,7 +63,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	firstVhost := sslVhosts[0]
 	firstVhostStr := firstVhost.String()
 
-	vhostCertKeyFilePath := "/app/conf/pki/" + firstVhostStr + ".key"
+	vhostCertKeyFilePath := pkiConfDir + firstVhostStr + ".key"
 	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertKeyFile (" + firstVhostStr + "): " + err.Error())
@@ -73,7 +73,7 @@ func (repo SslQueryRepo) sslPairFactory(
 		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
 	}
 
-	vhostCertFilePath := "/app/conf/pki/" + firstVhostStr + ".crt"
+	vhostCertFilePath := pkiConfDir + firstVhostStr + ".crt"
 	vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertFile (" + firstVhostStr + "): " + err.Error())
@@ -179,7 +179,7 @@ func (repo SslQueryRepo) getCertFilesPathWithVhosts(
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	pkiFilesPath, _ := valueObject.NewUnixFilePath("/app/conf/pki")
+	pkiFilesPath, _ := valueObject.NewUnixFilePath(pkiConfDir)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	pkiFiles, err := filesQueryRepo.Get(pkiFilesPath)
