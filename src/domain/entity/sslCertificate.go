@@ -11,7 +11,7 @@ import (
 type SslCertificate struct {
 	Id                 valueObject.SslId
 	CertificateContent valueObject.SslCertificateContent
-	CommonName         *valueObject.Fqdn
+	CommonName         *valueObject.SslHostname
 	IsCA               bool
 	AltNames           []valueObject.SslHostname
 	IssuedAt           valueObject.UnixTime
@@ -43,10 +43,10 @@ func NewSslCertificate(
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
-	var commonNamePtr *valueObject.Fqdn
+	var commonNamePtr *valueObject.SslHostname
 	commonNamePtr = nil
 	if !parsedCert.IsCA {
-		commonName, err := valueObject.NewFqdn(parsedCert.Subject.CommonName)
+		commonName, err := valueObject.NewSslHostname(parsedCert.Subject.CommonName)
 		if err != nil {
 			return sslCertificate, errors.New("InvalidSslCertificateCommonName")
 		}
