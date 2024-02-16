@@ -120,21 +120,17 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	// Criar um slice vazio de SslPairs
 	sslPairs := []entity.SslPair{}
 
-	// Criar um map cujo a chave é o caminho do arquivo ".crt" original (target) e o valor é um slice de FQDN que terá o host original (target) e os symlinks
-	certFilePathWithVhosts := map[string][]valueObject.Fqdn{}
-	// Buscar todos os vhosts
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetVhosts")
 	}
-	// Iterar sobre os vhosts
+
+	certFilePathWithVhosts := map[string][]valueObject.Fqdn{}
 	for _, vhost := range vhosts {
-		// Montar o caminho do arquivo ".crt" utilizando o vhost da iteração atual
 		certFilePath := pkiConfDir + "/" + vhost.Hostname.String() + ".crt"
-		// Validar se ele é um symlink
+
 		isSymlink := infraHelper.IsSymlink(certFilePath)
-		// Se for, descobrir qual o caminho do arquivo ".crt" original (target) do vhost da iteração atual através do os.Readlink()
 		if isSymlink {
 			targetCertFilePath, err := os.Readlink(certFilePath)
 			if err != nil {
@@ -144,33 +140,28 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 
 			certFilePath = targetCertFilePath
 		}
-		// Validar se o caminho do arquivo ".crt" já existe no map
+
 		_, certFilePathAlreadyExistsInMap := certFilePathWithVhosts[certFilePath]
-		// Se não existir, adicionar como chave  com um slice de FQDN vazio como valor
 		if !certFilePathAlreadyExistsInMap {
 			certFilePathWithVhosts[certFilePath] = []valueObject.Fqdn{}
 		}
-		// Adicionar o vhost da iteração atual como valor ao map com a chave igual ao caminho do arquivo ".crt" da iteração atual
+
 		certFilePathWithVhosts[certFilePath] = append(
 			certFilePathWithVhosts[certFilePath],
 			vhost.Hostname,
 		)
 	}
 
-	// Iterar sobre o map
 	for certFilePath, vhosts := range certFilePathWithVhosts {
-		// Enviar o slice de vhosts da iteração atual para o factory
 		sslPair, err := repo.sslPairFactory(vhosts)
 		if err != nil {
 			log.Printf("FailedToGetSslPair (%s): %s", certFilePath, err.Error())
 			continue
 		}
 
-		// Adicionar o SslPair retornado da factory ao slice de SslPairs
 		sslPairs = append(sslPairs, sslPair)
 	}
 
-	// Retornar os SslPairs
 	return sslPairs, nil
 }
 
