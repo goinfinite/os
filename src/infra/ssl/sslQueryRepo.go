@@ -127,6 +127,10 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 
 	certFilePathWithVhosts := map[string][]valueObject.Fqdn{}
 	for _, vhost := range vhosts {
+		if vhost.Type.String() == "alias" {
+			continue
+		}
+
 		certFilePath := pkiConfDir + "/" + vhost.Hostname.String() + ".crt"
 
 		isSymlink := infraHelper.IsSymlink(certFilePath)
