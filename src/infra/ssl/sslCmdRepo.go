@@ -4,10 +4,12 @@ import (
 	"errors"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 const pkiConfDir = "/app/conf/pki"
@@ -68,11 +70,28 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return errors.New("NoVirtualHostsProvidedToAddSslPair")
 	}
 
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhosts, err := vhostQueryRepo.Get()
+	if err != nil {
+		return errors.New("FailedToGetVhosts")
+	}
+
+	vhostsWithoutAliases := []valueObject.Fqdn{}
+	for _, vhost := range vhosts {
+		if vhost.Type.String() == "alias" {
+			continue
+		}
+
+		if slices.Contains(addSslPair.VirtualHosts, vhost.Hostname) {
+			vhostsWithoutAliases = append(vhostsWithoutAliases, vhost.Hostname)
+		}
+	}
+
 	firstVhostStr := addSslPair.VirtualHosts[0].String()
 	firstVhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
 	firstVhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
 
-	for _, vhost := range addSslPair.VirtualHosts {
+	for _, vhost := range vhostsWithoutAliases {
 		vhostStr := vhost.String()
 		vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
 		vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
