@@ -6,21 +6,21 @@ import (
 )
 
 func AddCustom(
-	addDto dto.CreateCustomService,
+	createDto dto.CreateCustomService,
 ) error {
 	svcVersion := valueObject.NewServiceVersionPanic("latest")
-	if addDto.Version != nil {
-		svcVersion = *addDto.Version
+	if createDto.Version != nil {
+		svcVersion = *createDto.Version
 	}
 
 	return SupervisordFacade{}.AddConf(
-		addDto.Name,
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("custom"),
-		addDto.Type,
+		createDto.Type,
 		svcVersion,
-		addDto.Command,
+		createDto.Command,
 		nil,
-		addDto.PortBindings,
+		createDto.PortBindings,
 		nil,
 	)
 }

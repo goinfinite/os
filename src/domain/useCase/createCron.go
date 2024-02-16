@@ -12,7 +12,7 @@ func CreateCron(
 	cronCmdRepo repository.CronCmdRepo,
 	addCron dto.CreateCron,
 ) error {
-	err := cronCmdRepo.Add(addCron)
+	err := cronCmdRepo.Create(addCron)
 	if err != nil {
 		log.Printf("CreateCronError: %s", err)
 		return errors.New("CreateCronInfraError")

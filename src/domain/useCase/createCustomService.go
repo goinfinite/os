@@ -48,21 +48,21 @@ func CreateCustomService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.CreateCustomService,
+	createDto dto.CreateCustomService,
 ) error {
-	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	_, err := servicesQueryRepo.GetByName(createDto.Name)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
-	err = servicesCmdRepo.AddCustom(addDto)
+	err = servicesCmdRepo.AddCustom(createDto)
 	if err != nil {
 		log.Printf("CreateCustomServiceError: %v", err)
 		return errors.New("CreateCustomServiceInfraError")
 	}
 
-	isRuntimeSvc := addDto.Type.String() == "runtime"
-	isApplicationSvc := addDto.Type.String() == "application"
+	isRuntimeSvc := createDto.Type.String() == "runtime"
+	isApplicationSvc := createDto.Type.String() == "application"
 	if !isRuntimeSvc && !isApplicationSvc {
 		return nil
 	}
@@ -77,14 +77,14 @@ func CreateCustomService(
 	}
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
-	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
+	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {
 		return nil
 	}
 
 	serviceMapping, err := serviceMappingFactory(
 		primaryVhostWithMapping.Hostname,
-		addDto.Name,
+		createDto.Name,
 	)
 	if err != nil {
 		log.Printf("AddServiceMappingError: %s", err.Error())

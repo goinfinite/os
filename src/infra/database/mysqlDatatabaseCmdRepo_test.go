@@ -28,7 +28,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 
 	t.Run("CreateDatabase", func(t *testing.T) {
-		err := mysqlDatabaseCmdRepo.Add("testing")
+		err := mysqlDatabaseCmdRepo.Create("testing")
 		if err != nil {
 			t.Error("Error adding database")
 		}

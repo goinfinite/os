@@ -18,7 +18,7 @@ func CreateDatabase(
 		return errors.New("DatabaseAlreadyExists")
 	}
 
-	err = dbCmdRepo.Add(addDatabase.DatabaseName)
+	err = dbCmdRepo.Create(addDatabase.DatabaseName)
 	if err != nil {
 		return errors.New("CreateDatabaseError")
 	}

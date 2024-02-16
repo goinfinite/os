@@ -266,10 +266,10 @@ func addPhp() error {
 	return nil
 }
 
-func addNode(addDto dto.CreateInstallableService) error {
+func addNode(createDto dto.CreateInstallableService) error {
 	versionStr := "lts"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["node"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -292,8 +292,8 @@ func addNode(addDto dto.CreateInstallableService) error {
 	}
 
 	startupFile := valueObject.NewUnixFilePathPanic(appHtmlDir + "/index.js")
-	if addDto.StartupFile != nil {
-		startupFile = *addDto.StartupFile
+	if createDto.StartupFile != nil {
+		startupFile = *createDto.StartupFile
 	}
 
 	if !infraHelper.FileExists(startupFile.String()) {
@@ -321,12 +321,12 @@ func addNode(addDto dto.CreateInstallableService) error {
 			valueObject.NewNetworkProtocolPanic("http"),
 		),
 	}
-	if len(addDto.PortBindings) > 0 {
-		portBindings = addDto.PortBindings
+	if len(createDto.PortBindings) > 0 {
+		portBindings = createDto.PortBindings
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -344,7 +344,7 @@ func addNode(addDto dto.CreateInstallableService) error {
 	return nil
 }
 
-func addMariaDb(addDto dto.CreateInstallableService) error {
+func addMariaDb(createDto dto.CreateInstallableService) error {
 	repoFilePath := "/speedia/repo.mariadb.sh"
 
 	err := infraHelper.DownloadFile(
@@ -357,8 +357,8 @@ func addMariaDb(addDto dto.CreateInstallableService) error {
 
 	versionFlag := ""
 	versionStr := "latest"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["mariadb"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -453,7 +453,7 @@ func addMariaDb(addDto dto.CreateInstallableService) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -469,10 +469,10 @@ func addMariaDb(addDto dto.CreateInstallableService) error {
 	return nil
 }
 
-func addPostgresqlDb(addDto dto.CreateInstallableService) error {
+func addPostgresqlDb(createDto dto.CreateInstallableService) error {
 	versionStr := "16"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["postgresql"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -547,7 +547,7 @@ func addPostgresqlDb(addDto dto.CreateInstallableService) error {
 	postgresUser := valueObject.NewUsernamePanic("postgres")
 
 	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -637,7 +637,7 @@ func addPostgresqlDb(addDto dto.CreateInstallableService) error {
 		return errors.New("UpdatePgHbaError: " + err.Error())
 	}
 
-	err = SupervisordFacade{}.Restart(addDto.Name)
+	err = SupervisordFacade{}.Restart(createDto.Name)
 	if err != nil {
 		return errors.New("RestartPostgresqlError: " + err.Error())
 	}
@@ -645,11 +645,11 @@ func addPostgresqlDb(addDto dto.CreateInstallableService) error {
 	return nil
 }
 
-func addRedis(addDto dto.CreateInstallableService) error {
+func addRedis(createDto dto.CreateInstallableService) error {
 	versionFlag := ""
 	versionStr := "latest"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["redis"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -690,8 +690,8 @@ func addRedis(addDto dto.CreateInstallableService) error {
 		return errors.New("CreateRepoFileError")
 	}
 
-	if addDto.Version != nil {
-		versionStr := addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr := createDto.Version.String()
 		latestVersion, err := infraHelper.GetPkgLatestVersion(
 			"redis-server",
 			&versionStr,
@@ -720,7 +720,7 @@ func addRedis(addDto dto.CreateInstallableService) error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.ServiceType("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -748,9 +748,9 @@ func addRedis(addDto dto.CreateInstallableService) error {
 }
 
 func AddInstallable(
-	addDto dto.CreateInstallableService,
+	createDto dto.CreateInstallableService,
 ) error {
-	svcNameStr := addDto.Name.String()
+	svcNameStr := createDto.Name.String()
 	svcNameHasHash := strings.Contains(svcNameStr, "-")
 	if svcNameHasHash {
 		svcNameWithoutHash := strings.Split(svcNameStr, "-")[0]
@@ -761,13 +761,13 @@ func AddInstallable(
 	case "php":
 		return addPhp()
 	case "node":
-		return addNode(addDto)
+		return addNode(createDto)
 	case "mariadb":
-		return addMariaDb(addDto)
+		return addMariaDb(createDto)
 	case "postgresql":
-		return addPostgresqlDb(addDto)
+		return addPostgresqlDb(createDto)
 	case "redis":
-		return addRedis(addDto)
+		return addRedis(createDto)
 	default:
 		return errors.New("UnknownInstallableService")
 	}

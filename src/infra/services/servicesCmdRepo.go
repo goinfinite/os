@@ -9,9 +9,9 @@ type ServicesCmdRepo struct {
 }
 
 func (repo ServicesCmdRepo) AddInstallable(
-	addDto dto.CreateInstallableService,
+	createDto dto.CreateInstallableService,
 ) error {
-	err := AddInstallable(addDto)
+	err := AddInstallable(createDto)
 	if err != nil {
 		return err
 	}
@@ -25,9 +25,9 @@ func (repo ServicesCmdRepo) AddInstallable(
 }
 
 func (repo ServicesCmdRepo) AddCustom(
-	addDto dto.CreateCustomService,
+	createDto dto.CreateCustomService,
 ) error {
-	err := AddCustom(addDto)
+	err := AddCustom(createDto)
 	if err != nil {
 		return err
 	}

@@ -52,14 +52,14 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
-func (repo VirtualHostCmdRepo) addAlias(addDto dto.CreateVirtualHost) error {
-	vhostFile, err := repo.getAliasConfigFile(*addDto.ParentHostname)
+func (repo VirtualHostCmdRepo) addAlias(createDto dto.CreateVirtualHost) error {
+	vhostFile, err := repo.getAliasConfigFile(*createDto.ParentHostname)
 	if err != nil {
 		return errors.New("GetAliasConfigFileFailed")
 	}
 	vhostFileStr := vhostFile.String()
 
-	hostnameStr := addDto.Hostname.String()
+	hostnameStr := createDto.Hostname.String()
 
 	_, err = infraHelper.RunCmd(
 		"sed",
@@ -136,11 +136,11 @@ virtualhost ` + hostname.String() + ` {
 	return nil
 }
 
-func (repo VirtualHostCmdRepo) Add(addDto dto.CreateVirtualHost) error {
-	hostnameStr := addDto.Hostname.String()
+func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
+	hostnameStr := createDto.Hostname.String()
 
-	if addDto.Type.String() == "alias" {
-		return repo.addAlias(addDto)
+	if createDto.Type.String() == "alias" {
+		return repo.addAlias(createDto)
 	}
 
 	publicDir := "/app/html/" + hostnameStr

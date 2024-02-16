@@ -19,7 +19,7 @@ func addDummyUser() error {
 	}
 
 	accCmdRepo := AccCmdRepo{}
-	err := accCmdRepo.Add(addUser)
+	err := accCmdRepo.Create(addUser)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func TestAccCmdRepo(t *testing.T) {
 		}
 
 		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.Add(addUser)
+		err := accCmdRepo.Create(addUser)
 		if err == nil {
 			t.Error("ExpectingError")
 		}

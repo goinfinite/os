@@ -23,7 +23,7 @@ import (
 type AccCmdRepo struct {
 }
 
-func (repo AccCmdRepo) Add(createAccount dto.CreateAccount) error {
+func (repo AccCmdRepo) Create(createAccount dto.CreateAccount) error {
 	passHash, err := bcrypt.GenerateFromPassword(
 		[]byte(createAccount.Password.String()),
 		bcrypt.DefaultCost,

@@ -13,9 +13,9 @@ func CreateInstallableService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.CreateInstallableService,
+	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	_, err := servicesQueryRepo.GetByName(createDto.Name)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -26,7 +26,7 @@ func CreateInstallableService(
 		return errors.New("GetInstallableServicesInfraError")
 	}
 
-	dtoServiceNameStr := addDto.Name.String()
+	dtoServiceNameStr := createDto.Name.String()
 	isNatureMulti := false
 	for _, installableSvc := range installableSvcs {
 		if installableSvc.Name.String() != dtoServiceNameStr {
@@ -38,16 +38,16 @@ func CreateInstallableService(
 	}
 
 	if isNatureMulti {
-		newSvcName, err := servicesQueryRepo.GetMultiServiceName(addDto.Name, addDto.StartupFile)
+		newSvcName, err := servicesQueryRepo.GetMultiServiceName(createDto.Name, createDto.StartupFile)
 		if err != nil {
 			log.Printf("GetMultiServiceNameError: %s", err.Error())
 			return errors.New("GetMultiServiceNameInfraError")
 		}
 
-		addDto.Name = newSvcName
+		createDto.Name = newSvcName
 	}
 
-	err = servicesCmdRepo.AddInstallable(addDto)
+	err = servicesCmdRepo.AddInstallable(createDto)
 	if err != nil {
 		log.Printf("CreateInstallableServiceError: %v", err)
 		return errors.New("CreateInstallableServiceInfraError")
@@ -64,14 +64,14 @@ func CreateInstallableService(
 	}
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
-	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
+	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {
 		return nil
 	}
 
 	serviceMapping, err := serviceMappingFactory(
 		primaryVhostWithMapping.Hostname,
-		addDto.Name,
+		createDto.Name,
 	)
 	if err != nil {
 		log.Printf("AddServiceMappingError: %s", err.Error())

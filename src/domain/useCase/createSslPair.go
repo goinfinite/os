@@ -12,7 +12,7 @@ func CreateSslPair(
 	sslCmdRepo repository.SslCmdRepo,
 	addSslPair dto.CreateSslPair,
 ) error {
-	err := sslCmdRepo.Add(addSslPair)
+	err := sslCmdRepo.Create(addSslPair)
 	if err != nil {
 		log.Printf("CreateSslPairError: %s", err)
 		return errors.New("CreateSslPairInfraError")

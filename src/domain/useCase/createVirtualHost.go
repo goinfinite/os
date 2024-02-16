@@ -23,7 +23,7 @@ func CreateVirtualHost(
 		return errors.New("AliasMustHaveParentHostname")
 	}
 
-	err = vhostCmdRepo.Add(addVirtualHost)
+	err = vhostCmdRepo.Create(addVirtualHost)
 	if err != nil {
 		log.Printf("CreateVirtualHostError: %s", err.Error())
 		return errors.New("CreateVirtualHostInfraError")

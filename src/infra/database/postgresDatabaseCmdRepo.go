@@ -10,7 +10,7 @@ import (
 type PostgresDatabaseCmdRepo struct {
 }
 
-func (repo PostgresDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo PostgresDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := PostgresqlCmd(
 		"CREATE DATABASE " + dbName.String(),
 	)

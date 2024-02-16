@@ -12,7 +12,7 @@ import (
 type MysqlDatabaseCmdRepo struct {
 }
 
-func (repo MysqlDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo MysqlDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := MysqlCmd(
 		"CREATE DATABASE " + dbName.String(),
 	)

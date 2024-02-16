@@ -21,7 +21,7 @@ func CreateAccount(
 		return errors.New("UsernameAlreadyExists")
 	}
 
-	err = accCmdRepo.Add(createAccount)
+	err = accCmdRepo.Create(createAccount)
 	if err != nil {
 		return errors.New("CreateAccountError")
 	}

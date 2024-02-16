@@ -6,7 +6,7 @@ import (
 )
 
 type VirtualHostCmdRepo interface {
-	Add(addDto dto.CreateVirtualHost) error
+	Create(createDto dto.CreateVirtualHost) error
 	Delete(vhost entity.VirtualHost) error
 	CreateMapping(addMapping dto.CreateMapping) error
 	DeleteMapping(mapping entity.Mapping) error

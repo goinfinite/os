@@ -27,7 +27,7 @@ func TestCronCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
-		err = cronCmdRepo.Add(addCron)
+		err = cronCmdRepo.Create(addCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
