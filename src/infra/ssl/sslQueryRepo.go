@@ -117,7 +117,6 @@ func (repo SslQueryRepo) sslPairFactory(
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
-	// Criar um slice vazio de SslPairs
 	sslPairs := []entity.SslPair{}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
