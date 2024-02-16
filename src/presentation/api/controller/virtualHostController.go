@@ -167,12 +167,12 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		)
 	}
 
-	var targetServicePtr *valueObject.ServiceName
-	if requestBody["targetService"] != nil {
-		targetService := valueObject.NewServiceNamePanic(
-			requestBody["targetService"].(string),
+	var targetServiceNamePtr *valueObject.ServiceName
+	if requestBody["targetServiceName"] != nil {
+		targetServiceName := valueObject.NewServiceNamePanic(
+			requestBody["targetServiceName"].(string),
 		)
-		targetServicePtr = &targetService
+		targetServiceNamePtr = &targetServiceName
 	}
 
 	var targetUrlPtr *valueObject.Url
@@ -194,7 +194,7 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		path,
 		matchPattern,
 		targetType,
-		targetServicePtr,
+		targetServiceNamePtr,
 		targetUrlPtr,
 		targetHttpResponseCodePtr,
 	)
