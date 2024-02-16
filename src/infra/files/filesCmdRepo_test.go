@@ -94,7 +94,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			nil,
 		)
 
-		err := filesCmdRepo.Move(updateUnixFile)
+		err := filesCmdRepo.Move(updateUnixFile, true)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -111,7 +111,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			nil,
 		)
 
-		err := filesCmdRepo.Move(updateUnixFile)
+		err := filesCmdRepo.Move(updateUnixFile, false)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}

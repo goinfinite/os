@@ -45,7 +45,8 @@ func (uc UpdateUnixFile) updateUnixFilePermissions(
 func (uc UpdateUnixFile) updateUnixFilePath(
 	updateUnixFile dto.UpdateUnixFile,
 ) error {
-	err := uc.filesCmdRepo.Move(updateUnixFile)
+	forceMove := false
+	err := uc.filesCmdRepo.Move(updateUnixFile, forceMove)
 	if err != nil {
 		log.Printf("MoveUnixFileInfraError: %s", err.Error())
 		return errors.New("MoveUnixFileInfraError")

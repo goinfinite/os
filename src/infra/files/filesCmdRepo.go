@@ -204,24 +204,18 @@ func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
 	return nil
 }
 
-func (repo FilesCmdRepo) Delete(
-	deleteUnixFiles dto.DeleteUnixFiles,
-) {
-	for _, fileToDelete := range deleteUnixFiles.SourcePaths {
-		fileExists := infraHelper.FileExists(fileToDelete.String())
-		if !fileExists {
-			log.Printf("DeleteFileError (%s): FileNotFound", fileToDelete.String())
-			continue
-		}
-
-		err := os.RemoveAll(fileToDelete.String())
-		if err != nil {
-			log.Printf("DeleteFileError (%s): %s", fileToDelete.String(), err)
-			continue
-		}
-
-		log.Printf("File '%s' deleted.", fileToDelete.String())
+func (repo FilesCmdRepo) Delete(unixFilePath valueObject.UnixFilePath) error {
+	fileExists := infraHelper.FileExists(unixFilePath.String())
+	if !fileExists {
+		return errors.New("DeleteFileError: FileNotFound")
 	}
+
+	err := os.RemoveAll(unixFilePath.String())
+	if err != nil {
+		return errors.New("DeleteFileError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
@@ -269,7 +263,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	return err
 }
 
-func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
+func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, forceMove bool) error {
 	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
 	if !fileToMoveExists {
 		return errors.New("FileToMoveNotFound")
@@ -277,7 +271,14 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile) error {
 
 	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
 	if destinationPathExists {
-		return errors.New("DestinationPathAlreadyExists")
+		if !forceMove {
+			return errors.New("DestinationPathAlreadyExists")
+		}
+
+		err := repo.Delete(*updateUnixFile.DestinationPath)
+		if err != nil {
+			return errors.New("FailedToReplaceTrashFile: " + err.Error())
+		}
 	}
 
 	return os.Rename(

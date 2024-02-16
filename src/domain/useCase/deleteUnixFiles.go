@@ -32,8 +32,16 @@ func DeleteUnixFiles(
 		deleteUnixFiles.SourcePaths = filesToDeleteWithoutNotAllowedPath
 	}
 
-	if deleteUnixFiles.PermanentDelete {
-		filesCmdRepo.Delete(deleteUnixFiles)
+	if deleteUnixFiles.HardDelete {
+		for _, fileToDelete := range deleteUnixFiles.SourcePaths {
+			err := filesCmdRepo.Delete(fileToDelete)
+			if err != nil {
+				log.Printf("DeleteFileError: %s", err.Error())
+				continue
+			}
+
+			log.Printf("File '%s' deleted.", fileToDelete.String())
+		}
 		return
 	}
 
@@ -62,7 +70,8 @@ func DeleteUnixFiles(
 			nil,
 		)
 
-		err = filesCmdRepo.Move(updateUnixFile)
+		forceMove := true
+		err = filesCmdRepo.Move(updateUnixFile, forceMove)
 		if err != nil {
 			log.Printf(
 				"MoveUnixFileToTrashError (%s): %s",

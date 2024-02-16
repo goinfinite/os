@@ -245,17 +245,17 @@ func DeleteFileController(c echo.Context) error {
 
 	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
 
-	permanentDelete := false
-	if requestBody["permanentDelete"] != nil {
-		permanentDeleteBool, assertOk := requestBody["permanentDelete"].(bool)
+	hardDelete := false
+	if requestBody["hardDelete"] != nil {
+		hardDeleteBool, assertOk := requestBody["hardDelete"].(bool)
 		if assertOk {
-			permanentDelete = permanentDeleteBool
+			hardDelete = hardDeleteBool
 		}
 	}
 
 	deleteUnixFilesDto := dto.NewDeleteUnixFiles(
 		sourcePaths,
-		permanentDelete,
+		hardDelete,
 	)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
