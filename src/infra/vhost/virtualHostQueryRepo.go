@@ -291,7 +291,8 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 
 		targetTypeStr = "response-code"
 
-		responseCodeStr := blockContentFirstLineParts[1]
+		responseCodeWithSemicolonStr := blockContentFirstLineParts[1]
+		responseCodeStr := strings.TrimRight(responseCodeWithSemicolonStr, ";")
 		if len(responseCodeStr) == 0 {
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
 		}
