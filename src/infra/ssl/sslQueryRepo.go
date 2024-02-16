@@ -4,13 +4,12 @@ import (
 	"errors"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 type SslQueryRepo struct{}
@@ -70,7 +69,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	}
 	privateKey, err := valueObject.NewSslPrivateKey(vhostCertKeyContentStr)
 	if err != nil {
-		return ssl, errors.New(err.Error() + "(" + firstVhostStr + ")")
+		return ssl, err
 	}
 
 	vhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
@@ -117,97 +116,61 @@ func (repo SslQueryRepo) sslPairFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) getHostnameFromCertFilePath(
-	certFilePath string,
-) (valueObject.Fqdn, error) {
-	certFilePathWithoutBase := filepath.Base(certFilePath)
-	certFileNameWithoutExt := strings.TrimSuffix(certFilePathWithoutBase, ".crt")
+func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
+	// Criar um slice vazio de SslPairs
+	sslPairs := []entity.SslPair{}
 
-	return valueObject.NewFqdn(certFileNameWithoutExt)
-}
-
-func (repo SslQueryRepo) getCertFilesPathWithVhosts(
-	pkiFiles []entity.UnixFile,
-) (map[string][]valueObject.Fqdn, error) {
-	certFilesPathWithVhostsMap := map[string][]valueObject.Fqdn{}
-	for _, pkiFile := range pkiFiles {
-		// TODO: remove when PR 19 is merged
-		isDirPath := pkiFile.MimeType.IsDir()
-		if isDirPath {
-			continue
-		}
-
-		isCertFile := pkiFile.Extension.String() == "crt"
-		if !isCertFile {
-			continue
-		}
-
-		certFilePathStr := pkiFile.Path.String()
-		targetCertFilePathStr := certFilePathStr
-
-		isSymlink := infraHelper.IsSymlink(certFilePathStr)
+	// Criar um map cujo a chave é o caminho do arquivo ".crt" original (target) e o valor é um slice de FQDN que terá o host original (target) e os symlinks
+	certFilePathWithVhosts := map[string][]valueObject.Fqdn{}
+	// Buscar todos os vhosts
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhosts, err := vhostQueryRepo.Get()
+	if err != nil {
+		return sslPairs, errors.New("FailedToGetVhosts")
+	}
+	// Iterar sobre os vhosts
+	for _, vhost := range vhosts {
+		// Montar o caminho do arquivo ".crt" utilizando o vhost da iteração atual
+		certFilePath := pkiConfDir + "/" + vhost.Hostname.String() + ".crt"
+		// Validar se ele é um symlink
+		isSymlink := infraHelper.IsSymlink(certFilePath)
+		// Se for, descobrir qual o caminho do arquivo ".crt" original (target) do vhost da iteração atual através do os.Readlink()
 		if isSymlink {
-			targetCertFilePathFromSymlink, err := os.Readlink(certFilePathStr)
+			targetCertFilePath, err := os.Readlink(certFilePath)
 			if err != nil {
-				log.Printf("FailedToGetCrtFilePathFromSymlink: %s", err.Error())
+				log.Printf("FailedToGetTargetCertFilePathFromSymlink: %s", err.Error())
 				continue
 			}
 
-			targetCertFilePathStr = targetCertFilePathFromSymlink
+			certFilePath = targetCertFilePath
 		}
-
-		_, targetVhostAlreadyExistsInMap := certFilesPathWithVhostsMap[targetCertFilePathStr]
-		if !targetVhostAlreadyExistsInMap {
-			certFilesPathWithVhostsMap[targetCertFilePathStr] = []valueObject.Fqdn{}
+		// Validar se o caminho do arquivo ".crt" já existe no map
+		_, certFilePathAlreadyExistsInMap := certFilePathWithVhosts[certFilePath]
+		// Se não existir, adicionar como chave  com um slice de FQDN vazio como valor
+		if !certFilePathAlreadyExistsInMap {
+			certFilePathWithVhosts[certFilePath] = []valueObject.Fqdn{}
 		}
-
-		vhost, err := repo.getHostnameFromCertFilePath(certFilePathStr)
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), certFilePathStr)
-			continue
-		}
-
-		certFilesPathWithVhostsMap[targetCertFilePathStr] = append(
-			certFilesPathWithVhostsMap[targetCertFilePathStr],
-			vhost,
+		// Adicionar o vhost da iteração atual como valor ao map com a chave igual ao caminho do arquivo ".crt" da iteração atual
+		certFilePathWithVhosts[certFilePath] = append(
+			certFilePathWithVhosts[certFilePath],
+			vhost.Hostname,
 		)
 	}
 
-	return certFilesPathWithVhostsMap, nil
-}
-
-func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
-	sslPairs := []entity.SslPair{}
-
-	pkiFilesPath, _ := valueObject.NewUnixFilePath(pkiConfDir)
-
-	filesQueryRepo := filesInfra.FilesQueryRepo{}
-	pkiFiles, err := filesQueryRepo.Get(pkiFilesPath)
-	if err != nil {
-		return sslPairs, errors.New("FailedToGetPkiFiles: " + err.Error())
-	}
-
-	certFilesPathWithVhostsMap, err := repo.getCertFilesPathWithVhosts(pkiFiles)
-	if err != nil {
-		return sslPairs, errors.New("FailedToGetCertFilesPathWithSymlinksVhosts: " + err.Error())
-	}
-
-	for certFilePath, sslVhosts := range certFilesPathWithVhostsMap {
-		targetVhost, err := repo.getHostnameFromCertFilePath(certFilePath)
+	// Iterar sobre o map
+	for certFilePath, vhosts := range certFilePathWithVhosts {
+		// Enviar o slice de vhosts da iteração atual para o factory
+		sslPair, err := repo.sslPairFactory(vhosts)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), certFilePath)
+			log.Printf("FailedToGetSslPair (%s): %s", certFilePath, err.Error())
 			continue
 		}
 
-		ssl, err := repo.sslPairFactory(sslVhosts)
-		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", targetVhost.String(), err.Error())
-			continue
-		}
-
-		sslPairs = append(sslPairs, ssl)
+		// Adicionar o SslPair retornado da factory ao slice de SslPairs
+		sslPairs = append(sslPairs, sslPair)
 	}
 
+	// Retornar os SslPairs
 	return sslPairs, nil
 }
 
