@@ -98,6 +98,16 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			parentDomainPtr = &rootDomain
 		}
 
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			log.Printf("FailedToGetPrimaryHostname: %s", err.Error())
+			continue
+		}
+		isPrimary := serverName == primaryHostname
+		if isPrimary {
+			vhostType, _ = valueObject.NewVirtualHostType("primary")
+		}
+
 		rootDirectorySuffix := "/" + serverName.String()
 		if isPrimaryDomain {
 			rootDirectorySuffix = ""
