@@ -352,7 +352,8 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		}
 	}
 
-	mappingId, err := valueObject.NewMappingId(locationBlockIndex)
+	mappingIdInt := locationBlockIndex + 1
+	mappingId, err := valueObject.NewMappingId(mappingIdInt)
 	if err != nil {
 		return mapping, err
 	}
