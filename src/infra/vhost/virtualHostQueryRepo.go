@@ -110,10 +110,6 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			continue
 		}
 
-		if isAliases {
-			vhostType, _ = valueObject.NewVirtualHostType("alias")
-		}
-
 		vhost := entity.NewVirtualHost(
 			serverName,
 			vhostType,
