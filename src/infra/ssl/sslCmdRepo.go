@@ -88,7 +88,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		}
 	}
 
-	firstVhostStr := addSslPair.VirtualHosts[0].String()
+	firstVhostStr := vhostsWithoutAliases[0].String()
 	firstVhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
 	firstVhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
 
