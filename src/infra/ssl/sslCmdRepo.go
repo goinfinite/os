@@ -74,7 +74,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
-		return errors.New("FailedToGetVhosts")
+		return errors.New("FailedToGetVhosts: " + err.Error())
 	}
 
 	vhostsWithoutAliases := []valueObject.Fqdn{}
