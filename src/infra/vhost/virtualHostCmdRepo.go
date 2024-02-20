@@ -188,8 +188,8 @@ func (repo VirtualHostCmdRepo) Add(addDto dto.AddVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	targetSelfSignedSslDirPath := "/app/conf/pki"
-	err = infraHelper.CreateSelfSignedSsl(targetSelfSignedSslDirPath, hostnameStr)
+	selfSignedSslDirPath := "/app/conf/pki"
+	err = infraHelper.CreateSelfSignedSsl(selfSignedSslDirPath, hostnameStr)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
 	}
