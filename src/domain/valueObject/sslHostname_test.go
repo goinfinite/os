@@ -9,6 +9,8 @@ func TestSslHostname(t *testing.T) {
 			"8.8.8.8",
 			"google.com",
 			"speedia.net",
+			"*.speedia.net",
+			"*.mysite.com",
 		}
 		for _, sslHostname := range validSslHostname {
 			_, err := NewSslHostname(sslHostname)
