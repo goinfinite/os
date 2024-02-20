@@ -12,6 +12,8 @@ func ParseBoolParam(value interface{}) (bool, error) {
 	var output bool
 	var err error
 	switch v := value.(type) {
+	case bool:
+		output = v
 	case string:
 		output, err = strconv.ParseBool(v)
 	case int, int8, int16, int32, int64:
