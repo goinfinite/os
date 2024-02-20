@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-func CreateSelfSignedSsl(virtualHost string) error {
-	vhostCertKeyFilePath := "/app/conf/pki/" + virtualHost + ".key"
-	vhostCertFilePath := "/app/conf/pki/" + virtualHost + ".crt"
+func CreateSelfSignedSsl(dirPath string, virtualHost string) error {
+	vhostCertKeyFilePath := dirPath + "/" + virtualHost + ".key"
+	vhostCertFilePath := dirPath + "/" + virtualHost + ".crt"
 
 	_, err := RunCmd(
 		"openssl",
@@ -25,7 +25,7 @@ func CreateSelfSignedSsl(virtualHost string) error {
 		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+virtualHost,
 	)
 	if err != nil {
-		return fmt.Errorf("ReplaceWithSelfSignedFailed (%s): %s", virtualHost, err.Error())
+		return fmt.Errorf("CreateSelfSignedSslFailed (%s): %s", virtualHost, err.Error())
 	}
 
 	return nil

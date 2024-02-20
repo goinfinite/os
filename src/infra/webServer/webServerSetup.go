@@ -85,7 +85,8 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	err = infraHelper.CreateSelfSignedSsl(vhostStr)
+	targetSelfSignedSslDirPath := "/app/conf/pki"
+	err = infraHelper.CreateSelfSignedSsl(targetSelfSignedSslDirPath, vhostStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}

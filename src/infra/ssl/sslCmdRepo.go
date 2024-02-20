@@ -62,7 +62,8 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	return infraHelper.CreateSelfSignedSsl(vhostStr)
+	targetSelfSignedSslDirPath := "/app/conf/pki"
+	return infraHelper.CreateSelfSignedSsl(targetSelfSignedSslDirPath, vhostStr)
 }
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
