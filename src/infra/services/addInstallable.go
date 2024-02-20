@@ -250,7 +250,7 @@ func addPhp() error {
 	}
 
 	err = SupervisordFacade{}.AddConf(
-		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceNamePanic("php-webserver"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic("latest"),
