@@ -9,54 +9,70 @@ import (
 )
 
 type SslCertificate struct {
-	Id          valueObject.SslId
-	Certificate valueObject.SslCertificateContent
-	CommonName  *valueObject.Fqdn
-	IssuedAt    valueObject.UnixTime
-	ExpiresAt   valueObject.UnixTime
-	IsCA        bool
+	Id                 valueObject.SslId
+	CertificateContent valueObject.SslCertificateContent
+	CommonName         *valueObject.SslHostname
+	IsCA               bool
+	AltNames           []valueObject.SslHostname
+	IssuedAt           valueObject.UnixTime
+	ExpiresAt          valueObject.UnixTime
 }
 
 func NewSslCertificate(
 	sslCertificateContent valueObject.SslCertificateContent,
 ) (SslCertificate, error) {
+	var sslCertificate SslCertificate
+
 	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
 	if block == nil {
-		return SslCertificate{}, errors.New("SslCertificateContentDecodeError")
+		return sslCertificate, errors.New("SslCertificateContentDecodeError")
 	}
 
 	parsedCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return SslCertificate{}, errors.New("SslCertificateContentParseError")
+		return sslCertificate, errors.New("SslCertificateContentParseError")
 	}
 
 	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(
 		sslCertificateContent,
 	)
 	if err != nil {
-		return SslCertificate{}, err
+		return sslCertificate, err
 	}
 
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
-	var commonNamePtr *valueObject.Fqdn
+	var commonNamePtr *valueObject.SslHostname
 	commonNamePtr = nil
 	if !parsedCert.IsCA {
-		commonName, err := valueObject.NewFqdn(parsedCert.Subject.CommonName)
+		commonName, err := valueObject.NewSslHostname(parsedCert.Subject.CommonName)
 		if err != nil {
-			return SslCertificate{}, errors.New("InvalidSslCertificateCommonName")
+			return sslCertificate, errors.New("InvalidSslCertificateCommonName")
 		}
 		commonNamePtr = &commonName
 	}
 
+	altNames := []valueObject.SslHostname{}
+	if len(parsedCert.DNSNames) > 0 {
+		for _, certDnsName := range parsedCert.DNSNames {
+			altName, err := valueObject.NewSslHostname(certDnsName)
+			if err != nil {
+				continue
+			}
+
+			altNames = append(altNames, altName)
+		}
+	}
+
 	return SslCertificate{
-		Id:          sslCertificateId,
-		Certificate: sslCertificateContent,
-		CommonName:  commonNamePtr,
-		IssuedAt:    issuedAt,
-		ExpiresAt:   expiresAt,
-		IsCA:        parsedCert.IsCA,
+		Id:                 sslCertificateId,
+		CertificateContent: sslCertificateContent,
+		CommonName:         commonNamePtr,
+		IsCA:               parsedCert.IsCA,
+		AltNames:           altNames,
+		IssuedAt:           issuedAt,
+		ExpiresAt:          expiresAt,
 	}, nil
 }
 
@@ -68,8 +84,4 @@ func NewSslCertificatePanic(
 		panic(err)
 	}
 	return sslCertificate
-}
-
-func (sslCertificate SslCertificate) String() string {
-	return sslCertificate.Certificate.String()
 }

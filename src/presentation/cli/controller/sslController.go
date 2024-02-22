@@ -7,6 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ func GetSslPairsController() *cobra.Command {
 }
 
 func AddSslPairController() *cobra.Command {
-	var hostnameStr string
+	var virtualHostsSlice []string
 	var certificateFilePathStr string
 	var keyFilePathStr string
 
@@ -38,6 +39,11 @@ func AddSslPairController() *cobra.Command {
 		Use:   "add",
 		Short: "AddNewSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
+			var virtualHosts []valueObject.Fqdn
+			for _, vhost := range virtualHostsSlice {
+				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+			}
+
 			certificateContentStr, err := infraHelper.GetFileContent(certificateFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
@@ -53,15 +59,17 @@ func AddSslPairController() *cobra.Command {
 			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
 
 			addSslDto := dto.NewAddSslPair(
-				valueObject.NewFqdnPanic(hostnameStr),
+				virtualHosts,
 				sslCertificate,
 				sslPrivateKey,
 			)
 
-			sslCmdRepo := sslInfra.SslCmdRepo{}
+			sslCmdRepo := sslInfra.NewSslCmdRepo()
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.AddSslPair(
 				sslCmdRepo,
+				vhostQueryRepo,
 				addSslDto,
 			)
 			if err != nil {
@@ -72,8 +80,8 @@ func AddSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "t", "", "Hostname")
-	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringSliceVarP(&virtualHostsSlice, "virtualHosts", "t", []string{}, "VirtualHosts")
+	cmd.MarkFlagRequired("virtualHosts")
 	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "CertificateFilePath")
 	cmd.MarkFlagRequired("certFilePath")
 	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "KeyFilePath")
@@ -91,7 +99,7 @@ func DeleteSslPairController() *cobra.Command {
 			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
 			cronQueryRepo := sslInfra.SslQueryRepo{}
-			cronCmdRepo := sslInfra.SslCmdRepo{}
+			cronCmdRepo := sslInfra.NewSslCmdRepo()
 
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,

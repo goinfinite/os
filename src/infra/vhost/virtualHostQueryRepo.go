@@ -132,13 +132,13 @@ func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 
 	configsDirHandler, err := os.Open(configurationsDir)
 	if err != nil {
-		log.Fatal(err)
+		return vhostsList, errors.New("FailedToOpenConfDir: " + err.Error())
 	}
 	defer configsDirHandler.Close()
 
 	files, err := configsDirHandler.Readdir(-1)
 	if err != nil {
-		log.Fatal(err)
+		return vhostsList, errors.New("FailedToReadConfDir: " + err.Error())
 	}
 
 	for _, file := range files {

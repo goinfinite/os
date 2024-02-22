@@ -2,135 +2,134 @@ package sslInfra
 
 import (
 	"errors"
+	"log"
 	"os"
-	"regexp"
-	"strings"
-	"unicode"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
-type SslCmdRepo struct{}
+const PkiConfDir = "/app/conf/pki"
 
-func (repo SslCmdRepo) vhsslConfigFactory(
-	sslCertFilePath string,
-	sslKeyFilePath string,
-	isChained bool,
-) string {
-	vhsslChainedConfig := ""
-	sslCertChain := "0"
-	if isChained {
-		sslCertChain = "1"
-		vhsslChainedConfig = `
-  CACertPath ` + sslCertFilePath + `
-  CACertFile ` + sslCertFilePath + ``
+type SslCmdRepo struct {
+	sslQueryRepo SslQueryRepo
+}
+
+func NewSslCmdRepo() SslCmdRepo {
+	return SslCmdRepo{
+		sslQueryRepo: SslQueryRepo{},
+	}
+}
+
+func (repo SslCmdRepo) forceSymlink(
+	pkiSourcePath string,
+	pkiTargetPath string,
+) error {
+	err := os.Remove(pkiTargetPath)
+	if err != nil && !os.IsNotExist(err) {
+		return errors.New("FailedToDeletePkiFile: " + err.Error())
 	}
 
-	vhsslConfigBreakline := "\n\n"
-	vhsslConfig := `
-vhssl {
-  keyFile    ` + sslKeyFilePath + `
-  certFile   ` + sslCertFilePath + `
-  certChain  ` + sslCertChain +
-		vhsslChainedConfig + `
-}` + vhsslConfigBreakline
+	err = os.Symlink(pkiSourcePath, pkiTargetPath)
+	if err != nil {
+		return errors.New("AddPkiSymlinkError: " + err.Error())
+	}
 
-	return vhsslConfig
+	return nil
+}
+
+func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
+	vhostStr := vhost.String()
+
+	vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
+	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
+	if vhostCertFileExists {
+		err := os.Remove(vhostCertFilePath)
+		if err != nil {
+			return errors.New("FailedToDeleteCertFile: " + err.Error())
+		}
+	}
+
+	vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
+	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
+	if vhostCertKeyFileExists {
+		err := os.Remove(vhostCertKeyFilePath)
+		if err != nil {
+			return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
+		}
+	}
+
+	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhostStr)
 }
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
-	sslQueryRepo := SslQueryRepo{}
-
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(addSslPair.Hostname)
-	if err != nil {
-		return err
+	if len(addSslPair.VirtualHosts) == 0 {
+		return errors.New("NoVirtualHostsProvidedToAddSslPair")
 	}
 
-	sslBaseDirPath := "/speedia/pki/" + addSslPair.Hostname.String()
-	sslKeyFilePath := sslBaseDirPath + "/ssl.key"
-	sslCertFilePath := sslBaseDirPath + "/ssl.crt"
+	firstVhostStr := addSslPair.VirtualHosts[0].String()
+	firstVhostCertFilePath := PkiConfDir + "/" + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := PkiConfDir + "/" + firstVhostStr + ".key"
 
-	err = infraHelper.MakeDir(sslBaseDirPath)
-	if err != nil {
-		return err
+	for _, vhost := range addSslPair.VirtualHosts {
+		vhostStr := vhost.String()
+		vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
+		vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
+
+		shouldBeSymlink := vhostStr != firstVhostStr
+		if shouldBeSymlink {
+			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
+			if err != nil {
+				log.Printf("AddSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
+				continue
+			}
+
+			err = repo.forceSymlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
+			if err != nil {
+				log.Printf("AddSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
+				continue
+			}
+
+			continue
+		}
+
+		shouldOverwrite := true
+		err := infraHelper.UpdateFile(
+			vhostCertFilePath,
+			addSslPair.Certificate.CertificateContent.String(),
+			shouldOverwrite,
+		)
+		if err != nil {
+			return err
+		}
+
+		err = infraHelper.UpdateFile(
+			vhostCertKeyFilePath,
+			addSslPair.Key.String(),
+			shouldOverwrite,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = infraHelper.UpdateFile(sslCertFilePath, addSslPair.Certificate.String(), true)
-	if err != nil {
-		return err
-	}
-
-	err = infraHelper.UpdateFile(sslKeyFilePath, addSslPair.Key.String(), true)
-	if err != nil {
-		return err
-	}
-
-	sslPairCertificate := addSslPair.Certificate
-	sslCertificates, err := sslQueryRepo.SslCertificatesFactory(
-		sslPairCertificate.Certificate,
-	)
-	if err != nil {
-		return err
-	}
-
-	newSsl, err := sslQueryRepo.SslPairFactory(
-		addSslPair.Hostname,
-		addSslPair.Key,
-		sslCertificates,
-	)
-	if err != nil {
-		return err
-	}
-
-	isChainedCert := true
-	if len(newSsl.ChainCertificates) == 1 {
-		isChainedCert = false
-	}
-
-	vhsslConfig := repo.vhsslConfigFactory(
-		sslCertFilePath,
-		sslKeyFilePath,
-		isChainedCert,
-	)
-	err = infraHelper.UpdateFile(vhostConfigFilePath.String(), vhsslConfig, false)
-	return err
+	return nil
 }
 
 func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
-	sslQueryRepo := SslQueryRepo{}
-
-	sslToDelete, err := sslQueryRepo.GetSslPairById(sslId)
+	sslPairToDelete, err := repo.sslQueryRepo.GetSslPairById(sslId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}
 
-	vhostConfigFilePath, err := sslQueryRepo.GetVhostConfigFilePath(sslToDelete.Hostname)
-	if err != nil {
-		return err
+	for _, vhost := range sslPairToDelete.VirtualHosts {
+		err = repo.ReplaceWithSelfSigned(vhost)
+		if err != nil {
+			log.Printf("%s (%s)", err.Error(), vhost.String())
+			continue
+		}
 	}
 
-	vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
-	if err != nil {
-		return err
-	}
-
-	sslBaseDirPath := "/speedia/pki/" + sslToDelete.Hostname.String()
-	err = os.RemoveAll(sslBaseDirPath)
-	if err != nil {
-		return err
-	}
-
-	vhostConfigVhsslMatch := regexp.MustCompile(`vhssl\s*\{[^}]*\}`)
-	vhostConfigWithoutVhssl := vhostConfigVhsslMatch.ReplaceAllString(vhostConfigContentStr, "")
-	vhostConfigWithoutSpaces := strings.TrimRightFunc(vhostConfigWithoutVhssl, unicode.IsSpace)
-	vhostConfigWithBreakLines := vhostConfigWithoutSpaces + "\n\n"
-
-	err = infraHelper.UpdateFile(
-		vhostConfigFilePath.String(),
-		vhostConfigWithBreakLines,
-		true,
-	)
-	return err
+	return nil
 }

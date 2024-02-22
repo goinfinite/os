@@ -10,6 +10,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
 type WebServerSetup struct{}
@@ -85,22 +86,7 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	_, err = infraHelper.RunCmd(
-		"openssl",
-		"req",
-		"-x509",
-		"-nodes",
-		"-days",
-		"365",
-		"-newkey",
-		"rsa:2048",
-		"-keyout",
-		"/app/conf/pki/"+vhostStr+".key",
-		"-out",
-		"/app/conf/pki/"+vhostStr+".crt",
-		"-subj",
-		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+vhostStr,
-	)
+	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, vhostStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}
@@ -114,11 +100,11 @@ func (ws WebServerSetup) FirstSetup() {
 }
 
 func (ws WebServerSetup) OnStartSetup() {
-	defaultLogPreffix := "WsOnStartupSetup"
+	defaultLogPrefix := "WsOnStartupSetup"
 
 	containerResources, err := o11yInfra.O11yQueryRepo{}.GetOverview()
 	if err != nil {
-		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPreffix)
+		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
 	}
 
 	cpuCores := containerResources.HardwareSpecs.CpuCores
@@ -131,7 +117,7 @@ func (ws WebServerSetup) OnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPreffix)
+		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
 	if workerCount == cpuCoresStr {
@@ -148,12 +134,12 @@ func (ws WebServerSetup) OnStartSetup() {
 		nginxConfFilePath,
 	)
 	if err != nil {
-		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPreffix)
+		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
 	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
 	if err != nil {
-		log.Fatalf("%sRestartNginxFailed", defaultLogPreffix)
+		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
 	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php")
@@ -162,7 +148,7 @@ func (ws WebServerSetup) OnStartSetup() {
 			containerResources.HardwareSpecs.MemoryTotal,
 		)
 		if err != nil {
-			log.Fatalf("%s%s", defaultLogPreffix, err.Error())
+			log.Fatalf("%s%s", defaultLogPrefix, err.Error())
 		}
 	}
 }

@@ -49,7 +49,8 @@ func (unixFilePath UnixFilePath) isRelative() bool {
 }
 
 func (unixFilePath UnixFilePath) GetWithoutExtension() UnixFilePath {
-	unixFilePathWithoutExtStr := strings.Split(string(unixFilePath), ".")[0]
+	unixFilePathExtStr := filepath.Ext(string(unixFilePath))
+	unixFilePathWithoutExtStr := strings.TrimSuffix(string(unixFilePath), unixFilePathExtStr)
 	unixFilePathWithoutExt, _ := NewUnixFilePath(unixFilePathWithoutExtStr)
 	return unixFilePathWithoutExt
 }
@@ -58,6 +59,14 @@ func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
 	unixFileBase := filepath.Base(string(unixFilePath))
 	unixFileName, _ := NewUnixFileName(unixFileBase)
 	return unixFileName
+}
+
+func (unixFilePath UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
+	unixFileBase := filepath.Base(string(unixFilePath))
+	unixFilePathExt := filepath.Ext(string(unixFilePath))
+	unixFileBaseWithoutExtStr := strings.TrimSuffix(string(unixFileBase), unixFilePathExt)
+	unixFileNameWithoutExt, _ := NewUnixFileName(unixFileBaseWithoutExtStr)
+	return unixFileNameWithoutExt
 }
 
 func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
