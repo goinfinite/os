@@ -26,19 +26,15 @@ func AddSslPair(
 		return errors.New("VhostsNotFound")
 	}
 
-	existingVhostsStr := []string{}
-	for _, vhost := range existingVhosts {
-		existingVhostsStr = append(existingVhostsStr, vhost.Hostname.String())
-	}
-
 	validSslVirtualHosts := []valueObject.Fqdn{}
-	for _, vhost := range addSslPair.VirtualHosts {
-		if !slices.Contains(existingVhostsStr, vhost.String()) {
-			log.Printf("VhostDoesNotExists: %s", vhost.String())
+	for _, vhost := range existingVhosts {
+		if vhost.Type.String() == "alias" {
 			continue
 		}
 
-		validSslVirtualHosts = append(validSslVirtualHosts, vhost)
+		if slices.Contains(addSslPair.VirtualHosts, vhost.Hostname) {
+			validSslVirtualHosts = append(validSslVirtualHosts, vhost.Hostname)
+		}
 	}
 
 	if len(validSslVirtualHosts) == 0 {
