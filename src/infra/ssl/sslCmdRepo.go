@@ -4,15 +4,13 @@ import (
 	"errors"
 	"log"
 	"os"
-	"slices"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-const pkiConfDir = "/app/conf/pki"
+const PkiConfDir = "/app/conf/pki"
 
 type SslCmdRepo struct {
 	sslQueryRepo SslQueryRepo
@@ -44,7 +42,7 @@ func (repo SslCmdRepo) forceSymlink(
 func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	vhostStr := vhost.String()
 
-	vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
+	vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
 	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
 	if vhostCertFileExists {
 		err := os.Remove(vhostCertFilePath)
@@ -53,7 +51,7 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
+	vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
 	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
 	if vhostCertKeyFileExists {
 		err := os.Remove(vhostCertKeyFilePath)
@@ -62,8 +60,7 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	selfSignedSslDirPath := "/app/conf/pki"
-	return infraHelper.CreateSelfSignedSsl(selfSignedSslDirPath, vhostStr)
+	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhostStr)
 }
 
 func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
@@ -71,31 +68,14 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		return errors.New("NoVirtualHostsProvidedToAddSslPair")
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhosts, err := vhostQueryRepo.Get()
-	if err != nil {
-		return errors.New("FailedToGetVhosts: " + err.Error())
-	}
+	firstVhostStr := addSslPair.VirtualHosts[0].String()
+	firstVhostCertFilePath := PkiConfDir + "/" + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := PkiConfDir + "/" + firstVhostStr + ".key"
 
-	vhostsWithoutAliases := []valueObject.Fqdn{}
-	for _, vhost := range vhosts {
-		if vhost.Type.String() == "alias" {
-			continue
-		}
-
-		if slices.Contains(addSslPair.VirtualHosts, vhost.Hostname) {
-			vhostsWithoutAliases = append(vhostsWithoutAliases, vhost.Hostname)
-		}
-	}
-
-	firstVhostStr := vhostsWithoutAliases[0].String()
-	firstVhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
-	firstVhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
-
-	for _, vhost := range vhostsWithoutAliases {
+	for _, vhost := range addSslPair.VirtualHosts {
 		vhostStr := vhost.String()
-		vhostCertFilePath := pkiConfDir + "/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := pkiConfDir + "/" + vhostStr + ".key"
+		vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
+		vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
