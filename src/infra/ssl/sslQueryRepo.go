@@ -168,8 +168,8 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	}
 
 	for sslPairIndex, sslPair := range sslPairs {
-		sslPair.VirtualHosts = sslPairIdsVhostsMap[sslPair.Id]
-
+		correctSslPairsVhosts := sslPairIdsVhostsMap[sslPair.Id]
+		sslPair.VirtualHosts = correctSslPairsVhosts
 		sslPairs[sslPairIndex] = sslPair
 	}
 
