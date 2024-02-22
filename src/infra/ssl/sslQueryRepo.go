@@ -3,13 +3,12 @@ package sslInfra
 import (
 	"errors"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 type SslQueryRepo struct{}
@@ -55,29 +54,26 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 }
 
 func (repo SslQueryRepo) sslPairFactory(
-	sslVhosts []valueObject.Fqdn,
+	crtFile entity.UnixFile,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
-	firstVhost := sslVhosts[0]
-	firstVhostStr := firstVhost.String()
-
-	vhostCertKeyFilePath := pkiConfDir + "/" + firstVhostStr + ".key"
-	vhostCertKeyContentStr, err := infraHelper.GetFileContent(vhostCertKeyFilePath)
+	vhostCrtKeyFilePath := crtFile.Path.GetWithoutExtension().String() + ".key"
+	vhostCrtKeyContentStr, err := infraHelper.GetFileContent(vhostCrtKeyFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
 	}
-	privateKey, err := valueObject.NewSslPrivateKey(vhostCertKeyContentStr)
+	privateKey, err := valueObject.NewSslPrivateKey(vhostCrtKeyContentStr)
 	if err != nil {
 		return ssl, err
 	}
 
-	vhostCertFilePath := pkiConfDir + "/" + firstVhostStr + ".crt"
-	vhostCertFileContentStr, err := infraHelper.GetFileContent(vhostCertFilePath)
+	vhostCrtFilePath := crtFile.Path.String()
+	vhostCrtFileContentStr, err := infraHelper.GetFileContent(vhostCrtFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
 	}
-	certificate, err := valueObject.NewSslCertificateContent(vhostCertFileContentStr)
+	certificate, err := valueObject.NewSslCertificateContent(vhostCrtFileContentStr)
 	if err != nil {
 		return ssl, err
 	}
@@ -107,9 +103,15 @@ func (repo SslQueryRepo) sslPairFactory(
 		return ssl, err
 	}
 
+	crtFileNameWithoutExt := crtFile.Path.GetFileNameWithoutExtension()
+	vhost, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	if err != nil {
+		return ssl, err
+	}
+
 	return entity.NewSslPair(
 		hashId,
-		sslVhosts,
+		[]valueObject.Fqdn{vhost},
 		mainCertificate,
 		privateKey,
 		chainCertificates,
@@ -119,50 +121,60 @@ func (repo SslQueryRepo) sslPairFactory(
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhosts, err := vhostQueryRepo.Get()
+	pkiDirPath, _ := valueObject.NewUnixFilePath("/app/conf/pki")
+
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	files, err := filesQueryRepo.Get(pkiDirPath)
 	if err != nil {
-		return sslPairs, errors.New("FailedToGetVhosts")
+		return sslPairs, errors.New("FailedToGetFiles: " + err.Error())
 	}
 
-	certFilePathWithVhosts := map[string][]valueObject.Fqdn{}
-	for _, vhost := range vhosts {
-		if vhost.Type.String() == "alias" {
+	crtFiles := []entity.UnixFile{}
+	for _, file := range files {
+		if file.MimeType.IsDir() {
 			continue
 		}
 
-		certFilePath := pkiConfDir + "/" + vhost.Hostname.String() + ".crt"
+		if file.Extension.String() == "crt" {
+			crtFiles = append(crtFiles, file)
+		}
+	}
 
-		isSymlink := infraHelper.IsSymlink(certFilePath)
-		if isSymlink {
-			targetCertFilePath, err := os.Readlink(certFilePath)
-			if err != nil {
-				log.Printf("FailedToGetTargetCertFilePathFromSymlink: %s", err.Error())
-				continue
-			}
-
-			certFilePath = targetCertFilePath
+	repeatedSslPairIdsWithVhosts := map[valueObject.SslId][]valueObject.Fqdn{}
+	for _, crtFile := range crtFiles {
+		sslPair, err := repo.sslPairFactory(crtFile)
+		if err != nil {
+			log.Printf("FailedToGetSslPair (%s): %s", crtFile.Path, err.Error())
 		}
 
-		_, certFilePathAlreadyExistsInMap := certFilePathWithVhosts[certFilePath]
-		if !certFilePathAlreadyExistsInMap {
-			certFilePathWithVhosts[certFilePath] = []valueObject.Fqdn{}
+		_, sslPairIdAlreadySavedInMap := repeatedSslPairIdsWithVhosts[sslPair.Id]
+		if !sslPairIdAlreadySavedInMap {
+			repeatedSslPairIdsWithVhosts[sslPair.Id] = []valueObject.Fqdn{}
+
+			sslPairs = append(sslPairs, sslPair)
+
+			continue
 		}
 
-		certFilePathWithVhosts[certFilePath] = append(
-			certFilePathWithVhosts[certFilePath],
-			vhost.Hostname,
+		uniqueVhost := sslPair.VirtualHosts[0]
+		repeatedSslPairIdsWithVhosts[sslPair.Id] = append(
+			repeatedSslPairIdsWithVhosts[sslPair.Id],
+			uniqueVhost,
 		)
 	}
 
-	for certFilePath, vhosts := range certFilePathWithVhosts {
-		sslPair, err := repo.sslPairFactory(vhosts)
-		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", certFilePath, err.Error())
+	for sslPairIndex, sslPair := range sslPairs {
+		_, sslPairIdExistsInMap := repeatedSslPairIdsWithVhosts[sslPair.Id]
+		if !sslPairIdExistsInMap {
 			continue
 		}
 
-		sslPairs = append(sslPairs, sslPair)
+		sslPair.VirtualHosts = append(
+			sslPair.VirtualHosts,
+			repeatedSslPairIdsWithVhosts[sslPair.Id]...,
+		)
+
+		sslPairs[sslPairIndex] = sslPair
 	}
 
 	return sslPairs, nil
