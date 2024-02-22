@@ -10,6 +10,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
 type WebServerSetup struct{}
@@ -85,8 +86,7 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	selfSignedSslDirPath := "/app/conf/pki"
-	err = infraHelper.CreateSelfSignedSsl(selfSignedSslDirPath, vhostStr)
+	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, vhostStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}
