@@ -7,7 +7,6 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
@@ -54,26 +53,25 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 }
 
 func (repo SslQueryRepo) sslPairFactory(
-	crtFile entity.UnixFile,
+	crtFilePath valueObject.UnixFilePath,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
-	vhostCrtKeyFilePath := crtFile.Path.GetWithoutExtension().String() + ".key"
-	vhostCrtKeyContentStr, err := infraHelper.GetFileContent(vhostCrtKeyFilePath)
+	crtKeyFilePath := crtFilePath.GetWithoutExtension().String() + ".key"
+	crtKeyContentStr, err := infraHelper.GetFileContent(crtKeyFilePath)
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
 	}
-	privateKey, err := valueObject.NewSslPrivateKey(vhostCrtKeyContentStr)
+	privateKey, err := valueObject.NewSslPrivateKey(crtKeyContentStr)
 	if err != nil {
 		return ssl, err
 	}
 
-	vhostCrtFilePath := crtFile.Path.String()
-	vhostCrtFileContentStr, err := infraHelper.GetFileContent(vhostCrtFilePath)
+	crtFileContentStr, err := infraHelper.GetFileContent(crtFilePath.String())
 	if err != nil {
 		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
 	}
-	certificate, err := valueObject.NewSslCertificateContent(vhostCrtFileContentStr)
+	certificate, err := valueObject.NewSslCertificateContent(crtFileContentStr)
 	if err != nil {
 		return ssl, err
 	}
@@ -103,7 +101,7 @@ func (repo SslQueryRepo) sslPairFactory(
 		return ssl, err
 	}
 
-	crtFileNameWithoutExt := crtFile.Path.GetFileNameWithoutExtension()
+	crtFileNameWithoutExt := crtFilePath.GetFileNameWithoutExtension()
 	vhost, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		return ssl, err
@@ -121,30 +119,37 @@ func (repo SslQueryRepo) sslPairFactory(
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	pkiDirPath, _ := valueObject.NewUnixFilePath("/app/conf/pki")
-
-	filesQueryRepo := filesInfra.FilesQueryRepo{}
-	files, err := filesQueryRepo.Get(pkiDirPath)
+	crtFilePathsStr, err := infraHelper.RunCmd(
+		"find",
+		PkiConfDir,
+		"(",
+		"-type",
+		"f",
+		"-o",
+		"-type",
+		"l",
+		")",
+		"-name",
+		"*.crt",
+	)
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetFiles: " + err.Error())
 	}
 
-	crtFiles := []entity.UnixFile{}
-	for _, file := range files {
-		if file.MimeType.IsDir() {
+	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
+
+	repeatedSslPairIdsWithVhosts := map[valueObject.SslId][]valueObject.Fqdn{}
+	for _, crtFilePathStr := range crtFilePaths {
+		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), crtFilePathStr)
 			continue
 		}
 
-		if file.Extension.String() == "crt" {
-			crtFiles = append(crtFiles, file)
-		}
-	}
-
-	repeatedSslPairIdsWithVhosts := map[valueObject.SslId][]valueObject.Fqdn{}
-	for _, crtFile := range crtFiles {
-		sslPair, err := repo.sslPairFactory(crtFile)
+		sslPair, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", crtFile.Path, err.Error())
+			log.Printf("FailedToGetSslPair (%s): %s", crtFilePath, err.Error())
+			continue
 		}
 
 		_, sslPairIdAlreadySavedInMap := repeatedSslPairIdsWithVhosts[sslPair.Id]
