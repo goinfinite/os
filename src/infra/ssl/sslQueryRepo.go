@@ -133,12 +133,12 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 		"*.crt",
 	)
 	if err != nil {
-		return sslPairs, errors.New("FailedToGetFiles: " + err.Error())
+		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
 	}
 
 	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
 
-	repeatedSslPairIdsWithVhosts := map[valueObject.SslId][]valueObject.Fqdn{}
+	sslPairIdsVhostsMap := map[valueObject.SslId][]valueObject.Fqdn{}
 	for _, crtFilePathStr := range crtFilePaths {
 		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
 		if err != nil {
@@ -152,32 +152,23 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 			continue
 		}
 
-		_, sslPairIdAlreadySavedInMap := repeatedSslPairIdsWithVhosts[sslPair.Id]
-		if !sslPairIdAlreadySavedInMap {
-			repeatedSslPairIdsWithVhosts[sslPair.Id] = []valueObject.Fqdn{}
+		pairMainVhost := sslPair.VirtualHosts[0]
 
-			sslPairs = append(sslPairs, sslPair)
-
+		_, pairIdAlreadyExists := sslPairIdsVhostsMap[sslPair.Id]
+		if pairIdAlreadyExists {
+			sslPairIdsVhostsMap[sslPair.Id] = append(
+				sslPairIdsVhostsMap[sslPair.Id],
+				pairMainVhost,
+			)
 			continue
 		}
 
-		uniqueVhost := sslPair.VirtualHosts[0]
-		repeatedSslPairIdsWithVhosts[sslPair.Id] = append(
-			repeatedSslPairIdsWithVhosts[sslPair.Id],
-			uniqueVhost,
-		)
+		sslPairIdsVhostsMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhost}
+		sslPairs = append(sslPairs, sslPair)
 	}
 
 	for sslPairIndex, sslPair := range sslPairs {
-		_, sslPairIdExistsInMap := repeatedSslPairIdsWithVhosts[sslPair.Id]
-		if !sslPairIdExistsInMap {
-			continue
-		}
-
-		sslPair.VirtualHosts = append(
-			sslPair.VirtualHosts,
-			repeatedSslPairIdsWithVhosts[sslPair.Id]...,
-		)
+		sslPair.VirtualHosts = sslPairIdsVhostsMap[sslPair.Id]
 
 		sslPairs[sslPairIndex] = sslPair
 	}
