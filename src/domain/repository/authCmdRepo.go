@@ -10,5 +10,5 @@ type AuthCmdRepo interface {
 		accountId valueObject.AccountId,
 		expiresIn valueObject.UnixTime,
 		ipAddress valueObject.IpAddress,
-	) entity.AccessToken
+	) (entity.AccessToken, error)
 }

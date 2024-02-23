@@ -1,6 +1,7 @@
 package authInfra
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -17,11 +18,13 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	accountId valueObject.AccountId,
 	expiresIn valueObject.UnixTime,
 	ipAddress valueObject.IpAddress,
-) entity.AccessToken {
+) (entity.AccessToken, error) {
+	var accessToken entity.AccessToken
+
 	jwtSecret := os.Getenv("JWT_SECRET")
 	apiURL, err := infraHelper.GetPrimaryHostname()
 	if err != nil {
-		panic("PrimaryHostnameNotFound")
+		return accessToken, errors.New("PrimaryHostnameNotFound")
 	}
 
 	now := time.Now()
@@ -39,7 +42,7 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStrUnparsed, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		panic("SessionTokenGenerationError")
+		return accessToken, errors.New("SessionTokenGenerationError")
 	}
 
 	tokenType := valueObject.NewAccessTokenTypePanic("sessionToken")
@@ -49,5 +52,5 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 		tokenType,
 		expiresIn,
 		tokenStr,
-	)
+	), nil
 }
