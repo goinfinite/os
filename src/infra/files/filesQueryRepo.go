@@ -136,18 +136,18 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, errors.New("PathNotFound")
 	}
 
+	filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
+	if filePathEndsWithSlash {
+		filePathWithoutSlashAtTheEnd := strings.TrimSuffix(unixFilePath.String(), "/")
+		unixFilePath, _ = valueObject.NewUnixFilePath(filePathWithoutSlashAtTheEnd)
+	}
+
 	filesToFactory := []valueObject.UnixFilePath{
 		unixFilePath,
 	}
 
 	fileInfo, _ := os.Stat(unixFilePath.String())
 	if fileInfo.IsDir() {
-		filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
-		_, err := unixFilePath.GetFileExtension()
-		if filePathEndsWithSlash && err == nil {
-			return unixFileList, errors.New("DirPathCannotEndWithSlash")
-		}
-
 		filesToFactoryWithoutDir := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutDir
 
