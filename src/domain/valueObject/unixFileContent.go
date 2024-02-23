@@ -6,13 +6,19 @@ import (
 
 type UnixFileContent string
 
+const charsAmountIn1Mb = 1048576
+const fileContentLimitInMb = 5
+const FileContentMaxSize = charsAmountIn1Mb * fileContentLimitInMb
+
 func NewUnixFileContent(value string) (UnixFileContent, error) {
-	unixFileContent := UnixFileContent(value)
-	if !unixFileContent.isValid() {
+	isTooShort := len(value) < 1
+	isTooBig := len(value) > FileContentMaxSize
+
+	if isTooShort || isTooBig {
 		return "", errors.New("InvalidUnixFileContent")
 	}
 
-	return unixFileContent, nil
+	return UnixFileContent(value), nil
 }
 
 func NewUnixFileContentPanic(value string) UnixFileContent {
@@ -22,19 +28,6 @@ func NewUnixFileContentPanic(value string) UnixFileContent {
 	}
 
 	return unixFileContent
-}
-
-func (unixFileContent UnixFileContent) isValid() bool {
-	unixFileContentStr := string(unixFileContent)
-
-	isTooShort := len(unixFileContentStr) < 1
-
-	contentCharAmountIn1Mb := 1048576
-	contentLimitInMb := 5
-	contentLimitInCharAmount := contentCharAmountIn1Mb * contentLimitInMb
-	isTooBig := len(unixFileContentStr) > contentLimitInCharAmount
-
-	return !isTooShort && !isTooBig
 }
 
 func (unixFileContent UnixFileContent) String() string {
