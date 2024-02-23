@@ -92,7 +92,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileSize := valueObject.Byte(fileInfo.Size())
 
 	var unixFileContentPtr *valueObject.UnixFileContent
-	if shouldReturnContent && unixFileSize.ToMiB() <= 5 {
+	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
 		unixFileContentStr, err := infraHelper.GetFileContent(filePath.String())
 		if err != nil {
 			return unixFile, errors.New("FailedToGetFileContent: " + err.Error())
@@ -136,8 +136,9 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, errors.New("PathNotFound")
 	}
 
+	isRootPath := unixFilePath.String() == "/"
 	filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
-	if filePathEndsWithSlash {
+	if !isRootPath && filePathEndsWithSlash {
 		filePathWithoutSlashAtTheEnd := strings.TrimSuffix(unixFilePath.String(), "/")
 		unixFilePath, _ = valueObject.NewUnixFilePath(filePathWithoutSlashAtTheEnd)
 	}
