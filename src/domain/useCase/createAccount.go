@@ -28,7 +28,7 @@ func CreateAccount(
 
 	log.Printf("Account '%v' created.", createAccount.Username.String())
 
-	trashPath, _ := valueObject.NewUnixFilePath("/.trash")
+	trashPath, _ := valueObject.NewUnixFilePath("/app/.trash")
 	_, err = filesQueryRepo.GetOne(trashPath)
 	if err != nil {
 		trashDirPermissions, _ := valueObject.NewUnixFilePermissions("775")

@@ -45,7 +45,7 @@ func DeleteUnixFiles(
 		return
 	}
 
-	trashPath, _ := valueObject.NewUnixFilePath("/.trash")
+	trashPath, _ := valueObject.NewUnixFilePath("/app/.trash")
 	_, err := filesQueryRepo.GetOne(trashPath)
 	if err != nil {
 		trashDirPermissions, _ := valueObject.NewUnixFilePermissions("775")
