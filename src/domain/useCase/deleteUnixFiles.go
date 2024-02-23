@@ -70,8 +70,8 @@ func DeleteUnixFiles(
 			nil,
 		)
 
-		forceMove := true
-		err = filesCmdRepo.Move(updateUnixFile, forceMove)
+		shouldOverwrite := true
+		err = filesCmdRepo.Move(updateUnixFile, shouldOverwrite)
 		if err != nil {
 			log.Printf(
 				"MoveUnixFileToTrashError (%s): %s",

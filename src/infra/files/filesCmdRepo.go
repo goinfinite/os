@@ -263,7 +263,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	return err
 }
 
-func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, forceMove bool) error {
+func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, shouldOverwrite bool) error {
 	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
 	if !fileToMoveExists {
 		return errors.New("FileToMoveNotFound")
@@ -271,7 +271,7 @@ func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, forceMove bool)
 
 	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
 	if destinationPathExists {
-		if !forceMove {
+		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 

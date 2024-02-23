@@ -11,7 +11,7 @@ type FilesCmdRepo interface {
 	Create(createUnixFile dto.CreateUnixFile) error
 	Delete(unixFilePath valueObject.UnixFilePath) error
 	Extract(extractUnixFiles dto.ExtractUnixFiles) error
-	Move(updateUnixFile dto.UpdateUnixFile, forceMove bool) error
+	Move(updateUnixFile dto.UpdateUnixFile, shouldOverwrite bool) error
 	UpdateContent(updateUnixFile dto.UpdateUnixFile) error
 	UpdatePermissions(
 		unixFilePath valueObject.UnixFilePath,
