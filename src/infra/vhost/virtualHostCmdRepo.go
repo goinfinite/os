@@ -11,6 +11,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
 type VirtualHostCmdRepo struct {
@@ -188,22 +189,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	_, err = infraHelper.RunCmd(
-		"openssl",
-		"req",
-		"-x509",
-		"-nodes",
-		"-days",
-		"365",
-		"-newkey",
-		"rsa:2048",
-		"-keyout",
-		keyPath,
-		"-out",
-		certPath,
-		"-subj",
-		"/C=US/ST=California/L=LosAngeles/O=Acme/CN="+hostnameStr,
-	)
+	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, hostnameStr)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
 	}

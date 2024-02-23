@@ -3,15 +3,12 @@ package sslInfra
 import (
 	"errors"
 	"log"
-	"regexp"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
-
-const olsHttpdConfigPath = "/usr/local/lsws/conf/httpd_config.conf"
 
 type SslQueryRepo struct{}
 
@@ -20,61 +17,7 @@ type SslCertificates struct {
 	ChainedCertificates []entity.SslCertificate
 }
 
-func (repo SslQueryRepo) GetVhosts() ([]valueObject.Fqdn, error) {
-	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
-	if err != nil {
-		return []valueObject.Fqdn{}, err
-	}
-
-	vhostsExpression := `virtualhost\s*(.*) {`
-	vhostsRegex := regexp.MustCompile(vhostsExpression)
-	vhostsMatch := vhostsRegex.FindAllStringSubmatch(httpdContent, -1)
-	if len(vhostsMatch) < 1 {
-		return []valueObject.Fqdn{}, err
-	}
-
-	httpdVhosts := []valueObject.Fqdn{}
-	for _, vhostMatchStr := range vhostsMatch {
-		if len(vhostMatchStr) < 2 {
-			continue
-		}
-
-		vhostStr := vhostMatchStr[1]
-		vhost, err := valueObject.NewFqdn(vhostStr)
-		if err != nil {
-			log.Printf("UnableToGetVhost (%v): %v", vhostStr, err)
-			continue
-		}
-		httpdVhosts = append(httpdVhosts, vhost)
-	}
-
-	return httpdVhosts, nil
-}
-
-func (repo SslQueryRepo) GetVhostConfigFilePath(
-	vhost valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostConfigFilePath valueObject.UnixFilePath
-	httpdContent, err := infraHelper.GetFileContent(olsHttpdConfigPath)
-	if err != nil {
-		return "", err
-	}
-
-	vhostConfigFileExpression := `\s*configFile\s*(.*)`
-	vhostConfigFileMatch, err := infraHelper.GetRegexFirstGroup(httpdContent, vhostConfigFileExpression)
-	if err != nil {
-		return "", err
-	}
-
-	vhostConfigFilePath, err = valueObject.NewUnixFilePath(vhostConfigFileMatch)
-	if err != nil {
-		return "", err
-	}
-
-	return vhostConfigFilePath, nil
-}
-
-func (repo SslQueryRepo) SslCertificatesFactory(
+func (repo SslQueryRepo) sslCertificatesFactory(
 	sslCertContent valueObject.SslCertificateContent,
 ) (SslCertificates, error) {
 	var certificates SslCertificates
@@ -84,6 +27,10 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 		"-----END CERTIFICATE-----\n",
 	)
 	for _, sslCertContentStr := range sslCertContentSlice {
+		if len(sslCertContentStr) == 0 {
+			continue
+		}
+
 		certificateContent, err := valueObject.NewSslCertificateContent(sslCertContentStr)
 		if err != nil {
 			return certificates, err
@@ -105,107 +52,125 @@ func (repo SslQueryRepo) SslCertificatesFactory(
 	return certificates, nil
 }
 
-func (repo SslQueryRepo) SslPairFactory(
-	sslHostname valueObject.Fqdn,
-	sslPrivateKey valueObject.SslPrivateKey,
-	sslCertificates SslCertificates,
+func (repo SslQueryRepo) sslPairFactory(
+	crtFilePath valueObject.UnixFilePath,
 ) (entity.SslPair, error) {
 	var ssl entity.SslPair
 
-	_, err := repo.GetVhostConfigFilePath(sslHostname)
+	crtKeyFilePath := crtFilePath.GetWithoutExtension().String() + ".key"
+	crtKeyContentStr, err := infraHelper.GetFileContent(crtKeyFilePath)
+	if err != nil {
+		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
+	}
+	privateKey, err := valueObject.NewSslPrivateKey(crtKeyContentStr)
 	if err != nil {
 		return ssl, err
 	}
 
-	certificate := sslCertificates.MainCertificate
+	crtFileContentStr, err := infraHelper.GetFileContent(crtFilePath.String())
+	if err != nil {
+		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
+	}
+	certificate, err := valueObject.NewSslCertificateContent(crtFileContentStr)
+	if err != nil {
+		return ssl, err
+	}
+
+	sslCertificates, err := repo.sslCertificatesFactory(certificate)
+	if err != nil {
+		return ssl, errors.New("FailedToGetMainAndChainedCerts: " + err.Error())
+	}
+
+	mainCertificate := sslCertificates.MainCertificate
 	chainCertificates := sslCertificates.ChainedCertificates
 
 	var chainCertificatesContent []valueObject.SslCertificateContent
 	for _, sslChainCertificate := range chainCertificates {
-		chainCertificatesContent = append(chainCertificatesContent, sslChainCertificate.Certificate)
+		chainCertificatesContent = append(
+			chainCertificatesContent,
+			sslChainCertificate.CertificateContent,
+		)
 	}
 
 	hashId, err := valueObject.NewSslIdFromSslPairContent(
-		certificate.Certificate,
+		mainCertificate.CertificateContent,
 		chainCertificatesContent,
-		sslPrivateKey,
+		privateKey,
 	)
+	if err != nil {
+		return ssl, err
+	}
+
+	crtFileNameWithoutExt := crtFilePath.GetFileNameWithoutExtension()
+	vhost, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		return ssl, err
 	}
 
 	return entity.NewSslPair(
 		hashId,
-		sslHostname,
-		certificate,
-		sslPrivateKey,
+		[]valueObject.Fqdn{vhost},
+		mainCertificate,
+		privateKey,
 		chainCertificates,
 	), nil
 }
 
 func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
-	var sslPairs []entity.SslPair
-	httpdVhosts, err := repo.GetVhosts()
+	sslPairs := []entity.SslPair{}
+
+	crtFilePathsStr, err := infraHelper.RunCmd(
+		"find",
+		PkiConfDir,
+		"(",
+		"-type",
+		"f",
+		"-o",
+		"-type",
+		"l",
+		")",
+		"-name",
+		"*.crt",
+	)
 	if err != nil {
-		return []entity.SslPair{}, err
+		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
 	}
 
-	for _, vhost := range httpdVhosts {
-		vhostConfigFilePath, err := repo.GetVhostConfigFilePath(vhost)
+	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
+
+	sslPairIdsVhostsMap := map[valueObject.SslId][]valueObject.Fqdn{}
+	for _, crtFilePathStr := range crtFilePaths {
+		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
 		if err != nil {
-			return []entity.SslPair{}, err
+			log.Printf("%s: %s", err.Error(), crtFilePathStr)
+			continue
 		}
 
-		vhostConfigContentStr, err := infraHelper.GetFileContent(vhostConfigFilePath.String())
+		sslPair, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			return []entity.SslPair{}, err
+			log.Printf("FailedToGetSslPair (%s): %s", crtFilePath, err.Error())
+			continue
 		}
 
-		if len(vhostConfigContentStr) < 1 {
-			return []entity.SslPair{}, nil
+		pairMainVhost := sslPair.VirtualHosts[0]
+
+		_, pairIdAlreadyExists := sslPairIdsVhostsMap[sslPair.Id]
+		if pairIdAlreadyExists {
+			sslPairIdsVhostsMap[sslPair.Id] = append(
+				sslPairIdsVhostsMap[sslPair.Id],
+				pairMainVhost,
+			)
+			continue
 		}
 
-		vhostConfigKeyFileExpression := `keyFile\s*(.*)`
-		vhostConfigKeyFileMatch, err := infraHelper.GetRegexFirstGroup(vhostConfigContentStr, vhostConfigKeyFileExpression)
-		if err != nil {
-			return []entity.SslPair{}, nil
-		}
-		privateKeyContentStr, err := infraHelper.GetFileContent(vhostConfigKeyFileMatch)
-		if err != nil {
-			log.Printf("FailedToOpenHttpdFile: %v", err)
-			return []entity.SslPair{}, errors.New("FailedToOpenHttpdFile")
-		}
-		privateKey, err := valueObject.NewSslPrivateKey(privateKeyContentStr)
-		if err != nil {
-			return []entity.SslPair{}, nil
-		}
+		sslPairIdsVhostsMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhost}
+		sslPairs = append(sslPairs, sslPair)
+	}
 
-		vhostConfigCertFileExpression := `certFile\s*(.*)`
-		vhostConfigCertFileMatch, err := infraHelper.GetRegexFirstGroup(vhostConfigContentStr, vhostConfigCertFileExpression)
-		if err != nil {
-			return []entity.SslPair{}, nil
-		}
-		certFileContentStr, err := infraHelper.GetFileContent(vhostConfigCertFileMatch)
-		if err != nil {
-			log.Printf("FailedToOpenVhconfFile: %v", err)
-			return []entity.SslPair{}, errors.New("FailedToOpenVhconfFile")
-		}
-		certificate, err := valueObject.NewSslCertificateContent(certFileContentStr)
-		if err != nil {
-			return []entity.SslPair{}, nil
-		}
-
-		sslCertificates, err := repo.SslCertificatesFactory(certificate)
-		if err != nil {
-			return []entity.SslPair{}, err
-		}
-
-		ssl, err := repo.SslPairFactory(vhost, privateKey, sslCertificates)
-		if err != nil {
-			return []entity.SslPair{}, err
-		}
-
-		sslPairs = append(sslPairs, ssl)
+	for sslPairIndex, sslPair := range sslPairs {
+		correctSslPairsVhosts := sslPairIdsVhostsMap[sslPair.Id]
+		sslPair.VirtualHosts = correctSslPairsVhosts
+		sslPairs[sslPairIndex] = sslPair
 	}
 
 	return sslPairs, nil
