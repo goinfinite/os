@@ -14,8 +14,16 @@ type ServiceName string
 const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
 
 var NativeSvcNamesWithAliases = map[string][]string{
-	"php-webserver": {"php", "lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed"},
-	"node":          {"nodejs"},
+	"php-webserver": {
+		"php",
+		"php-ws",
+		"lsphp",
+		"php-fpm",
+		"php-cgi",
+		"litespeed",
+		"openlitespeed",
+	},
+	"node": {"nodejs"},
 	"mariadb": {
 		"mariadbd",
 		"mariadb-server",
