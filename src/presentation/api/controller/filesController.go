@@ -204,9 +204,14 @@ func CopyFileController(c echo.Context) error {
 
 	shouldOverwrite := false
 	if requestBody["shouldOverwrite"] != nil {
-		shouldOverwriteBool, assertOk := requestBody["shouldOverwrite"].(bool)
-		if assertOk {
-			shouldOverwrite = shouldOverwriteBool
+		var err error
+		shouldOverwrite, err = apiHelper.ParseBoolParam(
+			requestBody["shouldOverwrite"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidShouldOverwrite",
+			)
 		}
 	}
 
