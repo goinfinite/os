@@ -27,7 +27,8 @@ func AddDatabaseUser(
 
 	err = dbCmdRepo.AddUser(addDatabaseUser)
 	if err != nil {
-		return errors.New("AddDatabaseUserError")
+		log.Printf("AddDatabaseUserError: %s", err.Error())
+		return errors.New("AddDatabaseUserErrorInfra")
 	}
 
 	log.Printf(

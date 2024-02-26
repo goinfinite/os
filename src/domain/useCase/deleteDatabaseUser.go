@@ -21,7 +21,8 @@ func DeleteDatabaseUser(
 
 	err = dbCmdRepo.DeleteUser(dbName, dbUser)
 	if err != nil {
-		return errors.New("DeleteDatabaseUserError")
+		log.Printf("DeleteDatabaseUserError: %s", err.Error())
+		return errors.New("DeleteDatabaseUserInfraError")
 	}
 
 	log.Printf(

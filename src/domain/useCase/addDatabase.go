@@ -20,7 +20,8 @@ func AddDatabase(
 
 	err = dbCmdRepo.Add(addDatabase.DatabaseName)
 	if err != nil {
-		return errors.New("AddDatabaseError")
+		log.Printf("AddDatabaseError: %s", err.Error())
+		return errors.New("AddDatabaseInfraError")
 	}
 
 	log.Printf("Database %s added", addDatabase.DatabaseName)
