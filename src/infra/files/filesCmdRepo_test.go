@@ -16,9 +16,11 @@ func TestFilesCmdRepo(t *testing.T) {
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
 
 	t.Run("AddUnixDirectory", func(t *testing.T) {
+		dirPermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+
 		addUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
-			valueObject.NewUnixFilePermissionsPanic("0777"),
+			&dirPermissions,
 			valueObject.NewMimeTypePanic("directory"),
 		)
 
@@ -29,9 +31,11 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("AddUnixFile", func(t *testing.T) {
+		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+
 		addUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
-			valueObject.NewUnixFilePermissionsPanic("0777"),
+			&filePermissions,
 			valueObject.NewMimeTypePanic("generic"),
 		)
 

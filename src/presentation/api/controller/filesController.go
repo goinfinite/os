@@ -110,7 +110,7 @@ func CreateFileController(c echo.Context) error {
 
 	createUnixFileDto := dto.NewCreateUnixFile(
 		valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string)),
-		filePermissions,
+		&filePermissions,
 		fileType,
 	)
 

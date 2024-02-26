@@ -35,7 +35,7 @@ func CreateAccount(
 		trashDirMimeType, _ := valueObject.NewMimeType("directory")
 		createTrashDir := dto.NewCreateUnixFile(
 			trashPath,
-			trashDirPermissions,
+			&trashDirPermissions,
 			trashDirMimeType,
 		)
 
