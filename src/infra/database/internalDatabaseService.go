@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const DatabaseFilePath = "/speedia/internal.db"
+const DatabaseFilePath = "/speedia/sos.db"
 
 type InternalDatabaseService struct {
 	Handler *gorm.DB
@@ -23,18 +23,18 @@ func NewInternalDatabaseService() (*InternalDatabaseService, error) {
 		return nil, errors.New("DatabaseConnectionError")
 	}
 
-	dbSvc := &InternalDatabaseService{Handler: ormSvc}
-	err = dbSvc.dbMigrate()
+	internalDbSvc := &InternalDatabaseService{Handler: ormSvc}
+	err = internalDbSvc.dbMigrate()
 	if err != nil {
 		return nil, err
 	}
 
-	return dbSvc, nil
+	return internalDbSvc, nil
 }
 
-func (dbSvc InternalDatabaseService) isTableEmpty(model interface{}) (bool, error) {
+func (internalDbSvc InternalDatabaseService) isTableEmpty(model interface{}) (bool, error) {
 	var count int64
-	err := dbSvc.Handler.Model(&model).Count(&count).Error
+	err := internalDbSvc.Handler.Model(&model).Count(&count).Error
 	if err != nil {
 		return false, err
 	}
@@ -42,9 +42,9 @@ func (dbSvc InternalDatabaseService) isTableEmpty(model interface{}) (bool, erro
 	return count == 0, nil
 }
 
-func (dbSvc InternalDatabaseService) seedDatabase(seedModels ...interface{}) error {
+func (internalDbSvc InternalDatabaseService) seedDatabase(seedModels ...interface{}) error {
 	for _, seedModel := range seedModels {
-		isTableEmpty, err := dbSvc.isTableEmpty(seedModel)
+		isTableEmpty, err := internalDbSvc.isTableEmpty(seedModel)
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,7 @@ func (dbSvc InternalDatabaseService) seedDatabase(seedModels ...interface{}) err
 			entryFormatHandlerWillAccept.Elem().Set(entryInnerStructure)
 			adjustedEntry := entryFormatHandlerWillAccept.Interface()
 
-			err = dbSvc.Handler.Create(adjustedEntry).Error
+			err = internalDbSvc.Handler.Create(adjustedEntry).Error
 			if err != nil {
 				return err
 			}
@@ -81,15 +81,15 @@ func (dbSvc InternalDatabaseService) seedDatabase(seedModels ...interface{}) err
 	return nil
 }
 
-func (dbSvc InternalDatabaseService) dbMigrate() error {
-	err := dbSvc.Handler.AutoMigrate()
+func (internalDbSvc InternalDatabaseService) dbMigrate() error {
+	err := internalDbSvc.Handler.AutoMigrate()
 	if err != nil {
 		return errors.New("DatabaseMigrationError")
 	}
 
 	modelsWithInitialEntries := []interface{}{}
 
-	err = dbSvc.seedDatabase(modelsWithInitialEntries...)
+	err = internalDbSvc.seedDatabase(modelsWithInitialEntries...)
 	if err != nil {
 		return errors.New("AddDefaultDatabaseEntriesError")
 	}
