@@ -52,10 +52,11 @@ func cronRoutes() {
 }
 
 func databaseRoutes() {
+	dbServices := []string{"mysql", "postgresql"}
 	var databaseCmd = &cobra.Command{
 		Use:              "db",
 		Short:            "DatabaseManagement",
-		PersistentPreRun: cliMiddleware.ServiceStatusValidator("mysql"),
+		PersistentPreRun: cliMiddleware.ServiceStatusValidator(dbServices),
 	}
 
 	rootCmd.AddCommand(databaseCmd)

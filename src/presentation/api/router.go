@@ -38,7 +38,9 @@ func cronRoutes(baseRoute *echo.Group) {
 }
 
 func databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
+	dbServices := []string{"mysql", "postgresql"}
+	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator(dbServices))
+
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
 	databaseGroup.DELETE(
