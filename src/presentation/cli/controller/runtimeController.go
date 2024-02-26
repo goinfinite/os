@@ -14,22 +14,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func getHostname(
-	hostnameStr string,
-) (valueObject.Fqdn, error) {
-	var hostname valueObject.Fqdn
-
-	if hostnameStr != "" {
-		hostname = valueObject.NewFqdnPanic(hostnameStr)
+func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
+	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return "", errors.New("PrimaryHostnameNotFound")
 	}
 
-	if hostnameStr == "" {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
-		if err != nil {
-			return "", errors.New("PrimaryHostnameNotFound")
-		}
-
-		hostname = primaryHostname
+	hostname := primaryHostname
+	if hostnameStr != "" {
+		hostname = valueObject.NewFqdnPanic(hostnameStr)
 	}
 
 	return hostname, nil
