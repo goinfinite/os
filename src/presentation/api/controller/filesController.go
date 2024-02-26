@@ -247,9 +247,14 @@ func DeleteFileController(c echo.Context) error {
 
 	hardDelete := false
 	if requestBody["hardDelete"] != nil {
-		hardDeleteBool, assertOk := requestBody["hardDelete"].(bool)
-		if assertOk {
-			hardDelete = hardDeleteBool
+		var err error
+		hardDelete, err = apiHelper.ParseBoolParam(
+			requestBody["hardDelete"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidHardDelete",
+			)
 		}
 	}
 
