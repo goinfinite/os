@@ -188,18 +188,18 @@ func (repo FilesQueryRepo) Get(
 		shouldReturnContent = true
 	}
 
-	for _, fileToFactory := range filesToFactory {
-		filePathIsDir := fileInfo.IsDir() && (fileToFactory.String() == unixFilePath.String())
-		if filePathIsDir {
+	for _, file := range filesToFactory {
+		isDir := fileInfo.IsDir() && (file.String() == unixFilePath.String())
+		if isDir {
 			continue
 		}
 
-		unixFile, err := repo.unixFileFactory(fileToFactory, shouldReturnContent)
+		unixFile, err := repo.unixFileFactory(file, shouldReturnContent)
 
 		if err != nil {
 			log.Printf(
 				"UnixFileFactoryError (%s): %s",
-				fileToFactory.String(),
+				file.String(),
 				err.Error(),
 			)
 			continue
