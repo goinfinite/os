@@ -8,9 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	DatabaseFilePath = "/var/speedia/control.db"
-)
+const DatabaseFilePath = "/speedia/internal.db"
 
 type InternalDatabaseService struct {
 	Handler *gorm.DB
