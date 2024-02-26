@@ -190,13 +190,23 @@ func (repo FilesCmdRepo) Create(createUnixFile dto.CreateUnixFile) error {
 			return err
 		}
 
+		filePermissions, _ := valueObject.NewUnixFilePermissions("644")
+		if createUnixFile.Permissions != nil {
+			filePermissions = *createUnixFile.Permissions
+		}
+
 		return repo.UpdatePermissions(
 			createUnixFile.FilePath,
-			createUnixFile.Permissions,
+			filePermissions,
 		)
 	}
 
-	err := os.MkdirAll(createUnixFile.FilePath.String(), createUnixFile.Permissions.GetFileMode())
+	dirPermissions, _ := valueObject.NewUnixFilePermissions("755")
+	if createUnixFile.Permissions != nil {
+		dirPermissions = *createUnixFile.Permissions
+	}
+
+	err := os.MkdirAll(createUnixFile.FilePath.String(), dirPermissions.GetFileMode())
 	if err != nil {
 		return err
 	}
