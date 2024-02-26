@@ -2,27 +2,33 @@ package sharedHelper
 
 import (
 	"errors"
+	"slices"
 
-	"github.com/speedianet/os/src/domain/valueObject"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func CheckServices(serviceNameStr string) error {
+func CheckServices(servicesNames []string) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-
-	serviceName, err := valueObject.NewServiceName(serviceNameStr)
+	services, err := servicesQueryRepo.Get()
 	if err != nil {
 		return err
 	}
 
-	currentSvcStatus, err := servicesQueryRepo.GetByName(serviceName)
-	if err != nil {
-		return err
+	serviceIsRunning := false
+	for _, service := range services {
+		if service.Status.String() != "running" {
+			continue
+		}
+
+		if !slices.Contains(servicesNames, service.Name.String()) {
+			continue
+		}
+
+		serviceIsRunning = true
 	}
 
-	isRunning := currentSvcStatus.Status.String() == "running"
-	if !isRunning {
-		return errors.New("ServiceUnavailableError")
+	if !serviceIsRunning {
+		return errors.New("ServiceUnavailable")
 	}
 
 	return nil
