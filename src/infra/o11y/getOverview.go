@@ -2,7 +2,9 @@ package o11yInfra
 
 import (
 	"errors"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -26,6 +28,21 @@ func (repo GetOverview) getUptime() (uint64, error) {
 	}
 
 	return uint64(sysinfo.Uptime), nil
+}
+
+func (repo GetOverview) getPublicIpAddress() (valueObject.IpAddress, error) {
+	resp, err := http.Get("https://speedia.net/ip")
+	if err != nil {
+		return "", errors.New("GetPublicIpAddressFailed")
+	}
+	defer resp.Body.Close()
+
+	ip, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.New("ReadPublicIpAddressFailed")
+	}
+
+	return valueObject.NewIpAddress(string(ip))
 }
 
 func (repo GetOverview) isCgroupV2() bool {
@@ -303,7 +320,7 @@ func (repo GetOverview) Get() (entity.O11yOverview, error) {
 		uptime = 0
 	}
 
-	publicIpAddress, err := infraHelper.GetPublicIpAddress()
+	publicIpAddress, err := repo.getPublicIpAddress()
 	if err != nil {
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
