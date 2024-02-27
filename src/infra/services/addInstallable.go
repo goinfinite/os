@@ -64,6 +64,8 @@ var RedisPackages = []string{
 //go:embed assets/*
 var assets embed.FS
 
+const configurationDir string = "/app/conf"
+
 func copyAssets(srcPath string, dstPath string) error {
 	srcPath = "assets/" + srcPath
 	srcFile, err := assets.Open(srcPath)
@@ -180,14 +182,14 @@ func addPhp() error {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir("/app/conf/php")
+	err = infraHelper.MakeDir(configurationDir + "//php")
 	if err != nil {
 		return errors.New("CreateConfDirError: " + err.Error())
 	}
 
 	err = copyAssets(
 		"php/primary.conf",
-		"/app/conf/php/template",
+		configurationDir+"//php/template",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -195,7 +197,7 @@ func addPhp() error {
 
 	err = copyAssets(
 		"php/primary.conf",
-		"/app/conf/php/primary.conf",
+		configurationDir+"//php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -205,7 +207,7 @@ func addPhp() error {
 		"sed",
 		"-i",
 		"s/speedia.net/"+primaryHostname.String()+"/g",
-		"/app/conf/php/primary.conf",
+		configurationDir+"//php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("RenameVHostError: " + err.Error())
@@ -215,7 +217,7 @@ func addPhp() error {
 		"chown",
 		"-R",
 		"lsadm:nogroup",
-		"/app/conf/php",
+		configurationDir+"//php",
 	)
 	if err != nil {
 		return errors.New("ChownConfDirError: " + err.Error())
