@@ -44,7 +44,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 			},
 		)
 
-		err := mysqlDatabaseCmdRepo.AddUser(addDatabaseUserDto)
+		err := mysqlDatabaseCmdRepo.CreateUser(addDatabaseUserDto)
 		if err != nil {
 			t.Error("Error adding database user")
 		}

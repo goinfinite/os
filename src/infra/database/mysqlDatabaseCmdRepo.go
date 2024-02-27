@@ -36,9 +36,9 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	return nil
 }
 
-func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.CreateDatabaseUser) error {
-	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
-	for i, privilege := range addDatabaseUser.Privileges {
+func (repo MysqlDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
+	privilegesStrList := make([]string, len(createDatabaseUser.Privileges))
+	for i, privilege := range createDatabaseUser.Privileges {
 		privilegesStrList[i] = privilege.String()
 	}
 	privilegesStr := strings.Join(privilegesStrList, ", ")
@@ -47,11 +47,11 @@ func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.CreateDatabaseUser)
 		"GRANT " +
 			privilegesStr +
 			" ON " +
-			addDatabaseUser.DatabaseName.String() +
+			createDatabaseUser.DatabaseName.String() +
 			".* TO '" +
-			addDatabaseUser.Username.String() + "'@'%' " +
+			createDatabaseUser.Username.String() + "'@'%' " +
 			"IDENTIFIED BY '" +
-			addDatabaseUser.Password.String() +
+			createDatabaseUser.Password.String() +
 			"'; " +
 			"FLUSH PRIVILEGES;",
 	)

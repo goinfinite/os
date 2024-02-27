@@ -128,7 +128,7 @@ func CreateDatabaseUserController() *cobra.Command {
 				}
 			}
 
-			addDatabaseUserDto := dto.NewCreateDatabaseUser(
+			createDatabaseUserDto := dto.NewCreateDatabaseUser(
 				dbName,
 				dbUser,
 				dbPass,
@@ -141,7 +141,7 @@ func CreateDatabaseUserController() *cobra.Command {
 			err := useCase.CreateDatabaseUser(
 				databaseQueryRepo,
 				databaseCmdRepo,
-				addDatabaseUserDto,
+				createDatabaseUserDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())

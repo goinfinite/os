@@ -131,7 +131,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 		}
 	}
 
-	addDatabaseUserDto := dto.NewCreateDatabaseUser(
+	createDatabaseUserDto := dto.NewCreateDatabaseUser(
 		dbName,
 		username,
 		password,
@@ -144,7 +144,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 	err := useCase.CreateDatabaseUser(
 		databaseQueryRepo,
 		databaseCmdRepo,
-		addDatabaseUserDto,
+		createDatabaseUserDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
