@@ -13,13 +13,17 @@ func TestAuthCmdRepo(t *testing.T) {
 
 	t.Run("GetSessionToken", func(t *testing.T) {
 		authCmdRepo := AuthCmdRepo{}
-		token := authCmdRepo.GenerateSessionToken(
+		token, err := authCmdRepo.GenerateSessionToken(
 			valueObject.AccountId(1000),
 			valueObject.UnixTime(
 				time.Now().Add(3*time.Hour).Unix(),
 			),
 			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %s", err.Error())
+		}
+
 		if token.TokenStr == "" {
 			t.Errorf("Expected token not to be empty")
 		}

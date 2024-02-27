@@ -22,7 +22,7 @@ func CopyUnixFile(
 	fileSourcePath := copyUnixFile.SourcePath
 	fileDestinationPath := copyUnixFile.DestinationPath
 	log.Printf(
-		"File '%s' (%s) copy added to '%s' with name '%s'.",
+		"File '%s' (%s) copy created to '%s' with name '%s'.",
 		fileSourcePath.GetFileName().String(),
 		fileSourcePath.GetFileDir().String(),
 		fileDestinationPath.GetFileName().String(),

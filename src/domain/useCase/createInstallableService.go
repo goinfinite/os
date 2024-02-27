@@ -8,14 +8,14 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func AddInstallableService(
+func CreateInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.AddInstallableService,
+	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	_, err := servicesQueryRepo.GetByName(createDto.Name)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -26,7 +26,7 @@ func AddInstallableService(
 		return errors.New("GetInstallableServicesInfraError")
 	}
 
-	dtoServiceNameStr := addDto.Name.String()
+	dtoServiceNameStr := createDto.Name.String()
 	isNatureMulti := false
 	for _, installableSvc := range installableSvcs {
 		if installableSvc.Name.String() != dtoServiceNameStr {
@@ -38,19 +38,19 @@ func AddInstallableService(
 	}
 
 	if isNatureMulti {
-		newSvcName, err := servicesQueryRepo.GetMultiServiceName(addDto.Name, addDto.StartupFile)
+		newSvcName, err := servicesQueryRepo.GetMultiServiceName(createDto.Name, createDto.StartupFile)
 		if err != nil {
 			log.Printf("GetMultiServiceNameError: %s", err.Error())
 			return errors.New("GetMultiServiceNameInfraError")
 		}
 
-		addDto.Name = newSvcName
+		createDto.Name = newSvcName
 	}
 
-	err = servicesCmdRepo.AddInstallable(addDto)
+	err = servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
-		log.Printf("AddInstallableServiceError: %s", err.Error())
-		return errors.New("AddInstallableServiceInfraError")
+		log.Printf("CreateInstallableServiceError: %v", err)
+		return errors.New("CreateInstallableServiceInfraError")
 	}
 
 	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
@@ -64,24 +64,24 @@ func AddInstallableService(
 	}
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
-	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
+	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {
 		return nil
 	}
 
 	serviceMapping, err := serviceMappingFactory(
 		primaryVhostWithMapping.Hostname,
-		addDto.Name,
+		createDto.Name,
 	)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingError")
 	}
 
-	err = vhostCmdRepo.AddMapping(serviceMapping)
+	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingInfraError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingInfraError")
 	}
 
 	return nil

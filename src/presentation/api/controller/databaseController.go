@@ -18,7 +18,7 @@ import (
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Success      200 {array} entity.Database
 // @Router       /database/{dbType}/ [get]
 func GetDatabasesController(c echo.Context) error {
@@ -34,18 +34,18 @@ func GetDatabasesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, databasesList)
 }
 
-// AddDatabase godoc
-// @Summary      AddDatabase
-// @Description  Add a new database.
+// CreateDatabase godoc
+// @Summary      CreateDatabase
+// @Description  Create a new database.
 // @Tags         database
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
-// @Param        addDatabaseDto body dto.AddDatabase true "AddDatabase"
+// @Param        dbType path string true "DatabaseType"
+// @Param        createDatabaseDto body dto.CreateDatabase true "CreateDatabase"
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /database/{dbType}/ [post]
-func AddDatabaseController(c echo.Context) error {
+func CreateDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 
 	requiredParams := []string{"dbName"}
@@ -53,15 +53,15 @@ func AddDatabaseController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 	dbName := valueObject.NewDatabaseNamePanic(requestBody["dbName"].(string))
-	addDatabaseDto := dto.NewAddDatabase(dbName)
+	createDatabaseDto := dto.NewCreateDatabase(dbName)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err := useCase.AddDatabase(
+	err := useCase.CreateDatabase(
 		databaseQueryRepo,
 		databaseCmdRepo,
-		addDatabaseDto,
+		createDatabaseDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -77,7 +77,7 @@ func AddDatabaseController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /database/{dbType}/{dbName}/ [delete]
@@ -100,19 +100,19 @@ func DeleteDatabaseController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "DatabaseDeleted")
 }
 
-// AddDatabaseUser godoc
-// @Summary      AddDatabaseUser
-// @Description  Add a new database user.
+// CreateDatabaseUser godoc
+// @Summary      CreateDatabaseUser
+// @Description  Create a new database user.
 // @Tags         database
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
-// @Param        addDatabaseUserDto body dto.AddDatabaseUser true "AddDatabaseUser"
+// @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /database/{dbType}/{dbName}/user/ [post]
-func AddDatabaseUserController(c echo.Context) error {
+func CreateDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -131,7 +131,7 @@ func AddDatabaseUserController(c echo.Context) error {
 		}
 	}
 
-	addDatabaseUserDto := dto.NewAddDatabaseUser(
+	createDatabaseUserDto := dto.NewCreateDatabaseUser(
 		dbName,
 		username,
 		password,
@@ -141,10 +141,10 @@ func AddDatabaseUserController(c echo.Context) error {
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err := useCase.AddDatabaseUser(
+	err := useCase.CreateDatabaseUser(
 		databaseQueryRepo,
 		databaseCmdRepo,
-		addDatabaseUserDto,
+		createDatabaseUserDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -160,7 +160,7 @@ func AddDatabaseUserController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path valueObject.DatabaseType true "DatabaseType"
+// @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
 // @Param        dbUser path string true "DatabaseUsername"
 // @Success      200 {object} object{} "DatabaseUserDeleted"

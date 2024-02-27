@@ -19,6 +19,7 @@ type FilesQueryRepo struct{}
 
 func (repo FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
+	shouldReturnContent bool,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
 
@@ -78,6 +79,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileMimeType := unixFileExtension.GetMimeType()
 	if fileInfo.IsDir() {
 		unixFileMimeType, _ = valueObject.NewMimeType("directory")
+		unixFileExtensionPtr = nil
 	}
 
 	filePermissions := fileInfo.Mode().Perm()
@@ -88,6 +90,22 @@ func (repo FilesQueryRepo) unixFileFactory(
 	}
 
 	unixFileSize := valueObject.Byte(fileInfo.Size())
+
+	var unixFileContentPtr *valueObject.UnixFileContent
+	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
+		unixFileContentStr, err := infraHelper.GetFileContent(filePath.String())
+		if err != nil {
+			return unixFile, errors.New("FailedToGetFileContent: " + err.Error())
+		}
+
+		unixFileContent, err := valueObject.NewUnixFileContent(unixFileContentStr)
+		if err != nil {
+			return unixFile, err
+		}
+
+		unixFileContentPtr = &unixFileContent
+	}
+
 	unixFileUpdatedAt := valueObject.UnixTime(fileInfo.ModTime().Unix())
 
 	unixFile = entity.NewUnixFile(
@@ -97,6 +115,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFilePermissions,
 		unixFileSize,
 		unixFileExtensionPtr,
+		unixFileContentPtr,
 		unixFileUid,
 		unixFileUsername,
 		unixFileGid,
@@ -115,6 +134,13 @@ func (repo FilesQueryRepo) Get(
 	exists := infraHelper.FileExists(unixFilePath.String())
 	if !exists {
 		return unixFileList, errors.New("PathNotFound")
+	}
+
+	isRootPath := unixFilePath.String() == "/"
+	filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
+	if !isRootPath && filePathEndsWithSlash {
+		filePathWithoutSlashAtTheEnd := strings.TrimSuffix(unixFilePath.String(), "/")
+		unixFilePath, _ = valueObject.NewUnixFilePath(filePathWithoutSlashAtTheEnd)
 	}
 
 	filesToFactory := []valueObject.UnixFilePath{
@@ -157,13 +183,23 @@ func (repo FilesQueryRepo) Get(
 		}
 	}
 
-	for _, fileToFactory := range filesToFactory {
-		unixFile, err := repo.unixFileFactory(fileToFactory)
+	shouldReturnContent := false
+	if len(filesToFactory) == 1 {
+		shouldReturnContent = true
+	}
+
+	for _, file := range filesToFactory {
+		isDir := fileInfo.IsDir() && (file.String() == unixFilePath.String())
+		if isDir {
+			continue
+		}
+
+		unixFile, err := repo.unixFileFactory(file, shouldReturnContent)
 
 		if err != nil {
 			log.Printf(
 				"UnixFileFactoryError (%s): %s",
-				fileToFactory.String(),
+				file.String(),
 				err.Error(),
 			)
 			continue
@@ -185,5 +221,6 @@ func (repo FilesQueryRepo) GetOne(
 		return unixFile, errors.New("FileNotFound")
 	}
 
-	return repo.unixFileFactory(unixFilePath)
+	shouldReturnContent := false
+	return repo.unixFileFactory(unixFilePath, shouldReturnContent)
 }

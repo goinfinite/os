@@ -8,7 +8,7 @@ import (
 type PostgresDatabaseCmdRepo struct {
 }
 
-func (repo PostgresDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo PostgresDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := PostgresqlCmd(
 		"CREATE DATABASE "+dbName.String(),
 		nil,
@@ -72,22 +72,22 @@ func (repo PostgresDatabaseCmdRepo) setUserDefaultPermissions(
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
 	_, err := PostgresqlCmd(
-		"CREATE USER "+addDatabaseUser.Username.String()+
-			" WITH PASSWORD '"+addDatabaseUser.Password.String()+"'",
+		"CREATE USER "+createDatabaseUser.Username.String()+
+			" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
 		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = repo.addPermissionsToUser(addDatabaseUser.DatabaseName, addDatabaseUser.Username)
+	err = repo.addPermissionsToUser(createDatabaseUser.DatabaseName, createDatabaseUser.Username)
 	if err != nil {
 		return err
 	}
 
-	err = repo.setUserDefaultPermissions(addDatabaseUser.DatabaseName, addDatabaseUser.Username)
+	err = repo.setUserDefaultPermissions(createDatabaseUser.DatabaseName, createDatabaseUser.Username)
 	return err
 }
 

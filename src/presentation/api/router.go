@@ -24,7 +24,7 @@ func authRoutes(baseRoute *echo.Group) {
 func accountRoutes(baseRoute *echo.Group) {
 	accountGroup := baseRoute.Group("/account")
 	accountGroup.GET("/", apiController.GetAccountsController)
-	accountGroup.POST("/", apiController.AddAccountController)
+	accountGroup.POST("/", apiController.CreateAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
 	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }
@@ -32,7 +32,7 @@ func accountRoutes(baseRoute *echo.Group) {
 func cronRoutes(baseRoute *echo.Group) {
 	cronGroup := baseRoute.Group("/cron")
 	cronGroup.GET("/", apiController.GetCronsController)
-	cronGroup.POST("/", apiController.AddCronController)
+	cronGroup.POST("/", apiController.CreateCronController)
 	cronGroup.PUT("/", apiController.UpdateCronController)
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }
@@ -42,14 +42,14 @@ func databaseRoutes(baseRoute *echo.Group) {
 	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator(dbServices))
 
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
-	databaseGroup.POST("/:dbType/", apiController.AddDatabaseController)
+	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
 	databaseGroup.DELETE(
 		"/:dbType/:dbName/",
 		apiController.DeleteDatabaseController,
 	)
 	databaseGroup.POST(
 		"/:dbType/:dbName/user/",
-		apiController.AddDatabaseUserController,
+		apiController.CreateDatabaseUserController,
 	)
 	databaseGroup.DELETE(
 		"/:dbType/:dbName/user/:dbUser/",
@@ -60,7 +60,7 @@ func databaseRoutes(baseRoute *echo.Group) {
 func filesRoutes(baseRoute *echo.Group) {
 	filesGroup := baseRoute.Group("/files")
 	filesGroup.GET("/", apiController.GetFilesController)
-	filesGroup.POST("/", apiController.AddFileController)
+	filesGroup.POST("/", apiController.CreateFileController)
 	filesGroup.PUT("/", apiController.UpdateFileController)
 	filesGroup.POST("/copy/", apiController.CopyFileController)
 	filesGroup.PUT("/delete/", apiController.DeleteFileController)
@@ -84,8 +84,8 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
 	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
-	servicesGroup.POST("/installables/", apiController.AddInstallableServiceController)
-	servicesGroup.POST("/custom/", apiController.AddCustomServiceController)
+	servicesGroup.POST("/installables/", apiController.CreateInstallableServiceController)
+	servicesGroup.POST("/custom/", apiController.CreateCustomServiceController)
 	servicesGroup.PUT("/", apiController.UpdateServiceController)
 	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
 }
@@ -93,18 +93,18 @@ func servicesRoutes(baseRoute *echo.Group) {
 func sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
 	sslGroup.GET("/", apiController.GetSslPairsController)
-	sslGroup.POST("/", apiController.AddSslPairController)
+	sslGroup.POST("/", apiController.CreateSslPairController)
 	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
 }
 
 func vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
 	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
-	vhostsGroup.POST("/", apiController.AddVirtualHostController)
+	vhostsGroup.POST("/", apiController.CreateVirtualHostController)
 	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
 
 	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
-	vhostsGroup.POST("/mapping/", apiController.AddVirtualHostMappingController)
+	vhostsGroup.POST("/mapping/", apiController.CreateVirtualHostMappingController)
 	vhostsGroup.DELETE(
 		"/mapping/:hostname/:mappingId/",
 		apiController.DeleteVirtualHostMappingController,

@@ -2,14 +2,14 @@ package dto
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-type AddDatabase struct {
+type CreateDatabase struct {
 	DatabaseName valueObject.DatabaseName `json:"dbName"`
 }
 
-func NewAddDatabase(
+func NewCreateDatabase(
 	dbName valueObject.DatabaseName,
-) AddDatabase {
-	return AddDatabase{
+) CreateDatabase {
+	return CreateDatabase{
 		DatabaseName: dbName,
 	}
 }

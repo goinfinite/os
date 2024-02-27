@@ -4,9 +4,9 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type UpdateCron struct {
 	Id       valueObject.CronId        `json:"id"`
-	Schedule *valueObject.CronSchedule `json:"schedule,omitempty"`
-	Command  *valueObject.UnixCommand  `json:"command,omitempty"`
-	Comment  *valueObject.CronComment  `json:"comment,omitempty"`
+	Schedule *valueObject.CronSchedule `json:"schedule"`
+	Command  *valueObject.UnixCommand  `json:"command"`
+	Comment  *valueObject.CronComment  `json:"comment"`
 }
 
 func NewUpdateCron(

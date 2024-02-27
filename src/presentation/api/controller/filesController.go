@@ -49,25 +49,29 @@ func getFilePathSliceFromBody(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        unixFilePath	query	string	true	"UnixFilePath"
+// @Param        sourcePath	query	string	true	"SourcePath"
 // @Success      200 {array} entity.UnixFile
 // @Router       /files/ [get]
 func GetFilesController(c echo.Context) error {
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesList, err := useCase.GetFiles(
 		filesQueryRepo,
-		valueObject.NewUnixFilePathPanic(c.QueryParam("unixFilePath")),
+		valueObject.NewUnixFilePathPanic(c.QueryParam("sourcePath")),
 	)
 	if err != nil {
+		if err.Error() == "DirPathCannotEndWithSlash" {
+			return apiHelper.ResponseWrapper(c, http.StatusNotFound, err.Error())
+		}
+
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, filesList)
 }
 
-// AddFile    godoc
-// @Summary      AddNewFile
-// @Description  Add a new dir/file.
+// CreateFile    godoc
+// @Summary      CreateNewFile
+// @Description  Create a new dir/file.
 // @Tags         files
 // @Accept       json
 // @Produce      json
@@ -75,7 +79,7 @@ func GetFilesController(c echo.Context) error {
 // @Param        createFileDto 	  body    dto.CreateUnixFile  true  "NewFile"
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /files/ [post]
-func AddFileController(c echo.Context) error {
+func CreateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -83,8 +87,8 @@ func AddFileController(c echo.Context) error {
 
 	fileType := valueObject.NewMimeTypePanic("generic")
 	isDirType := false
-	if requestBody["type"] != nil {
-		fileTypeStr := requestBody["type"].(string)
+	if requestBody["mimeType"] != nil {
+		fileTypeStr := requestBody["mimeType"].(string)
 		isDirType = strings.ToLower(fileTypeStr) == "directory"
 	}
 
@@ -104,9 +108,9 @@ func AddFileController(c echo.Context) error {
 		filePermissions = valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
 	}
 
-	addUnixFileDto := dto.NewCreateUnixFile(
+	createUnixFileDto := dto.NewCreateUnixFile(
 		valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string)),
-		filePermissions,
+		&filePermissions,
 		fileType,
 	)
 
@@ -116,7 +120,7 @@ func AddFileController(c echo.Context) error {
 	err := useCase.CreateUnixFile(
 		filesQueryRepo,
 		filesCmdRepo,
-		addUnixFileDto,
+		createUnixFileDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -127,7 +131,7 @@ func AddFileController(c echo.Context) error {
 
 // UpdateFile godoc
 // @Summary      UpdateFile
-// @Description  Move a dir/file, update name and/or permissions (Only filePath is required).
+// @Description  Move a dir/file, update name and/or permissions (Only sourcePath is required).
 // @Tags         files
 // @Accept       json
 // @Produce      json
@@ -136,12 +140,12 @@ func AddFileController(c echo.Context) error {
 // @Success      200 {object} object{} "FileUpdated"
 // @Router       /files/ [put]
 func UpdateFileController(c echo.Context) error {
-	requiredParams := []string{"filePath"}
+	requiredParams := []string{"sourcePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
 
 	var destinationPathPtr *valueObject.UnixFilePath
 	if requestBody["destinationPath"] != nil {
@@ -162,7 +166,7 @@ func UpdateFileController(c echo.Context) error {
 	}
 
 	updateUnixFileDto := dto.NewUpdateUnixFile(
-		filePath,
+		sourcePath,
 		destinationPathPtr,
 		permissionsPtr,
 		encodedContentPtr,
@@ -190,15 +194,28 @@ func UpdateFileController(c echo.Context) error {
 // @Success      201 {object} object{} "FileCopied"
 // @Router       /files/copy/ [post]
 func CopyFileController(c echo.Context) error {
-	requiredParams := []string{"filePath", "destinationPath"}
+	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 
-	copyUnixFileDto := dto.NewCopyUnixFile(filePath, destinationPath)
+	shouldOverwrite := false
+	if requestBody["shouldOverwrite"] != nil {
+		var err error
+		shouldOverwrite, err = apiHelper.ParseBoolParam(
+			requestBody["shouldOverwrite"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidShouldOverwrite",
+			)
+		}
+	}
+
+	copyUnixFileDto := dto.NewCopyUnixFile(sourcePath, destinationPath, shouldOverwrite)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
@@ -222,25 +239,46 @@ func CopyFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        filePath	body	[]string	true	"UnixFilePath"
+// @Param        sourcePaths	body	[]string	true	"SourcePath"
 // @Success      200 {object} object{} "FilesDeleted"
 // @Router       /files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
-	requiredParams := []string{"filePath"}
+	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
+	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
+
+	hardDelete := false
+	if requestBody["hardDelete"] != nil {
+		var err error
+		hardDelete, err = apiHelper.ParseBoolParam(
+			requestBody["hardDelete"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "InvalidHardDelete",
+			)
+		}
+	}
+
+	deleteUnixFilesDto := dto.NewDeleteUnixFiles(
+		sourcePaths,
+		hardDelete,
+	)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-	useCase.DeleteUnixFiles(
+	err := useCase.DeleteUnixFiles(
 		filesQueryRepo,
 		filesCmdRepo,
-		filePaths,
+		deleteUnixFilesDto,
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FilesDeleted")
 }
@@ -257,12 +295,12 @@ func DeleteFileController(c echo.Context) error {
 // @Success      207 {object} object{} "FilesArePartialCompressed"
 // @Router       /files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
-	requiredParams := []string{"filePath", "destinationPath"}
+	requiredParams := []string{"sourcePaths", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePaths := getFilePathSliceFromBody(requestBody["filePath"])
+	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
 
 	var compressionUnixTypePtr *valueObject.UnixCompressionType
 	if requestBody["compressionType"] != nil {
@@ -271,7 +309,7 @@ func CompressFilesController(c echo.Context) error {
 	}
 
 	compressUnixFilesDto := dto.NewCompressUnixFiles(
-		filePaths,
+		sourcePaths,
 		valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string)),
 		compressionUnixTypePtr,
 	)
@@ -311,15 +349,15 @@ func CompressFilesController(c echo.Context) error {
 // @Success      200 {object} object{} "FilesExtracted"
 // @Router       /files/extract/ [put]
 func ExtractFilesController(c echo.Context) error {
-	requiredParams := []string{"filePath", "destinationPath"}
+	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	filePath := valueObject.NewUnixFilePathPanic(requestBody["filePath"].(string))
+	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
 
-	extractUnixFilesDto := dto.NewExtractUnixFiles(filePath, destinationPath)
+	extractUnixFilesDto := dto.NewExtractUnixFiles(sourcePath, destinationPath)
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesCmdRepo := filesInfra.FilesCmdRepo{}

@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"golang.org/x/exp/slices"
 )
 
@@ -71,9 +71,8 @@ func CheckEnvs() {
 		os.Setenv(key, value)
 	}
 
-	virtualHost := os.Getenv("VIRTUAL_HOST")
-	_, err = valueObject.NewFqdn(virtualHost)
+	_, err = infraHelper.GetPrimaryHostname()
 	if err != nil {
-		log.Fatalf("VirtualHostEnvInvalidValue")
+		log.Fatalf("PrimaryHostnameNotFound")
 	}
 }

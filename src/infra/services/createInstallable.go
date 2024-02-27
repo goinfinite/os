@@ -64,6 +64,8 @@ var RedisPackages = []string{
 //go:embed assets/*
 var assets embed.FS
 
+const configurationDir string = "/app/conf"
+
 func copyAssets(srcPath string, dstPath string) error {
 	srcPath = "assets/" + srcPath
 	srcFile, err := assets.Open(srcPath)
@@ -165,25 +167,29 @@ func addPhp() error {
 		return errors.New("CopyAssetsError: " + err.Error())
 	}
 
-	virtualHost := os.Getenv("VIRTUAL_HOST")
+	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return errors.New("PrimaryHostnameNotFound")
+	}
+
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+virtualHost+"/g",
+		"s/speedia.net/"+primaryHostname.String()+"/g",
 		"/usr/local/lsws/conf/httpd_config.conf",
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir("/app/conf/php")
+	err = infraHelper.MakeDir(configurationDir + "//php")
 	if err != nil {
 		return errors.New("CreateConfDirError: " + err.Error())
 	}
 
 	err = copyAssets(
 		"php/primary.conf",
-		"/app/conf/php/template",
+		configurationDir+"//php/template",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -191,7 +197,7 @@ func addPhp() error {
 
 	err = copyAssets(
 		"php/primary.conf",
-		"/app/conf/php/primary.conf",
+		configurationDir+"//php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -200,8 +206,8 @@ func addPhp() error {
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+virtualHost+"/g",
-		"/app/conf/php/primary.conf",
+		"s/speedia.net/"+primaryHostname.String()+"/g",
+		configurationDir+"//php/primary.conf",
 	)
 	if err != nil {
 		return errors.New("RenameVHostError: " + err.Error())
@@ -211,7 +217,7 @@ func addPhp() error {
 		"chown",
 		"-R",
 		"lsadm:nogroup",
-		"/app/conf/php",
+		configurationDir+"//php",
 	)
 	if err != nil {
 		return errors.New("ChownConfDirError: " + err.Error())
@@ -245,8 +251,8 @@ func addPhp() error {
 		httpsPortBinding,
 	}
 
-	err = SupervisordFacade{}.AddConf(
-		valueObject.NewServiceNamePanic("php"),
+	err = SupervisordFacade{}.CreateConf(
+		valueObject.NewServiceNamePanic("php-webserver"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic("latest"),
@@ -256,16 +262,16 @@ func addPhp() error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError: " + err.Error())
+		return errors.New("CreateSupervisorConfError: " + err.Error())
 	}
 
 	return nil
 }
 
-func addNode(addDto dto.AddInstallableService) error {
+func addNode(createDto dto.CreateInstallableService) error {
 	versionStr := "lts"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["node"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -288,8 +294,8 @@ func addNode(addDto dto.AddInstallableService) error {
 	}
 
 	startupFile := valueObject.NewUnixFilePathPanic(appHtmlDir + "/index.js")
-	if addDto.StartupFile != nil {
-		startupFile = *addDto.StartupFile
+	if createDto.StartupFile != nil {
+		startupFile = *createDto.StartupFile
 	}
 
 	if !infraHelper.FileExists(startupFile.String()) {
@@ -317,12 +323,12 @@ func addNode(addDto dto.AddInstallableService) error {
 			valueObject.NewNetworkProtocolPanic("http"),
 		),
 	}
-	if len(addDto.PortBindings) > 0 {
-		portBindings = addDto.PortBindings
+	if len(createDto.PortBindings) > 0 {
+		portBindings = createDto.PortBindings
 	}
 
-	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+	err = SupervisordFacade{}.CreateConf(
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -334,13 +340,13 @@ func addNode(addDto dto.AddInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	return nil
 }
 
-func addMariaDb(addDto dto.AddInstallableService) error {
+func addMariaDb(createDto dto.CreateInstallableService) error {
 	repoFilePath := "/speedia/repo.mariadb.sh"
 
 	err := infraHelper.DownloadFile(
@@ -353,8 +359,8 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 
 	versionFlag := ""
 	versionStr := "latest"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["mariadb"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -448,8 +454,8 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		),
 	}
 
-	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+	err = SupervisordFacade{}.CreateConf(
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -459,16 +465,16 @@ func addMariaDb(addDto dto.AddInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	return nil
 }
 
-func addPostgresqlDb(addDto dto.AddInstallableService) error {
+func addPostgresqlDb(createDto dto.CreateInstallableService) error {
 	versionStr := "16"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["postgresql"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -542,8 +548,8 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 
 	postgresUser := valueObject.NewUsernamePanic("postgres")
 
-	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+	err = SupervisordFacade{}.CreateConf(
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -557,7 +563,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		&postgresUser,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError: " + err.Error())
+		return errors.New("CreateSupervisorConfError: " + err.Error())
 	}
 
 	hbaConfPath := "/etc/postgresql/" + versionStr + "/main/pg_hba.conf"
@@ -633,7 +639,7 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 		return errors.New("UpdatePgHbaError: " + err.Error())
 	}
 
-	err = SupervisordFacade{}.Restart(addDto.Name)
+	err = SupervisordFacade{}.Restart(createDto.Name)
 	if err != nil {
 		return errors.New("RestartPostgresqlError: " + err.Error())
 	}
@@ -641,11 +647,11 @@ func addPostgresqlDb(addDto dto.AddInstallableService) error {
 	return nil
 }
 
-func addRedis(addDto dto.AddInstallableService) error {
+func addRedis(createDto dto.CreateInstallableService) error {
 	versionFlag := ""
 	versionStr := "latest"
-	if addDto.Version != nil {
-		versionStr = addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr = createDto.Version.String()
 		re := regexp.MustCompile(supportedServicesVersion["redis"])
 		isVersionAllowed := re.MatchString(versionStr)
 
@@ -686,8 +692,8 @@ func addRedis(addDto dto.AddInstallableService) error {
 		return errors.New("CreateRepoFileError")
 	}
 
-	if addDto.Version != nil {
-		versionStr := addDto.Version.String()
+	if createDto.Version != nil {
+		versionStr := createDto.Version.String()
 		latestVersion, err := infraHelper.GetPkgLatestVersion(
 			"redis-server",
 			&versionStr,
@@ -715,8 +721,8 @@ func addRedis(addDto dto.AddInstallableService) error {
 		),
 	}
 
-	err = SupervisordFacade{}.AddConf(
-		addDto.Name,
+	err = SupervisordFacade{}.CreateConf(
+		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.ServiceType("database"),
 		valueObject.NewServiceVersionPanic(versionStr),
@@ -726,7 +732,7 @@ func addRedis(addDto dto.AddInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	_, err = infraHelper.RunCmd(
@@ -743,10 +749,10 @@ func addRedis(addDto dto.AddInstallableService) error {
 	return nil
 }
 
-func AddInstallable(
-	addDto dto.AddInstallableService,
+func CreateInstallable(
+	createDto dto.CreateInstallableService,
 ) error {
-	svcNameStr := addDto.Name.String()
+	svcNameStr := createDto.Name.String()
 	svcNameHasHash := strings.Contains(svcNameStr, "-")
 	if svcNameHasHash {
 		svcNameWithoutHash := strings.Split(svcNameStr, "-")[0]
@@ -757,25 +763,25 @@ func AddInstallable(
 	case "php":
 		return addPhp()
 	case "node":
-		return addNode(addDto)
+		return addNode(createDto)
 	case "mariadb":
-		return addMariaDb(addDto)
+		return addMariaDb(createDto)
 	case "postgresql":
-		return addPostgresqlDb(addDto)
+		return addPostgresqlDb(createDto)
 	case "redis":
-		return addRedis(addDto)
+		return addRedis(createDto)
 	default:
 		return errors.New("UnknownInstallableService")
 	}
 }
 
-func AddInstallableSimplified(serviceName string) error {
-	dto := dto.NewAddInstallableService(
+func CreateInstallableSimplified(serviceName string) error {
+	dto := dto.NewCreateInstallableService(
 		valueObject.NewServiceNamePanic(serviceName),
 		nil,
 		nil,
 		[]valueObject.PortBinding{},
 		true,
 	)
-	return AddInstallable(dto)
+	return CreateInstallable(dto)
 }

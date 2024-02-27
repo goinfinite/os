@@ -5,6 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	accountInfra "github.com/speedianet/os/src/infra/account"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -27,32 +28,36 @@ func GetAccountsController() *cobra.Command {
 	return cmd
 }
 
-func AddAccountController() *cobra.Command {
+func CreateAccountController() *cobra.Command {
 	var usernameStr string
 	var passwordStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "AddNewAccount",
+		Use:   "create",
+		Short: "CreateNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			username := valueObject.NewUsernamePanic(usernameStr)
 			password := valueObject.NewPasswordPanic(passwordStr)
 
-			addAccountDto := dto.NewAddAccount(username, password)
+			createAccountDto := dto.NewCreateAccount(username, password)
 
 			accQueryRepo := accountInfra.AccQueryRepo{}
 			accCmdRepo := accountInfra.AccCmdRepo{}
+			filesQueryRepo := filesInfra.FilesQueryRepo{}
+			filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-			err := useCase.AddAccount(
+			err := useCase.CreateAccount(
 				accQueryRepo,
 				accCmdRepo,
-				addAccountDto,
+				filesQueryRepo,
+				filesCmdRepo,
+				createAccountDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "AccountAdded")
+			cliHelper.ResponseWrapper(true, "AccountCreated")
 		},
 	}
 

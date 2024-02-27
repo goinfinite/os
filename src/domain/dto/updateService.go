@@ -4,12 +4,12 @@ import "github.com/speedianet/os/src/domain/valueObject"
 
 type UpdateService struct {
 	Name         valueObject.ServiceName     `json:"name"`
-	Type         *valueObject.ServiceType    `json:"type,omitempty"`
-	Command      *valueObject.UnixCommand    `json:"command,omitempty"`
-	Status       *valueObject.ServiceStatus  `json:"status,omitempty"`
-	Version      *valueObject.ServiceVersion `json:"version,omitempty"`
-	StartupFile  *valueObject.UnixFilePath   `json:"startupFile,omitempty"`
-	PortBindings []valueObject.PortBinding   `json:"portBindings,omitempty"`
+	Type         *valueObject.ServiceType    `json:"type"`
+	Command      *valueObject.UnixCommand    `json:"command"`
+	Status       *valueObject.ServiceStatus  `json:"status"`
+	Version      *valueObject.ServiceVersion `json:"version"`
+	StartupFile  *valueObject.UnixFilePath   `json:"startupFile"`
+	PortBindings []valueObject.PortBinding   `json:"portBindings"`
 }
 
 func NewUpdateService(

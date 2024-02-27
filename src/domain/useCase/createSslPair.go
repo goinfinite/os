@@ -10,10 +10,10 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func AddSslPair(
+func CreateSslPair(
 	sslCmdRepo repository.SslCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	addSslPair dto.AddSslPair,
+	createSslPair dto.CreateSslPair,
 ) error {
 	existingVhosts, err := vhostQueryRepo.Get()
 	if err != nil {
@@ -32,7 +32,7 @@ func AddSslPair(
 			continue
 		}
 
-		if slices.Contains(addSslPair.VirtualHosts, vhost.Hostname) {
+		if slices.Contains(createSslPair.VirtualHosts, vhost.Hostname) {
 			validSslVirtualHosts = append(validSslVirtualHosts, vhost.Hostname)
 		}
 	}
@@ -41,12 +41,12 @@ func AddSslPair(
 		return errors.New("VhostDoesNotExists")
 	}
 
-	addSslPair.VirtualHosts = validSslVirtualHosts
+	createSslPair.VirtualHosts = validSslVirtualHosts
 
-	err = sslCmdRepo.Add(addSslPair)
+	err = sslCmdRepo.Create(createSslPair)
 	if err != nil {
-		log.Printf("AddSslPairError: %s", err)
-		return errors.New("AddSslPairInfraError")
+		log.Printf("CreateSslPairError: %s", err)
+		return errors.New("CreateSslPairInfraError")
 	}
 
 	return nil

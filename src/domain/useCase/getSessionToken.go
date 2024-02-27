@@ -39,5 +39,5 @@ func GetSessionToken(
 		time.Now().Add(3 * time.Hour).Unix(),
 	)
 
-	return authCmdRepo.GenerateSessionToken(accountId, expiresIn, ipAddress), nil
+	return authCmdRepo.GenerateSessionToken(accountId, expiresIn, ipAddress)
 }

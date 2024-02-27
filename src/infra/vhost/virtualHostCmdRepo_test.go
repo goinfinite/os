@@ -11,40 +11,40 @@ import (
 
 func TestVirtualHostCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	t.Run("AddAlias", func(t *testing.T) {
+	t.Run("CreateAlias", func(t *testing.T) {
 		parentDomain := valueObject.NewFqdnPanic("speedia.net")
 
-		addDto := dto.NewAddVirtualHost(
+		createDto := dto.NewCreateVirtualHost(
 			valueObject.NewFqdnPanic("speedia.com"),
 			valueObject.NewVirtualHostTypePanic("alias"),
 			&parentDomain,
 		)
 
-		err := VirtualHostCmdRepo{}.Add(addDto)
+		err := VirtualHostCmdRepo{}.Create(createDto)
 
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
 
-	t.Run("AddTopLevel", func(t *testing.T) {
-		addDto := dto.NewAddVirtualHost(
+	t.Run("CreateTopLevel", func(t *testing.T) {
+		createDto := dto.NewCreateVirtualHost(
 			valueObject.NewFqdnPanic("speedia.org"),
 			valueObject.NewVirtualHostTypePanic("top-level"),
 			nil,
 		)
 
-		err := VirtualHostCmdRepo{}.Add(addDto)
+		err := VirtualHostCmdRepo{}.Create(createDto)
 
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
 
-	t.Run("AddMapping", func(t *testing.T) {
+	t.Run("CreateMapping", func(t *testing.T) {
 		responseCode := valueObject.NewHttpResponseCodePanic(403)
 
-		addDto := dto.NewAddMapping(
+		createDto := dto.NewCreateMapping(
 			valueObject.NewFqdnPanic("speedia.org"),
 			valueObject.NewMappingPathPanic("/"),
 			valueObject.NewMappingMatchPatternPanic("begins-with"),
@@ -54,7 +54,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			&responseCode,
 		)
 
-		err := VirtualHostCmdRepo{}.AddMapping(addDto)
+		err := VirtualHostCmdRepo{}.CreateMapping(createDto)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}

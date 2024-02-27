@@ -9,11 +9,11 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func AddMapping(
+func CreateMapping(
 	queryRepo repository.VirtualHostQueryRepo,
 	cmdRepo repository.VirtualHostCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
-	addMapping dto.AddMapping,
+	createMapping dto.CreateMapping,
 ) error {
 	vhostWithMappings, err := queryRepo.GetWithMappings()
 	if err != nil {
@@ -23,16 +23,16 @@ func AddMapping(
 
 	vhostIndex := -1
 	for vhostWithMappingIndex, vhostWithMapping := range vhostWithMappings {
-		if vhostWithMapping.Hostname != addMapping.Hostname {
+		if vhostWithMapping.Hostname != createMapping.Hostname {
 			continue
 		}
 
 		for _, mapping := range vhostWithMapping.Mappings {
-			if mapping.MatchPattern != addMapping.MatchPattern {
+			if mapping.MatchPattern != createMapping.MatchPattern {
 				continue
 			}
 
-			if mapping.Path != addMapping.Path {
+			if mapping.Path != createMapping.Path {
 				continue
 			}
 
@@ -50,13 +50,13 @@ func AddMapping(
 		return errors.New("AliasCannotHaveMappings")
 	}
 
-	isServiceTarget := addMapping.TargetType.String() == "service"
+	isServiceTarget := createMapping.TargetType.String() == "service"
 	if isServiceTarget {
-		if addMapping.TargetServiceName == nil {
+		if createMapping.TargetServiceName == nil {
 			return errors.New("TargetServiceNameRequired")
 		}
 
-		service, err := svcsQueryRepo.GetByName(*addMapping.TargetServiceName)
+		service, err := svcsQueryRepo.GetByName(*createMapping.TargetServiceName)
 		if err != nil {
 			return err
 		}
@@ -74,25 +74,25 @@ func AddMapping(
 		}
 	}
 
-	isUrlTarget := addMapping.TargetType.String() == "url"
-	if isUrlTarget && addMapping.TargetUrl == nil {
+	isUrlTarget := createMapping.TargetType.String() == "url"
+	if isUrlTarget && createMapping.TargetUrl == nil {
 		return errors.New("TargetUrlRequired")
 	}
 
 	defaultResponseCode, _ := valueObject.NewHttpResponseCode(301)
-	if isUrlTarget && addMapping.TargetHttpResponseCode == nil {
-		addMapping.TargetHttpResponseCode = &defaultResponseCode
+	if isUrlTarget && createMapping.TargetHttpResponseCode == nil {
+		createMapping.TargetHttpResponseCode = &defaultResponseCode
 	}
 
-	isResponseCodeTarget := addMapping.TargetType.String() == "response-code"
-	if isResponseCodeTarget && addMapping.TargetHttpResponseCode == nil {
+	isResponseCodeTarget := createMapping.TargetType.String() == "response-code"
+	if isResponseCodeTarget && createMapping.TargetHttpResponseCode == nil {
 		return errors.New("TargetHttpResponseCodeRequired")
 	}
 
-	err = cmdRepo.AddMapping(addMapping)
+	err = cmdRepo.CreateMapping(createMapping)
 	if err != nil {
-		log.Printf("AddMappingError: %s", err.Error())
-		return errors.New("AddMappingInfraError")
+		log.Printf("CreateMappingError: %s", err.Error())
+		return errors.New("CreateMappingInfraError")
 	}
 
 	return nil

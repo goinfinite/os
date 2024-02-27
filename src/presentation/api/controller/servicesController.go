@@ -69,17 +69,17 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	return svcPortBindings
 }
 
-// AddInstallableService godoc
-// @Summary      AddInstallableService
+// CreateInstallableService godoc
+// @Summary      CreateInstallableService
 // @Description  Install a new installable service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addInstallableServiceDto	body dto.AddInstallableService	true	"AddInstallableService"
+// @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installables/ [post]
-func AddInstallableServiceController(c echo.Context) error {
+func CreateInstallableServiceController(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -123,7 +123,7 @@ func AddInstallableServiceController(c echo.Context) error {
 		}
 	}
 
-	addInstallableServiceDto := dto.NewAddInstallableService(
+	createInstallableServiceDto := dto.NewCreateInstallableService(
 		svcName,
 		svcVersionPtr,
 		svcStartupFilePtr,
@@ -136,12 +136,12 @@ func AddInstallableServiceController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	err := useCase.AddInstallableService(
+	err := useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addInstallableServiceDto,
+		createInstallableServiceDto,
 	)
 
 	if err != nil {
@@ -151,17 +151,17 @@ func AddInstallableServiceController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "InstallableServiceCreated")
 }
 
-// AddCustomService godoc
-// @Summary      AddCustomService
+// CreateCustomService godoc
+// @Summary      CreateCustomService
 // @Description  Install a new custom service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addCustomServiceDto	body dto.AddCustomService	true	"AddCustomService"
+// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /services/custom/ [post]
-func AddCustomServiceController(c echo.Context) error {
+func CreateCustomServiceController(c echo.Context) error {
 	requiredParams := []string{"name", "type", "command"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -199,7 +199,7 @@ func AddCustomServiceController(c echo.Context) error {
 		}
 	}
 
-	addCustomServiceDto := dto.NewAddCustomService(
+	createCustomServiceDto := dto.NewCreateCustomService(
 		svcName,
 		svcType,
 		svcCommand,
@@ -213,12 +213,12 @@ func AddCustomServiceController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	err := useCase.AddCustomService(
+	err := useCase.CreateCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addCustomServiceDto,
+		createCustomServiceDto,
 	)
 
 	if err != nil {
