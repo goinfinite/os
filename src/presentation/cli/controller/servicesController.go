@@ -54,7 +54,7 @@ func CreateInstallableServiceController() *cobra.Command {
 	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
-		Use:   "add-installable",
+		Use:   "create-installable",
 		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
@@ -80,7 +80,7 @@ func CreateInstallableServiceController() *cobra.Command {
 				portBindings = append(portBindings, svcPortBinding)
 			}
 
-			addInstallableServiceDto := dto.NewCreateInstallableService(
+			createInstallableServiceDto := dto.NewCreateInstallableService(
 				svcName,
 				svcVersionPtr,
 				startupFilePtr,
@@ -98,7 +98,7 @@ func CreateInstallableServiceController() *cobra.Command {
 				servicesCmdRepo,
 				vhostQueryRepo,
 				vhostCmdRepo,
-				addInstallableServiceDto,
+				createInstallableServiceDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -134,7 +134,7 @@ func CreateCustomServiceController() *cobra.Command {
 	var autoCreateMapping bool
 
 	cmd := &cobra.Command{
-		Use:   "add-custom",
+		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
@@ -156,7 +156,7 @@ func CreateCustomServiceController() *cobra.Command {
 				portBindings = append(portBindings, svcPortBinding)
 			}
 
-			addCustomServiceDto := dto.NewCreateCustomService(
+			createCustomServiceDto := dto.NewCreateCustomService(
 				svcName,
 				svcType,
 				svcCommand,
@@ -175,7 +175,7 @@ func CreateCustomServiceController() *cobra.Command {
 				servicesCmdRepo,
 				vhostQueryRepo,
 				vhostCmdRepo,
-				addCustomServiceDto,
+				createCustomServiceDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())

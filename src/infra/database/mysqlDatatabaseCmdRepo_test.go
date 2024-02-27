@@ -14,7 +14,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.AddInstallableSimplified("mariadb")
+	err := servicesInfra.CreateInstallableSimplified("mariadb")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return
@@ -30,12 +30,12 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Run("CreateDatabase", func(t *testing.T) {
 		err := mysqlDatabaseCmdRepo.Create("testing")
 		if err != nil {
-			t.Error("Error adding database")
+			t.Error("Error creating database")
 		}
 	})
 
 	t.Run("CreateDatabaseUser", func(t *testing.T) {
-		addDatabaseUserDto := dto.NewCreateDatabaseUser(
+		createDatabaseUserDto := dto.NewCreateDatabaseUser(
 			valueObject.NewDatabaseNamePanic("testing"),
 			valueObject.NewDatabaseUsernamePanic("testing"),
 			valueObject.NewPasswordPanic("testing"),
@@ -44,9 +44,9 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 			},
 		)
 
-		err := mysqlDatabaseCmdRepo.CreateUser(addDatabaseUserDto)
+		err := mysqlDatabaseCmdRepo.CreateUser(createDatabaseUserDto)
 		if err != nil {
-			t.Error("Error adding database user")
+			t.Error("Error creating database user")
 		}
 	})
 

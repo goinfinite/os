@@ -16,7 +16,7 @@ func TestCronCmdRepo(t *testing.T) {
 		command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
 		comment := valueObject.NewCronCommentPanic("Test cron job")
 
-		addCron := dto.NewCreateCron(
+		createCron := dto.NewCreateCron(
 			schedule,
 			command,
 			&comment,
@@ -27,7 +27,7 @@ func TestCronCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
-		err = cronCmdRepo.Create(addCron)
+		err = cronCmdRepo.Create(createCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}

@@ -102,14 +102,14 @@ func DeleteDatabaseController(c echo.Context) error {
 
 // CreateDatabaseUser godoc
 // @Summary      CreateDatabaseUser
-// @Description  Add a new database user.
+// @Description  Create a new database user.
 // @Tags         database
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
 // @Param        dbType path string true "DatabaseType"
 // @Param        dbName path string true "DatabaseName"
-// @Param        addDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
+// @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /database/{dbType}/{dbName}/user/ [post]
 func CreateDatabaseUserController(c echo.Context) error {

@@ -43,8 +43,8 @@ func (repo AccCmdRepo) Create(createAccount dto.CreateAccount) error {
 
 	err = createAccountCmd.Run()
 	if err != nil {
-		log.Printf("AccountAddError: %s", err)
-		return errors.New("AccountAddError")
+		log.Printf("AccountCreateError: %s", err)
+		return errors.New("AccountCreateError")
 	}
 
 	return nil

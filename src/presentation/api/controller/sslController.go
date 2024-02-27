@@ -47,7 +47,7 @@ func parseVirtualHosts(vhosts []interface{}) []valueObject.Fqdn {
 	return virtualHosts
 }
 
-// AddSsl    	 godoc
+// CreateSsl    	 godoc
 // @Summary      CreateNewSslPair
 // @Description  Create a new ssl pair.
 // @Tags         ssl

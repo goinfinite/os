@@ -69,7 +69,7 @@ func GetFilesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, filesList)
 }
 
-// AddFile    godoc
+// CreateFile    godoc
 // @Summary      CreateNewFile
 // @Description  Create a new dir/file.
 // @Tags         files

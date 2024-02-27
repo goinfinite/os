@@ -36,8 +36,8 @@ func CreateSslPairController() *cobra.Command {
 	var keyFilePathStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "AddNewSslPair",
+		Use:   "create",
+		Short: "CreateNewSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {
@@ -58,7 +58,7 @@ func CreateSslPairController() *cobra.Command {
 			sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
 			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
 
-			addSslDto := dto.NewCreateSslPair(
+			createSslDto := dto.NewCreateSslPair(
 				virtualHosts,
 				sslCertificate,
 				sslPrivateKey,
@@ -70,7 +70,7 @@ func CreateSslPairController() *cobra.Command {
 			err = useCase.CreateSslPair(
 				sslCmdRepo,
 				vhostQueryRepo,
-				addSslDto,
+				createSslDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())

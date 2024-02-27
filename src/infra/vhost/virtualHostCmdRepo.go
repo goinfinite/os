@@ -53,7 +53,7 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
-func (repo VirtualHostCmdRepo) addAlias(createDto dto.CreateVirtualHost) error {
+func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) error {
 	vhostFile, err := repo.getAliasConfigFile(*createDto.ParentHostname)
 	if err != nil {
 		return errors.New("GetAliasConfigFileFailed")
@@ -69,7 +69,7 @@ func (repo VirtualHostCmdRepo) addAlias(createDto dto.CreateVirtualHost) error {
 		vhostFileStr,
 	)
 	if err != nil {
-		return errors.New("AddAliasFailed")
+		return errors.New("CreateAliasFailed")
 	}
 
 	// TODO: Regenerate cert for primary domain to include new alias
@@ -77,7 +77,7 @@ func (repo VirtualHostCmdRepo) addAlias(createDto dto.CreateVirtualHost) error {
 	return repo.reloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) addPhpVirtualHost(hostname valueObject.Fqdn) error {
+func (repo VirtualHostCmdRepo) createPhpVirtualHost(hostname valueObject.Fqdn) error {
 	vhostExists := true
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
@@ -141,7 +141,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	hostnameStr := createDto.Hostname.String()
 
 	if createDto.Type.String() == "alias" {
-		return repo.addAlias(createDto)
+		return repo.createAlias(createDto)
 	}
 
 	publicDir := "/app/html/" + hostnameStr
@@ -286,10 +286,10 @@ func (repo VirtualHostCmdRepo) mappingToLocationStartBlock(
 }
 
 func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
-	addMapping dto.CreateMapping,
+	createMapping dto.CreateMapping,
 ) (string, error) {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	serviceEntity, err := servicesQueryRepo.GetByName(*addMapping.TargetServiceName)
+	serviceEntity, err := servicesQueryRepo.GetByName(*createMapping.TargetServiceName)
 	if err != nil {
 		return "", errors.New("GetServiceByNameFailed")
 	}
@@ -485,27 +485,27 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	return locationContent, nil
 }
 
-func (repo VirtualHostCmdRepo) CreateMapping(addMapping dto.CreateMapping) error {
+func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) error {
 	locationStartBlock := repo.mappingToLocationStartBlock(
-		addMapping.MatchPattern,
-		addMapping.Path,
+		createMapping.MatchPattern,
+		createMapping.Path,
 	)
 
 	responseCodeStr := ""
-	if addMapping.TargetHttpResponseCode != nil {
-		responseCodeStr = addMapping.TargetHttpResponseCode.String()
+	if createMapping.TargetHttpResponseCode != nil {
+		responseCodeStr = createMapping.TargetHttpResponseCode.String()
 	}
 
 	locationContent := "	return " + responseCodeStr
-	if addMapping.TargetType.String() == "url" {
-		locationContent += " " + addMapping.TargetUrl.String()
+	if createMapping.TargetType.String() == "url" {
+		locationContent += " " + createMapping.TargetUrl.String()
 	}
 	locationContent += ";"
 
-	isService := addMapping.TargetType.String() == "service"
+	isService := createMapping.TargetType.String() == "service"
 	if isService {
 		var err error
-		locationContent, err = repo.serviceLocationContentFactory(addMapping)
+		locationContent, err = repo.serviceLocationContentFactory(createMapping)
 		if err != nil {
 			return errors.New("ServiceLocationContentFactoryFailed: " + err.Error())
 		}
@@ -518,15 +518,15 @@ func (repo VirtualHostCmdRepo) CreateMapping(addMapping dto.CreateMapping) error
 
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
-		addMapping.Hostname,
+		createMapping.Hostname,
 	)
 	if err != nil {
 		return errors.New("GetVirtualHostMappingsFilePathFailed")
 	}
 
-	isPhpService := isService && addMapping.TargetServiceName.String() == "php"
+	isPhpService := isService && createMapping.TargetServiceName.String() == "php"
 	if isPhpService {
-		err = repo.addPhpVirtualHost(addMapping.Hostname)
+		err = repo.createPhpVirtualHost(createMapping.Hostname)
 		if err != nil {
 			return err
 		}

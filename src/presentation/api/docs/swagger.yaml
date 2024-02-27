@@ -820,7 +820,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new database user.
+      description: Create a new database user.
       parameters:
       - description: DatabaseType
         in: path
@@ -834,7 +834,7 @@ paths:
         type: string
       - description: CreateDatabaseUser
         in: body
-        name: addDatabaseUserDto
+        name: createDatabaseUserDto
         required: true
         schema:
           $ref: '#/definitions/dto.CreateDatabaseUser'

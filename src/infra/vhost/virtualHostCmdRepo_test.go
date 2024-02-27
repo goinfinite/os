@@ -11,7 +11,7 @@ import (
 
 func TestVirtualHostCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	t.Run("AddAlias", func(t *testing.T) {
+	t.Run("CreateAlias", func(t *testing.T) {
 		parentDomain := valueObject.NewFqdnPanic("speedia.net")
 
 		createDto := dto.NewCreateVirtualHost(
@@ -27,7 +27,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("AddTopLevel", func(t *testing.T) {
+	t.Run("CreateTopLevel", func(t *testing.T) {
 		createDto := dto.NewCreateVirtualHost(
 			valueObject.NewFqdnPanic("speedia.org"),
 			valueObject.NewVirtualHostTypePanic("top-level"),

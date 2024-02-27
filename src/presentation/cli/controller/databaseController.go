@@ -39,7 +39,7 @@ func CreateDatabaseController() *cobra.Command {
 	var dbNameStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   "create",
 		Short: "CreateNewDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
@@ -112,8 +112,8 @@ func CreateDatabaseUserController() *cobra.Command {
 	var privilegesSlice []string
 
 	cmd := &cobra.Command{
-		Use:   "add-user",
-		Short: "AddNewDatabaseUser",
+		Use:   "create-user",
+		Short: "CreateNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)

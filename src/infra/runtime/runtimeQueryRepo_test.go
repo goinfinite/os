@@ -13,7 +13,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	t.Skip("SkipRuntimeQueryRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.AddInstallableSimplified("php")
+	err := servicesInfra.CreateInstallableSimplified("php")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return

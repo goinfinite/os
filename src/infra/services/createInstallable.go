@@ -251,7 +251,7 @@ func addPhp() error {
 		httpsPortBinding,
 	}
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		valueObject.NewServiceNamePanic("php-webserver"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
@@ -262,7 +262,7 @@ func addPhp() error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError: " + err.Error())
+		return errors.New("CreateSupervisorConfError: " + err.Error())
 	}
 
 	return nil
@@ -327,7 +327,7 @@ func addNode(createDto dto.CreateInstallableService) error {
 		portBindings = createDto.PortBindings
 	}
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		createDto.Name,
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
@@ -340,7 +340,7 @@ func addNode(createDto dto.CreateInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	return nil
@@ -454,7 +454,7 @@ func addMariaDb(createDto dto.CreateInstallableService) error {
 		),
 	}
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
@@ -465,7 +465,7 @@ func addMariaDb(createDto dto.CreateInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	return nil
@@ -548,7 +548,7 @@ func addPostgresqlDb(createDto dto.CreateInstallableService) error {
 
 	postgresUser := valueObject.NewUsernamePanic("postgres")
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("database"),
@@ -563,7 +563,7 @@ func addPostgresqlDb(createDto dto.CreateInstallableService) error {
 		&postgresUser,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError: " + err.Error())
+		return errors.New("CreateSupervisorConfError: " + err.Error())
 	}
 
 	hbaConfPath := "/etc/postgresql/" + versionStr + "/main/pg_hba.conf"
@@ -721,7 +721,7 @@ func addRedis(createDto dto.CreateInstallableService) error {
 		),
 	}
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		createDto.Name,
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.ServiceType("database"),
@@ -732,7 +732,7 @@ func addRedis(createDto dto.CreateInstallableService) error {
 		nil,
 	)
 	if err != nil {
-		return errors.New("AddSupervisorConfError")
+		return errors.New("CreateSupervisorConfError")
 	}
 
 	_, err = infraHelper.RunCmd(
@@ -749,7 +749,7 @@ func addRedis(createDto dto.CreateInstallableService) error {
 	return nil
 }
 
-func AddInstallable(
+func CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) error {
 	svcNameStr := createDto.Name.String()
@@ -775,7 +775,7 @@ func AddInstallable(
 	}
 }
 
-func AddInstallableSimplified(serviceName string) error {
+func CreateInstallableSimplified(serviceName string) error {
 	dto := dto.NewCreateInstallableService(
 		valueObject.NewServiceNamePanic(serviceName),
 		nil,
@@ -783,5 +783,5 @@ func AddInstallableSimplified(serviceName string) error {
 		[]valueObject.PortBinding{},
 		true,
 	)
-	return AddInstallable(dto)
+	return CreateInstallable(dto)
 }

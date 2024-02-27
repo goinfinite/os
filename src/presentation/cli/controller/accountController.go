@@ -33,7 +33,7 @@ func CreateAccountController() *cobra.Command {
 	var passwordStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   "create",
 		Short: "CreateNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			username := valueObject.NewUsernamePanic(usernameStr)

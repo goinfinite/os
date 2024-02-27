@@ -55,7 +55,7 @@ func CreateCustomService(
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
-	err = servicesCmdRepo.AddCustom(createDto)
+	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
 		log.Printf("CreateCustomServiceError: %v", err)
 		return errors.New("CreateCustomServiceInfraError")
@@ -87,14 +87,14 @@ func CreateCustomService(
 		createDto.Name,
 	)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingError")
 	}
 
 	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingInfraError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingInfraError")
 	}
 
 	return nil

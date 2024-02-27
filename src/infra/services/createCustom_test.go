@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func TestAddCustom(t *testing.T) {
+func TestCreateCustom(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	t.Run("CreateCustomService", func(t *testing.T) {
@@ -31,7 +31,7 @@ func TestAddCustom(t *testing.T) {
 			true,
 		)
 
-		err = AddCustom(dto)
+		err = CreateCustom(dto)
 		if err != nil {
 			t.Errorf("CreateCustomServiceFailed : %v", err)
 			return

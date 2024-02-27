@@ -483,7 +483,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new database user.",
+                "description": "Create a new database user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -511,7 +511,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "CreateDatabaseUser",
-                        "name": "addDatabaseUserDto",
+                        "name": "createDatabaseUserDto",
                         "in": "body",
                         "required": true,
                         "schema": {

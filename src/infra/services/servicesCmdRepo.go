@@ -8,10 +8,10 @@ import (
 type ServicesCmdRepo struct {
 }
 
-func (repo ServicesCmdRepo) AddInstallable(
+func (repo ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) error {
-	err := AddInstallable(createDto)
+	err := CreateInstallable(createDto)
 	if err != nil {
 		return err
 	}
@@ -24,10 +24,10 @@ func (repo ServicesCmdRepo) AddInstallable(
 	return nil
 }
 
-func (repo ServicesCmdRepo) AddCustom(
+func (repo ServicesCmdRepo) CreateCustom(
 	createDto dto.CreateCustomService,
 ) error {
-	err := AddCustom(createDto)
+	err := CreateCustom(createDto)
 	if err != nil {
 		return err
 	}

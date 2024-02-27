@@ -5,7 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func AddCustom(
+func CreateCustom(
 	createDto dto.CreateCustomService,
 ) error {
 	svcVersion := valueObject.NewServiceVersionPanic("latest")
@@ -13,7 +13,7 @@ func AddCustom(
 		svcVersion = *createDto.Version
 	}
 
-	return SupervisordFacade{}.AddConf(
+	return SupervisordFacade{}.CreateConf(
 		createDto.Name,
 		valueObject.NewServiceNaturePanic("custom"),
 		createDto.Type,

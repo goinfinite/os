@@ -47,7 +47,7 @@ func CreateInstallableService(
 		createDto.Name = newSvcName
 	}
 
-	err = servicesCmdRepo.AddInstallable(createDto)
+	err = servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
 		log.Printf("CreateInstallableServiceError: %v", err)
 		return errors.New("CreateInstallableServiceInfraError")
@@ -74,14 +74,14 @@ func CreateInstallableService(
 		createDto.Name,
 	)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingError")
 	}
 
 	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingInfraError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingInfraError")
 	}
 
 	return nil

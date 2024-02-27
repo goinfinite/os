@@ -15,31 +15,31 @@ func TestFilesCmdRepo(t *testing.T) {
 	currentUser, _ := user.Current()
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
 
-	t.Run("AddUnixDirectory", func(t *testing.T) {
+	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		dirPermissions := valueObject.NewUnixFilePermissionsPanic("0777")
 
-		addUnixFile := dto.NewCreateUnixFile(
+		createUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
 			&dirPermissions,
 			valueObject.NewMimeTypePanic("directory"),
 		)
 
-		err := filesCmdRepo.Create(addUnixFile)
+		err := filesCmdRepo.Create(createUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
-	t.Run("AddUnixFile", func(t *testing.T) {
+	t.Run("CreateUnixFile", func(t *testing.T) {
 		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
 
-		addUnixFile := dto.NewCreateUnixFile(
+		createUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
 			&filePermissions,
 			valueObject.NewMimeTypePanic("generic"),
 		)
 
-		err := filesCmdRepo.Create(addUnixFile)
+		err := filesCmdRepo.Create(createUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}

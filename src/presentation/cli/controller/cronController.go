@@ -33,7 +33,7 @@ func CreateCronControler() *cobra.Command {
 	var commentStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   "create",
 		Short: "CreateNewCron",
 		Run: func(cmd *cobra.Command, args []string) {
 			var commentPtr *valueObject.CronComment

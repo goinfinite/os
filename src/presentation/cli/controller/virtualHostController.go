@@ -35,7 +35,7 @@ func CreateVirtualHostController() *cobra.Command {
 	var parentHostnameStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
@@ -52,7 +52,7 @@ func CreateVirtualHostController() *cobra.Command {
 				parentHostnamePtr = &parentHostname
 			}
 
-			addVirtualHostDto := dto.NewCreateVirtualHost(
+			createVirtualHostDto := dto.NewCreateVirtualHost(
 				hostname,
 				vhostType,
 				parentHostnamePtr,
@@ -64,7 +64,7 @@ func CreateVirtualHostController() *cobra.Command {
 			err := useCase.CreateVirtualHost(
 				vhostQueryRepo,
 				vhostCmdRepo,
-				addVirtualHostDto,
+				createVirtualHostDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -149,7 +149,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 	var targetHttpResponseCode uint
 
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   "create",
 		Short: "CreateMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
@@ -181,7 +181,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 				targetHttpResponseCodePtr = &targetHttpResponseCode
 			}
 
-			addMappingDto := dto.NewCreateMapping(
+			createMappingDto := dto.NewCreateMapping(
 				hostname,
 				path,
 				matchPattern,
@@ -199,7 +199,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 				vhostQueryRepo,
 				vhostCmdRepo,
 				svcsQueryRepo,
-				addMappingDto,
+				createMappingDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())

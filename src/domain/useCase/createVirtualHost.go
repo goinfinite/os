@@ -13,19 +13,19 @@ import (
 func CreateVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addVirtualHost dto.CreateVirtualHost,
+	createVirtualHost dto.CreateVirtualHost,
 ) error {
-	_, err := vhostQueryRepo.GetByHostname(addVirtualHost.Hostname)
+	_, err := vhostQueryRepo.GetByHostname(createVirtualHost.Hostname)
 	if err == nil {
 		return errors.New("VirtualHostAlreadyExists")
 	}
 
-	isAlias := addVirtualHost.Type.String() == "alias"
-	if isAlias && addVirtualHost.ParentHostname == nil {
+	isAlias := createVirtualHost.Type.String() == "alias"
+	if isAlias && createVirtualHost.ParentHostname == nil {
 		return errors.New("AliasMustHaveParentHostname")
 	}
 
-	hostnameStr := addVirtualHost.Hostname.String()
+	hostnameStr := createVirtualHost.Hostname.String()
 	hasWildcardInHostname := strings.HasPrefix(hostnameStr, "*.")
 	if hasWildcardInHostname {
 		hostnameWithoutWildcardStr := strings.Replace(hostnameStr, "*.", "", 1)
@@ -34,16 +34,16 @@ func CreateVirtualHost(
 			return errors.New("FailedToRemoveWildcardFromHostname: " + err.Error())
 		}
 
-		addVirtualHost.Hostname = hostnameWithoutWildcard
+		createVirtualHost.Hostname = hostnameWithoutWildcard
 	}
 
-	err = vhostCmdRepo.Create(addVirtualHost)
+	err = vhostCmdRepo.Create(createVirtualHost)
 	if err != nil {
 		log.Printf("CreateVirtualHostError: %s", err.Error())
 		return errors.New("CreateVirtualHostInfraError")
 	}
 
-	log.Printf("VirtualHost '%s' created.", addVirtualHost.Hostname)
+	log.Printf("VirtualHost '%s' created.", createVirtualHost.Hostname)
 
 	return nil
 }
