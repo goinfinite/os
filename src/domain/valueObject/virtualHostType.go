@@ -10,6 +10,7 @@ import (
 type VirtualHostType string
 
 var ValidVirtualHostTypes = []string{
+	"primary",
 	"top-level",
 	"subdomain",
 	"wildcard",

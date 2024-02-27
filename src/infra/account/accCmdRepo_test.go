@@ -9,17 +9,17 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func addDummyUser() error {
+func createDummyUser() error {
 	username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
 	password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
 
-	addUser := dto.AddAccount{
+	createUser := dto.CreateAccount{
 		Username: username,
 		Password: password,
 	}
 
 	accCmdRepo := AccCmdRepo{}
-	err := accCmdRepo.Add(addUser)
+	err := accCmdRepo.Create(createUser)
 	if err != nil {
 		return err
 	}
@@ -40,46 +40,46 @@ func deleteDummyUser() error {
 }
 
 func resetDummyUser() {
-	_ = addDummyUser()
+	_ = createDummyUser()
 	_ = deleteDummyUser()
-	_ = addDummyUser()
+	_ = createDummyUser()
 }
 
 func TestAccCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	t.Run("AddValidAccount", func(t *testing.T) {
-		err := addDummyUser()
+	t.Run("CreateValidAccount", func(t *testing.T) {
+		err := createDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
-	t.Run("AddInvalidAccount", func(t *testing.T) {
+	t.Run("CreateInvalidAccount", func(t *testing.T) {
 		username := valueObject.NewUsernamePanic("root")
 		password := valueObject.NewPasswordPanic("invalid")
 
-		addUser := dto.AddAccount{
+		createUser := dto.CreateAccount{
 			Username: username,
 			Password: password,
 		}
 
 		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.Add(addUser)
+		err := accCmdRepo.Create(createUser)
 		if err == nil {
 			t.Error("ExpectingError")
 		}
 	})
 
 	t.Run("DeleteValidAccount", func(t *testing.T) {
-		_ = addDummyUser()
+		_ = createDummyUser()
 
 		err := deleteDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
-		_ = addDummyUser()
+		_ = createDummyUser()
 	})
 
 	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {

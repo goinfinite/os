@@ -2,18 +2,18 @@ package dto
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-type AddCron struct {
+type CreateCron struct {
 	Schedule valueObject.CronSchedule `json:"schedule"`
 	Command  valueObject.UnixCommand  `json:"command"`
-	Comment  *valueObject.CronComment `json:"comment,omitempty"`
+	Comment  *valueObject.CronComment `json:"comment"`
 }
 
-func NewAddCron(
+func NewCreateCron(
 	schedule valueObject.CronSchedule,
 	command valueObject.UnixCommand,
 	comment *valueObject.CronComment,
-) AddCron {
-	return AddCron{
+) CreateCron {
+	return CreateCron{
 		Schedule: schedule,
 		Command:  command,
 		Comment:  comment,

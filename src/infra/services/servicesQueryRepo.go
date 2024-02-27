@@ -440,20 +440,11 @@ func (repo ServicesQueryRepo) GetByName(
 
 func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, error) {
 	phpService := entity.NewInstallableService(
-		valueObject.NewServiceNamePanic("php"),
+		valueObject.NewServiceNamePanic("php-webserver"),
 		valueObject.NewServiceNaturePanic("solo"),
 		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
-			valueObject.NewServiceVersionPanic("8.3"),
-			valueObject.NewServiceVersionPanic("8.2"),
-			valueObject.NewServiceVersionPanic("8.1"),
-			valueObject.NewServiceVersionPanic("8.0"),
-			valueObject.NewServiceVersionPanic("7.4"),
-			valueObject.NewServiceVersionPanic("7.3"),
-			valueObject.NewServiceVersionPanic("7.2"),
-			valueObject.NewServiceVersionPanic("7.1"),
-			valueObject.NewServiceVersionPanic("7.0"),
-			valueObject.NewServiceVersionPanic("5.6"),
+			valueObject.NewServiceVersionPanic("latest"),
 		},
 	)
 

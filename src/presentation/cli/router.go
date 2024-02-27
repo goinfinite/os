@@ -33,7 +33,7 @@ func accountRoutes() {
 
 	rootCmd.AddCommand(accountCmd)
 	accountCmd.AddCommand(cliController.GetAccountsController())
-	accountCmd.AddCommand(cliController.AddAccountController())
+	accountCmd.AddCommand(cliController.CreateAccountController())
 	accountCmd.AddCommand(cliController.DeleteAccountController())
 	accountCmd.AddCommand(cliController.UpdateAccountController())
 }
@@ -46,7 +46,7 @@ func cronRoutes() {
 
 	rootCmd.AddCommand(cronCmd)
 	cronCmd.AddCommand(cliController.GetCronsController())
-	cronCmd.AddCommand(cliController.AddCronControler())
+	cronCmd.AddCommand(cliController.CreateCronControler())
 	cronCmd.AddCommand(cliController.UpdateCronController())
 	cronCmd.AddCommand(cliController.DeleteCronController())
 }
@@ -60,9 +60,9 @@ func databaseRoutes() {
 
 	rootCmd.AddCommand(databaseCmd)
 	databaseCmd.AddCommand(cliController.GetDatabasesController())
-	databaseCmd.AddCommand(cliController.AddDatabaseController())
+	databaseCmd.AddCommand(cliController.CreateDatabaseController())
 	databaseCmd.AddCommand(cliController.DeleteDatabaseController())
-	databaseCmd.AddCommand(cliController.AddDatabaseUserController())
+	databaseCmd.AddCommand(cliController.CreateDatabaseUserController())
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
@@ -104,8 +104,8 @@ func servicesRoutes() {
 	rootCmd.AddCommand(servicesCmd)
 	servicesCmd.AddCommand(cliController.GetServicesController())
 	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
-	servicesCmd.AddCommand(cliController.AddInstallableServiceController())
-	servicesCmd.AddCommand(cliController.AddCustomServiceController())
+	servicesCmd.AddCommand(cliController.CreateInstallableServiceController())
+	servicesCmd.AddCommand(cliController.CreateCustomServiceController())
 	servicesCmd.AddCommand(cliController.UpdateServiceController())
 	servicesCmd.AddCommand(cliController.DeleteServiceController())
 }
@@ -118,7 +118,7 @@ func sslRoutes() {
 
 	rootCmd.AddCommand(sslCmd)
 	sslCmd.AddCommand(cliController.GetSslPairsController())
-	sslCmd.AddCommand(cliController.AddSslPairController())
+	sslCmd.AddCommand(cliController.CreateSslPairController())
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
@@ -130,7 +130,7 @@ func virtualHostRoutes() {
 
 	rootCmd.AddCommand(vhostCmd)
 	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
-	vhostCmd.AddCommand(cliController.AddVirtualHostController())
+	vhostCmd.AddCommand(cliController.CreateVirtualHostController())
 	vhostCmd.AddCommand(cliController.DeleteVirtualHostController())
 
 	var mappingCmd = &cobra.Command{
@@ -140,7 +140,7 @@ func virtualHostRoutes() {
 
 	vhostCmd.AddCommand(mappingCmd)
 	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
-	mappingCmd.AddCommand(cliController.AddVirtualHostMappingController())
+	mappingCmd.AddCommand(cliController.CreateVirtualHostMappingController())
 	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
 }
 

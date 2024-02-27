@@ -47,17 +47,17 @@ func parseVirtualHosts(vhosts []interface{}) []valueObject.Fqdn {
 	return virtualHosts
 }
 
-// AddSsl    	 godoc
-// @Summary      AddNewSslPair
-// @Description  Add a new ssl pair.
+// CreateSsl    	 godoc
+// @Summary      CreateNewSslPair
+// @Description  Create a new ssl pair.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addSslPairDto 	  body    dto.AddSslPair  true  "NewSslPair"
+// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
-func AddSslPairController(c echo.Context) error {
+func CreateSslPairController(c echo.Context) error {
 	requiredParams := []string{"virtualHosts", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -77,7 +77,7 @@ func AddSslPairController(c echo.Context) error {
 		virtualHosts = []interface{}{virtualHostStr}
 	}
 
-	addSslPairDto := dto.NewAddSslPair(
+	createSslPairDto := dto.NewCreateSslPair(
 		parseVirtualHosts(virtualHosts),
 		sslCertificate,
 		sslPrivateKey,
@@ -86,10 +86,10 @@ func AddSslPairController(c echo.Context) error {
 	sslCmdRepo := sslInfra.NewSslCmdRepo()
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
-	err := useCase.AddSslPair(
+	err := useCase.CreateSslPair(
 		sslCmdRepo,
 		vhostQueryRepo,
-		addSslPairDto,
+		createSslPairDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

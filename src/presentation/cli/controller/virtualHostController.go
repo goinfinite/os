@@ -29,14 +29,14 @@ func GetVirtualHostsController() *cobra.Command {
 	return cmd
 }
 
-func AddVirtualHostController() *cobra.Command {
+func CreateVirtualHostController() *cobra.Command {
 	var hostnameStr string
 	var typeStr string
 	var parentHostnameStr string
 
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "AddVirtualHost",
+		Use:   "create",
+		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -52,7 +52,7 @@ func AddVirtualHostController() *cobra.Command {
 				parentHostnamePtr = &parentHostname
 			}
 
-			addVirtualHostDto := dto.NewAddVirtualHost(
+			createVirtualHostDto := dto.NewCreateVirtualHost(
 				hostname,
 				vhostType,
 				parentHostnamePtr,
@@ -61,16 +61,16 @@ func AddVirtualHostController() *cobra.Command {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			err := useCase.AddVirtualHost(
+			err := useCase.CreateVirtualHost(
 				vhostQueryRepo,
 				vhostCmdRepo,
-				addVirtualHostDto,
+				createVirtualHostDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "VirtualHostAdded")
+			cliHelper.ResponseWrapper(true, "VirtualHostCreated")
 		},
 	}
 
@@ -139,7 +139,7 @@ func GetVirtualHostsWithMappingsController() *cobra.Command {
 	return cmd
 }
 
-func AddVirtualHostMappingController() *cobra.Command {
+func CreateVirtualHostMappingController() *cobra.Command {
 	var hostnameStr string
 	var pathStr string
 	var matchPatternStr string
@@ -149,8 +149,8 @@ func AddVirtualHostMappingController() *cobra.Command {
 	var targetHttpResponseCode uint
 
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "AddMapping",
+		Use:   "create",
+		Short: "CreateMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			path := valueObject.NewMappingPathPanic(pathStr)
@@ -181,7 +181,7 @@ func AddVirtualHostMappingController() *cobra.Command {
 				targetHttpResponseCodePtr = &targetHttpResponseCode
 			}
 
-			addMappingDto := dto.NewAddMapping(
+			createMappingDto := dto.NewCreateMapping(
 				hostname,
 				path,
 				matchPattern,
@@ -195,17 +195,17 @@ func AddVirtualHostMappingController() *cobra.Command {
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 			svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
-			err := useCase.AddMapping(
+			err := useCase.CreateMapping(
 				vhostQueryRepo,
 				vhostCmdRepo,
 				svcsQueryRepo,
-				addMappingDto,
+				createMappingDto,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, "MappingAdded")
+			cliHelper.ResponseWrapper(true, "MappingCreated")
 		},
 	}
 

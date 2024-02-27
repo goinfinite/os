@@ -15,27 +15,31 @@ func TestFilesCmdRepo(t *testing.T) {
 	currentUser, _ := user.Current()
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
 
-	t.Run("AddUnixDirectory", func(t *testing.T) {
-		addUnixFile := dto.NewCreateUnixFile(
+	t.Run("CreateUnixDirectory", func(t *testing.T) {
+		dirPermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+
+		createUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
-			valueObject.NewUnixFilePermissionsPanic("0777"),
+			&dirPermissions,
 			valueObject.NewMimeTypePanic("directory"),
 		)
 
-		err := filesCmdRepo.Create(addUnixFile)
+		err := filesCmdRepo.Create(createUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
-	t.Run("AddUnixFile", func(t *testing.T) {
-		addUnixFile := dto.NewCreateUnixFile(
+	t.Run("CreateUnixFile", func(t *testing.T) {
+		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+
+		createUnixFile := dto.NewCreateUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
-			valueObject.NewUnixFilePermissionsPanic("0777"),
+			&filePermissions,
 			valueObject.NewMimeTypePanic("generic"),
 		)
 
-		err := filesCmdRepo.Create(addUnixFile)
+		err := filesCmdRepo.Create(createUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -94,7 +98,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			nil,
 		)
 
-		err := filesCmdRepo.Move(updateUnixFile)
+		err := filesCmdRepo.Move(updateUnixFile, true)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -111,7 +115,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			nil,
 		)
 
-		err := filesCmdRepo.Move(updateUnixFile)
+		err := filesCmdRepo.Move(updateUnixFile, false)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -121,6 +125,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
+			true,
 		)
 
 		err := filesCmdRepo.Copy(copyUnixFileDto)
@@ -133,6 +138,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		copyUnixFileDto := dto.NewCopyUnixFile(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/filesCmdRepoTest.txt"),
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
+			true,
 		)
 
 		err := filesCmdRepo.Copy(copyUnixFileDto)

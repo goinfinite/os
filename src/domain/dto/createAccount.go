@@ -2,16 +2,16 @@ package dto
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-type AddAccount struct {
+type CreateAccount struct {
 	Username valueObject.Username `json:"username"`
 	Password valueObject.Password `json:"password"`
 }
 
-func NewAddAccount(
+func NewCreateAccount(
 	username valueObject.Username,
 	password valueObject.Password,
-) AddAccount {
-	return AddAccount{
+) CreateAccount {
+	return CreateAccount{
 		Username: username,
 		Password: password,
 	}

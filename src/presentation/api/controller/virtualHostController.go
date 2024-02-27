@@ -32,17 +32,17 @@ func GetVirtualHostsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
 
-// AddVirtualHost    godoc
-// @Summary      AddNewVirtualHost
-// @Description  Add a new vhost.
+// CreateVirtualHost    godoc
+// @Summary      CreateNewVirtualHost
+// @Description  Create a new vhost.
 // @Tags         vhosts
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addVirtualHostDto 	  body    dto.AddVirtualHost  true  "NewVirtualHost (only hostname is required)."
+// @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
-func AddVirtualHostController(c echo.Context) error {
+func CreateVirtualHostController(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -64,7 +64,7 @@ func AddVirtualHostController(c echo.Context) error {
 		parentHostnamePtr = &parentHostname
 	}
 
-	addVirtualHostDto := dto.NewAddVirtualHost(
+	createVirtualHostDto := dto.NewCreateVirtualHost(
 		hostname,
 		vhostType,
 		parentHostnamePtr,
@@ -73,10 +73,10 @@ func AddVirtualHostController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	err := useCase.AddVirtualHost(
+	err := useCase.CreateVirtualHost(
 		vhostQueryRepo,
 		vhostCmdRepo,
-		addVirtualHostDto,
+		createVirtualHostDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -145,10 +145,10 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addMappingDto	body dto.AddMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
+// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
-func AddVirtualHostMappingController(c echo.Context) error {
+func CreateVirtualHostMappingController(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -167,12 +167,12 @@ func AddVirtualHostMappingController(c echo.Context) error {
 		)
 	}
 
-	var targetServicePtr *valueObject.ServiceName
-	if requestBody["targetService"] != nil {
-		targetService := valueObject.NewServiceNamePanic(
-			requestBody["targetService"].(string),
+	var targetServiceNamePtr *valueObject.ServiceName
+	if requestBody["targetServiceName"] != nil {
+		targetServiceName := valueObject.NewServiceNamePanic(
+			requestBody["targetServiceName"].(string),
 		)
-		targetServicePtr = &targetService
+		targetServiceNamePtr = &targetServiceName
 	}
 
 	var targetUrlPtr *valueObject.Url
@@ -189,12 +189,12 @@ func AddVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
-	addMappingDto := dto.NewAddMapping(
+	createMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
 		matchPattern,
 		targetType,
-		targetServicePtr,
+		targetServiceNamePtr,
 		targetUrlPtr,
 		targetHttpResponseCodePtr,
 	)
@@ -203,11 +203,11 @@ func AddVirtualHostMappingController(c echo.Context) error {
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
-	err := useCase.AddMapping(
+	err := useCase.CreateMapping(
 		vhostQueryRepo,
 		vhostCmdRepo,
 		svcsQueryRepo,
-		addMappingDto,
+		createMappingDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

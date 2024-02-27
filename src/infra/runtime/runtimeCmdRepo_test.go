@@ -1,12 +1,12 @@
 package runtimeInfra
 
 import (
-	"os"
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -14,15 +14,20 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	t.Skip("SkipRuntimeCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.AddInstallableSimplified("php")
+	err := servicesInfra.CreateInstallableSimplified("php")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return
 	}
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
-		err := RuntimeCmdRepo{}.UpdatePhpVersion(
-			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			t.Errorf("PrimaryHostnameNotFound")
+		}
+
+		err = RuntimeCmdRepo{}.UpdatePhpVersion(
+			valueObject.NewFqdnPanic(primaryHostname.String()),
 			valueObject.NewPhpVersionPanic("8.1"),
 		)
 		if err != nil {
@@ -31,8 +36,13 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpSettings", func(t *testing.T) {
-		err := RuntimeCmdRepo{}.UpdatePhpSettings(
-			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			t.Errorf("PrimaryHostnameNotFound")
+		}
+
+		err = RuntimeCmdRepo{}.UpdatePhpSettings(
+			valueObject.NewFqdnPanic(primaryHostname.String()),
 			[]entity.PhpSetting{
 				entity.NewPhpSetting(
 					valueObject.NewPhpSettingNamePanic("display_errors"),
@@ -47,8 +57,13 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpModules", func(t *testing.T) {
-		err := RuntimeCmdRepo{}.UpdatePhpModules(
-			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			t.Errorf("PrimaryHostnameNotFound")
+		}
+
+		err = RuntimeCmdRepo{}.UpdatePhpModules(
+			valueObject.NewFqdnPanic(primaryHostname.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(
 					valueObject.NewPhpModuleNamePanic("ioncube"),
@@ -61,7 +76,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpModules(
-			valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST")),
+			valueObject.NewFqdnPanic(primaryHostname.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(
 					valueObject.NewPhpModuleNamePanic("ioncube"),

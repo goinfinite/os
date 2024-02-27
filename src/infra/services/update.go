@@ -50,7 +50,7 @@ func Update(
 		svcPortBindings = updateDto.PortBindings
 	}
 
-	err = SupervisordFacade{}.AddConf(
+	err = SupervisordFacade{}.CreateConf(
 		serviceEntity.Name,
 		serviceEntity.Nature,
 		svcType,
@@ -61,7 +61,7 @@ func Update(
 		nil,
 	)
 	if err != nil {
-		return errors.New("ReAddServiceConfError")
+		return errors.New("RecreateServiceConfError")
 	}
 
 	return nil

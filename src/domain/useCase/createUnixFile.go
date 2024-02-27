@@ -21,8 +21,8 @@ func CreateUnixFile(
 
 	log.Printf(
 		"File '%s' created in '%s'.",
-		createUnixFile.SourcePath.GetFileName().String(),
-		createUnixFile.SourcePath.GetFileDir().String(),
+		createUnixFile.FilePath.GetFileName().String(),
+		createUnixFile.FilePath.GetFileDir().String(),
 	)
 
 	return nil

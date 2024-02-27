@@ -6,13 +6,13 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
-func TestAddInstallable(t *testing.T) {
+func TestCreateInstallable(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	t.Run("InstallPhp", func(t *testing.T) {
 		t.Skip("SkipPhpInstallTest")
 
-		err := AddInstallableSimplified("php")
+		err := CreateInstallableSimplified("php")
 		if err != nil {
 			t.Errorf("PhpInstallFailed : %v", err)
 			return
@@ -22,7 +22,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallNode", func(t *testing.T) {
 		t.Skip("SkipNodeInstallTest")
 
-		err := AddInstallableSimplified("node")
+		err := CreateInstallableSimplified("node")
 		if err != nil {
 			t.Errorf("NodeInstallFailed : %v", err)
 			return
@@ -32,7 +32,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallMariaDb", func(t *testing.T) {
 		t.Skip("SkipMariaDbInstallTest")
 
-		err := AddInstallableSimplified("mariadb")
+		err := CreateInstallableSimplified("mariadb")
 		if err != nil {
 			t.Errorf("MariaDbInstallFailed : %v", err)
 			return
@@ -42,7 +42,7 @@ func TestAddInstallable(t *testing.T) {
 	t.Run("InstallRedis", func(t *testing.T) {
 		t.Skip("SkipRedisInstallTest")
 
-		err := AddInstallableSimplified("redis")
+		err := CreateInstallableSimplified("redis")
 		if err != nil {
 			t.Errorf("RedisInstallFailed : %v", err)
 			return

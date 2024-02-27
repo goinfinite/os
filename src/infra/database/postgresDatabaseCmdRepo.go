@@ -10,7 +10,7 @@ import (
 type PostgresDatabaseCmdRepo struct {
 }
 
-func (repo PostgresDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo PostgresDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := PostgresqlCmd(
 		"CREATE DATABASE " + dbName.String(),
 	)
@@ -26,9 +26,9 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
-	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
-	for i, privilege := range addDatabaseUser.Privileges {
+func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
+	privilegesStrList := make([]string, len(createDatabaseUser.Privileges))
+	for i, privilege := range createDatabaseUser.Privileges {
 		privilegesStrList[i] = privilege.String()
 	}
 	privilegesStr := strings.Join(privilegesStrList, ", ")
@@ -37,11 +37,11 @@ func (repo PostgresDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser)
 		"GRANT " +
 			privilegesStr +
 			" ON " +
-			addDatabaseUser.DatabaseName.String() +
+			createDatabaseUser.DatabaseName.String() +
 			".* TO '" +
-			addDatabaseUser.Username.String() + "'@'%' " +
+			createDatabaseUser.Username.String() + "'@'%' " +
 			"IDENTIFIED BY '" +
-			addDatabaseUser.Password.String() +
+			createDatabaseUser.Password.String() +
 			"';",
 	)
 

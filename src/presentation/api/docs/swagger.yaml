@@ -1,13 +1,33 @@
 basePath: /v1
 definitions:
-  dto.AddAccount:
+  dto.CompressUnixFiles:
+    properties:
+      compressionType:
+        type: string
+      destinationPath:
+        type: string
+      sourcePaths:
+        items:
+          type: string
+        type: array
+    type: object
+  dto.CopyUnixFile:
+    properties:
+      destinationPath:
+        type: string
+      shouldOverwrite:
+        type: boolean
+      sourcePath:
+        type: string
+    type: object
+  dto.CreateAccount:
     properties:
       password:
         type: string
       username:
         type: string
     type: object
-  dto.AddCron:
+  dto.CreateCron:
     properties:
       command:
         type: string
@@ -16,7 +36,7 @@ definitions:
       schedule:
         type: string
     type: object
-  dto.AddCustomService:
+  dto.CreateCustomService:
     properties:
       autoCreateMapping:
         type: boolean
@@ -33,12 +53,12 @@ definitions:
       version:
         type: string
     type: object
-  dto.AddDatabase:
+  dto.CreateDatabase:
     properties:
       dbName:
         type: string
     type: object
-  dto.AddDatabaseUser:
+  dto.CreateDatabaseUser:
     properties:
       dbName:
         type: string
@@ -51,7 +71,7 @@ definitions:
       username:
         type: string
     type: object
-  dto.AddInstallableService:
+  dto.CreateInstallableService:
     properties:
       autoCreateMapping:
         type: boolean
@@ -66,7 +86,7 @@ definitions:
       version:
         type: string
     type: object
-  dto.AddMapping:
+  dto.CreateMapping:
     properties:
       hostname:
         type: string
@@ -83,7 +103,7 @@ definitions:
       targetUrl:
         type: string
     type: object
-  dto.AddSslPair:
+  dto.CreateSslPair:
     properties:
       certificate:
         $ref: '#/definitions/entity.SslCertificate'
@@ -92,40 +112,22 @@ definitions:
       key:
         type: string
     type: object
-  dto.AddVirtualHost:
+  dto.CreateUnixFile:
+    properties:
+      filePath:
+        type: string
+      mimeType:
+        type: string
+      permissions:
+        type: string
+    type: object
+  dto.CreateVirtualHost:
     properties:
       hostname:
         type: string
       parentHostname:
         type: string
       type:
-        type: string
-    type: object
-  dto.CompressUnixFiles:
-    properties:
-      compressionType:
-        type: string
-      destinationPath:
-        type: string
-      sourcePaths:
-        items:
-          type: string
-        type: array
-    type: object
-  dto.CopyUnixFile:
-    properties:
-      destinationPath:
-        type: string
-      sourcePath:
-        type: string
-    type: object
-  dto.CreateUnixFile:
-    properties:
-      mimeType:
-        type: string
-      permissions:
-        type: string
-      sourcePath:
         type: string
     type: object
   dto.ExtractUnixFiles:
@@ -281,7 +283,7 @@ definitions:
       size:
         type: integer
       type:
-        $ref: '#/definitions/valueObject.DatabaseType'
+        type: string
       users:
         items:
           $ref: '#/definitions/entity.DatabaseUser'
@@ -292,7 +294,7 @@ definitions:
       dbName:
         type: string
       dbType:
-        $ref: '#/definitions/valueObject.DatabaseType'
+        type: string
       privileges:
         items:
           type: string
@@ -303,6 +305,8 @@ definitions:
   entity.InstallableService:
     properties:
       name:
+        type: string
+      nature:
         type: string
       type:
         type: string
@@ -419,6 +423,8 @@ definitions:
     type: object
   entity.UnixFile:
     properties:
+      content:
+        type: string
       extension:
         type: string
       gid:
@@ -470,14 +476,6 @@ definitions:
       storageUsage:
         type: number
     type: object
-  valueObject.DatabaseType:
-    enum:
-    - mysql
-    - postgres
-    type: string
-    x-enum-varnames:
-    - mysql
-    - postgres
   valueObject.HardwareSpecs:
     properties:
       cpuCores:
@@ -557,14 +555,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new account.
+      description: Create a new account.
       parameters:
       - description: NewAccount
         in: body
-        name: addAccountDto
+        name: createAccountDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddAccount'
+          $ref: '#/definitions/dto.CreateAccount'
       produces:
       - application/json
       responses:
@@ -574,7 +572,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddNewAccount
+      summary: CreateNewAccount
       tags:
       - account
     put:
@@ -671,14 +669,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new cron.
+      description: Create a new cron.
       parameters:
       - description: NewCron
         in: body
-        name: addCronDto
+        name: createCronDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddCron'
+          $ref: '#/definitions/dto.CreateCron'
       produces:
       - application/json
       responses:
@@ -688,7 +686,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddNewCron
+      summary: CreateNewCron
       tags:
       - cron
     put:
@@ -744,9 +742,6 @@ paths:
       description: List databases names, users and sizes.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -768,22 +763,19 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new database.
+      description: Create a new database.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
         type: string
-      - description: AddDatabase
+      - description: CreateDatabase
         in: body
-        name: addDatabaseDto
+        name: createDatabaseDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddDatabase'
+          $ref: '#/definitions/dto.CreateDatabase'
       produces:
       - application/json
       responses:
@@ -793,7 +785,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddDatabase
+      summary: CreateDatabase
       tags:
       - database
   /database/{dbType}/{dbName}/:
@@ -803,9 +795,6 @@ paths:
       description: Delete a database.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -831,12 +820,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new database user.
+      description: Create a new database user.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -846,12 +832,12 @@ paths:
         name: dbName
         required: true
         type: string
-      - description: AddDatabaseUser
+      - description: CreateDatabaseUser
         in: body
-        name: addDatabaseUserDto
+        name: createDatabaseUserDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddDatabaseUser'
+          $ref: '#/definitions/dto.CreateDatabaseUser'
       produces:
       - application/json
       responses:
@@ -861,7 +847,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddDatabaseUser
+      summary: CreateDatabaseUser
       tags:
       - database
   /database/{dbType}/{dbName}/user/{dbUser}/:
@@ -871,9 +857,6 @@ paths:
       description: Delete a database user.
       parameters:
       - description: DatabaseType
-        enum:
-        - mysql
-        - postgres
         in: path
         name: dbType
         required: true
@@ -906,9 +889,9 @@ paths:
       - application/json
       description: List dir/files.
       parameters:
-      - description: UnixFilePath
+      - description: SourcePath
         in: query
-        name: unixFilePath
+        name: sourcePath
         required: true
         type: string
       produces:
@@ -928,7 +911,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new dir/file.
+      description: Create a new dir/file.
       parameters:
       - description: NewFile
         in: body
@@ -945,13 +928,13 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddNewFile
+      summary: CreateNewFile
       tags:
       - files
     put:
       consumes:
       - application/json
-      description: Move a dir/file, update name and/or permissions (Only filePath
+      description: Move a dir/file, update name and/or permissions (Only sourcePath
         is required).
       parameters:
       - description: UpdateFile
@@ -1030,9 +1013,9 @@ paths:
       - application/json
       description: Delete one or more directories/files.
       parameters:
-      - description: UnixFilePath
+      - description: SourcePath
         in: body
-        name: filePath
+        name: sourcePaths
         required: true
         schema:
           items:
@@ -1245,12 +1228,12 @@ paths:
       - application/json
       description: Install a new custom service.
       parameters:
-      - description: AddCustomService
+      - description: CreateCustomService
         in: body
-        name: addCustomServiceDto
+        name: createCustomServiceDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddCustomService'
+          $ref: '#/definitions/dto.CreateCustomService'
       produces:
       - application/json
       responses:
@@ -1260,7 +1243,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddCustomService
+      summary: CreateCustomService
       tags:
       - services
   /services/installables/:
@@ -1287,12 +1270,12 @@ paths:
       - application/json
       description: Install a new installable service.
       parameters:
-      - description: AddInstallableService
+      - description: CreateInstallableService
         in: body
-        name: addInstallableServiceDto
+        name: createInstallableServiceDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddInstallableService'
+          $ref: '#/definitions/dto.CreateInstallableService'
       produces:
       - application/json
       responses:
@@ -1302,7 +1285,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddInstallableService
+      summary: CreateInstallableService
       tags:
       - services
   /ssl/:
@@ -1327,14 +1310,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new ssl pair.
+      description: Create a new ssl pair.
       parameters:
       - description: NewSslPair
         in: body
-        name: addSslPairDto
+        name: createSslPairDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddSslPair'
+          $ref: '#/definitions/dto.CreateSslPair'
       produces:
       - application/json
       responses:
@@ -1344,7 +1327,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddNewSslPair
+      summary: CreateNewSslPair
       tags:
       - ssl
   /ssl/{sslPairId}/:
@@ -1392,14 +1375,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new vhost.
+      description: Create a new vhost.
       parameters:
       - description: NewVirtualHost (only hostname is required).
         in: body
-        name: addVirtualHostDto
+        name: createVirtualHostDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddVirtualHost'
+          $ref: '#/definitions/dto.CreateVirtualHost'
       produces:
       - application/json
       responses:
@@ -1409,7 +1392,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: AddNewVirtualHost
+      summary: CreateNewVirtualHost
       tags:
       - vhosts
   /vhosts/{hostname}/:
@@ -1464,10 +1447,10 @@ paths:
           'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains',
           'equals', 'ends-with' or empty.
         in: body
-        name: addMappingDto
+        name: createMappingDto
         required: true
         schema:
-          $ref: '#/definitions/dto.AddMapping'
+          $ref: '#/definitions/dto.CreateMapping'
       produces:
       - application/json
       responses:

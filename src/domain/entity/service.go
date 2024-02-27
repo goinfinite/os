@@ -9,8 +9,8 @@ type Service struct {
 	Version      valueObject.ServiceVersion `json:"version"`
 	Command      valueObject.UnixCommand    `json:"command"`
 	Status       valueObject.ServiceStatus  `json:"status"`
-	StartupFile  *valueObject.UnixFilePath  `json:"startupFile,omitempty"`
-	PortBindings []valueObject.PortBinding  `json:"portBindings,omitempty"`
+	StartupFile  *valueObject.UnixFilePath  `json:"startupFile"`
+	PortBindings []valueObject.PortBinding  `json:"portBindings"`
 }
 
 func NewService(

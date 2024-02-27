@@ -19,12 +19,12 @@ func NewDatabaseCmdRepo(
 	}
 }
 
-func (repo DatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo DatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	switch repo.dbType {
 	case "mysql":
-		return MysqlDatabaseCmdRepo{}.Add(dbName)
+		return MysqlDatabaseCmdRepo{}.Create(dbName)
 	case "postgres":
-		return PostgresDatabaseCmdRepo{}.Add(dbName)
+		return PostgresDatabaseCmdRepo{}.Create(dbName)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}
@@ -41,12 +41,12 @@ func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	}
 }
 
-func (repo DatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
+func (repo DatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
 	switch repo.dbType {
 	case "mysql":
-		return MysqlDatabaseCmdRepo{}.AddUser(addDatabaseUser)
+		return MysqlDatabaseCmdRepo{}.CreateUser(createDatabaseUser)
 	case "postgres":
-		return PostgresDatabaseCmdRepo{}.AddUser(addDatabaseUser)
+		return PostgresDatabaseCmdRepo{}.CreateUser(createDatabaseUser)
 	default:
 		return errors.New("DatabaseTypeNotSupported")
 	}

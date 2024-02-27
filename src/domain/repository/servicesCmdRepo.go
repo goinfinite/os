@@ -6,8 +6,8 @@ import (
 )
 
 type ServicesCmdRepo interface {
-	AddInstallable(addDto dto.AddInstallableService) error
-	AddCustom(addDto dto.AddCustomService) error
+	CreateInstallable(createDto dto.CreateInstallableService) error
+	CreateCustom(createDto dto.CreateCustomService) error
 	Start(name valueObject.ServiceName) error
 	Stop(name valueObject.ServiceName) error
 	Update(updateDto dto.UpdateService) error

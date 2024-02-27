@@ -40,16 +40,19 @@ func TestAuthQueryRepo(t *testing.T) {
 	t.Run("ValidSessionAccessToken", func(t *testing.T) {
 		authCmdRepo := AuthCmdRepo{}
 
-		token := authCmdRepo.GenerateSessionToken(
+		token, err := authCmdRepo.GenerateSessionToken(
 			valueObject.AccountId(1000),
 			valueObject.UnixTime(
 				time.Now().Add(3*time.Hour).Unix(),
 			),
 			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %s", err.Error())
+		}
 
 		authQueryRepo := AuthQueryRepo{}
-		_, err := authQueryRepo.GetAccessTokenDetails(token.TokenStr)
+		_, err = authQueryRepo.GetAccessTokenDetails(token.TokenStr)
 		if err != nil {
 			t.Error(err)
 		}

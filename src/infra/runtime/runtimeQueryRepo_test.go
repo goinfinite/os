@@ -1,11 +1,11 @@
 package runtimeInfra
 
 import (
-	"os"
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -13,7 +13,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	t.Skip("SkipRuntimeQueryRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.AddInstallableSimplified("php")
+	err := servicesInfra.CreateInstallableSimplified("php")
 	if err != nil {
 		t.Errorf("InstallDependenciesFail: %v", err)
 		return
@@ -34,7 +34,12 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		hostname := valueObject.NewFqdnPanic(os.Getenv("VIRTUAL_HOST"))
+		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		if err != nil {
+			t.Errorf("PrimaryHostnameNotFound")
+		}
+
+		hostname := valueObject.NewFqdnPanic(primaryHostname.String())
 		phpConfigs, err := repo.GetPhpConfigs(hostname)
 
 		if err != nil {
