@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/speedianet/os/src/domain/valueObject"
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -103,7 +104,13 @@ func (ws WebServerSetup) FirstSetup() {
 func (ws WebServerSetup) OnStartSetup() {
 	defaultLogPrefix := "WsOnStartupSetup"
 
-	containerResources, err := o11yInfra.O11yQueryRepo{}.GetOverview()
+	transientDbSvc, err := databaseInfra.NewTransientDatabaseService()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
+	containerResources, err := o11yQueryRepo.GetOverview()
 	if err != nil {
 		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
 	}
