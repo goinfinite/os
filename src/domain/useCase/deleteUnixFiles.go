@@ -9,11 +9,35 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
+const trashDirPath = "/app/.trash"
+
+func CreateTrash(
+	filesQueryRepo repository.FilesQueryRepo,
+	filesCmdRepo repository.FilesCmdRepo,
+) error {
+	trashPath, _ := valueObject.NewUnixFilePath(trashDirPath)
+
+	_, err := filesQueryRepo.GetOne(trashPath)
+	if err == nil {
+		return nil
+	}
+
+	trashDirPermissions, _ := valueObject.NewUnixFilePermissions("755")
+	trashDirMimeType, _ := valueObject.NewMimeType("directory")
+	createTrashDir := dto.NewCreateUnixFile(
+		trashPath,
+		&trashDirPermissions,
+		trashDirMimeType,
+	)
+
+	return filesCmdRepo.Create(createTrashDir)
+}
+
 func DeleteUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	deleteUnixFiles dto.DeleteUnixFiles,
-) {
+) error {
 	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
 		isRootPath := fileToDelete.String() == "/"
 		if !isRootPath {
@@ -42,25 +66,17 @@ func DeleteUnixFiles(
 
 			log.Printf("File '%s' deleted.", fileToDelete.String())
 		}
-		return
+
+		return nil
 	}
 
-	trashPath, _ := valueObject.NewUnixFilePath("/app/.trash")
-	_, err := filesQueryRepo.GetOne(trashPath)
+	err := CreateTrash(filesQueryRepo, filesCmdRepo)
 	if err != nil {
-		trashDirPermissions, _ := valueObject.NewUnixFilePermissions("775")
-		trashDirMimeType, _ := valueObject.NewMimeType("directory")
-		createTrashDir := dto.NewCreateUnixFile(
-			trashPath,
-			&trashDirPermissions,
-			trashDirMimeType,
-		)
-
-		filesCmdRepo.Create(createTrashDir)
+		return err
 	}
 
 	for _, fileToMoveToTrash := range deleteUnixFiles.SourcePaths {
-		trashPathWithFileNameStr := trashPath.String() + "/" + fileToMoveToTrash.GetFileName().String()
+		trashPathWithFileNameStr := trashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 
 		updateUnixFile := dto.NewUpdateUnixFile(
@@ -83,4 +99,6 @@ func DeleteUnixFiles(
 
 		log.Printf("File '%s' moved to trash.", fileToMoveToTrash.String())
 	}
+
+	return nil
 }

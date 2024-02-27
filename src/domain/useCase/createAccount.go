@@ -6,7 +6,6 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func CreateAccount(
@@ -28,19 +27,5 @@ func CreateAccount(
 
 	log.Printf("Account '%v' created.", createAccount.Username.String())
 
-	trashPath, _ := valueObject.NewUnixFilePath("/app/.trash")
-	_, err = filesQueryRepo.GetOne(trashPath)
-	if err != nil {
-		trashDirPermissions, _ := valueObject.NewUnixFilePermissions("755")
-		trashDirMimeType, _ := valueObject.NewMimeType("directory")
-		createTrashDir := dto.NewCreateUnixFile(
-			trashPath,
-			&trashDirPermissions,
-			trashDirMimeType,
-		)
-
-		filesCmdRepo.Create(createTrashDir)
-	}
-
-	return nil
+	return CreateTrash(filesQueryRepo, filesCmdRepo)
 }
