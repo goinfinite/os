@@ -9,7 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-const trashDirPath = "/app/.trash"
+const trashDirPath string = "/app/.trash"
 
 func CreateTrash(
 	filesQueryRepo repository.FilesQueryRepo,
