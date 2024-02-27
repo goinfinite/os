@@ -33,7 +33,7 @@ func (repo SslCmdRepo) forceSymlink(
 
 	err = os.Symlink(pkiSourcePath, pkiTargetPath)
 	if err != nil {
-		return errors.New("AddPkiSymlinkError: " + err.Error())
+		return errors.New("CreatePkiSymlinkError: " + err.Error())
 	}
 
 	return nil
@@ -63,16 +63,16 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhostStr)
 }
 
-func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
-	if len(addSslPair.VirtualHosts) == 0 {
-		return errors.New("NoVirtualHostsProvidedToAddSslPair")
+func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
+	if len(createSslPair.VirtualHosts) == 0 {
+		return errors.New("NoVirtualHostsProvidedToCreateSslPair")
 	}
 
-	firstVhostStr := addSslPair.VirtualHosts[0].String()
+	firstVhostStr := createSslPair.VirtualHosts[0].String()
 	firstVhostCertFilePath := PkiConfDir + "/" + firstVhostStr + ".crt"
 	firstVhostCertKeyFilePath := PkiConfDir + "/" + firstVhostStr + ".key"
 
-	for _, vhost := range addSslPair.VirtualHosts {
+	for _, vhost := range createSslPair.VirtualHosts {
 		vhostStr := vhost.String()
 		vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
 		vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
@@ -81,13 +81,13 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		if shouldBeSymlink {
 			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
 			if err != nil {
-				log.Printf("AddSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
+				log.Printf("CreateSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
 			err = repo.forceSymlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
 			if err != nil {
-				log.Printf("AddSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
+				log.Printf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
@@ -97,7 +97,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 		shouldOverwrite := true
 		err := infraHelper.UpdateFile(
 			vhostCertFilePath,
-			addSslPair.Certificate.CertificateContent.String(),
+			createSslPair.Certificate.CertificateContent.String(),
 			shouldOverwrite,
 		)
 		if err != nil {
@@ -106,7 +106,7 @@ func (repo SslCmdRepo) Add(addSslPair dto.AddSslPair) error {
 
 		err = infraHelper.UpdateFile(
 			vhostCertKeyFilePath,
-			addSslPair.Key.String(),
+			createSslPair.Key.String(),
 			shouldOverwrite,
 		)
 		if err != nil {

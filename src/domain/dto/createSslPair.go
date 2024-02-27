@@ -5,18 +5,18 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type AddSslPair struct {
+type CreateSslPair struct {
 	VirtualHosts []valueObject.Fqdn        `json:"virtualHosts"`
 	Certificate  entity.SslCertificate     `json:"certificate"`
 	Key          valueObject.SslPrivateKey `json:"key"`
 }
 
-func NewAddSslPair(
+func NewCreateSslPair(
 	virtualHosts []valueObject.Fqdn,
 	certificate entity.SslCertificate,
 	key valueObject.SslPrivateKey,
-) AddSslPair {
-	return AddSslPair{
+) CreateSslPair {
+	return CreateSslPair{
 		VirtualHosts: virtualHosts,
 		Certificate:  certificate,
 		Key:          key,

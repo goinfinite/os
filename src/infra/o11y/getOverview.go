@@ -278,19 +278,26 @@ func (repo GetOverview) getCurrentResourceUsage() (
 }
 
 func (repo GetOverview) Get() (entity.O11yOverview, error) {
+	var o11yOverview entity.O11yOverview
+
 	hostnameStr, err := os.Hostname()
 	if err != nil {
 		hostnameStr = "localhost"
 	}
 
-	isVirtualHostEnvSet := os.Getenv("VIRTUAL_HOST") != ""
+	primaryVirtualHost, err := infraHelper.GetPrimaryHostname()
+	if err != nil {
+		return o11yOverview, errors.New("PrimaryHostnameNotFound")
+	}
+
+	isVirtualHostEnvSet := primaryVirtualHost.String() != ""
 	if isVirtualHostEnvSet {
-		hostnameStr = os.Getenv("VIRTUAL_HOST")
+		hostnameStr = primaryVirtualHost.String()
 	}
 
 	hostname, err := valueObject.NewFqdn(hostnameStr)
 	if err != nil {
-		return entity.O11yOverview{}, errors.New("GetHostnameFailed")
+		return o11yOverview, errors.New("GetHostnameFailed")
 	}
 
 	runtimeContext, err := infraHelper.GetRuntimeContext()
@@ -311,13 +318,13 @@ func (repo GetOverview) Get() (entity.O11yOverview, error) {
 	hardwareSpecs, err := repo.getHardwareSpecs()
 	if err != nil {
 		log.Printf("GetHardwareSpecsFailed: %v", err)
-		return entity.O11yOverview{}, errors.New("GetHardwareSpecsFailed")
+		return o11yOverview, errors.New("GetHardwareSpecsFailed")
 	}
 
 	currentResourceUsage, err := repo.getCurrentResourceUsage()
 	if err != nil {
 		log.Printf("GetCurrentResourceUsageFailed: %v", err)
-		return entity.O11yOverview{}, errors.New("GetCurrentResourceUsageFailed")
+		return o11yOverview, errors.New("GetCurrentResourceUsageFailed")
 	}
 
 	return entity.NewO11yOverview(

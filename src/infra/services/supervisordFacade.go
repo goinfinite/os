@@ -133,7 +133,7 @@ func (facade SupervisordFacade) Reload() error {
 	return nil
 }
 
-func (facade SupervisordFacade) AddConf(
+func (facade SupervisordFacade) CreateConf(
 	svcName valueObject.ServiceName,
 	svcNature valueObject.ServiceNature,
 	svcType valueObject.ServiceType,

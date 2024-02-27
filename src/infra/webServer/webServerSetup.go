@@ -51,11 +51,12 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("FirstBootDetected! Please await while the web server is configured...")
 
-	vhost, err := valueObject.NewFqdn(os.Getenv("VIRTUAL_HOST"))
+	primaryHostname, err := infraHelper.GetPrimaryHostname()
 	if err != nil {
-		log.Fatal("VirtualHostEnvInvalidValue")
+		log.Fatal("PrimaryHostnameNotFound")
 	}
-	vhostStr := vhost.String()
+
+	primaryHostnameStr := primaryHostname.String()
 
 	log.Print("UpdatingVhost...")
 
@@ -63,7 +64,7 @@ func (ws WebServerSetup) FirstSetup() {
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+vhostStr+"/g",
+		"s/speedia.net/"+primaryHostnameStr+"/g",
 		primaryConfFilePath,
 	)
 	if err != nil {
@@ -86,7 +87,7 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, vhostStr)
+	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, primaryHostnameStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}

@@ -12,13 +12,13 @@ import (
 type MysqlDatabaseCmdRepo struct {
 }
 
-func (repo MysqlDatabaseCmdRepo) Add(dbName valueObject.DatabaseName) error {
+func (repo MysqlDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := MysqlCmd(
 		"CREATE DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("AddDatabaseError: %v", err)
-		return errors.New("AddDatabaseError")
+		log.Printf("CreateDatabaseError: %v", err)
+		return errors.New("CreateDatabaseError")
 	}
 
 	return nil
@@ -36,9 +36,9 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	return nil
 }
 
-func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) error {
-	privilegesStrList := make([]string, len(addDatabaseUser.Privileges))
-	for i, privilege := range addDatabaseUser.Privileges {
+func (repo MysqlDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
+	privilegesStrList := make([]string, len(createDatabaseUser.Privileges))
+	for i, privilege := range createDatabaseUser.Privileges {
 		privilegesStrList[i] = privilege.String()
 	}
 	privilegesStr := strings.Join(privilegesStrList, ", ")
@@ -47,17 +47,17 @@ func (repo MysqlDatabaseCmdRepo) AddUser(addDatabaseUser dto.AddDatabaseUser) er
 		"GRANT " +
 			privilegesStr +
 			" ON " +
-			addDatabaseUser.DatabaseName.String() +
+			createDatabaseUser.DatabaseName.String() +
 			".* TO '" +
-			addDatabaseUser.Username.String() + "'@'%' " +
+			createDatabaseUser.Username.String() + "'@'%' " +
 			"IDENTIFIED BY '" +
-			addDatabaseUser.Password.String() +
+			createDatabaseUser.Password.String() +
 			"'; " +
 			"FLUSH PRIVILEGES;",
 	)
 	if err != nil {
-		log.Printf("AddDatabaseUserError: %v", err)
-		return errors.New("AddDatabaseUserError")
+		log.Printf("CreateDatabaseUserError: %v", err)
+		return errors.New("CreateDatabaseUserError")
 	}
 
 	return nil

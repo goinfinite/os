@@ -56,7 +56,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 
 	firstDomain, err := valueObject.NewFqdn(serverNamesParts[0])
 	if err != nil {
-		log.Println("InvalidServerName: " + serverNamesParts[0])
+		log.Printf("InvalidServerName: %s", serverNamesParts[0])
 		return vhosts, nil
 	}
 	isPrimaryDomain := repo.IsVirtualHostPrimaryDomain(firstDomain)
@@ -64,7 +64,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 	for _, serverName := range serverNamesParts {
 		serverName, err := valueObject.NewFqdn(serverName)
 		if err != nil {
-			log.Println("InvalidServerName: " + serverName.String())
+			log.Printf("InvalidServerName: %s", serverName.String())
 			continue
 		}
 
@@ -83,12 +83,12 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 
 		rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(serverName.String())
 		if err != nil {
-			log.Println("InvalidRootDomain: " + serverName.String())
+			log.Printf("InvalidRootDomain: %s", serverName.String())
 			continue
 		}
 		rootDomain, err := valueObject.NewFqdn(rootDomainStr)
 		if err != nil {
-			log.Println("InvalidRootDomain: " + rootDomainStr)
+			log.Printf("InvalidRootDomain: %s", rootDomainStr)
 			continue
 		}
 
@@ -96,6 +96,10 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		if isSubdomain {
 			vhostType, _ = valueObject.NewVirtualHostType("subdomain")
 			parentDomainPtr = &rootDomain
+		}
+
+		if isPrimaryDomain {
+			vhostType, _ = valueObject.NewVirtualHostType("primary")
 		}
 
 		rootDirectorySuffix := "/" + serverName.String()
@@ -106,12 +110,8 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			"/app/html" + rootDirectorySuffix,
 		)
 		if err != nil {
-			log.Println("InvalidRootDirectory: " + rootDirectorySuffix)
+			log.Printf("InvalidRootDirectory: %s", rootDirectorySuffix)
 			continue
-		}
-
-		if isAliases {
-			vhostType, _ = valueObject.NewVirtualHostType("alias")
 		}
 
 		vhost := entity.NewVirtualHost(
@@ -291,7 +291,8 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 
 		targetTypeStr = "response-code"
 
-		responseCodeStr := blockContentFirstLineParts[1]
+		responseCodeWithSemicolonStr := blockContentFirstLineParts[1]
+		responseCodeStr := strings.TrimRight(responseCodeWithSemicolonStr, ";")
 		if len(responseCodeStr) == 0 {
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
 		}
@@ -351,7 +352,8 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		}
 	}
 
-	mappingId, err := valueObject.NewMappingId(locationBlockIndex)
+	mappingIdInt := locationBlockIndex + 1
+	mappingId, err := valueObject.NewMappingId(mappingIdInt)
 	if err != nil {
 		return mapping, err
 	}

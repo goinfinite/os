@@ -8,6 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	accountInfra "github.com/speedianet/os/src/infra/account"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -30,34 +31,38 @@ func GetAccountsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, accountsList)
 }
 
-// AddAccount    godoc
-// @Summary      AddNewAccount
-// @Description  Add a new account.
+// CreateAccount    godoc
+// @Summary      CreateNewAccount
+// @Description  Create a new account.
 // @Tags         account
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        addAccountDto 	  body    dto.AddAccount  true  "NewAccount"
+// @Param        createAccountDto 	  body    dto.CreateAccount  true  "NewAccount"
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /account/ [post]
-func AddAccountController(c echo.Context) error {
+func CreateAccountController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	addAccountDto := dto.NewAddAccount(
+	createAccountDto := dto.NewCreateAccount(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
 	)
 
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
+	filesQueryRepo := filesInfra.FilesQueryRepo{}
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-	err := useCase.AddAccount(
+	err := useCase.CreateAccount(
 		accQueryRepo,
 		accCmdRepo,
-		addAccountDto,
+		filesQueryRepo,
+		filesCmdRepo,
+		createAccountDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

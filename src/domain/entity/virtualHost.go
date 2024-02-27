@@ -6,7 +6,7 @@ type VirtualHost struct {
 	Hostname       valueObject.Fqdn            `json:"hostname"`
 	Type           valueObject.VirtualHostType `json:"type"`
 	RootDirectory  valueObject.UnixFilePath    `json:"rootDirectory"`
-	ParentHostname *valueObject.Fqdn           `json:"parentHostname,omitempty"`
+	ParentHostname *valueObject.Fqdn           `json:"parentHostname"`
 }
 
 func NewVirtualHost(

@@ -11,8 +11,6 @@ import (
 func GetVirtualHosts(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 ) ([]entity.VirtualHost, error) {
-	vhosts := []entity.VirtualHost{}
-
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		log.Printf("GetVirtualHostsError: %s", err.Error())

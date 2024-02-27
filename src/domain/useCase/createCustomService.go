@@ -12,8 +12,8 @@ import (
 func serviceMappingFactory(
 	primaryHostname valueObject.Fqdn,
 	svcName valueObject.ServiceName,
-) (dto.AddMapping, error) {
-	var serviceMapping dto.AddMapping
+) (dto.CreateMapping, error) {
+	var serviceMapping dto.CreateMapping
 
 	svcMappingPath, err := valueObject.NewMappingPath("/")
 	if err != nil {
@@ -30,7 +30,7 @@ func serviceMappingFactory(
 		return serviceMapping, err
 	}
 
-	serviceMapping = dto.NewAddMapping(
+	serviceMapping = dto.NewCreateMapping(
 		primaryHostname,
 		svcMappingPath,
 		svcMappingMatchPattern,
@@ -43,26 +43,26 @@ func serviceMappingFactory(
 	return serviceMapping, nil
 }
 
-func AddCustomService(
+func CreateCustomService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	addDto dto.AddCustomService,
+	createDto dto.CreateCustomService,
 ) error {
-	_, err := servicesQueryRepo.GetByName(addDto.Name)
+	_, err := servicesQueryRepo.GetByName(createDto.Name)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
-	err = servicesCmdRepo.AddCustom(addDto)
+	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
-		log.Printf("AddCustomServiceError: %v", err)
-		return errors.New("AddCustomServiceInfraError")
+		log.Printf("CreateCustomServiceError: %v", err)
+		return errors.New("CreateCustomServiceInfraError")
 	}
 
-	isRuntimeSvc := addDto.Type.String() == "runtime"
-	isApplicationSvc := addDto.Type.String() == "application"
+	isRuntimeSvc := createDto.Type.String() == "runtime"
+	isApplicationSvc := createDto.Type.String() == "application"
 	if !isRuntimeSvc && !isApplicationSvc {
 		return nil
 	}
@@ -77,24 +77,24 @@ func AddCustomService(
 	}
 
 	primaryVhostWithMapping := vhostsWithMappings[0]
-	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && addDto.AutoCreateMapping
+	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {
 		return nil
 	}
 
 	serviceMapping, err := serviceMappingFactory(
 		primaryVhostWithMapping.Hostname,
-		addDto.Name,
+		createDto.Name,
 	)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingError")
 	}
 
-	err = vhostCmdRepo.AddMapping(serviceMapping)
+	err = vhostCmdRepo.CreateMapping(serviceMapping)
 	if err != nil {
-		log.Printf("AddServiceMappingError: %s", err.Error())
-		return errors.New("AddServiceMappingInfraError")
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingInfraError")
 	}
 
 	return nil
