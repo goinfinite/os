@@ -16,14 +16,13 @@ type PostgresDatabaseQueryRepo struct {
 }
 
 func PostgresqlCmd(cmd string, dbName *string) (string, error) {
-	psqlArgs := []string{"-U", "postgres"}
+	psqlArgs := []string{"-U", "postgres", "-tAc", cmd}
+
 	if dbName != nil {
 		psqlDbToConnect := []string{"-d", *dbName}
 		psqlArgs = append(psqlArgs, psqlDbToConnect...)
 	}
 
-	psqlQuery := []string{"-tAc", cmd}
-	psqlArgs = append(psqlArgs, psqlQuery...)
 	return infraHelper.RunCmd("psql", psqlArgs...)
 }
 
