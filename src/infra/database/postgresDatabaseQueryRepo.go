@@ -102,6 +102,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 
 		dbUser, err := valueObject.NewDatabaseUsername(dbUserStr)
 		if err != nil {
+			log.Printf("%s: %s", err.Error(), dbUserStr)
 			continue
 		}
 
