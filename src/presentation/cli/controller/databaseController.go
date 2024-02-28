@@ -20,7 +20,7 @@ func GetDatabasesController() *cobra.Command {
 		Short: "GetDatabases",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.CheckServiceAvailability(dbType.String(), availableServices)
+			sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
 
 			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
@@ -47,7 +47,7 @@ func CreateDatabaseController() *cobra.Command {
 		Short: "CreateNewDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.CheckServiceAvailability(dbType.String(), availableServices)
+			sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
@@ -85,7 +85,7 @@ func DeleteDatabaseController() *cobra.Command {
 		Short: "DeleteDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.CheckServiceAvailability(dbType.String(), availableServices)
+			sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
@@ -124,7 +124,7 @@ func CreateDatabaseUserController() *cobra.Command {
 		Short: "CreateNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.CheckServiceAvailability(dbType.String(), availableServices)
+			sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 			dbUser := valueObject.NewDatabaseUsernamePanic(dbUserStr)
@@ -190,7 +190,7 @@ func DeleteDatabaseUserController() *cobra.Command {
 		Short: "DeleteDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.CheckServiceAvailability(dbType.String(), availableServices)
+			sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 			dbUser := valueObject.NewDatabaseUsernamePanic(dbUserStr)
