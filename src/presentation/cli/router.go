@@ -28,14 +28,6 @@ var versionCmd = &cobra.Command{
 	},
 }
 
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Start the SOS server (default to port 1618)",
-	Run: func(cmd *cobra.Command, args []string) {
-		api.ApiInit()
-	},
-}
-
 func (router Router) accountRoutes() {
 	var accountCmd = &cobra.Command{
 		Use:   "account",
@@ -106,6 +98,19 @@ func (router Router) runtimeRoutes() {
 	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
 }
 
+func (router Router) serveRoutes() {
+	var serveCmd = &cobra.Command{
+		Use:   "serve",
+		Short: "Start the SOS server (default to port 1618)",
+		Run: func(cmd *cobra.Command, args []string) {
+			api.ApiInit(router.transientDbSvc)
+		},
+	}
+
+	rootCmd.AddCommand(serveCmd)
+
+}
+
 func (router Router) servicesRoutes() {
 	var servicesCmd = &cobra.Command{
 		Use:   "services",
@@ -157,13 +162,13 @@ func (router Router) virtualHostRoutes() {
 
 func (router Router) registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(serveCmd)
 
 	router.accountRoutes()
 	router.cronRoutes()
 	router.databaseRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
+	router.serveRoutes()
 	router.servicesRoutes()
 	router.sslRoutes()
 	router.virtualHostRoutes()
