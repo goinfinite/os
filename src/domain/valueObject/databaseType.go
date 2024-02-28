@@ -11,8 +11,8 @@ import (
 type DatabaseType string
 
 var databaseTypesWithAliases = map[string][]string{
-	"mysql":    {"mariadb", "percona"},
-	"postgres": {"postgresql"},
+	"mysql":      {"mariadb", "percona"},
+	"postgresql": {"postgres"},
 }
 
 func NewDatabaseType(value string) (DatabaseType, error) {

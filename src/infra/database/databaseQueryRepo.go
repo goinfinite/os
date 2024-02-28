@@ -23,7 +23,7 @@ func (repo DatabaseQueryRepo) Get() ([]entity.Database, error) {
 	switch repo.dbType {
 	case "mysql":
 		return MysqlDatabaseQueryRepo{}.Get()
-	case "postgres":
+	case "postgresql":
 		return PostgresDatabaseQueryRepo{}.Get()
 	default:
 		return []entity.Database{}, errors.New("DatabaseTypeNotSupported")
