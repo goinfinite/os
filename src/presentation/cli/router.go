@@ -3,11 +3,22 @@ package cli
 import (
 	"fmt"
 
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	api "github.com/speedianet/os/src/presentation/api"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
 	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	"github.com/spf13/cobra"
 )
+
+type Router struct {
+	transientDbSvc *databaseInfra.TransientDatabaseService
+}
+
+func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) Router {
+	return Router{
+		transientDbSvc: transientDbSvc,
+	}
+}
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
@@ -25,7 +36,7 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func accountRoutes() {
+func (router Router) accountRoutes() {
 	var accountCmd = &cobra.Command{
 		Use:   "account",
 		Short: "AccountManagement",
@@ -38,7 +49,7 @@ func accountRoutes() {
 	accountCmd.AddCommand(cliController.UpdateAccountController())
 }
 
-func cronRoutes() {
+func (router Router) cronRoutes() {
 	var cronCmd = &cobra.Command{
 		Use:   "cron",
 		Short: "CronManagement",
@@ -51,7 +62,7 @@ func cronRoutes() {
 	cronCmd.AddCommand(cliController.DeleteCronController())
 }
 
-func databaseRoutes() {
+func (router Router) databaseRoutes() {
 	var databaseCmd = &cobra.Command{
 		Use:              "db",
 		Short:            "DatabaseManagement",
@@ -66,17 +77,17 @@ func databaseRoutes() {
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
-func o11yRoutes() {
+func (router Router) o11yRoutes() {
 	var o11yCmd = &cobra.Command{
 		Use:   "o11y",
 		Short: "O11yManagement",
 	}
 
 	rootCmd.AddCommand(o11yCmd)
-	o11yCmd.AddCommand(cliController.GetO11yOverviewController())
+	o11yCmd.AddCommand(cliController.GetO11yOverviewController(router.transientDbSvc))
 }
 
-func runtimeRoutes() {
+func (router Router) runtimeRoutes() {
 	var runtimeCmd = &cobra.Command{
 		Use:   "runtime",
 		Short: "RuntimeManagement",
@@ -95,7 +106,7 @@ func runtimeRoutes() {
 	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
 }
 
-func servicesRoutes() {
+func (router Router) servicesRoutes() {
 	var servicesCmd = &cobra.Command{
 		Use:   "services",
 		Short: "ServicesManagement",
@@ -110,7 +121,7 @@ func servicesRoutes() {
 	servicesCmd.AddCommand(cliController.DeleteServiceController())
 }
 
-func sslRoutes() {
+func (router Router) sslRoutes() {
 	var sslCmd = &cobra.Command{
 		Use:   "ssl",
 		Short: "SslManagement",
@@ -122,7 +133,7 @@ func sslRoutes() {
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
-func virtualHostRoutes() {
+func (router Router) virtualHostRoutes() {
 	var vhostCmd = &cobra.Command{
 		Use:   "vhost",
 		Short: "VirtualHostManagement",
@@ -144,15 +155,16 @@ func virtualHostRoutes() {
 	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
 }
 
-func registerCliRoutes() {
+func (router Router) registerCliRoutes() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(serveCmd)
-	accountRoutes()
-	cronRoutes()
-	databaseRoutes()
-	o11yRoutes()
-	runtimeRoutes()
-	servicesRoutes()
-	sslRoutes()
-	virtualHostRoutes()
+
+	router.accountRoutes()
+	router.cronRoutes()
+	router.databaseRoutes()
+	router.o11yRoutes()
+	router.runtimeRoutes()
+	router.servicesRoutes()
+	router.sslRoutes()
+	router.virtualHostRoutes()
 }
