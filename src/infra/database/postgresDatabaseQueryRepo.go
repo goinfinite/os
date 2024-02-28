@@ -123,7 +123,6 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 	for _, dbName := range dbNames {
 		dbSize, err := repo.getDatabaseSize(dbName)
 		if err != nil {
-			log.Printf("FailedToGetDatabaseSize (%s): %s", dbName.String(), err.Error())
 			dbSize = valueObject.Byte(0)
 		}
 
