@@ -30,21 +30,23 @@ func (repo PostgresDatabaseCmdRepo) addPermissionsToUser(
 	dbName valueObject.DatabaseName,
 	dbUser valueObject.DatabaseUsername,
 ) error {
+	dbUserStr := dbUser.String()
+
 	_, err := PostgresqlCmd(
 		"GRANT ALL PRIVILEGES ON DATABASE "+dbName.String()+
-			" TO "+dbUser.String(),
+			" TO "+dbUserStr,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	_, err = PostgresqlCmd("GRANT ALL ON ALL TABLES IN SCHEMA public TO "+dbUser.String(), nil)
+	_, err = PostgresqlCmd("GRANT ALL ON ALL TABLES IN SCHEMA public TO "+dbUserStr, nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = PostgresqlCmd("GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "+dbUser.String(), nil)
+	_, err = PostgresqlCmd("GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "+dbUserStr, nil)
 	return err
 }
 
@@ -53,10 +55,11 @@ func (repo PostgresDatabaseCmdRepo) setUserDefaultPermissions(
 	dbUser valueObject.DatabaseUsername,
 ) error {
 	dbNameStr := dbName.String()
+	dbUserStr := dbUser.String()
 
 	_, err := PostgresqlCmd(
 		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"GRANT ALL ON TABLES TO "+dbUser.String(),
+			"GRANT ALL ON TABLES TO "+dbUserStr,
 		&dbNameStr,
 	)
 	if err != nil {
@@ -65,7 +68,7 @@ func (repo PostgresDatabaseCmdRepo) setUserDefaultPermissions(
 
 	_, err = PostgresqlCmd(
 		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"GRANT ALL ON SEQUENCES TO "+dbUser.String(),
+			"GRANT ALL ON SEQUENCES TO "+dbUserStr,
 		&dbNameStr,
 	)
 
