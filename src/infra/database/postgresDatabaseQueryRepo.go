@@ -37,13 +37,14 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.Database
 	dbNameListSlice := strings.Split(dbNameListStr, "\n")
 	dbExcludeRegex := "^(postgres|template1|template0)$"
 	compiledDbExcludeRegex := regexp.MustCompile(dbExcludeRegex)
-	for _, dbName := range dbNameListSlice {
-		if compiledDbExcludeRegex.MatchString(dbName) {
+	for _, dbNameStr := range dbNameListSlice {
+		if compiledDbExcludeRegex.MatchString(dbNameStr) {
 			continue
 		}
 
-		dbName, err := valueObject.NewDatabaseName(dbName)
+		dbName, err := valueObject.NewDatabaseName(dbNameStr)
 		if err != nil {
+			log.Printf("%s: %s", err.Error(), dbNameStr)
 			continue
 		}
 
