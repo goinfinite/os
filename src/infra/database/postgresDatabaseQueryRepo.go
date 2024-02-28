@@ -129,7 +129,6 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 		dbUsernames, err := repo.getDatabaseUsernames(dbName)
 		if err != nil {
 			log.Printf("FailedToGetDatabaseUsers (%s): %s", dbName.String(), err.Error())
-			dbUsernames = []valueObject.DatabaseUsername{}
 		}
 
 		dbUsersWithPrivileges := []entity.DatabaseUser{}
