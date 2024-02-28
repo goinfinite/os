@@ -26,14 +26,20 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) addPermissionsToUser(
-	dbName valueObject.DatabaseName,
-	dbUser valueObject.DatabaseUsername,
-) error {
-	dbUserStr := dbUser.String()
+func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
+	dbNameStr := createDatabaseUser.DatabaseName.String()
+	dbUserStr := createDatabaseUser.Username.String()
 
 	_, err := PostgresqlCmd(
-		"GRANT ALL PRIVILEGES ON DATABASE "+dbName.String()+
+		"CREATE USER "+dbUserStr+" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd(
+		"GRANT ALL PRIVILEGES ON DATABASE "+dbNameStr+
 			" TO "+dbUserStr,
 		nil,
 	)
@@ -47,17 +53,11 @@ func (repo PostgresDatabaseCmdRepo) addPermissionsToUser(
 	}
 
 	_, err = PostgresqlCmd("GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "+dbUserStr, nil)
-	return err
-}
+	if err != nil {
+		return err
+	}
 
-func (repo PostgresDatabaseCmdRepo) setUserDefaultPermissions(
-	dbName valueObject.DatabaseName,
-	dbUser valueObject.DatabaseUsername,
-) error {
-	dbNameStr := dbName.String()
-	dbUserStr := dbUser.String()
-
-	_, err := PostgresqlCmd(
+	_, err = PostgresqlCmd(
 		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
 			"GRANT ALL ON TABLES TO "+dbUserStr,
 		&dbNameStr,
@@ -71,38 +71,27 @@ func (repo PostgresDatabaseCmdRepo) setUserDefaultPermissions(
 			"GRANT ALL ON SEQUENCES TO "+dbUserStr,
 		&dbNameStr,
 	)
-
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
+func (repo PostgresDatabaseCmdRepo) DeleteUser(
+	dbName valueObject.DatabaseName,
+	dbUser valueObject.DatabaseUsername,
+) error {
+	dbNameStr := dbName.String()
+	dbUserStr := dbUser.String()
+
 	_, err := PostgresqlCmd(
-		"CREATE USER "+createDatabaseUser.Username.String()+
-			" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
+		"REVOKE ALL ON DATABASE "+dbNameStr+" FROM "+dbUserStr,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = repo.addPermissionsToUser(createDatabaseUser.DatabaseName, createDatabaseUser.Username)
-	if err != nil {
-		return err
-	}
-
-	err = repo.setUserDefaultPermissions(createDatabaseUser.DatabaseName, createDatabaseUser.Username)
-	return err
-}
-
-func (repo PostgresDatabaseCmdRepo) revokeUserDefaultPermissions(
-	dbName valueObject.DatabaseName,
-	dbUser valueObject.DatabaseUsername,
-) error {
-	dbNameStr := dbName.String()
-
-	_, err := PostgresqlCmd(
+	_, err = PostgresqlCmd(
 		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"REVOKE ALL ON TABLES FROM "+dbUser.String(),
+			"REVOKE ALL ON TABLES FROM "+dbUserStr,
 		&dbNameStr,
 	)
 	if err != nil {
@@ -111,29 +100,13 @@ func (repo PostgresDatabaseCmdRepo) revokeUserDefaultPermissions(
 
 	_, err = PostgresqlCmd(
 		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"REVOKE ALL ON SEQUENCES FROM "+dbUser.String(),
+			"REVOKE ALL ON SEQUENCES FROM "+dbUserStr,
 		&dbNameStr,
 	)
-	return err
-}
-
-func (repo PostgresDatabaseCmdRepo) DeleteUser(
-	dbName valueObject.DatabaseName,
-	dbUser valueObject.DatabaseUsername,
-) error {
-	_, err := PostgresqlCmd(
-		"REVOKE ALL ON DATABASE "+dbName.String()+" FROM "+dbUser.String(),
-		nil,
-	)
 	if err != nil {
 		return err
 	}
 
-	err = repo.revokeUserDefaultPermissions(dbName, dbUser)
-	if err != nil {
-		return err
-	}
-
-	_, err = PostgresqlCmd("DROP USER "+dbUser.String(), nil)
+	_, err = PostgresqlCmd("DROP USER "+dbUserStr, nil)
 	return err
 }
