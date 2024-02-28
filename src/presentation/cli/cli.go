@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	cliInit "github.com/speedianet/os/src/presentation/cli/init"
 	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 	"github.com/spf13/cobra"
@@ -24,7 +25,10 @@ func CliInit() {
 
 	sharedMiddleware.CheckEnvs()
 
-	registerCliRoutes()
+	transientDbSvc := cliInit.TransientDatabaseService()
+
+	router := NewRouter(transientDbSvc)
+	router.registerCliRoutes()
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
