@@ -2,6 +2,7 @@ package cliController
 
 import (
 	"github.com/speedianet/os/src/domain/useCase"
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
@@ -12,7 +13,12 @@ func GetO11yOverviewController() *cobra.Command {
 		Use:   "overview",
 		Short: "GetOverview",
 		Run: func(cmd *cobra.Command, args []string) {
-			o11yQueryRepo := o11yInfra.O11yQueryRepo{}
+			transientDbSvc, err := databaseInfra.NewTransientDatabaseService()
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
 			o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
