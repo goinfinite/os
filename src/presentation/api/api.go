@@ -32,7 +32,7 @@ import (
 // @BasePath	/v1
 func ApiInit(transientDbSvc *databaseInfra.TransientDatabaseService) {
 	sharedMiddleware.CheckEnvs()
-	apiInit.WebServerSetup()
+	apiInit.WebServerSetup(transientDbSvc)
 
 	e := echo.New()
 
