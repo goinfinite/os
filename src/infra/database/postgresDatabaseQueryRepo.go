@@ -76,9 +76,9 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 	dbName valueObject.DatabaseName,
 ) ([]valueObject.DatabaseUsername, error) {
-	var dbUsernameList []valueObject.DatabaseUsername
+	dbUsernameList := []valueObject.DatabaseUsername{}
 
-	dbDataclStr, err := PostgresqlCmd(
+	dbUsersPrivs, err := PostgresqlCmd(
 		"SELECT datacl FROM pg_database WHERE datname = '"+dbName.String()+"'",
 		nil,
 	)
@@ -86,8 +86,8 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 		return dbUsernameList, errors.New("GetDatabaseUserError: " + err.Error())
 	}
 
-	dataclRegexp := regexp.MustCompile(`(\w+)=`)
-	dbUsersMatches := dataclRegexp.FindAllStringSubmatch(dbDataclStr, -1)
+	compiledDbUsersPrivsRegex := regexp.MustCompile(`(\w+)=`)
+	dbUsersMatches := compiledDbUsersPrivsRegex.FindAllStringSubmatch(dbUsersPrivs, -1)
 
 	defaultDbUser := "postgres"
 	for _, dbUserMatch := range dbUsersMatches {
