@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/labstack/echo/v4"
+	databaseInfra "github.com/speedianet/os/src/infra/database"
 	apiController "github.com/speedianet/os/src/presentation/api/controller"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -11,17 +12,27 @@ import (
 	_ "github.com/speedianet/os/src/presentation/api/docs"
 )
 
-func swaggerRoute(baseRoute *echo.Group) {
+type Router struct {
+	transientDbSvc *databaseInfra.TransientDatabaseService
+}
+
+func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) Router {
+	return Router{
+		transientDbSvc: transientDbSvc,
+	}
+}
+
+func (router Router) swaggerRoute(baseRoute *echo.Group) {
 	swaggerGroup := baseRoute.Group("/swagger")
 	swaggerGroup.GET("/*", echoSwagger.WrapHandler)
 }
 
-func authRoutes(baseRoute *echo.Group) {
+func (router Router) authRoutes(baseRoute *echo.Group) {
 	authGroup := baseRoute.Group("/auth")
 	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
-func accountRoutes(baseRoute *echo.Group) {
+func (router Router) accountRoutes(baseRoute *echo.Group) {
 	accountGroup := baseRoute.Group("/account")
 	accountGroup.GET("/", apiController.GetAccountsController)
 	accountGroup.POST("/", apiController.CreateAccountController)
@@ -29,7 +40,7 @@ func accountRoutes(baseRoute *echo.Group) {
 	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }
 
-func cronRoutes(baseRoute *echo.Group) {
+func (router Router) cronRoutes(baseRoute *echo.Group) {
 	cronGroup := baseRoute.Group("/cron")
 	cronGroup.GET("/", apiController.GetCronsController)
 	cronGroup.POST("/", apiController.CreateCronController)
@@ -37,7 +48,7 @@ func cronRoutes(baseRoute *echo.Group) {
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }
 
-func databaseRoutes(baseRoute *echo.Group) {
+func (router Router) databaseRoutes(baseRoute *echo.Group) {
 	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
@@ -55,7 +66,7 @@ func databaseRoutes(baseRoute *echo.Group) {
 	)
 }
 
-func filesRoutes(baseRoute *echo.Group) {
+func (router Router) filesRoutes(baseRoute *echo.Group) {
 	filesGroup := baseRoute.Group("/files")
 	filesGroup.GET("/", apiController.GetFilesController)
 	filesGroup.POST("/", apiController.CreateFileController)
@@ -67,18 +78,20 @@ func filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/upload/", apiController.UploadFilesController)
 }
 
-func o11yRoutes(baseRoute *echo.Group) {
+func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
-	o11yGroup.GET("/overview/", apiController.O11yOverviewController)
+
+	o11yController := apiController.NewO11yController(router.transientDbSvc)
+	o11yGroup.GET("/overview/", o11yController.O11yOverviewController)
 }
 
-func runtimeRoutes(baseRoute *echo.Group) {
+func (router Router) runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup := baseRoute.Group("/runtime")
 	runtimeGroup.GET("/php/:hostname/", apiController.GetPhpConfigsController)
 	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
 }
 
-func servicesRoutes(baseRoute *echo.Group) {
+func (router Router) servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
 	servicesGroup.GET("/", apiController.GetServicesController)
 	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
@@ -88,14 +101,14 @@ func servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
 }
 
-func sslRoutes(baseRoute *echo.Group) {
+func (router Router) sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
 	sslGroup.GET("/", apiController.GetSslPairsController)
 	sslGroup.POST("/", apiController.CreateSslPairController)
 	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
 }
 
-func vhostsRoutes(baseRoute *echo.Group) {
+func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
 	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
 	vhostsGroup.POST("/", apiController.CreateVirtualHostController)
@@ -109,16 +122,16 @@ func vhostsRoutes(baseRoute *echo.Group) {
 	)
 }
 
-func registerApiRoutes(baseRoute *echo.Group) {
-	swaggerRoute(baseRoute)
-	authRoutes(baseRoute)
-	accountRoutes(baseRoute)
-	cronRoutes(baseRoute)
-	databaseRoutes(baseRoute)
-	filesRoutes(baseRoute)
-	o11yRoutes(baseRoute)
-	runtimeRoutes(baseRoute)
-	servicesRoutes(baseRoute)
-	sslRoutes(baseRoute)
-	vhostsRoutes(baseRoute)
+func (router Router) registerApiRoutes(baseRoute *echo.Group) {
+	router.swaggerRoute(baseRoute)
+	router.authRoutes(baseRoute)
+	router.accountRoutes(baseRoute)
+	router.cronRoutes(baseRoute)
+	router.databaseRoutes(baseRoute)
+	router.filesRoutes(baseRoute)
+	router.o11yRoutes(baseRoute)
+	router.runtimeRoutes(baseRoute)
+	router.servicesRoutes(baseRoute)
+	router.sslRoutes(baseRoute)
+	router.vhostsRoutes(baseRoute)
 }
