@@ -6,7 +6,7 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func CheckServiceAvailability(svcName string, requiredSvcNames []string) {
+func CheckServiceAvailability(svcName string, requiredSvcNames *[]string) {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	availableSvcs, err := servicesQueryRepo.Get()
 	if err != nil {
@@ -17,7 +17,8 @@ func CheckServiceAvailability(svcName string, requiredSvcNames []string) {
 	for _, availableSvc := range availableSvcs {
 		availableSvcName := availableSvc.Name.String()
 
-		if !slices.Contains(requiredSvcNames, availableSvcName) {
+		hasRequiredSvcNames := requiredSvcNames != nil
+		if hasRequiredSvcNames && !slices.Contains(*requiredSvcNames, availableSvcName) {
 			continue
 		}
 
