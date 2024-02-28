@@ -41,18 +41,29 @@ func (repo O11yQueryRepo) getUptime() (uint64, error) {
 }
 
 func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
+	ipStr, err := repo.transientDbSvc.Get("PublicIp")
+	if err == nil {
+		return valueObject.NewIpAddress(ipStr)
+	}
+
 	resp, err := http.Get("https://speedia.net/ip")
 	if err != nil {
 		return "", errors.New("GetPublicIpAddressFailed")
 	}
 	defer resp.Body.Close()
 
-	ip, err := io.ReadAll(resp.Body)
+	ipBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.New("ReadPublicIpAddressFailed")
 	}
 
-	return valueObject.NewIpAddress(string(ip))
+	ipStr = string(ipBytes)
+	err = repo.transientDbSvc.Set("PublicIp", ipStr)
+	if err != nil {
+		log.Printf("FailedToPersistPublicIp: %s", err.Error())
+	}
+
+	return valueObject.NewIpAddress(ipStr)
 }
 
 func (repo O11yQueryRepo) isCgroupV2() bool {
