@@ -14,7 +14,17 @@ import (
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
-type WebServerSetup struct{}
+type WebServerSetup struct {
+	transientDbSvc *databaseInfra.TransientDatabaseService
+}
+
+func NewWebServerSetup(
+	transientDbSvc *databaseInfra.TransientDatabaseService,
+) WebServerSetup {
+	return WebServerSetup{
+		transientDbSvc: transientDbSvc,
+	}
+}
 
 func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
@@ -104,12 +114,7 @@ func (ws WebServerSetup) FirstSetup() {
 func (ws WebServerSetup) OnStartSetup() {
 	defaultLogPrefix := "WsOnStartupSetup"
 
-	transientDbSvc, err := databaseInfra.NewTransientDatabaseService()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
 	containerResources, err := o11yQueryRepo.GetOverview()
 	if err != nil {
 		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
