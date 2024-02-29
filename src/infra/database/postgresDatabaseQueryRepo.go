@@ -123,7 +123,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 	if err != nil {
 		return databases, errors.New("FailedToGetDatabaseNames: " + err.Error())
 	}
-	dbType, _ := valueObject.NewDatabaseType("postgres")
+	dbType, _ := valueObject.NewDatabaseType("postgresql")
 
 	for _, dbName := range dbNames {
 		dbSize, err := repo.getDatabaseSize(dbName)
