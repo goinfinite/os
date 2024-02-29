@@ -28,7 +28,7 @@ import (
 // @Router       /runtime/php/{hostname}/ [get]
 func GetPhpConfigsController(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
-	sharedHelper.CheckServiceAvailability(svcName.String(), nil)
+	sharedHelper.StopIfServiceUnavailable(svcName.String())
 
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
@@ -135,7 +135,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Router       /runtime/php/{hostname}/ [put]
 func UpdatePhpConfigsController(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
-	sharedHelper.CheckServiceAvailability(svcName.String(), nil)
+	sharedHelper.StopIfServiceUnavailable(svcName.String())
 
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 

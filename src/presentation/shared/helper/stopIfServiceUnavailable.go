@@ -1,12 +1,10 @@
 package sharedHelper
 
 import (
-	"slices"
-
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func CheckServiceAvailability(svcName string, requiredSvcNames *[]string) {
+func StopIfServiceUnavailable(svcName string) {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	availableSvcs, err := servicesQueryRepo.Get()
 	if err != nil {
@@ -16,11 +14,6 @@ func CheckServiceAvailability(svcName string, requiredSvcNames *[]string) {
 	serviceIsRunning := false
 	for _, availableSvc := range availableSvcs {
 		availableSvcName := availableSvc.Name.String()
-
-		hasRequiredSvcNames := requiredSvcNames != nil
-		if hasRequiredSvcNames && !slices.Contains(*requiredSvcNames, availableSvcName) {
-			continue
-		}
 
 		if availableSvcName != svcName {
 			continue

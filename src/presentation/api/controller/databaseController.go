@@ -12,8 +12,6 @@ import (
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
-var availableServices = []string{"mysql", "postgresql"}
-
 // GetDatabases godoc
 // @Summary      GetDatabases
 // @Description  List databases names, users and sizes.
@@ -26,7 +24,7 @@ var availableServices = []string{"mysql", "postgresql"}
 // @Router       /database/{dbType}/ [get]
 func GetDatabasesController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
+	sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
@@ -51,7 +49,7 @@ func GetDatabasesController(c echo.Context) error {
 // @Router       /database/{dbType}/ [post]
 func CreateDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	//sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
+	//sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	requiredParams := []string{"dbName"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -88,7 +86,7 @@ func CreateDatabaseController(c echo.Context) error {
 // @Router       /database/{dbType}/{dbName}/ [delete]
 func DeleteDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
+	sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -121,7 +119,7 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Router       /database/{dbType}/{dbName}/user/ [post]
 func CreateDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
+	sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -176,7 +174,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Router       /database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func DeleteDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.CheckServiceAvailability(dbType.String(), &availableServices)
+	sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 	dbUser := valueObject.NewDatabaseUsernamePanic(c.Param("dbUser"))
