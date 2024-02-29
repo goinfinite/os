@@ -89,6 +89,10 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 	compiledDbUsersPrivsRegex := regexp.MustCompile(`(\w+)=`)
 	dbUsersMatches := compiledDbUsersPrivsRegex.FindAllStringSubmatch(dbUsersPrivs, -1)
 
+	if len(dbUsersMatches) == 0 {
+		return dbUsernameList, nil
+	}
+
 	defaultDbUser := "postgres"
 	for _, dbUserMatch := range dbUsersMatches {
 		if len(dbUserMatch) < 2 {
