@@ -1,8 +1,6 @@
 package databaseInfra
 
 import (
-	"strings"
-
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -12,7 +10,8 @@ type PostgresDatabaseCmdRepo struct {
 
 func (repo PostgresDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	_, err := PostgresqlCmd(
-		"CREATE DATABASE " + dbName.String(),
+		"CREATE DATABASE "+dbName.String(),
+		nil,
 	)
 
 	return err
@@ -20,31 +19,58 @@ func (repo PostgresDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) erro
 
 func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	_, err := PostgresqlCmd(
-		"DROP DATABASE " + dbName.String(),
+		"DROP DATABASE "+dbName.String(),
+		nil,
 	)
 
 	return err
 }
 
 func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
-	privilegesStrList := make([]string, len(createDatabaseUser.Privileges))
-	for i, privilege := range createDatabaseUser.Privileges {
-		privilegesStrList[i] = privilege.String()
-	}
-	privilegesStr := strings.Join(privilegesStrList, ", ")
+	dbNameStr := createDatabaseUser.DatabaseName.String()
+	dbUserStr := createDatabaseUser.Username.String()
 
 	_, err := PostgresqlCmd(
-		"GRANT " +
-			privilegesStr +
-			" ON " +
-			createDatabaseUser.DatabaseName.String() +
-			".* TO '" +
-			createDatabaseUser.Username.String() + "'@'%' " +
-			"IDENTIFIED BY '" +
-			createDatabaseUser.Password.String() +
-			"';",
+		"CREATE USER "+dbUserStr+" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
+		nil,
 	)
+	if err != nil {
+		return err
+	}
 
+	_, err = PostgresqlCmd(
+		"GRANT ALL PRIVILEGES ON DATABASE "+dbNameStr+
+			" TO "+dbUserStr,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd("GRANT ALL ON ALL TABLES IN SCHEMA public TO "+dbUserStr, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd("GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "+dbUserStr, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd(
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
+			"GRANT ALL ON TABLES TO "+dbUserStr,
+		&dbNameStr,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd(
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
+			"GRANT ALL ON SEQUENCES TO "+dbUserStr,
+		&dbNameStr,
+	)
 	return err
 }
 
@@ -52,13 +78,35 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 	dbName valueObject.DatabaseName,
 	dbUser valueObject.DatabaseUsername,
 ) error {
-	_, err := PostgresqlCmd(
-		"REVOKE ALL PRIVILEGES ON " +
-			dbName.String() +
-			".* FROM '" +
-			dbUser.String() +
-			"'@'%';",
-	)
+	dbNameStr := dbName.String()
+	dbUserStr := dbUser.String()
 
+	_, err := PostgresqlCmd(
+		"REVOKE ALL ON DATABASE "+dbNameStr+" FROM "+dbUserStr,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd(
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
+			"REVOKE ALL ON TABLES FROM "+dbUserStr,
+		&dbNameStr,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd(
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
+			"REVOKE ALL ON SEQUENCES FROM "+dbUserStr,
+		&dbNameStr,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = PostgresqlCmd("DROP USER "+dbUserStr, nil)
 	return err
 }

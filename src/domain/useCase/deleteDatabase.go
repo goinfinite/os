@@ -20,7 +20,8 @@ func DeleteDatabase(
 
 	err = dbCmdRepo.Delete(dbName)
 	if err != nil {
-		return errors.New("DeleteDatabaseError")
+		log.Printf("DeleteDatabaseError: %s", err.Error())
+		return errors.New("DeleteDatabaseInfraError")
 	}
 
 	log.Printf("Database '%v' deleted.", dbName.String())
