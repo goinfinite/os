@@ -49,7 +49,7 @@ func GetDatabasesController(c echo.Context) error {
 // @Router       /database/{dbType}/ [post]
 func CreateDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	//sharedHelper.StopIfServiceUnavailable(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(dbType.String())
 
 	requiredParams := []string{"dbName"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
