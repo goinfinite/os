@@ -14,8 +14,8 @@ type Router struct {
 	transientDbSvc *databaseInfra.TransientDatabaseService
 }
 
-func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) Router {
-	return Router{
+func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) *Router {
+	return &Router{
 		transientDbSvc: transientDbSvc,
 	}
 }

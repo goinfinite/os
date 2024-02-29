@@ -20,8 +20,8 @@ type WebServerSetup struct {
 
 func NewWebServerSetup(
 	transientDbSvc *databaseInfra.TransientDatabaseService,
-) WebServerSetup {
-	return WebServerSetup{
+) *WebServerSetup {
+	return &WebServerSetup{
 		transientDbSvc: transientDbSvc,
 	}
 }
