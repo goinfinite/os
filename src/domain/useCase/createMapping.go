@@ -98,7 +98,8 @@ func CreateMapping(
 		}
 
 		if isTargetHttpResponseCodeMissing {
-			return errors.New("TargetHttpResponseCodeRequired")
+			defaultHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+			createMapping.TargetHttpResponseCode = &defaultHttpResponseCode
 		}
 	}
 
