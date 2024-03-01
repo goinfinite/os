@@ -271,28 +271,56 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 
 	blockContent := locationBlockParts[2]
 	blockContent = strings.TrimSpace(blockContent)
-	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
+	isUrlOrResponseCodeOrInlineHtml := strings.Contains(blockContent, "return ")
 
 	targetTypeStr := "service"
 	var targetUrlPtr *valueObject.Url
 	var targetResponseCodePtr *valueObject.HttpResponseCode
+	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
 
-	if isUrlOrResponseCode {
-		blockContentFirstLine := strings.Split(blockContent, "\n")[0]
-		blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
-		if len(blockContentFirstLineParts) < 2 {
+	if isUrlOrResponseCodeOrInlineHtml {
+		blockContentLines := strings.Split(blockContent, "\n")
+
+		blockContentFirstLine := blockContentLines[0]
+		directiveBlockContent := blockContentFirstLine
+		directiveBlockContentParts := strings.Split(directiveBlockContent, " ")
+		if len(directiveBlockContentParts) < 2 {
 			return mapping, errors.New("GetLocationBlockContentPartsFailed")
-		}
-
-		directive := blockContentFirstLineParts[0]
-		if directive != "return" {
-			return mapping, errors.New("GetLocationDirectiveFailed")
 		}
 
 		targetTypeStr = "response-code"
 
-		responseCodeWithSemicolonStr := blockContentFirstLineParts[1]
-		responseCodeStr := strings.TrimRight(responseCodeWithSemicolonStr, ";")
+		directive := directiveBlockContentParts[0]
+		if directive == "add_header" {
+			blockContentSecondLine := blockContentLines[1]
+			blockContentSecondLine = strings.TrimSpace(blockContentSecondLine)
+			blockContentSecondLineParts := strings.Split(blockContentSecondLine, " ")
+			if len(blockContentSecondLineParts) < 2 {
+				return mapping, errors.New("GetLocationBlockContentPartsFailed")
+			}
+
+			inlineHtmlContentStr := blockContentSecondLineParts[2]
+			inlineHtmlContent, err := valueObject.NewInlineHtmlContent(inlineHtmlContentStr)
+			if err != nil {
+				return mapping, errors.New("InvalidReturnInlineHtmlContent: " + inlineHtmlContentStr)
+			}
+			targetInlineHtmlContentPtr = &inlineHtmlContent
+
+			directive = blockContentSecondLineParts[0]
+			directiveBlockContentParts = blockContentSecondLineParts
+			targetTypeStr = "inline-html"
+		}
+
+		if directive != "return" {
+			return mapping, errors.New("GetLocationDirectiveFailed")
+		}
+
+		responseCodeStr := directiveBlockContentParts[1]
+		if targetTypeStr == "response-code" {
+			responseCodeWithoutSemicolonStr := strings.TrimRight(responseCodeStr, ";")
+			responseCodeStr = responseCodeWithoutSemicolonStr
+		}
+
 		if len(responseCodeStr) == 0 {
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
 		}
@@ -303,11 +331,11 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		}
 		targetResponseCodePtr = &responseCode
 
-		hasUrl := len(blockContentFirstLineParts) == 3
+		hasUrl := len(directiveBlockContentParts) == 3 && targetTypeStr != "inline-html"
 		if hasUrl {
 			targetTypeStr = "url"
 
-			urlStr := blockContentFirstLineParts[2]
+			urlStr := directiveBlockContentParts[2]
 			urlStr = strings.TrimSuffix(urlStr, ";")
 			url, err := valueObject.NewUrl(urlStr)
 			if err != nil {
@@ -367,6 +395,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		targetServiceNamePtr,
 		targetUrlPtr,
 		targetResponseCodePtr,
+		targetInlineHtmlContentPtr,
 	), nil
 }
 
