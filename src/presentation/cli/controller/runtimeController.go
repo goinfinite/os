@@ -11,6 +11,7 @@ import (
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,9 @@ func GetPhpConfigsController() *cobra.Command {
 		Use:   "get",
 		Short: "GetPhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic("php")
+			sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
@@ -66,6 +70,9 @@ func UpdatePhpConfigController() *cobra.Command {
 		Use:   "update",
 		Short: "UpdatePhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic("php")
+			sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
@@ -141,6 +148,9 @@ func UpdatePhpSettingController() *cobra.Command {
 		Use:   "update-setting",
 		Short: "UpdatePhpSetting",
 		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic("php")
+			sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
@@ -201,6 +211,9 @@ func UpdatePhpModuleController() *cobra.Command {
 		Use:   "update-module",
 		Short: "UpdatePhpModule",
 		Run: func(cmd *cobra.Command, args []string) {
+			svcName := valueObject.NewServiceNamePanic("php")
+			sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")

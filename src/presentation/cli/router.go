@@ -6,7 +6,6 @@ import (
 	databaseInfra "github.com/speedianet/os/src/infra/database"
 	api "github.com/speedianet/os/src/presentation/api"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
-	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -56,9 +55,8 @@ func (router Router) cronRoutes() {
 
 func (router Router) databaseRoutes() {
 	var databaseCmd = &cobra.Command{
-		Use:              "db",
-		Short:            "DatabaseManagement",
-		PersistentPreRun: cliMiddleware.ServiceStatusValidator("mysql"),
+		Use:   "db",
+		Short: "DatabaseManagement",
 	}
 
 	rootCmd.AddCommand(databaseCmd)

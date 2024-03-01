@@ -13,6 +13,7 @@ import (
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 // GetPhpConfigs godoc
@@ -26,6 +27,9 @@ import (
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /runtime/php/{hostname}/ [get]
 func GetPhpConfigsController(c echo.Context) error {
+	svcName := valueObject.NewServiceNamePanic("php")
+	sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
@@ -130,6 +134,9 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /runtime/php/{hostname}/ [put]
 func UpdatePhpConfigsController(c echo.Context) error {
+	svcName := valueObject.NewServiceNamePanic("php")
+	sharedHelper.StopIfServiceUnavailable(svcName.String())
+
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
 	requiredParams := []string{"version"}

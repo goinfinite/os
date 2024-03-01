@@ -20,7 +20,8 @@ func CreateDatabase(
 
 	err = dbCmdRepo.Create(createDatabase.DatabaseName)
 	if err != nil {
-		return errors.New("CreateDatabaseError")
+		log.Printf("CreateDatabaseError: %s", err.Error())
+		return errors.New("CreateDatabaseInfraError")
 	}
 
 	log.Printf("Database %s created", createDatabase.DatabaseName)

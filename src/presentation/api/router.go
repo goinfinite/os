@@ -6,7 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 	databaseInfra "github.com/speedianet/os/src/infra/database"
 	apiController "github.com/speedianet/os/src/presentation/api/controller"
-	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	_ "github.com/speedianet/os/src/presentation/api/docs"
@@ -49,7 +48,7 @@ func (router Router) cronRoutes(baseRoute *echo.Group) {
 }
 
 func (router Router) databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database", apiMiddleware.ServiceStatusValidator("mysql"))
+	databaseGroup := baseRoute.Group("/database")
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
 	databaseGroup.DELETE(
