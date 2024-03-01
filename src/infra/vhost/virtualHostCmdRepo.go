@@ -500,6 +500,12 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 	if createMapping.TargetType.String() == "url" {
 		locationContent += " " + createMapping.TargetUrl.String()
 	}
+
+	if createMapping.TargetType.String() == "inline-html" {
+		locationContent = `	add_header Content-Type text/html;
+` + locationContent
+		locationContent += " '" + createMapping.TargetInlineHtmlContent.String() + "'"
+	}
 	locationContent += ";"
 
 	isService := createMapping.TargetType.String() == "service"
