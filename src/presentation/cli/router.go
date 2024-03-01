@@ -106,7 +106,6 @@ func (router Router) serveRoutes() {
 	}
 
 	rootCmd.AddCommand(serveCmd)
-
 }
 
 func (router Router) servicesRoutes() {
