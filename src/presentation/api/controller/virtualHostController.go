@@ -189,6 +189,14 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
+	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
+	if requestBody["targetInlineHtmlContent"] != nil {
+		targetInlineHtmlContent := valueObject.NewInlineHtmlContentPanic(
+			requestBody["targetInlineHtmlContent"].(string),
+		)
+		targetInlineHtmlContentPtr = &targetInlineHtmlContent
+	}
+
 	createMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
@@ -197,6 +205,7 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		targetServiceNamePtr,
 		targetUrlPtr,
 		targetHttpResponseCodePtr,
+		targetInlineHtmlContentPtr,
 	)
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}

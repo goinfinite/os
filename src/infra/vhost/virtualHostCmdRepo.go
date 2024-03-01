@@ -598,6 +598,7 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		mapping.TargetServiceName,
 		mapping.TargetUrl,
 		mapping.TargetHttpResponseCode,
+		mapping.TargetInlineHtmlContent,
 	)
 
 	return repo.CreateMapping(mappingDto)

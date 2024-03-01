@@ -38,6 +38,7 @@ func serviceMappingFactory(
 		&svcName,
 		nil,
 		nil,
+		nil,
 	)
 
 	return serviceMapping, nil

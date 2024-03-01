@@ -147,6 +147,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 	var targetServiceStr string
 	var targetUrlStr string
 	var targetHttpResponseCode uint
+	var targetInlineHtmlContent string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -181,6 +182,14 @@ func CreateVirtualHostMappingController() *cobra.Command {
 				targetHttpResponseCodePtr = &targetHttpResponseCode
 			}
 
+			var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
+			if targetInlineHtmlContent != "" {
+				targetInlineHtmlContent := valueObject.NewInlineHtmlContentPanic(
+					targetInlineHtmlContent,
+				)
+				targetInlineHtmlContentPtr = &targetInlineHtmlContent
+			}
+
 			createMappingDto := dto.NewCreateMapping(
 				hostname,
 				path,
@@ -189,6 +198,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 				targetServicePtr,
 				targetUrlPtr,
 				targetHttpResponseCodePtr,
+				targetInlineHtmlContentPtr,
 			)
 
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -226,6 +236,9 @@ func CreateVirtualHostMappingController() *cobra.Command {
 	)
 	cmd.Flags().UintVarP(
 		&targetHttpResponseCode, "response-code", "r", 0, "TargetHttpResponseCode",
+	)
+	cmd.Flags().StringVarP(
+		&targetInlineHtmlContent, "html", "h", "", "TargetInlineHtmlContent",
 	)
 	return cmd
 }
