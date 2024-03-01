@@ -502,8 +502,7 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 	}
 
 	if createMapping.TargetType.String() == "inline-html" {
-		locationContent = `	add_header Content-Type text/html;
-` + locationContent
+		locationContent = "	add_header Content-Type text/html;\n" + locationContent
 		locationContent += " '" + createMapping.TargetInlineHtmlContent.String() + "'"
 	}
 	locationContent += ";"
