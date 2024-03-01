@@ -58,12 +58,17 @@ func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 	}
 
 	ipStr = string(ipBytes)
-	err = repo.transientDbSvc.Set("PublicIp", ipStr)
+	ipAddress, err := valueObject.NewIpAddress(ipStr)
+	if err != nil {
+		return "", err
+	}
+
+	err = repo.transientDbSvc.Set("PublicIp", ipAddress.String())
 	if err != nil {
 		log.Printf("FailedToPersistPublicIp: %s", err.Error())
 	}
 
-	return valueObject.NewIpAddress(ipStr)
+	return ipAddress, nil
 }
 
 func (repo O11yQueryRepo) isCgroupV2() bool {
