@@ -13,6 +13,7 @@ var ValidMappingTargetTypes = []string{
 	"url",
 	"service",
 	"response-code",
+	"inline-html",
 }
 
 func NewMappingTargetType(value string) (MappingTargetType, error) {
