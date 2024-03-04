@@ -107,16 +107,24 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathExt, err := compressUnixFiles.DestinationPath.GetFileExtension()
 	if err == nil {
-		compressionTypeStr = destinationPathExt.String()
-
-		if compressUnixFiles.CompressionType != nil {
-			compressionTypeStr = compressUnixFiles.CompressionType.String()
+		destinationPathExtStr := destinationPathExt.String()
+		if destinationPathExtStr != "zip" {
+			compressionTypeStr = "gzip"
 		}
 	}
 
+	if compressUnixFiles.CompressionType != nil {
+		compressionTypeStr = compressUnixFiles.CompressionType.String()
+	}
+
 	destinationPathWithoutExt := compressUnixFiles.DestinationPath.GetWithoutExtension()
+	compressionTypeAsExt := compressionTypeStr
+	if compressionTypeAsExt == "gzip" {
+		compressionTypeAsExt = "tar.gz"
+	}
+
 	newDestinationPath, err := valueObject.NewUnixFilePath(
-		destinationPathWithoutExt.String() + "." + compressionTypeStr,
+		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
 	)
 	if err != nil {
 		return dto.CompressionProcessReport{}, errors.New(
@@ -167,6 +175,8 @@ func (repo FilesCmdRepo) Compress(
 					"SourcePathNotFound",
 				),
 			)
+
+			continue
 		}
 
 		compressionProcessReport.FilePathsSuccessfullyCompressed = append(
