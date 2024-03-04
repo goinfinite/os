@@ -19,6 +19,15 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+func RunRootCmd() {
+	err := rootCmd.Execute()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
 func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
@@ -30,8 +39,5 @@ func CliInit() {
 	router := NewRouter(transientDbSvc)
 	router.RegisterRoutes()
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	RunRootCmd()
 }
