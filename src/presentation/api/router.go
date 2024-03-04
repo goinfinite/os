@@ -4,7 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/labstack/echo/v4"
-	databaseInfra "github.com/speedianet/os/src/infra/database"
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiController "github.com/speedianet/os/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -12,10 +12,10 @@ import (
 )
 
 type Router struct {
-	transientDbSvc *databaseInfra.TransientDatabaseService
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
 }
 
-func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) *Router {
+func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
 	return &Router{
 		transientDbSvc: transientDbSvc,
 	}
@@ -47,19 +47,19 @@ func (router Router) cronRoutes(baseRoute *echo.Group) {
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }
 
-func (router Router) databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database")
-	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
-	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
-	databaseGroup.DELETE(
+func (router Router) internalDatabaseRoutes(baseRoute *echo.Group) {
+	internalDatabaseGroup := baseRoute.Group("/internalDatabase")
+	internalDatabaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
+	internalDatabaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
+	internalDatabaseGroup.DELETE(
 		"/:dbType/:dbName/",
 		apiController.DeleteDatabaseController,
 	)
-	databaseGroup.POST(
+	internalDatabaseGroup.POST(
 		"/:dbType/:dbName/user/",
 		apiController.CreateDatabaseUserController,
 	)
-	databaseGroup.DELETE(
+	internalDatabaseGroup.DELETE(
 		"/:dbType/:dbName/user/:dbUser/",
 		apiController.DeleteDatabaseUserController,
 	)
@@ -126,7 +126,7 @@ func (router Router) registerApiRoutes(baseRoute *echo.Group) {
 	router.authRoutes(baseRoute)
 	router.accountRoutes(baseRoute)
 	router.cronRoutes(baseRoute)
-	router.databaseRoutes(baseRoute)
+	router.internalDatabaseRoutes(baseRoute)
 	router.filesRoutes(baseRoute)
 	router.o11yRoutes(baseRoute)
 	router.runtimeRoutes(baseRoute)

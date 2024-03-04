@@ -1,4 +1,4 @@
-package databaseInfra
+package internalDatabaseInfra
 
 import (
 	"errors"
@@ -9,11 +9,11 @@ import (
 
 const DatabaseFilePath = "/speedia/sos.db"
 
-type InternalDatabaseService struct {
+type PersistentDatabaseService struct {
 	Handler *gorm.DB
 }
 
-func NewInternalDatabaseService() (*InternalDatabaseService, error) {
+func NewInternalDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
 		sqlite.Open(DatabaseFilePath),
 		&gorm.Config{},
@@ -22,5 +22,5 @@ func NewInternalDatabaseService() (*InternalDatabaseService, error) {
 		return nil, errors.New("DatabaseConnectionError")
 	}
 
-	return &InternalDatabaseService{Handler: ormSvc}, nil
+	return &PersistentDatabaseService{Handler: ormSvc}, nil
 }

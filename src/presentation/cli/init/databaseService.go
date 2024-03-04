@@ -1,9 +1,9 @@
 package cliInit
 
-import databaseInfra "github.com/speedianet/os/src/infra/database"
+import internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 
-func TransientDatabaseService() *databaseInfra.TransientDatabaseService {
-	transientDbSvc, err := databaseInfra.NewTransientDatabaseService()
+func TransientDatabaseService() *internalDatabaseInfra.TransientDatabaseService {
+	transientDbSvc, err := internalDatabaseInfra.NewTransientDatabaseService()
 	if err != nil {
 		panic("PersistentDatabaseConnectionError:" + err.Error())
 	}

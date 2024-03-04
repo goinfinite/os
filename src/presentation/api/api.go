@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	databaseInfra "github.com/speedianet/os/src/infra/database"
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiInit "github.com/speedianet/os/src/presentation/api/init"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
@@ -30,7 +30,7 @@ import (
 
 // @host		localhost:1618
 // @BasePath	/v1
-func ApiInit(transientDbSvc *databaseInfra.TransientDatabaseService) {
+func ApiInit(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) {
 	sharedMiddleware.CheckEnvs()
 	apiInit.WebServerSetup(transientDbSvc)
 

@@ -3,17 +3,17 @@ package cli
 import (
 	"fmt"
 
-	databaseInfra "github.com/speedianet/os/src/infra/database"
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	api "github.com/speedianet/os/src/presentation/api"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
 
 type Router struct {
-	transientDbSvc *databaseInfra.TransientDatabaseService
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
 }
 
-func NewRouter(transientDbSvc *databaseInfra.TransientDatabaseService) *Router {
+func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
 	return &Router{
 		transientDbSvc: transientDbSvc,
 	}
@@ -53,18 +53,18 @@ func (router Router) cronRoutes() {
 	cronCmd.AddCommand(cliController.DeleteCronController())
 }
 
-func (router Router) databaseRoutes() {
-	var databaseCmd = &cobra.Command{
+func (router Router) internalDatabaseRoutes() {
+	var internalDatabaseCmd = &cobra.Command{
 		Use:   "db",
 		Short: "DatabaseManagement",
 	}
 
-	rootCmd.AddCommand(databaseCmd)
-	databaseCmd.AddCommand(cliController.GetDatabasesController())
-	databaseCmd.AddCommand(cliController.CreateDatabaseController())
-	databaseCmd.AddCommand(cliController.DeleteDatabaseController())
-	databaseCmd.AddCommand(cliController.CreateDatabaseUserController())
-	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
+	rootCmd.AddCommand(internalDatabaseCmd)
+	internalDatabaseCmd.AddCommand(cliController.GetDatabasesController())
+	internalDatabaseCmd.AddCommand(cliController.CreateDatabaseController())
+	internalDatabaseCmd.AddCommand(cliController.DeleteDatabaseController())
+	internalDatabaseCmd.AddCommand(cliController.CreateDatabaseUserController())
+	internalDatabaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
 func (router Router) o11yRoutes() {
@@ -162,7 +162,7 @@ func (router Router) registerCliRoutes() {
 
 	router.accountRoutes()
 	router.cronRoutes()
-	router.databaseRoutes()
+	router.internalDatabaseRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
 	router.serveRoutes()
