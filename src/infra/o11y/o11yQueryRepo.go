@@ -19,6 +19,8 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
+const PublicIpTransientKey string = "PublicIp"
+
 type O11yQueryRepo struct {
 	transientDbSvc *databaseInfra.TransientDatabaseService
 }
@@ -41,7 +43,7 @@ func (repo O11yQueryRepo) getUptime() (uint64, error) {
 }
 
 func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
-	cachedIpAddressStr, err := repo.transientDbSvc.Get("PublicIp")
+	cachedIpAddressStr, err := repo.transientDbSvc.Get(PublicIpTransientKey)
 	if err == nil {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
@@ -63,7 +65,7 @@ func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 		return "", err
 	}
 
-	err = repo.transientDbSvc.Set("PublicIp", ipAddress.String())
+	err = repo.transientDbSvc.Set(PublicIpTransientKey, ipAddress.String())
 	if err != nil {
 		log.Printf("FailedToPersistPublicIp: %s", err.Error())
 	}
