@@ -336,11 +336,6 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 		return entity.O11yOverview{}, errors.New("GetHostnameFailed")
 	}
 
-	runtimeContext, err := infraHelper.GetRuntimeContext()
-	if err != nil {
-		runtimeContext, _ = valueObject.NewRuntimeContext("vm")
-	}
-
 	uptime, err := repo.getUptime()
 	if err != nil {
 		uptime = 0
@@ -365,7 +360,6 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 
 	return entity.NewO11yOverview(
 		hostname,
-		runtimeContext,
 		uptime,
 		publicIpAddress,
 		hardwareSpecs,
