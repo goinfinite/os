@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -195,4 +196,33 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 	}
 
 	return entity.SslPair{}, errors.New("SslPairNotFound")
+}
+
+func (repo SslQueryRepo) IsSslPairStillValid(vhost valueObject.Fqdn) bool {
+	sslCrtFilePath := PkiConfDir + "/" + vhost.String() + ".crt"
+	expirationDateStr, err := infraHelper.RunCmd(
+		"openssl",
+		"x509",
+		"-enddate",
+		"-noout",
+		"-in",
+		sslCrtFilePath,
+	)
+	if err != nil {
+		return false
+	}
+
+	notAfterRegexp := `notAfter=(.+)`
+	expirationDateStr, err = infraHelper.GetRegexFirstGroup(expirationDateStr, notAfterRegexp)
+	if err != nil {
+		return false
+	}
+
+	parsedExpirationDate, err := time.Parse("Jan  2 15:04:05 2006 MST", expirationDateStr)
+	if err != nil {
+		return false
+	}
+
+	todayDate := time.Now()
+	return !parsedExpirationDate.Before(todayDate)
 }
