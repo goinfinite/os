@@ -81,7 +81,7 @@ func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 
 	o11yController := apiController.NewO11yController(router.transientDbSvc)
-	o11yGroup.GET("/overview/", o11yController.O11yOverviewController)
+	o11yGroup.GET("/overview/", o11yController.GetO11yOverview)
 }
 
 func (router Router) runtimeRoutes(baseRoute *echo.Group) {
