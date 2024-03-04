@@ -50,7 +50,7 @@ func ApiInit(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) {
 	e.Use(apiMiddleware.Auth(basePath))
 
 	router := NewRouter(transientDbSvc)
-	router.registerApiRoutes(baseRoute)
+	router.RegisterRoutes(baseRoute)
 
 	e.Start(":1618")
 }

@@ -121,7 +121,7 @@ func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	)
 }
 
-func (router Router) registerApiRoutes(baseRoute *echo.Group) {
+func (router Router) RegisterRoutes(baseRoute *echo.Group) {
 	router.swaggerRoute(baseRoute)
 	router.authRoutes(baseRoute)
 	router.accountRoutes(baseRoute)

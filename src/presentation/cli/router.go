@@ -157,7 +157,7 @@ func (router Router) virtualHostRoutes() {
 	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
 }
 
-func (router Router) registerCliRoutes() {
+func (router Router) RegisterRoutes() {
 	rootCmd.AddCommand(versionCmd)
 
 	router.accountRoutes()

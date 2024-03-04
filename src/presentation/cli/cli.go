@@ -28,7 +28,7 @@ func CliInit() {
 	transientDbSvc := cliInit.TransientDatabaseService()
 
 	router := NewRouter(transientDbSvc)
-	router.registerCliRoutes()
+	router.RegisterRoutes()
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
