@@ -300,6 +300,11 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 			}
 
 			inlineHtmlContentStr := blockContentSecondLineParts[2]
+			inlineHtmlContentWithoutQuotesStr := strings.ReplaceAll(inlineHtmlContentStr, "'", "")
+			inlineHtmlContentWithoutSemicolonStr := strings.TrimRight(
+				inlineHtmlContentWithoutQuotesStr, ";",
+			)
+			inlineHtmlContentStr = inlineHtmlContentWithoutSemicolonStr
 			inlineHtmlContent, err := valueObject.NewInlineHtmlContent(inlineHtmlContentStr)
 			if err != nil {
 				return mapping, errors.New("InvalidReturnInlineHtmlContent: " + inlineHtmlContentStr)
