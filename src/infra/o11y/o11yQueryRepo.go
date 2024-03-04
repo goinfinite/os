@@ -41,9 +41,9 @@ func (repo O11yQueryRepo) getUptime() (uint64, error) {
 }
 
 func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
-	ipStr, err := repo.transientDbSvc.Get("PublicIp")
+	cachedIpAddressStr, err := repo.transientDbSvc.Get("PublicIp")
 	if err == nil {
-		return valueObject.NewIpAddress(ipStr)
+		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
 	resp, err := http.Get("https://speedia.net/ip")
@@ -52,13 +52,13 @@ func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 	}
 	defer resp.Body.Close()
 
-	ipBytes, err := io.ReadAll(resp.Body)
+	ipAddressBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.New("ReadPublicIpAddressFailed")
 	}
 
-	ipStr = string(ipBytes)
-	ipAddress, err := valueObject.NewIpAddress(ipStr)
+	ipAddressStr := string(ipAddressBytes)
+	ipAddress, err := valueObject.NewIpAddress(ipAddressStr)
 	if err != nil {
 		return "", err
 	}
