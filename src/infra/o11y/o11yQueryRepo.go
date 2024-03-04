@@ -323,6 +323,8 @@ func (repo O11yQueryRepo) getCurrentResourceUsage() (
 }
 
 func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
+	var o11yOverview entity.O11yOverview
+
 	hostnameStr, err := os.Hostname()
 	if err != nil {
 		hostnameStr = "localhost"
@@ -335,7 +337,7 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 
 	hostname, err := valueObject.NewFqdn(hostnameStr)
 	if err != nil {
-		return entity.O11yOverview{}, errors.New("GetHostnameFailed")
+		return o11yOverview, errors.New("GetHostnameFailed")
 	}
 
 	uptime, err := repo.getUptime()
@@ -350,14 +352,12 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 
 	hardwareSpecs, err := repo.getHardwareSpecs()
 	if err != nil {
-		log.Printf("GetHardwareSpecsFailed: %v", err)
-		return entity.O11yOverview{}, errors.New("GetHardwareSpecsFailed")
+		return o11yOverview, errors.New("GetHardwareSpecsFailed: " + err.Error())
 	}
 
 	currentResourceUsage, err := repo.getCurrentResourceUsage()
 	if err != nil {
-		log.Printf("GetCurrentResourceUsageFailed: %v", err)
-		return entity.O11yOverview{}, errors.New("GetCurrentResourceUsageFailed")
+		return o11yOverview, errors.New("GetCurrentResourceUsageFailed: " + err.Error())
 	}
 
 	return entity.NewO11yOverview(
