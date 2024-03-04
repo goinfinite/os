@@ -1,7 +1,9 @@
 package apiController
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -124,4 +126,16 @@ func DeleteSslPairController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
+}
+
+func AutoSslValidationController() {
+	validationIntervalHours := 24 / 4
+
+	taskInterval := time.Duration(validationIntervalHours) * time.Minute
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	for range timer.C {
+		log.Print("Dummy AutoSslValidationController timer log")
+	}
 }
