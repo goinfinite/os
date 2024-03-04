@@ -390,6 +390,10 @@ func UploadFilesController(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
+	if requestBody["destinationPath"] == nil {
+		requestBody["destinationPath"] = c.QueryParam("destinationPath")
+	}
+
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	destinationPath := valueObject.NewUnixFilePathPanic(requestBody["destinationPath"].(string))
