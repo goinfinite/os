@@ -11,6 +11,7 @@ func StopIfServiceUnavailable(svcName string) {
 		panic("FailedToGetAvailableServices: " + err.Error())
 	}
 
+	serviceIsRunning := false
 	for _, availableSvc := range availableSvcs {
 		availableSvcName := availableSvc.Name.String()
 		if availableSvcName != svcName {
@@ -18,7 +19,13 @@ func StopIfServiceUnavailable(svcName string) {
 		}
 
 		if availableSvc.Status.String() != "running" {
-			panic("ServiceUnavailable: " + svcName)
+			continue
 		}
+
+		serviceIsRunning = true
+	}
+
+	if !serviceIsRunning {
+		panic("ServiceUnavailable: " + svcName)
 	}
 }
