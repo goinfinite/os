@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"errors"
 	"log"
 	"slices"
 
@@ -11,13 +12,35 @@ import (
 
 const trashDirPath string = "/app/.trash"
 
-func CreateTrash(
+type DeleteUnixFiles struct {
+	filesQueryRepo repository.FilesQueryRepo
+	filesCmdRepo   repository.FilesCmdRepo
+}
+
+func NewDeleteUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-) error {
+) DeleteUnixFiles {
+	return DeleteUnixFiles{
+		filesQueryRepo: filesQueryRepo,
+		filesCmdRepo:   filesCmdRepo,
+	}
+}
+
+func (uc DeleteUnixFiles) emptyTrash() error {
+	trashPath, _ := valueObject.NewUnixFilePath(trashDirPath)
+	err := uc.filesCmdRepo.Delete(trashPath)
+	if err != nil {
+		return err
+	}
+
+	return uc.CreateTrash()
+}
+
+func (uc DeleteUnixFiles) CreateTrash() error {
 	trashPath, _ := valueObject.NewUnixFilePath(trashDirPath)
 
-	_, err := filesQueryRepo.GetOne(trashPath)
+	_, err := uc.filesQueryRepo.GetOne(trashPath)
 	if err == nil {
 		return nil
 	}
@@ -30,12 +53,10 @@ func CreateTrash(
 		trashDirMimeType,
 	)
 
-	return filesCmdRepo.Create(createTrashDir)
+	return uc.filesCmdRepo.Create(createTrashDir)
 }
 
-func DeleteUnixFiles(
-	filesQueryRepo repository.FilesQueryRepo,
-	filesCmdRepo repository.FilesCmdRepo,
+func (uc DeleteUnixFiles) Execute(
 	deleteUnixFiles dto.DeleteUnixFiles,
 ) error {
 	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
@@ -56,9 +77,13 @@ func DeleteUnixFiles(
 		deleteUnixFiles.SourcePaths = filesToDeleteWithoutNotAllowedPath
 	}
 
+	if (len(deleteUnixFiles.SourcePaths)) == 0 {
+		return errors.New("ThereAreNoSourcePathsToDelete")
+	}
+
 	if deleteUnixFiles.HardDelete {
 		for _, fileToDelete := range deleteUnixFiles.SourcePaths {
-			err := filesCmdRepo.Delete(fileToDelete)
+			err := uc.filesCmdRepo.Delete(fileToDelete)
 			if err != nil {
 				log.Printf("DeleteFileError: %s", err.Error())
 				continue
@@ -70,7 +95,7 @@ func DeleteUnixFiles(
 		return nil
 	}
 
-	err := CreateTrash(filesQueryRepo, filesCmdRepo)
+	err := uc.CreateTrash()
 	if err != nil {
 		return err
 	}
@@ -87,7 +112,7 @@ func DeleteUnixFiles(
 		)
 
 		shouldOverwrite := true
-		err = filesCmdRepo.Move(updateUnixFile, shouldOverwrite)
+		err = uc.filesCmdRepo.Move(updateUnixFile, shouldOverwrite)
 		if err != nil {
 			log.Printf(
 				"MoveUnixFileToTrashError (%s): %s",
