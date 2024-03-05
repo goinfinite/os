@@ -1,7 +1,6 @@
 package useCase
 
 import (
-	"errors"
 	"log"
 	"slices"
 
@@ -60,6 +59,25 @@ func (uc DeleteUnixFiles) Execute(
 	deleteUnixFiles dto.DeleteUnixFiles,
 ) error {
 	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
+		isToCleanTrash := fileToDelete.String() == trashDirPath
+		if isToCleanTrash {
+			err := uc.emptyTrash()
+			if err != nil {
+				log.Printf("FailedToCleanTrash: %s", err.Error())
+			}
+
+			fileToDeleteAfterTrashPathIndex := fileToDeleteIndex + 1
+			filesToDeleteWithoutTrashPath := slices.Delete(
+				deleteUnixFiles.SourcePaths,
+				fileToDeleteIndex,
+				fileToDeleteAfterTrashPathIndex,
+			)
+
+			deleteUnixFiles.SourcePaths = filesToDeleteWithoutTrashPath
+
+			continue
+		}
+
 		isRootPath := fileToDelete.String() == "/"
 		if !isRootPath {
 			continue
@@ -75,10 +93,6 @@ func (uc DeleteUnixFiles) Execute(
 		)
 
 		deleteUnixFiles.SourcePaths = filesToDeleteWithoutNotAllowedPath
-	}
-
-	if (len(deleteUnixFiles.SourcePaths)) == 0 {
-		return errors.New("ThereAreNoSourcePathsToDelete")
 	}
 
 	if deleteUnixFiles.HardDelete {
