@@ -11,7 +11,7 @@ import (
 type DatabaseType string
 
 var databaseTypesWithAliases = map[string][]string{
-	"mysql":      {"mariadb", "percona"},
+	"mariadb":    {"mysql", "percona"},
 	"postgresql": {"postgres"},
 }
 

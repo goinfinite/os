@@ -21,7 +21,7 @@ func NewDatabaseCmdRepo(
 
 func (repo DatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 	switch repo.dbType {
-	case "mysql":
+	case "mariadb":
 		return MysqlDatabaseCmdRepo{}.Create(dbName)
 	case "postgresql":
 		return PostgresDatabaseCmdRepo{}.Create(dbName)
@@ -32,7 +32,7 @@ func (repo DatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 
 func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 	switch repo.dbType {
-	case "mysql":
+	case "mariadb":
 		return MysqlDatabaseCmdRepo{}.Delete(dbName)
 	case "postgresql":
 		return PostgresDatabaseCmdRepo{}.Delete(dbName)
@@ -43,7 +43,7 @@ func (repo DatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 
 func (repo DatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
 	switch repo.dbType {
-	case "mysql":
+	case "mariadb":
 		return MysqlDatabaseCmdRepo{}.CreateUser(createDatabaseUser)
 	case "postgresql":
 		return PostgresDatabaseCmdRepo{}.CreateUser(createDatabaseUser)
@@ -57,7 +57,7 @@ func (repo DatabaseCmdRepo) DeleteUser(
 	dbUser valueObject.DatabaseUsername,
 ) error {
 	switch repo.dbType {
-	case "mysql":
+	case "mariadb":
 		return MysqlDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
 	case "postgresql":
 		return PostgresDatabaseCmdRepo{}.DeleteUser(dbName, dbUser)
