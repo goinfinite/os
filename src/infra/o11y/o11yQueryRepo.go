@@ -67,7 +67,7 @@ func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 
 	err = repo.transientDbSvc.Set(PublicIpTransientKey, ipAddress.String())
 	if err != nil {
-		return "", errors.New("FailedToPersistPublicIp: " + err.Error())
+		return ipAddress, errors.New("FailedToPersistPublicIp: " + err.Error())
 	}
 
 	return ipAddress, nil
