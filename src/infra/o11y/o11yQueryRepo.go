@@ -67,7 +67,7 @@ func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 
 	err = repo.transientDbSvc.Set(PublicIpTransientKey, ipAddress.String())
 	if err != nil {
-		log.Printf("FailedToPersistPublicIp: %s", err.Error())
+		return "", errors.New("FailedToPersistPublicIp: " + err.Error())
 	}
 
 	return ipAddress, nil
@@ -347,6 +347,7 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 
 	publicIpAddress, err := repo.getPublicIpAddress()
 	if err != nil {
+		log.Printf("GetPublicIpAddressError: %s", err.Error())
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 
