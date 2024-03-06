@@ -53,18 +53,18 @@ func (router Router) cronRoutes() {
 	cronCmd.AddCommand(cliController.DeleteCronController())
 }
 
-func (router Router) internalDatabaseRoutes() {
-	var internalDatabaseCmd = &cobra.Command{
+func (router Router) databaseRoutes() {
+	var databaseGroupCmd = &cobra.Command{
 		Use:   "db",
 		Short: "DatabaseManagement",
 	}
 
-	rootCmd.AddCommand(internalDatabaseCmd)
-	internalDatabaseCmd.AddCommand(cliController.GetDatabasesController())
-	internalDatabaseCmd.AddCommand(cliController.CreateDatabaseController())
-	internalDatabaseCmd.AddCommand(cliController.DeleteDatabaseController())
-	internalDatabaseCmd.AddCommand(cliController.CreateDatabaseUserController())
-	internalDatabaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
+	rootCmd.AddCommand(databaseGroupCmd)
+	databaseGroupCmd.AddCommand(cliController.GetDatabasesController())
+	databaseGroupCmd.AddCommand(cliController.CreateDatabaseController())
+	databaseGroupCmd.AddCommand(cliController.DeleteDatabaseController())
+	databaseGroupCmd.AddCommand(cliController.CreateDatabaseUserController())
+	databaseGroupCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
 func (router Router) o11yRoutes() {
@@ -162,7 +162,7 @@ func (router Router) RegisterRoutes() {
 
 	router.accountRoutes()
 	router.cronRoutes()
-	router.internalDatabaseRoutes()
+	router.databaseRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
 	router.serveRoutes()

@@ -47,19 +47,19 @@ func (router Router) cronRoutes(baseRoute *echo.Group) {
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }
 
-func (router Router) internalDatabaseRoutes(baseRoute *echo.Group) {
-	internalDatabaseGroup := baseRoute.Group("/internalDatabase")
-	internalDatabaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
-	internalDatabaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
-	internalDatabaseGroup.DELETE(
+func (router Router) databaseRoutes(baseRoute *echo.Group) {
+	databaseGroup := baseRoute.Group("/database")
+	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
+	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
+	databaseGroup.DELETE(
 		"/:dbType/:dbName/",
 		apiController.DeleteDatabaseController,
 	)
-	internalDatabaseGroup.POST(
+	databaseGroup.POST(
 		"/:dbType/:dbName/user/",
 		apiController.CreateDatabaseUserController,
 	)
-	internalDatabaseGroup.DELETE(
+	databaseGroup.DELETE(
 		"/:dbType/:dbName/user/:dbUser/",
 		apiController.DeleteDatabaseUserController,
 	)
@@ -126,7 +126,7 @@ func (router Router) RegisterRoutes(baseRoute *echo.Group) {
 	router.authRoutes(baseRoute)
 	router.accountRoutes(baseRoute)
 	router.cronRoutes(baseRoute)
-	router.internalDatabaseRoutes(baseRoute)
+	router.databaseRoutes(baseRoute)
 	router.filesRoutes(baseRoute)
 	router.o11yRoutes(baseRoute)
 	router.runtimeRoutes(baseRoute)
