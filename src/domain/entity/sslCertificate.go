@@ -9,13 +9,13 @@ import (
 )
 
 type SslCertificate struct {
-	Id                 valueObject.SslId
-	CertificateContent valueObject.SslCertificateContent
-	CommonName         *valueObject.SslHostname
-	IsCA               bool
-	AltNames           []valueObject.SslHostname
-	IssuedAt           valueObject.UnixTime
-	ExpiresAt          valueObject.UnixTime
+	Id                 valueObject.SslId                 `json:"sslId"`
+	CertificateContent valueObject.SslCertificateContent `json:"certificateContent"`
+	CommonName         *valueObject.SslHostname          `json:"commonName"`
+	IsCA               bool                              `json:"isCa"`
+	AltNames           []valueObject.SslHostname         `json:"altNames"`
+	IssuedAt           valueObject.UnixTime              `json:"issuedAt"`
+	ExpiresAt          valueObject.UnixTime              `json:"expiresAt"`
 }
 
 func NewSslCertificate(
