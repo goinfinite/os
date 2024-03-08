@@ -1,12 +1,15 @@
 package sslInfra
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
@@ -27,7 +30,7 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 		sslCertContent.String(),
 		"-----END CERTIFICATE-----\n",
 	)
-	for _, sslCertContentStr := range sslCertContentSlice {
+	for sslCertContentIndex, sslCertContentStr := range sslCertContentSlice {
 		if len(sslCertContentStr) == 0 {
 			continue
 		}
@@ -42,12 +45,14 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 			return certificates, err
 		}
 
-		if !certificate.IsCA {
-			certificates.MainCertificate = certificate
+		isChainedContent := certificate.IsCA && sslCertContentIndex > 0
+		if isChainedContent {
+			certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
+
 			continue
 		}
 
-		certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
+		certificates.MainCertificate = certificate
 	}
 
 	return certificates, nil
@@ -198,12 +203,36 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 	return entity.SslPair{}, errors.New("SslPairNotFound")
 }
 
-func (repo SslQueryRepo) IsSslPairStillValid(vhost valueObject.Fqdn) bool {
+func (repo SslQueryRepo) GetSslPairByHostname(
+	vhost valueObject.Fqdn,
+) (entity.SslPair, error) {
+	var sslPair entity.SslPair
+
+	crtFilePathStr := PkiConfDir + "/" + vhost.String() + ".crt"
+	crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
+	if err != nil {
+		return sslPair, err
+	}
+
+	return repo.sslPairFactory(crtFilePath)
+}
+
+func (repo SslQueryRepo) GetOwnershipHash(
+	sslCrtContent valueObject.SslCertificateContent,
+) string {
+	sslCrtContentBytes := []byte(sslCrtContent.String())
+	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
+	return hex.EncodeToString(sslCrtContentHash[:])
+}
+
+func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
 	sslCrtFilePath := PkiConfDir + "/" + vhost.String() + ".crt"
-	expirationDateStr, err := infraHelper.RunCmd(
+	crtDetailsStr, err := infraHelper.RunCmd(
 		"openssl",
 		"x509",
 		"-enddate",
+		"-issuer",
+		"-subject",
 		"-noout",
 		"-in",
 		sslCrtFilePath,
@@ -212,12 +241,16 @@ func (repo SslQueryRepo) IsSslPairStillValid(vhost valueObject.Fqdn) bool {
 		return false
 	}
 
-	notAfterRegexp := `notAfter=(.+)`
-	expirationDateStr, err = infraHelper.GetRegexFirstGroup(expirationDateStr, notAfterRegexp)
-	if err != nil {
+	crtDetailsRegexp := `^notAfter=(?<expiresAt>.+)\nissuer=(?<issuer>.+)\nsubject=(?<subject>.+)$`
+	crtDetails := infraHelper.GetRegexCapturingGroups(crtDetailsStr, crtDetailsRegexp)
+
+	crtIssuer := crtDetails["issuer"]
+	crtSubject := crtDetails["subject"]
+	if crtIssuer == crtSubject {
 		return false
 	}
 
+	expirationDateStr := crtDetails["notAfter"]
 	parsedExpirationDate, err := time.Parse("Jan  2 15:04:05 2006 MST", expirationDateStr)
 	if err != nil {
 		return false
@@ -225,4 +258,20 @@ func (repo SslQueryRepo) IsSslPairStillValid(vhost valueObject.Fqdn) bool {
 
 	todayDate := time.Now()
 	return !parsedExpirationDate.Before(todayDate)
+}
+
+func (repo SslQueryRepo) ValidateSslOwnership(
+	vhost valueObject.Fqdn,
+	ownershipHash string,
+) bool {
+	ownershipValidateUrl := vhost.String() + useCase.OwnershipValidatePath
+	achivedOwnershipHash, err := infraHelper.RunCmd(
+		"curl",
+		ownershipValidateUrl,
+	)
+	if err != nil {
+		log.Printf("FailedToGetOwnershipHash: %s", err.Error())
+	}
+
+	return achivedOwnershipHash == ownershipHash
 }
