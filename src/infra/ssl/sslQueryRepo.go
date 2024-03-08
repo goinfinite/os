@@ -257,7 +257,9 @@ func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
 	}
 
 	todayDate := time.Now()
-	return !parsedExpirationDate.Before(todayDate)
+	afterTwoDaysInterval := 2 * 24 * time.Hour
+	todayDateAfterTwoDays := todayDate.Add(afterTwoDaysInterval)
+	return !parsedExpirationDate.Before(todayDateAfterTwoDays)
 }
 
 func (repo SslQueryRepo) ValidateSslOwnership(
