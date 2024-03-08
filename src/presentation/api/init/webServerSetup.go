@@ -1,9 +1,14 @@
 package apiInit
 
-import wsInfra "github.com/speedianet/os/src/infra/webServer"
+import (
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	wsInfra "github.com/speedianet/os/src/infra/webServer"
+)
 
-func WebServerSetup() {
-	ws := wsInfra.WebServerSetup{}
+func WebServerSetup(
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+) {
+	ws := wsInfra.NewWebServerSetup(transientDbSvc)
 
 	ws.FirstSetup()
 	ws.OnStartSetup()

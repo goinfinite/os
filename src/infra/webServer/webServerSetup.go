@@ -8,12 +8,23 @@ import (
 
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 )
 
-type WebServerSetup struct{}
+type WebServerSetup struct {
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+}
+
+func NewWebServerSetup(
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+) *WebServerSetup {
+	return &WebServerSetup{
+		transientDbSvc: transientDbSvc,
+	}
+}
 
 func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
@@ -103,7 +114,8 @@ func (ws WebServerSetup) FirstSetup() {
 func (ws WebServerSetup) OnStartSetup() {
 	defaultLogPrefix := "WsOnStartupSetup"
 
-	containerResources, err := o11yInfra.O11yQueryRepo{}.GetOverview()
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
+	containerResources, err := o11yQueryRepo.GetOverview()
 	if err != nil {
 		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
 	}

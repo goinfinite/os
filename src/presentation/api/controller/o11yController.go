@@ -5,9 +5,22 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
+	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
+
+type O11yController struct {
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+}
+
+func NewO11yController(
+	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+) *O11yController {
+	return &O11yController{
+		transientDbSvc: transientDbSvc,
+	}
+}
 
 // O11yOverview  godoc
 // @Summary      O11yOverview
@@ -18,8 +31,8 @@ import (
 // @Security     Bearer
 // @Success      200 {object} entity.O11yOverview
 // @Router       /o11y/overview/ [get]
-func O11yOverviewController(c echo.Context) error {
-	o11yQueryRepo := o11yInfra.O11yQueryRepo{}
+func (controller O11yController) GetO11yOverview(c echo.Context) error {
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(controller.transientDbSvc)
 	o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
