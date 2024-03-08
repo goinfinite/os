@@ -84,12 +84,6 @@ func CreateMapping(
 		createMapping.TargetHttpResponseCode = &defaultUrlResponseCode
 	}
 
-	isStaticFiles := createMapping.TargetType.String() == "static-files"
-	defaultStaticFilesResponseCode, _ := valueObject.NewHttpResponseCode(404)
-	if isStaticFiles && createMapping.TargetHttpResponseCode == nil {
-		createMapping.TargetHttpResponseCode = &defaultStaticFilesResponseCode
-	}
-
 	isResponseCodeTarget := createMapping.TargetType.String() == "response-code"
 	if isResponseCodeTarget && createMapping.TargetHttpResponseCode == nil {
 		return errors.New("TargetHttpResponseCodeRequired")

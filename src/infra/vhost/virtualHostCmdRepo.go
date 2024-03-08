@@ -491,18 +491,16 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 		createMapping.Path,
 	)
 
-	locationContent := "	return "
-
-	isStaticFiles := createMapping.TargetType.String() == "static-files"
-	if isStaticFiles {
-		locationContent = "	try_files $uri $uri/ ="
-	}
-
 	responseCodeStr := ""
 	if createMapping.TargetHttpResponseCode != nil {
 		responseCodeStr = createMapping.TargetHttpResponseCode.String()
 	}
-	locationContent += responseCodeStr
+	locationContent := "	return " + responseCodeStr
+
+	isStaticFiles := createMapping.TargetType.String() == "static-files"
+	if isStaticFiles {
+		locationContent = "	try_files $uri $uri/"
+	}
 
 	if createMapping.TargetType.String() == "url" {
 		locationContent += " " + createMapping.TargetUrl.String()
