@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	cliInit "github.com/speedianet/os/src/presentation/cli/init"
 	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 	"github.com/spf13/cobra"
@@ -18,16 +19,25 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+func RunRootCmd() {
+	err := rootCmd.Execute()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
 func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
 
 	sharedMiddleware.CheckEnvs()
 
-	registerCliRoutes()
+	transientDbSvc := cliInit.TransientDatabaseService()
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	router := NewRouter(transientDbSvc)
+	router.RegisterRoutes()
+
+	RunRootCmd()
 }
