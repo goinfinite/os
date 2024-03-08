@@ -48,19 +48,19 @@ func UpdateService(
 		return err
 	}
 
-	if updateDto.Status != nil {
+	isSoloService := serviceEntity.Type.String() == "solo"
+	shouldUpdateStatus := updateDto.Status != nil
+	if isSoloService && !shouldUpdateStatus {
+		return errors.New("SoloServicesCanOnlyChangeStatus")
+	}
+
+	if shouldUpdateStatus {
 		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
 			serviceEntity,
 			updateDto,
 		)
-	}
-
-	isSoloService := serviceEntity.Type.String() == "solo"
-	shouldUpdateVersion := updateDto.Version != nil
-	if isSoloService && shouldUpdateVersion {
-		return errors.New("SoloServicesVersionCannotBeChanged")
 	}
 
 	err = cmdRepo.Update(updateDto)
