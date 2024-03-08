@@ -350,14 +350,12 @@ func (repo FilesCmdRepo) Upload(
 		return uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
 	}
 
-	for index, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
+	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
 		err := repo.uploadSingleFile(
 			destinationPath,
 			fileToUpload,
 		)
-		if index > 0 {
-			err = errors.New("ForcedError")
-		}
+
 		if err != nil {
 			uploadFailure, err := repo.getUploadFailure(err.Error(), fileToUpload)
 			if err != nil {
