@@ -59,8 +59,8 @@ func (uc DeleteUnixFiles) Execute(
 	deleteUnixFiles dto.DeleteUnixFiles,
 ) error {
 	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
-		isToCleanTrash := fileToDelete.String() == trashDirPath
-		if isToCleanTrash {
+		shouldCleanTrash := fileToDelete.String() == trashDirPath
+		if shouldCleanTrash {
 			err := uc.emptyTrash()
 			if err != nil {
 				log.Printf("FailedToCleanTrash: %s", err.Error())
