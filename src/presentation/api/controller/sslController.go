@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -129,13 +128,24 @@ func DeleteSslPairController(c echo.Context) error {
 }
 
 func AutoSslValidationController() {
-	validationIntervalHours := 24 / 4
+	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
-	taskInterval := time.Duration(validationIntervalHours) * time.Minute
+	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+
 	for range timer.C {
-		log.Print("Dummy AutoSslValidationController timer log")
+		sslCertificateWatchDog := useCase.NewSslCertificateWatchDog(
+			sslQueryRepo,
+			sslCmdRepo,
+			vhostQueryRepo,
+			vhostCmdRepo,
+		)
+		sslCertificateWatchDog.Execute()
 	}
 }
