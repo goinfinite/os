@@ -15,7 +15,7 @@ import (
 
 type FilesCmdRepo struct{}
 
-func (repo FilesCmdRepo) getUploadFailure(
+func (repo FilesCmdRepo) uploadFailureFactory(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
 ) (valueObject.UploadProcessFailure, error) {
@@ -357,7 +357,7 @@ func (repo FilesCmdRepo) Upload(
 		)
 
 		if err != nil {
-			uploadFailure, err := repo.getUploadFailure(err.Error(), fileToUpload)
+			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
 			if err != nil {
 				log.Printf("AddUploadFailureError: %s", err.Error())
 			}
