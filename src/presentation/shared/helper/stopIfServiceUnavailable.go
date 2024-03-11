@@ -1,31 +1,26 @@
 package sharedHelper
 
 import (
+	"github.com/speedianet/os/src/domain/valueObject"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func StopIfServiceUnavailable(svcName string) {
+func StopIfServiceUnavailable(svcNameStr string) {
+	svcName := valueObject.NewServiceNamePanic(svcNameStr)
+
+	isServiceRunning := true
+
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	availableSvcs, err := servicesQueryRepo.Get()
+	availableSvc, err := servicesQueryRepo.GetByName(svcName)
 	if err != nil {
-		panic("FailedToGetAvailableServices: " + err.Error())
+		isServiceRunning = false
 	}
 
-	serviceIsRunning := false
-	for _, availableSvc := range availableSvcs {
-		availableSvcName := availableSvc.Name.String()
-		if availableSvcName != svcName {
-			continue
-		}
-
-		if availableSvc.Status.String() != "running" {
-			continue
-		}
-
-		serviceIsRunning = true
+	if availableSvc.Status.String() != "running" {
+		isServiceRunning = false
 	}
 
-	if !serviceIsRunning {
-		panic("ServiceUnavailable: " + svcName)
+	if !isServiceRunning {
+		panic("ServiceUnavailable: " + svcName.String())
 	}
 }
