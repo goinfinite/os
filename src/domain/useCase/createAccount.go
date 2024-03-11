@@ -27,5 +27,6 @@ func CreateAccount(
 
 	log.Printf("Account '%v' created.", createAccount.Username.String())
 
-	return CreateTrash(filesQueryRepo, filesCmdRepo)
+	deleteUnixFilesUc := NewDeleteUnixFiles(filesQueryRepo, filesCmdRepo)
+	return deleteUnixFilesUc.CreateTrash()
 }

@@ -162,3 +162,17 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 
 	return databases, nil
 }
+
+func (repo PostgresDatabaseQueryRepo) UserExists(
+	dbUser valueObject.DatabaseUsername,
+) bool {
+	userExists, err := PostgresqlCmd(
+		"SELECT 1 FROM pg_user WHERE usename='"+dbUser.String()+"'",
+		nil,
+	)
+	if err != nil {
+		return false
+	}
+
+	return userExists == "1"
+}

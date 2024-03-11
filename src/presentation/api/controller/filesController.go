@@ -271,11 +271,12 @@ func DeleteFileController(c echo.Context) error {
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-	err := useCase.DeleteUnixFiles(
+	deleteUnixFiles := useCase.NewDeleteUnixFiles(
 		filesQueryRepo,
 		filesCmdRepo,
-		deleteUnixFilesDto,
 	)
+
+	err := deleteUnixFiles.Execute(deleteUnixFilesDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -389,6 +390,10 @@ func ExtractFilesController(c echo.Context) error {
 func UploadFilesController(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	if requestBody["destinationPath"] == nil {
+		requestBody["destinationPath"] = c.QueryParam("destinationPath")
+	}
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

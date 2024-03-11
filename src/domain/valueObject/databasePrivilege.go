@@ -67,6 +67,8 @@ var ValidDatabasePrivileges = []string{
 }
 
 func NewDatabasePrivilege(value string) (DatabasePrivilege, error) {
+	value = strings.ReplaceAll(value, "-", " ")
+
 	dp := DatabasePrivilege(strings.ToUpper(value))
 	if !dp.isValid() {
 		return "", errors.New("InvalidDatabasePrivilege")
@@ -75,9 +77,9 @@ func NewDatabasePrivilege(value string) (DatabasePrivilege, error) {
 }
 
 func NewDatabasePrivilegePanic(value string) DatabasePrivilege {
-	dp := DatabasePrivilege(strings.ToUpper(value))
-	if !dp.isValid() {
-		panic("InvalidDatabasePrivilege")
+	dp, err := NewDatabasePrivilege(value)
+	if err != nil {
+		panic(err)
 	}
 	return dp
 }

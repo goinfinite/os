@@ -13,25 +13,21 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
-type FilesCmdRepo struct {
-	uploadProcessReport dto.UploadProcessReport
-}
+type FilesCmdRepo struct{}
 
-func (repo FilesCmdRepo) addUploadFailure(
+func (repo FilesCmdRepo) uploadFailureFactory(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
-) error {
+) (valueObject.UploadProcessFailure, error) {
 	failureReason, err := valueObject.NewFileProcessingFailure(errMessage)
 	if err != nil {
-		return err
+		return valueObject.UploadProcessFailure{}, err
 	}
 
-	repo.uploadProcessReport.FailedNamesWithReason = append(
-		repo.uploadProcessReport.FailedNamesWithReason,
-		valueObject.NewUploadProcessFailure(fileStreamHandler.Name, failureReason),
-	)
-
-	return nil
+	return valueObject.NewUploadProcessFailure(
+		fileStreamHandler.Name,
+		failureReason,
+	), nil
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
@@ -54,11 +50,6 @@ func (repo FilesCmdRepo) uploadSingleFile(
 	if err != nil {
 		return errors.New("CopyFileContentToDestinationError: " + err.Error())
 	}
-
-	repo.uploadProcessReport.FileNamesSuccessfullyUploaded = append(
-		repo.uploadProcessReport.FileNamesSuccessfullyUploaded,
-		fileToUpload.Name,
-	)
 
 	return nil
 }
@@ -107,16 +98,20 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathExt, err := compressUnixFiles.DestinationPath.GetFileExtension()
 	if err == nil {
-		compressionTypeStr = destinationPathExt.String()
-
-		if compressUnixFiles.CompressionType != nil {
-			compressionTypeStr = compressUnixFiles.CompressionType.String()
+		destinationPathExtStr := destinationPathExt.String()
+		if destinationPathExtStr != "zip" {
+			compressionTypeStr = "tgz"
 		}
 	}
 
+	if compressUnixFiles.CompressionType != nil {
+		compressionTypeStr = compressUnixFiles.CompressionType.String()
+	}
+
 	destinationPathWithoutExt := compressUnixFiles.DestinationPath.GetWithoutExtension()
+	compressionTypeAsExt := compressionTypeStr
 	newDestinationPath, err := valueObject.NewUnixFilePath(
-		destinationPathWithoutExt.String() + "." + compressionTypeStr,
+		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
 	)
 	if err != nil {
 		return dto.CompressionProcessReport{}, errors.New(
@@ -167,6 +162,8 @@ func (repo FilesCmdRepo) Compress(
 					"SourcePathNotFound",
 				),
 			)
+
+			continue
 		}
 
 		compressionProcessReport.FilePathsSuccessfullyCompressed = append(
@@ -334,7 +331,7 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationPath := uploadUnixFiles.DestinationPath
 
-	repo.uploadProcessReport = dto.NewUploadProcessReport(
+	uploadProcessReport := dto.NewUploadProcessReport(
 		[]valueObject.UnixFileName{},
 		[]valueObject.UploadProcessFailure{},
 		destinationPath,
@@ -342,11 +339,11 @@ func (repo FilesCmdRepo) Upload(
 
 	destinationFile, err := queryRepo.GetOne(destinationPath)
 	if err != nil {
-		return repo.uploadProcessReport, errors.New("DestinationFileNotFound")
+		return uploadProcessReport, errors.New("DestinationFileNotFound")
 	}
 
 	if !destinationFile.MimeType.IsDir() {
-		return repo.uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
+		return uploadProcessReport, errors.New("DestinationPathCannotBeAFile")
 	}
 
 	for _, fileToUpload := range uploadUnixFiles.FileStreamHandlers {
@@ -354,15 +351,27 @@ func (repo FilesCmdRepo) Upload(
 			destinationPath,
 			fileToUpload,
 		)
+
 		if err != nil {
-			for _, fileStreamHandler := range uploadUnixFiles.FileStreamHandlers {
-				err := repo.addUploadFailure(err.Error(), fileStreamHandler)
-				if err != nil {
-					log.Printf("AddUploadFailureError: %s", err.Error())
-				}
+			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
+			if err != nil {
+				log.Printf("AddUploadFailureError: %s", err.Error())
 			}
+
+			uploadProcessReport.FailedNamesWithReason = append(
+				uploadProcessReport.FailedNamesWithReason,
+				uploadFailure,
+			)
+
+			continue
 		}
+
+		uploadProcessReport.FileNamesSuccessfullyUploaded = append(
+			uploadProcessReport.FileNamesSuccessfullyUploaded,
+			fileToUpload.Name,
+		)
+
 	}
 
-	return repo.uploadProcessReport, nil
+	return uploadProcessReport, nil
 }
