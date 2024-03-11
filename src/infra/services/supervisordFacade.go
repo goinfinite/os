@@ -89,7 +89,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			"pkill",
 			"sleep",
 		)
-	case "mysql":
+	case "mariadb":
 		_, _ = infraHelper.RunCmd(
 			"mysqladmin",
 			"shutdown",

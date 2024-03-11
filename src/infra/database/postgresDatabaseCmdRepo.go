@@ -30,15 +30,19 @@ func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateData
 	dbNameStr := createDatabaseUser.DatabaseName.String()
 	dbUserStr := createDatabaseUser.Username.String()
 
-	_, err := PostgresqlCmd(
-		"CREATE USER "+dbUserStr+" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
-		nil,
-	)
-	if err != nil {
-		return err
+	postgresDatabaseQueryRepo := PostgresDatabaseQueryRepo{}
+	userExists := postgresDatabaseQueryRepo.UserExists(createDatabaseUser.Username)
+	if !userExists {
+		_, err := PostgresqlCmd(
+			"CREATE USER "+dbUserStr+" WITH PASSWORD '"+createDatabaseUser.Password.String()+"'",
+			nil,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = PostgresqlCmd(
+	_, err := PostgresqlCmd(
 		"GRANT ALL PRIVILEGES ON DATABASE "+dbNameStr+
 			" TO "+dbUserStr,
 		nil,

@@ -48,7 +48,13 @@ func UpdateService(
 		return err
 	}
 
-	if updateDto.Status != nil {
+	isSoloService := serviceEntity.Type.String() == "solo"
+	shouldUpdateStatus := updateDto.Status != nil
+	if isSoloService && !shouldUpdateStatus {
+		return errors.New("SoloServicesCanOnlyChangeStatus")
+	}
+
+	if shouldUpdateStatus {
 		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
@@ -57,40 +63,36 @@ func UpdateService(
 		)
 	}
 
-	isSoloService := serviceEntity.Type.String() == "solo"
-	shouldUpdateVersion := updateDto.Version != nil
-	if isSoloService && shouldUpdateVersion {
-		return errors.New("SoloServicesVersionCannotBeChanged")
-	}
-
 	err = cmdRepo.Update(updateDto)
 	if err != nil {
 		log.Printf("UpdateServiceError: %s", err.Error())
 		return errors.New("UpdateServiceInfraError")
 	}
 
-	if len(updateDto.PortBindings) > 0 {
-		vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+	if len(updateDto.PortBindings) == 0 {
+		return nil
+	}
+
+	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+	if err != nil {
+		return err
+	}
+
+	var mappingsToRecreate []entity.Mapping
+	for _, vhostWithMapping := range vhostsWithMappings {
+		for _, vhostMapping := range vhostWithMapping.Mappings {
+			if vhostMapping.TargetServiceName.String() != updateDto.Name.String() {
+				continue
+			}
+
+			mappingsToRecreate = append(mappingsToRecreate, vhostMapping)
+		}
+	}
+
+	for _, mappingToRecreate := range mappingsToRecreate {
+		err = vhostCmdRepo.RecreateMapping(mappingToRecreate)
 		if err != nil {
-			return err
-		}
-
-		var mappingsToRecreate []entity.Mapping
-		for _, vhostWithMapping := range vhostsWithMappings {
-			for _, vhostMapping := range vhostWithMapping.Mappings {
-				if vhostMapping.TargetServiceName.String() != updateDto.Name.String() {
-					continue
-				}
-
-				mappingsToRecreate = append(mappingsToRecreate, vhostMapping)
-			}
-		}
-
-		for _, mappingToRecreate := range mappingsToRecreate {
-			err = vhostCmdRepo.RecreateMapping(mappingToRecreate)
-			if err != nil {
-				log.Printf("RecreateMappingError: %s", err.Error())
-			}
+			log.Printf("RecreateMappingError: %s", err.Error())
 		}
 	}
 

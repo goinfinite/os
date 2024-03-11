@@ -145,7 +145,7 @@ func (repo MysqlDatabaseQueryRepo) Get() ([]entity.Database, error) {
 	if err != nil {
 		return []entity.Database{}, err
 	}
-	dbType, _ := valueObject.NewDatabaseType("mysql")
+	dbType, _ := valueObject.NewDatabaseType("mariadb")
 
 	var databases []entity.Database
 	for _, dbName := range dbNames {

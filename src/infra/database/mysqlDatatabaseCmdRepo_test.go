@@ -68,7 +68,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	})
 
 	err = servicesInfra.Uninstall(
-		valueObject.NewServiceNamePanic("mysql"),
+		valueObject.NewServiceNamePanic("mariadb"),
 	)
 	if err != nil {
 		t.Error("Error uninstalling service")
