@@ -100,7 +100,7 @@ func (repo FilesCmdRepo) Compress(
 	if err == nil {
 		destinationPathExtStr := destinationPathExt.String()
 		if destinationPathExtStr != "zip" {
-			compressionTypeStr = "gzip"
+			compressionTypeStr = "tgz"
 		}
 	}
 
@@ -110,10 +110,6 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathWithoutExt := compressUnixFiles.DestinationPath.GetWithoutExtension()
 	compressionTypeAsExt := compressionTypeStr
-	if compressionTypeAsExt == "gzip" {
-		compressionTypeAsExt = "tar.gz"
-	}
-
 	newDestinationPath, err := valueObject.NewUnixFilePath(
 		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
 	)

@@ -10,7 +10,7 @@ import (
 type UnixCompressionType string
 
 var validUnixCompressionTypes = []string{
-	"gzip",
+	"tgz",
 	"zip",
 }
 
