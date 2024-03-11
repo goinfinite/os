@@ -21,7 +21,7 @@ func NewDatabaseQueryRepo(
 
 func (repo DatabaseQueryRepo) Get() ([]entity.Database, error) {
 	switch repo.dbType {
-	case "mysql":
+	case "mariadb":
 		return MysqlDatabaseQueryRepo{}.Get()
 	case "postgresql":
 		return PostgresDatabaseQueryRepo{}.Get()
