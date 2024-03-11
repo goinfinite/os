@@ -269,14 +269,20 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		return mapping, errors.New("InvalidMappingPath: " + pathStr)
 	}
 
+	targetTypeStr := "service"
+
 	blockContent := locationBlockParts[2]
 	blockContent = strings.TrimSpace(blockContent)
-	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
 
-	targetTypeStr := "service"
+	isStaticFiles := strings.Contains(blockContent, "try_files")
+	if isStaticFiles {
+		targetTypeStr = "static-files"
+	}
+
 	var targetUrlPtr *valueObject.Url
 	var targetResponseCodePtr *valueObject.HttpResponseCode
 
+	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
 	if isUrlOrResponseCode {
 		blockContentFirstLine := strings.Split(blockContent, "\n")[0]
 		blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
