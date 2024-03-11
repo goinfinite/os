@@ -499,7 +499,7 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 
 	isStaticFiles := createMapping.TargetType.String() == "static-files"
 	if isStaticFiles {
-		locationContent = "	try_files $uri $uri/"
+		locationContent = "	try_files $uri $uri/ index.html?$query_string"
 	}
 
 	if createMapping.TargetType.String() == "url" {
