@@ -79,9 +79,9 @@ func CreateMapping(
 		return errors.New("TargetUrlRequired")
 	}
 
-	defaultResponseCode, _ := valueObject.NewHttpResponseCode(301)
+	defaultUrlResponseCode, _ := valueObject.NewHttpResponseCode(301)
 	if isUrlTarget && createMapping.TargetHttpResponseCode == nil {
-		createMapping.TargetHttpResponseCode = &defaultResponseCode
+		createMapping.TargetHttpResponseCode = &defaultUrlResponseCode
 	}
 
 	isTargetHttpResponseCodeMissing := createMapping.TargetHttpResponseCode == nil

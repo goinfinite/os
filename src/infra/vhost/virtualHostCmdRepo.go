@@ -495,8 +495,13 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 	if createMapping.TargetHttpResponseCode != nil {
 		responseCodeStr = createMapping.TargetHttpResponseCode.String()
 	}
-
 	locationContent := "	return " + responseCodeStr
+
+	isStaticFiles := createMapping.TargetType.String() == "static-files"
+	if isStaticFiles {
+		locationContent = "	try_files $uri $uri/ index.html?$query_string"
+	}
+
 	if createMapping.TargetType.String() == "url" {
 		locationContent += " " + createMapping.TargetUrl.String()
 	}
@@ -505,6 +510,7 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 		locationContent = "	add_header Content-Type text/html;\n" + locationContent
 		locationContent += " '" + createMapping.TargetInlineHtmlContent.String() + "'"
 	}
+
 	locationContent += ";"
 
 	isService := createMapping.TargetType.String() == "service"

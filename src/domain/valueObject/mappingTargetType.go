@@ -14,6 +14,7 @@ var ValidMappingTargetTypes = []string{
 	"service",
 	"response-code",
 	"inline-html",
+	"static-files",
 }
 
 func NewMappingTargetType(value string) (MappingTargetType, error) {
