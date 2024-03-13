@@ -22,24 +22,7 @@ func NewSslCmdRepo() SslCmdRepo {
 	}
 }
 
-func (repo SslCmdRepo) forceSymlink(
-	pkiSourcePath string,
-	pkiTargetPath string,
-) error {
-	err := os.Remove(pkiTargetPath)
-	if err != nil && !os.IsNotExist(err) {
-		return errors.New("FailedToDeletePkiFile: " + err.Error())
-	}
-
-	err = os.Symlink(pkiSourcePath, pkiTargetPath)
-	if err != nil {
-		return errors.New("CreatePkiSymlinkError: " + err.Error())
-	}
-
-	return nil
-}
-
-func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
+func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 	vhostStr := vhost.String()
 
 	vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
@@ -60,7 +43,16 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhostStr)
+	return nil
+}
+
+func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
+	err := repo.deleteCurrentSsl(vhost)
+	if err != nil {
+		return err
+	}
+
+	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhost.String())
 }
 
 func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
@@ -79,13 +71,22 @@ func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
-			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
+			shouldOverwrite := true
+			err := infraHelper.CreateSymlink(
+				firstVhostCertFilePath,
+				vhostCertFilePath,
+				shouldOverwrite,
+			)
 			if err != nil {
 				log.Printf("CreateSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
-			err = repo.forceSymlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
+			err = infraHelper.CreateSymlink(
+				firstVhostCertKeyFilePath,
+				vhostCertKeyFilePath,
+				shouldOverwrite,
+			)
 			if err != nil {
 				log.Printf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
