@@ -289,11 +289,12 @@ func (repo FilesCmdRepo) Move(
 }
 
 func (repo FilesCmdRepo) UpdateContent(
-	updateUnixFile dto.UpdateUnixFile,
+	unixSrcFilePath valueObject.UnixFilePath,
+	unixFileEncodedContent valueObject.EncodedContent,
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdate, err := queryRepo.GetOne(updateUnixFile.SourcePath)
+	fileToUpdate, err := queryRepo.GetOne(unixSrcFilePath)
 	if err != nil {
 		return err
 	}
@@ -302,13 +303,13 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("PathIsADir")
 	}
 
-	decodedContent, err := updateUnixFile.EncodedContent.GetDecodedContent()
+	decodedContent, err := unixFileEncodedContent.GetDecodedContent()
 	if err != nil {
 		return err
 	}
 
 	return infraHelper.UpdateFile(
-		updateUnixFile.SourcePath.String(),
+		unixSrcFilePath.String(),
 		decodedContent,
 		true,
 	)

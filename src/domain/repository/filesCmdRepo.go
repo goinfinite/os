@@ -16,7 +16,10 @@ type FilesCmdRepo interface {
 		unixDestinationPath valueObject.UnixFilePath,
 		shouldOverwrite bool,
 	) error
-	UpdateContent(updateUnixFile dto.UpdateUnixFile) error
+	UpdateContent(
+		unixSrcFilePath valueObject.UnixFilePath,
+		unixFileEncodedContent valueObject.EncodedContent,
+	) error
 	UpdatePermissions(
 		unixFilePath valueObject.UnixFilePath,
 		unixFilePermissions valueObject.UnixFilePermissions,
