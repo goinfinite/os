@@ -100,6 +100,12 @@ func (uc SslCertificateWatchDog) Execute() {
 		vhostMappings, err := uc.vhostQueryRepo.GetMappingsByHostname(invalidSslVhost)
 		if err != nil {
 			log.Printf("FailedToGetVhostMappings: %s", err.Error())
+			continue
+		}
+
+		if len(vhostMappings) == 0 {
+			log.Printf("VhostMappingsNotFound: %s", invalidSslVhost)
+			continue
 		}
 
 		lastMappingIndex := len(vhostMappings) - 1
@@ -107,16 +113,16 @@ func (uc SslCertificateWatchDog) Execute() {
 		err = uc.vhostCmdRepo.DeleteMapping(lastMapping)
 		if err != nil {
 			log.Printf("FailedToDeleteOwnershipValidationMapping: %s", err.Error())
+			continue
 		}
 
 		if !isOwnershipValid {
 			continue
 		}
 
-		err = uc.sslCmdRepo.Delete(sslPair.Id)
+		err = uc.sslCmdRepo.ReplaceWithValidSsl(invalidSslVhost)
 		if err != nil {
-			log.Printf("FailedToDeleteInvalidSsl: %s", err.Error())
-			continue
+			log.Printf("FailedToReplaceWithValidSsl: %s", err.Error())
 		}
 	}
 }
