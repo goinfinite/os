@@ -250,8 +250,8 @@ func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
 		return false
 	}
 
-	expirationDateStr := crtDetails["notAfter"]
-	parsedExpirationDate, err := time.Parse("Jan  2 15:04:05 2006 MST", expirationDateStr)
+	expirationDateStr := crtDetails["expiresAt"]
+	parsedExpirationDate, err := time.Parse("Jan  2 15:04:05 2006 GMT", expirationDateStr)
 	if err != nil {
 		return false
 	}
@@ -259,7 +259,7 @@ func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
 	todayDate := time.Now()
 	afterTwoDaysInterval := 2 * 24 * time.Hour
 	todayDateAfterTwoDays := todayDate.Add(afterTwoDaysInterval)
-	return !parsedExpirationDate.Before(todayDateAfterTwoDays)
+	return parsedExpirationDate.After(todayDateAfterTwoDays)
 }
 
 func (repo SslQueryRepo) ValidateSslOwnership(
@@ -267,7 +267,7 @@ func (repo SslQueryRepo) ValidateSslOwnership(
 	ownershipHash string,
 ) bool {
 	ownershipValidateUrl := vhost.String() + useCase.OwnershipValidatePath
-	achivedOwnershipHash, err := infraHelper.RunCmd(
+	achievedOwnershipHash, err := infraHelper.RunCmd(
 		"curl",
 		ownershipValidateUrl,
 	)
@@ -275,5 +275,5 @@ func (repo SslQueryRepo) ValidateSslOwnership(
 		log.Printf("FailedToGetOwnershipHash: %s", err.Error())
 	}
 
-	return achivedOwnershipHash == ownershipHash
+	return achievedOwnershipHash == ownershipHash
 }
