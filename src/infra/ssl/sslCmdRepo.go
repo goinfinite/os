@@ -2,6 +2,7 @@ package sslInfra
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -53,6 +54,58 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	}
 
 	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhost.String())
+}
+
+func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
+	err := repo.deleteCurrentSsl(vhost)
+	if err != nil {
+		return err
+	}
+
+	vhostStr := vhost.String()
+	_, err = infraHelper.RunCmd(
+		"certbot",
+		"certonly",
+		"--webroot",
+		"--webroot-path",
+		"/app/html",
+		"--agree-tos",
+		"--register-unsafely-without-email",
+		"--cert-name",
+		vhostStr,
+		"-d",
+		vhostStr,
+	)
+	if err != nil {
+		return fmt.Errorf("CreateSelfSignedSslFailed (%s): %s", vhostStr, err.Error())
+	}
+
+	certbotDirPath := "/etc/letsencrypt/live"
+	shouldOverwrite := true
+
+	certbotCrtFilePath := certbotDirPath + "/" + vhostStr + "/fullchain.pem"
+	vhostCrtFilePath := PkiConfDir + "/" + vhostStr + ".crt"
+	err = infraHelper.CreateSymlink(
+		certbotCrtFilePath,
+		vhostCrtFilePath,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return fmt.Errorf("CreateSslCrtSymlinkError (%s): %s", vhost.String(), err.Error())
+	}
+
+	certbotKeyFilePath := certbotDirPath + "/" + vhostStr + "/privkey.pem"
+	vhostCrtKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
+	err = infraHelper.CreateSymlink(
+		certbotKeyFilePath,
+		vhostCrtKeyFilePath,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return fmt.Errorf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
+	}
+
+	return nil
 }
 
 func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {

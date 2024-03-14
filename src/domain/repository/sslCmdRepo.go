@@ -8,4 +8,5 @@ import (
 type SslCmdRepo interface {
 	Create(createSslPair dto.CreateSslPair) error
 	Delete(sslId valueObject.SslId) error
+	ReplaceWithValidSsl(vhost valueObject.Fqdn) error
 }
