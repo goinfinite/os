@@ -118,15 +118,12 @@ func (uc DeleteUnixFiles) Execute(
 		trashPathWithFileNameStr := trashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 
-		updateUnixFile := dto.NewUpdateUnixFile(
-			fileToMoveToTrash,
-			&trashPathWithFileName,
-			nil,
-			nil,
-		)
-
 		shouldOverwrite := true
-		err = uc.filesCmdRepo.Move(updateUnixFile, shouldOverwrite)
+		err = uc.filesCmdRepo.Move(
+			fileToMoveToTrash,
+			trashPathWithFileName,
+			shouldOverwrite,
+		)
 		if err != nil {
 			log.Printf(
 				"MoveUnixFileToTrashError (%s): %s",
