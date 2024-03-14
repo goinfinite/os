@@ -260,27 +260,31 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	return err
 }
 
-func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, shouldOverwrite bool) error {
-	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
+func (repo FilesCmdRepo) Move(
+	unixSrcFilePath valueObject.UnixFilePath,
+	unixDestinationPath valueObject.UnixFilePath,
+	shouldOverwrite bool,
+) error {
+	fileToMoveExists := infraHelper.FileExists(unixSrcFilePath.String())
 	if !fileToMoveExists {
 		return errors.New("FileToMoveNotFound")
 	}
 
-	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
+	destinationPathExists := infraHelper.FileExists(unixDestinationPath.String())
 	if destinationPathExists {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 
-		err := repo.Delete(*updateUnixFile.DestinationPath)
+		err := repo.Delete(unixDestinationPath)
 		if err != nil {
 			return errors.New("FailedToReplaceTrashFile: " + err.Error())
 		}
 	}
 
 	return os.Rename(
-		updateUnixFile.SourcePath.String(),
-		updateUnixFile.DestinationPath.String(),
+		unixSrcFilePath.String(),
+		unixDestinationPath.String(),
 	)
 }
 
