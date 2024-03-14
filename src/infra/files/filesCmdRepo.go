@@ -138,11 +138,11 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	filesToCompress := strings.Join(existingFiles, " ")
-	_, err = infraHelper.RunCmd(
-		compressionBinary,
-		compressionBinaryFlag,
-		newDestinationPath.String(),
-		filesToCompress,
+	_, err = infraHelper.RunCmdWithSubShell(
+		compressionBinary + " " +
+			compressionBinaryFlag + " " +
+			newDestinationPath.String() + " " +
+			filesToCompress,
 	)
 	if err != nil {
 		return dto.CompressionProcessReport{}, err
