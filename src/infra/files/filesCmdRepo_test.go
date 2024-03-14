@@ -46,16 +46,10 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateUnixFileContent", func(t *testing.T) {
-		encodedContent := valueObject.NewEncodedContentPanic("Q29udGVudCB0byB0ZXN0")
-
-		updateUnixFile := dto.NewUpdateUnixFile(
+		err := filesCmdRepo.UpdateContent(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir/filesCmdRepoTest.txt"),
-			nil,
-			nil,
-			&encodedContent,
+			valueObject.NewEncodedContentPanic("Q29udGVudCB0byB0ZXN0"),
 		)
-
-		err := filesCmdRepo.UpdateContent(updateUnixFile)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -88,34 +82,22 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
-		destinationPath := valueObject.NewUnixFilePathPanic(fileBasePathStr + "/testDir_")
-		permissions := valueObject.NewUnixFilePermissionsPanic("0777")
-
-		updateUnixFile := dto.NewUpdateUnixFile(
+		err := filesCmdRepo.Move(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir"),
-			&destinationPath,
-			&permissions,
-			nil,
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_"),
+			true,
 		)
-
-		err := filesCmdRepo.Move(updateUnixFile, true)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("MoveUnixFile", func(t *testing.T) {
-		destinationPath := valueObject.NewUnixFilePathPanic(fileBasePathStr + "/filesCmdRepoTest.txt")
-		permissions := valueObject.NewUnixFilePermissionsPanic("0777")
-
-		updateUnixFile := dto.NewUpdateUnixFile(
+		err := filesCmdRepo.Move(
 			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/testDir_/filesCmdRepoTest.txt"),
-			&destinationPath,
-			&permissions,
-			nil,
+			valueObject.NewUnixFilePathPanic(fileBasePathStr+"/filesCmdRepoTest.txt"),
+			false,
 		)
-
-		err := filesCmdRepo.Move(updateUnixFile, false)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
