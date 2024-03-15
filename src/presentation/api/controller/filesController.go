@@ -136,16 +136,17 @@ func CreateFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateUnixFileDto 	  body dto.UpdateUnixFile  true  "UpdateFile"
+// @Param        updateUnixFilesDto 	  body dto.UpdateUnixFiles  true  "UpdateFile"
 // @Success      200 {object} object{} "FileUpdated"
+// @Success      207 {object} object{} "FilesArePartialUpdated"
 // @Router       /files/ [put]
 func UpdateFileController(c echo.Context) error {
-	requiredParams := []string{"sourcePath"}
+	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
+	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
 
 	var destinationPathPtr *valueObject.UnixFilePath
 	if requestBody["destinationPath"] != nil {
@@ -165,8 +166,8 @@ func UpdateFileController(c echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
-	updateUnixFileDto := dto.NewUpdateUnixFile(
-		sourcePath,
+	updateUnixFileDto := dto.NewUpdateUnixFiles(
+		sourcePaths,
 		destinationPathPtr,
 		permissionsPtr,
 		encodedContentPtr,
@@ -174,13 +175,22 @@ func UpdateFileController(c echo.Context) error {
 
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-	updateUnixFileUc := useCase.NewUpdateUnixFile(filesCmdRepo)
-	err := updateUnixFileUc.Execute(updateUnixFileDto)
+	updateUnixFileUc := useCase.NewUpdateUnixFiles(filesCmdRepo)
+	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
+	httpStatus := http.StatusCreated
+
+	hasFilePathsSuccessfullyCompressed := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
+	hasFailedPathsWithReason := len(updateProcessInfo.FailedPathsWithReason) > 0
+	isMultiStatus := hasFilePathsSuccessfullyCompressed && hasFailedPathsWithReason
+	if isMultiStatus {
+		httpStatus = http.StatusMultiStatus
+	}
+
+	return apiHelper.ResponseWrapper(c, httpStatus, updateProcessInfo)
 }
 
 // CopyFile    godoc
