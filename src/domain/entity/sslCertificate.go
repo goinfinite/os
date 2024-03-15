@@ -9,13 +9,14 @@ import (
 )
 
 type SslCertificate struct {
-	Id                 valueObject.SslId                 `json:"sslId"`
-	CertificateContent valueObject.SslCertificateContent `json:"certificateContent"`
-	CommonName         *valueObject.SslHostname          `json:"commonName"`
-	IsCA               bool                              `json:"-"`
-	AltNames           []valueObject.SslHostname         `json:"altNames"`
-	IssuedAt           valueObject.UnixTime              `json:"issuedAt"`
-	ExpiresAt          valueObject.UnixTime              `json:"expiresAt"`
+	Id                   valueObject.SslId                   `json:"sslId"`
+	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
+	CommonName           *valueObject.SslHostname            `json:"commonName"`
+	IsCA                 bool                                `json:"-"`
+	CertificateAuthority valueObject.SslCertificateAuthority `json:"certificateAuthority"`
+	AltNames             []valueObject.SslHostname           `json:"altNames"`
+	IssuedAt             valueObject.UnixTime                `json:"issuedAt"`
+	ExpiresAt            valueObject.UnixTime                `json:"expiresAt"`
 }
 
 func NewSslCertificate(
@@ -53,6 +54,17 @@ func NewSslCertificate(
 		commonNamePtr = &commonName
 	}
 
+	certIssuer := parsedCert.Issuer
+	certificateAuthorityStr := certIssuer.CommonName
+	if len(certIssuer.Organization) > 0 {
+		certificateAuthorityStr += ", " + certIssuer.Organization[0]
+	}
+
+	certificateAuthority, err := valueObject.NewSslCertificateAuthority(certificateAuthorityStr)
+	if err != nil {
+		return sslCertificate, err
+	}
+
 	altNames := []valueObject.SslHostname{}
 	if len(parsedCert.DNSNames) > 0 {
 		for _, certDnsName := range parsedCert.DNSNames {
@@ -66,13 +78,14 @@ func NewSslCertificate(
 	}
 
 	return SslCertificate{
-		Id:                 sslCertificateId,
-		CertificateContent: sslCertificateContent,
-		CommonName:         commonNamePtr,
-		IsCA:               parsedCert.IsCA,
-		AltNames:           altNames,
-		IssuedAt:           issuedAt,
-		ExpiresAt:          expiresAt,
+		Id:                   sslCertificateId,
+		CertificateContent:   sslCertificateContent,
+		CommonName:           commonNamePtr,
+		IsCA:                 parsedCert.IsCA,
+		CertificateAuthority: certificateAuthority,
+		AltNames:             altNames,
+		IssuedAt:             issuedAt,
+		ExpiresAt:            expiresAt,
 	}, nil
 }
 
