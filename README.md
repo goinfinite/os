@@ -11,7 +11,7 @@ Speedia OS is a streamlined container image equipped with a REST API, CLI, and u
 To run Speedia OS as a container, you can use the image available at DockerHub with the following command:
 
 ```
-podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 1618:1618 -it docker.io/speedianet/os:latest
+podman run --name sos --env 'PRIMARY_HOST=speedia.net' --rm -p 1618:1618 -it docker.io/speedianet/os:latest
 ```
 
 Feel free to rename the container, vhost and change the host port as you wish. Speedia OS should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
@@ -64,7 +64,7 @@ podman build -t sos:latest .
 To run the project you may use the following command:
 
 ```
-podman run --name sos --env 'VIRTUAL_HOST=speedia.net' --rm -p 1618:1618 -it sos:latest
+podman run --name sos --env 'PRIMARY_HOST=speedia.net' --rm -p 1618:1618 -it sos:latest
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy.
