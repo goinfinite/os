@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const sslCertificateAuthorityRegex string = `^[A-z\.\,\s\'\(\)]{1,50}$`
+const sslCertificateAuthorityRegex string = `^[A-z0-9\.\,\s\'\(\)]{1,50}$`
 
 type SslCertificateAuthority string
 
