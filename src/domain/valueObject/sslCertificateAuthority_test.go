@@ -11,6 +11,7 @@ func TestSslCertificateAuthority(t *testing.T) {
 			"GlobalSign",
 			"Let's Encrypt",
 			"GoDaddy Group",
+			"Internet Security Research Group",
 		}
 		for _, sslCertificateAuthority := range validsSslCertificateAuthority {
 			_, err := NewSslCertificateAuthority(sslCertificateAuthority)
