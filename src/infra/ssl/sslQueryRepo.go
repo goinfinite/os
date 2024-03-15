@@ -272,7 +272,7 @@ func (repo SslQueryRepo) ValidateSslOwnership(
 		ownershipValidateUrl,
 	)
 	if err != nil {
-		log.Printf("FailedToGetOwnershipHash: %s", err.Error())
+		return false
 	}
 
 	return achievedOwnershipHash == ownershipHash
