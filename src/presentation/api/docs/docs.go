@@ -639,17 +639,23 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "UpdateFile",
-                        "name": "updateUnixFileDto",
+                        "name": "updateUnixFilesDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateUnixFile"
+                            "$ref": "#/definitions/dto.UpdateUnixFiles"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "FileUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "207": {
+                        "description": "FilesArePartialUpdated",
                         "schema": {
                             "type": "object"
                         }
@@ -1719,11 +1725,14 @@ const docTemplate = `{
                 "certificate": {
                     "$ref": "#/definitions/entity.SslCertificate"
                 },
-                "hostname": {
-                    "type": "string"
-                },
                 "key": {
                     "type": "string"
+                },
+                "virtualHosts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1895,7 +1904,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateUnixFile": {
+        "dto.UpdateUnixFiles": {
             "type": "object",
             "properties": {
                 "destinationPath": {
@@ -1907,8 +1916,11 @@ const docTemplate = `{
                 "permissions": {
                     "type": "string"
                 },
-                "sourcePath": {
-                    "type": "string"
+                "sourcePaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -2081,9 +2093,6 @@ const docTemplate = `{
                 "publicIp": {
                     "type": "string"
                 },
-                "runtimeContext": {
-                    "$ref": "#/definitions/valueObject.RuntimeContext"
-                },
                 "specs": {
                     "$ref": "#/definitions/valueObject.HardwareSpecs"
                 },
@@ -2160,7 +2169,13 @@ const docTemplate = `{
         "entity.SslCertificate": {
             "type": "object",
             "properties": {
-                "certificate": {
+                "altNames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "certificateContent": {
                     "type": "string"
                 },
                 "commonName": {
@@ -2192,14 +2207,17 @@ const docTemplate = `{
                         "$ref": "#/definitions/entity.SslCertificate"
                     }
                 },
-                "hostname": {
-                    "type": "string"
-                },
                 "key": {
                     "type": "string"
                 },
                 "sslPairId": {
                     "type": "string"
+                },
+                "virtualHosts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -2316,19 +2334,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "valueObject.RuntimeContext": {
-            "type": "string",
-            "enum": [
-                "container",
-                "vm",
-                "bareMetal"
-            ],
-            "x-enum-varnames": [
-                "container",
-                "vm",
-                "bareMetal"
-            ]
         },
         "valueObject.ServiceMetrics": {
             "type": "object",
