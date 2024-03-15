@@ -138,11 +138,11 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	filesToCompress := strings.Join(existingFiles, " ")
-	_, err = infraHelper.RunCmd(
-		compressionBinary,
-		compressionBinaryFlag,
-		newDestinationPath.String(),
-		filesToCompress,
+	_, err = infraHelper.RunCmdWithSubShell(
+		compressionBinary + " " +
+			compressionBinaryFlag + " " +
+			newDestinationPath.String() + " " +
+			filesToCompress,
 	)
 	if err != nil {
 		return dto.CompressionProcessReport{}, err
@@ -260,36 +260,41 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 	return err
 }
 
-func (repo FilesCmdRepo) Move(updateUnixFile dto.UpdateUnixFile, shouldOverwrite bool) error {
-	fileToMoveExists := infraHelper.FileExists(updateUnixFile.SourcePath.String())
+func (repo FilesCmdRepo) Move(
+	unixSrcFilePath valueObject.UnixFilePath,
+	unixDestinationPath valueObject.UnixFilePath,
+	shouldOverwrite bool,
+) error {
+	fileToMoveExists := infraHelper.FileExists(unixSrcFilePath.String())
 	if !fileToMoveExists {
 		return errors.New("FileToMoveNotFound")
 	}
 
-	destinationPathExists := infraHelper.FileExists(updateUnixFile.DestinationPath.String())
+	destinationPathExists := infraHelper.FileExists(unixDestinationPath.String())
 	if destinationPathExists {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 
-		err := repo.Delete(*updateUnixFile.DestinationPath)
+		err := repo.Delete(unixDestinationPath)
 		if err != nil {
 			return errors.New("FailedToReplaceTrashFile: " + err.Error())
 		}
 	}
 
 	return os.Rename(
-		updateUnixFile.SourcePath.String(),
-		updateUnixFile.DestinationPath.String(),
+		unixSrcFilePath.String(),
+		unixDestinationPath.String(),
 	)
 }
 
 func (repo FilesCmdRepo) UpdateContent(
-	updateUnixFile dto.UpdateUnixFile,
+	unixSrcFilePath valueObject.UnixFilePath,
+	unixFileEncodedContent valueObject.EncodedContent,
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdate, err := queryRepo.GetOne(updateUnixFile.SourcePath)
+	fileToUpdate, err := queryRepo.GetOne(unixSrcFilePath)
 	if err != nil {
 		return err
 	}
@@ -298,13 +303,13 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("PathIsADir")
 	}
 
-	decodedContent, err := updateUnixFile.EncodedContent.GetDecodedContent()
+	decodedContent, err := unixFileEncodedContent.GetDecodedContent()
 	if err != nil {
 		return err
 	}
 
 	return infraHelper.UpdateFile(
-		updateUnixFile.SourcePath.String(),
+		unixSrcFilePath.String(),
 		decodedContent,
 		true,
 	)
