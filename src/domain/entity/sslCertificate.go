@@ -55,11 +55,11 @@ func NewSslCertificate(
 	}
 
 	certIssuer := parsedCert.Issuer
-	certificateAuthorityStr := certIssuer.CommonName
-	if len(certIssuer.Organization) > 0 {
-		certificateAuthorityStr += ", " + certIssuer.Organization[0]
+	if len(certIssuer.Organization) == 0 {
+		return sslCertificate, errors.New("SslCertificateWithoutCA")
 	}
 
+	certificateAuthorityStr := certIssuer.Organization[0]
 	certificateAuthority, err := valueObject.NewSslCertificateAuthority(certificateAuthorityStr)
 	if err != nil {
 		return sslCertificate, err
