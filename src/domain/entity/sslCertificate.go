@@ -12,7 +12,7 @@ type SslCertificate struct {
 	Id                 valueObject.SslId                 `json:"sslId"`
 	CertificateContent valueObject.SslCertificateContent `json:"certificateContent"`
 	CommonName         *valueObject.SslHostname          `json:"commonName"`
-	IsCA               bool                              `json:"isCa"`
+	IsCA               bool                              `json:"-"`
 	AltNames           []valueObject.SslHostname         `json:"altNames"`
 	IssuedAt           valueObject.UnixTime              `json:"issuedAt"`
 	ExpiresAt          valueObject.UnixTime              `json:"expiresAt"`
