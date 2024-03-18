@@ -22,17 +22,6 @@ var mappingsDir string = "/app/conf/nginx/mapping"
 type VirtualHostQueryRepo struct {
 }
 
-func (repo VirtualHostQueryRepo) IsVirtualHostPrimaryDomain(
-	domain valueObject.Fqdn,
-) bool {
-	primaryDomain, err := infraHelper.GetPrimaryHostname()
-	if err != nil {
-		return false
-	}
-
-	return domain == primaryDomain
-}
-
 func (repo VirtualHostQueryRepo) vhostsFactory(
 	filePath valueObject.UnixFilePath,
 ) ([]entity.VirtualHost, error) {
@@ -59,7 +48,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		log.Printf("InvalidServerName: %s", serverNamesParts[0])
 		return vhosts, nil
 	}
-	isPrimaryDomain := repo.IsVirtualHostPrimaryDomain(firstDomain)
+	isPrimaryDomain := infraHelper.IsVirtualHostPrimaryDomain(firstDomain)
 
 	for _, serverName := range serverNamesParts {
 		serverName, err := valueObject.NewFqdn(serverName)
@@ -202,7 +191,7 @@ func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 		mappingFileName = parentHostname.String() + ".conf"
 	}
 
-	if repo.IsVirtualHostPrimaryDomain(vhostName) {
+	if infraHelper.IsVirtualHostPrimaryDomain(vhostName) {
 		mappingFileName = "primary.conf"
 	}
 
