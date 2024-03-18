@@ -77,6 +77,13 @@ func (router Router) filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/upload/", apiController.UploadFilesController)
 }
 
+func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
+	marketplaceGroup := baseRoute.Group("/marketplace")
+
+	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
+	marketplaceCatalogGroup.GET("/", apiController.GetCatalogController)
+}
+
 func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 
@@ -128,6 +135,7 @@ func (router Router) RegisterRoutes(baseRoute *echo.Group) {
 	router.cronRoutes(baseRoute)
 	router.databaseRoutes(baseRoute)
 	router.filesRoutes(baseRoute)
+	router.marketplaceRoutes(baseRoute)
 	router.o11yRoutes(baseRoute)
 	router.runtimeRoutes(baseRoute)
 	router.servicesRoutes(baseRoute)
