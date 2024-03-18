@@ -72,7 +72,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		vhostStr,
 	)
 	if err != nil {
-		return fmt.Errorf("CreateSelfSignedSslFailed (%s): %s", vhostStr, err.Error())
+		return fmt.Errorf("CreateValidSslFailed (%s): %s", vhostStr, err.Error())
 	}
 
 	certbotDirPath := "/etc/letsencrypt/live"
