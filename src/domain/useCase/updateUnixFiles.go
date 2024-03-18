@@ -24,11 +24,18 @@ func NewUpdateUnixFiles(
 func (uc UpdateUnixFiles) updateFailureFactory(
 	filePath valueObject.UnixFilePath,
 	errMessage string,
-) valueObject.UpdateProcessFailure {
+) (valueObject.UpdateProcessFailure, error) {
+	var updateProcessFailure valueObject.UpdateProcessFailure
+
+	failureReason, err := valueObject.NewFailureReason(errMessage)
+	if err != nil {
+		return updateProcessFailure, err
+	}
+
 	return valueObject.NewUpdateProcessFailure(
 		filePath,
-		errMessage,
-	)
+		failureReason,
+	), nil
 }
 
 func (uc UpdateUnixFiles) updateUnixFilePermissions(
@@ -112,9 +119,14 @@ func (uc UpdateUnixFiles) Execute(
 				*updateUnixFiles.Permissions,
 			)
 			if err != nil {
+				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
+				if err != nil {
+					log.Printf("AddUpdatePermissionsFailureError: %s", err.Error())
+				}
+
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason,
-					uc.updateFailureFactory(sourcePath, err.Error()),
+					updateFailure,
 				)
 				continue
 			}
@@ -126,9 +138,14 @@ func (uc UpdateUnixFiles) Execute(
 				*updateUnixFiles.DestinationPath,
 			)
 			if err != nil {
+				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
+				if err != nil {
+					log.Printf("AddMoveFailureError: %s", err.Error())
+				}
+
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason,
-					uc.updateFailureFactory(sourcePath, err.Error()),
+					updateFailure,
 				)
 				continue
 			}
@@ -140,9 +157,14 @@ func (uc UpdateUnixFiles) Execute(
 				*updateUnixFiles.EncodedContent,
 			)
 			if err != nil {
+				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
+				if err != nil {
+					log.Printf("AddUpdateContentFailureError: %s", err.Error())
+				}
+
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason,
-					uc.updateFailureFactory(sourcePath, err.Error()),
+					updateFailure,
 				)
 				continue
 			}

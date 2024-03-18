@@ -1,13 +1,13 @@
 package valueObject
 
 type UpdateProcessFailure struct {
-	FilePath UnixFilePath `json:"filePath"`
-	Reason   string       `json:"reason"`
+	FilePath UnixFilePath  `json:"filePath"`
+	Reason   FailureReason `json:"reason"`
 }
 
 func NewUpdateProcessFailure(
 	filePath UnixFilePath,
-	reason string,
+	reason FailureReason,
 ) UpdateProcessFailure {
 	return UpdateProcessFailure{
 		FilePath: filePath,
