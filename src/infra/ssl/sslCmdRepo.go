@@ -57,13 +57,8 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 }
 
 func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
-	err := repo.deleteCurrentSsl(vhost)
-	if err != nil {
-		return err
-	}
-
 	vhostStr := vhost.String()
-	_, err = infraHelper.RunCmd(
+	_, err := infraHelper.RunCmd(
 		"certbot",
 		"certonly",
 		"--webroot",
