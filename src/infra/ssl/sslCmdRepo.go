@@ -58,12 +58,17 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 
 func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 	vhostStr := vhost.String()
+	vhostRootDir := "/app/html"
+	if !infraHelper.IsVirtualHostPrimaryDomain(vhost) {
+		vhostRootDir += "/" + vhostStr
+	}
+
 	_, err := infraHelper.RunCmd(
 		"certbot",
 		"certonly",
 		"--webroot",
 		"--webroot-path",
-		"/app/html",
+		vhostRootDir,
 		"--agree-tos",
 		"--register-unsafely-without-email",
 		"--cert-name",
