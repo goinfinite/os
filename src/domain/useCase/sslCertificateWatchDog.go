@@ -79,6 +79,7 @@ func (uc SslCertificateWatchDog) Execute() {
 		sslPair, err := uc.sslQueryRepo.GetSslPairByHostname(invalidSslVhost)
 		if err != nil {
 			log.Printf("FailedToGetSslPair (%s): %s", invalidSslVhost, err.Error())
+			continue
 		}
 
 		ownershipHash := uc.sslQueryRepo.GetOwnershipHash(sslPair.Certificate.CertificateContent)
