@@ -1,15 +1,15 @@
 package valueObject
 
-type CompressionProcessFailure struct {
+type UpdateProcessFailure struct {
 	FilePath UnixFilePath  `json:"filePath"`
 	Reason   FailureReason `json:"reason"`
 }
 
-func NewCompressionProcessFailure(
+func NewUpdateProcessFailure(
 	filePath UnixFilePath,
 	reason FailureReason,
-) CompressionProcessFailure {
-	return CompressionProcessFailure{
+) UpdateProcessFailure {
+	return UpdateProcessFailure{
 		FilePath: filePath,
 		Reason:   reason,
 	}
