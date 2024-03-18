@@ -181,12 +181,12 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	httpStatus := http.StatusCreated
+	httpStatus := http.StatusOK
 
-	hasFilePathsSuccessfullyCompressed := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
-	hasFailedPathsWithReason := len(updateProcessInfo.FailedPathsWithReason) > 0
-	isMultiStatus := hasFilePathsSuccessfullyCompressed && hasFailedPathsWithReason
-	if isMultiStatus {
+	hasSuccess := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
+	hasFailures := len(updateProcessInfo.FailedPathsWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
 		httpStatus = http.StatusMultiStatus
 	}
 
@@ -339,10 +339,10 @@ func CompressFilesController(c echo.Context) error {
 
 	httpStatus := http.StatusCreated
 
-	hasFilePathsSuccessfullyCompressed := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
-	hasFailedPathsWithReason := len(compressionProcessInfo.FailedPathsWithReason) > 0
-	isMultiStatus := hasFilePathsSuccessfullyCompressed && hasFailedPathsWithReason
-	if isMultiStatus {
+	hasSuccess := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
+	hasFailures := len(compressionProcessInfo.FailedPathsWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
 		httpStatus = http.StatusMultiStatus
 	}
 
@@ -431,10 +431,10 @@ func UploadFilesController(c echo.Context) error {
 
 	httpStatus := http.StatusCreated
 
-	hasFileNamesSuccessfullyUploaded := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
-	hasFailedNamesWithReason := len(uploadProcessInfo.FailedNamesWithReason) > 0
-	isMultiStatus := hasFileNamesSuccessfullyUploaded && hasFailedNamesWithReason
-	if isMultiStatus {
+	hasSuccess := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
+	hasFailures := len(uploadProcessInfo.FailedNamesWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
 		httpStatus = http.StatusMultiStatus
 	}
 
