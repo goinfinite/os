@@ -127,7 +127,7 @@ func DeleteSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
 }
 
-func AutoSslValidationController() {
+func SslCertificateWatchDogController() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
 	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
