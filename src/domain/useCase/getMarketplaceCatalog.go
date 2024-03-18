@@ -7,6 +7,6 @@ import (
 
 func GetMarketplaceCatalog(
 	mktplaceQueryRepo repository.MarketplaceQueryRepo,
-) ([]entity.MarketplaceCatalog, error) {
+) ([]entity.MarketplaceItem, error) {
 	return mktplaceQueryRepo.Get()
 }

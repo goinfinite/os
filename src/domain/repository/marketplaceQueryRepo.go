@@ -3,5 +3,5 @@ package repository
 import "github.com/speedianet/os/src/domain/entity"
 
 type MarketplaceQueryRepo interface {
-	Get() ([]entity.MarketplaceCatalog, error)
+	Get() ([]entity.MarketplaceItem, error)
 }

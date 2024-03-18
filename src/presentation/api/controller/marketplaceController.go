@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
-	mktplaceInfra "github.com/speedianet/os/src/infra/mktplace"
+	mktplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -20,10 +20,10 @@ import (
 // @Router       /marketplace/catalog/ [get]
 func GetCatalogController(c echo.Context) error {
 	mktplaceQueryRepo := mktplaceInfra.MarketplaceQueryRepo{}
-	err := useCase.GetMarketplaceCatalog(mktplaceQueryRepo)
+	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "AllCatalogProducts")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, mktplaceItems)
 }

@@ -1,6 +1,6 @@
 package entity
 
-type MarketplaceCatalog struct {
+type MarketplaceItem struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
 	Description string        `json:"description"`
