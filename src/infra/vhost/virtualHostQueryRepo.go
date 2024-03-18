@@ -9,6 +9,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -532,4 +533,20 @@ func (repo VirtualHostQueryRepo) GetMappingById(
 	}
 
 	return mapping, errors.New("MappingNotFound")
+}
+
+func (repo VirtualHostQueryRepo) IsDomainOwner(
+	vhost valueObject.Fqdn,
+	ownershipHash string,
+) bool {
+	ownershipValidateUrl := vhost.String() + useCase.OwnershipValidatePath
+	achievedOwnershipHash, err := infraHelper.RunCmd(
+		"curl",
+		ownershipValidateUrl,
+	)
+	if err != nil {
+		return false
+	}
+
+	return achievedOwnershipHash == ownershipHash
 }

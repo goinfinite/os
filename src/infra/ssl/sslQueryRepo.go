@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
@@ -260,20 +259,4 @@ func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
 	afterTwoDaysInterval := 2 * 24 * time.Hour
 	todayDateAfterTwoDays := todayDate.Add(afterTwoDaysInterval)
 	return parsedExpirationDate.After(todayDateAfterTwoDays)
-}
-
-func (repo SslQueryRepo) ValidateSslOwnership(
-	vhost valueObject.Fqdn,
-	ownershipHash string,
-) bool {
-	ownershipValidateUrl := vhost.String() + useCase.OwnershipValidatePath
-	achievedOwnershipHash, err := infraHelper.RunCmd(
-		"curl",
-		ownershipValidateUrl,
-	)
-	if err != nil {
-		return false
-	}
-
-	return achievedOwnershipHash == ownershipHash
 }

@@ -93,9 +93,9 @@ func (uc SslCertificateWatchDog) Execute() {
 		// Wait for NGINX reload
 		time.Sleep(5 * time.Second)
 
-		isOwnershipValid := uc.sslQueryRepo.ValidateSslOwnership(invalidSslVhost, ownershipHash)
+		isOwnershipValid := uc.vhostQueryRepo.IsDomainOwner(invalidSslVhost, ownershipHash)
 		if !isOwnershipValid {
-			log.Printf("HostIsNotDomainOwner: %s", invalidSslVhost.String())
+			log.Printf("CurrentHostIsNotDomainOwner: %s", invalidSslVhost.String())
 		}
 
 		vhostMappings, err := uc.vhostQueryRepo.GetMappingsByHostname(invalidSslVhost)
