@@ -2,13 +2,13 @@ package valueObject
 
 import "errors"
 
-type FileProcessingFailure string
+type FailureReason string
 
-func NewFileProcessingFailure(value string) (FileProcessingFailure, error) {
+func NewFailureReason(value string) (FailureReason, error) {
 	maxProcessingFailureSize := 256
 
 	if len(value) < 1 {
-		return "", errors.New("EmptyProcessingFailure")
+		return "", errors.New("EmptyFailureReason")
 	}
 
 	if len(value) > maxProcessingFailureSize {
@@ -17,17 +17,17 @@ func NewFileProcessingFailure(value string) (FileProcessingFailure, error) {
 		value = partialProcessingFailure
 	}
 
-	return FileProcessingFailure(value), nil
+	return FailureReason(value), nil
 }
 
-func NewFileProcessingFailurePanic(value string) FileProcessingFailure {
-	fileProcessingFailure, err := NewFileProcessingFailure(value)
+func NewFailureReasonPanic(value string) FailureReason {
+	fileProcessingFailure, err := NewFailureReason(value)
 	if err != nil {
 		panic(err)
 	}
 	return fileProcessingFailure
 }
 
-func (fileProcessingFailure FileProcessingFailure) String() string {
+func (fileProcessingFailure FailureReason) String() string {
 	return string(fileProcessingFailure)
 }

@@ -19,7 +19,7 @@ func (repo FilesCmdRepo) uploadFailureFactory(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
 ) (valueObject.UploadProcessFailure, error) {
-	failureReason, err := valueObject.NewFileProcessingFailure(errMessage)
+	failureReason, err := valueObject.NewFailureReason(errMessage)
 	if err != nil {
 		return valueObject.UploadProcessFailure{}, err
 	}
