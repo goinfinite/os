@@ -38,7 +38,7 @@ func (uc UpdateUnixFiles) updateFailureFactory(
 	), nil
 }
 
-func (uc UpdateUnixFiles) updateUnixFilePermissions(
+func (uc UpdateUnixFiles) updateFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
@@ -47,8 +47,8 @@ func (uc UpdateUnixFiles) updateUnixFilePermissions(
 		permissions,
 	)
 	if err != nil {
-		log.Printf("UpdateUnixFilesPermissionsError: %s", err.Error())
-		return errors.New("UpdateUnixFilesPermissionsInfraError")
+		log.Printf("UpdateFilePermissionsError: %s", err.Error())
+		return errors.New("UpdateFilePermissionsInfraError")
 	}
 
 	log.Printf(
@@ -61,7 +61,7 @@ func (uc UpdateUnixFiles) updateUnixFilePermissions(
 	return nil
 }
 
-func (uc UpdateUnixFiles) updateUnixFilePath(
+func (uc UpdateUnixFiles) moveFile(
 	sourcePath valueObject.UnixFilePath,
 	destinationPath valueObject.UnixFilePath,
 ) error {
@@ -72,8 +72,8 @@ func (uc UpdateUnixFiles) updateUnixFilePath(
 		shouldOverwrite,
 	)
 	if err != nil {
-		log.Printf("MoveUnixFileError: %s", err.Error())
-		return errors.New("MoveUnixFileInfraError")
+		log.Printf("MoveFileError: %s", err.Error())
+		return errors.New("MoveFileInfraError")
 	}
 
 	log.Printf(
@@ -86,14 +86,14 @@ func (uc UpdateUnixFiles) updateUnixFilePath(
 	return nil
 }
 
-func (uc UpdateUnixFiles) updateUnixFileContent(
+func (uc UpdateUnixFiles) updateFileContent(
 	sourcePath valueObject.UnixFilePath,
 	encodedContent valueObject.EncodedContent,
 ) error {
 	err := uc.filesCmdRepo.UpdateContent(sourcePath, encodedContent)
 	if err != nil {
-		log.Printf("UpdateUnixFilesContentError: %s", err.Error())
-		return errors.New("UpdateUnixFilesContentInfraError")
+		log.Printf("UpdateFileContentError: %s", err.Error())
+		return errors.New("UpdateFileContentInfraError")
 	}
 
 	log.Printf(
@@ -114,7 +114,7 @@ func (uc UpdateUnixFiles) Execute(
 
 	for _, sourcePath := range updateUnixFiles.SourcePaths {
 		if updateUnixFiles.Permissions != nil {
-			err := uc.updateUnixFilePermissions(
+			err := uc.updateFilePermissions(
 				sourcePath,
 				*updateUnixFiles.Permissions,
 			)
@@ -133,7 +133,7 @@ func (uc UpdateUnixFiles) Execute(
 		}
 
 		if updateUnixFiles.DestinationPath != nil {
-			err := uc.updateUnixFilePath(
+			err := uc.moveFile(
 				sourcePath,
 				*updateUnixFiles.DestinationPath,
 			)
@@ -152,7 +152,7 @@ func (uc UpdateUnixFiles) Execute(
 		}
 
 		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateUnixFileContent(
+			err := uc.updateFileContent(
 				sourcePath,
 				*updateUnixFiles.EncodedContent,
 			)
