@@ -95,10 +95,10 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 	}
 
 	certbotKeyFilePath := certbotDirPath + "/" + vhostStr + "/privkey.pem"
-	vhostCrtKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
+	vhostKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
 	err = infraHelper.CreateSymlink(
 		certbotKeyFilePath,
-		vhostCrtKeyFilePath,
+		vhostKeyFilePath,
 		shouldOverwrite,
 	)
 	if err != nil {
