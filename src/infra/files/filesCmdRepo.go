@@ -2,6 +2,7 @@ package filesInfra
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -270,13 +271,21 @@ func (repo FilesCmdRepo) Move(
 		return errors.New("FileToMoveNotFound")
 	}
 
-	destinationPathExists := infraHelper.FileExists(unixDestinationPath.String())
+	destinationPathWithFileNameStr := unixDestinationPath.String() + "/" + unixSrcFilePath.GetFileName().String()
+	destinationPathWithFileName, err := valueObject.NewUnixFilePath(
+		destinationPathWithFileNameStr,
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %s", err.Error(), destinationPathWithFileNameStr)
+	}
+
+	destinationPathExists := infraHelper.FileExists(destinationPathWithFileName.String())
 	if destinationPathExists {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 
-		err := repo.Delete(unixDestinationPath)
+		err := repo.Delete(destinationPathWithFileName)
 		if err != nil {
 			return errors.New("FailedToReplaceTrashFile: " + err.Error())
 		}
@@ -284,7 +293,7 @@ func (repo FilesCmdRepo) Move(
 
 	return os.Rename(
 		unixSrcFilePath.String(),
-		unixDestinationPath.String(),
+		destinationPathWithFileName.String(),
 	)
 }
 
