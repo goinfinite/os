@@ -136,7 +136,7 @@ func CreateFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateUnixFilesDto 	  body dto.UpdateUnixFiles  true  "UpdateFile"
+// @Param        updateUnixFilesDto 	  body dto.UpdateUnixFiles  true  "Only sourcePaths are required."
 // @Success      200 {object} object{} "FileUpdated"
 // @Success      207 {object} object{} "FilesArePartialUpdated"
 // @Router       /files/ [put]

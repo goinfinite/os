@@ -935,7 +935,7 @@ paths:
       description: Move a dir/file, update name and/or permissions (Only sourcePath
         is required).
       parameters:
-      - description: UpdateFile
+      - description: Only sourcePaths are required.
         in: body
         name: updateUnixFilesDto
         required: true

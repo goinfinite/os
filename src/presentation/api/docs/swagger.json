@@ -632,7 +632,7 @@
                 "summary": "UpdateFile",
                 "parameters": [
                     {
-                        "description": "UpdateFile",
+                        "description": "Only sourcePaths are required.",
                         "name": "updateUnixFilesDto",
                         "in": "body",
                         "required": true,
