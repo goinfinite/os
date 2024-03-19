@@ -10,8 +10,8 @@ import (
 
 type SslCertificate struct {
 	Id                   valueObject.SslId                   `json:"sslId"`
-	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
 	CommonName           *valueObject.SslHostname            `json:"commonName"`
+	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
 	IsCA                 bool                                `json:"-"`
 	CertificateAuthority valueObject.SslCertificateAuthority `json:"certificateAuthority"`
 	AltNames             []valueObject.SslHostname           `json:"altNames"`
