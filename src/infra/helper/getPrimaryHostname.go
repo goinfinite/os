@@ -9,7 +9,7 @@ import (
 func GetPrimaryHostname() (valueObject.Fqdn, error) {
 	var hostname valueObject.Fqdn
 
-	hostnameStr := os.Getenv("PRIMARY_HOST")
+	hostnameStr := os.Getenv("PRIMARY_VHOST")
 	if hostnameStr == "" {
 		var err error
 		hostnameStr, err = RunCmd("hostname", "-f")

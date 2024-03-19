@@ -12,7 +12,7 @@ import (
 )
 
 var requiredEnvVars = []string{
-	"PRIMARY_HOST",
+	"PRIMARY_VHOST",
 	"JWT_SECRET",
 	"UAK_SECRET",
 }
