@@ -224,39 +224,24 @@ func (repo SslQueryRepo) GetOwnershipHash(
 	return hex.EncodeToString(sslCrtContentHash[:])
 }
 
-func (repo SslQueryRepo) IsSslPairValid(vhost valueObject.Fqdn) bool {
-	sslCrtFilePath := PkiConfDir + "/" + vhost.String() + ".crt"
-	crtDetailsStr, err := infraHelper.RunCmd(
-		"openssl",
-		"x509",
-		"-enddate",
-		"-issuer",
-		"-subject",
-		"-noout",
-		"-in",
-		sslCrtFilePath,
-	)
-	if err != nil {
+func (repo SslQueryRepo) IsSslPairValid(sslPair entity.SslPair) bool {
+	sslPairSubject := sslPair.Certificate.CommonName
+	if sslPairSubject == nil {
 		return false
 	}
 
-	crtDetailsRegexp := `^notAfter=(?<expiresAt>.+)\nissuer=(?<issuer>.+)\nsubject=(?<subject>.+)$`
-	crtDetails := infraHelper.GetRegexCapturingGroups(crtDetailsStr, crtDetailsRegexp)
-
-	crtIssuer := crtDetails["issuer"]
-	crtSubject := crtDetails["subject"]
-	if crtIssuer == crtSubject {
+	sslPairSubjectStr := sslPairSubject.String()
+	sslPairIssuerStr := sslPair.Certificate.IssuerCommonName.String()
+	if sslPairSubjectStr == sslPairIssuerStr {
 		return false
 	}
 
-	expirationDateStr := crtDetails["expiresAt"]
-	parsedExpirationDate, err := time.Parse("Jan  2 15:04:05 2006 GMT", expirationDateStr)
-	if err != nil {
-		return false
-	}
+	expirationDateTimestamp := sslPair.Certificate.ExpiresAt.Get()
+	expirationDate := time.Unix(expirationDateTimestamp, 0)
 
 	todayDate := time.Now()
 	afterTwoDaysInterval := 2 * 24 * time.Hour
 	todayDateAfterTwoDays := todayDate.Add(afterTwoDaysInterval)
-	return parsedExpirationDate.After(todayDateAfterTwoDays)
+
+	return expirationDate.After(todayDateAfterTwoDays)
 }

@@ -10,5 +10,5 @@ type SslQueryRepo interface {
 	GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error)
 	GetSslPairByHostname(vhost valueObject.Fqdn) (entity.SslPair, error)
 	GetOwnershipHash(sslCrtContent valueObject.SslCertificateContent) string
-	IsSslPairValid(vhost valueObject.Fqdn) bool
+	IsSslPairValid(sslPair entity.SslPair) bool
 }
