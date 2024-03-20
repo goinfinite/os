@@ -7,8 +7,12 @@ import (
 type InlineHtmlContent string
 
 func NewInlineHtmlContent(value string) (InlineHtmlContent, error) {
-	if len(value) == 0 || len(value) > 3500 {
-		return "", errors.New("InvalidInlineHtmlContent")
+	if len(value) == 0 {
+		return "", errors.New("InlineHtmlContentTooSmall")
+	}
+
+	if len(value) > 3500 {
+		return "", errors.New("InlineHtmlContentTooBig")
 	}
 
 	return InlineHtmlContent(value), nil
