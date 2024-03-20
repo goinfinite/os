@@ -14,6 +14,7 @@ type SslCertificate struct {
 	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
 	IsCA                 bool                                `json:"-"`
 	CertificateAuthority valueObject.SslCertificateAuthority `json:"certificateAuthority"`
+	IssuerCommonName     valueObject.SslHostname             `json:"-"`
 	AltNames             []valueObject.SslHostname           `json:"altNames"`
 	IssuedAt             valueObject.UnixTime                `json:"issuedAt"`
 	ExpiresAt            valueObject.UnixTime                `json:"expiresAt"`
@@ -45,7 +46,6 @@ func NewSslCertificate(
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
 	var commonNamePtr *valueObject.SslHostname
-	commonNamePtr = nil
 	if !parsedCert.IsCA {
 		commonName, err := valueObject.NewSslHostname(parsedCert.Subject.CommonName)
 		if err != nil {
@@ -55,6 +55,12 @@ func NewSslCertificate(
 	}
 
 	certIssuer := parsedCert.Issuer
+	issuerCommonNameStr := certIssuer.CommonName
+	issuerCommonName, err := valueObject.NewSslHostname(issuerCommonNameStr)
+	if err != nil {
+		return sslCertificate, errors.New("InvalidIssuerCommonName")
+	}
+
 	if len(certIssuer.Organization) == 0 {
 		return sslCertificate, errors.New("SslCertificateWithoutCA")
 	}
@@ -83,6 +89,7 @@ func NewSslCertificate(
 		CommonName:           commonNamePtr,
 		IsCA:                 parsedCert.IsCA,
 		CertificateAuthority: certificateAuthority,
+		IssuerCommonName:     issuerCommonName,
 		AltNames:             altNames,
 		IssuedAt:             issuedAt,
 		ExpiresAt:            expiresAt,
