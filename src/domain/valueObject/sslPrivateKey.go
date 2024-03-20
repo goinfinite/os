@@ -34,6 +34,30 @@ func (sslPrivateKey SslPrivateKey) isValid() bool {
 	return err == nil
 }
 
+func NewSslPrivateKeyFromEncodedContent(
+	encodedContent EncodedContent,
+) (SslPrivateKey, error) {
+	var sslPrivateKey SslPrivateKey
+
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		return sslPrivateKey, errors.New("InvalidSslPrivateKey")
+	}
+
+	return NewSslPrivateKey(decodedContent)
+}
+
+func NewSslPrivateKeyFromEncodedContentPanic(
+	encodedContent EncodedContent,
+) SslPrivateKey {
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		panic("InvalidSslPrivateKey")
+	}
+
+	return NewSslPrivateKeyPanic(decodedContent)
+}
+
 func (sslPrivateKey SslPrivateKey) String() string {
 	return string(sslPrivateKey)
 }

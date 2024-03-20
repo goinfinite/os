@@ -35,6 +35,30 @@ func (sslCertificate SslCertificateContent) isValid() bool {
 	return err == nil
 }
 
+func NewSslCertificateContentFromEncodedContent(
+	encodedContent EncodedContent,
+) (SslCertificateContent, error) {
+	var sslCertificateContent SslCertificateContent
+
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		return sslCertificateContent, errors.New("InvalidSslCertificate")
+	}
+
+	return NewSslCertificateContent(decodedContent)
+}
+
+func NewSslCertificateContentFromEncodedContentPanic(
+	encodedContent EncodedContent,
+) SslCertificateContent {
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		panic("InvalidSslCertificate")
+	}
+
+	return NewSslCertificateContentPanic(decodedContent)
+}
+
 func (sslCertificate SslCertificateContent) String() string {
 	return string(sslCertificate)
 }
