@@ -64,9 +64,16 @@ func CreateSslPairController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sslCertificateContent := valueObject.NewSslCertificateContentPanic(requestBody["certificate"].(string))
+	sslCertificateEncoded := valueObject.NewEncodedContentPanic(
+		requestBody["certificate"].(string),
+	)
+	sslCertificateContent := valueObject.NewSslCertificateContentFromEncodedContentPanic(
+		sslCertificateEncoded,
+	)
 	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
-	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
+
+	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
+	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
 
 	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
 	if !assertOk {
