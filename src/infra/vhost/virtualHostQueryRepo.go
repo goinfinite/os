@@ -502,12 +502,7 @@ func (repo VirtualHostQueryRepo) GetMappingsByHostname(
 		return vhostMappings, err
 	}
 
-	mappings, err := repo.getVirtualHostMappings(vhost)
-	if err != nil {
-		return vhostMappings, err
-	}
-
-	return mappings, nil
+	return repo.getVirtualHostMappings(vhost)
 }
 
 func (repo VirtualHostQueryRepo) GetMappingById(
