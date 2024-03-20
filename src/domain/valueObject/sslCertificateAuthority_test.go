@@ -25,7 +25,8 @@ func TestSslCertificateAuthority(t *testing.T) {
 		invalidsSslCertificateAuthority := []string{
 			"",
 			"Nitro Auth@rity",
-			"Super long certificate authority, because I don't know",
+			"()()()()()()",
+			"Super long certificate authority, because I don't know, but trust me that is important to test the certificate authority name",
 		}
 		for _, sslCertificateAuthority := range invalidsSslCertificateAuthority {
 			_, err := NewSslCertificateAuthority(sslCertificateAuthority)
