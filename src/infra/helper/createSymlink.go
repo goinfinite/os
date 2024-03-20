@@ -16,10 +16,5 @@ func CreateSymlink(
 		}
 	}
 
-	err := os.Symlink(sourcePath, targetPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.Symlink(sourcePath, targetPath)
 }
