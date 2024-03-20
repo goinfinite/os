@@ -75,6 +75,8 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		vhostStr,
 		"-d",
 		vhostStr,
+		"-d",
+		"www."+vhostStr,
 	)
 	if err != nil {
 		return fmt.Errorf("CreateValidSslFailed (%s): %s", vhostStr, err.Error())
