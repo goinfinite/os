@@ -59,32 +59,22 @@ func (uc SslCertificateWatchDog) createInlineHtmlMapping(
 }
 
 func (uc SslCertificateWatchDog) Execute() {
-	vhosts, err := uc.vhostQueryRepo.Get()
+	sslPairs, err := uc.sslQueryRepo.GetSslPairs()
 	if err != nil {
-		log.Printf("FailedToGetVhosts: %s", err.Error())
+		log.Printf("FailedToGetSslPairs: %s", err.Error())
 		return
 	}
 
-	invalidSslVhosts := []valueObject.Fqdn{}
-	for _, vhost := range vhosts {
-		isSslValid := uc.sslQueryRepo.IsSslPairValid(vhost.Hostname)
+	for _, sslPair := range sslPairs {
+		isSslValid := uc.sslQueryRepo.IsSslPairValid(sslPair)
 		if isSslValid {
-			continue
-		}
-
-		invalidSslVhosts = append(invalidSslVhosts, vhost.Hostname)
-	}
-
-	for _, invalidSslVhost := range invalidSslVhosts {
-		sslPair, err := uc.sslQueryRepo.GetSslPairByHostname(invalidSslVhost)
-		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", invalidSslVhost, err.Error())
 			continue
 		}
 
 		ownershipHash := uc.sslQueryRepo.GetOwnershipHash(sslPair.Certificate.CertificateContent)
 
-		err = uc.createInlineHtmlMapping(invalidSslVhost, ownershipHash)
+		firstVhost := sslPair.VirtualHosts[0]
+		err = uc.createInlineHtmlMapping(firstVhost, ownershipHash)
 		if err != nil {
 			log.Printf("FailedToCreateOwnershipValidationMapping: %s", err.Error())
 			continue
@@ -93,19 +83,19 @@ func (uc SslCertificateWatchDog) Execute() {
 		// Wait for NGINX reload
 		time.Sleep(5 * time.Second)
 
-		isOwnershipValid := uc.vhostQueryRepo.IsDomainOwner(invalidSslVhost, ownershipHash)
+		isOwnershipValid := uc.vhostQueryRepo.IsDomainOwner(firstVhost, ownershipHash)
 		if !isOwnershipValid {
-			log.Printf("CurrentHostIsNotDomainOwner: %s", invalidSslVhost.String())
+			log.Printf("CurrentHostIsNotDomainOwner: %s", firstVhost.String())
 		}
 
-		vhostMappings, err := uc.vhostQueryRepo.GetMappingsByHostname(invalidSslVhost)
+		vhostMappings, err := uc.vhostQueryRepo.GetMappingsByHostname(firstVhost)
 		if err != nil {
 			log.Printf("FailedToGetVhostMappings: %s", err.Error())
 			continue
 		}
 
 		if len(vhostMappings) == 0 {
-			log.Printf("VhostMappingsNotFound: %s", invalidSslVhost)
+			log.Printf("VhostMappingsNotFound: %s", firstVhost)
 			continue
 		}
 
@@ -121,7 +111,7 @@ func (uc SslCertificateWatchDog) Execute() {
 			continue
 		}
 
-		err = uc.sslCmdRepo.ReplaceWithValidSsl(invalidSslVhost)
+		err = uc.sslCmdRepo.ReplaceWithValidSsl(firstVhost)
 		if err != nil {
 			log.Printf("FailedToReplaceWithValidSsl: %s", err.Error())
 		}
