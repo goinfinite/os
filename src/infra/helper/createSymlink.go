@@ -1,6 +1,7 @@
 package infraHelper
 
 import (
+	"errors"
 	"os"
 )
 
@@ -9,9 +10,13 @@ func CreateSymlink(
 	targetPath string,
 	shouldOverwrite bool,
 ) error {
+	if !FileExists(sourcePath) && !shouldOverwrite {
+		return errors.New("FileNotFound")
+	}
+
 	if shouldOverwrite {
 		err := os.Remove(targetPath)
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil {
 			return err
 		}
 	}
