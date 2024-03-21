@@ -12,20 +12,19 @@ type SslCertificate struct {
 	Id                   valueObject.SslId                   `json:"sslId"`
 	CommonName           *valueObject.SslHostname            `json:"commonName"`
 	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
-	IsCA                 bool                                `json:"-"`
+	IsIntermediary       bool                                `json:"-"`
 	CertificateAuthority valueObject.SslCertificateAuthority `json:"certificateAuthority"`
-	IssuerCommonName     valueObject.SslHostname             `json:"-"`
 	AltNames             []valueObject.SslHostname           `json:"altNames"`
 	IssuedAt             valueObject.UnixTime                `json:"issuedAt"`
 	ExpiresAt            valueObject.UnixTime                `json:"expiresAt"`
 }
 
 func NewSslCertificate(
-	sslCertificateContent valueObject.SslCertificateContent,
+	sslCertContent valueObject.SslCertificateContent,
 ) (SslCertificate, error) {
 	var sslCertificate SslCertificate
 
-	block, _ := pem.Decode([]byte(sslCertificateContent.String()))
+	block, _ := pem.Decode([]byte(sslCertContent.String()))
 	if block == nil {
 		return sslCertificate, errors.New("SslCertificateContentDecodeError")
 	}
@@ -35,9 +34,7 @@ func NewSslCertificate(
 		return sslCertificate, errors.New("SslCertificateContentParseError")
 	}
 
-	sslCertificateId, err := valueObject.NewSslIdFromSslCertificateContent(
-		sslCertificateContent,
-	)
+	sslCertId, err := valueObject.NewSslIdFromSslCertificateContent(sslCertContent)
 	if err != nil {
 		return sslCertificate, err
 	}
@@ -45,28 +42,26 @@ func NewSslCertificate(
 	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
 	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
 
+	isIntermediary := true
+
 	var commonNamePtr *valueObject.SslHostname
-	if !parsedCert.IsCA {
-		commonName, err := valueObject.NewSslHostname(parsedCert.Subject.CommonName)
-		if err != nil {
-			return sslCertificate, errors.New("InvalidSslCertificateCommonName")
-		}
+	commonName, err := valueObject.NewSslHostname(parsedCert.Subject.CommonName)
+	if err == nil {
+		isIntermediary = false
 		commonNamePtr = &commonName
 	}
 
-	certIssuer := parsedCert.Issuer
-	issuerCommonNameStr := certIssuer.CommonName
-	issuerCommonName, err := valueObject.NewSslHostname(issuerCommonNameStr)
-	if err != nil {
-		return sslCertificate, errors.New("InvalidIssuerCommonName")
+	certAuthorityStr := "self-signed"
+	if parsedCert.CheckSignatureFrom(parsedCert) != nil {
+		certIssuer := parsedCert.Issuer
+		certAuthorityStr = certIssuer.CommonName
+
+		if len(certIssuer.Organization) > 0 {
+			certAuthorityStr += ", " + certIssuer.Organization[0]
+		}
 	}
 
-	if len(certIssuer.Organization) == 0 {
-		return sslCertificate, errors.New("SslCertificateWithoutCA")
-	}
-
-	certificateAuthorityStr := certIssuer.Organization[0]
-	certificateAuthority, err := valueObject.NewSslCertificateAuthority(certificateAuthorityStr)
+	certAuthority, err := valueObject.NewSslCertificateAuthority(certAuthorityStr)
 	if err != nil {
 		return sslCertificate, err
 	}
@@ -84,12 +79,11 @@ func NewSslCertificate(
 	}
 
 	return SslCertificate{
-		Id:                   sslCertificateId,
-		CertificateContent:   sslCertificateContent,
+		Id:                   sslCertId,
+		CertificateContent:   sslCertContent,
 		CommonName:           commonNamePtr,
-		IsCA:                 parsedCert.IsCA,
-		CertificateAuthority: certificateAuthority,
-		IssuerCommonName:     issuerCommonName,
+		IsIntermediary:       isIntermediary,
+		CertificateAuthority: certAuthority,
 		AltNames:             altNames,
 		IssuedAt:             issuedAt,
 		ExpiresAt:            expiresAt,
