@@ -14,20 +14,20 @@ const (
 	OwnershipValidatePath string = "/validateOwnership"
 )
 
-type SslCertificateWatchDog struct {
+type SslCertificateWatchdog struct {
 	sslQueryRepo   repository.SslQueryRepo
 	sslCmdRepo     repository.SslCmdRepo
 	vhostQueryRepo repository.VirtualHostQueryRepo
 	vhostCmdRepo   repository.VirtualHostCmdRepo
 }
 
-func NewSslCertificateWatchDog(
+func NewSslCertificateWatchdog(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-) SslCertificateWatchDog {
-	return SslCertificateWatchDog{
+) SslCertificateWatchdog {
+	return SslCertificateWatchdog{
 		sslQueryRepo:   sslQueryRepo,
 		sslCmdRepo:     sslCmdRepo,
 		vhostQueryRepo: vhostQueryRepo,
@@ -35,7 +35,7 @@ func NewSslCertificateWatchDog(
 	}
 }
 
-func (uc SslCertificateWatchDog) createInlineHtmlMapping(
+func (uc SslCertificateWatchdog) createInlineHtmlMapping(
 	vhost valueObject.Fqdn,
 	ownershipHash string,
 ) error {
@@ -58,7 +58,7 @@ func (uc SslCertificateWatchDog) createInlineHtmlMapping(
 	return uc.vhostCmdRepo.CreateMapping(inlineHmtlMapping)
 }
 
-func (uc SslCertificateWatchDog) Execute() {
+func (uc SslCertificateWatchdog) Execute() {
 	sslPairs, err := uc.sslQueryRepo.GetSslPairs()
 	if err != nil {
 		log.Printf("FailedToGetSslPairs: %s", err.Error())

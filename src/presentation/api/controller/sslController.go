@@ -134,7 +134,7 @@ func DeleteSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
 }
 
-func SslCertificateWatchDogController() {
+func SslCertificateWatchdogController() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
 	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
@@ -147,12 +147,12 @@ func SslCertificateWatchDogController() {
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	for range timer.C {
-		sslCertificateWatchDog := useCase.NewSslCertificateWatchDog(
+		sslCertificateWatchdog := useCase.NewSslCertificateWatchdog(
 			sslQueryRepo,
 			sslCmdRepo,
 			vhostQueryRepo,
 			vhostCmdRepo,
 		)
-		sslCertificateWatchDog.Execute()
+		sslCertificateWatchdog.Execute()
 	}
 }
