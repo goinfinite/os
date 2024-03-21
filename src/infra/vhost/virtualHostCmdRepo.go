@@ -18,21 +18,11 @@ type VirtualHostCmdRepo struct {
 }
 
 func (repo VirtualHostCmdRepo) reloadWebServer() error {
-	_, err := infraHelper.RunCmd(
-		"nginx",
-		"-t",
+	_, err := infraHelper.RunCmdWithSubShell(
+		"nginx -t && nginx -s reload && sleep 2",
 	)
 	if err != nil {
-		return errors.New("NginxConfigTestFailed")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"nginx",
-		"-s",
-		"reload",
-	)
-	if err != nil {
-		return errors.New("NginxReloadFailed")
+		return errors.New("NginxReloadFailed: " + err.Error())
 	}
 
 	return nil
