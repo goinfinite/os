@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const sslCertificateAuthorityRegex string = `^\w{1,3}[\w\.\,\'\(\)\ ]{0,100}$`
+const sslCertificateAuthorityRegex string = `^(self-signed|\w{1,3}[\w\.\,\'\(\)\ ]{0,100})$`
 
 type SslCertificateAuthority string
 
@@ -34,4 +34,8 @@ func (sca SslCertificateAuthority) isValid() bool {
 
 func (sca SslCertificateAuthority) String() string {
 	return string(sca)
+}
+
+func (sca SslCertificateAuthority) IsSelfSigned() bool {
+	return string(sca) == "self-signed"
 }

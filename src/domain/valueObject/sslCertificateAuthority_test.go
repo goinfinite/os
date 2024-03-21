@@ -5,6 +5,7 @@ import "testing"
 func TestSslCertificateAuthority(t *testing.T) {
 	t.Run("ValidSslCertificateAuthority", func(t *testing.T) {
 		validsSslCertificateAuthority := []string{
+			"self-signed",
 			"IdenTrust",
 			"DigiCert Group",
 			"Sectigo (Comodo Cybersecurity)",
