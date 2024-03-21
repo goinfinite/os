@@ -113,7 +113,7 @@ func (uc SslCertificateWatchDog) Execute() {
 
 		err = uc.sslCmdRepo.ReplaceWithValidSsl(firstVhost)
 		if err != nil {
-			log.Printf("FailedToReplaceWithValidSsl: %s", err.Error())
+			log.Printf("%s: %s", firstVhost.String(), err.Error())
 		}
 	}
 }
