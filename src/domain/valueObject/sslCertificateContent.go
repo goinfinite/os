@@ -2,6 +2,8 @@ package valueObject
 
 import (
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 )
@@ -25,8 +27,8 @@ func NewSslCertificateContentPanic(certificate string) SslCertificateContent {
 	return sslCertificate
 }
 
-func (sslCertificate SslCertificateContent) isValid() bool {
-	block, _ := pem.Decode([]byte(sslCertificate))
+func (sslCrt SslCertificateContent) isValid() bool {
+	block, _ := pem.Decode([]byte(sslCrt))
 	if block == nil {
 		return false
 	}
@@ -59,6 +61,11 @@ func NewSslCertificateContentFromEncodedContentPanic(
 	return NewSslCertificateContentPanic(decodedContent)
 }
 
-func (sslCertificate SslCertificateContent) String() string {
-	return string(sslCertificate)
+func (sslCrt SslCertificateContent) String() string {
+	return string(sslCrt)
+}
+
+func (sslCrt SslCertificateContent) MarshalJSON() ([]byte, error) {
+	sslCrtBytes := []byte(string(sslCrt))
+	return json.Marshal(base64.StdEncoding.EncodeToString(sslCrtBytes))
 }
