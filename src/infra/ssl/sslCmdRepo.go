@@ -3,6 +3,7 @@ package sslInfra
 import (
 	"errors"
 	"log"
+	"net"
 	"os"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -62,21 +63,28 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		vhostRootDir += "/" + vhostStr
 	}
 
-	_, err := infraHelper.RunCmd(
-		"certbot",
-		"certonly",
-		"--webroot",
-		"--webroot-path",
-		vhostRootDir,
-		"--agree-tos",
-		"--register-unsafely-without-email",
-		"--cert-name",
-		vhostStr,
-		"-d",
-		vhostStr,
-		"-d",
-		"www."+vhostStr,
-	)
+	certbotCmd := "certbot certonly --webroot --webroot-path" + vhostRootDir +
+		"--agree-tos --register-unsafely-without-email --cert-name" + vhostStr +
+		"-d" + vhostStr
+	rootDomain, err := infraHelper.GetRootDomain(vhost)
+	if err != nil {
+		return err
+	}
+
+	isSubdomain := rootDomain.String() != vhost.String()
+	if isSubdomain {
+		vhostIps, err := net.LookupIP(vhost.String())
+		if err != nil {
+			return err
+		}
+
+		dnsExists := len(vhostIps) > 0
+		if dnsExists {
+			certbotCmd += " -d www." + vhostStr
+		}
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
 	if err != nil {
 		return errors.New("CreateValidSslFailed: " + err.Error())
 	}
