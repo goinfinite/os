@@ -2,10 +2,13 @@ package vhostInfra
 
 import (
 	"errors"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -528,14 +531,26 @@ func (repo VirtualHostQueryRepo) IsDomainOwner(
 	vhost valueObject.Fqdn,
 	ownershipHash string,
 ) bool {
-	ownershipValidateUrl := vhost.String() + useCase.OwnershipValidatePath
-	achievedOwnershipHash, err := infraHelper.RunCmd(
-		"curl",
-		ownershipValidateUrl,
-	)
+	ownershipValidateUrl := "https://" + vhost.String() + useCase.OwnershipValidatePath
+
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	httpResponse, err := httpClient.Get(ownershipValidateUrl)
 	if err != nil {
+		log.Printf("IsDomainOwner (httpResponse): %s", err.Error())
+		return false
+	}
+	defer httpResponse.Body.Close()
+
+	responseBodyBytes, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		log.Printf("IsDomainOwner (responseBodyBytes): %s", err.Error())
 		return false
 	}
 
+	log.Printf("AchievedOwnershipHash: %s", string(responseBodyBytes))
+
+	achievedOwnershipHash := string(responseBodyBytes)
 	return achievedOwnershipHash == ownershipHash
 }
