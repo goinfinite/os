@@ -2,7 +2,6 @@ package sslInfra
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
@@ -79,7 +78,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		"www."+vhostStr,
 	)
 	if err != nil {
-		return fmt.Errorf("CreateValidSslFailed (%s): %s", vhostStr, err.Error())
+		return errors.New("CreateValidSslFailed: " + err.Error())
 	}
 
 	certbotDirPath := "/etc/letsencrypt/live"
@@ -93,7 +92,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		shouldOverwrite,
 	)
 	if err != nil {
-		return fmt.Errorf("CreateSslCrtSymlinkError (%s): %s", vhost.String(), err.Error())
+		return errors.New("CreateSslCrtSymlinkError: " + err.Error())
 	}
 
 	certbotKeyFilePath := certbotDirPath + "/" + vhostStr + "/privkey.pem"
@@ -104,7 +103,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
 		shouldOverwrite,
 	)
 	if err != nil {
-		return fmt.Errorf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
+		return errors.New("CreateSslKeySymlinkError: " + err.Error())
 	}
 
 	return nil
