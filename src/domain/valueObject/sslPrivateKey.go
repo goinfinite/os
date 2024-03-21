@@ -2,6 +2,8 @@ package valueObject
 
 import (
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 )
@@ -60,4 +62,9 @@ func NewSslPrivateKeyFromEncodedContentPanic(
 
 func (sslPrivateKey SslPrivateKey) String() string {
 	return string(sslPrivateKey)
+}
+
+func (sslPrivateKey SslPrivateKey) MarshalJSON() ([]byte, error) {
+	sslPrivateKeyBytes := []byte(string(sslPrivateKey))
+	return json.Marshal(base64.StdEncoding.EncodeToString(sslPrivateKeyBytes))
 }
