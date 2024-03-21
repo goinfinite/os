@@ -29,7 +29,7 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 		sslCertContent.String(),
 		"-----END CERTIFICATE-----\n",
 	)
-	for sslCertContentIndex, sslCertContentStr := range sslCertContentSlice {
+	for _, sslCertContentStr := range sslCertContentSlice {
 		if len(sslCertContentStr) == 0 {
 			continue
 		}
@@ -44,8 +44,7 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 			return certificates, err
 		}
 
-		isChainedContent := certificate.IsCA && sslCertContentIndex > 0
-		if isChainedContent {
+		if certificate.IsIntermediary {
 			certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
 
 			continue
@@ -225,14 +224,8 @@ func (repo SslQueryRepo) GetOwnershipHash(
 }
 
 func (repo SslQueryRepo) IsSslPairValid(sslPair entity.SslPair) bool {
-	sslPairSubject := sslPair.Certificate.CommonName
-	if sslPairSubject == nil {
-		return false
-	}
-
-	sslPairSubjectStr := sslPairSubject.String()
-	sslPairIssuerStr := sslPair.Certificate.IssuerCommonName.String()
-	if sslPairSubjectStr == sslPairIssuerStr {
+	sslPairCrtAuthority := sslPair.Certificate.CertificateAuthority
+	if sslPairCrtAuthority.IsSelfSigned() {
 		return false
 	}
 
