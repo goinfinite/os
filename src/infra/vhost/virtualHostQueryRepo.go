@@ -14,7 +14,6 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
-	"golang.org/x/net/publicsuffix"
 )
 
 var configurationsDir string = "/app/conf/nginx"
@@ -71,14 +70,9 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			parentDomainPtr = &firstDomain
 		}
 
-		rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(serverName.String())
+		rootDomain, err := infraHelper.GetRootDomain(serverName)
 		if err != nil {
-			log.Printf("InvalidRootDomain: %s", serverName.String())
-			continue
-		}
-		rootDomain, err := valueObject.NewFqdn(rootDomainStr)
-		if err != nil {
-			log.Printf("InvalidRootDomain: %s", rootDomainStr)
+			log.Printf("%s: %s", err.Error(), serverName.String())
 			continue
 		}
 
