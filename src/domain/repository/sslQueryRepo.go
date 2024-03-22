@@ -8,7 +8,5 @@ import (
 type SslQueryRepo interface {
 	GetSslPairs() ([]entity.SslPair, error)
 	GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error)
-	GetSslPairByHostname(vhost valueObject.Fqdn) (entity.SslPair, error)
-	GetOwnershipHash(sslCrtContent valueObject.SslCertificateContent) string
 	IsSslPairValid(sslPair entity.SslPair) bool
 }

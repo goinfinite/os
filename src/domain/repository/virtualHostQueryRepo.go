@@ -17,5 +17,4 @@ type VirtualHostQueryRepo interface {
 		vhostHostname valueObject.Fqdn,
 		id valueObject.MappingId,
 	) (entity.Mapping, error)
-	IsDomainOwner(vhost valueObject.Fqdn, ownershipHash string) bool
 }
