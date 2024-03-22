@@ -202,21 +202,7 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 	return entity.SslPair{}, errors.New("SslPairNotFound")
 }
 
-func (repo SslQueryRepo) GetSslPairByHostname(
-	vhost valueObject.Fqdn,
-) (entity.SslPair, error) {
-	var sslPair entity.SslPair
-
-	crtFilePathStr := envDataInfra.PkiConfDir + "/" + vhost.String() + ".crt"
-	crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
-	if err != nil {
-		return sslPair, err
-	}
-
-	return repo.sslPairFactory(crtFilePath)
-}
-
-func (repo SslQueryRepo) GetOwnershipHash(
+func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContent valueObject.SslCertificateContent,
 ) string {
 	sslCrtContentBytes := []byte(sslCrtContent.String())
