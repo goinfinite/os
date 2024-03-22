@@ -56,8 +56,18 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhost.String())
 }
 
-func (repo SslCmdRepo) ReplaceWithValidSsl(vhost valueObject.Fqdn) error {
-	vhostStr := vhost.String()
+	lastMappingIndex := len(vhostMappings) - 1
+	lastMapping := vhostMappings[lastMappingIndex]
+
+	err = vhostCmdRepo.DeleteMapping(lastMapping)
+	if err != nil {
+		return errors.New("FailedToDeleteOwnershipValidationMapping: " + err.Error())
+	}
+
+	if !isOwnershipValid {
+		return errors.New("CurrentHostIsNotDomainOwner: " + firstVhostStr)
+	}
+
 	vhostRootDir := "/app/html"
 	if !infraHelper.IsVirtualHostPrimaryDomain(vhost) {
 		vhostRootDir += "/" + vhostStr
