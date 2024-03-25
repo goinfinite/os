@@ -135,8 +135,8 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	}
 
 	publicDir := "/app/html/" + hostnameStr
-	certPath := envDataInfra.PkiConfDir + hostnameStr + ".crt"
-	keyPath := envDataInfra.PkiConfDir + hostnameStr + ".key"
+	certPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".crt"
+	keyPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".key"
 	mappingFilePath := "/app/conf/nginx/mapping/" + hostnameStr + ".conf"
 
 	nginxConf := `server {
