@@ -10,7 +10,7 @@ func CreateSymlink(
 	targetPath string,
 	shouldOverwrite bool,
 ) error {
-	if !FileExists(sourcePath) && !shouldOverwrite {
+	if !shouldOverwrite && !FileExists(sourcePath) {
 		return errors.New("FileNotFound")
 	}
 
