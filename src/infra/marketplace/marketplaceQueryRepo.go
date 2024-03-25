@@ -4,8 +4,8 @@ import "github.com/speedianet/os/src/domain/entity"
 
 type MarketplaceQueryRepo struct{}
 
-func (mktplace MarketplaceQueryRepo) Get() ([]entity.MarketplaceItem, error) {
-	marketplaceItems := []entity.MarketplaceItem{}
+func (mktplace MarketplaceQueryRepo) Get() ([]entity.MarketplaceCatalogItem, error) {
+	marketplaceCatalogItems := []entity.MarketplaceCatalogItem{}
 
-	return marketplaceItems, nil
+	return marketplaceCatalogItems, nil
 }
