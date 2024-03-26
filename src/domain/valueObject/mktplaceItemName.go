@@ -40,3 +40,16 @@ func (mktplaceItemName MktplaceItemName) isValid() bool {
 func (mktplaceItemName MktplaceItemName) String() string {
 	return string(mktplaceItemName)
 }
+
+func (mktplaceItemNamePtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mktplaceItemName, err := NewMktplaceItemName(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mktplaceItemNamePtr = mktplaceItemName
+	return nil
+}
