@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"reflect"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -86,7 +85,16 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 		return false
 	}
 
-	return reflect.DeepEqual(wwwVhostIps, vhostIps)
+	firstVhostIp := vhostIps[0]
+	for _, wwwVhostIp := range wwwVhostIps {
+		if !firstVhostIp.Equal(wwwVhostIp) {
+			continue
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
