@@ -43,3 +43,14 @@ func (mktplaceItemId MktplaceItemId) Get() int64 {
 func (mktplaceItemId MktplaceItemId) String() string {
 	return strconv.FormatInt(int64(mktplaceItemId), 10)
 }
+
+func (mktplaceItemIdPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	mktplaceItemId, err := NewMktplaceItemId(valueStr)
+	if err != nil {
+		return err
+	}
+
+	*mktplaceItemIdPtr = mktplaceItemId
+	return nil
+}
