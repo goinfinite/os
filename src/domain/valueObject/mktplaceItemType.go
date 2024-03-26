@@ -26,14 +26,27 @@ func NewMktplaceItemType(value string) (MktplaceItemType, error) {
 }
 
 func NewMktplaceItemTypePanic(value string) MktplaceItemType {
-	sn, err := NewMktplaceItemType(value)
+	mktplaceItemType, err := NewMktplaceItemType(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return sn
+	return mktplaceItemType
 }
 
-func (sn MktplaceItemType) String() string {
-	return string(sn)
+func (mktplaceItemType MktplaceItemType) String() string {
+	return string(mktplaceItemType)
+}
+
+func (mktplaceItemTypePtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mktplaceItemType, err := NewMktplaceItemType(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mktplaceItemTypePtr = mktplaceItemType
+	return nil
 }
