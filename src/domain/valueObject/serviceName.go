@@ -74,3 +74,16 @@ func ServiceNameAdapter(value string) string {
 func (sn ServiceName) String() string {
 	return string(sn)
 }
+
+func (sntr *ServiceName) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	svcName, err := NewServiceName(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*sntr = svcName
+	return nil
+}
