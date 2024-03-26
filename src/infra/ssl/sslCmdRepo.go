@@ -75,8 +75,8 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 		return false
 	}
 
-	wwwDnsExists := len(wwwDnsEntryIps) > 0
-	if !wwwDnsExists {
+	wwwDnsEntryExists := len(wwwDnsEntryIps) > 0
+	if !wwwDnsEntryExists {
 		return false
 	}
 
