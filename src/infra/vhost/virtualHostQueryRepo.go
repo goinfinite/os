@@ -554,6 +554,6 @@ func (repo VirtualHostQueryRepo) CheckDomainOwnership(
 		return false
 	}
 
-	achievedOwnershipHash := string(responseBodyBytes)
-	return achievedOwnershipHash == ownershipHash
+	ownershipHashFound := string(responseBodyBytes)
+	return ownershipHashFound == ownershipHash
 }
