@@ -1,6 +1,9 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 type MktplaceItemDescription string
 
@@ -26,4 +29,17 @@ func NewMktplaceItemDescriptionPanic(value string) MktplaceItemDescription {
 
 func (mktplaceItemDesc MktplaceItemDescription) String() string {
 	return string(mktplaceItemDesc)
+}
+
+func (mktplaceItemDescPtr *MktplaceItemDescription) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mktplaceItemDesc, err := NewMktplaceItemDescription(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mktplaceItemDescPtr = mktplaceItemDesc
+	return nil
 }
