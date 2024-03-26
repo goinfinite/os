@@ -37,8 +37,13 @@ func (uc SslCertificateWatchdog) Execute() {
 	}
 
 	for _, sslPair := range sslPairs {
-		isSslValid := uc.sslQueryRepo.IsSslPairValid(sslPair)
-		if isSslValid {
+		sslCertAuthority := sslPair.Certificate.CertificateAuthority
+		if !sslCertAuthority.IsSelfSigned() {
+			continue
+		}
+
+		isPubliclyTrusted := sslPair.IsPubliclyTrusted()
+		if isPubliclyTrusted {
 			continue
 		}
 
