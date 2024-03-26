@@ -147,7 +147,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	vhostRootDir := "/app/html"
-	if !infraHelper.IsVirtualHostPrimaryDomain(firstVhost) {
+	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
 		vhostRootDir += "/" + firstVhostStr
 	}
 
