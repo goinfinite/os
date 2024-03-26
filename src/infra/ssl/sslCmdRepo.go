@@ -127,7 +127,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	isOwnershipValid := vhostQueryRepo.CheckDomainOwnership(
+	isOwnershipValid := vhostQueryRepo.IsDomainMappedToServer(
 		firstVhost,
 		ownershipValidationHash,
 	)

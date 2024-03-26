@@ -528,7 +528,7 @@ func (repo VirtualHostQueryRepo) GetMappingById(
 	return mapping, errors.New("MappingNotFound")
 }
 
-func (repo VirtualHostQueryRepo) CheckDomainOwnership(
+func (repo VirtualHostQueryRepo) IsDomainMappedToServer(
 	vhost valueObject.Fqdn,
 	correctOwnershipHash string,
 ) bool {
