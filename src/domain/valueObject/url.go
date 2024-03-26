@@ -3,6 +3,7 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -52,4 +53,17 @@ func (url Url) GetPort() (NetworkPort, error) {
 	}
 
 	return NewNetworkPort(portStr)
+}
+
+func (urlPtr *Url) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	url, err := NewUrl(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*urlPtr = url
+	return nil
 }
