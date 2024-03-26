@@ -8,5 +8,4 @@ import (
 type SslQueryRepo interface {
 	GetSslPairs() ([]entity.SslPair, error)
 	GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error)
-	IsSslPairValid(sslPair entity.SslPair) bool
 }

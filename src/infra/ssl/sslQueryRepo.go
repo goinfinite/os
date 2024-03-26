@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -208,20 +207,4 @@ func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContentBytes := []byte(sslCrtContent.String())
 	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
 	return hex.EncodeToString(sslCrtContentHash[:])
-}
-
-func (repo SslQueryRepo) IsSslPairValid(sslPair entity.SslPair) bool {
-	sslPairCrtAuthority := sslPair.Certificate.CertificateAuthority
-	if sslPairCrtAuthority.IsSelfSigned() {
-		return false
-	}
-
-	expirationDateTimestamp := sslPair.Certificate.ExpiresAt.Get()
-	expirationDate := time.Unix(expirationDateTimestamp, 0)
-
-	todayDate := time.Now()
-	afterTwoDaysInterval := 2 * 24 * time.Hour
-	todayDateAfterTwoDays := todayDate.Add(afterTwoDaysInterval)
-
-	return expirationDate.After(todayDateAfterTwoDays)
 }
