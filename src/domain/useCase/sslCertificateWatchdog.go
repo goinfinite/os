@@ -6,7 +6,7 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-const SslValidationsPerHour int = 3
+const SslValidationsPerHour int = 4
 
 type SslCertificateWatchdog struct {
 	sslQueryRepo   repository.SslQueryRepo
