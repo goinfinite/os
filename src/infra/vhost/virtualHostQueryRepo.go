@@ -533,7 +533,7 @@ func (repo VirtualHostQueryRepo) CheckDomainOwnership(
 	ownershipHash string,
 ) bool {
 	ownershipValidateUrl := "https://" + vhost.String() +
-		envDataInfra.OwnershipValidationPath
+		envDataInfra.DomainOwnershipValidationUrlPath
 
 	httpClient := &http.Client{
 		Timeout: time.Second * 10,

@@ -98,7 +98,7 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 }
 
 func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
-	path, _ := valueObject.NewMappingPath(envDataInfra.OwnershipValidationPath)
+	path, _ := valueObject.NewMappingPath(envDataInfra.DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
 	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
