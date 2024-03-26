@@ -5,7 +5,7 @@ import "testing"
 func TestSslCertificateAuthority(t *testing.T) {
 	t.Run("ValidSslCertificateAuthority", func(t *testing.T) {
 		validsSslCertificateAuthority := []string{
-			"self-signed",
+			"Self Signed",
 			"IdenTrust",
 			"DigiCert Group",
 			"Sectigo (Comodo Cybersecurity)",
@@ -26,6 +26,7 @@ func TestSslCertificateAuthority(t *testing.T) {
 		invalidsSslCertificateAuthority := []string{
 			"",
 			"Nitro Auth@rity",
+			"self-signed",
 			"()()()()()()",
 			"Super long certificate authority, because I don't know, but trust me that is important to test the certificate authority name",
 		}
