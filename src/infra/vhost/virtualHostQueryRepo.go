@@ -530,7 +530,7 @@ func (repo VirtualHostQueryRepo) GetMappingById(
 
 func (repo VirtualHostQueryRepo) CheckDomainOwnership(
 	vhost valueObject.Fqdn,
-	ownershipHash string,
+	correctOwnershipHash string,
 ) bool {
 	ownershipValidateUrl := "https://" + vhost.String() +
 		envDataInfra.DomainOwnershipValidationUrlPath
@@ -555,5 +555,5 @@ func (repo VirtualHostQueryRepo) CheckDomainOwnership(
 	}
 
 	ownershipHashFound := string(responseBodyBytes)
-	return ownershipHashFound == ownershipHash
+	return ownershipHashFound == correctOwnershipHash
 }
