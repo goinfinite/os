@@ -80,14 +80,14 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 		return false
 	}
 
-	vhostIps, err := net.LookupIP(hostStr)
+	hostIps, err := net.LookupIP(hostStr)
 	if err != nil {
 		return false
 	}
 
-	firstVhostIp := vhostIps[0]
+	firstHostIp := hostIps[0]
 	for _, wwwDnsEntryIp := range wwwDnsEntryIps {
-		if !firstVhostIp.Equal(wwwDnsEntryIp) {
+		if !firstHostIp.Equal(wwwDnsEntryIp) {
 			continue
 		}
 
