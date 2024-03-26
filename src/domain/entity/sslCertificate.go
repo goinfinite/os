@@ -57,7 +57,9 @@ func NewSslCertificate(
 		certIssuer := parsedCert.Issuer
 		certAuthorityStr = certIssuer.CommonName
 
-		if len(certIssuer.Organization) > 0 {
+		hasOrganizationName := len(certIssuer.Organization) > 0 &&
+			len(certIssuer.Organization[0]) > 0
+		if hasOrganizationName {
 			certAuthorityStr += ", " + certIssuer.Organization[0]
 		}
 	}
