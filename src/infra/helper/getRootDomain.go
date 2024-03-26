@@ -7,17 +7,17 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-func GetRootDomain(serverName valueObject.Fqdn) (valueObject.Fqdn, error) {
+func GetRootDomain(hostname valueObject.Fqdn) (valueObject.Fqdn, error) {
 	var rootDomain valueObject.Fqdn
 
-	rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(serverName.String())
+	rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(hostname.String())
 	if err != nil {
-		return rootDomain, errors.New("InvalidRootDomain")
+		return rootDomain, errors.New("InvalidHostname")
 	}
 
 	rootDomain, err = valueObject.NewFqdn(rootDomainStr)
 	if err != nil {
-		return rootDomain, errors.New("InvalidRootDomain")
+		return rootDomain, errors.New("InvalidHostname")
 	}
 
 	return rootDomain, nil
