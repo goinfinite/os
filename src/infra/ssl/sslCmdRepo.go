@@ -69,13 +69,13 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 		return false
 	}
 
-	wwwVhost := "www." + hostStr
-	wwwVhostIps, err := net.LookupIP(wwwVhost)
+	wwwDnsEntry := "www." + hostStr
+	wwwDnsEntryIps, err := net.LookupIP(wwwDnsEntry)
 	if err != nil {
 		return false
 	}
 
-	wwwDnsExists := len(wwwVhostIps) > 0
+	wwwDnsExists := len(wwwDnsEntryIps) > 0
 	if !wwwDnsExists {
 		return false
 	}
@@ -86,8 +86,8 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 	}
 
 	firstVhostIp := vhostIps[0]
-	for _, wwwVhostIp := range wwwVhostIps {
-		if !firstVhostIp.Equal(wwwVhostIp) {
+	for _, wwwDnsEntryIp := range wwwDnsEntryIps {
+		if !firstVhostIp.Equal(wwwDnsEntryIp) {
 			continue
 		}
 
