@@ -11,7 +11,7 @@ type MarketplaceCatalogItem struct {
 	Description        valueObject.MktplaceItemDescription   `json:"description"`
 	Services           []valueObject.ServiceName             `json:"services"`
 	Mappings           []Mapping                             `json:"mappings"`
-	DataFields         []valueObject.DataField               `json:"dataFields"`
+	DataFields         []valueObject.DataField               `json:"-"`
 	CmdSteps           []valueObject.MktplaceItemInstallStep `json:"cmdSteps"`
 	EstimatedSizeBytes valueObject.Byte                      `json:"estimatedSizeBytes"`
 	AvatarUrl          valueObject.Url                       `json:"avatarUrl"`
