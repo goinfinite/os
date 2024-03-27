@@ -179,7 +179,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	err = infraHelper.CreateSelfSignedSsl("/app/conf/pki", hostnameStr)
+	err = infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, hostnameStr)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
 	}
@@ -187,7 +187,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	directories := []string{
 		publicDir,
 		"/app/conf/nginx",
-		"/app/conf/pki",
+		envDataInfra.PkiConfDir,
 	}
 	for _, directory := range directories {
 		_, err = infraHelper.RunCmd(
