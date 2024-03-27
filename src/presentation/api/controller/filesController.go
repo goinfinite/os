@@ -136,16 +136,17 @@ func CreateFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateUnixFileDto 	  body dto.UpdateUnixFile  true  "UpdateFile"
+// @Param        updateUnixFilesDto 	  body dto.UpdateUnixFiles  true  "Only sourcePaths are required."
 // @Success      200 {object} object{} "FileUpdated"
+// @Success      207 {object} object{} "FilesArePartialUpdated"
 // @Router       /files/ [put]
 func UpdateFileController(c echo.Context) error {
-	requiredParams := []string{"sourcePath"}
+	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sourcePath := valueObject.NewUnixFilePathPanic(requestBody["sourcePath"].(string))
+	sourcePaths := getFilePathSliceFromBody(requestBody["sourcePaths"])
 
 	var destinationPathPtr *valueObject.UnixFilePath
 	if requestBody["destinationPath"] != nil {
@@ -165,8 +166,8 @@ func UpdateFileController(c echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
-	updateUnixFileDto := dto.NewUpdateUnixFile(
-		sourcePath,
+	updateUnixFileDto := dto.NewUpdateUnixFiles(
+		sourcePaths,
 		destinationPathPtr,
 		permissionsPtr,
 		encodedContentPtr,
@@ -174,13 +175,22 @@ func UpdateFileController(c echo.Context) error {
 
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
-	updateUnixFileUc := useCase.NewUpdateUnixFile(filesCmdRepo)
-	err := updateUnixFileUc.Execute(updateUnixFileDto)
+	updateUnixFileUc := useCase.NewUpdateUnixFiles(filesCmdRepo)
+	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "FileUpdated")
+	httpStatus := http.StatusOK
+
+	hasSuccess := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
+	hasFailures := len(updateProcessInfo.FailedPathsWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
+		httpStatus = http.StatusMultiStatus
+	}
+
+	return apiHelper.ResponseWrapper(c, httpStatus, updateProcessInfo)
 }
 
 // CopyFile    godoc
@@ -329,10 +339,10 @@ func CompressFilesController(c echo.Context) error {
 
 	httpStatus := http.StatusCreated
 
-	hasFilePathsSuccessfullyCompressed := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
-	hasFailedPathsWithReason := len(compressionProcessInfo.FailedPathsWithReason) > 0
-	isMultiStatus := hasFilePathsSuccessfullyCompressed && hasFailedPathsWithReason
-	if isMultiStatus {
+	hasSuccess := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
+	hasFailures := len(compressionProcessInfo.FailedPathsWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
 		httpStatus = http.StatusMultiStatus
 	}
 
@@ -421,10 +431,10 @@ func UploadFilesController(c echo.Context) error {
 
 	httpStatus := http.StatusCreated
 
-	hasFileNamesSuccessfullyUploaded := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
-	hasFailedNamesWithReason := len(uploadProcessInfo.FailedNamesWithReason) > 0
-	isMultiStatus := hasFileNamesSuccessfullyUploaded && hasFailedNamesWithReason
-	if isMultiStatus {
+	hasSuccess := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
+	hasFailures := len(uploadProcessInfo.FailedNamesWithReason) > 0
+	wasPartiallySuccessful := hasSuccess && hasFailures
+	if wasPartiallySuccessful {
 		httpStatus = http.StatusMultiStatus
 	}
 

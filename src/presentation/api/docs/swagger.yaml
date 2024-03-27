@@ -107,10 +107,12 @@ definitions:
     properties:
       certificate:
         $ref: '#/definitions/entity.SslCertificate'
-      hostname:
-        type: string
       key:
         type: string
+      virtualHosts:
+        items:
+          type: string
+        type: array
     type: object
   dto.CreateUnixFile:
     properties:
@@ -221,7 +223,7 @@ definitions:
       version:
         type: string
     type: object
-  dto.UpdateUnixFile:
+  dto.UpdateUnixFiles:
     properties:
       destinationPath:
         type: string
@@ -229,8 +231,10 @@ definitions:
         type: string
       permissions:
         type: string
-      sourcePath:
-        type: string
+      sourcePaths:
+        items:
+          type: string
+        type: array
     type: object
   dto.VirtualHostWithMappings:
     properties:
@@ -342,8 +346,6 @@ definitions:
         type: string
       publicIp:
         type: string
-      runtimeContext:
-        $ref: '#/definitions/valueObject.RuntimeContext'
       specs:
         $ref: '#/definitions/valueObject.HardwareSpecs'
       uptimeSecs:
@@ -393,7 +395,11 @@ definitions:
     type: object
   entity.SslCertificate:
     properties:
-      certificate:
+      altNames:
+        items:
+          type: string
+        type: array
+      certificateContent:
         type: string
       commonName:
         type: string
@@ -414,12 +420,14 @@ definitions:
         items:
           $ref: '#/definitions/entity.SslCertificate'
         type: array
-      hostname:
-        type: string
       key:
         type: string
       sslPairId:
         type: string
+      virtualHosts:
+        items:
+          type: string
+        type: array
     type: object
   entity.UnixFile:
     properties:
@@ -496,16 +504,6 @@ definitions:
       protocol:
         type: string
     type: object
-  valueObject.RuntimeContext:
-    enum:
-    - container
-    - vm
-    - bareMetal
-    type: string
-    x-enum-varnames:
-    - container
-    - vm
-    - bareMetal
   valueObject.ServiceMetrics:
     properties:
       cpuUsagePercent:
@@ -937,17 +935,21 @@ paths:
       description: Move a dir/file, update name and/or permissions (Only sourcePath
         is required).
       parameters:
-      - description: UpdateFile
+      - description: Only sourcePaths are required.
         in: body
-        name: updateUnixFileDto
+        name: updateUnixFilesDto
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateUnixFile'
+          $ref: '#/definitions/dto.UpdateUnixFiles'
       produces:
       - application/json
       responses:
         "200":
           description: FileUpdated
+          schema:
+            type: object
+        "207":
+          description: FilesArePartialUpdated
           schema:
             type: object
       security:
