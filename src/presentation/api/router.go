@@ -105,6 +105,7 @@ func (router Router) sslRoutes(baseRoute *echo.Group) {
 	sslGroup.GET("/", apiController.GetSslPairsController)
 	sslGroup.POST("/", apiController.CreateSslPairController)
 	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
+	go apiController.SslCertificateWatchdogController()
 }
 
 func (router Router) vhostsRoutes(baseRoute *echo.Group) {

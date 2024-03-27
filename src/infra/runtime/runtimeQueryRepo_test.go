@@ -34,12 +34,12 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		hostname := valueObject.NewFqdnPanic(primaryHostname.String())
+		hostname := valueObject.NewFqdnPanic(primaryVhost.String())
 		phpConfigs, err := repo.GetPhpConfigs(hostname)
 
 		if err != nil {

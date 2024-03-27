@@ -11,7 +11,7 @@ import (
 	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
+	envDataInfra "github.com/speedianet/os/src/infra/shared"
 )
 
 type WebServerSetup struct {
@@ -62,12 +62,12 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("FirstBootDetected! Please await while the web server is configured...")
 
-	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		log.Fatal("PrimaryHostnameNotFound")
+		log.Fatal("PrimaryVirtualHostNotFound")
 	}
 
-	primaryHostnameStr := primaryHostname.String()
+	primaryVhostStr := primaryVhost.String()
 
 	log.Print("UpdatingVhost...")
 
@@ -75,7 +75,7 @@ func (ws WebServerSetup) FirstSetup() {
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+primaryHostnameStr+"/g",
+		"s/speedia.net/"+primaryVhostStr+"/g",
 		primaryConfFilePath,
 	)
 	if err != nil {
@@ -98,7 +98,7 @@ func (ws WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, primaryHostnameStr)
+	err = infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, primaryVhostStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}
