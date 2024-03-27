@@ -10,28 +10,28 @@ const hashRegex string = `^\w{6,256}$`
 type Hash string
 
 func NewHash(value string) (Hash, error) {
-	user := Hash(value)
-	if !user.isValid() {
+	hash := Hash(value)
+	if !hash.isValid() {
 		return "", errors.New("InvalidHash")
 	}
 
-	return user, nil
+	return hash, nil
 }
 
 func NewHashPanic(value string) Hash {
-	user, err := NewHash(value)
+	hash, err := NewHash(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return user
+	return hash
 }
 
-func (user Hash) isValid() bool {
+func (hash Hash) isValid() bool {
 	re := regexp.MustCompile(hashRegex)
-	return re.MatchString(string(user))
+	return re.MatchString(string(hash))
 }
 
-func (user Hash) String() string {
-	return string(user)
+func (hash Hash) String() string {
+	return string(hash)
 }
