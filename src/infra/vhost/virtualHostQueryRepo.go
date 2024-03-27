@@ -52,7 +52,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		log.Printf("InvalidServerName: %s", serverNamesParts[0])
 		return vhosts, nil
 	}
-	isPrimaryDomain := infraHelper.IsPrimaryVirtualHost(firstDomain)
+	isPrimaryVhost := infraHelper.IsPrimaryVirtualHost(firstDomain)
 
 	for _, serverName := range serverNamesParts {
 		serverName, err := valueObject.NewFqdn(serverName)
@@ -86,12 +86,12 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			parentDomainPtr = &rootDomain
 		}
 
-		if isPrimaryDomain {
+		if isPrimaryVhost {
 			vhostType, _ = valueObject.NewVirtualHostType("primary")
 		}
 
 		rootDirectorySuffix := "/" + serverName.String()
-		if isPrimaryDomain {
+		if isPrimaryVhost {
 			rootDirectorySuffix = ""
 		}
 		rootDirectory, err := valueObject.NewUnixFilePath(
