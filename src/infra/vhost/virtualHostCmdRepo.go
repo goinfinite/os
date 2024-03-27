@@ -33,10 +33,10 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 ) (valueObject.UnixFilePath, error) {
 	vhostFileStr := "/app/conf/nginx/" + parentHostname.String() + ".conf"
 
-	isParentPrimaryDomain := infraHelper.IsPrimaryVirtualHost(
+	isParentPrimaryVhost := infraHelper.IsPrimaryVirtualHost(
 		parentHostname,
 	)
-	if isParentPrimaryDomain {
+	if isParentPrimaryVhost {
 		vhostFileStr = "/app/conf/nginx/primary.conf"
 	}
 
