@@ -18,7 +18,7 @@ func TestGroupName(t *testing.T) {
 		}
 	})
 
-	t.Run("ValidGroupName", func(t *testing.T) {
+	t.Run("InvalidGroupName", func(t *testing.T) {
 		invalidGroupNames := []string{
 			"",
 			".",
