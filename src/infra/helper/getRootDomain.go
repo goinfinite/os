@@ -15,10 +15,5 @@ func GetRootDomain(hostname valueObject.Fqdn) (valueObject.Fqdn, error) {
 		return rootDomain, errors.New("InvalidHostname")
 	}
 
-	rootDomain, err = valueObject.NewFqdn(rootDomainStr)
-	if err != nil {
-		return rootDomain, errors.New("InvalidHostname")
-	}
-
-	return rootDomain, nil
+	return valueObject.NewFqdn(rootDomainStr)
 }
