@@ -127,7 +127,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	isOwnershipValid := vhostQueryRepo.IsDomainMappedToServer(
+	isDomainMappedToServer := vhostQueryRepo.IsDomainMappedToServer(
 		firstVhost,
 		ownershipValidationHash,
 	)
@@ -150,7 +150,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("FailedToDeleteOwnershipValidationMapping: " + err.Error())
 	}
 
-	if !isOwnershipValid {
+	if !isDomainMappedToServer {
 		return errors.New("CurrentHostIsNotDomainOwner: " + firstVhostStr)
 	}
 
