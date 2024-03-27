@@ -51,7 +51,7 @@ func NewSslCertificate(
 		commonNamePtr = &commonName
 	}
 
-	certAuthorityStr := "Self Signed"
+	certAuthorityStr := "Self-signed"
 	isSelfSigned := parsedCert.CheckSignatureFrom(parsedCert) == nil
 	if !isSelfSigned {
 		certIssuer := parsedCert.Issuer

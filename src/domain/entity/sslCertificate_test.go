@@ -84,7 +84,7 @@ qVJbJOmn5TZEn+aQetPL0lrd4Ke+zZPA
 		}
 	})
 
-	t.Run("ValidSslCertificate (Self Signed)", func(t *testing.T) {
+	t.Run("ValidSslCertificate (Self-signed)", func(t *testing.T) {
 		selfSignedSslCrtContent := `-----BEGIN CERTIFICATE-----
 MIIDmTCCAoGgAwIBAgIUIS59eqnSjoGxRRbFkfwTMVvFyZYwDQYJKoZIhvcNAQEL
 BQAwXDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExEzARBgNVBAcM
@@ -111,7 +111,7 @@ hxh2OsC7/1mvbLs/WA==
 
 		_, err := NewSslCertificate(validSslCrtContent)
 		if err != nil {
-			t.Errorf("Expected no error for Self Signed SSL certificate, got '%s'", err.Error())
+			t.Errorf("Expected no error for Self-signed SSL certificate, got '%s'", err.Error())
 		}
 	})
 
