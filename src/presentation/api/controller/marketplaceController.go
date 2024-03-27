@@ -19,8 +19,8 @@ import (
 // @Success      200 {string} "AllCatalogProducts"
 // @Router       /marketplace/catalog/ [get]
 func GetCatalogController(c echo.Context) error {
-	mktplaceQueryRepo := mktplaceInfra.MarketplaceQueryRepo{}
-	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceQueryRepo)
+	mktplaceCatalogQueryRepo := mktplaceInfra.MktplaceCatalogQueryRepo{}
+	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceCatalogQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
