@@ -2,6 +2,6 @@ package repository
 
 import "github.com/speedianet/os/src/domain/entity"
 
-type MarketplaceQueryRepo interface {
+type MktplaceCatalogQueryRepo interface {
 	Get() ([]entity.MarketplaceCatalogItem, error)
 }
