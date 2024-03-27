@@ -42,8 +42,7 @@ func (uc SslCertificateWatchdog) Execute() {
 			continue
 		}
 
-		isPubliclyTrusted := sslPair.IsPubliclyTrusted()
-		if isPubliclyTrusted {
+		if sslPair.IsPubliclyTrusted() {
 			continue
 		}
 
