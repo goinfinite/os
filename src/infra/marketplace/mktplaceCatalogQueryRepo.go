@@ -52,13 +52,5 @@ func (repo MktplaceCatalogQueryRepo) GetItems() ([]entity.MarketplaceCatalogItem
 		return mktplaceCatalogItems, errors.New("MktAssetsEmpty")
 	}
 
-	mktplaceItemName, _ := valueObject.NewMktplaceItemName("wordpress")
-	mktplaceCatalogItem, err := repo.getMarketplaceCatalogItemFromName(mktplaceItemName)
-	if err != nil {
-		return mktplaceCatalogItems, err
-	}
-
-	mktplaceCatalogItems = append(mktplaceCatalogItems, mktplaceCatalogItem)
-
 	return mktplaceCatalogItems, nil
 }
