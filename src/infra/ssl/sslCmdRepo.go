@@ -57,19 +57,19 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	return infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, vhost.String())
 }
 
-func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
-	rootDomain, err := infraHelper.GetRootDomain(host)
+func (repo SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
+	rootDomain, err := infraHelper.GetRootDomain(vhost)
 	if err != nil {
 		return false
 	}
 
-	hostStr := host.String()
-	isSubdomain := rootDomain.String() != hostStr
+	vhostStr := vhost.String()
+	isSubdomain := rootDomain.String() != vhostStr
 	if isSubdomain {
 		return false
 	}
 
-	wwwDnsEntry := "www." + hostStr
+	wwwDnsEntry := "www." + vhostStr
 	wwwDnsEntryIps, err := net.LookupIP(wwwDnsEntry)
 	if err != nil {
 		return false
@@ -80,14 +80,14 @@ func (repo SslCmdRepo) shouldIncludeWww(host valueObject.Fqdn) bool {
 		return false
 	}
 
-	hostIps, err := net.LookupIP(hostStr)
+	vhostIps, err := net.LookupIP(vhostStr)
 	if err != nil {
 		return false
 	}
 
-	firstHostIp := hostIps[0]
+	firstVhostIp := vhostIps[0]
 	for _, wwwDnsEntryIp := range wwwDnsEntryIps {
-		if !firstHostIp.Equal(wwwDnsEntryIp) {
+		if !firstVhostIp.Equal(wwwDnsEntryIp) {
 			continue
 		}
 
