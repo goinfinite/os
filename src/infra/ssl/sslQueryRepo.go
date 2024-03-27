@@ -203,8 +203,9 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 
 func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContent valueObject.SslCertificateContent,
-) string {
+) (valueObject.Hash, error) {
 	sslCrtContentBytes := []byte(sslCrtContent.String())
 	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
-	return hex.EncodeToString(sslCrtContentHash[:])
+	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
+	return valueObject.NewHash(sslCrtContentHashStr)
 }

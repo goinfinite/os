@@ -103,10 +103,15 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
 	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
 
-	expectedOwnershipHash := repo.sslQueryRepo.GetOwnershipValidationHash(
+	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
 		sslPair.Certificate.CertificateContent,
 	)
-	inlineHtmlContent, _ := valueObject.NewInlineHtmlContent(expectedOwnershipHash)
+	if err != nil {
+		return errors.New("FailedToCreateOwnershipValidationHash: " + err.Error())
+	}
+	inlineHtmlContent, _ := valueObject.NewInlineHtmlContent(
+		expectedOwnershipHash.String(),
+	)
 
 	firstVhost := sslPair.VirtualHosts[0]
 	inlineHmtlMapping := dto.NewCreateMapping(
@@ -121,7 +126,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-	err := vhostCmdRepo.CreateMapping(inlineHmtlMapping)
+	err = vhostCmdRepo.CreateMapping(inlineHmtlMapping)
 	if err != nil {
 		return errors.New("FailedToCreateOwnershipValidationMapping: " + err.Error())
 	}
