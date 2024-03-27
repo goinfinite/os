@@ -41,7 +41,7 @@ func GetPhpConfigsController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryVirtualHostNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
@@ -75,7 +75,7 @@ func UpdatePhpConfigController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryVirtualHostNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
@@ -153,7 +153,7 @@ func UpdatePhpSettingController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryVirtualHostNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
@@ -216,7 +216,7 @@ func UpdatePhpModuleController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryVirtualHostNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
