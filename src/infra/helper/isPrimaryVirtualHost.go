@@ -2,11 +2,11 @@ package infraHelper
 
 import "github.com/speedianet/os/src/domain/valueObject"
 
-func IsPrimaryVirtualHost(host valueObject.Fqdn) bool {
-	primaryHost, err := GetPrimaryHostname()
+func IsPrimaryVirtualHost(vhost valueObject.Fqdn) bool {
+	primaryVhost, err := GetPrimaryVirtualHost()
 	if err != nil {
 		return false
 	}
 
-	return host == primaryHost
+	return vhost == primaryVhost
 }

@@ -97,15 +97,15 @@ func DeleteVirtualHostController() *cobra.Command {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			primaryHostname, err := infraHelper.GetPrimaryHostname()
+			primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 			if err != nil {
-				panic("PrimaryHostnameNotFound")
+				panic("PrimaryVirtualHostNotFound")
 			}
 
 			err = useCase.DeleteVirtualHost(
 				vhostQueryRepo,
 				vhostCmdRepo,
-				primaryHostname,
+				primaryVhost,
 				hostname,
 			)
 			if err != nil {

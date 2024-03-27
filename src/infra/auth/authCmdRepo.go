@@ -22,9 +22,9 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	var accessToken entity.AccessToken
 
 	jwtSecret := os.Getenv("JWT_SECRET")
-	apiURL, err := infraHelper.GetPrimaryHostname()
+	apiURL, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return accessToken, errors.New("PrimaryHostnameNotFound")
+		return accessToken, errors.New("PrimaryVirtualHostNotFound")
 	}
 
 	now := time.Now()

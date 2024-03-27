@@ -330,7 +330,7 @@ func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 		hostnameStr = "localhost"
 	}
 
-	isVirtualHostEnvSet, err := infraHelper.GetPrimaryHostname()
+	isVirtualHostEnvSet, err := infraHelper.GetPrimaryVirtualHost()
 	if err == nil {
 		hostnameStr = isVirtualHostEnvSet.String()
 	}

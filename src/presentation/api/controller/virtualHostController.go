@@ -101,15 +101,15 @@ func DeleteVirtualHostController(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		panic("PrimaryHostnameNotFound")
+		panic("PrimaryVirtualHostNotFound")
 	}
 
 	err = useCase.DeleteVirtualHost(
 		vhostsQueryRepo,
 		vhostsCmdRepo,
-		primaryHostname,
+		primaryVhost,
 		hostname,
 	)
 	if err != nil {

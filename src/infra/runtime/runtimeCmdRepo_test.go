@@ -21,9 +21,9 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	}
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpVersion(
@@ -36,9 +36,9 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpSettings", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpSettings(
@@ -57,9 +57,9 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpModules", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpModules(
