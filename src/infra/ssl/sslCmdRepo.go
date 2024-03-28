@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -55,6 +56,59 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	}
 
 	return infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, vhost.String())
+}
+
+func (repo SslCmdRepo) isDomainMappedToServer(
+	vhost valueObject.Fqdn,
+	expectedOwnershipHash valueObject.Hash,
+) bool {
+	vhostStr := vhost.String()
+
+	rawVhostIps, err := infraHelper.RunCmd("dig", "+short", vhostStr, "@8.8.8.8")
+	if err != nil || rawVhostIps == "" {
+		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@1.1.1.1")
+		if err != nil || rawVhostIps == "" {
+			return false
+		}
+	}
+
+	rawVhostIpsParts := strings.Split(rawVhostIps, "\n")
+	if len(rawVhostIpsParts) == 0 {
+		return false
+	}
+
+	var serverIpAddress *valueObject.IpAddress
+	for _, rawVhostIp := range rawVhostIpsParts {
+		ipAddress, err := valueObject.NewIpAddress(rawVhostIp)
+		if err != nil {
+			continue
+		}
+
+		serverIpAddress = &ipAddress
+		break
+	}
+
+	if serverIpAddress == nil {
+		return false
+	}
+
+	ownershipValidateUrl := "https://" + serverIpAddress.String() +
+		envDataInfra.DomainOwnershipValidationUrlPath
+
+	ownershipHashFound, err := infraHelper.RunCmd(
+		"curl",
+		"-skL",
+		"--max-time",
+		"10",
+		"--header",
+		"Host: "+vhostStr,
+		ownershipValidateUrl,
+	)
+	if err != nil {
+		return false
+	}
+
+	return ownershipHashFound == expectedOwnershipHash.String()
 }
 
 func (repo SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
@@ -131,12 +185,12 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("FailedToCreateOwnershipValidationMapping: " + err.Error())
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	isDomainMappedToServer := vhostQueryRepo.IsDomainMappedToServer(
+	isDomainMappedToServer := repo.isDomainMappedToServer(
 		firstVhost,
 		expectedOwnershipHash,
 	)
 
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostMappings, err := vhostQueryRepo.GetMappingsByHostname(firstVhost)
 	if err != nil {
 		return errors.New("FailedToGetVhostMappings: " + err.Error())
