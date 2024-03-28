@@ -12,34 +12,34 @@ func NewMktplaceItemDescription(value string) (MktplaceItemDescription, error) {
 	isTooLong := len(value) > 512
 
 	if isTooShort || isTooLong {
-		return "", errors.New("InvalidMktplaceItemDescription")
+		return "", errors.New("InvalidMktItemDescription")
 	}
 
 	return MktplaceItemDescription(value), nil
 }
 
 func NewMktplaceItemDescriptionPanic(value string) MktplaceItemDescription {
-	comment, err := NewMktplaceItemDescription(value)
+	mid, err := NewMktplaceItemDescription(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return comment
+	return mid
 }
 
-func (mktplaceItemDesc MktplaceItemDescription) String() string {
-	return string(mktplaceItemDesc)
+func (mid MktplaceItemDescription) String() string {
+	return string(mid)
 }
 
-func (mktplaceItemDescPtr *MktplaceItemDescription) UnmarshalJSON(value []byte) error {
+func (midPtr *MktplaceItemDescription) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mktplaceItemDesc, err := NewMktplaceItemDescription(unquotedValue)
+	mid, err := NewMktplaceItemDescription(unquotedValue)
 	if err != nil {
 		return err
 	}
 
-	*mktplaceItemDescPtr = mktplaceItemDesc
+	*midPtr = mid
 	return nil
 }

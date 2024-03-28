@@ -12,45 +12,45 @@ type MktplaceItemId int64
 func NewMktplaceItemId(value interface{}) (MktplaceItemId, error) {
 	mktplaceItemUid, err := voHelper.InterfaceToUint(value)
 	if err != nil {
-		return 0, errors.New("InvalidMktplaceItemId")
+		return 0, errors.New("InvalidMktItemId")
 	}
 
-	mktplaceItemId := MktplaceItemId(mktplaceItemUid)
-	if !mktplaceItemId.isValid() {
-		return 0, errors.New("InvalidMktplaceItemId")
+	mii := MktplaceItemId(mktplaceItemUid)
+	if !mii.isValid() {
+		return 0, errors.New("InvalidMktItemId")
 	}
 
-	return mktplaceItemId, nil
+	return mii, nil
 }
 
 func NewMktplaceItemIdPanic(value interface{}) MktplaceItemId {
-	mktplaceItemId, err := NewMktplaceItemId(value)
+	mii, err := NewMktplaceItemId(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return mktplaceItemId
+	return mii
 }
 
-func (mktplaceItemId MktplaceItemId) isValid() bool {
-	return mktplaceItemId >= 1 && mktplaceItemId <= 999999999999
+func (mii MktplaceItemId) isValid() bool {
+	return mii >= 1 && mii <= 999999999999
 }
 
-func (mktplaceItemId MktplaceItemId) Get() int64 {
-	return int64(mktplaceItemId)
+func (mii MktplaceItemId) Get() int64 {
+	return int64(mii)
 }
 
-func (mktplaceItemId MktplaceItemId) String() string {
-	return strconv.FormatInt(int64(mktplaceItemId), 10)
+func (mii MktplaceItemId) String() string {
+	return strconv.FormatInt(int64(mii), 10)
 }
 
-func (mktplaceItemIdPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
+func (miiPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
-	mktplaceItemId, err := NewMktplaceItemId(valueStr)
+	mii, err := NewMktplaceItemId(valueStr)
 	if err != nil {
 		return err
 	}
 
-	*mktplaceItemIdPtr = mktplaceItemId
+	*miiPtr = mii
 	return nil
 }

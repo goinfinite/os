@@ -18,7 +18,8 @@ var ValidMktplaceItemTypes = []string{
 func NewMktplaceItemType(value string) (MktplaceItemType, error) {
 	value = strings.ToLower(value)
 
-	if !slices.Contains(ValidMktplaceItemTypes, value) {
+	mit := MktplaceItemType(value)
+	if !mit.isValid() {
 		return "", errors.New("InvalidMarketplaceItemType")
 	}
 
@@ -26,27 +27,31 @@ func NewMktplaceItemType(value string) (MktplaceItemType, error) {
 }
 
 func NewMktplaceItemTypePanic(value string) MktplaceItemType {
-	mktplaceItemType, err := NewMktplaceItemType(value)
+	mit, err := NewMktplaceItemType(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return mktplaceItemType
+	return mit
 }
 
-func (mktplaceItemType MktplaceItemType) String() string {
-	return string(mktplaceItemType)
+func (mit MktplaceItemType) isValid() bool {
+	return slices.Contains(ValidMktplaceItemTypes, string(mit))
 }
 
-func (mktplaceItemTypePtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
+func (mit MktplaceItemType) String() string {
+	return string(mit)
+}
+
+func (mitPtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mktplaceItemType, err := NewMktplaceItemType(unquotedValue)
+	mit, err := NewMktplaceItemType(unquotedValue)
 	if err != nil {
 		return err
 	}
 
-	*mktplaceItemTypePtr = mktplaceItemType
+	*mitPtr = mit
 	return nil
 }

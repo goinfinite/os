@@ -8,42 +8,42 @@ import (
 type MktplaceItemInstallStep string
 
 func NewMktplaceItemInstallStep(value string) (MktplaceItemInstallStep, error) {
-	mpis := MktplaceItemInstallStep(value)
-	if !mpis.isValid() {
-		return "", errors.New("InvalidMarketplaceItemInstallStep")
+	miis := MktplaceItemInstallStep(value)
+	if !miis.isValid() {
+		return "", errors.New("InvalidMktItemInstallStep")
 	}
 
-	return mpis, nil
+	return miis, nil
 }
 
 func NewMktplaceItemInstallStepPanic(value string) MktplaceItemInstallStep {
-	mpis, err := NewMktplaceItemInstallStep(value)
+	miis, err := NewMktplaceItemInstallStep(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return mpis
+	return miis
 }
 
-func (mpis MktplaceItemInstallStep) isValid() bool {
-	isTooShort := len(string(mpis)) < 1
-	isTooLong := len(string(mpis)) > 512
+func (miis MktplaceItemInstallStep) isValid() bool {
+	isTooShort := len(string(miis)) < 1
+	isTooLong := len(string(miis)) > 512
 	return !isTooShort && !isTooLong
 }
 
-func (mpis MktplaceItemInstallStep) String() string {
-	return string(mpis)
+func (miis MktplaceItemInstallStep) String() string {
+	return string(miis)
 }
 
-func (mpisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
+func (miisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mpis, err := NewMktplaceItemInstallStep(unquotedValue)
+	miis, err := NewMktplaceItemInstallStep(unquotedValue)
 	if err != nil {
 		return err
 	}
 
-	*mpisPtr = mpis
+	*miisPtr = miis
 	return nil
 }

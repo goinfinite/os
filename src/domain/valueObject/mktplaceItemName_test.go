@@ -22,14 +22,10 @@ func TestMktplaceItemName(t *testing.T) {
 			"rabbitmq",
 			"RabbitMQ",
 		}
-		for _, mktplaceItemName := range validMktplaceItemNames {
-			_, err := NewMktplaceItemName(mktplaceItemName)
+		for _, min := range validMktplaceItemNames {
+			_, err := NewMktplaceItemName(min)
 			if err != nil {
-				t.Errorf(
-					"Expected no error for %s, got %s",
-					mktplaceItemName,
-					err.Error(),
-				)
+				t.Errorf("Expected no error for %s, got %s", min, err.Error())
 			}
 		}
 	})
@@ -45,10 +41,10 @@ func TestMktplaceItemName(t *testing.T) {
 			"ççççççç",
 			"<root>",
 		}
-		for _, mktplaceItemName := range invalidMktplaceItemNames {
-			_, err := NewMktplaceItemName(mktplaceItemName)
+		for _, min := range invalidMktplaceItemNames {
+			_, err := NewMktplaceItemName(min)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mktplaceItemName)
+				t.Errorf("Expected error for %s, got nil", min)
 			}
 		}
 	})

@@ -11,10 +11,10 @@ func TestMktplaceItemType(t *testing.T) {
 			"framework",
 			"stack",
 		}
-		for _, mktplaceItemType := range validMktplaceItemTypes {
-			_, err := NewMktplaceItemType(mktplaceItemType)
+		for _, mit := range validMktplaceItemTypes {
+			_, err := NewMktplaceItemType(mit)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mktplaceItemType, err.Error())
+				t.Errorf("Expected no error for %s, got %s", mit, err.Error())
 			}
 		}
 	})
@@ -27,10 +27,10 @@ func TestMktplaceItemType(t *testing.T) {
 			"ml-model",
 			"repository",
 		}
-		for _, mktplaceItemType := range invalidMktplaceItemTypes {
-			_, err := NewMktplaceItemType(mktplaceItemType)
+		for _, mit := range invalidMktplaceItemTypes {
+			_, err := NewMktplaceItemType(mit)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mktplaceItemType)
+				t.Errorf("Expected error for %s, got nil", mit)
 			}
 		}
 	})

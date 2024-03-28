@@ -13,43 +13,43 @@ const mktplaceItemNameRegexExpression = `^[a-z0-9\-]{5,30}$`
 func NewMktplaceItemName(value string) (MktplaceItemName, error) {
 	value = strings.ToLower(value)
 
-	mkplaceItemInstallStep := MktplaceItemName(value)
-	if !mkplaceItemInstallStep.isValid() {
+	min := MktplaceItemName(value)
+	if !min.isValid() {
 		return "", errors.New("InvalidMarketplaceItemName")
 	}
 
-	return mkplaceItemInstallStep, nil
+	return min, nil
 }
 
 func NewMktplaceItemNamePanic(value string) MktplaceItemName {
-	mkplaceItemInstallStep, err := NewMktplaceItemName(value)
+	min, err := NewMktplaceItemName(value)
 	if err != nil {
 		panic(err)
 	}
 
-	return mkplaceItemInstallStep
+	return min
 }
 
-func (mktplaceItemName MktplaceItemName) isValid() bool {
+func (min MktplaceItemName) isValid() bool {
 	mktplaceItemNameCompiledRegex := regexp.MustCompile(
 		mktplaceItemNameRegexExpression,
 	)
-	return mktplaceItemNameCompiledRegex.MatchString(string(mktplaceItemName))
+	return mktplaceItemNameCompiledRegex.MatchString(string(min))
 }
 
-func (mktplaceItemName MktplaceItemName) String() string {
-	return string(mktplaceItemName)
+func (min MktplaceItemName) String() string {
+	return string(min)
 }
 
-func (mktplaceItemNamePtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
+func (minPtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mktplaceItemName, err := NewMktplaceItemName(unquotedValue)
+	min, err := NewMktplaceItemName(unquotedValue)
 	if err != nil {
 		return err
 	}
 
-	*mktplaceItemNamePtr = mktplaceItemName
+	*minPtr = min
 	return nil
 }

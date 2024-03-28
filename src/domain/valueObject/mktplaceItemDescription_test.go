@@ -13,10 +13,10 @@ func TestMktplaceItemDescription(t *testing.T) {
 			"It's comprised of Elasticsearch, Kibana, Beats, and Logstash (also known as the ELK Stack) and more. Reliably and securely take data from any source, in any format, then search, analyze, and visualize.",
 			"RabbitMQ is a reliable and mature messaging and streaming broker, which is easy to deploy on cloud environments, on-premises, and on your local machine. It is currently used by millions worldwide.",
 		}
-		for _, mktplaceItemDesc := range validMktplaceItemDescriptions {
-			_, err := NewMktplaceItemDescription(mktplaceItemDesc)
+		for _, mid := range validMktplaceItemDescriptions {
+			_, err := NewMktplaceItemDescription(mid)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mktplaceItemDesc, err.Error())
+				t.Errorf("Expected no error for %s, got %s", mid, err.Error())
 			}
 		}
 	})
@@ -28,10 +28,10 @@ func TestMktplaceItemDescription(t *testing.T) {
 			"a",
 			testHelpers.GenerateString(invalidLength),
 		}
-		for _, mktplaceItemDesc := range invalidMktplaceItemDescriptions {
-			_, err := NewMktplaceItemDescription(mktplaceItemDesc)
+		for _, mid := range invalidMktplaceItemDescriptions {
+			_, err := NewMktplaceItemDescription(mid)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mktplaceItemDesc)
+				t.Errorf("Expected error for %s, got nil", mid)
 			}
 		}
 	})

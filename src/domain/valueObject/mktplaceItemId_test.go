@@ -11,10 +11,10 @@ func TestMktplaceItemId(t *testing.T) {
 			"12345",
 		}
 
-		for _, groupId := range validMktplaceItemIds {
-			_, err := NewMktplaceItemId(groupId)
+		for _, mii := range validMktplaceItemIds {
+			_, err := NewMktplaceItemId(mii)
 			if err != nil {
-				t.Errorf("Expected no error for %v, got %s", groupId, err.Error())
+				t.Errorf("Expected no error for %v, got %s", mii, err.Error())
 			}
 		}
 	})
@@ -27,10 +27,10 @@ func TestMktplaceItemId(t *testing.T) {
 			"-455",
 		}
 
-		for _, groupId := range invalidMktplaceItemIds {
-			_, err := NewMktplaceItemId(groupId)
+		for _, mii := range invalidMktplaceItemIds {
+			_, err := NewMktplaceItemId(mii)
 			if err == nil {
-				t.Errorf("Expected error for %v, got nil", groupId)
+				t.Errorf("Expected error for %v, got nil", mii)
 			}
 		}
 	})

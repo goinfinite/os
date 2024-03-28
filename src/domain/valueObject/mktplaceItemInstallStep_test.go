@@ -17,14 +17,10 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 			"wget https://github.com/speedianet/os -O $PATH",
 		}
 
-		for _, mktplaceItemInstallStep := range validMktplaceItemInstallSteps {
-			_, err := NewMktplaceItemInstallStep(mktplaceItemInstallStep)
+		for _, miis := range validMktplaceItemInstallSteps {
+			_, err := NewMktplaceItemInstallStep(miis)
 			if err != nil {
-				t.Errorf(
-					"Expected no error for %s, got %s",
-					mktplaceItemInstallStep,
-					err.Error(),
-				)
+				t.Errorf("Expected no error for %s, got %s", miis, err.Error())
 			}
 		}
 	})
@@ -36,10 +32,10 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 			testHelpers.GenerateString(invalidLength),
 		}
 
-		for _, mktplaceItemInstallStep := range invalidMktplaceItemInstallSteps {
-			_, err := NewMktplaceItemInstallStep(mktplaceItemInstallStep)
+		for _, miis := range invalidMktplaceItemInstallSteps {
+			_, err := NewMktplaceItemInstallStep(miis)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mktplaceItemInstallStep)
+				t.Errorf("Expected error for %s, got nil", miis)
 			}
 		}
 	})
