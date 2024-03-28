@@ -114,7 +114,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 
 	firstVhost := sslPair.VirtualHosts[0]
-	inlineHmtlMapping := dto.NewCreateMapping(
+	inlineHtmlMapping := dto.NewCreateMapping(
 		firstVhost,
 		path,
 		matchPattern,
@@ -126,7 +126,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-	err = vhostCmdRepo.CreateMapping(inlineHmtlMapping)
+	err = vhostCmdRepo.CreateMapping(inlineHtmlMapping)
 	if err != nil {
 		return errors.New("FailedToCreateOwnershipValidationMapping: " + err.Error())
 	}
