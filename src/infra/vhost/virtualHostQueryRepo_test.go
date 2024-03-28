@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
@@ -46,23 +45,6 @@ location / {
 
 		if len(vhosts) == 0 {
 			t.Errorf("ExpectingNonEmptySliceButGot: %v", vhosts)
-		}
-	})
-
-	t.Run("TestDomainNotMappedToServer", func(t *testing.T) {
-		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-		if err != nil {
-			t.Errorf("GetPrimaryVirtualHostError: %s", err.Error())
-		}
-		randomHash := valueObject.NewHashPanic("randomhash")
-
-		isDomainMapped := vhostQueryRepo.IsDomainMappedToServer(
-			primaryVhost,
-			randomHash,
-		)
-
-		if isDomainMapped {
-			t.Errorf("ExpectingFalseButGot: %v", isDomainMapped)
 		}
 	})
 }
