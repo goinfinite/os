@@ -2,9 +2,7 @@ package o11yInfra
 
 import (
 	"errors"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -43,31 +41,38 @@ func (repo O11yQueryRepo) getUptime() (uint64, error) {
 }
 
 func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
+	var ipAddress valueObject.IpAddress
+
 	cachedIpAddressStr, err := repo.transientDbSvc.Get(PublicIpTransientKey)
 	if err == nil {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
-	resp, err := http.Get("https://speedia.net/ip")
+	rawIpEntry, err := infraHelper.RunCmd(
+		"dig", "+short", "TXT", "o-o.myaddr.l.google.com", "@ns1.google.com",
+	)
 	if err != nil {
-		return "", errors.New("GetPublicIpAddressFailed")
+		rawIpEntry, err = infraHelper.RunCmd(
+			"dig", "+short", "TXT", "CH", "whoami.cloudflare", "@1.1.1.1",
+		)
+		if err != nil {
+			return ipAddress, errors.New("GetPublicIpFailed: " + err.Error())
+		}
 	}
-	defer resp.Body.Close()
 
-	ipAddressBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", errors.New("ReadPublicIpAddressFailed")
+	rawIpEntry = strings.Trim(rawIpEntry, `"`)
+	if rawIpEntry == "" {
+		return ipAddress, errors.New("GetPublicIpFailed: NoIpEntry")
 	}
 
-	ipAddressStr := string(ipAddressBytes)
-	ipAddress, err := valueObject.NewIpAddress(ipAddressStr)
+	ipAddress, err = valueObject.NewIpAddress(rawIpEntry)
 	if err != nil {
-		return "", err
+		return ipAddress, err
 	}
 
 	err = repo.transientDbSvc.Set(PublicIpTransientKey, ipAddress.String())
 	if err != nil {
-		return ipAddress, errors.New("FailedToPersistPublicIp: " + err.Error())
+		return ipAddress, errors.New("PersistPublicIpFailed: " + err.Error())
 	}
 
 	return ipAddress, nil
