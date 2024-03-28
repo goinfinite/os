@@ -26,7 +26,7 @@ func NewWebServerSetup(
 	}
 }
 
-func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
+func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
 
 	maxChildProcesses := int64(300)
@@ -54,7 +54,7 @@ func (ws WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte
 	return nil
 }
 
-func (ws WebServerSetup) FirstSetup() {
+func (ws *WebServerSetup) FirstSetup() {
 	_, err := os.Stat("/etc/nginx/dhparam.pem")
 	if err == nil {
 		return
@@ -111,7 +111,7 @@ func (ws WebServerSetup) FirstSetup() {
 	}
 }
 
-func (ws WebServerSetup) OnStartSetup() {
+func (ws *WebServerSetup) OnStartSetup() {
 	defaultLogPrefix := "WsOnStartupSetup"
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
