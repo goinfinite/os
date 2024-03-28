@@ -167,15 +167,15 @@ func addPhp() error {
 		return errors.New("CopyAssetsError: " + err.Error())
 	}
 
-	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return errors.New("PrimaryHostnameNotFound")
+		return errors.New("PrimaryVirtualHostNotFound")
 	}
 
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+primaryHostname.String()+"/g",
+		"s/speedia.net/"+primaryVhost.String()+"/g",
 		"/usr/local/lsws/conf/httpd_config.conf",
 	)
 	if err != nil {
@@ -206,7 +206,7 @@ func addPhp() error {
 	_, err = infraHelper.RunCmd(
 		"sed",
 		"-i",
-		"s/speedia.net/"+primaryHostname.String()+"/g",
+		"s/speedia.net/"+primaryVhost.String()+"/g",
 		configurationDir+"//php/primary.conf",
 	)
 	if err != nil {

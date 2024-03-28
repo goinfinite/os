@@ -1,6 +1,12 @@
 package entity
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import (
+	"time"
+
+	"github.com/speedianet/os/src/domain/valueObject"
+)
+
+const EarlyRenewalThresholdHours int64 = 48
 
 type SslPair struct {
 	Id                valueObject.SslId         `json:"sslPairId"`
@@ -24,4 +30,21 @@ func NewSslPair(
 		Key:               key,
 		ChainCertificates: chainCertificates,
 	}
+}
+
+func (sslPair SslPair) IsPubliclyTrusted() bool {
+	sslPairCrtAuthority := sslPair.Certificate.CertificateAuthority
+	if sslPairCrtAuthority.IsSelfSigned() {
+		return false
+	}
+
+	hoursToSeconds := int64(3600)
+	earlyRenewalThresholdSeconds := EarlyRenewalThresholdHours * hoursToSeconds
+
+	expirationDate := sslPair.Certificate.ExpiresAt.Get()
+	expirationDateUnixTime := time.Unix(expirationDate, 0).UTC().Unix()
+	unixTimeToRenew := expirationDateUnixTime - earlyRenewalThresholdSeconds
+	nowUnixTime := time.Now().Unix()
+
+	return nowUnixTime > unixTimeToRenew
 }

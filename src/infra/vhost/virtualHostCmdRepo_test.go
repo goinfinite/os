@@ -52,6 +52,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			nil,
 			nil,
 			&responseCode,
+			nil,
 		)
 
 		err := VirtualHostCmdRepo{}.CreateMapping(createDto)
@@ -72,6 +73,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			nil,
 			nil,
 			&responseCode,
+			nil,
 		)
 
 		err := VirtualHostCmdRepo{}.DeleteMapping(mapping)

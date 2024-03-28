@@ -13,24 +13,12 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
-	"golang.org/x/net/publicsuffix"
 )
 
 var configurationsDir string = "/app/conf/nginx"
 var mappingsDir string = "/app/conf/nginx/mapping"
 
 type VirtualHostQueryRepo struct {
-}
-
-func (repo VirtualHostQueryRepo) IsVirtualHostPrimaryDomain(
-	domain valueObject.Fqdn,
-) bool {
-	primaryDomain, err := infraHelper.GetPrimaryHostname()
-	if err != nil {
-		return false
-	}
-
-	return domain == primaryDomain
 }
 
 func (repo VirtualHostQueryRepo) vhostsFactory(
@@ -59,7 +47,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 		log.Printf("InvalidServerName: %s", serverNamesParts[0])
 		return vhosts, nil
 	}
-	isPrimaryDomain := repo.IsVirtualHostPrimaryDomain(firstDomain)
+	isPrimaryVhost := infraHelper.IsPrimaryVirtualHost(firstDomain)
 
 	for _, serverName := range serverNamesParts {
 		serverName, err := valueObject.NewFqdn(serverName)
@@ -81,14 +69,9 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			parentDomainPtr = &firstDomain
 		}
 
-		rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(serverName.String())
+		rootDomain, err := infraHelper.GetRootDomain(serverName)
 		if err != nil {
-			log.Printf("InvalidRootDomain: %s", serverName.String())
-			continue
-		}
-		rootDomain, err := valueObject.NewFqdn(rootDomainStr)
-		if err != nil {
-			log.Printf("InvalidRootDomain: %s", rootDomainStr)
+			log.Printf("%s: %s", err.Error(), serverName.String())
 			continue
 		}
 
@@ -98,12 +81,12 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			parentDomainPtr = &rootDomain
 		}
 
-		if isPrimaryDomain {
+		if isPrimaryVhost {
 			vhostType, _ = valueObject.NewVirtualHostType("primary")
 		}
 
 		rootDirectorySuffix := "/" + serverName.String()
-		if isPrimaryDomain {
+		if isPrimaryVhost {
 			rootDirectorySuffix = ""
 		}
 		rootDirectory, err := valueObject.NewUnixFilePath(
@@ -202,7 +185,7 @@ func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 		mappingFileName = parentHostname.String() + ".conf"
 	}
 
-	if repo.IsVirtualHostPrimaryDomain(vhostName) {
+	if infraHelper.IsPrimaryVirtualHost(vhostName) {
 		mappingFileName = "primary.conf"
 	}
 
@@ -281,24 +264,57 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 
 	var targetUrlPtr *valueObject.Url
 	var targetResponseCodePtr *valueObject.HttpResponseCode
+	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
 
-	isUrlOrResponseCode := strings.Contains(blockContent, "return ")
-	if isUrlOrResponseCode {
-		blockContentFirstLine := strings.Split(blockContent, "\n")[0]
-		blockContentFirstLineParts := strings.Split(blockContentFirstLine, " ")
-		if len(blockContentFirstLineParts) < 2 {
+	isUrlOrResponseCodeOrInlineHtml := strings.Contains(blockContent, "return ")
+	if isUrlOrResponseCodeOrInlineHtml {
+		blockContentLines := strings.Split(blockContent, "\n")
+
+		blockContentFirstLine := blockContentLines[0]
+		directiveBlockContent := blockContentFirstLine
+		directiveBlockContentParts := strings.Split(directiveBlockContent, " ")
+		if len(directiveBlockContentParts) < 2 {
 			return mapping, errors.New("GetLocationBlockContentPartsFailed")
-		}
-
-		directive := blockContentFirstLineParts[0]
-		if directive != "return" {
-			return mapping, errors.New("GetLocationDirectiveFailed")
 		}
 
 		targetTypeStr = "response-code"
 
-		responseCodeWithSemicolonStr := blockContentFirstLineParts[1]
-		responseCodeStr := strings.TrimRight(responseCodeWithSemicolonStr, ";")
+		directive := directiveBlockContentParts[0]
+		if directive == "add_header" {
+			blockContentSecondLine := blockContentLines[1]
+			blockContentSecondLine = strings.TrimSpace(blockContentSecondLine)
+			blockContentSecondLineParts := strings.Split(blockContentSecondLine, " ")
+			if len(blockContentSecondLineParts) < 2 {
+				return mapping, errors.New("GetLocationBlockContentPartsFailed")
+			}
+
+			inlineHtmlContentStr := blockContentSecondLineParts[2]
+			inlineHtmlContentWithoutQuotesStr := strings.ReplaceAll(inlineHtmlContentStr, "'", "")
+			inlineHtmlContentWithoutSemicolonStr := strings.TrimRight(
+				inlineHtmlContentWithoutQuotesStr, ";",
+			)
+			inlineHtmlContentStr = inlineHtmlContentWithoutSemicolonStr
+			inlineHtmlContent, err := valueObject.NewInlineHtmlContent(inlineHtmlContentStr)
+			if err != nil {
+				return mapping, errors.New("InvalidReturnInlineHtmlContent: " + inlineHtmlContentStr)
+			}
+			targetInlineHtmlContentPtr = &inlineHtmlContent
+
+			directive = blockContentSecondLineParts[0]
+			directiveBlockContentParts = blockContentSecondLineParts
+			targetTypeStr = "inline-html"
+		}
+
+		if directive != "return" {
+			return mapping, errors.New("GetLocationDirectiveFailed")
+		}
+
+		responseCodeStr := directiveBlockContentParts[1]
+		if targetTypeStr == "response-code" {
+			responseCodeWithoutSemicolonStr := strings.TrimRight(responseCodeStr, ";")
+			responseCodeStr = responseCodeWithoutSemicolonStr
+		}
+
 		if len(responseCodeStr) == 0 {
 			return mapping, errors.New("InvalidReturnResponseCode: " + responseCodeStr)
 		}
@@ -309,11 +325,11 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		}
 		targetResponseCodePtr = &responseCode
 
-		hasUrl := len(blockContentFirstLineParts) == 3
+		hasUrl := len(directiveBlockContentParts) == 3 && targetTypeStr != "inline-html"
 		if hasUrl {
 			targetTypeStr = "url"
 
-			urlStr := blockContentFirstLineParts[2]
+			urlStr := directiveBlockContentParts[2]
 			urlStr = strings.TrimSuffix(urlStr, ";")
 			url, err := valueObject.NewUrl(urlStr)
 			if err != nil {
@@ -373,6 +389,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 		targetServiceNamePtr,
 		targetUrlPtr,
 		targetResponseCodePtr,
+		targetInlineHtmlContentPtr,
 	), nil
 }
 
@@ -466,6 +483,19 @@ func (repo VirtualHostQueryRepo) GetWithMappings() ([]dto.VirtualHostWithMapping
 	}
 
 	return vhostsWithMappings, nil
+}
+
+func (repo VirtualHostQueryRepo) GetMappingsByHostname(
+	hostname valueObject.Fqdn,
+) ([]entity.Mapping, error) {
+	vhostMappings := []entity.Mapping{}
+
+	vhost, err := repo.GetByHostname(hostname)
+	if err != nil {
+		return vhostMappings, err
+	}
+
+	return repo.getVirtualHostMappings(vhost)
 }
 
 func (repo VirtualHostQueryRepo) GetMappingById(

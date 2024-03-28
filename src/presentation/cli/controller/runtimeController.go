@@ -16,12 +16,12 @@ import (
 )
 
 func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
-	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return "", errors.New("PrimaryHostnameNotFound")
+		return "", errors.New("PrimaryVirtualHostNotFound")
 	}
 
-	hostname := primaryHostname
+	hostname := primaryVhost
 	if hostnameStr != "" {
 		hostname = valueObject.NewFqdnPanic(hostnameStr)
 	}
@@ -41,7 +41,7 @@ func GetPhpConfigsController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
@@ -75,7 +75,7 @@ func UpdatePhpConfigController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
@@ -153,7 +153,7 @@ func UpdatePhpSettingController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
@@ -216,7 +216,7 @@ func UpdatePhpModuleController() *cobra.Command {
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "PrimaryHostnameNotFound")
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)

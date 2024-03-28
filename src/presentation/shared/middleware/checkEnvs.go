@@ -12,7 +12,7 @@ import (
 )
 
 var requiredEnvVars = []string{
-	"VIRTUAL_HOST",
+	"PRIMARY_VHOST",
 	"JWT_SECRET",
 	"UAK_SECRET",
 }
@@ -71,8 +71,8 @@ func CheckEnvs() {
 		os.Setenv(key, value)
 	}
 
-	_, err = infraHelper.GetPrimaryHostname()
+	_, err = infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		log.Fatalf("PrimaryHostnameNotFound")
+		log.Fatalf("PrimaryVirtualHostNotFound")
 	}
 }

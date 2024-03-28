@@ -8,12 +8,11 @@ import (
 )
 
 func TestVirtualHostQueryRepo(t *testing.T) {
+	vhostQueryRepo := VirtualHostQueryRepo{}
 	testHelpers.LoadEnvVars()
 
 	t.Run("GetVirtualHosts", func(t *testing.T) {
-		repo := VirtualHostQueryRepo{}
-		vhosts, err := repo.Get()
-
+		vhosts, err := vhostQueryRepo.Get()
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
@@ -39,9 +38,7 @@ location / {
 			t.Errorf("UpdateMappingFileError: %s", err.Error())
 		}
 
-		repo := VirtualHostQueryRepo{}
-		vhosts, err := repo.GetWithMappings()
-
+		vhosts, err := vhostQueryRepo.GetWithMappings()
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}

@@ -84,9 +84,23 @@ func CreateMapping(
 		createMapping.TargetHttpResponseCode = &defaultUrlResponseCode
 	}
 
+	isTargetHttpResponseCodeMissing := createMapping.TargetHttpResponseCode == nil
+
 	isResponseCodeTarget := createMapping.TargetType.String() == "response-code"
-	if isResponseCodeTarget && createMapping.TargetHttpResponseCode == nil {
+	if isResponseCodeTarget && isTargetHttpResponseCodeMissing {
 		return errors.New("TargetHttpResponseCodeRequired")
+	}
+
+	isInlineHtmlTarget := createMapping.TargetType.String() == "inline-html"
+	if isInlineHtmlTarget {
+		if createMapping.TargetInlineHtmlContent == nil {
+			return errors.New("TargetInlineHtmlContentRequired")
+		}
+
+		if isTargetHttpResponseCodeMissing {
+			defaultHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+			createMapping.TargetHttpResponseCode = &defaultHttpResponseCode
+		}
 	}
 
 	err = cmdRepo.CreateMapping(createMapping)
