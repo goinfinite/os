@@ -2,9 +2,7 @@ package o11yInfra
 
 import (
 	"errors"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -33,7 +31,7 @@ func NewO11yQueryRepo(
 	}
 }
 
-func (repo O11yQueryRepo) getUptime() (uint64, error) {
+func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 	sysinfo := &syscall.Sysinfo_t{}
 	if err := syscall.Sysinfo(sysinfo); err != nil {
 		return 0, err
@@ -42,43 +40,50 @@ func (repo O11yQueryRepo) getUptime() (uint64, error) {
 	return uint64(sysinfo.Uptime), nil
 }
 
-func (repo O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
+func (repo *O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
+	var ipAddress valueObject.IpAddress
+
 	cachedIpAddressStr, err := repo.transientDbSvc.Get(PublicIpTransientKey)
 	if err == nil {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
-	resp, err := http.Get("https://speedia.net/ip")
+	rawIpEntry, err := infraHelper.RunCmd(
+		"dig", "+short", "TXT", "o-o.myaddr.l.google.com", "@ns1.google.com",
+	)
 	if err != nil {
-		return "", errors.New("GetPublicIpAddressFailed")
+		rawIpEntry, err = infraHelper.RunCmd(
+			"dig", "+short", "TXT", "CH", "whoami.cloudflare", "@1.1.1.1",
+		)
+		if err != nil {
+			return ipAddress, errors.New("GetPublicIpFailed: " + err.Error())
+		}
 	}
-	defer resp.Body.Close()
 
-	ipAddressBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", errors.New("ReadPublicIpAddressFailed")
+	rawIpEntry = strings.Trim(rawIpEntry, `"`)
+	if rawIpEntry == "" {
+		return ipAddress, errors.New("GetPublicIpFailed: NoIpEntry")
 	}
 
-	ipAddressStr := string(ipAddressBytes)
-	ipAddress, err := valueObject.NewIpAddress(ipAddressStr)
+	ipAddress, err = valueObject.NewIpAddress(rawIpEntry)
 	if err != nil {
-		return "", err
+		return ipAddress, err
 	}
 
 	err = repo.transientDbSvc.Set(PublicIpTransientKey, ipAddress.String())
 	if err != nil {
-		return ipAddress, errors.New("FailedToPersistPublicIp: " + err.Error())
+		return ipAddress, errors.New("PersistPublicIpFailed: " + err.Error())
 	}
 
 	return ipAddress, nil
 }
 
-func (repo O11yQueryRepo) isCgroupV2() bool {
+func (repo *O11yQueryRepo) isCgroupV2() bool {
 	_, err := os.Stat("/sys/fs/cgroup/cpu.max")
 	return err == nil
 }
 
-func (repo O11yQueryRepo) getFileContent(file string) (string, error) {
+func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
 	fileContent, err := infraHelper.GetFileContent(file)
 	if err != nil {
 		return "", err
@@ -87,7 +92,7 @@ func (repo O11yQueryRepo) getFileContent(file string) (string, error) {
 	return strings.TrimSpace(fileContent), nil
 }
 
-func (repo O11yQueryRepo) getCpuQuota() (int64, error) {
+func (repo *O11yQueryRepo) getCpuQuota() (int64, error) {
 	cpuQuotaFile := "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"
 	if repo.isCgroupV2() {
 		cpuQuotaFile = "/sys/fs/cgroup/cpu.max"
@@ -109,7 +114,7 @@ func (repo O11yQueryRepo) getCpuQuota() (int64, error) {
 	return cpuQuotaInt, nil
 }
 
-func (repo O11yQueryRepo) getMemoryLimit() (int64, error) {
+func (repo *O11yQueryRepo) getMemoryLimit() (int64, error) {
 	memLimitFile := "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 	if repo.isCgroupV2() {
 		memLimitFile = "/sys/fs/cgroup/memory.max"
@@ -134,7 +139,7 @@ func (repo O11yQueryRepo) getMemoryLimit() (int64, error) {
 	return memLimitInt, nil
 }
 
-func (repo O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
+func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
 	var stat syscall.Statfs_t
 	err := syscall.Statfs("/", &stat)
 	if err != nil {
@@ -152,7 +157,7 @@ func (repo O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
 	), nil
 }
 
-func (repo O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error) {
+func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error) {
 	cmd := exec.Command(
 		"awk",
 		"-F:",
@@ -207,7 +212,7 @@ func (repo O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error) 
 	), nil
 }
 
-func (repo O11yQueryRepo) getCpuUsagePercent() (float64, error) {
+func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 	cpuUsageFile := "/sys/fs/cgroup/cpuacct/cpuacct.usage"
 	if repo.isCgroupV2() {
 		cpuUsageFile = "/sys/fs/cgroup/cpu.stat"
@@ -262,7 +267,7 @@ func (repo O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 	return cpuUsagePercent, nil
 }
 
-func (repo O11yQueryRepo) getMemUsagePercent() (float64, error) {
+func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	memUsageFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
 	if repo.isCgroupV2() {
 		memUsageFile = "/sys/fs/cgroup/memory.current"
@@ -296,7 +301,7 @@ func (repo O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	return memUsagePercent, nil
 }
 
-func (repo O11yQueryRepo) getCurrentResourceUsage() (
+func (repo *O11yQueryRepo) getCurrentResourceUsage() (
 	valueObject.CurrentResourceUsage,
 	error,
 ) {
@@ -322,7 +327,7 @@ func (repo O11yQueryRepo) getCurrentResourceUsage() (
 	), nil
 }
 
-func (repo O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
+func (repo *O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 	var o11yOverview entity.O11yOverview
 
 	hostnameStr, err := os.Hostname()

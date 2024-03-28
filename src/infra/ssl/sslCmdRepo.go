@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -32,7 +33,7 @@ func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 	if vhostCertFileExists {
 		err := os.Remove(vhostCertFilePath)
 		if err != nil {
-			return errors.New("FailedToDeleteCertFile: " + err.Error())
+			return errors.New("DeleteCertFileError: " + err.Error())
 		}
 	}
 
@@ -41,7 +42,7 @@ func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 	if vhostCertKeyFileExists {
 		err := os.Remove(vhostCertKeyFilePath)
 		if err != nil {
-			return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
+			return errors.New("DeleteCertKeyFileError: " + err.Error())
 		}
 	}
 
@@ -55,6 +56,59 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	}
 
 	return infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, vhost.String())
+}
+
+func (repo SslCmdRepo) isDomainMappedToServer(
+	vhost valueObject.Fqdn,
+	expectedOwnershipHash valueObject.Hash,
+) bool {
+	vhostStr := vhost.String()
+
+	rawVhostIps, err := infraHelper.RunCmd("dig", "+short", vhostStr, "@8.8.8.8")
+	if err != nil || rawVhostIps == "" {
+		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@1.1.1.1")
+		if err != nil || rawVhostIps == "" {
+			return false
+		}
+	}
+
+	rawVhostIpsParts := strings.Split(rawVhostIps, "\n")
+	if len(rawVhostIpsParts) == 0 {
+		return false
+	}
+
+	var serverIpAddress *valueObject.IpAddress
+	for _, rawVhostIp := range rawVhostIpsParts {
+		ipAddress, err := valueObject.NewIpAddress(rawVhostIp)
+		if err != nil {
+			continue
+		}
+
+		serverIpAddress = &ipAddress
+		break
+	}
+
+	if serverIpAddress == nil {
+		return false
+	}
+
+	ownershipValidateUrl := "https://" + serverIpAddress.String() +
+		envDataInfra.DomainOwnershipValidationUrlPath
+
+	ownershipHashFound, err := infraHelper.RunCmd(
+		"curl",
+		"-skL",
+		"--max-time",
+		"10",
+		"--header",
+		"Host: "+vhostStr,
+		ownershipValidateUrl,
+	)
+	if err != nil {
+		return false
+	}
+
+	return ownershipHashFound == expectedOwnershipHash.String()
 }
 
 func (repo SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
@@ -107,14 +161,14 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		sslPair.Certificate.CertificateContent,
 	)
 	if err != nil {
-		return errors.New("FailedToCreateOwnershipValidationHash: " + err.Error())
+		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
 	inlineHtmlContent, _ := valueObject.NewInlineHtmlContent(
 		expectedOwnershipHash.String(),
 	)
 
 	firstVhost := sslPair.VirtualHosts[0]
-	inlineHmtlMapping := dto.NewCreateMapping(
+	inlineHtmlMapping := dto.NewCreateMapping(
 		firstVhost,
 		path,
 		matchPattern,
@@ -126,25 +180,25 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-	err = vhostCmdRepo.CreateMapping(inlineHmtlMapping)
+	err = vhostCmdRepo.CreateMapping(inlineHtmlMapping)
 	if err != nil {
-		return errors.New("FailedToCreateOwnershipValidationMapping: " + err.Error())
+		return errors.New("CreateOwnershipValidationMappingError: " + err.Error())
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	isDomainMappedToServer := vhostQueryRepo.IsDomainMappedToServer(
+	isDomainMappedToServer := repo.isDomainMappedToServer(
 		firstVhost,
 		expectedOwnershipHash,
 	)
 
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostMappings, err := vhostQueryRepo.GetMappingsByHostname(firstVhost)
 	if err != nil {
-		return errors.New("FailedToGetVhostMappings: " + err.Error())
+		return errors.New("GetVhostMappingsError: " + err.Error())
 	}
 
 	firstVhostStr := firstVhost.String()
 	if len(vhostMappings) == 0 {
-		return errors.New("VhostMappingsNotFound: " + firstVhostStr)
+		return errors.New("VhostMappingsNotFound")
 	}
 
 	lastMappingIndex := len(vhostMappings) - 1
@@ -152,11 +206,11 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 
 	err = vhostCmdRepo.DeleteMapping(lastMapping)
 	if err != nil {
-		return errors.New("FailedToDeleteOwnershipValidationMapping: " + err.Error())
+		return errors.New("DeleteOwnershipValidationMappingError: " + err.Error())
 	}
 
 	if !isDomainMappedToServer {
-		return errors.New("CurrentHostIsNotDomainOwner: " + firstVhostStr)
+		return errors.New("DomainIsNotMappedToServer")
 	}
 
 	vhostRootDir := "/app/html"
@@ -175,7 +229,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 
 	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
 	if err != nil {
-		return errors.New("CreateValidSslFailed: " + err.Error())
+		return errors.New("CreateValidSslError: " + err.Error())
 	}
 
 	certbotDirPath := "/etc/letsencrypt/live"
@@ -208,7 +262,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 
 func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 	if len(createSslPair.VirtualHosts) == 0 {
-		return errors.New("NoVirtualHostsProvidedToCreateSslPair")
+		return errors.New("EmptyVirtualHosts")
 	}
 
 	firstVhostStr := createSslPair.VirtualHosts[0].String()

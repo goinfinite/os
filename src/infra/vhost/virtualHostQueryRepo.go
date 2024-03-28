@@ -1,22 +1,17 @@
 package vhostInfra
 
 import (
-	"crypto/tls"
 	"errors"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	envDataInfra "github.com/speedianet/os/src/infra/shared"
 	"golang.org/x/exp/slices"
 )
 
@@ -526,34 +521,4 @@ func (repo VirtualHostQueryRepo) GetMappingById(
 	}
 
 	return mapping, errors.New("MappingNotFound")
-}
-
-func (repo VirtualHostQueryRepo) IsDomainMappedToServer(
-	vhost valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-) bool {
-	ownershipValidateUrl := "https://" + vhost.String() +
-		envDataInfra.DomainOwnershipValidationUrlPath
-
-	httpClient := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
-	httpResponse, err := httpClient.Get(ownershipValidateUrl)
-	if err != nil {
-		return false
-	}
-	defer httpResponse.Body.Close()
-
-	responseBodyBytes, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return false
-	}
-
-	ownershipHashFound := string(responseBodyBytes)
-	return ownershipHashFound == expectedOwnershipHash.String()
 }
