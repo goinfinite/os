@@ -31,7 +31,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.Database
 
 	dbNameListStr, err := PostgresqlCmd("SELECT datname FROM pg_database", nil)
 	if err != nil {
-		return dbNameList, errors.New("GetDatabaseNamesError: " + err.Error())
+		return dbNameList, errors.New("FailedToGetDatabaseNames: " + err.Error())
 	}
 
 	dbNameListSlice := strings.Split(dbNameListStr, "\n")
@@ -62,7 +62,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 		nil,
 	)
 	if err != nil {
-		return 0, errors.New("GetDatabaseSizeError: " + err.Error())
+		return 0, errors.New("FailedToGetDatabaseSize: " + err.Error())
 	}
 
 	dbSizeInBytes, err := strconv.ParseInt(dbSizeStr, 10, 64)
@@ -83,7 +83,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 		nil,
 	)
 	if err != nil {
-		return dbUsernameList, errors.New("GetDatabaseUserError: " + err.Error())
+		return dbUsernameList, errors.New("FailedToGetDatabaseUser: " + err.Error())
 	}
 
 	compiledDbUsersPrivsRegex := regexp.MustCompile(`(\w+)=`)
@@ -175,4 +175,39 @@ func (repo PostgresDatabaseQueryRepo) UserExists(
 	}
 
 	return userExists == "1"
+}
+
+func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
+	dbUser valueObject.DatabaseUsername,
+) ([]valueObject.DatabaseName, error) {
+	userDbNamesList := []valueObject.DatabaseName{}
+
+	userDbNamesStr, err := PostgresqlCmd(
+		"SELECT datname FROM pg_database WHERE array_to_string(datacl, '') LIKE '%"+
+			dbUser.String()+"%'",
+		nil,
+	)
+	if err != nil {
+		return userDbNamesList, errors.New("FailedToGetUserDatabaseNames: " + err.Error())
+	}
+
+	userDbNamesStrSlice := strings.Split(userDbNamesStr, "\n")
+	if len(userDbNamesStrSlice) == 0 {
+		return userDbNamesList, nil
+	}
+
+	for _, userDbNameStr := range userDbNamesStrSlice {
+		if len(userDbNameStr) == 0 {
+			continue
+		}
+
+		userDbName, err := valueObject.NewDatabaseName(userDbNameStr)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), userDbNameStr)
+		}
+
+		userDbNamesList = append(userDbNamesList, userDbName)
+	}
+
+	return userDbNamesList, nil
 }
