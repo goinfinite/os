@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 )
 
 type MktplaceItemType string
@@ -48,6 +49,22 @@ func (mitPtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
 	unquotedValue := strings.Trim(valueStr, "\"")
 
 	mit, err := NewMktplaceItemType(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mitPtr = mit
+	return nil
+}
+
+func (mitPtr *MktplaceItemType) UnmarshalYAML(value *yaml.Node) error {
+	var valueStr string
+	err := value.Decode(&valueStr)
+	if err != nil {
+		return err
+	}
+
+	mit, err := NewMktplaceItemType(valueStr)
 	if err != nil {
 		return err
 	}

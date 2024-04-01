@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strings"
 )
 
 type DataFieldValue string
@@ -29,4 +30,17 @@ func NewDataFieldValuePanic(value string) DataFieldValue {
 
 func (dfv DataFieldValue) String() string {
 	return string(dfv)
+}
+
+func (dfvPtr *DataFieldValue) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	dfv, err := NewDataFieldValue(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*dfvPtr = dfv
+	return nil
 }

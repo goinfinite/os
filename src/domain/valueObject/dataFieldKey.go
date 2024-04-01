@@ -3,6 +3,7 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 const dataFieldKeyRegex string = `^[0-9a-zA-Z_-]{1,32}$`
@@ -34,4 +35,17 @@ func (dfk DataFieldKey) isValid() bool {
 
 func (dfk DataFieldKey) String() string {
 	return string(dfk)
+}
+
+func (dfkPtr *DataFieldKey) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	dfk, err := NewDataFieldKey(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*dfkPtr = dfk
+	return nil
 }

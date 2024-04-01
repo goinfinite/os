@@ -3,6 +3,8 @@ package valueObject
 import (
 	"errors"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type MktplaceItemInstallStep string
@@ -40,6 +42,22 @@ func (miisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
 	unquotedValue := strings.Trim(valueStr, "\"")
 
 	miis, err := NewMktplaceItemInstallStep(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*miisPtr = miis
+	return nil
+}
+
+func (miisPtr *MktplaceItemInstallStep) UnmarshalYAML(value *yaml.Node) error {
+	var valueStr string
+	err := value.Decode(&valueStr)
+	if err != nil {
+		return err
+	}
+
+	miis, err := NewMktplaceItemInstallStep(valueStr)
 	if err != nil {
 		return err
 	}
