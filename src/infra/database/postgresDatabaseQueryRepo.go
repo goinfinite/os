@@ -182,7 +182,7 @@ func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
 ) ([]valueObject.DatabaseName, error) {
 	dbNames := []valueObject.DatabaseName{}
 
-	dbNamesStr, err := PostgresqlCmd(
+	rawDbNames, err := PostgresqlCmd(
 		"SELECT datname FROM pg_database WHERE array_to_string(datacl, '') LIKE '%"+
 			dbUser.String()+"%'",
 		nil,
@@ -191,19 +191,19 @@ func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
 		return dbNames, errors.New("GetUserDatabaseNamesError: " + err.Error())
 	}
 
-	dbNamesStrSlice := strings.Split(dbNamesStr, "\n")
-	if len(dbNamesStrSlice) == 0 {
+	rawDbNamesSlice := strings.Split(rawDbNames, "\n")
+	if len(rawDbNamesSlice) == 0 {
 		return dbNames, nil
 	}
 
-	for _, dbNameStr := range dbNamesStrSlice {
-		if len(dbNameStr) == 0 {
+	for _, rawDbName := range rawDbNamesSlice {
+		if len(rawDbName) == 0 {
 			continue
 		}
 
-		dbName, err := valueObject.NewDatabaseName(dbNameStr)
+		dbName, err := valueObject.NewDatabaseName(rawDbName)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), dbNameStr)
+			log.Printf("%s: %s", err.Error(), rawDbName)
 			continue
 		}
 
