@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	"gopkg.in/yaml.v3"
 )
 
 type MktplaceItemId int64
@@ -46,6 +47,22 @@ func (mii MktplaceItemId) String() string {
 
 func (miiPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
+	mii, err := NewMktplaceItemId(valueStr)
+	if err != nil {
+		return err
+	}
+
+	*miiPtr = mii
+	return nil
+}
+
+func (miiPtr *MktplaceItemId) UnmarshalYAML(value *yaml.Node) error {
+	var valueStr string
+	err := value.Decode(&valueStr)
+	if err != nil {
+		return err
+	}
+
 	mii, err := NewMktplaceItemId(valueStr)
 	if err != nil {
 		return err
