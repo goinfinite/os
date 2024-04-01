@@ -14,7 +14,6 @@ func NewMappingPath(value string) (MappingPath, error) {
 	if !mappingPath.isValid(value) {
 		return "", errors.New("InvalidMappingPath")
 	}
-
 	return mappingPath, nil
 }
 
@@ -23,7 +22,6 @@ func NewMappingPathPanic(value string) MappingPath {
 	if err != nil {
 		panic(err)
 	}
-
 	return mappingPath
 }
 
