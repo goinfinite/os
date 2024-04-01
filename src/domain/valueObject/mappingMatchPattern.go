@@ -35,3 +35,16 @@ func NewMappingMatchPatternPanic(value string) MappingMatchPattern {
 func (mmp MappingMatchPattern) String() string {
 	return string(mmp)
 }
+
+func (mmpPtr *MappingMatchPattern) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mmp, err := NewMappingMatchPattern(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mmpPtr = mmp
+	return nil
+}
