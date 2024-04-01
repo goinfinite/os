@@ -9,6 +9,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed assets/*
@@ -27,8 +28,19 @@ func (repo MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
 	}
 	defer mktplaceCatalogItemFile.Close()
 
-	mktplaceCatalogItemJsonDecoder := json.NewDecoder(mktplaceCatalogItemFile)
-	err = mktplaceCatalogItemJsonDecoder.Decode(&mktplaceCatalogItem)
+	mktplaceItemFileExt, _ := mktplaceItemFilePath.GetFileExtension()
+	if mktplaceItemFileExt == "json" {
+		mktplaceCatalogItemJsonDecoder := json.NewDecoder(mktplaceCatalogItemFile)
+		err = mktplaceCatalogItemJsonDecoder.Decode(&mktplaceCatalogItem)
+		if err != nil {
+			return mktplaceCatalogItem, err
+		}
+
+		return mktplaceCatalogItem, nil
+	}
+
+	mktplaceCatalogItemYamlDecoder := yaml.NewDecoder(mktplaceCatalogItemFile)
+	err = mktplaceCatalogItemYamlDecoder.Decode(&mktplaceCatalogItem)
 	if err != nil {
 		return mktplaceCatalogItem, err
 	}
