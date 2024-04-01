@@ -9,13 +9,9 @@ type UnixFileContent string
 const FileContentMaxSizeInMb = 5
 
 func NewUnixFileContent(value string) (UnixFileContent, error) {
-	isTooShort := len(value) < 1
-
 	charsAmountIn1Mb := 1048576
 	contentLimitInCharsAmount := charsAmountIn1Mb * FileContentMaxSizeInMb
-	isTooBig := len(value) > contentLimitInCharsAmount
-
-	if isTooShort || isTooBig {
+	if len(value) > contentLimitInCharsAmount {
 		return "", errors.New("InvalidUnixFileContent")
 	}
 
