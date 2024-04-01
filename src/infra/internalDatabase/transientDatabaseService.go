@@ -1,4 +1,4 @@
-package internalDatabaseInfra
+package internalDbInfra
 
 import (
 	"errors"

@@ -16,17 +16,17 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc *internalDbInfra.TransientDatabaseService
 }
 
 func NewO11yQueryRepo(
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yQueryRepo {
 	return &O11yQueryRepo{
 		transientDbSvc: transientDbSvc,

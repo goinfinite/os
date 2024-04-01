@@ -1,4 +1,4 @@
-package internalDatabaseInfra
+package internalDbInfra
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ type PersistentDatabaseService struct {
 	Handler *gorm.DB
 }
 
-func NewInternalDatabaseService() (*PersistentDatabaseService, error) {
+func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
 		sqlite.Open(DatabaseFilePath),
 		&gorm.Config{},
