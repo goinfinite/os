@@ -4,7 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/labstack/echo/v4"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiController "github.com/speedianet/os/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -12,12 +12,17 @@ import (
 )
 
 type Router struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
+func NewRouter(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *Router {
 	return &Router{
-		transientDbSvc: transientDbSvc,
+		transientDbSvc:  transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
 	}
 }
 
@@ -81,7 +86,10 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	marketplaceGroup := baseRoute.Group("/marketplace")
 
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
-	marketplaceCatalogGroup.GET("/", apiController.GetCatalogController)
+	marketplaceCatalogController := apiController.NewMarketplaceController(
+		router.persistentDbSvc,
+	)
+	marketplaceCatalogGroup.GET("/", marketplaceCatalogController.GetCatalogController)
 }
 
 func (router Router) o11yRoutes(baseRoute *echo.Group) {

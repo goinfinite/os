@@ -35,8 +35,9 @@ func CliInit() {
 	sharedMiddleware.CheckEnvs()
 
 	transientDbSvc := cliInit.TransientDatabaseService()
+	persistentDbSvc := cliInit.PersistentDatabaseService()
 
-	router := NewRouter(transientDbSvc)
+	router := NewRouter(transientDbSvc, persistentDbSvc)
 	router.RegisterRoutes()
 
 	RunRootCmd()
