@@ -204,6 +204,7 @@ func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
 		userDbName, err := valueObject.NewDatabaseName(userDbNameStr)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), userDbNameStr)
+			continue
 		}
 
 		userDbNamesList = append(userDbNamesList, userDbName)
