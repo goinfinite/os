@@ -1,11 +1,11 @@
-package infraShared
+package infraData
 
-type envDataInfra struct {
+type globalConfigs struct {
 	PkiConfDir                       string
 	DomainOwnershipValidationUrlPath string
 }
 
-var EnvDataInfra = envDataInfra{
+var GlobalConfigs = globalConfigs{
 	PkiConfDir:                       "/app/conf/pki",
 	DomainOwnershipValidationUrlPath: "/validateOwnership",
 }

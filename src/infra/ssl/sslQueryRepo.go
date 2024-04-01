@@ -10,7 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	infraShared "github.com/speedianet/os/src/infra/shared"
+	infraData "github.com/speedianet/os/src/infra/infraData"
 )
 
 type SslQueryRepo struct{}
@@ -125,7 +125,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 
 	crtFilePathsStr, err := infraHelper.RunCmd(
 		"find",
-		infraShared.EnvDataInfra.PkiConfDir,
+		infraData.GlobalConfigs.PkiConfDir,
 		"(",
 		"-type",
 		"f",
