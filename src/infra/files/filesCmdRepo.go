@@ -263,7 +263,7 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 
 func (repo FilesCmdRepo) Move(
 	unixSrcFilePath valueObject.UnixFilePath,
-	unixDestinationPath valueObject.UnixFilePath,
+	unixDestinationDir valueObject.UnixFilePath,
 	shouldOverwrite bool,
 ) error {
 	fileToMoveExists := infraHelper.FileExists(unixSrcFilePath.String())
@@ -271,21 +271,19 @@ func (repo FilesCmdRepo) Move(
 		return errors.New("FileToMoveNotFound")
 	}
 
-	destinationPathWithFileNameStr := unixDestinationPath.String() + "/" + unixSrcFilePath.GetFileName().String()
-	destinationPathWithFileName, err := valueObject.NewUnixFilePath(
-		destinationPathWithFileNameStr,
-	)
+	newFileDestinationPathStr := unixDestinationDir.String() + "/" + unixSrcFilePath.GetFileName().String()
+	newFileDestinationPath, err := valueObject.NewUnixFilePath(newFileDestinationPathStr)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err.Error(), destinationPathWithFileNameStr)
+		return fmt.Errorf("%s: %s", err.Error(), newFileDestinationPathStr)
 	}
 
-	destinationPathExists := infraHelper.FileExists(destinationPathWithFileName.String())
-	if destinationPathExists {
+	newFilePathDestinationExists := infraHelper.FileExists(newFileDestinationPathStr)
+	if newFilePathDestinationExists {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 
-		err := repo.Delete(destinationPathWithFileName)
+		err := repo.Delete(newFileDestinationPath)
 		if err != nil {
 			return errors.New("FailedToReplaceTrashFile: " + err.Error())
 		}
@@ -293,7 +291,7 @@ func (repo FilesCmdRepo) Move(
 
 	return os.Rename(
 		unixSrcFilePath.String(),
-		destinationPathWithFileName.String(),
+		newFileDestinationPathStr,
 	)
 }
 
