@@ -104,18 +104,18 @@ func CreateMapping(
 		}
 	}
 
-	mappingPathStr := createMapping.Path.String()
-	mappingPathStartsWithTrailingSlash := strings.HasPrefix(mappingPathStr, "/")
-	if !mappingPathStartsWithTrailingSlash {
-		mappingPathStr = "/" + mappingPathStr
+	pathStartsWithSlashStr := createMapping.Path.String()
+	pathStartsWithSlash := strings.HasPrefix(pathStartsWithSlashStr, "/")
+	if !pathStartsWithSlash {
+		pathStartsWithSlashStr = "/" + pathStartsWithSlashStr
 	}
 
-	correctMappingPath, err := valueObject.NewMappingPath(mappingPathStr)
+	correctPath, err := valueObject.NewMappingPath(pathStartsWithSlashStr)
 	if err != nil {
-		log.Printf("GetCorrectMappingPathError (%s): %s", mappingPathStr, err.Error())
-		return errors.New("GetCorrectMappingPathInfraError")
+		log.Printf("GetCorrectMappingPathError (%s): %s", pathStartsWithSlashStr, err.Error())
+		return errors.New("GetCorrectMappingPathError")
 	}
-	createMapping.Path = correctMappingPath
+	createMapping.Path = correctPath
 
 	err = cmdRepo.CreateMapping(createMapping)
 	if err != nil {
