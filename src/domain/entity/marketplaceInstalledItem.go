@@ -10,7 +10,7 @@ type MarketplaceInstalledItem struct {
 	Type          valueObject.MktplaceItemType `json:"type"`
 	RootDirectory valueObject.UnixFilePath     `json:"rootDirectory"`
 	Services      []valueObject.ServiceName    `json:"services"`
-	MappingsIds   []valueObject.MappingId      `json:"mappingsIds"`
+	Mappings      []Mapping                    `json:"mappings"`
 	AvatarUrl     valueObject.Url              `json:"avatarUrl"`
 	CreatedAt     valueObject.UnixTime         `json:"createdAt"`
 	UpdatedAt     valueObject.UnixTime         `json:"updatedAt"`
