@@ -2,7 +2,6 @@ package filesInfra
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -274,7 +273,7 @@ func (repo FilesCmdRepo) Move(
 	newFileDestinationPathStr := unixDestinationDir.String() + "/" + unixSrcFilePath.GetFileName().String()
 	newFileDestinationPath, err := valueObject.NewUnixFilePath(newFileDestinationPathStr)
 	if err != nil {
-		return fmt.Errorf("%s: %s", err.Error(), newFileDestinationPathStr)
+		return errors.New(err.Error() + ": " + newFileDestinationPathStr)
 	}
 
 	if infraHelper.FileExists(newFileDestinationPathStr) {
