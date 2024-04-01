@@ -56,7 +56,7 @@ func (repo MktplaceCatalogQueryRepo) GetItems() (
 	mktplaceItemFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
 		return mktplaceCatalogItems, errors.New(
-			"FailedToGetMktItemsFiles: " + err.Error(),
+			"GetMktItemsFilesError: " + err.Error(),
 		)
 	}
 
@@ -85,7 +85,7 @@ func (repo MktplaceCatalogQueryRepo) GetItems() (
 		)
 		if err != nil {
 			log.Printf(
-				"FailedToGetMktCatalogItem (%s): %s",
+				"GetMktCatalogItemError (%s): %s",
 				mktplaceItemFileName,
 				err.Error(),
 			)
