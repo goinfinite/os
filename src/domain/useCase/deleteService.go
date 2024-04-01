@@ -30,7 +30,7 @@ func NewDeleteService(
 	}
 }
 
-func (uc DeleteService) deleteServiceMapping(
+func (uc DeleteService) deleteSvcAutoMapping(
 	svcName valueObject.ServiceName,
 ) error {
 	vhostsWithMappings, err := uc.vhostQueryRepo.GetWithMappings()
@@ -89,10 +89,10 @@ func (uc DeleteService) Execute(svcName valueObject.ServiceName) error {
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 
-	err = uc.deleteServiceMapping(svcName)
+	err = uc.deleteSvcAutoMapping(svcName)
 	if err != nil {
-		log.Printf("DeleteServiceMappingError: %s", err.Error())
-		return errors.New("DeleteServiceMappingsInfraError")
+		log.Printf("DeleteSvcAutoMappingError: %s", err.Error())
+		return errors.New("DeleteSvcAutoMappingsInfraError")
 	}
 
 	err = uc.cmdRepo.Uninstall(svcName)
