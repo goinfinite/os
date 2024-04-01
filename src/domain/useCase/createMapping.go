@@ -3,6 +3,7 @@ package useCase
 import (
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -102,6 +103,19 @@ func CreateMapping(
 			createMapping.TargetHttpResponseCode = &defaultHttpResponseCode
 		}
 	}
+
+	mappingPathStr := createMapping.Path.String()
+	mappingPathStartsWithTrailingSlash := strings.HasPrefix(mappingPathStr, "/")
+	if !mappingPathStartsWithTrailingSlash {
+		mappingPathStr = "/" + mappingPathStr
+	}
+
+	correctMappingPath, err := valueObject.NewMappingPath(mappingPathStr)
+	if err != nil {
+		log.Printf("GetCorrectMappingPathError (%s): %s", mappingPathStr, err.Error())
+		return errors.New("GetCorrectMappingPathInfraError")
+	}
+	createMapping.Path = correctMappingPath
 
 	err = cmdRepo.CreateMapping(createMapping)
 	if err != nil {
