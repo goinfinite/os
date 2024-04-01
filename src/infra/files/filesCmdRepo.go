@@ -277,8 +277,7 @@ func (repo FilesCmdRepo) Move(
 		return fmt.Errorf("%s: %s", err.Error(), newFileDestinationPathStr)
 	}
 
-	newFilePathDestinationExists := infraHelper.FileExists(newFileDestinationPathStr)
-	if newFilePathDestinationExists {
+	if infraHelper.FileExists(newFileDestinationPathStr) {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
