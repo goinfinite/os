@@ -31,7 +31,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.Database
 
 	dbNameListStr, err := PostgresqlCmd("SELECT datname FROM pg_database", nil)
 	if err != nil {
-		return dbNameList, errors.New("FailedToGetDatabaseNames: " + err.Error())
+		return dbNameList, errors.New("GetDatabaseNamesError: " + err.Error())
 	}
 
 	dbNameListSlice := strings.Split(dbNameListStr, "\n")
@@ -62,7 +62,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 		nil,
 	)
 	if err != nil {
-		return 0, errors.New("FailedToGetDatabaseSize: " + err.Error())
+		return 0, errors.New("GetDatabaseSizeError: " + err.Error())
 	}
 
 	dbSizeInBytes, err := strconv.ParseInt(dbSizeStr, 10, 64)
@@ -83,7 +83,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 		nil,
 	)
 	if err != nil {
-		return dbUsernameList, errors.New("FailedToGetDatabaseUser: " + err.Error())
+		return dbUsernameList, errors.New("GetDatabaseUserError: " + err.Error())
 	}
 
 	compiledDbUsersPrivsRegex := regexp.MustCompile(`(\w+)=`)
@@ -121,7 +121,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 
 	dbNames, err := repo.getDatabaseNames()
 	if err != nil {
-		return databases, errors.New("FailedToGetDatabaseNames: " + err.Error())
+		return databases, errors.New("GetDatabaseNamesError: " + err.Error())
 	}
 	dbType, _ := valueObject.NewDatabaseType("postgresql")
 
@@ -133,7 +133,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 
 		dbUsernames, err := repo.getDatabaseUsernames(dbName)
 		if err != nil {
-			log.Printf("FailedToGetDatabaseUsers (%s): %s", dbName.String(), err.Error())
+			log.Printf("GetDatabaseUsersError (%s): %s", dbName.String(), err.Error())
 		}
 
 		dbUsersWithPrivileges := []entity.DatabaseUser{}
@@ -188,7 +188,7 @@ func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
 		nil,
 	)
 	if err != nil {
-		return userDbNamesList, errors.New("FailedToGetUserDatabaseNames: " + err.Error())
+		return userDbNamesList, errors.New("GetUserDatabaseNamesError: " + err.Error())
 	}
 
 	userDbNamesStrSlice := strings.Split(userDbNamesStr, "\n")
