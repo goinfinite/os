@@ -1,6 +1,11 @@
-package envDataInfra
+package infraShared
 
-const (
-	PkiConfDir                       string = "/app/conf/pki"
-	DomainOwnershipValidationUrlPath string = "/validateOwnership"
-)
+type envDataInfra struct {
+	PkiConfDir                       string
+	DomainOwnershipValidationUrlPath string
+}
+
+var EnvDataInfra = envDataInfra{
+	PkiConfDir:                       "/app/conf/pki",
+	DomainOwnershipValidationUrlPath: "/validateOwnership",
+}

@@ -11,7 +11,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	envDataInfra "github.com/speedianet/os/src/infra/shared"
+	infraShared "github.com/speedianet/os/src/infra/shared"
 )
 
 type VirtualHostCmdRepo struct {
@@ -135,8 +135,8 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	}
 
 	publicDir := "/app/html/" + hostnameStr
-	certPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".crt"
-	keyPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".key"
+	certPath := infraShared.EnvDataInfra.PkiConfDir + "/" + hostnameStr + ".crt"
+	keyPath := infraShared.EnvDataInfra.PkiConfDir + "/" + hostnameStr + ".key"
 	mappingFilePath := "/app/conf/nginx/mapping/" + hostnameStr + ".conf"
 
 	nginxConf := `server {
@@ -179,7 +179,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	err = infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, hostnameStr)
+	err = infraHelper.CreateSelfSignedSsl(infraShared.EnvDataInfra.PkiConfDir, hostnameStr)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
 	}
@@ -187,7 +187,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	directories := []string{
 		publicDir,
 		"/app/conf/nginx",
-		envDataInfra.PkiConfDir,
+		infraShared.EnvDataInfra.PkiConfDir,
 	}
 	for _, directory := range directories {
 		_, err = infraHelper.RunCmd(
