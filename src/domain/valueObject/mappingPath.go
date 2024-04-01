@@ -3,6 +3,7 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
@@ -10,26 +11,39 @@ const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
 type MappingPath string
 
 func NewMappingPath(value string) (MappingPath, error) {
-	mappingPath := MappingPath(value)
-	if !mappingPath.isValid(value) {
+	mp := MappingPath(value)
+	if !mp.isValid() {
 		return "", errors.New("InvalidMappingPath")
 	}
-	return mappingPath, nil
+	return mp, nil
 }
 
 func NewMappingPathPanic(value string) MappingPath {
-	mappingPath, err := NewMappingPath(value)
+	mp, err := NewMappingPath(value)
 	if err != nil {
 		panic(err)
 	}
-	return mappingPath
+	return mp
 }
 
-func (MappingPath) isValid(value string) bool {
+func (mp MappingPath) isValid() bool {
 	re := regexp.MustCompile(mappingPathRegex)
-	return re.MatchString(value)
+	return re.MatchString(string(mp))
 }
 
-func (mappingPath MappingPath) String() string {
-	return string(mappingPath)
+func (mp MappingPath) String() string {
+	return string(mp)
+}
+
+func (mpPtr *MappingPath) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mp, err := NewMappingPath(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mpPtr = mp
+	return nil
 }
