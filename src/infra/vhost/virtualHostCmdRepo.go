@@ -471,6 +471,15 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 `
 	}
 
+	isTcpSupported := protocolPortsMap["tcp"] != ""
+	if isTcpSupported {
+		locationContent += `
+	set $protocol "tcp";
+	set $backend "localhost:` + protocolPortsMap["tcp"] + `";
+	proxy_pass $protocol://$backend;
+`
+	}
+
 	locationContent = strings.Trim(locationContent, "\n")
 	return locationContent, nil
 }
