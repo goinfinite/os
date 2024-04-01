@@ -313,12 +313,16 @@ func DeleteServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-			err := useCase.DeleteService(
+			deleteServiceUc := useCase.NewDeleteService(
 				servicesQueryRepo,
 				servicesCmdRepo,
-				svcName,
+				vhostQueryRepo,
+				vhostCmdRepo,
 			)
+			err := deleteServiceUc.Execute(svcName)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
