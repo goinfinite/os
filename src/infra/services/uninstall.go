@@ -20,17 +20,17 @@ func purgePkgs(packages []string) error {
 }
 
 func removeMariaDb() error {
-	mariaDbPidFilePath := "/run/mysqld/mysqld.pid"
-	mariaDbPid, err := infraHelper.GetFileContent(mariaDbPidFilePath)
+	pidFilePath := "/run/mysqld/mysqld.pid"
+	pid, err := infraHelper.GetFileContent(pidFilePath)
 	if err != nil {
 		return err
 	}
 
-	mariaDbPidWithoutBreakLine := strings.Trim(mariaDbPid, "\n")
+	pidWithoutBreakLine := strings.Trim(pid, "\n")
 	_, err = infraHelper.RunCmd(
 		"kill",
 		"-15",
-		mariaDbPidWithoutBreakLine,
+		pidWithoutBreakLine,
 	)
 	if err != nil {
 		return err
@@ -38,16 +38,8 @@ func removeMariaDb() error {
 
 	time.Sleep(2 * time.Second)
 
-	_, err = infraHelper.RunCmd(
-		"mariadbd-safe",
-		"stop",
-	)
-	if err != nil {
-		return err
-	}
-
-	mariaDbDataDirPath := "/var/lib/mysql"
-	err = os.RemoveAll(mariaDbDataDirPath)
+	dbDataDirPath := "/var/lib/mysql"
+	err = os.RemoveAll(dbDataDirPath)
 	if err != nil {
 		return err
 	}
