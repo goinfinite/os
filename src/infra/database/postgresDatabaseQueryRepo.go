@@ -180,35 +180,35 @@ func (repo PostgresDatabaseQueryRepo) UserExists(
 func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
 	dbUser valueObject.DatabaseUsername,
 ) ([]valueObject.DatabaseName, error) {
-	userDbNamesList := []valueObject.DatabaseName{}
+	dbNames := []valueObject.DatabaseName{}
 
-	userDbNamesStr, err := PostgresqlCmd(
+	dbNamesStr, err := PostgresqlCmd(
 		"SELECT datname FROM pg_database WHERE array_to_string(datacl, '') LIKE '%"+
 			dbUser.String()+"%'",
 		nil,
 	)
 	if err != nil {
-		return userDbNamesList, errors.New("GetUserDatabaseNamesError: " + err.Error())
+		return dbNames, errors.New("GetUserDatabaseNamesError: " + err.Error())
 	}
 
-	userDbNamesStrSlice := strings.Split(userDbNamesStr, "\n")
-	if len(userDbNamesStrSlice) == 0 {
-		return userDbNamesList, nil
+	dbNamesStrSlice := strings.Split(dbNamesStr, "\n")
+	if len(dbNamesStrSlice) == 0 {
+		return dbNames, nil
 	}
 
-	for _, userDbNameStr := range userDbNamesStrSlice {
-		if len(userDbNameStr) == 0 {
+	for _, dbNameStr := range dbNamesStrSlice {
+		if len(dbNameStr) == 0 {
 			continue
 		}
 
-		userDbName, err := valueObject.NewDatabaseName(userDbNameStr)
+		dbName, err := valueObject.NewDatabaseName(dbNameStr)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), userDbNameStr)
+			log.Printf("%s: %s", err.Error(), dbNameStr)
 			continue
 		}
 
-		userDbNamesList = append(userDbNamesList, userDbName)
+		dbNames = append(dbNames, dbName)
 	}
 
-	return userDbNamesList, nil
+	return dbNames, nil
 }
