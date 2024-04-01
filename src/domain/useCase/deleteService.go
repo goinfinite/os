@@ -4,33 +4,11 @@ import (
 	"errors"
 	"log"
 
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type DeleteService struct {
-	queryRepo      repository.ServicesQueryRepo
-	cmdRepo        repository.ServicesCmdRepo
-	vhostQueryRepo repository.VirtualHostQueryRepo
-	vhostCmdRepo   repository.VirtualHostCmdRepo
-}
-
-func NewDeleteService(
-	queryRepo repository.ServicesQueryRepo,
-	cmdRepo repository.ServicesCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
-) DeleteService {
-	return DeleteService{
-		queryRepo:      queryRepo,
-		cmdRepo:        cmdRepo,
-		vhostQueryRepo: vhostQueryRepo,
-		vhostCmdRepo:   vhostCmdRepo,
-	}
-}
-
-func (uc DeleteService) deleteSvcAutoMapping(
+/*func (uc DeleteService) deleteSvcAutoMapping(
 	svcName valueObject.ServiceName,
 ) error {
 	vhostsWithMappings, err := uc.vhostQueryRepo.GetWithMappings()
@@ -76,10 +54,16 @@ func (uc DeleteService) deleteSvcAutoMapping(
 	}
 
 	return nil
-}
+}*/
 
-func (uc DeleteService) Execute(svcName valueObject.ServiceName) error {
-	serviceEntity, err := uc.queryRepo.GetByName(svcName)
+func DeleteService(
+	queryRepo repository.ServicesQueryRepo,
+	cmdRepo repository.ServicesCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
+	svcName valueObject.ServiceName,
+) error {
+	serviceEntity, err := queryRepo.GetByName(svcName)
 	if err != nil {
 		return errors.New("ServiceNotFound")
 	}
@@ -89,13 +73,13 @@ func (uc DeleteService) Execute(svcName valueObject.ServiceName) error {
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 
-	err = uc.deleteSvcAutoMapping(svcName)
+	err = vhostCmdRepo.DeleteAutoMapping(svcName)
 	if err != nil {
-		log.Printf("DeleteSvcAutoMappingError: %s", err.Error())
-		return errors.New("DeleteSvcAutoMappingsInfraError")
+		log.Printf("DeleteAutoMappingError: %s", err.Error())
+		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
-	err = uc.cmdRepo.Uninstall(svcName)
+	err = cmdRepo.Uninstall(svcName)
 	if err != nil {
 		log.Printf("DeleteServiceError: %v", err)
 		return errors.New("DeleteServiceInfraError")

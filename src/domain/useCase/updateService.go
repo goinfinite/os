@@ -32,13 +32,13 @@ func updateServiceStatus(
 	case "stopped":
 		return cmdRepo.Stop(updateDto.Name)
 	case "uninstalled":
-		deleteSvcUc := NewDeleteService(
+		return DeleteService(
 			queryRepo,
 			cmdRepo,
 			vhostQueryRepo,
 			vhostCmdRepo,
+			updateDto.Name,
 		)
-		return deleteSvcUc.Execute(updateDto.Name)
 	default:
 		return errors.New("UnknownServiceStatus")
 	}

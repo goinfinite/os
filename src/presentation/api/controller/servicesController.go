@@ -340,13 +340,13 @@ func DeleteServiceController(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	deleteServiceUc := useCase.NewDeleteService(
+	err := useCase.DeleteService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
+		svcName,
 	)
-	err := deleteServiceUc.Execute(svcName)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}

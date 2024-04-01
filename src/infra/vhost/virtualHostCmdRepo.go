@@ -594,6 +594,59 @@ func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 	return repo.reloadWebServer()
 }
 
+func (repo VirtualHostCmdRepo) DeleteAutoMapping(
+	svcName valueObject.ServiceName,
+) error {
+	queryRepo := VirtualHostQueryRepo{}
+
+	vhostsWithMappings, err := queryRepo.GetWithMappings()
+	if err != nil {
+		return err
+	}
+
+	if len(vhostsWithMappings) == 0 {
+		return nil
+	}
+
+	var primaryVhostWithMapping dto.VirtualHostWithMappings
+	for _, vhostWithMappings := range vhostsWithMappings {
+		if !infraHelper.IsPrimaryVirtualHost(vhostWithMappings.Hostname) {
+			continue
+		}
+
+		primaryVhostWithMapping = vhostWithMappings
+	}
+
+	if len(primaryVhostWithMapping.Mappings) == 0 {
+		return nil
+	}
+
+	var mappingToDelete entity.Mapping
+	for _, primaryVhostMapping := range primaryVhostWithMapping.Mappings {
+		if primaryVhostMapping.TargetType.String() != "service" {
+			continue
+		}
+
+		targetServiceName := primaryVhostMapping.TargetServiceName
+		if targetServiceName == nil {
+			continue
+		}
+
+		if targetServiceName.String() != svcName.String() {
+			continue
+		}
+
+		mappingToDelete = primaryVhostMapping
+	}
+
+	hasMappingToDelete := mappingToDelete.Hostname != ""
+	if !hasMappingToDelete {
+		return nil
+	}
+
+	return repo.DeleteMapping(mappingToDelete)
+}
+
 func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 	err := repo.DeleteMapping(mapping)
 	if err != nil {
