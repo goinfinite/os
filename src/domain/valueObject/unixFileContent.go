@@ -12,7 +12,7 @@ func NewUnixFileContent(value string) (UnixFileContent, error) {
 	charsAmountIn1Mb := 1048576
 	contentLimitInCharsAmount := charsAmountIn1Mb * FileContentMaxSizeInMb
 	if len(value) > contentLimitInCharsAmount {
-		return "", errors.New("InvalidUnixFileContent")
+		return "", errors.New("UnixFileContentTooBig")
 	}
 
 	return UnixFileContent(value), nil
