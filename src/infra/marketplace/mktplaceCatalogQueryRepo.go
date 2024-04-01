@@ -23,29 +23,29 @@ func (repo MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
 
 	mktplaceCatalogItemFile, err := assets.Open(mktplaceItemFilePath.String())
 	if err != nil {
-		return mktplaceCatalogItem, errors.New(
-			"FailedToOpenMktCatalogItemFile: " + err.Error(),
-		)
+		return mktplaceCatalogItem, err
 	}
 	defer mktplaceCatalogItemFile.Close()
 
 	mktplaceCatalogItemJsonDecoder := json.NewDecoder(mktplaceCatalogItemFile)
 	err = mktplaceCatalogItemJsonDecoder.Decode(&mktplaceCatalogItem)
 	if err != nil {
-		return mktplaceCatalogItem, errors.New(
-			"FailedToDecodeMktCatalogItemFile: " + err.Error(),
-		)
+		return mktplaceCatalogItem, err
 	}
 
 	return mktplaceCatalogItem, nil
 }
 
-func (repo MktplaceCatalogQueryRepo) GetItems() ([]entity.MarketplaceCatalogItem, error) {
+func (repo MktplaceCatalogQueryRepo) GetItems() (
+	[]entity.MarketplaceCatalogItem, error,
+) {
 	mktplaceCatalogItems := []entity.MarketplaceCatalogItem{}
 
 	mktplaceItemFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
-		return mktplaceCatalogItems, errors.New("FailedToGetMktItemsFiles: " + err.Error())
+		return mktplaceCatalogItems, errors.New(
+			"FailedToGetMktItemsFiles: " + err.Error(),
+		)
 	}
 
 	if len(mktplaceItemFiles) == 0 {
@@ -53,16 +53,30 @@ func (repo MktplaceCatalogQueryRepo) GetItems() ([]entity.MarketplaceCatalogItem
 	}
 
 	for mktplaceItemFileIndex, mktplaceItemFile := range mktplaceItemFiles {
-		mktplaceItemFilePathStr := "assets/" + mktplaceItemFile.Name()
-		mktplaceItemFilePath, err := valueObject.NewUnixFilePath(mktplaceItemFilePathStr)
+		mktplaceItemFileName := mktplaceItemFile.Name()
+
+		mktplaceItemFilePathStr := "assets/" + mktplaceItemFileName
+		mktplaceItemFilePath, err := valueObject.NewUnixFilePath(
+			mktplaceItemFilePathStr,
+		)
 		if err != nil {
-			log.Printf("%s : %s", err.Error(), mktplaceItemFilePathStr)
+			log.Printf(
+				"%s (%s): %s", err.Error(),
+				mktplaceItemFileName,
+				mktplaceItemFilePathStr,
+			)
 			continue
 		}
 
-		mktplaceCatalogItem, err := repo.getMktCatalogItemFromFilePath(mktplaceItemFilePath)
+		mktplaceCatalogItem, err := repo.getMktCatalogItemFromFilePath(
+			mktplaceItemFilePath,
+		)
 		if err != nil {
-			log.Printf("FailedToGetMktCatalogItem: %s", err.Error())
+			log.Printf(
+				"FailedToGetMktCatalogItem (%s): %s",
+				mktplaceItemFileName,
+				err.Error(),
+			)
 			continue
 		}
 
