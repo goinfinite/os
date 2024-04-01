@@ -4,6 +4,8 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type MktplaceItemName string
@@ -46,6 +48,22 @@ func (minPtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
 	unquotedValue := strings.Trim(valueStr, "\"")
 
 	min, err := NewMktplaceItemName(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*minPtr = min
+	return nil
+}
+
+func (minPtr *MktplaceItemName) UnmarshalYAML(value *yaml.Node) error {
+	var valueStr string
+	err := value.Decode(&valueStr)
+	if err != nil {
+		return err
+	}
+
+	min, err := NewMktplaceItemName(valueStr)
 	if err != nil {
 		return err
 	}
