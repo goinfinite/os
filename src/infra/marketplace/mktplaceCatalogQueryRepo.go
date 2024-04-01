@@ -45,11 +45,11 @@ func (repo MktplaceCatalogQueryRepo) GetItems() ([]entity.MarketplaceCatalogItem
 
 	mktplaceItemFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
-		return mktplaceCatalogItems, errors.New("FailedToGetMktAssetsFiles: " + err.Error())
+		return mktplaceCatalogItems, errors.New("FailedToGetMktItemsFiles: " + err.Error())
 	}
 
 	if len(mktplaceItemFiles) == 0 {
-		return mktplaceCatalogItems, errors.New("MktAssetsEmpty")
+		return mktplaceCatalogItems, errors.New("MktItemsEmpty")
 	}
 
 	for mktplaceItemFileIndex, mktplaceItemFile := range mktplaceItemFiles {
