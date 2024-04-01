@@ -18,86 +18,86 @@ var assets embed.FS
 type MktplaceCatalogQueryRepo struct{}
 
 func (repo MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
-	mktplaceItemFilePath valueObject.UnixFilePath,
+	mktCatalogItemFilePath valueObject.UnixFilePath,
 ) (entity.MarketplaceCatalogItem, error) {
-	var mktplaceCatalogItem entity.MarketplaceCatalogItem
+	var catalogItem entity.MarketplaceCatalogItem
 
-	mktplaceCatalogItemFile, err := assets.Open(mktplaceItemFilePath.String())
+	catalogItemFile, err := assets.Open(mktCatalogItemFilePath.String())
 	if err != nil {
-		return mktplaceCatalogItem, err
+		return catalogItem, err
 	}
-	defer mktplaceCatalogItemFile.Close()
+	defer catalogItemFile.Close()
 
-	mktplaceItemFileExt, _ := mktplaceItemFilePath.GetFileExtension()
-	if mktplaceItemFileExt == "json" {
-		mktplaceCatalogItemJsonDecoder := json.NewDecoder(mktplaceCatalogItemFile)
-		err = mktplaceCatalogItemJsonDecoder.Decode(&mktplaceCatalogItem)
+	catalogItemFileExt, _ := mktCatalogItemFilePath.GetFileExtension()
+	if catalogItemFileExt == "json" {
+		catalogItemJsonDecoder := json.NewDecoder(catalogItemFile)
+		err = catalogItemJsonDecoder.Decode(&catalogItem)
 		if err != nil {
-			return mktplaceCatalogItem, err
+			return catalogItem, err
 		}
 
-		return mktplaceCatalogItem, nil
+		return catalogItem, nil
 	}
 
-	mktplaceCatalogItemYamlDecoder := yaml.NewDecoder(mktplaceCatalogItemFile)
-	err = mktplaceCatalogItemYamlDecoder.Decode(&mktplaceCatalogItem)
+	catalogItemYamlDecoder := yaml.NewDecoder(catalogItemFile)
+	err = catalogItemYamlDecoder.Decode(&catalogItem)
 	if err != nil {
-		return mktplaceCatalogItem, err
+		return catalogItem, err
 	}
 
-	return mktplaceCatalogItem, nil
+	return catalogItem, nil
 }
 
 func (repo MktplaceCatalogQueryRepo) GetItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
-	mktplaceCatalogItems := []entity.MarketplaceCatalogItem{}
+	catalogItems := []entity.MarketplaceCatalogItem{}
 
-	mktplaceItemFiles, err := fs.ReadDir(assets, "assets")
+	catalogItemFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
-		return mktplaceCatalogItems, errors.New(
-			"GetMktItemsFilesError: " + err.Error(),
+		return catalogItems, errors.New(
+			"GetMktCatalogItemsFilesError: " + err.Error(),
 		)
 	}
 
-	if len(mktplaceItemFiles) == 0 {
-		return mktplaceCatalogItems, errors.New("MktItemsEmpty")
+	if len(catalogItemFiles) == 0 {
+		return catalogItems, errors.New("MktItemsEmpty")
 	}
 
-	for mktplaceItemFileIndex, mktplaceItemFile := range mktplaceItemFiles {
-		mktplaceItemFileName := mktplaceItemFile.Name()
+	for catalogItemFileIndex, catalogItemFile := range catalogItemFiles {
+		catalogItemFileName := catalogItemFile.Name()
 
-		mktplaceItemFilePathStr := "assets/" + mktplaceItemFileName
-		mktplaceItemFilePath, err := valueObject.NewUnixFilePath(
-			mktplaceItemFilePathStr,
+		catalogItemFilePathStr := "assets/" + catalogItemFileName
+		catalogItemFilePath, err := valueObject.NewUnixFilePath(
+			catalogItemFilePathStr,
 		)
 		if err != nil {
 			log.Printf(
 				"%s (%s): %s", err.Error(),
-				mktplaceItemFileName,
-				mktplaceItemFilePathStr,
+				catalogItemFileName,
+				catalogItemFilePathStr,
 			)
 			continue
 		}
 
-		mktplaceCatalogItem, err := repo.getMktCatalogItemFromFilePath(
-			mktplaceItemFilePath,
+		catalogItem, err := repo.getMktCatalogItemFromFilePath(
+			catalogItemFilePath,
 		)
 		if err != nil {
 			log.Printf(
 				"GetMktCatalogItemError (%s): %s",
-				mktplaceItemFileName,
+				catalogItemFileName,
 				err.Error(),
 			)
 			continue
 		}
 
-		mktplaceItemIdInt := mktplaceItemFileIndex + 1
-		mktplaceItemId, _ := valueObject.NewMktplaceItemId(mktplaceItemIdInt)
-		mktplaceCatalogItem.Id = mktplaceItemId
+		catalogItemIdInt := catalogItemFileIndex + 1
+		catalogItemId, _ := valueObject.NewMktplaceItemId(catalogItemIdInt)
+		catalogItem.Id = catalogItemId
 
-		mktplaceCatalogItems = append(mktplaceCatalogItems, mktplaceCatalogItem)
+		catalogItems = append(catalogItems, catalogItem)
 	}
 
-	return mktplaceCatalogItems, nil
+	return catalogItems, nil
 }
