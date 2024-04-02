@@ -29,22 +29,22 @@ func PostgresqlCmd(cmd string, dbName *string) (string, error) {
 func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.DatabaseName, error) {
 	var dbNameList []valueObject.DatabaseName
 
-	dbNameListStr, err := PostgresqlCmd("SELECT datname FROM pg_database", nil)
+	rawDbNameList, err := PostgresqlCmd("SELECT datname FROM pg_database", nil)
 	if err != nil {
 		return dbNameList, errors.New("GetDatabaseNamesError: " + err.Error())
 	}
 
-	dbNameListSlice := strings.Split(dbNameListStr, "\n")
+	rawDbNameListSlice := strings.Split(rawDbNameList, "\n")
 	dbExcludeRegex := "^(postgres|template1|template0)$"
 	compiledDbExcludeRegex := regexp.MustCompile(dbExcludeRegex)
-	for _, dbNameStr := range dbNameListSlice {
-		if compiledDbExcludeRegex.MatchString(dbNameStr) {
+	for _, rawDbName := range rawDbNameListSlice {
+		if compiledDbExcludeRegex.MatchString(rawDbName) {
 			continue
 		}
 
-		dbName, err := valueObject.NewDatabaseName(dbNameStr)
+		dbName, err := valueObject.NewDatabaseName(rawDbName)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), dbNameStr)
+			log.Printf("%s: %s", err.Error(), rawDbName)
 			continue
 		}
 
@@ -57,7 +57,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.Database
 func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 	dbName valueObject.DatabaseName,
 ) (valueObject.Byte, error) {
-	dbSizeStr, err := PostgresqlCmd(
+	rawDbSize, err := PostgresqlCmd(
 		"SELECT pg_database_size('"+dbName.String()+"')",
 		nil,
 	)
@@ -65,7 +65,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 		return 0, errors.New("GetDatabaseSizeError: " + err.Error())
 	}
 
-	dbSizeInBytes, err := strconv.ParseInt(dbSizeStr, 10, 64)
+	dbSizeInBytes, err := strconv.ParseInt(rawDbSize, 10, 64)
 	if err != nil {
 		return 0, err
 	}
@@ -78,7 +78,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 ) ([]valueObject.DatabaseUsername, error) {
 	dbUsernameList := []valueObject.DatabaseUsername{}
 
-	dbUsersPrivs, err := PostgresqlCmd(
+	rawDbUsersPrivs, err := PostgresqlCmd(
 		"SELECT datacl FROM pg_database WHERE datname = '"+dbName.String()+"'",
 		nil,
 	)
@@ -87,26 +87,26 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 	}
 
 	compiledDbUsersPrivsRegex := regexp.MustCompile(`(\w+)=`)
-	dbUsersMatches := compiledDbUsersPrivsRegex.FindAllStringSubmatch(dbUsersPrivs, -1)
+	rawDbUsersMatches := compiledDbUsersPrivsRegex.FindAllStringSubmatch(rawDbUsersPrivs, -1)
 
-	if len(dbUsersMatches) == 0 {
+	if len(rawDbUsersMatches) == 0 {
 		return dbUsernameList, nil
 	}
 
 	defaultDbUser := "postgres"
-	for _, dbUserMatch := range dbUsersMatches {
-		if len(dbUserMatch) < 2 {
+	for _, rawDbUserMatch := range rawDbUsersMatches {
+		if len(rawDbUserMatch) < 2 {
 			continue
 		}
 
-		dbUserStr := dbUserMatch[1]
-		if dbUserStr == defaultDbUser {
+		rawDbUser := rawDbUserMatch[1]
+		if rawDbUser == defaultDbUser {
 			continue
 		}
 
-		dbUser, err := valueObject.NewDatabaseUsername(dbUserStr)
+		dbUser, err := valueObject.NewDatabaseUsername(rawDbUser)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), dbUserStr)
+			log.Printf("%s: %s", err.Error(), rawDbUser)
 			continue
 		}
 
@@ -121,7 +121,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 
 	dbNames, err := repo.getDatabaseNames()
 	if err != nil {
-		return databases, errors.New("FailedToGetDatabaseNames: " + err.Error())
+		return databases, errors.New("GetDatabaseNamesError: " + err.Error())
 	}
 	dbType, _ := valueObject.NewDatabaseType("postgresql")
 
@@ -133,7 +133,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 
 		dbUsernames, err := repo.getDatabaseUsernames(dbName)
 		if err != nil {
-			log.Printf("FailedToGetDatabaseUsers (%s): %s", dbName.String(), err.Error())
+			log.Printf("GetDatabaseUsersError (%s): %s", dbName.String(), err.Error())
 		}
 
 		dbUsersWithPrivileges := []entity.DatabaseUser{}
@@ -175,4 +175,40 @@ func (repo PostgresDatabaseQueryRepo) UserExists(
 	}
 
 	return userExists == "1"
+}
+
+func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
+	dbUser valueObject.DatabaseUsername,
+) ([]valueObject.DatabaseName, error) {
+	dbNames := []valueObject.DatabaseName{}
+
+	rawDbNames, err := PostgresqlCmd(
+		"SELECT datname FROM pg_database WHERE array_to_string(datacl, '') LIKE '%"+
+			dbUser.String()+"%'",
+		nil,
+	)
+	if err != nil {
+		return dbNames, errors.New("GetUserDatabaseNamesError: " + err.Error())
+	}
+
+	rawDbNamesSlice := strings.Split(rawDbNames, "\n")
+	if len(rawDbNamesSlice) == 0 {
+		return dbNames, nil
+	}
+
+	for _, rawDbName := range rawDbNamesSlice {
+		if len(rawDbName) == 0 {
+			continue
+		}
+
+		dbName, err := valueObject.NewDatabaseName(rawDbName)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawDbName)
+			continue
+		}
+
+		dbNames = append(dbNames, dbName)
+	}
+
+	return dbNames, nil
 }

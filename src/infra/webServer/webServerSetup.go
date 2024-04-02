@@ -8,10 +8,10 @@ import (
 
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	infraData "github.com/speedianet/os/src/infra/infraData"
 	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	envDataInfra "github.com/speedianet/os/src/infra/shared"
 )
 
 type WebServerSetup struct {
@@ -98,7 +98,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	err = infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, primaryVhostStr)
+	err = infraHelper.CreateSelfSignedSsl(infraData.GlobalConfigs.PkiConfDir, primaryVhostStr)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed")
 	}

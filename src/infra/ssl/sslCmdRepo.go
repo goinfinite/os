@@ -11,7 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	envDataInfra "github.com/speedianet/os/src/infra/shared"
+	infraData "github.com/speedianet/os/src/infra/infraData"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
@@ -28,7 +28,7 @@ func NewSslCmdRepo() SslCmdRepo {
 func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 	vhostStr := vhost.String()
 
-	vhostCertFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".crt"
+	vhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".crt"
 	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
 	if vhostCertFileExists {
 		err := os.Remove(vhostCertFilePath)
@@ -37,7 +37,7 @@ func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 		}
 	}
 
-	vhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".key"
+	vhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".key"
 	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
 	if vhostCertKeyFileExists {
 		err := os.Remove(vhostCertKeyFilePath)
@@ -55,7 +55,7 @@ func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 		return err
 	}
 
-	return infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, vhost.String())
+	return infraHelper.CreateSelfSignedSsl(infraData.GlobalConfigs.PkiConfDir, vhost.String())
 }
 
 func (repo SslCmdRepo) isDomainMappedToServer(
@@ -93,7 +93,7 @@ func (repo SslCmdRepo) isDomainMappedToServer(
 	}
 
 	ownershipValidateUrl := "https://" + serverIpAddress.String() +
-		envDataInfra.DomainOwnershipValidationUrlPath
+		infraData.GlobalConfigs.DomainOwnershipValidationUrlPath
 
 	ownershipHashFound, err := infraHelper.RunCmd(
 		"curl",
@@ -152,7 +152,7 @@ func (repo SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
 }
 
 func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
-	path, _ := valueObject.NewMappingPath(envDataInfra.DomainOwnershipValidationUrlPath)
+	path, _ := valueObject.NewMappingPath(infraData.GlobalConfigs.DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
 	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
@@ -236,7 +236,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	shouldOverwrite := true
 
 	certbotCrtFilePath := certbotDirPath + "/" + firstVhostStr + "/fullchain.pem"
-	vhostCrtFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".crt"
+	vhostCrtFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".crt"
 	err = infraHelper.CreateSymlink(
 		certbotCrtFilePath,
 		vhostCrtFilePath,
@@ -247,7 +247,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	certbotKeyFilePath := certbotDirPath + "/" + firstVhostStr + "/privkey.pem"
-	vhostKeyFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".key"
+	vhostKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".key"
 	err = infraHelper.CreateSymlink(
 		certbotKeyFilePath,
 		vhostKeyFilePath,
@@ -266,13 +266,13 @@ func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 	}
 
 	firstVhostStr := createSslPair.VirtualHosts[0].String()
-	firstVhostCertFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".crt"
-	firstVhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".key"
+	firstVhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".key"
 
 	for _, vhost := range createSslPair.VirtualHosts {
 		vhostStr := vhost.String()
-		vhostCertFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".key"
+		vhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".crt"
+		vhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".key"
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
