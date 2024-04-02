@@ -3,7 +3,7 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type RemoveSslPairVhosts struct {
-	Id           valueObject.SslId  `json:"sslPairId"`
+	SslPairId    valueObject.SslId  `json:"sslPairId"`
 	VirtualHosts []valueObject.Fqdn `json:"virtualHosts"`
 }
 
@@ -12,7 +12,7 @@ func NewRemoveSslPairVhosts(
 	virtualHosts []valueObject.Fqdn,
 ) RemoveSslPairVhosts {
 	return RemoveSslPairVhosts{
-		Id:           sslPairId,
+		SslPairId:    sslPairId,
 		VirtualHosts: virtualHosts,
 	}
 }
