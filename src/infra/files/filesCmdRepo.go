@@ -270,18 +270,18 @@ func (repo FilesCmdRepo) Move(
 		return errors.New("FileToMoveNotFound")
 	}
 
-	newFileDestinationPathStr := unixDestinationDir.String() + "/" + unixSrcFilePath.GetFileName().String()
-	newFileDestinationPath, err := valueObject.NewUnixFilePath(newFileDestinationPathStr)
+	fileDestinationAbsolutePathStr := unixDestinationDir.String() + "/" + unixSrcFilePath.GetFileName().String()
+	fileDestinationAbsolutePath, err := valueObject.NewUnixFilePath(fileDestinationAbsolutePathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + newFileDestinationPathStr)
+		return errors.New(err.Error() + ": " + fileDestinationAbsolutePathStr)
 	}
 
-	if infraHelper.FileExists(newFileDestinationPathStr) {
+	if infraHelper.FileExists(fileDestinationAbsolutePathStr) {
 		if !shouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 
-		err := repo.Delete(newFileDestinationPath)
+		err := repo.Delete(fileDestinationAbsolutePath)
 		if err != nil {
 			return errors.New("FailedToReplaceTrashFile: " + err.Error())
 		}
@@ -289,7 +289,7 @@ func (repo FilesCmdRepo) Move(
 
 	return os.Rename(
 		unixSrcFilePath.String(),
-		newFileDestinationPathStr,
+		fileDestinationAbsolutePathStr,
 	)
 }
 
