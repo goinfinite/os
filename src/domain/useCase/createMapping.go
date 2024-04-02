@@ -107,16 +107,11 @@ func CreateMapping(
 	pathStr := createMapping.Path.String()
 	pathStartsWithSlash := strings.HasPrefix(pathStr, "/")
 	if !pathStartsWithSlash {
-		pathWithSlash := "/" + pathStr
-		pathStr = pathWithSlash
+		createMapping.Path, err = valueObject.NewMappingPath("/" + pathStr)
+		if err != nil {
+			return errors.New("AutoCorrectMappingPathError")
+		}
 	}
-
-	correctPath, err := valueObject.NewMappingPath(pathStr)
-	if err != nil {
-		log.Printf("GetCorrectMappingPathError (%s): %s", pathStr, err.Error())
-		return errors.New("GetCorrectMappingPathError")
-	}
-	createMapping.Path = correctPath
 
 	err = cmdRepo.CreateMapping(createMapping)
 	if err != nil {
