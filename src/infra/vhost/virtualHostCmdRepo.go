@@ -621,7 +621,7 @@ func (repo VirtualHostCmdRepo) DeleteAutoMapping(
 		return nil
 	}
 
-	var mappingToDelete entity.Mapping
+	var mappingToDelete *entity.Mapping
 	for _, primaryVhostMapping := range primaryVhostWithMapping.Mappings {
 		if primaryVhostMapping.TargetType.String() != "service" {
 			continue
@@ -636,15 +636,14 @@ func (repo VirtualHostCmdRepo) DeleteAutoMapping(
 			continue
 		}
 
-		mappingToDelete = primaryVhostMapping
+		mappingToDelete = &primaryVhostMapping
 	}
 
-	hasMappingToDelete := mappingToDelete.Hostname != ""
-	if !hasMappingToDelete {
+	if mappingToDelete == nil {
 		return nil
 	}
 
-	return repo.DeleteMapping(mappingToDelete)
+	return repo.DeleteMapping(*mappingToDelete)
 }
 
 func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
