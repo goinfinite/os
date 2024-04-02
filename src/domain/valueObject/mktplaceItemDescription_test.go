@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
+	"gopkg.in/yaml.v3"
 )
 
 func TestMktplaceItemDescription(t *testing.T) {
@@ -43,7 +44,7 @@ func TestMktplaceItemDescription(t *testing.T) {
 			DataToTest MktplaceItemDescription
 		}
 
-		dataToTest := "Some nice markettplace item description."
+		dataToTest := "Some nice marketplace item description."
 		mapToTest := map[string]string{
 			"dataToTest": dataToTest,
 		}
@@ -82,6 +83,53 @@ func TestMktplaceItemDescription(t *testing.T) {
 		err := jsonDecoder.Decode(&testStruct)
 		if err == nil {
 			t.Fatal("Expected error on UnmarshalJSON invalid test, got nil")
+		}
+	})
+
+	t.Run("ValidUnmarshalYAML", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest MktplaceItemDescription `yaml:"dataToTest"`
+		}
+
+		dataToTest := "Some nice marketplace item description."
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := yaml.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		yamlDecoder := yaml.NewDecoder(reader)
+		err := yamlDecoder.Decode(&testStruct)
+		if err != nil {
+			t.Fatalf("Expected no error on UnmarshalYAML valid test, got %s", err.Error())
+		}
+
+		dataToTestFromStructStr := testStruct.DataToTest.String()
+		if dataToTestFromStructStr != dataToTest {
+			t.Errorf(
+				"VO data '%s' after UnmarshalYAML is not the same as the original data '%s'",
+				dataToTestFromStructStr,
+				dataToTest,
+			)
+		}
+	})
+
+	t.Run("InvalidUnmarshalYAML", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest MktplaceItemDescription `yaml:"dataToTest"`
+		}
+
+		dataToTest := ""
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := yaml.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		yamlDecoder := yaml.NewDecoder(reader)
+		err := yamlDecoder.Decode(&testStruct)
+		if err == nil {
+			t.Fatal("Expected error on UnmarshalYAML invalid test, got nil")
 		}
 	})
 }
