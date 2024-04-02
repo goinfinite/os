@@ -90,6 +90,7 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 		router.persistentDbSvc,
 	)
 	marketplaceCatalogGroup.GET("/", marketplaceCatalogController.GetCatalogController)
+	marketplaceCatalogGroup.POST("/", marketplaceCatalogController.InstallCatalogItemController)
 }
 
 func (router Router) o11yRoutes(baseRoute *echo.Group) {

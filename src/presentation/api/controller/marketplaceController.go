@@ -4,10 +4,25 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	mktplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
+
+type MarketplaceController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewMarketplaceController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *MarketplaceController {
+	return &MarketplaceController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 // GetMarketplaceCatalog godoc
 // @Summary      GetMarketplaceCatalog
@@ -18,12 +33,75 @@ import (
 // @Produce      json
 // @Success      200 {string} "AllCatalogProducts"
 // @Router       /marketplace/catalog/ [get]
-func GetCatalogController(c echo.Context) error {
-	mktplaceCatalogQueryRepo := mktplaceInfra.MktplaceCatalogQueryRepo{}
+func (controller *MarketplaceController) GetCatalogController(c echo.Context) error {
+	mktplaceCatalogQueryRepo := mktplaceInfra.NewMktplaceCatalogQueryRepo(controller.persistentDbSvc)
 	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceCatalogQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, mktplaceItems)
+}
+
+func getDataFieldsFromBody(
+	dataFieldsBodyInput interface{},
+) []valueObject.DataField {
+	dataFields := []valueObject.DataField{}
+
+	dataFieldsInterfaceSlice, assertOk := dataFieldsBodyInput.([]interface{})
+	if !assertOk {
+		panic("InvalidDataField")
+	}
+
+	for _, dataFieldsInterface := range dataFieldsInterfaceSlice {
+		dataFieldMap, assertOk := dataFieldsInterface.(map[string]interface{})
+		if !assertOk {
+			panic("InvalidDataField")
+		}
+
+		dataField := valueObject.NewDataField(
+			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
+			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
+		)
+
+		dataFields = append(dataFields, dataField)
+	}
+
+	return dataFields
+}
+
+// InstallMarketplaceCatalogItem	 godoc
+// @Summary      InstallMarketplaceCatalogItem
+// @Description  Install a marketplace catalog item.
+// @Tags         marketplace
+// @Accept       json
+// @Produce      json
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem"
+// @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
+// @Router       /marketplace/catalog/ [post]
+func (controller *MarketplaceController) InstallCatalogItemController(c echo.Context) error {
+	requiredParams := []string{"id", "hostname", "rootDirectory", "dataFields"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	mktplaceItemId := valueObject.NewMktplaceItemIdPanic(requestBody["id"])
+	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
+	rootDir := valueObject.NewUnixFilePathPanic(requestBody["rootDirectory"].(string))
+	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
+
+	mktplaceCatalogQueryRepo := mktplaceInfra.NewMktplaceCatalogQueryRepo(controller.persistentDbSvc)
+	mktplaceCatalogCmdRepo := mktplaceInfra.NewMktplaceCatalogCmdRepo(controller.persistentDbSvc)
+
+	dto := dto.NewInstallMarketplaceCatalogItem(mktplaceItemId, hostname, rootDir, dataFields)
+	err := useCase.InstallMarketplaceCatalogItem(
+		mktplaceCatalogQueryRepo,
+		mktplaceCatalogCmdRepo,
+		dto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "MarketplaceCatalogItemInstalled")
 }
