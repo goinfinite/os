@@ -1,6 +1,9 @@
 package useCase
 
 import (
+	"errors"
+	"log"
+
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
 )
@@ -11,5 +14,23 @@ func RemoveSslPairVhosts(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	dto dto.RemoveSslPairVhosts,
 ) error {
+	_, err := sslQueryRepo.GetSslPairById(dto.SslPairId)
+	if err != nil {
+		return errors.New("SslPairNotFound")
+	}
+
+	for _, vhost := range dto.VirtualHosts {
+		_, err := vhostQueryRepo.GetByHostname(vhost)
+		if err != nil {
+			log.Printf("VhostNotFound: %s", vhost.String())
+			continue
+		}
+
+		err = sslCmdRepo.RemoveVhostFromSslPair(vhost)
+		if err != nil {
+			log.Printf("RemoveVhostFromSslPairError: %s", err.Error())
+		}
+	}
+
 	return nil
 }
