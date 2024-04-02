@@ -9,15 +9,26 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	"gopkg.in/yaml.v3"
 )
 
 //go:embed assets/*
 var assets embed.FS
 
-type MktplaceCatalogQueryRepo struct{}
+type MktplaceCatalogQueryRepo struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
 
-func (repo MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
+func NewMktplaceCatalogQueryRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *MktplaceCatalogQueryRepo {
+	return &MktplaceCatalogQueryRepo{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+func (repo *MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
 	mktCatalogItemFilePath valueObject.UnixFilePath,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
@@ -48,7 +59,7 @@ func (repo MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
 	return catalogItem, nil
 }
 
-func (repo MktplaceCatalogQueryRepo) GetItems() (
+func (repo *MktplaceCatalogQueryRepo) GetItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
