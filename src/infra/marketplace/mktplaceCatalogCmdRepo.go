@@ -18,7 +18,7 @@ func NewMktplaceCatalogCmdRepo(
 }
 
 func (repo *MktplaceCatalogCmdRepo) Create(
-	dto dto.InstallMarketplaceItem,
+	dto dto.InstallMarketplaceCatalogItem,
 ) error {
 	return nil
 }
