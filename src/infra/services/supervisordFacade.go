@@ -92,6 +92,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 	case "mariadb":
 		_, _ = infraHelper.RunCmd(
 			"mysqladmin",
+			"--defaults-file=/root/.my.cnf",
 			"shutdown",
 		)
 	}

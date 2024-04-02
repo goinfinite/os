@@ -313,10 +313,12 @@ func DeleteServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.DeleteService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				vhostCmdRepo,
 				svcName,
 			)
 			if err != nil {

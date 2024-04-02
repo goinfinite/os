@@ -111,6 +111,17 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 		return err
 	}
 
+	postgresDatabaseQueryRepo := PostgresDatabaseQueryRepo{}
+	userDbNames, err := postgresDatabaseQueryRepo.GetDatabaseNamesByUser(dbUser)
+	if err != nil {
+		return err
+	}
+
+	userStillHasPermissions := len(userDbNames) > 0
+	if userStillHasPermissions {
+		return nil
+	}
+
 	_, err = PostgresqlCmd("DROP USER "+dbUserStr, nil)
 	return err
 }

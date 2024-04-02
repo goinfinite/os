@@ -12,6 +12,7 @@ import (
 func updateServiceStatus(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	serviceEntity entity.Service,
 	updateDto dto.UpdateService,
 ) error {
@@ -30,7 +31,12 @@ func updateServiceStatus(
 	case "stopped":
 		return cmdRepo.Stop(updateDto.Name)
 	case "uninstalled":
-		return DeleteService(queryRepo, cmdRepo, updateDto.Name)
+		return DeleteService(
+			queryRepo,
+			cmdRepo,
+			vhostCmdRepo,
+			updateDto.Name,
+		)
 	default:
 		return errors.New("UnknownServiceStatus")
 	}
@@ -58,6 +64,7 @@ func UpdateService(
 		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
+			vhostCmdRepo,
 			serviceEntity,
 			updateDto,
 		)
