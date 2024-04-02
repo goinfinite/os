@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -104,6 +105,69 @@ func CreateSslPairController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
+}
+
+func getVhostsSliceFromBody(vhostBodyInput interface{}) []valueObject.Fqdn {
+	var vhosts []valueObject.Fqdn
+
+	vhostBodyInputType := reflect.TypeOf(vhostBodyInput).Kind()
+
+	switch vhostBodyInputType {
+	case reflect.String:
+		vhosts = append(
+			vhosts,
+			valueObject.NewFqdnPanic(vhostBodyInput.(string)),
+		)
+	case reflect.Slice:
+		for _, vhostBodyInterface := range vhostBodyInput.([]interface{}) {
+			vhostStr := vhostBodyInterface.(string)
+			vhost, err := valueObject.NewFqdn(vhostStr)
+			if err != nil {
+				continue
+			}
+
+			vhosts = append(vhosts, vhost)
+		}
+	}
+
+	return vhosts
+}
+
+// RemoveSslPairVhosts    	 godoc
+// @Summary      RemoveSslPairVhosts
+// @Description  Create a new ssl pair.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        removeSslPairVhostsDto 	  body    dto.RemoveSslPairVhosts  true  "SslPairVhostsRemoved"
+// @Success      200 {object} object{} "SslPairVhostsRemoved"
+// @Router       /ssl/ [put]
+func RemoveSslPairVhostsController(c echo.Context) error {
+	requiredParams := []string{"sslPairId", "virtualHosts"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
+	virtualHosts := getVhostsSliceFromBody(requestBody["virtualHosts"])
+
+	dto := dto.NewRemoveSslPairVhosts(sslPairId, virtualHosts)
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	err := useCase.RemoveSslPairVhosts(
+		sslQueryRepo,
+		sslCmdRepo,
+		vhostQueryRepo,
+		dto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsRemoved")
 }
 
 // DeleteSsl	 godoc

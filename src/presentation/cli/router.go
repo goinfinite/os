@@ -132,6 +132,7 @@ func (router Router) sslRoutes() {
 	rootCmd.AddCommand(sslCmd)
 	sslCmd.AddCommand(cliController.GetSslPairsController())
 	sslCmd.AddCommand(cliController.CreateSslPairController())
+	sslCmd.AddCommand(cliController.RemoveSslPairVhostsController())
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
