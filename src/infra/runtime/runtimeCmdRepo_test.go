@@ -21,13 +21,13 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	}
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpVersion(
-			valueObject.NewFqdnPanic(primaryHostname.String()),
+			valueObject.NewFqdnPanic(primaryVhost.String()),
 			valueObject.NewPhpVersionPanic("8.1"),
 		)
 		if err != nil {
@@ -36,13 +36,13 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpSettings", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpSettings(
-			valueObject.NewFqdnPanic(primaryHostname.String()),
+			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpSetting{
 				entity.NewPhpSetting(
 					valueObject.NewPhpSettingNamePanic("display_errors"),
@@ -57,13 +57,13 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpModules", func(t *testing.T) {
-		primaryHostname, err := infraHelper.GetPrimaryHostname()
+		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 		if err != nil {
-			t.Errorf("PrimaryHostnameNotFound")
+			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpModules(
-			valueObject.NewFqdnPanic(primaryHostname.String()),
+			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(
 					valueObject.NewPhpModuleNamePanic("ioncube"),
@@ -76,7 +76,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 		}
 
 		err = RuntimeCmdRepo{}.UpdatePhpModules(
-			valueObject.NewFqdnPanic(primaryHostname.String()),
+			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(
 					valueObject.NewPhpModuleNamePanic("ioncube"),

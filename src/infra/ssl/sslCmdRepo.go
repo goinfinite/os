@@ -3,14 +3,17 @@ package sslInfra
 import (
 	"errors"
 	"log"
+	"net"
 	"os"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	envDataInfra "github.com/speedianet/os/src/infra/shared"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
-
-const PkiConfDir = "/app/conf/pki"
 
 type SslCmdRepo struct {
 	sslQueryRepo SslQueryRepo
@@ -22,70 +25,273 @@ func NewSslCmdRepo() SslCmdRepo {
 	}
 }
 
-func (repo SslCmdRepo) forceSymlink(
-	pkiSourcePath string,
-	pkiTargetPath string,
-) error {
-	err := os.Remove(pkiTargetPath)
-	if err != nil && !os.IsNotExist(err) {
-		return errors.New("FailedToDeletePkiFile: " + err.Error())
+func (repo SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
+	vhostStr := vhost.String()
+
+	vhostCertFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".crt"
+	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
+	if vhostCertFileExists {
+		err := os.Remove(vhostCertFilePath)
+		if err != nil {
+			return errors.New("DeleteCertFileError: " + err.Error())
+		}
 	}
 
-	err = os.Symlink(pkiSourcePath, pkiTargetPath)
-	if err != nil {
-		return errors.New("CreatePkiSymlinkError: " + err.Error())
+	vhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".key"
+	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
+	if vhostCertKeyFileExists {
+		err := os.Remove(vhostCertKeyFilePath)
+		if err != nil {
+			return errors.New("DeleteCertKeyFileError: " + err.Error())
+		}
 	}
 
 	return nil
 }
 
 func (repo SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
+	err := repo.deleteCurrentSsl(vhost)
+	if err != nil {
+		return err
+	}
+
+	return infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, vhost.String())
+}
+
+func (repo SslCmdRepo) isDomainMappedToServer(
+	vhost valueObject.Fqdn,
+	expectedOwnershipHash valueObject.Hash,
+) bool {
 	vhostStr := vhost.String()
 
-	vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
-	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
-	if vhostCertFileExists {
-		err := os.Remove(vhostCertFilePath)
-		if err != nil {
-			return errors.New("FailedToDeleteCertFile: " + err.Error())
+	rawVhostIps, err := infraHelper.RunCmd("dig", "+short", vhostStr, "@8.8.8.8")
+	if err != nil || rawVhostIps == "" {
+		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@1.1.1.1")
+		if err != nil || rawVhostIps == "" {
+			return false
 		}
 	}
 
-	vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
-	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
-	if vhostCertKeyFileExists {
-		err := os.Remove(vhostCertKeyFilePath)
-		if err != nil {
-			return errors.New("FailedToDeleteCertKeyFile: " + err.Error())
-		}
+	rawVhostIpsParts := strings.Split(rawVhostIps, "\n")
+	if len(rawVhostIpsParts) == 0 {
+		return false
 	}
 
-	return infraHelper.CreateSelfSignedSsl(PkiConfDir, vhostStr)
+	var serverIpAddress *valueObject.IpAddress
+	for _, rawVhostIp := range rawVhostIpsParts {
+		ipAddress, err := valueObject.NewIpAddress(rawVhostIp)
+		if err != nil {
+			continue
+		}
+
+		serverIpAddress = &ipAddress
+		break
+	}
+
+	if serverIpAddress == nil {
+		return false
+	}
+
+	ownershipValidateUrl := "https://" + serverIpAddress.String() +
+		envDataInfra.DomainOwnershipValidationUrlPath
+
+	ownershipHashFound, err := infraHelper.RunCmd(
+		"curl",
+		"-skL",
+		"--max-time",
+		"10",
+		"--header",
+		"Host: "+vhostStr,
+		ownershipValidateUrl,
+	)
+	if err != nil {
+		return false
+	}
+
+	return ownershipHashFound == expectedOwnershipHash.String()
+}
+
+func (repo SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
+	rootDomain, err := infraHelper.GetRootDomain(vhost)
+	if err != nil {
+		return false
+	}
+
+	vhostStr := vhost.String()
+	isSubdomain := rootDomain.String() != vhostStr
+	if isSubdomain {
+		return false
+	}
+
+	wwwDnsEntry := "www." + vhostStr
+	wwwDnsEntryIps, err := net.LookupIP(wwwDnsEntry)
+	if err != nil {
+		return false
+	}
+
+	wwwDnsEntryExists := len(wwwDnsEntryIps) > 0
+	if !wwwDnsEntryExists {
+		return false
+	}
+
+	vhostIps, err := net.LookupIP(vhostStr)
+	if err != nil {
+		return false
+	}
+
+	firstVhostIp := vhostIps[0]
+	for _, wwwDnsEntryIp := range wwwDnsEntryIps {
+		if !firstVhostIp.Equal(wwwDnsEntryIp) {
+			continue
+		}
+
+		return true
+	}
+
+	return false
+}
+
+func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
+	path, _ := valueObject.NewMappingPath(envDataInfra.DomainOwnershipValidationUrlPath)
+	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
+	targetType, _ := valueObject.NewMappingTargetType("inline-html")
+	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+
+	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
+		sslPair.Certificate.CertificateContent,
+	)
+	if err != nil {
+		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
+	}
+	inlineHtmlContent, _ := valueObject.NewInlineHtmlContent(
+		expectedOwnershipHash.String(),
+	)
+
+	firstVhost := sslPair.VirtualHosts[0]
+	inlineHtmlMapping := dto.NewCreateMapping(
+		firstVhost,
+		path,
+		matchPattern,
+		targetType,
+		nil,
+		nil,
+		&httpResponseCode,
+		&inlineHtmlContent,
+	)
+
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	err = vhostCmdRepo.CreateMapping(inlineHtmlMapping)
+	if err != nil {
+		return errors.New("CreateOwnershipValidationMappingError: " + err.Error())
+	}
+
+	isDomainMappedToServer := repo.isDomainMappedToServer(
+		firstVhost,
+		expectedOwnershipHash,
+	)
+
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostMappings, err := vhostQueryRepo.GetMappingsByHostname(firstVhost)
+	if err != nil {
+		return errors.New("GetVhostMappingsError: " + err.Error())
+	}
+
+	firstVhostStr := firstVhost.String()
+	if len(vhostMappings) == 0 {
+		return errors.New("VhostMappingsNotFound")
+	}
+
+	lastMappingIndex := len(vhostMappings) - 1
+	lastMapping := vhostMappings[lastMappingIndex]
+
+	err = vhostCmdRepo.DeleteMapping(lastMapping)
+	if err != nil {
+		return errors.New("DeleteOwnershipValidationMappingError: " + err.Error())
+	}
+
+	if !isDomainMappedToServer {
+		return errors.New("DomainIsNotMappedToServer")
+	}
+
+	vhostRootDir := "/app/html"
+	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
+		vhostRootDir += "/" + firstVhostStr
+	}
+
+	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
+		" --agree-tos --register-unsafely-without-email --cert-name " + firstVhostStr +
+		" -d " + firstVhostStr
+
+	shouldIncludeWww := repo.shouldIncludeWww(firstVhost)
+	if shouldIncludeWww {
+		certbotCmd += " -d www." + firstVhostStr
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
+	if err != nil {
+		return errors.New("CreateValidSslError: " + err.Error())
+	}
+
+	certbotDirPath := "/etc/letsencrypt/live"
+	shouldOverwrite := true
+
+	certbotCrtFilePath := certbotDirPath + "/" + firstVhostStr + "/fullchain.pem"
+	vhostCrtFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".crt"
+	err = infraHelper.CreateSymlink(
+		certbotCrtFilePath,
+		vhostCrtFilePath,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return errors.New("CreateSslCrtSymlinkError: " + err.Error())
+	}
+
+	certbotKeyFilePath := certbotDirPath + "/" + firstVhostStr + "/privkey.pem"
+	vhostKeyFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".key"
+	err = infraHelper.CreateSymlink(
+		certbotKeyFilePath,
+		vhostKeyFilePath,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return errors.New("CreateSslKeySymlinkError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 	if len(createSslPair.VirtualHosts) == 0 {
-		return errors.New("NoVirtualHostsProvidedToCreateSslPair")
+		return errors.New("EmptyVirtualHosts")
 	}
 
 	firstVhostStr := createSslPair.VirtualHosts[0].String()
-	firstVhostCertFilePath := PkiConfDir + "/" + firstVhostStr + ".crt"
-	firstVhostCertKeyFilePath := PkiConfDir + "/" + firstVhostStr + ".key"
+	firstVhostCertFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".crt"
+	firstVhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + firstVhostStr + ".key"
 
 	for _, vhost := range createSslPair.VirtualHosts {
 		vhostStr := vhost.String()
-		vhostCertFilePath := PkiConfDir + "/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := PkiConfDir + "/" + vhostStr + ".key"
+		vhostCertFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".crt"
+		vhostCertKeyFilePath := envDataInfra.PkiConfDir + "/" + vhostStr + ".key"
 
 		shouldBeSymlink := vhostStr != firstVhostStr
 		if shouldBeSymlink {
-			err := repo.forceSymlink(firstVhostCertFilePath, vhostCertFilePath)
+			shouldOverwrite := true
+			err := infraHelper.CreateSymlink(
+				firstVhostCertFilePath,
+				vhostCertFilePath,
+				shouldOverwrite,
+			)
 			if err != nil {
 				log.Printf("CreateSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
 				continue
 			}
 
-			err = repo.forceSymlink(firstVhostCertKeyFilePath, vhostCertKeyFilePath)
+			err = infraHelper.CreateSymlink(
+				firstVhostCertKeyFilePath,
+				vhostCertKeyFilePath,
+				shouldOverwrite,
+			)
 			if err != nil {
 				log.Printf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
 				continue

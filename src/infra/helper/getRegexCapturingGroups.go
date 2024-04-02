@@ -4,16 +4,17 @@ import (
 	"regexp"
 )
 
-func GetRegexCapturingGroups(input string, regex string) []string {
-	re := regexp.MustCompile(regex)
-	matches := re.FindAllStringSubmatch(input, -1)
+func GetRegexCapturingGroups(input string, regex string) map[string]string {
+	namedGroupsWithValues := make(map[string]string)
 
-	capturingGroups := []string{}
-	for _, match := range matches {
-		if len(match) < 1 {
-			continue
-		}
-		capturingGroups = append(capturingGroups, match[1:]...)
+	compiledRegex := regexp.MustCompile(regex)
+
+	matches := compiledRegex.FindStringSubmatch(input)
+	namedGroups := compiledRegex.SubexpNames()[1:]
+
+	for namedGroupIndex, namedGroup := range namedGroups {
+		namedGroupsWithValues[namedGroup] = matches[namedGroupIndex+1]
 	}
-	return capturingGroups
+
+	return namedGroupsWithValues
 }

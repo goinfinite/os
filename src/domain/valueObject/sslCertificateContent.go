@@ -2,6 +2,8 @@ package valueObject
 
 import (
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 )
@@ -25,8 +27,8 @@ func NewSslCertificateContentPanic(certificate string) SslCertificateContent {
 	return sslCertificate
 }
 
-func (sslCertificate SslCertificateContent) isValid() bool {
-	block, _ := pem.Decode([]byte(sslCertificate))
+func (sslCrt SslCertificateContent) isValid() bool {
+	block, _ := pem.Decode([]byte(sslCrt))
 	if block == nil {
 		return false
 	}
@@ -35,6 +37,35 @@ func (sslCertificate SslCertificateContent) isValid() bool {
 	return err == nil
 }
 
-func (sslCertificate SslCertificateContent) String() string {
-	return string(sslCertificate)
+func NewSslCertificateContentFromEncodedContent(
+	encodedContent EncodedContent,
+) (SslCertificateContent, error) {
+	var sslCertificateContent SslCertificateContent
+
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		return sslCertificateContent, errors.New("InvalidSslCertificate")
+	}
+
+	return NewSslCertificateContent(decodedContent)
+}
+
+func NewSslCertificateContentFromEncodedContentPanic(
+	encodedContent EncodedContent,
+) SslCertificateContent {
+	decodedContent, err := encodedContent.GetDecodedContent()
+	if err != nil {
+		panic("InvalidSslCertificate")
+	}
+
+	return NewSslCertificateContentPanic(decodedContent)
+}
+
+func (sslCrt SslCertificateContent) String() string {
+	return string(sslCrt)
+}
+
+func (sslCrt SslCertificateContent) MarshalJSON() ([]byte, error) {
+	sslCrtBytes := []byte(string(sslCrt))
+	return json.Marshal(base64.StdEncoding.EncodeToString(sslCrtBytes))
 }

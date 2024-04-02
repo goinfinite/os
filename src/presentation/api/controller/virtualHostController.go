@@ -101,15 +101,15 @@ func DeleteVirtualHostController(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	primaryHostname, err := infraHelper.GetPrimaryHostname()
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		panic("PrimaryHostnameNotFound")
+		panic("PrimaryVirtualHostNotFound")
 	}
 
 	err = useCase.DeleteVirtualHost(
 		vhostsQueryRepo,
 		vhostsCmdRepo,
-		primaryHostname,
+		primaryVhost,
 		hostname,
 	)
 	if err != nil {
@@ -189,6 +189,14 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
+	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
+	if requestBody["targetInlineHtmlContent"] != nil {
+		targetInlineHtmlContent := valueObject.NewInlineHtmlContentPanic(
+			requestBody["targetInlineHtmlContent"].(string),
+		)
+		targetInlineHtmlContentPtr = &targetInlineHtmlContent
+	}
+
 	createMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
@@ -197,6 +205,7 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 		targetServiceNamePtr,
 		targetUrlPtr,
 		targetHttpResponseCodePtr,
+		targetInlineHtmlContentPtr,
 	)
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}

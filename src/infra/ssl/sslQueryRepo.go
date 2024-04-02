@@ -1,6 +1,8 @@
 package sslInfra
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"log"
 	"strings"
@@ -8,6 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	envDataInfra "github.com/speedianet/os/src/infra/shared"
 )
 
 type SslQueryRepo struct{}
@@ -41,12 +44,13 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 			return certificates, err
 		}
 
-		if !certificate.IsCA {
-			certificates.MainCertificate = certificate
+		if certificate.IsIntermediary {
+			certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
+
 			continue
 		}
 
-		certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
+		certificates.MainCertificate = certificate
 	}
 
 	return certificates, nil
@@ -121,7 +125,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 
 	crtFilePathsStr, err := infraHelper.RunCmd(
 		"find",
-		PkiConfDir,
+		envDataInfra.PkiConfDir,
 		"(",
 		"-type",
 		"f",
@@ -195,4 +199,13 @@ func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair
 	}
 
 	return entity.SslPair{}, errors.New("SslPairNotFound")
+}
+
+func (repo SslQueryRepo) GetOwnershipValidationHash(
+	sslCrtContent valueObject.SslCertificateContent,
+) (valueObject.Hash, error) {
+	sslCrtContentBytes := []byte(sslCrtContent.String())
+	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
+	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
+	return valueObject.NewHash(sslCrtContentHashStr)
 }
