@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	mktplaceInfra "github.com/speedianet/os/src/infra/marketplace"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
@@ -92,11 +93,13 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	mktplaceCatalogQueryRepo := mktplaceInfra.NewMktplaceCatalogQueryRepo(controller.persistentDbSvc)
 	mktplaceCatalogCmdRepo := mktplaceInfra.NewMktplaceCatalogCmdRepo(controller.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(mktplaceItemId, hostname, rootDir, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		mktplaceCatalogQueryRepo,
 		mktplaceCatalogCmdRepo,
+		vhostQueryRepo,
 		dto,
 	)
 	if err != nil {
