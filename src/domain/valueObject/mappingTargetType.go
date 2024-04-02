@@ -13,6 +13,7 @@ var ValidMappingTargetTypes = []string{
 	"url",
 	"service",
 	"response-code",
+	"inline-html",
 	"static-files",
 }
 

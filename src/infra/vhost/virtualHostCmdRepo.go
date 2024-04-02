@@ -11,28 +11,18 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
+	envDataInfra "github.com/speedianet/os/src/infra/shared"
 )
 
 type VirtualHostCmdRepo struct {
 }
 
 func (repo VirtualHostCmdRepo) reloadWebServer() error {
-	_, err := infraHelper.RunCmd(
-		"nginx",
-		"-t",
+	_, err := infraHelper.RunCmdWithSubShell(
+		"nginx -t && nginx -s reload && sleep 2",
 	)
 	if err != nil {
-		return errors.New("NginxConfigTestFailed")
-	}
-
-	_, err = infraHelper.RunCmd(
-		"nginx",
-		"-s",
-		"reload",
-	)
-	if err != nil {
-		return errors.New("NginxReloadFailed")
+		return errors.New("NginxReloadFailed: " + err.Error())
 	}
 
 	return nil
@@ -43,10 +33,10 @@ func (repo VirtualHostCmdRepo) getAliasConfigFile(
 ) (valueObject.UnixFilePath, error) {
 	vhostFileStr := "/app/conf/nginx/" + parentHostname.String() + ".conf"
 
-	isParentPrimaryDomain := VirtualHostQueryRepo{}.IsVirtualHostPrimaryDomain(
+	isParentPrimaryVhost := infraHelper.IsPrimaryVirtualHost(
 		parentHostname,
 	)
-	if isParentPrimaryDomain {
+	if isParentPrimaryVhost {
 		vhostFileStr = "/app/conf/nginx/primary.conf"
 	}
 
@@ -145,8 +135,8 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	}
 
 	publicDir := "/app/html/" + hostnameStr
-	certPath := "/app/conf/pki/" + hostnameStr + ".crt"
-	keyPath := "/app/conf/pki/" + hostnameStr + ".key"
+	certPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".crt"
+	keyPath := envDataInfra.PkiConfDir + "/" + hostnameStr + ".key"
 	mappingFilePath := "/app/conf/nginx/mapping/" + hostnameStr + ".conf"
 
 	nginxConf := `server {
@@ -189,7 +179,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
-	err = infraHelper.CreateSelfSignedSsl(sslInfra.PkiConfDir, hostnameStr)
+	err = infraHelper.CreateSelfSignedSsl(envDataInfra.PkiConfDir, hostnameStr)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
 	}
@@ -197,7 +187,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	directories := []string{
 		publicDir,
 		"/app/conf/nginx",
-		"/app/conf/pki",
+		envDataInfra.PkiConfDir,
 	}
 	for _, directory := range directories {
 		_, err = infraHelper.RunCmd(
@@ -506,6 +496,11 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 		locationContent += " " + createMapping.TargetUrl.String()
 	}
 
+	if createMapping.TargetType.String() == "inline-html" {
+		locationContent = "	add_header Content-Type text/html;\n" + locationContent
+		locationContent += " '" + createMapping.TargetInlineHtmlContent.String() + "'"
+	}
+
 	locationContent += ";"
 
 	isService := createMapping.TargetType.String() == "service"
@@ -604,6 +599,7 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		mapping.TargetServiceName,
 		mapping.TargetUrl,
 		mapping.TargetHttpResponseCode,
+		mapping.TargetInlineHtmlContent,
 	)
 
 	return repo.CreateMapping(mappingDto)

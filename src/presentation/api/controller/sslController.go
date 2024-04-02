@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -63,9 +64,16 @@ func CreateSslPairController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sslCertificateContent := valueObject.NewSslCertificateContentPanic(requestBody["certificate"].(string))
+	sslCertificateEncoded := valueObject.NewEncodedContentPanic(
+		requestBody["certificate"].(string),
+	)
+	sslCertificateContent := valueObject.NewSslCertificateContentFromEncodedContentPanic(
+		sslCertificateEncoded,
+	)
 	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
-	sslPrivateKey := valueObject.NewSslPrivateKeyPanic(requestBody["key"].(string))
+
+	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
+	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
 
 	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
 	if !assertOk {
@@ -124,4 +132,27 @@ func DeleteSslPairController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
+}
+
+func SslCertificateWatchdogController() {
+	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
+
+	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+
+	for range timer.C {
+		sslCertificateWatchdog := useCase.NewSslCertificateWatchdog(
+			sslQueryRepo,
+			sslCmdRepo,
+			vhostQueryRepo,
+			vhostCmdRepo,
+		)
+		sslCertificateWatchdog.Execute()
+	}
 }

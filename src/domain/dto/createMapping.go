@@ -3,13 +3,14 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type CreateMapping struct {
-	Hostname               valueObject.Fqdn                `json:"hostname"`
-	Path                   valueObject.MappingPath         `json:"path"`
-	MatchPattern           valueObject.MappingMatchPattern `json:"matchPattern"`
-	TargetType             valueObject.MappingTargetType   `json:"targetType"`
-	TargetServiceName      *valueObject.ServiceName        `json:"targetServiceName"`
-	TargetUrl              *valueObject.Url                `json:"targetUrl"`
-	TargetHttpResponseCode *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
+	Hostname                valueObject.Fqdn                `json:"hostname"`
+	Path                    valueObject.MappingPath         `json:"path"`
+	MatchPattern            valueObject.MappingMatchPattern `json:"matchPattern"`
+	TargetType              valueObject.MappingTargetType   `json:"targetType"`
+	TargetServiceName       *valueObject.ServiceName        `json:"targetServiceName"`
+	TargetUrl               *valueObject.Url                `json:"targetUrl"`
+	TargetHttpResponseCode  *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
+	TargetInlineHtmlContent *valueObject.InlineHtmlContent  `json:"targetInlineHtmlContent"`
 }
 
 func NewCreateMapping(
@@ -20,14 +21,16 @@ func NewCreateMapping(
 	targetServiceName *valueObject.ServiceName,
 	targetUrl *valueObject.Url,
 	targetHttpResponseCode *valueObject.HttpResponseCode,
+	targetInlineHtmlContent *valueObject.InlineHtmlContent,
 ) CreateMapping {
 	return CreateMapping{
-		Hostname:               hostname,
-		Path:                   path,
-		MatchPattern:           matchPattern,
-		TargetType:             targetType,
-		TargetServiceName:      targetServiceName,
-		TargetUrl:              targetUrl,
-		TargetHttpResponseCode: targetHttpResponseCode,
+		Hostname:                hostname,
+		Path:                    path,
+		MatchPattern:            matchPattern,
+		TargetType:              targetType,
+		TargetServiceName:       targetServiceName,
+		TargetUrl:               targetUrl,
+		TargetHttpResponseCode:  targetHttpResponseCode,
+		TargetInlineHtmlContent: targetInlineHtmlContent,
 	}
 }

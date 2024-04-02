@@ -131,40 +131,46 @@ func (repo FilesQueryRepo) Get(
 ) ([]entity.UnixFile, error) {
 	unixFileList := []entity.UnixFile{}
 
-	exists := infraHelper.FileExists(unixFilePath.String())
+	sourcePathStr := unixFilePath.String()
+	exists := infraHelper.FileExists(sourcePathStr)
 	if !exists {
 		return unixFileList, errors.New("PathNotFound")
 	}
 
-	isRootPath := unixFilePath.String() == "/"
-	filePathEndsWithSlash := strings.HasSuffix(unixFilePath.String(), "/")
-	if !isRootPath && filePathEndsWithSlash {
-		filePathWithoutSlashAtTheEnd := strings.TrimSuffix(unixFilePath.String(), "/")
-		unixFilePath, _ = valueObject.NewUnixFilePath(filePathWithoutSlashAtTheEnd)
+	filePathHasTrailingSlash := strings.HasSuffix(sourcePathStr, "/")
+	isRootPath := sourcePathStr == "/"
+	if filePathHasTrailingSlash && !isRootPath {
+		filePathWithoutTrailingSlash := strings.TrimSuffix(sourcePathStr, "/")
+		unixFilePath, _ = valueObject.NewUnixFilePath(filePathWithoutTrailingSlash)
+		sourcePathStr = unixFilePath.String()
+	}
+
+	sourcePathInfo, err := os.Stat(sourcePathStr)
+	if err != nil {
+		return unixFileList, errors.New("GetSourcePathInfoError")
 	}
 
 	filesToFactory := []valueObject.UnixFilePath{
 		unixFilePath,
 	}
 
-	fileInfo, _ := os.Stat(unixFilePath.String())
-	if fileInfo.IsDir() {
-		filesToFactoryWithoutDir := filesToFactory[1:]
-		filesToFactory = filesToFactoryWithoutDir
+	if sourcePathInfo.IsDir() {
+		filesToFactoryWithoutSourcePath := filesToFactory[1:]
+		filesToFactory = filesToFactoryWithoutSourcePath
 
 		rawDirectoryFiles, err := infraHelper.RunCmd(
 			"find",
-			unixFilePath.String(),
+			sourcePathStr,
 			"-maxdepth",
 			"1",
 			"-printf",
 			"%p\n",
 		)
 		if err != nil {
-			return unixFileList, err
+			return unixFileList, errors.New("ReadDirectoryError: " + err.Error())
 		}
 		if len(rawDirectoryFiles) == 0 {
-			return unixFileList, errors.New("UnableToGetDirFiles")
+			return unixFileList, errors.New("ReadDirectoryError")
 		}
 
 		rawDirectoryFilesList := strings.Split(rawDirectoryFiles, "\n")
@@ -188,18 +194,18 @@ func (repo FilesQueryRepo) Get(
 		shouldReturnContent = true
 	}
 
-	for _, file := range filesToFactory {
-		isDir := fileInfo.IsDir() && (file.String() == unixFilePath.String())
-		if isDir {
+	for _, filePath := range filesToFactory {
+		isFileTheSourcePath := filePath.String() == unixFilePath.String()
+		if isFileTheSourcePath && sourcePathInfo.IsDir() {
 			continue
 		}
 
-		unixFile, err := repo.unixFileFactory(file, shouldReturnContent)
+		unixFile, err := repo.unixFileFactory(filePath, shouldReturnContent)
 
 		if err != nil {
 			log.Printf(
 				"UnixFileFactoryError (%s): %s",
-				file.String(),
+				filePath.String(),
 				err.Error(),
 			)
 			continue
