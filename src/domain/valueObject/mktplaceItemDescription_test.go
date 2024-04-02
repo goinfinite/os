@@ -1,6 +1,8 @@
 package valueObject
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
@@ -33,6 +35,53 @@ func TestMktplaceItemDescription(t *testing.T) {
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", mid)
 			}
+		}
+	})
+
+	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest MktplaceItemDescription
+		}
+
+		dataToTest := "Some nice markettplace item description."
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err != nil {
+			t.Fatalf("Expected no error on UnmarshalJSON valid test, got %s", err.Error())
+		}
+
+		dataToTestFromStructStr := testStruct.DataToTest.String()
+		if dataToTestFromStructStr != dataToTest {
+			t.Errorf(
+				"VO data '%s' after UnmarshalJSON is not the same as the original data '%s'",
+				dataToTestFromStructStr,
+				dataToTest,
+			)
+		}
+	})
+
+	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest MktplaceItemDescription
+		}
+
+		dataToTest := ""
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err == nil {
+			t.Fatal("Expected error on UnmarshalJSON invalid test, got nil")
 		}
 	})
 }

@@ -1,6 +1,8 @@
 package valueObject
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -25,7 +27,7 @@ func TestNewUrl(t *testing.T) {
 		for _, url := range validUrls {
 			_, err := NewUrl(url)
 			if err != nil {
-				t.Errorf("Expected no error for '%v', got '%s'", url, err.Error())
+				t.Errorf("Expected no error for '%s', got '%s'", url, err.Error())
 			}
 		}
 	})
@@ -57,7 +59,7 @@ func TestNewUrl(t *testing.T) {
 		for _, url := range invalidUrls {
 			_, err := NewUrl(url)
 			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", url)
+				t.Errorf("Expected error for '%s', got nil", url)
 			}
 		}
 	})
@@ -67,6 +69,53 @@ func TestNewUrl(t *testing.T) {
 		port, _ := url.GetPort()
 		if port.Get() != 8080 {
 			t.Errorf("Expected port '8080', got '%d'", port.Get())
+		}
+	})
+
+	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest Url
+		}
+
+		dataToTest := "https://speedia.net/"
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err != nil {
+			t.Fatalf("Expected no error on UnmarshalJSON valid test, got %s", err.Error())
+		}
+
+		dataToTestFromStructStr := testStruct.DataToTest.String()
+		if dataToTestFromStructStr != dataToTest {
+			t.Errorf(
+				"VO data '%s' after UnmarshalJSON is not the same as the original data '%s'",
+				dataToTestFromStructStr,
+				dataToTest,
+			)
+		}
+	})
+
+	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest Url
+		}
+
+		dataToTest := "https://invalidmaçalink.com.br/"
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err == nil {
+			t.Fatal("Expected error on UnmarshalJSON invalid test, got nil")
 		}
 	})
 }

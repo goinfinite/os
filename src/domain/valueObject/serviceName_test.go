@@ -1,6 +1,10 @@
 package valueObject
 
-import "testing"
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+)
 
 func TestServiceName(t *testing.T) {
 	t.Run("ValidServiceNames", func(t *testing.T) {
@@ -33,6 +37,53 @@ func TestServiceName(t *testing.T) {
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", name)
 			}
+		}
+	})
+
+	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest ServiceName
+		}
+
+		dataToTest := "mariadb"
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err != nil {
+			t.Fatalf("Expected no error on UnmarshalJSON valid test, got %s", err.Error())
+		}
+
+		dataToTestFromStructStr := testStruct.DataToTest.String()
+		if dataToTestFromStructStr != dataToTest {
+			t.Errorf(
+				"VO data '%s' after UnmarshalJSON is not the same as the original data '%s'",
+				dataToTestFromStructStr,
+				dataToTest,
+			)
+		}
+	})
+
+	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
+		var testStruct struct {
+			DataToTest ServiceName
+		}
+
+		dataToTest := "nginx@"
+		mapToTest := map[string]string{
+			"dataToTest": dataToTest,
+		}
+		mapBytesToTest, _ := json.Marshal(mapToTest)
+
+		reader := strings.NewReader(string(mapBytesToTest))
+		jsonDecoder := json.NewDecoder(reader)
+		err := jsonDecoder.Decode(&testStruct)
+		if err == nil {
+			t.Fatal("Expected error on UnmarshalJSON invalid test, got nil")
 		}
 	})
 }
