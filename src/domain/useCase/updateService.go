@@ -12,7 +12,6 @@ import (
 func updateServiceStatus(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
 	serviceEntity entity.Service,
 	updateDto dto.UpdateService,
@@ -35,7 +34,6 @@ func updateServiceStatus(
 		return DeleteService(
 			queryRepo,
 			cmdRepo,
-			vhostQueryRepo,
 			vhostCmdRepo,
 			updateDto.Name,
 		)
@@ -66,7 +64,6 @@ func UpdateService(
 		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
-			vhostQueryRepo,
 			vhostCmdRepo,
 			serviceEntity,
 			updateDto,

@@ -11,7 +11,6 @@ import (
 func DeleteService(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
