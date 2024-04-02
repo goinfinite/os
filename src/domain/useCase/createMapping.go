@@ -104,15 +104,16 @@ func CreateMapping(
 		}
 	}
 
-	pathStartsWithSlashStr := createMapping.Path.String()
-	pathStartsWithSlash := strings.HasPrefix(pathStartsWithSlashStr, "/")
+	pathStr := createMapping.Path.String()
+	pathStartsWithSlash := strings.HasPrefix(pathStr, "/")
 	if !pathStartsWithSlash {
-		pathStartsWithSlashStr = "/" + pathStartsWithSlashStr
+		pathWithSlash := "/" + pathStr
+		pathStr = pathWithSlash
 	}
 
-	correctPath, err := valueObject.NewMappingPath(pathStartsWithSlashStr)
+	correctPath, err := valueObject.NewMappingPath(pathStr)
 	if err != nil {
-		log.Printf("GetCorrectMappingPathError (%s): %s", pathStartsWithSlashStr, err.Error())
+		log.Printf("GetCorrectMappingPathError (%s): %s", pathStr, err.Error())
 		return errors.New("GetCorrectMappingPathError")
 	}
 	createMapping.Path = correctPath
