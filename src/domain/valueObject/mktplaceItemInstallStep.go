@@ -40,8 +40,9 @@ func (miis MktplaceItemInstallStep) String() string {
 func (miisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
+	valueWithoutBackslash := strings.ReplaceAll(unquotedValue, "\\", "")
 
-	miis, err := NewMktplaceItemInstallStep(unquotedValue)
+	miis, err := NewMktplaceItemInstallStep(valueWithoutBackslash)
 	if err != nil {
 		return err
 	}
