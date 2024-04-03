@@ -341,26 +341,5 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 }
 
 func (repo SslCmdRepo) RemoveVhostFromSslPair(vhost valueObject.Fqdn) error {
-	/*
-		Existe um problema nessa função. Os SSLs só tem um vhost que carrega ele, o restante
-		são todos symlinks desse vhost principal. Caso seja feita a remoção do vhost principal,
-		enquanto permanecem outros vhosts, será criado um self signed no lugar do SSL anterior e,
-		portanto, todos os outros vhosts irão usar esse mesmo self signed por serem symlink do
-		caminho desse vhost principal. Exemplo:
-
-		Tenho um Let's Encrypt para 3 vhosts: speedia.net, infinite.net, nimbus.net.
-		Sendo o vhost speedia.net aquele que tem o SSL de fato, o outros dois são symlinks.
-		Caso o vhost speedia.net seja removido desse SSL, ele deverá receber um self signed, contudo
-		os outros dois vhosts são symlinks do seu SSL, portanto quando ele tiver seu SSL trocado para
-		um self signed, os outros dois também terão self signed.
-
-		O que precisa ser feito é que esse symlink seja substituído pelo de outro, como por exemplo o
-		vhost infinite.net "herdar" o SSL do vhost speedia.net para que todos os symlinks gerados para
-		esse SSL seja direcionado a ele. Contudo, se fizer isso, todos os vhosts terão que ter seus
-		symlinks atualizados.
-
-		Isso está correto?
-	*/
-
 	return repo.ReplaceWithSelfSigned(vhost)
 }
