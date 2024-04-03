@@ -27,7 +27,13 @@ func (MarketplaceInstalledItem) TableName() string {
 
 func (MarketplaceInstalledItem) ToModel(
 	entity entity.MarketplaceInstalledItem,
+	withoutId bool,
 ) (MarketplaceInstalledItem, error) {
+	idUint := uint(entity.Id.Get())
+	if withoutId {
+		idUint = 0
+	}
+
 	var svcNamesListStr []string
 	for _, svcName := range entity.Services {
 		svcNamesListStr = append(svcNamesListStr, svcName.String())
@@ -41,7 +47,7 @@ func (MarketplaceInstalledItem) ToModel(
 	mappingIdsStr := strings.Join(mappingIdsListStr, ",")
 
 	return MarketplaceInstalledItem{
-		ID:            uint(entity.Id.Get()),
+		ID:            idUint,
 		Name:          entity.Name.String(),
 		Type:          entity.Type.String(),
 		RootDirectory: entity.RootDirectory.String(),

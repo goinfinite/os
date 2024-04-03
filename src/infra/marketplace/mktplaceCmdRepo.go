@@ -109,8 +109,10 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		updatedAt,
 	)
 
+	modelWithoutId := true
 	mktplaceInstalledItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
 		mktplaceInstalledItem,
+		modelWithoutId,
 	)
 	if err != nil {
 		return err
