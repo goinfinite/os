@@ -95,7 +95,6 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("MktplaceCatalogItemNotFound")
 	}
 
-	// Isso é domain ou é infra?
 	hasRequiredDataFields := hasRequiredDataFields(
 		installMktplaceCatalogItem.DataFields,
 		mktplaceCatalogItem.DataFields,
