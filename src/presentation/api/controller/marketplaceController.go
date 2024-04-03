@@ -32,11 +32,11 @@ func NewMarketplaceController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {string} "AllCatalogProducts"
+// @Success      200 {string} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalogController(c echo.Context) error {
-	MktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
-	mktplaceItems, err := useCase.GetMarketplaceCatalog(MktplaceQueryRepo)
+	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
+	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -97,15 +97,15 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
 
-	MktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
-	MktplaceCmdRepo := mktplaceInfra.NewMktplaceCmdRepo(controller.persistentDbSvc)
+	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
+	mktplaceCmdRepo := mktplaceInfra.NewMktplaceCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(mktplaceItemId, hostname, rootDir, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
-		MktplaceQueryRepo,
-		MktplaceCmdRepo,
+		mktplaceQueryRepo,
+		mktplaceCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
 		dto,
@@ -114,5 +114,5 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "MarketplaceCatalogItemInstalled")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MarketplaceCatalogItemInstalled")
 }

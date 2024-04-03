@@ -22,11 +22,11 @@ type MktplaceCmdRepo struct {
 func NewMktplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MktplaceCmdRepo {
-	MktplaceQueryRepo := NewMktplaceQueryRepo(persistentDbSvc)
+	mktplaceQueryRepo := NewMktplaceQueryRepo(persistentDbSvc)
 
 	return &MktplaceCmdRepo{
 		persistentDbSvc: persistentDbSvc,
-		queryRepo:       MktplaceQueryRepo,
+		queryRepo:       mktplaceQueryRepo,
 	}
 }
 
