@@ -48,6 +48,8 @@ func (MarketplaceInstalledItem) ToModel(
 		Services:      svcNamesStr,
 		MappingsIds:   mappingIdsStr,
 		AvatarUrl:     entity.AvatarUrl.String(),
+		CreatedAt:     entity.CreatedAt.GetUnixTime(),
+		UpdatedAt:     entity.UpdatedAt.GetUnixTime(),
 	}, nil
 }
 
