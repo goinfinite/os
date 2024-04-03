@@ -84,13 +84,16 @@ func (router Router) filesRoutes(baseRoute *echo.Group) {
 
 func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	marketplaceGroup := baseRoute.Group("/marketplace")
-
-	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
-	marketplaceCatalogController := apiController.NewMarketplaceController(
+	marketplaceController := apiController.NewMarketplaceController(
 		router.persistentDbSvc,
 	)
-	marketplaceCatalogGroup.GET("/", marketplaceCatalogController.GetCatalogController)
-	marketplaceCatalogGroup.POST("/", marketplaceCatalogController.InstallCatalogItemController)
+
+	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
+	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItemsController)
+
+	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
+	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalogController)
+	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItemController)
 }
 
 func (router Router) o11yRoutes(baseRoute *echo.Group) {

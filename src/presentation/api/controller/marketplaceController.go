@@ -116,3 +116,22 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MarketplaceCatalogItemInstalled")
 }
+
+// GetMarketplaceInstalledItems godoc
+// @Summary      GetMarketplaceInstalledItems
+// @Description  List marketplace installed items.
+// @Tags         marketplace
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Success      200 {string} entity.MarketplaceInstalledItem
+// @Router       /marketplace/installed/ [get]
+func (controller *MarketplaceController) GetInstalledItemsController(c echo.Context) error {
+	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
+	mktplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(mktplaceQueryRepo)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, mktplaceInstalledItems)
+}
