@@ -112,3 +112,24 @@ func (repo *MktplaceCatalogQueryRepo) GetItems() (
 
 	return catalogItems, nil
 }
+
+func (repo *MktplaceCatalogQueryRepo) GetItemById(
+	id valueObject.MktplaceItemId,
+) (entity.MarketplaceCatalogItem, error) {
+	var mktplaceCatalogItem entity.MarketplaceCatalogItem
+
+	mktplaceCatalogItems, err := repo.GetItems()
+	if err != nil {
+		return mktplaceCatalogItem, err
+	}
+
+	for _, catalogItem := range mktplaceCatalogItems {
+		if catalogItem.Id.Get() != id.Get() {
+			continue
+		}
+
+		mktplaceCatalogItem = catalogItem
+	}
+
+	return mktplaceCatalogItem, nil
+}
