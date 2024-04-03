@@ -10,12 +10,15 @@ import (
 type MktplaceItemInstallStep string
 
 func NewMktplaceItemInstallStep(value string) (MktplaceItemInstallStep, error) {
-	miis := MktplaceItemInstallStep(value)
-	if !miis.isValid() {
-		return "", errors.New("InvalidMktItemInstallStep")
+	if len(value) < 1 {
+		return "", errors.New("MktItemInstallStepTooSmall")
 	}
 
-	return miis, nil
+	if len(value) > 512 {
+		return "", errors.New("MktItemInstallStepTooBig")
+	}
+
+	return MktplaceItemInstallStep(value), nil
 }
 
 func NewMktplaceItemInstallStepPanic(value string) MktplaceItemInstallStep {
@@ -25,12 +28,6 @@ func NewMktplaceItemInstallStepPanic(value string) MktplaceItemInstallStep {
 	}
 
 	return miis
-}
-
-func (miis MktplaceItemInstallStep) isValid() bool {
-	isTooShort := len(string(miis)) < 1
-	isTooLong := len(string(miis)) > 512
-	return !isTooShort && !isTooLong
 }
 
 func (miis MktplaceItemInstallStep) String() string {
