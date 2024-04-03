@@ -36,3 +36,16 @@ func NewMappingTargetTypePanic(value string) MappingTargetType {
 func (mtt MappingTargetType) String() string {
 	return string(mtt)
 }
+
+func (mttPtr *MappingTargetType) UnmarshalJSON(value []byte) error {
+	valueStr := string(value)
+	unquotedValue := strings.Trim(valueStr, "\"")
+
+	mtt, err := NewMappingTargetType(unquotedValue)
+	if err != nil {
+		return err
+	}
+
+	*mttPtr = mtt
+	return nil
+}
