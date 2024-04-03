@@ -2,12 +2,14 @@ package mktplaceInfra
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
@@ -42,6 +44,25 @@ func (repo *MktplaceCmdRepo) getDataFieldsAsMap(
 	return dataFieldMap
 }
 
+func (repo *MktplaceCmdRepo) moveMktplaceItemDir(
+	rootDirectory valueObject.UnixFilePath,
+	mktplaceItemName valueObject.MktplaceItemName,
+) error {
+	mktplaceItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + mktplaceItemName.String())
+
+	mktplaceItemDestinationPathStr := rootDirectory.String() + mktplaceItemName.String()
+	mktplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(mktplaceItemDestinationPathStr)
+
+	err := infraHelper.MakeDir(mktplaceItemDestinationPathStr)
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	filesCmdRepo := filesInfra.FilesCmdRepo{}
+	shouldOverwrite := true
+	return filesCmdRepo.Move(mktplaceItemSrcPath, mktplaceItemDestinationPath, shouldOverwrite)
+}
+
 func (repo *MktplaceCmdRepo) InstallItem(
 	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
@@ -52,6 +73,7 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		return errors.New("MktplaceCatalogItemNotFound")
 	}
 
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 	for _, requiredSvcName := range mktplaceCatalogItem.Services {
 		requiredSvcAutoCreateMapping := false
 		requiredService := dto.NewCreateInstallableService(
@@ -62,7 +84,7 @@ func (repo *MktplaceCmdRepo) InstallItem(
 			requiredSvcAutoCreateMapping,
 		)
 
-		err := servicesInfra.CreateInstallable(requiredService)
+		err := servicesCmdRepo.CreateInstallable(requiredService)
 		if err != nil {
 			return errors.New("InstallRequiredService: " + err.Error())
 		}
@@ -89,6 +111,14 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		if err != nil {
 			return errors.New("RunCmdStepError: " + err.Error())
 		}
+	}
+
+	err = repo.moveMktplaceItemDir(
+		installMktplaceCatalogItem.RootDirectory,
+		mktplaceCatalogItem.Name,
+	)
+	if err != nil {
+		return err
 	}
 
 	nowUnixTime := time.Now().Unix()
