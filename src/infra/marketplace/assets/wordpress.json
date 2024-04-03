@@ -25,6 +25,7 @@
         "chmod +x /speedia/wp-cli.phar",
         "mv /speedia/wp-cli.phar /usr/local/bin/wp",
         "wp core download --path=/speedia/wordpress --locale=%locale% --allow-root",
+        "sos db create -n %dbName% -t mysql",
         "wp config create --path=/speedia/wordpress --dbname=wpDb --dbuser=$(grep -oP '(?<=^user=).*' /root/.my.cnf) --dbpass=$(grep -oP '(?<=^password=).*' /root/.my.cnf) --allow-root"
     ],
     "estimatedSizeBytes": 1000000000,
