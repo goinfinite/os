@@ -68,8 +68,6 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		}
 	}
 
-	// Criar os mappings que o mktplaceCatalogItem exige.
-
 	dataFieldsMap := repo.getDataFieldsAsMap(installMktplaceCatalogItem.DataFields)
 	for _, cmdStep := range mktplaceCatalogItem.CmdSteps {
 		cmdStepStr := cmdStep.String()
