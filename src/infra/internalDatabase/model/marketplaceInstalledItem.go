@@ -10,19 +10,19 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id            int64     `gorm:"column:Id;primaryKey;unique;autoIncrement"`
-	Name          string    `gorm:"column:Name;not null"`
-	Type          string    `gorm:"column:Type;not null"`
-	RootDirectory string    `gorm:"column:RootDirectory;not null"`
-	Services      string    `gorm:"column:Services;not null"`
-	MappingsIds   string    `gorm:"column:MappingsIds;not null"`
-	AvatarUrl     string    `gorm:"column:AvatarUrl;not null"`
-	CreatedAt     time.Time `gorm:"column:CreatedAt;autoCreateTime"`
-	UpdatedAt     time.Time `gorm:"column:UpdatedAt;autoUpdateTime"`
+	ID            uint `gorm:"primarykey"`
+	Name          string
+	Type          string
+	RootDirectory string
+	Services      string
+	MappingsIds   string
+	AvatarUrl     string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func (MarketplaceInstalledItem) TableName() string {
-	return "marketplaceInstalledItem"
+	return "mktplace_installed_items"
 }
 
 func (MarketplaceInstalledItem) ToModel(
@@ -41,7 +41,7 @@ func (MarketplaceInstalledItem) ToModel(
 	mappingIdsStr := strings.Join(mappingIdsListStr, ",")
 
 	return MarketplaceInstalledItem{
-		Id:            entity.Id.Get(),
+		ID:            uint(entity.Id.Get()),
 		Name:          entity.Name.String(),
 		Type:          entity.Type.String(),
 		RootDirectory: entity.RootDirectory.String(),
@@ -56,7 +56,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 ) {
 	var mktplaceInstalledItem entity.MarketplaceInstalledItem
 
-	id, err := valueObject.NewMktplaceItemId(model.Id)
+	id, err := valueObject.NewMktplaceItemId(model.ID)
 	if err != nil {
 		return mktplaceInstalledItem, err
 	}
