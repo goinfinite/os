@@ -81,14 +81,20 @@ func getDataFieldsFromBody(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItemController(c echo.Context) error {
-	requiredParams := []string{"id", "hostname", "rootDirectory", "dataFields"}
+	requiredParams := []string{"id", "hostname", "dataFields"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	mktplaceItemId := valueObject.NewMktplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
-	rootDir := valueObject.NewUnixFilePathPanic(requestBody["rootDirectory"].(string))
+
+	rawRootDir := requestBody["rootDirectory"]
+	if rawRootDir == nil {
+		rawRootDir = "/"
+	}
+	rootDir := valueObject.NewUnixFilePathPanic(rawRootDir.(string))
+
 	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
 
 	mktplaceCatalogQueryRepo := mktplaceInfra.NewMktplaceCatalogQueryRepo(controller.persistentDbSvc)
