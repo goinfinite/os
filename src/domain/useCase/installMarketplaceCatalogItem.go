@@ -77,8 +77,8 @@ func mktplaceItemMappingFactory(
 }
 
 func InstallMarketplaceCatalogItem(
-	MktplaceQueryRepo repository.MktplaceQueryRepo,
-	MktplaceCmdRepo repository.MktplaceCmdRepo,
+	mktplaceQueryRepo repository.MktplaceQueryRepo,
+	mktplaceCmdRepo repository.MktplaceCmdRepo,
 	vhostQueryRepo vhostInfra.VirtualHostQueryRepo,
 	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
 	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
@@ -88,7 +88,7 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("VhostNotFound")
 	}
 
-	mktplaceCatalogItem, err := MktplaceQueryRepo.GetItemById(
+	mktplaceCatalogItem, err := mktplaceQueryRepo.GetItemById(
 		installMktplaceCatalogItem.Id,
 	)
 	if err != nil {
@@ -111,7 +111,7 @@ func InstallMarketplaceCatalogItem(
 	}
 	installMktplaceCatalogItem.RootDirectory = rootDirAbsolutePath
 
-	err = MktplaceCmdRepo.InstallItem(installMktplaceCatalogItem)
+	err = mktplaceCmdRepo.InstallItem(installMktplaceCatalogItem)
 	if err != nil {
 		log.Printf("InstallMktplaceCatalogItemError: %s", err.Error())
 		return errors.New("InstallMktplaceCatalogItemInfraError")
