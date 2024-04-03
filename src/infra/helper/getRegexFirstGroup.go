@@ -5,18 +5,19 @@ import (
 	"regexp"
 )
 
-func GetRegexFirstGroup(input string, regexExpression string) (string, error) {
+func GetRegexFirstGroup(input string, regexExpression string) ([]string, error) {
+	matchesValues := []string{}
+
 	regex := regexp.MustCompile(regexExpression)
-	match := regex.FindStringSubmatch(input)
+	matches := regex.FindAllStringSubmatch(input, -1)
 
-	if len(match) < 2 {
-		return "", errors.New("RegexGroupNotFound")
+	if len(matches) == 0 {
+		return matchesValues, errors.New("RegexGroupNotFound")
 	}
 
-	firstGroup := match[1]
-	if len(firstGroup) == 0 {
-		return "", errors.New("EmptyRegexGroup")
+	for _, match := range matches {
+		matchesValues = append(matchesValues, match[1])
 	}
 
-	return firstGroup, nil
+	return matchesValues, nil
 }
