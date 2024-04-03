@@ -16,19 +16,19 @@ import (
 //go:embed assets/*
 var assets embed.FS
 
-type MktplaceCatalogQueryRepo struct {
+type MktplaceQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewMktplaceCatalogQueryRepo(
+func NewMktplaceQueryRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-) *MktplaceCatalogQueryRepo {
-	return &MktplaceCatalogQueryRepo{
+) *MktplaceQueryRepo {
+	return &MktplaceQueryRepo{
 		persistentDbSvc: persistentDbSvc,
 	}
 }
 
-func (repo *MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
+func (repo *MktplaceQueryRepo) getMktCatalogItemFromFilePath(
 	mktCatalogItemFilePath valueObject.UnixFilePath,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
@@ -59,7 +59,7 @@ func (repo *MktplaceCatalogQueryRepo) getMktCatalogItemFromFilePath(
 	return catalogItem, nil
 }
 
-func (repo *MktplaceCatalogQueryRepo) GetItems() (
+func (repo *MktplaceQueryRepo) GetItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -113,7 +113,7 @@ func (repo *MktplaceCatalogQueryRepo) GetItems() (
 	return catalogItems, nil
 }
 
-func (repo *MktplaceCatalogQueryRepo) GetItemById(
+func (repo *MktplaceQueryRepo) GetItemById(
 	id valueObject.MktplaceItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var mktplaceCatalogItem entity.MarketplaceCatalogItem

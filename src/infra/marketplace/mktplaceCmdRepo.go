@@ -14,23 +14,23 @@ import (
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-type MktplaceCatalogCmdRepo struct {
+type MktplaceCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	queryRepo       *MktplaceCatalogQueryRepo
+	queryRepo       *MktplaceQueryRepo
 }
 
-func NewMktplaceCatalogCmdRepo(
+func NewMktplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-) *MktplaceCatalogCmdRepo {
-	mktplaceCatalogQueryRepo := NewMktplaceCatalogQueryRepo(persistentDbSvc)
+) *MktplaceCmdRepo {
+	MktplaceQueryRepo := NewMktplaceQueryRepo(persistentDbSvc)
 
-	return &MktplaceCatalogCmdRepo{
+	return &MktplaceCmdRepo{
 		persistentDbSvc: persistentDbSvc,
-		queryRepo:       mktplaceCatalogQueryRepo,
+		queryRepo:       MktplaceQueryRepo,
 	}
 }
 
-func (repo *MktplaceCatalogCmdRepo) getDataFieldsAsMap(
+func (repo *MktplaceCmdRepo) getDataFieldsAsMap(
 	dataFields []valueObject.DataField,
 ) map[string]string {
 	dataFieldMap := map[string]string{}
@@ -42,7 +42,7 @@ func (repo *MktplaceCatalogCmdRepo) getDataFieldsAsMap(
 	return dataFieldMap
 }
 
-func (repo *MktplaceCatalogCmdRepo) InstallItem(
+func (repo *MktplaceCmdRepo) InstallItem(
 	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
 	mktplaceCatalogItem, err := repo.queryRepo.GetItemById(

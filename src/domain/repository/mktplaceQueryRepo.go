@@ -5,7 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type MktplaceCatalogQueryRepo interface {
+type MktplaceQueryRepo interface {
 	GetItems() ([]entity.MarketplaceCatalogItem, error)
 	GetItemById(id valueObject.MktplaceItemId) (entity.MarketplaceCatalogItem, error)
 }
