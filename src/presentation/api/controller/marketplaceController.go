@@ -94,12 +94,14 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 	mktplaceCatalogQueryRepo := mktplaceInfra.NewMktplaceCatalogQueryRepo(controller.persistentDbSvc)
 	mktplaceCatalogCmdRepo := mktplaceInfra.NewMktplaceCatalogCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(mktplaceItemId, hostname, rootDir, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		mktplaceCatalogQueryRepo,
 		mktplaceCatalogCmdRepo,
 		vhostQueryRepo,
+		vhostCmdRepo,
 		dto,
 	)
 	if err != nil {

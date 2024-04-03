@@ -7,10 +7,11 @@ import (
 )
 
 func InstallMarketplaceCatalogItem(
-	queryRepo repository.MktplaceCatalogQueryRepo,
-	cmdRepo repository.MktplaceCatalogCmdRepo,
+	mktplaceCatalogQueryRepo repository.MktplaceCatalogQueryRepo,
+	mktplaceCatalogCmdRepo repository.MktplaceCatalogCmdRepo,
 	vhostQueryRepo vhostInfra.VirtualHostQueryRepo,
-	dto dto.InstallMarketplaceCatalogItem,
+	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
+	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
 	return nil
 }
