@@ -97,7 +97,6 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		}
 	}
 
-	// Arrumar isso aqui depois
 	mappings := []entity.Mapping{}
 
 	avatarUrl, err := valueObject.NewUrl(model.AvatarUrl)
