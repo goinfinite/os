@@ -1,0 +1,36 @@
+{
+    "name": "wordpress",
+    "type": "app",
+    "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
+    "services": ["php", "mysql"],
+    "mappings": [
+        {
+            "path": "/wordpress",
+            "matchPattern": "begins-with",
+            "targetType": "static-files"
+        }
+    ],
+    "dataFields": [
+        {
+            "key": "locale",
+            "value": "pt_BR"
+        },
+        {
+            "key": "dbName",
+            "value": "exampleDbName"
+        }
+    ],
+    "cmdSteps": [
+        "wget -O /speedia/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar",
+        "chmod +x /speedia/wp-cli.phar",
+        "mv /speedia/wp-cli.phar /usr/local/bin/wp",
+        "wp core download --path=/speedia/wordpress --locale=%locale% --allow-root",
+        "wp config create --path=/speedia/wordpress --dbname=wpDb --dbuser=$(grep -oP '(?<=^user=).*' /root/.my.cnf) --dbpass=$(grep -oP '(?<=^password=).*' /root/.my.cnf) --allow-root"
+    ],
+    "estimatedSizeBytes": 1000000000,
+    "avatarUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/1200px-WordPress_blue_logo.svg.png",
+    "screenshotUrls": [
+        "https://assets-global.website-files.com/6411daab15c8848a5e4e0153/641b3f9ce3cdde01161582b2_629712455650ab2e848fe8c4_logo-wordpress.png",
+        "https://kinsta.com/wp-content/uploads/2018/02/what-is-wordpress.png"
+    ]
+}
