@@ -3,7 +3,6 @@ package mktplaceInfra
 import (
 	"errors"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -74,14 +73,7 @@ func (repo *MktplaceCmdRepo) moveMktplaceItemDir(
 	mktplaceItemName valueObject.MktplaceItemName,
 ) error {
 	mktplaceItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + mktplaceItemName.String())
-
-	mktplaceItemDestinationPathStr := rootDirectory.String() + mktplaceItemName.String()
-	mktplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(mktplaceItemDestinationPathStr)
-
-	err := infraHelper.MakeDir(mktplaceItemDestinationPathStr)
-	if err != nil && !os.IsExist(err) {
-		return err
-	}
+	mktplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
 
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 	shouldOverwrite := true
