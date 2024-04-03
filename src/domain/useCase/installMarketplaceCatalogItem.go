@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"slices"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -36,44 +35,6 @@ func hasRequiredDataFields(
 	}
 
 	return hasRequiredDataFields
-}
-
-func mktplaceItemMappingFactory(
-	vhost valueObject.Fqdn,
-	rootDirectory valueObject.UnixFilePath,
-) (dto.CreateMapping, error) {
-	var mktplaceItemMapping dto.CreateMapping
-
-	rootDirectoryWithoutTrailingSlash := strings.TrimSuffix(rootDirectory.String(), "/")
-	mktplaceItemMappingPath, err := valueObject.NewMappingPath(
-		rootDirectoryWithoutTrailingSlash,
-	)
-	if err != nil {
-		return mktplaceItemMapping, err
-	}
-
-	mktplaceItemMappingMatchPattern, err := valueObject.NewMappingMatchPattern("begins-with")
-	if err != nil {
-		return mktplaceItemMapping, err
-	}
-
-	mktplaceItemMappingTargetType, err := valueObject.NewMappingTargetType("static-files")
-	if err != nil {
-		return mktplaceItemMapping, err
-	}
-
-	mktplaceItemMapping = dto.NewCreateMapping(
-		vhost,
-		mktplaceItemMappingPath,
-		mktplaceItemMappingMatchPattern,
-		mktplaceItemMappingTargetType,
-		nil,
-		nil,
-		nil,
-		nil,
-	)
-
-	return mktplaceItemMapping, nil
 }
 
 func InstallMarketplaceCatalogItem(
@@ -115,21 +76,6 @@ func InstallMarketplaceCatalogItem(
 	if err != nil {
 		log.Printf("InstallMktplaceCatalogItemError: %s", err.Error())
 		return errors.New("InstallMktplaceCatalogItemInfraError")
-	}
-
-	mktplaceItemMapping, err := mktplaceItemMappingFactory(
-		installMktplaceCatalogItem.Hostname,
-		installMktplaceCatalogItem.RootDirectory,
-	)
-	if err != nil {
-		log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
-		return errors.New("CreateMktplaceItemMappingError")
-	}
-
-	err = vhostCmdRepo.CreateMapping(mktplaceItemMapping)
-	if err != nil {
-		log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
-		return errors.New("CreateMktplaceItemMappingInfraError")
 	}
 
 	return nil
