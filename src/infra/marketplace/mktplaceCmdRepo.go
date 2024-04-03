@@ -46,6 +46,29 @@ func (repo *MktplaceCmdRepo) getDataFieldsAsMap(
 	return dataFieldMap
 }
 
+func (repo *MktplaceCmdRepo) getCmdStepWithDataFields(
+	cmdStep valueObject.MktplaceItemInstallStep,
+	dataFieldsMap map[string]string,
+) (string, error) {
+	cmdStepStr := cmdStep.String()
+	cmdStepRequiredDataFields, _ := infraHelper.GetRegexFirstGroup(
+		cmdStepStr,
+		`%(.*?)%`,
+	)
+
+	cmdStepWithDataField := cmdStepStr
+	for _, cmdStepRequiredDataField := range cmdStepRequiredDataFields {
+		requiredDataFieldValue := dataFieldsMap[cmdStepRequiredDataField]
+		cmdStepWithDataField = strings.ReplaceAll(
+			cmdStepWithDataField,
+			"%"+cmdStepRequiredDataField+"%",
+			requiredDataFieldValue,
+		)
+	}
+
+	return cmdStepWithDataField, nil
+}
+
 func (repo *MktplaceCmdRepo) moveMktplaceItemDir(
 	rootDirectory valueObject.UnixFilePath,
 	mktplaceItemName valueObject.MktplaceItemName,
@@ -100,24 +123,19 @@ func (repo *MktplaceCmdRepo) InstallItem(
 
 	dataFieldsMap := repo.getDataFieldsAsMap(installMktplaceCatalogItem.DataFields)
 	for _, cmdStep := range mktplaceCatalogItem.CmdSteps {
-		cmdStepStr := cmdStep.String()
-		cmdStepRequiredDataField, err := infraHelper.GetRegexFirstGroup(
-			cmdStepStr,
-			`%(.+)%`,
+		cmdStepRequiredDataFields, err := repo.getCmdStepWithDataFields(
+			cmdStep,
+			dataFieldsMap,
 		)
-		if err == nil {
-			requiredDataFieldValue := dataFieldsMap[cmdStepRequiredDataField]
-			cmdStepWithDataField := strings.ReplaceAll(
-				cmdStepStr,
-				"%"+cmdStepRequiredDataField+"%",
-				requiredDataFieldValue,
-			)
-			cmdStepStr = cmdStepWithDataField
+		if err != nil {
+			return errors.New("GetCmdStepWithDataFieldsError: " + err.Error())
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
+		_, err = infraHelper.RunCmdWithSubShell(cmdStepRequiredDataFields)
 		if err != nil {
-			return errors.New("RunCmdStepError (" + cmdStepStr + "): " + err.Error())
+			return errors.New(
+				"RunCmdStepError (" + cmdStepRequiredDataFields + "): " + err.Error(),
+			)
 		}
 	}
 
@@ -127,6 +145,25 @@ func (repo *MktplaceCmdRepo) InstallItem(
 	)
 	if err != nil {
 		return err
+	}
+
+	for _, mktplaceItemMapping := range mktplaceCatalogItem.Mappings {
+		createMktplaceItemMapping := dto.NewCreateMapping(
+			installMktplaceCatalogItem.Hostname,
+			mktplaceItemMapping.Path,
+			mktplaceItemMapping.MatchPattern,
+			mktplaceItemMapping.TargetType,
+			mktplaceItemMapping.TargetServiceName,
+			mktplaceItemMapping.TargetUrl,
+			mktplaceItemMapping.TargetHttpResponseCode,
+			mktplaceItemMapping.TargetInlineHtmlContent,
+		)
+
+		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+		err = vhostCmdRepo.CreateMapping(createMktplaceItemMapping)
+		if err != nil {
+			log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
+		}
 	}
 
 	nowUnixTime := time.Now().Unix()
@@ -157,25 +194,6 @@ func (repo *MktplaceCmdRepo) InstallItem(
 	err = repo.persistentDbSvc.Handler.Create(&mktplaceInstalledItemModel).Error
 	if err != nil {
 		return err
-	}
-
-	for _, mktplaceItemMapping := range mktplaceCatalogItem.Mappings {
-		createMktplaceItemMapping := dto.NewCreateMapping(
-			installMktplaceCatalogItem.Hostname,
-			mktplaceItemMapping.Path,
-			mktplaceItemMapping.MatchPattern,
-			mktplaceItemMapping.TargetType,
-			mktplaceItemMapping.TargetServiceName,
-			mktplaceItemMapping.TargetUrl,
-			mktplaceItemMapping.TargetHttpResponseCode,
-			mktplaceItemMapping.TargetInlineHtmlContent,
-		)
-
-		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err = vhostCmdRepo.CreateMapping(createMktplaceItemMapping)
-		if err != nil {
-			log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
-		}
 	}
 
 	return nil
