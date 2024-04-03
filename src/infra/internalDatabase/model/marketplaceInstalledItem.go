@@ -79,14 +79,16 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	}
 
 	svcsNameList := []valueObject.ServiceName{}
-	rawSvcsNameList := strings.Split(model.Services, ",")
-	for _, rawSvcName := range rawSvcsNameList {
-		svcName, err := valueObject.NewServiceName(rawSvcName)
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawSvcName)
-		}
+	if len(model.Services) > 0 {
+		rawSvcsNameList := strings.Split(model.Services, ",")
+		for _, rawSvcName := range rawSvcsNameList {
+			svcName, err := valueObject.NewServiceName(rawSvcName)
+			if err != nil {
+				log.Printf("%s: %s", err.Error(), rawSvcName)
+			}
 
-		svcsNameList = append(svcsNameList, svcName)
+			svcsNameList = append(svcsNameList, svcName)
+		}
 	}
 
 	// Arrumar isso aqui depois
