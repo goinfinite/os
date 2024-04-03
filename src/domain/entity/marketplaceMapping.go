@@ -8,13 +8,13 @@ import (
 type MarketplaceMapping struct {
 	Path              valueObject.MappingPath         `json:"path"`
 	MatchPattern      valueObject.MappingMatchPattern `json:"matchPattern"`
-	TargetServiceName *valueObject.ServiceName        `json:"targetServiceName"`
+	TargetServiceName valueObject.ServiceName         `json:"targetServiceName"`
 }
 
 func NewMarketplaceMapping(
 	path valueObject.MappingPath,
 	matchPattern valueObject.MappingMatchPattern,
-	targetServiceName *valueObject.ServiceName,
+	targetServiceName valueObject.ServiceName,
 ) MarketplaceMapping {
 	return MarketplaceMapping{
 		Path:              path,
@@ -35,25 +35,17 @@ func (mmPtr *MarketplaceMapping) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 
-	matchPattern, err := valueObject.NewMappingMatchPattern(
-		valuesMap["matchPattern"],
-	)
+	matchPattern, err := valueObject.NewMappingMatchPattern(valuesMap["matchPattern"])
 	if err != nil {
 		return err
 	}
 
-	var targetSvcNamePtr *valueObject.ServiceName
-	targetSvcName, targetSvcNameExists := valuesMap["targetServiceName"]
-	if targetSvcNameExists {
-		targetSvcName, err := valueObject.NewServiceName(targetSvcName)
-		if err != nil {
-			return err
-		}
-
-		targetSvcNamePtr = &targetSvcName
+	targetSvcName, err := valueObject.NewServiceName(valuesMap["targetServiceName"])
+	if err != nil {
+		return err
 	}
 
-	*mmPtr = NewMarketplaceMapping(path, matchPattern, targetSvcNamePtr)
+	*mmPtr = NewMarketplaceMapping(path, matchPattern, targetSvcName)
 
 	return nil
 }
