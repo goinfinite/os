@@ -5,5 +5,5 @@ import (
 )
 
 type MktplaceCatalogCmdRepo interface {
-	InstallItem(dto dto.InstallMarketplaceCatalogItem) error
+	InstallItem(installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem) error
 }
