@@ -9,7 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func serviceMappingFactory(
+func serviceAutoMappingFactory(
 	primaryHostname valueObject.Fqdn,
 	svcName valueObject.ServiceName,
 ) (dto.CreateMapping, error) {
@@ -83,7 +83,7 @@ func CreateCustomService(
 		return nil
 	}
 
-	serviceMapping, err := serviceMappingFactory(
+	serviceMapping, err := serviceAutoMappingFactory(
 		primaryVhostWithMapping.Hostname,
 		createDto.Name,
 	)

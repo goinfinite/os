@@ -69,7 +69,7 @@ func CreateInstallableService(
 		return nil
 	}
 
-	serviceMapping, err := serviceMappingFactory(
+	serviceMapping, err := serviceAutoMappingFactory(
 		primaryVhostWithMapping.Hostname,
 		createDto.Name,
 	)
