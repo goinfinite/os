@@ -10,6 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -132,4 +133,34 @@ func (repo *MktplaceQueryRepo) GetItemById(
 	}
 
 	return mktplaceCatalogItem, nil
+}
+
+func (repo *MktplaceQueryRepo) GetInstalledItems() (
+	[]entity.MarketplaceInstalledItem, error,
+) {
+	mktplaceInstalledItemEntities := []entity.MarketplaceInstalledItem{}
+
+	mktplaceInstalledItemModels := []dbModel.MarketplaceInstalledItem{}
+	err := repo.persistentDbSvc.Handler.Model(&dbModel.MarketplaceInstalledItem{}).
+		Find(&mktplaceInstalledItemModels).Error
+	if err != nil {
+		return mktplaceInstalledItemEntities, errors.New(
+			"DatabaseQueryMktplaceInstalledItemsError",
+		)
+	}
+
+	for _, mktplaceInstalledItemModel := range mktplaceInstalledItemModels {
+		mktplaceInstalledItem, err := mktplaceInstalledItemModel.ToEntity()
+		if err != nil {
+			log.Printf("MktplaceInstalledItemModelToEntityError: %s", err.Error())
+			continue
+		}
+
+		mktplaceInstalledItemEntities = append(
+			mktplaceInstalledItemEntities,
+			mktplaceInstalledItem,
+		)
+	}
+
+	return mktplaceInstalledItemEntities, nil
 }
