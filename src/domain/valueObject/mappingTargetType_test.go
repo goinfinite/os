@@ -2,63 +2,50 @@ package valueObject
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
 	"testing"
 )
 
-func TestNewHttpResponseCode(t *testing.T) {
-	t.Run("ValidResponseCode", func(t *testing.T) {
-		validResponseCodes := []interface{}{
-			"100",
-			"200",
-			"300",
-			"400",
-			"500",
-			100,
-			200,
-			300,
-			400,
-			500,
+func TestMappingTargetType(t *testing.T) {
+	t.Run("ValidMappingTargetType", func(t *testing.T) {
+		validMappingTargetTypes := []string{
+			"url",
+			"service",
+			"response-code",
+			"inline-html",
+			"static-files",
 		}
 
-		for _, responseCode := range validResponseCodes {
-			_, err := NewHttpResponseCode(responseCode)
+		for _, mtt := range validMappingTargetTypes {
+			_, err := NewMappingTargetType(mtt)
 			if err != nil {
-				t.Errorf(
-					"Expected no error for %v, got %s",
-					responseCode,
-					err.Error(),
-				)
+				t.Errorf("Expected no error for %s, got %s", mtt, err.Error())
 			}
 		}
 	})
 
-	t.Run("InvalidResponseCode", func(t *testing.T) {
-		invalidResponseCodes := []interface{}{
-			"@blabla",
-			"<script>alert('xss')</script>",
-			"1000",
-			"0",
-			"-1",
-			"UNION SELECT * FROM USERS",
+	t.Run("ValidMappingTargetType", func(t *testing.T) {
+		invalidMappingTargetTypes := []string{
+			"response-header",
+			"reverse-proxy",
+			"template",
 		}
 
-		for _, responseCode := range invalidResponseCodes {
-			_, err := NewHttpResponseCode(responseCode)
+		for _, mtt := range invalidMappingTargetTypes {
+			_, err := NewMappingTargetType(mtt)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", responseCode)
+				t.Errorf("Expected error for %s, got nil", mtt)
 			}
 		}
 	})
 
 	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest HttpResponseCode
+			DataToTest MappingTargetType
 		}
 
-		dataToTest := 200
-		mapToTest := map[string]int{
+		dataToTest := "service"
+		mapToTest := map[string]string{
 			"dataToTest": dataToTest,
 		}
 		mapBytesToTest, _ := json.Marshal(mapToTest)
@@ -71,22 +58,21 @@ func TestNewHttpResponseCode(t *testing.T) {
 		}
 
 		dataToTestFromStructStr := testStruct.DataToTest.String()
-		dataToTestStr := strconv.Itoa(dataToTest)
-		if dataToTestFromStructStr != dataToTestStr {
+		if dataToTestFromStructStr != dataToTest {
 			t.Errorf(
 				"VO data '%s' after UnmarshalJSON is not the same as the original data '%s'",
 				dataToTestFromStructStr,
-				dataToTestStr,
+				dataToTest,
 			)
 		}
 	})
 
 	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest HttpResponseCode
+			DataToTest MappingTargetType
 		}
 
-		dataToTest := ""
+		dataToTest := "reverse-proxy"
 		mapToTest := map[string]string{
 			"dataToTest": dataToTest,
 		}

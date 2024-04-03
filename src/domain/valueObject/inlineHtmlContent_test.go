@@ -2,63 +2,50 @@ package valueObject
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
 	"testing"
+
+	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
-func TestNewHttpResponseCode(t *testing.T) {
-	t.Run("ValidResponseCode", func(t *testing.T) {
-		validResponseCodes := []interface{}{
-			"100",
-			"200",
-			"300",
-			"400",
-			"500",
-			100,
-			200,
-			300,
-			400,
-			500,
+func TestInlineHtmlContent(t *testing.T) {
+	t.Run("ValidInlineHtmlContent", func(t *testing.T) {
+		validInlineHtmlContents := []string{
+			"Some nice inline html content",
+			"<h1>Nice title here</h1>",
+			"<p>With some regular text here too...<h2>",
 		}
 
-		for _, responseCode := range validResponseCodes {
-			_, err := NewHttpResponseCode(responseCode)
+		for _, ihc := range validInlineHtmlContents {
+			_, err := NewInlineHtmlContent(ihc)
 			if err != nil {
-				t.Errorf(
-					"Expected no error for %v, got %s",
-					responseCode,
-					err.Error(),
-				)
+				t.Errorf("Expected no error for %s, got %s", ihc, err.Error())
 			}
 		}
 	})
 
-	t.Run("InvalidResponseCode", func(t *testing.T) {
-		invalidResponseCodes := []interface{}{
-			"@blabla",
-			"<script>alert('xss')</script>",
-			"1000",
-			"0",
-			"-1",
-			"UNION SELECT * FROM USERS",
+	t.Run("ValidInlineHtmlContent", func(t *testing.T) {
+		invalidLength := 3600
+		invalidInlineHtmlContents := []string{
+			"",
+			testHelpers.GenerateString(invalidLength),
 		}
 
-		for _, responseCode := range invalidResponseCodes {
-			_, err := NewHttpResponseCode(responseCode)
+		for _, ihc := range invalidInlineHtmlContents {
+			_, err := NewInlineHtmlContent(ihc)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", responseCode)
+				t.Errorf("Expected error for %s, got nil", ihc)
 			}
 		}
 	})
 
 	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest HttpResponseCode
+			DataToTest InlineHtmlContent
 		}
 
-		dataToTest := 200
-		mapToTest := map[string]int{
+		dataToTest := "Some nice inline html content"
+		mapToTest := map[string]string{
 			"dataToTest": dataToTest,
 		}
 		mapBytesToTest, _ := json.Marshal(mapToTest)
@@ -71,19 +58,18 @@ func TestNewHttpResponseCode(t *testing.T) {
 		}
 
 		dataToTestFromStructStr := testStruct.DataToTest.String()
-		dataToTestStr := strconv.Itoa(dataToTest)
-		if dataToTestFromStructStr != dataToTestStr {
+		if dataToTestFromStructStr != dataToTest {
 			t.Errorf(
 				"VO data '%s' after UnmarshalJSON is not the same as the original data '%s'",
 				dataToTestFromStructStr,
-				dataToTestStr,
+				dataToTest,
 			)
 		}
 	})
 
 	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest HttpResponseCode
+			DataToTest InlineHtmlContent
 		}
 
 		dataToTest := ""
