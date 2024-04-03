@@ -10,11 +10,12 @@ import (
 type MktplaceItemDescription string
 
 func NewMktplaceItemDescription(value string) (MktplaceItemDescription, error) {
-	isTooShort := len(value) < 2
-	isTooLong := len(value) > 512
+	if len(value) < 2 {
+		return "", errors.New("MktItemDescriptionTooSmall")
+	}
 
-	if isTooShort || isTooLong {
-		return "", errors.New("InvalidMktItemDescription")
+	if len(value) > 512 {
+		return "", errors.New("MktItemDescriptionTooBig")
 	}
 
 	return MktplaceItemDescription(value), nil
