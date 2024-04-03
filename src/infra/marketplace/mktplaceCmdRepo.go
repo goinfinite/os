@@ -2,6 +2,7 @@ package mktplaceInfra
 
 import (
 	"errors"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 type MktplaceCmdRepo struct {
@@ -73,8 +75,14 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		return errors.New("MktplaceCatalogItemNotFound")
 	}
 
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 	for _, requiredSvcName := range mktplaceCatalogItem.Services {
+		_, err := servicesQueryRepo.GetByName(requiredSvcName)
+		if err == nil {
+			continue
+		}
+
 		requiredSvcAutoCreateMapping := false
 		requiredService := dto.NewCreateInstallableService(
 			requiredSvcName,
@@ -84,9 +92,9 @@ func (repo *MktplaceCmdRepo) InstallItem(
 			requiredSvcAutoCreateMapping,
 		)
 
-		err := servicesCmdRepo.CreateInstallable(requiredService)
+		err = servicesCmdRepo.CreateInstallable(requiredService)
 		if err != nil {
-			return errors.New("InstallRequiredService: " + err.Error())
+			return errors.New("InstallRequiredServiceError: " + err.Error())
 		}
 	}
 
@@ -109,7 +117,7 @@ func (repo *MktplaceCmdRepo) InstallItem(
 
 		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
 		if err != nil {
-			return errors.New("RunCmdStepError: " + err.Error())
+			return errors.New("RunCmdStepError (" + cmdStepStr + "): " + err.Error())
 		}
 	}
 
@@ -150,5 +158,25 @@ func (repo *MktplaceCmdRepo) InstallItem(
 	if err != nil {
 		return err
 	}
+
+	for _, mktplaceItemMapping := range mktplaceCatalogItem.Mappings {
+		createMktplaceItemMapping := dto.NewCreateMapping(
+			installMktplaceCatalogItem.Hostname,
+			mktplaceItemMapping.Path,
+			mktplaceItemMapping.MatchPattern,
+			mktplaceItemMapping.TargetType,
+			mktplaceItemMapping.TargetServiceName,
+			mktplaceItemMapping.TargetUrl,
+			mktplaceItemMapping.TargetHttpResponseCode,
+			mktplaceItemMapping.TargetInlineHtmlContent,
+		)
+
+		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+		err = vhostCmdRepo.CreateMapping(createMktplaceItemMapping)
+		if err != nil {
+			log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
+		}
+	}
+
 	return nil
 }
