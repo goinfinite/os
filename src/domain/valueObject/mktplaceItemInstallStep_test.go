@@ -9,9 +9,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestMktplaceItemInstallStep(t *testing.T) {
-	t.Run("ValidMktplaceItemInstallStep", func(t *testing.T) {
-		validMktplaceItemInstallSteps := []string{
+func TestMarketplaceItemInstallStep(t *testing.T) {
+	t.Run("ValidMarketplaceItemInstallStep", func(t *testing.T) {
+		validMarketplaceItemInstallSteps := []string{
 			"ls -l",
 			"cat file.txt | grep \"pattern\" | sort",
 			"echo \"Today is $(date +%A)\"",
@@ -20,23 +20,23 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 			"wget https://github.com/speedianet/os -O $PATH",
 		}
 
-		for _, miis := range validMktplaceItemInstallSteps {
-			_, err := NewMktplaceItemInstallStep(miis)
+		for _, miis := range validMarketplaceItemInstallSteps {
+			_, err := NewMarketplaceItemInstallStep(miis)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", miis, err.Error())
 			}
 		}
 	})
 
-	t.Run("ValidMktplaceItemInstallStep", func(t *testing.T) {
+	t.Run("ValidMarketplaceItemInstallStep", func(t *testing.T) {
 		invalidLength := 700
-		invalidMktplaceItemInstallSteps := []string{
+		invalidMarketplaceItemInstallSteps := []string{
 			"",
 			testHelpers.GenerateString(invalidLength),
 		}
 
-		for _, miis := range invalidMktplaceItemInstallSteps {
-			_, err := NewMktplaceItemInstallStep(miis)
+		for _, miis := range invalidMarketplaceItemInstallSteps {
+			_, err := NewMarketplaceItemInstallStep(miis)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", miis)
 			}
@@ -45,7 +45,7 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 
 	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemInstallStep
+			DataToTest MarketplaceItemInstallStep
 		}
 
 		dataToTest := "cat file.txt | grep \"pattern\" | sort"
@@ -73,7 +73,7 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 
 	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemInstallStep
+			DataToTest MarketplaceItemInstallStep
 		}
 
 		dataToTest := ""
@@ -92,7 +92,7 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 
 	t.Run("ValidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemInstallStep `yaml:"dataToTest"`
+			DataToTest MarketplaceItemInstallStep `yaml:"dataToTest"`
 		}
 
 		dataToTest := "cat file.txt | grep \"pattern\" | sort"
@@ -120,7 +120,7 @@ func TestMktplaceItemInstallStep(t *testing.T) {
 
 	t.Run("InvalidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemInstallStep `yaml:"dataToTest"`
+			DataToTest MarketplaceItemInstallStep `yaml:"dataToTest"`
 		}
 
 		dataToTest := ""

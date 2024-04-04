@@ -1,4 +1,4 @@
-package mktplaceInfra
+package marketplaceInfra
 
 import (
 	"embed"
@@ -17,30 +17,30 @@ import (
 //go:embed assets/*
 var assets embed.FS
 
-type MktplaceQueryRepo struct {
+type MarketplaceQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewMktplaceQueryRepo(
+func NewMarketplaceQueryRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-) *MktplaceQueryRepo {
-	return &MktplaceQueryRepo{
+) *MarketplaceQueryRepo {
+	return &MarketplaceQueryRepo{
 		persistentDbSvc: persistentDbSvc,
 	}
 }
 
-func (repo *MktplaceQueryRepo) getMktCatalogItemFromFilePath(
-	mktCatalogItemFilePath valueObject.UnixFilePath,
+func (repo *MarketplaceQueryRepo) getMarketplaceCatalogItemFromFilePath(
+	marketplaceCatalogItemFilePath valueObject.UnixFilePath,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
-	catalogItemFile, err := assets.Open(mktCatalogItemFilePath.String())
+	catalogItemFile, err := assets.Open(marketplaceCatalogItemFilePath.String())
 	if err != nil {
 		return catalogItem, err
 	}
 	defer catalogItemFile.Close()
 
-	catalogItemFileExt, _ := mktCatalogItemFilePath.GetFileExtension()
+	catalogItemFileExt, _ := marketplaceCatalogItemFilePath.GetFileExtension()
 	if catalogItemFileExt == "json" {
 		catalogItemJsonDecoder := json.NewDecoder(catalogItemFile)
 		err = catalogItemJsonDecoder.Decode(&catalogItem)
@@ -60,7 +60,7 @@ func (repo *MktplaceQueryRepo) getMktCatalogItemFromFilePath(
 	return catalogItem, nil
 }
 
-func (repo *MktplaceQueryRepo) GetItems() (
+func (repo *MarketplaceQueryRepo) GetItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -68,12 +68,12 @@ func (repo *MktplaceQueryRepo) GetItems() (
 	catalogItemFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
 		return catalogItems, errors.New(
-			"GetMktCatalogItemsFilesError: " + err.Error(),
+			"GetMarketplaceCatalogItemsFilesError: " + err.Error(),
 		)
 	}
 
 	if len(catalogItemFiles) == 0 {
-		return catalogItems, errors.New("MktItemsEmpty")
+		return catalogItems, errors.New("MarketplaceItemsEmpty")
 	}
 
 	for catalogItemFileIndex, catalogItemFile := range catalogItemFiles {
@@ -92,12 +92,12 @@ func (repo *MktplaceQueryRepo) GetItems() (
 			continue
 		}
 
-		catalogItem, err := repo.getMktCatalogItemFromFilePath(
+		catalogItem, err := repo.getMarketplaceCatalogItemFromFilePath(
 			catalogItemFilePath,
 		)
 		if err != nil {
 			log.Printf(
-				"GetMktCatalogItemError (%s): %s",
+				"GetMarketplaceCatalogItemError (%s): %s",
 				catalogItemFileName,
 				err.Error(),
 			)
@@ -105,7 +105,7 @@ func (repo *MktplaceQueryRepo) GetItems() (
 		}
 
 		catalogItemIdInt := catalogItemFileIndex + 1
-		catalogItemId, _ := valueObject.NewMktplaceItemId(catalogItemIdInt)
+		catalogItemId, _ := valueObject.NewMarketplaceItemId(catalogItemIdInt)
 		catalogItem.Id = catalogItemId
 
 		catalogItems = append(catalogItems, catalogItem)
@@ -114,53 +114,53 @@ func (repo *MktplaceQueryRepo) GetItems() (
 	return catalogItems, nil
 }
 
-func (repo *MktplaceQueryRepo) GetItemById(
-	id valueObject.MktplaceItemId,
+func (repo *MarketplaceQueryRepo) GetItemById(
+	id valueObject.MarketplaceItemId,
 ) (entity.MarketplaceCatalogItem, error) {
-	var mktplaceCatalogItem entity.MarketplaceCatalogItem
+	var marketplaceCatalogItem entity.MarketplaceCatalogItem
 
-	mktplaceCatalogItems, err := repo.GetItems()
+	marketplaceCatalogItems, err := repo.GetItems()
 	if err != nil {
-		return mktplaceCatalogItem, err
+		return marketplaceCatalogItem, err
 	}
 
-	for _, catalogItem := range mktplaceCatalogItems {
+	for _, catalogItem := range marketplaceCatalogItems {
 		if catalogItem.Id.Get() != id.Get() {
 			continue
 		}
 
-		mktplaceCatalogItem = catalogItem
+		marketplaceCatalogItem = catalogItem
 	}
 
-	return mktplaceCatalogItem, nil
+	return marketplaceCatalogItem, nil
 }
 
-func (repo *MktplaceQueryRepo) GetInstalledItems() (
+func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 	[]entity.MarketplaceInstalledItem, error,
 ) {
-	mktplaceInstalledItemEntities := []entity.MarketplaceInstalledItem{}
+	marketplaceInstalledItemEntities := []entity.MarketplaceInstalledItem{}
 
-	mktplaceInstalledItemModels := []dbModel.MarketplaceInstalledItem{}
+	marketplaceInstalledItemModels := []dbModel.MarketplaceInstalledItem{}
 	err := repo.persistentDbSvc.Handler.Model(&dbModel.MarketplaceInstalledItem{}).
-		Find(&mktplaceInstalledItemModels).Error
+		Find(&marketplaceInstalledItemModels).Error
 	if err != nil {
-		return mktplaceInstalledItemEntities, errors.New(
-			"DatabaseQueryMktplaceInstalledItemsError",
+		return marketplaceInstalledItemEntities, errors.New(
+			"DatabaseQueryMarketplaceInstalledItemsError",
 		)
 	}
 
-	for _, mktplaceInstalledItemModel := range mktplaceInstalledItemModels {
-		mktplaceInstalledItem, err := mktplaceInstalledItemModel.ToEntity()
+	for _, marketplaceInstalledItemModel := range marketplaceInstalledItemModels {
+		marketplaceInstalledItem, err := marketplaceInstalledItemModel.ToEntity()
 		if err != nil {
-			log.Printf("MktplaceInstalledItemModelToEntityError: %s", err.Error())
+			log.Printf("MarketplaceInstalledItemModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		mktplaceInstalledItemEntities = append(
-			mktplaceInstalledItemEntities,
-			mktplaceInstalledItem,
+		marketplaceInstalledItemEntities = append(
+			marketplaceInstalledItemEntities,
+			marketplaceInstalledItem,
 		)
 	}
 
-	return mktplaceInstalledItemEntities, nil
+	return marketplaceInstalledItemEntities, nil
 }

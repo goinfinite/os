@@ -9,33 +9,33 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestMktplaceItemId(t *testing.T) {
-	t.Run("ValidMktplaceItemId", func(t *testing.T) {
-		validMktplaceItemIds := []interface{}{
+func TestMarketplaceItemId(t *testing.T) {
+	t.Run("ValidMarketplaceItemId", func(t *testing.T) {
+		validMarketplaceItemIds := []interface{}{
 			1,
 			1000,
 			65365,
 			"12345",
 		}
 
-		for _, mii := range validMktplaceItemIds {
-			_, err := NewMktplaceItemId(mii)
+		for _, mii := range validMarketplaceItemIds {
+			_, err := NewMarketplaceItemId(mii)
 			if err != nil {
 				t.Errorf("Expected no error for %v, got %s", mii, err.Error())
 			}
 		}
 	})
 
-	t.Run("InvalidMktplaceItemId", func(t *testing.T) {
-		invalidMktplaceItemIds := []interface{}{
+	t.Run("InvalidMarketplaceItemId", func(t *testing.T) {
+		invalidMarketplaceItemIds := []interface{}{
 			-1,
 			0,
 			1000000000000000000,
 			"-455",
 		}
 
-		for _, mii := range invalidMktplaceItemIds {
-			_, err := NewMktplaceItemId(mii)
+		for _, mii := range invalidMarketplaceItemIds {
+			_, err := NewMarketplaceItemId(mii)
 			if err == nil {
 				t.Errorf("Expected error for %v, got nil", mii)
 			}
@@ -44,7 +44,7 @@ func TestMktplaceItemId(t *testing.T) {
 
 	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemId
+			DataToTest MarketplaceItemId
 		}
 
 		dataToTest := 5
@@ -73,7 +73,7 @@ func TestMktplaceItemId(t *testing.T) {
 
 	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemId
+			DataToTest MarketplaceItemId
 		}
 
 		dataToTest := 0
@@ -92,7 +92,7 @@ func TestMktplaceItemId(t *testing.T) {
 
 	t.Run("ValidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemId `yaml:"dataToTest"`
+			DataToTest MarketplaceItemId `yaml:"dataToTest"`
 		}
 
 		dataToTest := 5
@@ -121,7 +121,7 @@ func TestMktplaceItemId(t *testing.T) {
 
 	t.Run("InvalidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemId `yaml:"dataToTest"`
+			DataToTest MarketplaceItemId `yaml:"dataToTest"`
 		}
 
 		dataToTest := 0

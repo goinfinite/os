@@ -7,22 +7,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MktplaceItemDescription string
+type MarketplaceItemDescription string
 
-func NewMktplaceItemDescription(value string) (MktplaceItemDescription, error) {
+func NewMarketplaceItemDescription(value string) (MarketplaceItemDescription, error) {
 	if len(value) < 2 {
-		return "", errors.New("MktItemDescriptionTooSmall")
+		return "", errors.New("MarketplaceItemDescriptionTooSmall")
 	}
 
 	if len(value) > 512 {
-		return "", errors.New("MktItemDescriptionTooBig")
+		return "", errors.New("MarketplaceItemDescriptionTooBig")
 	}
 
-	return MktplaceItemDescription(value), nil
+	return MarketplaceItemDescription(value), nil
 }
 
-func NewMktplaceItemDescriptionPanic(value string) MktplaceItemDescription {
-	mid, err := NewMktplaceItemDescription(value)
+func NewMarketplaceItemDescriptionPanic(value string) MarketplaceItemDescription {
+	mid, err := NewMarketplaceItemDescription(value)
 	if err != nil {
 		panic(err)
 	}
@@ -30,15 +30,15 @@ func NewMktplaceItemDescriptionPanic(value string) MktplaceItemDescription {
 	return mid
 }
 
-func (mid MktplaceItemDescription) String() string {
+func (mid MarketplaceItemDescription) String() string {
 	return string(mid)
 }
 
-func (midPtr *MktplaceItemDescription) UnmarshalJSON(value []byte) error {
+func (midPtr *MarketplaceItemDescription) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mid, err := NewMktplaceItemDescription(unquotedValue)
+	mid, err := NewMarketplaceItemDescription(unquotedValue)
 	if err != nil {
 		return err
 	}
@@ -47,14 +47,14 @@ func (midPtr *MktplaceItemDescription) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-func (midPtr *MktplaceItemDescription) UnmarshalYAML(value *yaml.Node) error {
+func (midPtr *MarketplaceItemDescription) UnmarshalYAML(value *yaml.Node) error {
 	var valueStr string
 	err := value.Decode(&valueStr)
 	if err != nil {
 		return err
 	}
 
-	mid, err := NewMktplaceItemDescription(valueStr)
+	mid, err := NewMarketplaceItemDescription(valueStr)
 	if err != nil {
 		return err
 	}

@@ -8,27 +8,27 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MktplaceItemType string
+type MarketplaceItemType string
 
-var ValidMktplaceItemTypes = []string{
+var ValidMarketplaceItemTypes = []string{
 	"app",
 	"framework",
 	"stack",
 }
 
-func NewMktplaceItemType(value string) (MktplaceItemType, error) {
+func NewMarketplaceItemType(value string) (MarketplaceItemType, error) {
 	value = strings.ToLower(value)
 
-	mit := MktplaceItemType(value)
+	mit := MarketplaceItemType(value)
 	if !mit.isValid() {
 		return "", errors.New("InvalidMarketplaceItemType")
 	}
 
-	return MktplaceItemType(value), nil
+	return MarketplaceItemType(value), nil
 }
 
-func NewMktplaceItemTypePanic(value string) MktplaceItemType {
-	mit, err := NewMktplaceItemType(value)
+func NewMarketplaceItemTypePanic(value string) MarketplaceItemType {
+	mit, err := NewMarketplaceItemType(value)
 	if err != nil {
 		panic(err)
 	}
@@ -36,19 +36,19 @@ func NewMktplaceItemTypePanic(value string) MktplaceItemType {
 	return mit
 }
 
-func (mit MktplaceItemType) isValid() bool {
-	return slices.Contains(ValidMktplaceItemTypes, string(mit))
+func (mit MarketplaceItemType) isValid() bool {
+	return slices.Contains(ValidMarketplaceItemTypes, string(mit))
 }
 
-func (mit MktplaceItemType) String() string {
+func (mit MarketplaceItemType) String() string {
 	return string(mit)
 }
 
-func (mitPtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
+func (mitPtr *MarketplaceItemType) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	mit, err := NewMktplaceItemType(unquotedValue)
+	mit, err := NewMarketplaceItemType(unquotedValue)
 	if err != nil {
 		return err
 	}
@@ -57,14 +57,14 @@ func (mitPtr *MktplaceItemType) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-func (mitPtr *MktplaceItemType) UnmarshalYAML(value *yaml.Node) error {
+func (mitPtr *MarketplaceItemType) UnmarshalYAML(value *yaml.Node) error {
 	var valueStr string
 	err := value.Decode(&valueStr)
 	if err != nil {
 		return err
 	}
 
-	mit, err := NewMktplaceItemType(valueStr)
+	mit, err := NewMarketplaceItemType(valueStr)
 	if err != nil {
 		return err
 	}

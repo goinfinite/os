@@ -9,13 +9,13 @@ import (
 )
 
 func GetMarketplaceInstalledItems(
-	mktplaceQueryRepo repository.MktplaceQueryRepo,
+	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 ) ([]entity.MarketplaceInstalledItem, error) {
-	mktplaceInstalledItems, err := mktplaceQueryRepo.GetInstalledItems()
+	marketplaceInstalledItems, err := marketplaceQueryRepo.GetInstalledItems()
 	if err != nil {
 		log.Printf("GetMkplaceInstalledItemsError: %s", err.Error())
 		return nil, errors.New("GetMkplaceInstalledItemsInfraError")
 	}
 
-	return mktplaceInstalledItems, nil
+	return marketplaceInstalledItems, nil
 }

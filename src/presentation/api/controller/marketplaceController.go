@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	mktplaceInfra "github.com/speedianet/os/src/infra/marketplace"
+	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
@@ -35,13 +35,13 @@ func NewMarketplaceController(
 // @Success      200 {string} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalogController(c echo.Context) error {
-	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
-	mktplaceItems, err := useCase.GetMarketplaceCatalog(mktplaceQueryRepo)
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+	marketplaceItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, mktplaceItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceItems)
 }
 
 func getDataFieldsFromBody(
@@ -86,7 +86,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	mktplaceItemId := valueObject.NewMktplaceItemIdPanic(requestBody["id"])
+	marketplaceItemId := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	rawRootDir := requestBody["rootDirectory"]
@@ -97,15 +97,15 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
 
-	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
-	mktplaceCmdRepo := mktplaceInfra.NewMktplaceCmdRepo(controller.persistentDbSvc)
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(mktplaceItemId, hostname, rootDir, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(marketplaceItemId, hostname, rootDir, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
-		mktplaceQueryRepo,
-		mktplaceCmdRepo,
+		marketplaceQueryRepo,
+		marketplaceCmdRepo,
 		vhostQueryRepo,
 		vhostCmdRepo,
 		dto,
@@ -127,11 +127,11 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 // @Success      200 {string} entity.MarketplaceInstalledItem
 // @Router       /marketplace/installed/ [get]
 func (controller *MarketplaceController) GetInstalledItemsController(c echo.Context) error {
-	mktplaceQueryRepo := mktplaceInfra.NewMktplaceQueryRepo(controller.persistentDbSvc)
-	mktplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(mktplaceQueryRepo)
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+	marketplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, mktplaceInstalledItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceInstalledItems)
 }

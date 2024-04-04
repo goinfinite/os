@@ -7,22 +7,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MktplaceItemInstallStep string
+type MarketplaceItemInstallStep string
 
-func NewMktplaceItemInstallStep(value string) (MktplaceItemInstallStep, error) {
+func NewMarketplaceItemInstallStep(value string) (MarketplaceItemInstallStep, error) {
 	if len(value) < 1 {
-		return "", errors.New("MktItemInstallStepTooSmall")
+		return "", errors.New("MarketplaceItemInstallStepTooSmall")
 	}
 
 	if len(value) > 512 {
-		return "", errors.New("MktItemInstallStepTooBig")
+		return "", errors.New("MarketplaceItemInstallStepTooBig")
 	}
 
-	return MktplaceItemInstallStep(value), nil
+	return MarketplaceItemInstallStep(value), nil
 }
 
-func NewMktplaceItemInstallStepPanic(value string) MktplaceItemInstallStep {
-	miis, err := NewMktplaceItemInstallStep(value)
+func NewMarketplaceItemInstallStepPanic(value string) MarketplaceItemInstallStep {
+	miis, err := NewMarketplaceItemInstallStep(value)
 	if err != nil {
 		panic(err)
 	}
@@ -30,16 +30,16 @@ func NewMktplaceItemInstallStepPanic(value string) MktplaceItemInstallStep {
 	return miis
 }
 
-func (miis MktplaceItemInstallStep) String() string {
+func (miis MarketplaceItemInstallStep) String() string {
 	return string(miis)
 }
 
-func (miisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
+func (miisPtr *MarketplaceItemInstallStep) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 	valueWithoutBackslash := strings.ReplaceAll(unquotedValue, "\\", "")
 
-	miis, err := NewMktplaceItemInstallStep(valueWithoutBackslash)
+	miis, err := NewMarketplaceItemInstallStep(valueWithoutBackslash)
 	if err != nil {
 		return err
 	}
@@ -48,14 +48,14 @@ func (miisPtr *MktplaceItemInstallStep) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-func (miisPtr *MktplaceItemInstallStep) UnmarshalYAML(value *yaml.Node) error {
+func (miisPtr *MarketplaceItemInstallStep) UnmarshalYAML(value *yaml.Node) error {
 	var valueStr string
 	err := value.Decode(&valueStr)
 	if err != nil {
 		return err
 	}
 
-	miis, err := NewMktplaceItemInstallStep(valueStr)
+	miis, err := NewMarketplaceItemInstallStep(valueStr)
 	if err != nil {
 		return err
 	}

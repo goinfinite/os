@@ -4,6 +4,6 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 )
 
-type MktplaceCmdRepo interface {
-	InstallItem(installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem) error
+type MarketplaceCmdRepo interface {
+	InstallItem(installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem) error
 }

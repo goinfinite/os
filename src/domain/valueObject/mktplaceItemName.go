@@ -8,14 +8,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MktplaceItemName string
+type MarketplaceItemName string
 
-const mktplaceItemNameRegexExpression = `^[a-z0-9\-]{5,30}$`
+const marketplaceItemNameRegexExpression = `^[a-z0-9\-]{5,30}$`
 
-func NewMktplaceItemName(value string) (MktplaceItemName, error) {
+func NewMarketplaceItemName(value string) (MarketplaceItemName, error) {
 	value = strings.ToLower(value)
 
-	min := MktplaceItemName(value)
+	min := MarketplaceItemName(value)
 	if !min.isValid() {
 		return "", errors.New("InvalidMarketplaceItemName")
 	}
@@ -23,8 +23,8 @@ func NewMktplaceItemName(value string) (MktplaceItemName, error) {
 	return min, nil
 }
 
-func NewMktplaceItemNamePanic(value string) MktplaceItemName {
-	min, err := NewMktplaceItemName(value)
+func NewMarketplaceItemNamePanic(value string) MarketplaceItemName {
+	min, err := NewMarketplaceItemName(value)
 	if err != nil {
 		panic(err)
 	}
@@ -32,22 +32,22 @@ func NewMktplaceItemNamePanic(value string) MktplaceItemName {
 	return min
 }
 
-func (min MktplaceItemName) isValid() bool {
-	mktplaceItemNameCompiledRegex := regexp.MustCompile(
-		mktplaceItemNameRegexExpression,
+func (min MarketplaceItemName) isValid() bool {
+	marketplaceItemNameCompiledRegex := regexp.MustCompile(
+		marketplaceItemNameRegexExpression,
 	)
-	return mktplaceItemNameCompiledRegex.MatchString(string(min))
+	return marketplaceItemNameCompiledRegex.MatchString(string(min))
 }
 
-func (min MktplaceItemName) String() string {
+func (min MarketplaceItemName) String() string {
 	return string(min)
 }
 
-func (minPtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
+func (minPtr *MarketplaceItemName) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
 	unquotedValue := strings.Trim(valueStr, "\"")
 
-	min, err := NewMktplaceItemName(unquotedValue)
+	min, err := NewMarketplaceItemName(unquotedValue)
 	if err != nil {
 		return err
 	}
@@ -56,14 +56,14 @@ func (minPtr *MktplaceItemName) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-func (minPtr *MktplaceItemName) UnmarshalYAML(value *yaml.Node) error {
+func (minPtr *MarketplaceItemName) UnmarshalYAML(value *yaml.Node) error {
 	var valueStr string
 	err := value.Decode(&valueStr)
 	if err != nil {
 		return err
 	}
 
-	min, err := NewMktplaceItemName(valueStr)
+	min, err := NewMarketplaceItemName(valueStr)
 	if err != nil {
 		return err
 	}

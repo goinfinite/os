@@ -22,7 +22,7 @@ type MarketplaceInstalledItem struct {
 }
 
 func (MarketplaceInstalledItem) TableName() string {
-	return "mktplace_installed_items"
+	return "marketplace_installed_items"
 }
 
 func (MarketplaceInstalledItem) ToModel(
@@ -62,26 +62,26 @@ func (MarketplaceInstalledItem) ToModel(
 func (model MarketplaceInstalledItem) ToEntity() (
 	entity.MarketplaceInstalledItem, error,
 ) {
-	var mktplaceInstalledItem entity.MarketplaceInstalledItem
+	var marketplaceInstalledItem entity.MarketplaceInstalledItem
 
-	id, err := valueObject.NewMktplaceItemId(model.ID)
+	id, err := valueObject.NewMarketplaceItemId(model.ID)
 	if err != nil {
-		return mktplaceInstalledItem, err
+		return marketplaceInstalledItem, err
 	}
 
-	itemName, err := valueObject.NewMktplaceItemName(model.Name)
+	itemName, err := valueObject.NewMarketplaceItemName(model.Name)
 	if err != nil {
-		return mktplaceInstalledItem, err
+		return marketplaceInstalledItem, err
 	}
 
-	itemType, err := valueObject.NewMktplaceItemType(model.Type)
+	itemType, err := valueObject.NewMarketplaceItemType(model.Type)
 	if err != nil {
-		return mktplaceInstalledItem, err
+		return marketplaceInstalledItem, err
 	}
 
 	rootDirectory, err := valueObject.NewUnixFilePath(model.RootDirectory)
 	if err != nil {
-		return mktplaceInstalledItem, err
+		return marketplaceInstalledItem, err
 	}
 
 	svcsNameList := []valueObject.ServiceName{}
@@ -101,7 +101,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 
 	avatarUrl, err := valueObject.NewUrl(model.AvatarUrl)
 	if err != nil {
-		return mktplaceInstalledItem, err
+		return marketplaceInstalledItem, err
 	}
 
 	rawCreatedAtUnix := model.CreatedAt.UTC().Unix()

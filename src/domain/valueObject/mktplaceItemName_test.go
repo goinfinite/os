@@ -8,9 +8,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestMktplaceItemName(t *testing.T) {
-	t.Run("ValidMktplaceItemName", func(t *testing.T) {
-		validMktplaceItemNames := []string{
+func TestMarketplaceItemName(t *testing.T) {
+	t.Run("ValidMarketplaceItemName", func(t *testing.T) {
+		validMarketplaceItemNames := []string{
 			"wordpress",
 			"WordPress",
 			"opencart",
@@ -28,16 +28,16 @@ func TestMktplaceItemName(t *testing.T) {
 			"rabbitmq",
 			"RabbitMQ",
 		}
-		for _, min := range validMktplaceItemNames {
-			_, err := NewMktplaceItemName(min)
+		for _, min := range validMarketplaceItemNames {
+			_, err := NewMarketplaceItemName(min)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", min, err.Error())
 			}
 		}
 	})
 
-	t.Run("ValidMktplaceItemName", func(t *testing.T) {
-		invalidMktplaceItemNames := []string{
+	t.Run("ValidMarketplaceItemName", func(t *testing.T) {
+		invalidMarketplaceItemNames := []string{
 			"",
 			".",
 			"..",
@@ -47,8 +47,8 @@ func TestMktplaceItemName(t *testing.T) {
 			"ççççççç",
 			"<root>",
 		}
-		for _, min := range invalidMktplaceItemNames {
-			_, err := NewMktplaceItemName(min)
+		for _, min := range invalidMarketplaceItemNames {
+			_, err := NewMarketplaceItemName(min)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", min)
 			}
@@ -57,7 +57,7 @@ func TestMktplaceItemName(t *testing.T) {
 
 	t.Run("ValidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemName
+			DataToTest MarketplaceItemName
 		}
 
 		dataToTest := "wordpress"
@@ -85,7 +85,7 @@ func TestMktplaceItemName(t *testing.T) {
 
 	t.Run("InvalidUnmarshalJSON", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemName
+			DataToTest MarketplaceItemName
 		}
 
 		dataToTest := "name with space"
@@ -104,7 +104,7 @@ func TestMktplaceItemName(t *testing.T) {
 
 	t.Run("ValidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemName `yaml:"dataToTest"`
+			DataToTest MarketplaceItemName `yaml:"dataToTest"`
 		}
 
 		dataToTest := "wordpress"
@@ -132,7 +132,7 @@ func TestMktplaceItemName(t *testing.T) {
 
 	t.Run("InvalidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest MktplaceItemName `yaml:"dataToTest"`
+			DataToTest MarketplaceItemName `yaml:"dataToTest"`
 		}
 
 		dataToTest := "name with space"

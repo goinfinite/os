@@ -38,44 +38,44 @@ func hasRequiredDataFields(
 }
 
 func InstallMarketplaceCatalogItem(
-	mktplaceQueryRepo repository.MktplaceQueryRepo,
-	mktplaceCmdRepo repository.MktplaceCmdRepo,
+	marketplaceQueryRepo repository.MarketplaceQueryRepo,
+	marketplaceCmdRepo repository.MarketplaceCmdRepo,
 	vhostQueryRepo vhostInfra.VirtualHostQueryRepo,
 	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
-	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
+	installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
-	vhost, err := vhostQueryRepo.GetByHostname(installMktplaceCatalogItem.Hostname)
+	vhost, err := vhostQueryRepo.GetByHostname(installMarketplaceCatalogItem.Hostname)
 	if err != nil {
 		return errors.New("VhostNotFound")
 	}
 
-	mktplaceCatalogItem, err := mktplaceQueryRepo.GetItemById(
-		installMktplaceCatalogItem.Id,
+	marketplaceCatalogItem, err := marketplaceQueryRepo.GetItemById(
+		installMarketplaceCatalogItem.Id,
 	)
 	if err != nil {
-		return errors.New("MktplaceCatalogItemNotFound")
+		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
 	hasRequiredDataFields := hasRequiredDataFields(
-		installMktplaceCatalogItem.DataFields,
-		mktplaceCatalogItem.DataFields,
+		installMarketplaceCatalogItem.DataFields,
+		marketplaceCatalogItem.DataFields,
 	)
 	if !hasRequiredDataFields {
 		return errors.New("MissingRequiredDataFieldKeys")
 	}
 
-	mktplaceItemRootDir := installMktplaceCatalogItem.RootDirectory
-	rawCorrectRootDir := vhost.RootDirectory.String() + mktplaceItemRootDir.String()
+	marketplaceItemRootDir := installMarketplaceCatalogItem.RootDirectory
+	rawCorrectRootDir := vhost.RootDirectory.String() + marketplaceItemRootDir.String()
 	rootDirAbsolutePath, err := valueObject.NewUnixFilePath(rawCorrectRootDir)
 	if err != nil {
 		return err
 	}
-	installMktplaceCatalogItem.RootDirectory = rootDirAbsolutePath
+	installMarketplaceCatalogItem.RootDirectory = rootDirAbsolutePath
 
-	err = mktplaceCmdRepo.InstallItem(installMktplaceCatalogItem)
+	err = marketplaceCmdRepo.InstallItem(installMarketplaceCatalogItem)
 	if err != nil {
-		log.Printf("InstallMktplaceCatalogItemError: %s", err.Error())
-		return errors.New("InstallMktplaceCatalogItemInfraError")
+		log.Printf("InstallMarketplaceCatalogItemError: %s", err.Error())
+		return errors.New("InstallMarketplaceCatalogItemInfraError")
 	}
 
 	return nil

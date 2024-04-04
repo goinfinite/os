@@ -8,24 +8,24 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MktplaceItemId int64
+type MarketplaceItemId int64
 
-func NewMktplaceItemId(value interface{}) (MktplaceItemId, error) {
-	mktplaceItemUid, err := voHelper.InterfaceToUint(value)
+func NewMarketplaceItemId(value interface{}) (MarketplaceItemId, error) {
+	marketplaceItemUid, err := voHelper.InterfaceToUint(value)
 	if err != nil {
-		return 0, errors.New("InvalidMktItemId")
+		return 0, errors.New("InvalidMarketplaceItemId")
 	}
 
-	mii := MktplaceItemId(mktplaceItemUid)
+	mii := MarketplaceItemId(marketplaceItemUid)
 	if !mii.isValid() {
-		return 0, errors.New("InvalidMktItemId")
+		return 0, errors.New("InvalidMarketplaceItemId")
 	}
 
 	return mii, nil
 }
 
-func NewMktplaceItemIdPanic(value interface{}) MktplaceItemId {
-	mii, err := NewMktplaceItemId(value)
+func NewMarketplaceItemIdPanic(value interface{}) MarketplaceItemId {
+	mii, err := NewMarketplaceItemId(value)
 	if err != nil {
 		panic(err)
 	}
@@ -33,21 +33,21 @@ func NewMktplaceItemIdPanic(value interface{}) MktplaceItemId {
 	return mii
 }
 
-func (mii MktplaceItemId) isValid() bool {
+func (mii MarketplaceItemId) isValid() bool {
 	return mii >= 1 && mii <= 999999999999
 }
 
-func (mii MktplaceItemId) Get() int64 {
+func (mii MarketplaceItemId) Get() int64 {
 	return int64(mii)
 }
 
-func (mii MktplaceItemId) String() string {
+func (mii MarketplaceItemId) String() string {
 	return strconv.FormatInt(int64(mii), 10)
 }
 
-func (miiPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
+func (miiPtr *MarketplaceItemId) UnmarshalJSON(value []byte) error {
 	valueStr := string(value)
-	mii, err := NewMktplaceItemId(valueStr)
+	mii, err := NewMarketplaceItemId(valueStr)
 	if err != nil {
 		return err
 	}
@@ -56,14 +56,14 @@ func (miiPtr *MktplaceItemId) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-func (miiPtr *MktplaceItemId) UnmarshalYAML(value *yaml.Node) error {
+func (miiPtr *MarketplaceItemId) UnmarshalYAML(value *yaml.Node) error {
 	var valueStr string
 	err := value.Decode(&valueStr)
 	if err != nil {
 		return err
 	}
 
-	mii, err := NewMktplaceItemId(valueStr)
+	mii, err := NewMarketplaceItemId(valueStr)
 	if err != nil {
 		return err
 	}

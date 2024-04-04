@@ -1,4 +1,4 @@
-package mktplaceInfra
+package marketplaceInfra
 
 import (
 	"errors"
@@ -17,23 +17,23 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-type MktplaceCmdRepo struct {
+type MarketplaceCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	queryRepo       *MktplaceQueryRepo
+	queryRepo       *MarketplaceQueryRepo
 }
 
-func NewMktplaceCmdRepo(
+func NewMarketplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-) *MktplaceCmdRepo {
-	mktplaceQueryRepo := NewMktplaceQueryRepo(persistentDbSvc)
+) *MarketplaceCmdRepo {
+	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
 
-	return &MktplaceCmdRepo{
+	return &MarketplaceCmdRepo{
 		persistentDbSvc: persistentDbSvc,
-		queryRepo:       mktplaceQueryRepo,
+		queryRepo:       marketplaceQueryRepo,
 	}
 }
 
-func (repo *MktplaceCmdRepo) getDataFieldsAsMap(
+func (repo *MarketplaceCmdRepo) getDataFieldsAsMap(
 	dataFields []valueObject.DataField,
 ) map[string]string {
 	dataFieldMap := map[string]string{}
@@ -45,8 +45,8 @@ func (repo *MktplaceCmdRepo) getDataFieldsAsMap(
 	return dataFieldMap
 }
 
-func (repo *MktplaceCmdRepo) getCmdStepWithDataFields(
-	cmdStep valueObject.MktplaceItemInstallStep,
+func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
+	cmdStep valueObject.MarketplaceItemInstallStep,
 	dataFieldsMap map[string]string,
 ) (string, error) {
 	cmdStepStr := cmdStep.String()
@@ -68,31 +68,31 @@ func (repo *MktplaceCmdRepo) getCmdStepWithDataFields(
 	return cmdStepWithDataField, nil
 }
 
-func (repo *MktplaceCmdRepo) moveMktplaceItemDir(
+func (repo *MarketplaceCmdRepo) moveMarketplaceItemDir(
 	rootDirectory valueObject.UnixFilePath,
-	mktplaceItemName valueObject.MktplaceItemName,
+	marketplaceItemName valueObject.MarketplaceItemName,
 ) error {
-	mktplaceItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + mktplaceItemName.String())
-	mktplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
+	marketplaceItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + marketplaceItemName.String())
+	marketplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
 
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 	shouldOverwrite := true
-	return filesCmdRepo.Move(mktplaceItemSrcPath, mktplaceItemDestinationPath, shouldOverwrite)
+	return filesCmdRepo.Move(marketplaceItemSrcPath, marketplaceItemDestinationPath, shouldOverwrite)
 }
 
-func (repo *MktplaceCmdRepo) InstallItem(
-	installMktplaceCatalogItem dto.InstallMarketplaceCatalogItem,
+func (repo *MarketplaceCmdRepo) InstallItem(
+	installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
-	mktplaceCatalogItem, err := repo.queryRepo.GetItemById(
-		installMktplaceCatalogItem.Id,
+	marketplaceCatalogItem, err := repo.queryRepo.GetItemById(
+		installMarketplaceCatalogItem.Id,
 	)
 	if err != nil {
-		return errors.New("MktplaceCatalogItemNotFound")
+		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, requiredSvcName := range mktplaceCatalogItem.Services {
+	for _, requiredSvcName := range marketplaceCatalogItem.Services {
 		_, err := servicesQueryRepo.GetByName(requiredSvcName)
 		if err == nil {
 			continue
@@ -113,8 +113,8 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		}
 	}
 
-	dataFieldsMap := repo.getDataFieldsAsMap(installMktplaceCatalogItem.DataFields)
-	for _, cmdStep := range mktplaceCatalogItem.CmdSteps {
+	dataFieldsMap := repo.getDataFieldsAsMap(installMarketplaceCatalogItem.DataFields)
+	for _, cmdStep := range marketplaceCatalogItem.CmdSteps {
 		cmdStepRequiredDataFields, err := repo.getCmdStepWithDataFields(
 			cmdStep,
 			dataFieldsMap,
@@ -131,30 +131,30 @@ func (repo *MktplaceCmdRepo) InstallItem(
 		}
 	}
 
-	err = repo.moveMktplaceItemDir(
-		installMktplaceCatalogItem.RootDirectory,
-		mktplaceCatalogItem.Name,
+	err = repo.moveMarketplaceItemDir(
+		installMarketplaceCatalogItem.RootDirectory,
+		marketplaceCatalogItem.Name,
 	)
 	if err != nil {
 		return err
 	}
 
-	for _, mktplaceItemMapping := range mktplaceCatalogItem.Mappings {
-		createMktplaceItemMapping := dto.NewCreateMapping(
-			installMktplaceCatalogItem.Hostname,
-			mktplaceItemMapping.Path,
-			mktplaceItemMapping.MatchPattern,
-			mktplaceItemMapping.TargetType,
-			mktplaceItemMapping.TargetServiceName,
-			mktplaceItemMapping.TargetUrl,
-			mktplaceItemMapping.TargetHttpResponseCode,
-			mktplaceItemMapping.TargetInlineHtmlContent,
+	for _, marketplaceItemMapping := range marketplaceCatalogItem.Mappings {
+		createMarketplaceItemMapping := dto.NewCreateMapping(
+			installMarketplaceCatalogItem.Hostname,
+			marketplaceItemMapping.Path,
+			marketplaceItemMapping.MatchPattern,
+			marketplaceItemMapping.TargetType,
+			marketplaceItemMapping.TargetServiceName,
+			marketplaceItemMapping.TargetUrl,
+			marketplaceItemMapping.TargetHttpResponseCode,
+			marketplaceItemMapping.TargetInlineHtmlContent,
 		)
 
 		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err = vhostCmdRepo.CreateMapping(createMktplaceItemMapping)
+		err = vhostCmdRepo.CreateMapping(createMarketplaceItemMapping)
 		if err != nil {
-			log.Printf("CreateMktplaceItemMappingError: %s", err.Error())
+			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
 		}
 	}
 
@@ -162,28 +162,28 @@ func (repo *MktplaceCmdRepo) InstallItem(
 	createdAt := valueObject.UnixTime(nowUnixTime)
 	updatedAt := valueObject.UnixTime(nowUnixTime)
 
-	mktplaceInstalledItem := entity.NewMarketplaceInstalledItem(
-		mktplaceCatalogItem.Id,
-		mktplaceCatalogItem.Name,
-		mktplaceCatalogItem.Type,
-		installMktplaceCatalogItem.RootDirectory,
-		mktplaceCatalogItem.Services,
+	marketplaceInstalledItem := entity.NewMarketplaceInstalledItem(
+		marketplaceCatalogItem.Id,
+		marketplaceCatalogItem.Name,
+		marketplaceCatalogItem.Type,
+		installMarketplaceCatalogItem.RootDirectory,
+		marketplaceCatalogItem.Services,
 		[]entity.Mapping{},
-		mktplaceCatalogItem.AvatarUrl,
+		marketplaceCatalogItem.AvatarUrl,
 		createdAt,
 		updatedAt,
 	)
 
 	modelWithoutId := true
-	mktplaceInstalledItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
-		mktplaceInstalledItem,
+	marketplaceInstalledItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
+		marketplaceInstalledItem,
 		modelWithoutId,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = repo.persistentDbSvc.Handler.Create(&mktplaceInstalledItemModel).Error
+	err = repo.persistentDbSvc.Handler.Create(&marketplaceInstalledItemModel).Error
 	if err != nil {
 		return err
 	}
