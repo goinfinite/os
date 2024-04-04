@@ -7,10 +7,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestDataField(t *testing.T) {
+func TestMarketplaceItemDataField(t *testing.T) {
 	t.Run("ValidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest DataField `yaml:"dataToTest"`
+			DataToTest MarketplaceItemDataField `yaml:"dataToTest"`
 		}
 
 		dataKeyToTest := "SomeNiceDataFieldKey"
@@ -51,7 +51,7 @@ func TestDataField(t *testing.T) {
 
 	t.Run("InvalidUnmarshalYAML", func(t *testing.T) {
 		var testStruct struct {
-			DataToTest DataField `yaml:"dataToTest"`
+			DataToTest MarketplaceItemDataField `yaml:"dataToTest"`
 		}
 
 		dataKeyToTest := ""

@@ -8,14 +8,14 @@ type InstallMarketplaceCatalogItem struct {
 	Id            valueObject.MarketplaceItemId
 	Hostname      valueObject.Fqdn
 	RootDirectory valueObject.UnixFilePath
-	DataFields    []valueObject.DataField
+	DataFields    []valueObject.MarketplaceItemDataField
 }
 
 func NewInstallMarketplaceCatalogItem(
 	id valueObject.MarketplaceItemId,
 	hostname valueObject.Fqdn,
 	rootDirectory valueObject.UnixFilePath,
-	dataFields []valueObject.DataField,
+	dataFields []valueObject.MarketplaceItemDataField,
 ) InstallMarketplaceCatalogItem {
 	return InstallMarketplaceCatalogItem{
 		Id:            id,

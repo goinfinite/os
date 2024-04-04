@@ -4,22 +4,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type DataField struct {
+type MarketplaceItemDataField struct {
 	Key   DataFieldKey   `json:"key"`
 	Value DataFieldValue `json:"value"`
 }
 
-func NewDataField(
+func NewMarketplaceItemDataField(
 	key DataFieldKey,
 	value DataFieldValue,
-) DataField {
-	return DataField{
+) MarketplaceItemDataField {
+	return MarketplaceItemDataField{
 		Key:   key,
 		Value: value,
 	}
 }
 
-func (dfPtr *DataField) UnmarshalYAML(value *yaml.Node) error {
+func (dfPtr *MarketplaceItemDataField) UnmarshalYAML(value *yaml.Node) error {
 	var valuesMap map[string]string
 	err := value.Decode(&valuesMap)
 	if err != nil {
@@ -36,7 +36,7 @@ func (dfPtr *DataField) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 
-	*dfPtr = NewDataField(dfKey, dfValue)
+	*dfPtr = NewMarketplaceItemDataField(dfKey, dfValue)
 
 	return nil
 }

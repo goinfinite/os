@@ -46,8 +46,8 @@ func (controller *MarketplaceController) GetCatalogController(c echo.Context) er
 
 func getDataFieldsFromBody(
 	dataFieldsBodyInput interface{},
-) []valueObject.DataField {
-	dataFields := []valueObject.DataField{}
+) []valueObject.MarketplaceItemDataField {
+	dataFields := []valueObject.MarketplaceItemDataField{}
 
 	dataFieldsInterfaceSlice, assertOk := dataFieldsBodyInput.([]interface{})
 	if !assertOk {
@@ -60,7 +60,7 @@ func getDataFieldsFromBody(
 			panic("InvalidDataField")
 		}
 
-		dataField := valueObject.NewDataField(
+		dataField := valueObject.NewMarketplaceItemDataField(
 			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 		)
@@ -86,7 +86,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	marketplaceItemId := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
+	id := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	rawRootDir := requestBody["rootDirectory"]
@@ -102,7 +102,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(marketplaceItemId, hostname, rootDir, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(id, hostname, rootDir, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
