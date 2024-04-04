@@ -35,7 +35,7 @@ func (MarketplaceInstalledItem) ToModel(
 	}
 
 	var svcNamesListStr []string
-	for _, svcName := range entity.Services {
+	for _, svcName := range entity.ServiceNames {
 		svcNamesListStr = append(svcNamesListStr, svcName.String())
 	}
 	svcNamesStr := strings.Join(svcNamesListStr, ",")

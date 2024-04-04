@@ -9,7 +9,7 @@ type MarketplaceCatalogItem struct {
 	Name               valueObject.MarketplaceItemName          `json:"name" yaml:"name"`
 	Type               valueObject.MarketplaceItemType          `json:"type" yaml:"type"`
 	Description        valueObject.MarketplaceItemDescription   `json:"description" yaml:"description"`
-	Services           []valueObject.ServiceName                `json:"services" yaml:"services"`
+	ServiceNames       []valueObject.ServiceName                `json:"services" yaml:"serviceNames"`
 	Mappings           []MarketplaceMapping                     `json:"mappings" yaml:"mappings"`
 	DataFields         []valueObject.MarketplaceItemDataField   `json:"dataFields" yaml:"dataFields"`
 	CmdSteps           []valueObject.MarketplaceItemInstallStep `json:"cmdSteps" yaml:"cmdSteps"`

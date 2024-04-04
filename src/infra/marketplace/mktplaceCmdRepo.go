@@ -92,7 +92,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, requiredSvcName := range marketplaceCatalogItem.Services {
+	for _, requiredSvcName := range marketplaceCatalogItem.ServiceNames {
 		_, err := servicesQueryRepo.GetByName(requiredSvcName)
 		if err == nil {
 			continue
@@ -167,7 +167,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		marketplaceCatalogItem.Name,
 		marketplaceCatalogItem.Type,
 		installMarketplaceCatalogItem.RootDirectory,
-		marketplaceCatalogItem.Services,
+		marketplaceCatalogItem.ServiceNames,
 		[]entity.Mapping{},
 		marketplaceCatalogItem.AvatarUrl,
 		createdAt,
