@@ -83,7 +83,7 @@ func (repo *MarketplaceCmdRepo) moveMarketplaceItemDir(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem,
 ) error {
-	marketplaceCatalogItem, err := repo.queryRepo.GetItemById(
+	marketplaceCatalogItem, err := repo.queryRepo.GetCatalogItemById(
 		installMarketplaceCatalogItem.Id,
 	)
 	if err != nil {

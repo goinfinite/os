@@ -60,7 +60,7 @@ func (repo *MarketplaceQueryRepo) getMarketplaceCatalogItemFromFilePath(
 	return catalogItem, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetItems() (
+func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -114,12 +114,12 @@ func (repo *MarketplaceQueryRepo) GetItems() (
 	return catalogItems, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetItemById(
+func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	id valueObject.MarketplaceItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var marketplaceCatalogItem entity.MarketplaceCatalogItem
 
-	marketplaceCatalogItems, err := repo.GetItems()
+	marketplaceCatalogItems, err := repo.GetCatalogItems()
 	if err != nil {
 		return marketplaceCatalogItem, err
 	}

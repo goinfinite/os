@@ -11,7 +11,7 @@ import (
 func GetMarketplaceCatalog(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 ) ([]entity.MarketplaceCatalogItem, error) {
-	marketplaceCatalogItems, err := marketplaceQueryRepo.GetItems()
+	marketplaceCatalogItems, err := marketplaceQueryRepo.GetCatalogItems()
 	if err != nil {
 		log.Printf("GetMkplaceCatalogItemsError: %s", err.Error())
 		return nil, errors.New("GetMkplaceCatalogItemsInfraError")

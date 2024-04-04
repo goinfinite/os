@@ -49,7 +49,7 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("VhostNotFound")
 	}
 
-	marketplaceCatalogItem, err := marketplaceQueryRepo.GetItemById(
+	marketplaceCatalogItem, err := marketplaceQueryRepo.GetCatalogItemById(
 		installMarketplaceCatalogItem.Id,
 	)
 	if err != nil {
