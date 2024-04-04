@@ -11,11 +11,11 @@ import (
 func GetMarketplaceCatalog(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 ) ([]entity.MarketplaceCatalogItem, error) {
-	marketplaceCatalogItems, err := marketplaceQueryRepo.GetCatalogItems()
+	catalogItems, err := marketplaceQueryRepo.GetCatalogItems()
 	if err != nil {
 		log.Printf("GetMkplaceCatalogItemsError: %s", err.Error())
 		return nil, errors.New("GetMkplaceCatalogItemsInfraError")
 	}
 
-	return marketplaceCatalogItems, nil
+	return catalogItems, nil
 }

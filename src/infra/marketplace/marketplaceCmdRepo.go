@@ -68,32 +68,32 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
 	return cmdStepWithDataField, nil
 }
 
-func (repo *MarketplaceCmdRepo) moveMarketplaceItemDir(
+func (repo *MarketplaceCmdRepo) moveInstalledItemDir(
 	rootDirectory valueObject.UnixFilePath,
-	marketplaceItemName valueObject.MarketplaceItemName,
+	installedItemName valueObject.MarketplaceItemName,
 ) error {
-	marketplaceItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + marketplaceItemName.String())
-	marketplaceItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
+	installedItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + installedItemName.String())
+	installedItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
 
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 	shouldOverwrite := true
-	return filesCmdRepo.Move(marketplaceItemSrcPath, marketplaceItemDestinationPath, shouldOverwrite)
+	return filesCmdRepo.Move(installedItemSrcPath, installedItemDestinationPath, shouldOverwrite)
 }
 
 func (repo *MarketplaceCmdRepo) InstallItem(
-	installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem,
+	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	marketplaceCatalogItem, err := repo.queryRepo.GetCatalogItemById(
-		installMarketplaceCatalogItem.Id,
+	catalogItem, err := repo.queryRepo.GetCatalogItemById(
+		installDto.Id,
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, requiredSvcName := range marketplaceCatalogItem.ServiceNames {
-		_, err := servicesQueryRepo.GetByName(requiredSvcName)
+	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
+	svcCmdRepo := servicesInfra.ServicesCmdRepo{}
+	for _, requiredSvcName := range catalogItem.ServiceNames {
+		_, err := svcQueryRepo.GetByName(requiredSvcName)
 		if err == nil {
 			continue
 		}
@@ -107,14 +107,14 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 			requiredSvcAutoCreateMapping,
 		)
 
-		err = servicesCmdRepo.CreateInstallable(requiredService)
+		err = svcCmdRepo.CreateInstallable(requiredService)
 		if err != nil {
 			return errors.New("InstallRequiredServiceError: " + err.Error())
 		}
 	}
 
-	dataFieldsMap := repo.getDataFieldsAsMap(installMarketplaceCatalogItem.DataFields)
-	for _, cmdStep := range marketplaceCatalogItem.CmdSteps {
+	dataFieldsMap := repo.getDataFieldsAsMap(installDto.DataFields)
+	for _, cmdStep := range catalogItem.CmdSteps {
 		cmdStepRequiredDataFields, err := repo.getCmdStepWithDataFields(
 			cmdStep,
 			dataFieldsMap,
@@ -131,28 +131,28 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
-	err = repo.moveMarketplaceItemDir(
-		installMarketplaceCatalogItem.RootDirectory,
-		marketplaceCatalogItem.Name,
+	err = repo.moveInstalledItemDir(
+		installDto.RootDirectory,
+		catalogItem.Name,
 	)
 	if err != nil {
 		return err
 	}
 
-	for _, marketplaceItemMapping := range marketplaceCatalogItem.Mappings {
-		createMarketplaceItemMapping := dto.NewCreateMapping(
-			installMarketplaceCatalogItem.Hostname,
-			marketplaceItemMapping.Path,
-			marketplaceItemMapping.MatchPattern,
-			marketplaceItemMapping.TargetType,
-			marketplaceItemMapping.TargetServiceName,
-			marketplaceItemMapping.TargetUrl,
-			marketplaceItemMapping.TargetHttpResponseCode,
-			marketplaceItemMapping.TargetInlineHtmlContent,
+	for _, catalogItemMapping := range catalogItem.Mappings {
+		createCatalogItemMapping := dto.NewCreateMapping(
+			installDto.Hostname,
+			catalogItemMapping.Path,
+			catalogItemMapping.MatchPattern,
+			catalogItemMapping.TargetType,
+			catalogItemMapping.TargetServiceName,
+			catalogItemMapping.TargetUrl,
+			catalogItemMapping.TargetHttpResponseCode,
+			catalogItemMapping.TargetInlineHtmlContent,
 		)
 
 		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err = vhostCmdRepo.CreateMapping(createMarketplaceItemMapping)
+		err = vhostCmdRepo.CreateMapping(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
 		}
@@ -162,28 +162,28 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	createdAt := valueObject.UnixTime(nowUnixTime)
 	updatedAt := valueObject.UnixTime(nowUnixTime)
 
-	marketplaceInstalledItem := entity.NewMarketplaceInstalledItem(
-		marketplaceCatalogItem.Id,
-		marketplaceCatalogItem.Name,
-		marketplaceCatalogItem.Type,
-		installMarketplaceCatalogItem.RootDirectory,
-		marketplaceCatalogItem.ServiceNames,
+	installedItemEntity := entity.NewMarketplaceInstalledItem(
+		catalogItem.Id,
+		catalogItem.Name,
+		catalogItem.Type,
+		installDto.RootDirectory,
+		catalogItem.ServiceNames,
 		[]entity.Mapping{},
-		marketplaceCatalogItem.AvatarUrl,
+		catalogItem.AvatarUrl,
 		createdAt,
 		updatedAt,
 	)
 
 	modelWithoutId := true
-	marketplaceInstalledItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
-		marketplaceInstalledItem,
+	installedItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
+		installedItemEntity,
 		modelWithoutId,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = repo.persistentDbSvc.Handler.Create(&marketplaceInstalledItemModel).Error
+	err = repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
 	if err != nil {
 		return err
 	}
