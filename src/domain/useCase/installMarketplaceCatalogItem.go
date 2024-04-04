@@ -42,37 +42,37 @@ func InstallMarketplaceCatalogItem(
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
 	vhostQueryRepo vhostInfra.VirtualHostQueryRepo,
 	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
-	installMarketplaceCatalogItem dto.InstallMarketplaceCatalogItem,
+	dto dto.InstallMarketplaceCatalogItem,
 ) error {
-	vhost, err := vhostQueryRepo.GetByHostname(installMarketplaceCatalogItem.Hostname)
+	vhost, err := vhostQueryRepo.GetByHostname(dto.Hostname)
 	if err != nil {
 		return errors.New("VhostNotFound")
 	}
 
 	marketplaceCatalogItem, err := marketplaceQueryRepo.GetCatalogItemById(
-		installMarketplaceCatalogItem.Id,
+		dto.Id,
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
 	hasRequiredDataFields := hasRequiredDataFields(
-		installMarketplaceCatalogItem.DataFields,
+		dto.DataFields,
 		marketplaceCatalogItem.DataFields,
 	)
 	if !hasRequiredDataFields {
 		return errors.New("MissingRequiredDataFieldKeys")
 	}
 
-	marketplaceItemRootDir := installMarketplaceCatalogItem.RootDirectory
+	marketplaceItemRootDir := dto.RootDirectory
 	rawCorrectRootDir := vhost.RootDirectory.String() + marketplaceItemRootDir.String()
 	rootDirAbsolutePath, err := valueObject.NewUnixFilePath(rawCorrectRootDir)
 	if err != nil {
 		return err
 	}
-	installMarketplaceCatalogItem.RootDirectory = rootDirAbsolutePath
+	dto.RootDirectory = rootDirAbsolutePath
 
-	err = marketplaceCmdRepo.InstallItem(installMarketplaceCatalogItem)
+	err = marketplaceCmdRepo.InstallItem(dto)
 	if err != nil {
 		log.Printf("InstallMarketplaceCatalogItemError: %s", err.Error())
 		return errors.New("InstallMarketplaceCatalogItemInfraError")
