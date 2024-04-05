@@ -2,7 +2,7 @@
     "name": "wordpress",
     "type": "app",
     "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
-    "services": ["php", "mysql"],
+    "serviceNames": ["php", "mysql"],
     "mappings": [
         {
             "path": "/wordpress",
