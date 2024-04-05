@@ -68,7 +68,7 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
 	return cmdStepWithDataField, nil
 }
 
-func (repo *MarketplaceCmdRepo) moveInstalledItemDir(
+func (repo *MarketplaceCmdRepo) moveInstalledItem(
 	rootDirectory valueObject.UnixFilePath,
 	installedItemName valueObject.MarketplaceItemName,
 ) error {
@@ -131,7 +131,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
-	err = repo.moveInstalledItemDir(
+	err = repo.moveInstalledItem(
 		installDto.RootDirectory,
 		catalogItem.Name,
 	)
