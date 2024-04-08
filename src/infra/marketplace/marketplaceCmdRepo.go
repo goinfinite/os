@@ -49,7 +49,7 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
 	dataFieldsMap map[string]string,
 ) (string, error) {
 	cmdStepStr := cmdStep.String()
-	cmdStepRequiredDataFields, _ := infraHelper.GetRegexFirstGroup(
+	cmdStepRequiredDataFields, _ := infraHelper.GetAllRegexGroupMatches(
 		cmdStepStr,
 		`%(.*?)%`,
 	)

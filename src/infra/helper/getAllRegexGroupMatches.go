@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-func GetRegexFirstGroup(input string, regexExpression string) ([]string, error) {
+func GetAllRegexGroupMatches(input string, regexExpression string) ([]string, error) {
 	matchesValues := []string{}
 
 	regex := regexp.MustCompile(regexExpression)
