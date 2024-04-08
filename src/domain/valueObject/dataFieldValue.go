@@ -2,24 +2,30 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type DataFieldValue string
 
-func NewDataFieldValue(value string) (DataFieldValue, error) {
-	if len(value) <= 1 {
+func NewDataFieldValue(value interface{}) (DataFieldValue, error) {
+	dataFieldValueStr, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return "", errors.New("InvalidDataFieldValue")
+	}
+
+	if len(dataFieldValueStr) <= 1 {
 		return "", errors.New("DataFieldValueTooSmall")
 	}
 
-	if len(value) >= 60 {
+	if len(dataFieldValueStr) >= 60 {
 		return "", errors.New("DataFieldValueTooBig")
 	}
 
-	return DataFieldValue(value), nil
+	return DataFieldValue(dataFieldValueStr), nil
 }
 
-func NewDataFieldValuePanic(value string) DataFieldValue {
+func NewDataFieldValuePanic(value interface{}) DataFieldValue {
 	dfv, err := NewDataFieldValue(value)
 	if err != nil {
 		panic(err)
@@ -30,17 +36,4 @@ func NewDataFieldValuePanic(value string) DataFieldValue {
 
 func (dfv DataFieldValue) String() string {
 	return string(dfv)
-}
-
-func (dfvPtr *DataFieldValue) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	dfv, err := NewDataFieldValue(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*dfvPtr = dfv
-	return nil
 }
