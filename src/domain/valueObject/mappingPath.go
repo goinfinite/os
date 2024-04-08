@@ -3,7 +3,6 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 )
 
 const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
@@ -33,17 +32,4 @@ func (mp MappingPath) isValid() bool {
 
 func (mp MappingPath) String() string {
 	return string(mp)
-}
-
-func (mpPtr *MappingPath) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	mp, err := NewMappingPath(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*mpPtr = mp
-	return nil
 }

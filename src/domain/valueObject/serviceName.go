@@ -7,7 +7,6 @@ import (
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
-	"gopkg.in/yaml.v3"
 )
 
 type ServiceName string
@@ -74,33 +73,4 @@ func ServiceNameAdapter(value string) string {
 
 func (sn ServiceName) String() string {
 	return string(sn)
-}
-
-func (sntr *ServiceName) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	svcName, err := NewServiceName(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*sntr = svcName
-	return nil
-}
-
-func (sntrPtr *ServiceName) UnmarshalYAML(value *yaml.Node) error {
-	var valueStr string
-	err := value.Decode(&valueStr)
-	if err != nil {
-		return err
-	}
-
-	sntr, err := NewServiceName(valueStr)
-	if err != nil {
-		return err
-	}
-
-	*sntrPtr = sntr
-	return nil
 }

@@ -2,9 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 type MarketplaceItemDescription string
@@ -32,33 +29,4 @@ func NewMarketplaceItemDescriptionPanic(value string) MarketplaceItemDescription
 
 func (mid MarketplaceItemDescription) String() string {
 	return string(mid)
-}
-
-func (midPtr *MarketplaceItemDescription) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	mid, err := NewMarketplaceItemDescription(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*midPtr = mid
-	return nil
-}
-
-func (midPtr *MarketplaceItemDescription) UnmarshalYAML(value *yaml.Node) error {
-	var valueStr string
-	err := value.Decode(&valueStr)
-	if err != nil {
-		return err
-	}
-
-	mid, err := NewMarketplaceItemDescription(valueStr)
-	if err != nil {
-		return err
-	}
-
-	*midPtr = mid
-	return nil
 }

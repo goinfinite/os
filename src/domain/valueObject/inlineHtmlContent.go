@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 )
 
 type InlineHtmlContent string
@@ -30,17 +29,4 @@ func NewInlineHtmlContentPanic(value string) InlineHtmlContent {
 
 func (ihc InlineHtmlContent) String() string {
 	return string(ihc)
-}
-
-func (ihcPtr *InlineHtmlContent) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	ihc, err := NewInlineHtmlContent(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*ihcPtr = ihc
-	return nil
 }

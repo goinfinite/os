@@ -4,8 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 type MarketplaceItemName string
@@ -41,33 +39,4 @@ func (min MarketplaceItemName) isValid() bool {
 
 func (min MarketplaceItemName) String() string {
 	return string(min)
-}
-
-func (minPtr *MarketplaceItemName) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	min, err := NewMarketplaceItemName(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*minPtr = min
-	return nil
-}
-
-func (minPtr *MarketplaceItemName) UnmarshalYAML(value *yaml.Node) error {
-	var valueStr string
-	err := value.Decode(&valueStr)
-	if err != nil {
-		return err
-	}
-
-	min, err := NewMarketplaceItemName(valueStr)
-	if err != nil {
-		return err
-	}
-
-	*minPtr = min
-	return nil
 }

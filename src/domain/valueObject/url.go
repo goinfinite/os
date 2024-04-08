@@ -3,10 +3,8 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	"gopkg.in/yaml.v3"
 )
 
 const urlRegex string = `^(?P<schema>https?:\/\/)(?P<hostname>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9])*)(:(?P<port>\d{1,6}))?(?P<path>\/[A-Za-z0-9\/\_\.\-]*)?(?P<query>\?[\w\/#=&%\-]*)?$`
@@ -54,33 +52,4 @@ func (url Url) GetPort() (NetworkPort, error) {
 	}
 
 	return NewNetworkPort(portStr)
-}
-
-func (urlPtr *Url) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	url, err := NewUrl(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*urlPtr = url
-	return nil
-}
-
-func (urlPtr *Url) UnmarshalYAML(value *yaml.Node) error {
-	var valueStr string
-	err := value.Decode(&valueStr)
-	if err != nil {
-		return err
-	}
-
-	url, err := NewUrl(valueStr)
-	if err != nil {
-		return err
-	}
-
-	*urlPtr = url
-	return nil
 }

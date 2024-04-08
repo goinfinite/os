@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"golang.org/x/exp/slices"
-	"gopkg.in/yaml.v3"
 )
 
 type MarketplaceItemType string
@@ -42,33 +41,4 @@ func (mit MarketplaceItemType) isValid() bool {
 
 func (mit MarketplaceItemType) String() string {
 	return string(mit)
-}
-
-func (mitPtr *MarketplaceItemType) UnmarshalJSON(value []byte) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	mit, err := NewMarketplaceItemType(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*mitPtr = mit
-	return nil
-}
-
-func (mitPtr *MarketplaceItemType) UnmarshalYAML(value *yaml.Node) error {
-	var valueStr string
-	err := value.Decode(&valueStr)
-	if err != nil {
-		return err
-	}
-
-	mit, err := NewMarketplaceItemType(valueStr)
-	if err != nil {
-		return err
-	}
-
-	*mitPtr = mit
-	return nil
 }

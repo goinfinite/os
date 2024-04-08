@@ -4,7 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"strconv"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -43,19 +42,4 @@ func (responseCode HttpResponseCode) isValid() bool {
 
 func (responseCode HttpResponseCode) String() string {
 	return strconv.FormatUint(uint64(responseCode), 10)
-}
-
-func (responseCodePtr *HttpResponseCode) UnmarshalJSON(
-	value []byte,
-) error {
-	valueStr := string(value)
-	unquotedValue := strings.Trim(valueStr, "\"")
-
-	responseCode, err := NewHttpResponseCode(unquotedValue)
-	if err != nil {
-		return err
-	}
-
-	*responseCodePtr = responseCode
-	return nil
 }
