@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -159,26 +158,17 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
-	nowUnixTime := time.Now().Unix()
-	createdAt := valueObject.UnixTime(nowUnixTime)
-	updatedAt := valueObject.UnixTime(nowUnixTime)
-
-	installedItemEntity := entity.NewMarketplaceInstalledItem(
-		catalogItem.Id,
+	installedItemDto := dto.CreateNewMarketplaceInstalledItem(
 		catalogItem.Name,
 		catalogItem.Type,
 		installDto.RootDirectory,
 		catalogItem.ServiceNames,
 		[]entity.Mapping{},
 		catalogItem.AvatarUrl,
-		createdAt,
-		updatedAt,
 	)
 
-	modelWithoutId := true
-	installedItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModel(
-		installedItemEntity,
-		modelWithoutId,
+	installedItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModelFromDto(
+		installedItemDto,
 	)
 	if err != nil {
 		return err

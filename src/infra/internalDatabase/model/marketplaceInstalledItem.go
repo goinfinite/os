@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -25,37 +26,31 @@ func (MarketplaceInstalledItem) TableName() string {
 	return "marketplace_installed_items"
 }
 
-func (MarketplaceInstalledItem) ToModel(
-	entity entity.MarketplaceInstalledItem,
-	withoutId bool,
+func (MarketplaceInstalledItem) ToModelFromDto(
+	dto dto.CreateMarketplaceInstalledItem,
 ) (MarketplaceInstalledItem, error) {
-	idUint := uint(entity.Id.Get())
-	if withoutId {
-		idUint = 0
-	}
-
 	var svcNamesListStr []string
-	for _, svcName := range entity.ServiceNames {
+	for _, svcName := range dto.ServiceNames {
 		svcNamesListStr = append(svcNamesListStr, svcName.String())
 	}
 	svcNamesStr := strings.Join(svcNamesListStr, ",")
 
 	var mappingIdsListStr []string
-	for _, mapping := range entity.Mappings {
+	for _, mapping := range dto.Mappings {
 		mappingIdsListStr = append(mappingIdsListStr, mapping.Id.String())
 	}
 	mappingIdsStr := strings.Join(mappingIdsListStr, ",")
 
+	nowTime := time.Now()
 	return MarketplaceInstalledItem{
-		ID:            idUint,
-		Name:          entity.Name.String(),
-		Type:          entity.Type.String(),
-		RootDirectory: entity.RootDirectory.String(),
+		Name:          dto.Name.String(),
+		Type:          dto.Type.String(),
+		RootDirectory: dto.RootDirectory.String(),
 		Services:      svcNamesStr,
 		MappingsIds:   mappingIdsStr,
-		AvatarUrl:     entity.AvatarUrl.String(),
-		CreatedAt:     entity.CreatedAt.GetUnixTime(),
-		UpdatedAt:     entity.UpdatedAt.GetUnixTime(),
+		AvatarUrl:     dto.AvatarUrl.String(),
+		CreatedAt:     nowTime,
+		UpdatedAt:     nowTime,
 	}, nil
 }
 
