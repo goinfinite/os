@@ -134,7 +134,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return repo.createAlias(createDto)
 	}
 
-	publicDir := "/app/html/" + hostnameStr
+	publicDir := infraData.GlobalConfigs.PrimaryPublicDir + "/" + hostnameStr
 	certPath := infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".crt"
 	keyPath := infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".key"
 	mappingFilePath := "/app/conf/nginx/mapping/" + hostnameStr + ".conf"
@@ -235,7 +235,7 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 	_, err := infraHelper.RunCmd(
 		"rm",
 		"-rf",
-		"/app/html/"+hostnameStr,
+		infraData.GlobalConfigs.PrimaryPublicDir+"/"+hostnameStr,
 		"/app/conf/nginx/"+hostnameStr+".conf",
 		"/app/conf/pki/"+hostnameStr+".crt",
 		"/app/conf/pki/"+hostnameStr+".key",
