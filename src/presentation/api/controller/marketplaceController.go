@@ -60,7 +60,7 @@ func getDataFieldsFromBody(
 			panic("InvalidDataField")
 		}
 
-		dataField := valueObject.NewMarketplaceItemDataField(
+		dataField := valueObject.NewMarketplaceItemDataFieldPanic(
 			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 			false,

@@ -206,7 +206,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldFactory(
 		value,
 		rawIsRequired,
 		defaultValuePtr,
-	), nil
+	)
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
