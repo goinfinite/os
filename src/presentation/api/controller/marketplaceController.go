@@ -63,6 +63,8 @@ func getDataFieldsFromBody(
 		dataField := valueObject.NewMarketplaceItemDataField(
 			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
+			false,
+			nil,
 		)
 
 		dataFields = append(dataFields, dataField)
