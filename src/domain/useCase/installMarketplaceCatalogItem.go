@@ -12,14 +12,14 @@ import (
 )
 
 func hasRequiredDataFields(
-	dtoDataFields []valueObject.MarketplaceItemDataField,
+	receivedDataFields []valueObject.MarketplaceItemDataField,
 	requiredDataFields []valueObject.MarketplaceItemDataField,
 ) bool {
-	dtoDataFieldsKeysStr := []string{}
-	for _, dtoDataField := range dtoDataFields {
-		dtoDataFieldsKeysStr = append(
-			dtoDataFieldsKeysStr,
-			dtoDataField.Key.String(),
+	receivedDataFieldsKeysStr := []string{}
+	for _, receivedDataField := range receivedDataFields {
+		receivedDataFieldsKeysStr = append(
+			receivedDataFieldsKeysStr,
+			receivedDataField.Key.String(),
 		)
 	}
 
@@ -30,7 +30,7 @@ func hasRequiredDataFields(
 		}
 
 		requiredDataFieldStr := requiredDataField.Key.String()
-		if !slices.Contains(dtoDataFieldsKeysStr, requiredDataFieldStr) {
+		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
 			hasRequiredDataFields = false
 			break
 		}
@@ -48,7 +48,7 @@ func InstallMarketplaceCatalogItem(
 	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	_, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
 	if err != nil {
 		return errors.New("VhostNotFound")
 	}
@@ -67,14 +67,6 @@ func InstallMarketplaceCatalogItem(
 	if !hasRequiredDataFields {
 		return errors.New("MissingRequiredDataFieldKeys")
 	}
-
-	catalogItemRootDir := installDto.RootDirectory
-	rawCorrectRootDir := vhost.RootDirectory.String() + catalogItemRootDir.String()
-	rootDirAbsolutePath, err := valueObject.NewUnixFilePath(rawCorrectRootDir)
-	if err != nil {
-		return err
-	}
-	installDto.RootDirectory = rootDirAbsolutePath
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
 	if err != nil {

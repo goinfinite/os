@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -66,20 +67,6 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
 	return cmdStepWithDataField, nil
 }
 
-func (repo *MarketplaceCmdRepo) moveInstalledItem(
-	installedItemName valueObject.MarketplaceItemName,
-	rootDirectory valueObject.UnixFilePath,
-) error {
-	installedItemSrcPath := "/speedia/" + installedItemName.String()
-	_, err := infraHelper.RunCmd(
-		"mv",
-		installedItemSrcPath,
-		rootDirectory.String(),
-	)
-
-	return err
-}
-
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
@@ -113,7 +100,19 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
+	installDirStr := infraData.GlobalConfigs.PrimaryPublicDir
+	if installDto.InstallDirectory != nil {
+		vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+		vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+		if err != nil {
+			return err
+		}
+
+		installDirStr = vhost.RootDirectory.String() + installDto.InstallDirectory.String()
+	}
+
 	dataFieldsMap := repo.getDataFieldsAsMap(installDto.DataFields)
+	dataFieldsMap["installDirectory"] = installDirStr
 	for _, cmdStep := range catalogItem.CmdSteps {
 		cmdStepRequiredDataFields, err := repo.getCmdStepWithDataFields(
 			cmdStep,
@@ -129,14 +128,6 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 				"RunCmdStepError (" + cmdStepRequiredDataFields + "): " + err.Error(),
 			)
 		}
-	}
-
-	err = repo.moveInstalledItem(
-		catalogItem.Name,
-		installDto.RootDirectory,
-	)
-	if err != nil {
-		return err
 	}
 
 	for _, catalogItemMapping := range catalogItem.Mappings {
@@ -158,10 +149,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
+	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 	installedItemDto := dto.CreateNewMarketplaceInstalledItem(
 		catalogItem.Name,
 		catalogItem.Type,
-		installDto.RootDirectory,
+		installDir,
 		catalogItem.ServiceNames,
 		[]entity.Mapping{},
 		catalogItem.AvatarUrl,
