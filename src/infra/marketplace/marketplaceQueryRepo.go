@@ -286,8 +286,8 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	for _, rawCatalogItemDataField := range rawCatalogItemDataFields {
 		catalogItemDataField, err := repo.catalogItemDataFieldFactory(rawCatalogItemDataField.(map[string]interface{}))
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawCatalogItemDataField)
-			continue
+			log.Printf("%s: %v", err.Error(), rawCatalogItemDataField)
+			return catalogItem, err
 		}
 
 		catalogItemDataFields = append(catalogItemDataFields, catalogItemDataField)
@@ -302,7 +302,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		catalogItemCmdStep, err := valueObject.NewMarketplaceItemInstallStep(rawCatalogItemCmdStep.(string))
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), rawCatalogItemCmdStep)
-			continue
+			return catalogItem, err
 		}
 
 		catalogItemCmdSteps = append(catalogItemCmdSteps, catalogItemCmdStep)
