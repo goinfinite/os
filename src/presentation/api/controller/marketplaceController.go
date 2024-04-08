@@ -91,11 +91,13 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 	id := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
-	rawRootDir := requestBody["rootDirectory"]
-	if rawRootDir == nil {
-		rawRootDir = "/"
+	var installDirPtr *valueObject.UnixFilePath
+	if requestBody["installDirectory"] != nil {
+		installDir := valueObject.NewUnixFilePathPanic(
+			requestBody["installDirectory"].(string),
+		)
+		installDirPtr = &installDir
 	}
-	rootDir := valueObject.NewUnixFilePathPanic(rawRootDir.(string))
 
 	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
 
@@ -104,7 +106,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(id, hostname, rootDir, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(id, hostname, installDirPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
