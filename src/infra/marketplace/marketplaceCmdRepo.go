@@ -9,7 +9,6 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	filesInfra "github.com/speedianet/os/src/infra/files"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
@@ -69,15 +68,17 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
 }
 
 func (repo *MarketplaceCmdRepo) moveInstalledItem(
-	rootDirectory valueObject.UnixFilePath,
 	installedItemName valueObject.MarketplaceItemName,
+	rootDirectory valueObject.UnixFilePath,
 ) error {
-	installedItemSrcPath, _ := valueObject.NewUnixFilePath("/speedia/" + installedItemName.String())
-	installedItemDestinationPath, _ := valueObject.NewUnixFilePath(rootDirectory.String())
+	installedItemSrcPath := "/speedia/" + installedItemName.String()
+	_, err := infraHelper.RunCmd(
+		"mv",
+		installedItemSrcPath,
+		rootDirectory.String(),
+	)
 
-	filesCmdRepo := filesInfra.FilesCmdRepo{}
-	shouldOverwrite := true
-	return filesCmdRepo.Move(installedItemSrcPath, installedItemDestinationPath, shouldOverwrite)
+	return err
 }
 
 func (repo *MarketplaceCmdRepo) InstallItem(
@@ -132,8 +133,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	err = repo.moveInstalledItem(
-		installDto.RootDirectory,
 		catalogItem.Name,
+		installDto.RootDirectory,
 	)
 	if err != nil {
 		return err
