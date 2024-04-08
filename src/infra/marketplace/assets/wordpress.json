@@ -5,27 +5,32 @@
     "serviceNames": ["php", "mysql"],
     "mappings": [
         {
-            "path": "/wordpress",
+            "path": "/php-ws",
             "matchPattern": "begins-with",
-            "targetType": "static-files"
+            "targetType": "service"
         }
     ],
     "dataFields": [
         {
             "key": "locale",
-            "value": "pt_BR"
+            "value": "pt_BR",
+            "isRequired": false,
+            "defaultValue": "pt_BR"
         },
         {
             "key": "dbName",
-            "value": "exampleDbName"
+            "value": "exampleDbName",
+            "isRequired": true
         },
         {
             "key": "dbAdminUser",
-            "value": "exampleAdminUser"
+            "value": "exampleAdminUser",
+            "isRequired": true
         },
         {
             "key": "dbAdminPass",
-            "value": "exampleAdminPass"
+            "value": "exampleAdminPass",
+            "isRequired": true
         }
     ],
     "cmdSteps": [
