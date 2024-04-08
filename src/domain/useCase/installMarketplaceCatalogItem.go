@@ -25,6 +25,10 @@ func hasRequiredDataFields(
 
 	hasRequiredDataFields := true
 	for _, requiredDataField := range requiredDataFields {
+		if !requiredDataField.IsRequired {
+			continue
+		}
+
 		requiredDataFieldStr := requiredDataField.Key.String()
 		if !slices.Contains(dtoDataFieldsKeysStr, requiredDataFieldStr) {
 			hasRequiredDataFields = false
