@@ -2,7 +2,6 @@ package testHelpers
 
 import (
 	"encoding/base64"
-	"fmt"
 	"path"
 	"runtime"
 
@@ -10,8 +9,9 @@ import (
 )
 
 func GenerateString(desiredSize int) string {
-	desiredByteSize := uint((float64(desiredSize) / 4) * 3)
-	randomBytes := make([]byte, desiredByteSize)
+	desiredSizeBytesLength := float64(desiredSize) * 3
+	desiredSizeStringLength := desiredSizeBytesLength / 4
+	randomBytes := make([]byte, uint(desiredSizeStringLength))
 	return base64.StdEncoding.EncodeToString(randomBytes)
 }
 
@@ -22,6 +22,6 @@ func LoadEnvVars() {
 
 	loadEnvErr := godotenv.Load(testEnvPath)
 	if loadEnvErr != nil {
-		panic(fmt.Errorf("Error loading .env file: %s", loadEnvErr))
+		panic("LoadingEnvFileError: " + loadEnvErr.Error())
 	}
 }
