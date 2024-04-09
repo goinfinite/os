@@ -13,23 +13,10 @@
     "dataFields": [
         {
             "key": "locale",
-            "value": "pt_BR",
-            "isRequired": false,
             "defaultValue": "pt_BR"
         },
         {
             "key": "dbName",
-            "value": "exampleDbName",
-            "isRequired": true
-        },
-        {
-            "key": "dbAdminUser",
-            "value": "exampleAdminUser",
-            "isRequired": true
-        },
-        {
-            "key": "dbAdminPass",
-            "value": "exampleAdminPass",
             "isRequired": true
         }
     ],
