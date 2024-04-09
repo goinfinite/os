@@ -13,8 +13,8 @@ func GetMarketplaceCatalog(
 ) ([]entity.MarketplaceCatalogItem, error) {
 	catalogItems, err := marketplaceQueryRepo.GetCatalogItems()
 	if err != nil {
-		log.Printf("GetMkplaceCatalogItemsError: %s", err.Error())
-		return nil, errors.New("GetMkplaceCatalogItemsInfraError")
+		log.Printf("GetMarketplaceCatalogItemsError: %s", err.Error())
+		return nil, errors.New("GetMarketplaceCatalogItemsInfraError")
 	}
 
 	return catalogItems, nil

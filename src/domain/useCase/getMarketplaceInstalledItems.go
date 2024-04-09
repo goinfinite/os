@@ -13,8 +13,8 @@ func GetMarketplaceInstalledItems(
 ) ([]entity.MarketplaceInstalledItem, error) {
 	installedItems, err := marketplaceQueryRepo.GetInstalledItems()
 	if err != nil {
-		log.Printf("GetMkplaceInstalledItemsError: %s", err.Error())
-		return nil, errors.New("GetMkplaceInstalledItemsInfraError")
+		log.Printf("GetMarketplaceInstalledItemsError: %s", err.Error())
+		return nil, errors.New("GetMarketplaceInstalledItemsInfraError")
 	}
 
 	return installedItems, nil
