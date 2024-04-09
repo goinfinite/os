@@ -22,7 +22,7 @@ func TestInlineHtmlContent(t *testing.T) {
 		}
 	})
 
-	t.Run("ValidInlineHtmlContent", func(t *testing.T) {
+	t.Run("InvalidInlineHtmlContent", func(t *testing.T) {
 		invalidLength := 3600
 		invalidInlineHtmlContents := []string{
 			"",
