@@ -22,7 +22,7 @@ func TestMappingTargetType(t *testing.T) {
 		}
 	})
 
-	t.Run("ValidMappingTargetType", func(t *testing.T) {
+	t.Run("InvalidMappingTargetType", func(t *testing.T) {
 		invalidMappingTargetTypes := []string{
 			"response-header",
 			"reverse-proxy",
