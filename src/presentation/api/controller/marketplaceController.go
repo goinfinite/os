@@ -46,8 +46,8 @@ func (controller *MarketplaceController) GetCatalogController(c echo.Context) er
 
 func getDataFieldsFromBody(
 	dataFieldsBodyInput interface{},
-) []valueObject.MarketplaceItemDataField {
-	dataFields := []valueObject.MarketplaceItemDataField{}
+) []valueObject.MarketplaceCatalogItemDataField {
+	dataFields := []valueObject.MarketplaceCatalogItemDataField{}
 
 	dataFieldsInterfaceSlice, assertOk := dataFieldsBodyInput.([]interface{})
 	if !assertOk {
@@ -60,7 +60,7 @@ func getDataFieldsFromBody(
 			panic("InvalidDataField")
 		}
 
-		dataField := valueObject.NewMarketplaceItemDataFieldPanic(
+		dataField := valueObject.NewMarketplaceCatalogItemDataFieldPanic(
 			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 			false,

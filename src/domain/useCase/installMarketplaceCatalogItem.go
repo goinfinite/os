@@ -12,8 +12,8 @@ import (
 )
 
 func hasRequiredDataFields(
-	receivedDataFields []valueObject.MarketplaceItemDataField,
-	requiredDataFields []valueObject.MarketplaceItemDataField,
+	receivedDataFields []valueObject.MarketplaceCatalogItemDataField,
+	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) bool {
 	receivedDataFieldsKeysStr := []string{}
 	for _, receivedDataField := range receivedDataFields {

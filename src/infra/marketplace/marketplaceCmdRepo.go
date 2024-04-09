@@ -33,7 +33,7 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) getDataFieldsAsMap(
-	dataFields []valueObject.MarketplaceItemDataField,
+	dataFields []valueObject.MarketplaceCatalogItemDataField,
 ) map[string]string {
 	dataFieldMap := map[string]string{}
 

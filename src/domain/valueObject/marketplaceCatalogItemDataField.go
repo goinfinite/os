@@ -2,27 +2,27 @@ package valueObject
 
 import "errors"
 
-type MarketplaceItemDataField struct {
+type MarketplaceCatalogItemDataField struct {
 	Key          DataFieldKey    `json:"key"`
 	Value        DataFieldValue  `json:"value"`
 	IsRequired   bool            `json:"isRequired"`
 	DefaultValue *DataFieldValue `json:"defaultValue,omitempty"`
 }
 
-func NewMarketplaceItemDataField(
+func NewMarketplaceCatalogItemDataField(
 	key DataFieldKey,
 	value DataFieldValue,
 	isRequired bool,
 	defaultValue *DataFieldValue,
-) (MarketplaceItemDataField, error) {
-	var marketplaceItemDataField MarketplaceItemDataField
+) (MarketplaceCatalogItemDataField, error) {
+	var marketplaceCatalogItemDataField MarketplaceCatalogItemDataField
 
 	missingRequiredDefaultValue := !isRequired && defaultValue == nil
 	if missingRequiredDefaultValue {
-		return marketplaceItemDataField, errors.New("MissingRequiredDefaultValue")
+		return marketplaceCatalogItemDataField, errors.New("MissingRequiredDefaultValue")
 	}
 
-	return MarketplaceItemDataField{
+	return MarketplaceCatalogItemDataField{
 		Key:          key,
 		Value:        value,
 		IsRequired:   isRequired,
@@ -30,13 +30,13 @@ func NewMarketplaceItemDataField(
 	}, nil
 }
 
-func NewMarketplaceItemDataFieldPanic(
+func NewMarketplaceCatalogItemDataFieldPanic(
 	key DataFieldKey,
 	value DataFieldValue,
 	isRequired bool,
 	defaultValue *DataFieldValue,
-) MarketplaceItemDataField {
-	marketplaceItemDataField, err := NewMarketplaceItemDataField(
+) MarketplaceCatalogItemDataField {
+	marketplaceCatalogItemDataField, err := NewMarketplaceCatalogItemDataField(
 		key,
 		value,
 		isRequired,
@@ -46,5 +46,5 @@ func NewMarketplaceItemDataFieldPanic(
 		panic(err)
 	}
 
-	return marketplaceItemDataField
+	return marketplaceCatalogItemDataField
 }
