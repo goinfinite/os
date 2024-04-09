@@ -173,23 +173,8 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldFactory(
 		return dataField, err
 	}
 
-	rawValue, assertOk := catalogItemDataFieldMap["value"].(string)
-	if !assertOk {
-		return dataField, errors.New("InvalidDataFieldValue")
-	}
-	value, err := valueObject.NewDataFieldValue(rawValue)
-	if err != nil {
-		return dataField, err
-	}
-
-	rawIsRequired, assertOk := catalogItemDataFieldMap["isRequired"].(bool)
-	if !assertOk {
-		return dataField, errors.New("InvalidDataFieldIsRequired")
-	}
-
-	_, defaultValueExists := catalogItemDataFieldMap["defaultValue"]
 	var defaultValuePtr *valueObject.DataFieldValue
-	if defaultValueExists {
+	if catalogItemDataFieldMap["defaultValue"] != nil {
 		rawDefaultValue, assertOk := catalogItemDataFieldMap["defaultValue"].(string)
 		if !assertOk {
 			return dataField, errors.New("InvalidDataFieldDefaultValue")
@@ -201,11 +186,19 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldFactory(
 		defaultValuePtr = &defaultValue
 	}
 
+	isRequired := false
+	if catalogItemDataFieldMap["isRequired"] != nil {
+		rawIsRequired, assertOk := catalogItemDataFieldMap["isRequired"].(bool)
+		if !assertOk {
+			return dataField, errors.New("InvalidDataFieldIsRequired")
+		}
+		isRequired = rawIsRequired
+	}
+
 	return valueObject.NewMarketplaceCatalogItemDataField(
 		key,
-		value,
-		rawIsRequired,
 		defaultValuePtr,
+		isRequired,
 	)
 }
 

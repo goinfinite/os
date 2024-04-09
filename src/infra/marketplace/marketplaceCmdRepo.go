@@ -32,19 +32,39 @@ func NewMarketplaceCmdRepo(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) getDataFieldsAsMap(
-	dataFields []valueObject.MarketplaceCatalogItemDataField,
+func (repo *MarketplaceCmdRepo) getReceivedDataFieldsAsMap(
+	receivedDataFields []valueObject.MarketplaceInstalledItemDataField,
 ) map[string]string {
-	dataFieldMap := map[string]string{}
+	receivedDataFieldsMap := map[string]string{}
 
-	for _, dataField := range dataFields {
-		dataFieldMap[dataField.Key.String()] = dataField.Value.String()
+	for _, receivedDataField := range receivedDataFields {
+		receivedDataFieldKeyStr := receivedDataField.Key.String()
+		receivedDataFieldsMap[receivedDataFieldKeyStr] = receivedDataField.Value.String()
 	}
 
-	return dataFieldMap
+	return receivedDataFieldsMap
 }
 
-func (repo *MarketplaceCmdRepo) getCmdStepWithDataFields(
+func (repo *MarketplaceCmdRepo) addMissingOptionalDataFields(
+	receivedDataFieldsMap *map[string]string,
+	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
+) {
+	for _, requiredDataField := range requiredDataFields {
+		if requiredDataField.IsRequired {
+			continue
+		}
+
+		requiredKeyStr := requiredDataField.Key.String()
+		if len((*receivedDataFieldsMap)[requiredKeyStr]) != 0 {
+			continue
+		}
+
+		requiredDefaultValueStr := requiredDataField.DefaultValue.String()
+		(*receivedDataFieldsMap)[requiredKeyStr] = requiredDefaultValueStr
+	}
+}
+
+func (repo *MarketplaceCmdRepo) getCmdStepWithReceivedDataFields(
 	cmdStep valueObject.MarketplaceItemInstallStep,
 	dataFieldsMap map[string]string,
 ) (string, error) {
@@ -111,12 +131,15 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installDirStr = vhost.RootDirectory.String() + installDto.InstallDirectory.String()
 	}
 
-	dataFieldsMap := repo.getDataFieldsAsMap(installDto.DataFields)
-	dataFieldsMap["installDirectory"] = installDirStr
+	receivedDataFielsdMap := repo.getReceivedDataFieldsAsMap(installDto.DataFields)
+	receivedDataFielsdMap["installDirectory"] = installDirStr
+	repo.addMissingOptionalDataFields(&receivedDataFielsdMap, catalogItem.DataFields)
+	log.Printf("receivedDataFielsdMap: %+v", receivedDataFielsdMap)
+
 	for _, cmdStep := range catalogItem.CmdSteps {
-		cmdStepRequiredDataFields, err := repo.getCmdStepWithDataFields(
+		cmdStepRequiredDataFields, err := repo.getCmdStepWithReceivedDataFields(
 			cmdStep,
-			dataFieldsMap,
+			receivedDataFielsdMap,
 		)
 		if err != nil {
 			return errors.New("GetCmdStepWithDataFieldsError: " + err.Error())
