@@ -28,6 +28,9 @@ func InterfaceToString(input interface{}) (string, error) {
 			err = defaultErr
 		}
 		output = strconv.FormatFloat(floatValue, 'f', -1, 64)
+	case bool:
+		boolValue := reflect.ValueOf(v).Bool()
+		output = strconv.FormatBool(boolValue)
 	default:
 		err = defaultErr
 	}
