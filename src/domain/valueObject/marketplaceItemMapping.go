@@ -1,9 +1,5 @@
 package valueObject
 
-import (
-	"gopkg.in/yaml.v3"
-)
-
 type MarketplaceItemMapping struct {
 	Path                    MappingPath         `json:"path"`
 	MatchPattern            MappingMatchPattern `json:"matchPattern"`
@@ -32,91 +28,4 @@ func NewMarketplaceItemMapping(
 		TargetHttpResponseCode:  targetHttpResponseCode,
 		TargetInlineHtmlContent: targetInlineHtmlContent,
 	}
-}
-
-func (mmPtr *MarketplaceItemMapping) UnmarshalYAML(value *yaml.Node) error {
-	var valuesMap map[string]string
-	err := value.Decode(&valuesMap)
-	if err != nil {
-		return err
-	}
-
-	path, err := NewMappingPath(valuesMap["path"])
-	if err != nil {
-		return err
-	}
-
-	matchPattern, err := NewMappingMatchPattern(
-		valuesMap["matchPattern"],
-	)
-	if err != nil {
-		return err
-	}
-
-	targetType, err := NewMappingTargetType(
-		valuesMap["targetType"],
-	)
-	if err != nil {
-		return err
-	}
-
-	var targetSvcNamePtr *ServiceName
-	targetSvcName, targetSvcNameExists := valuesMap["targetServiceName"]
-	if targetSvcNameExists {
-		targetSvcName, err := NewServiceName(targetSvcName)
-		if err != nil {
-			return err
-		}
-
-		targetSvcNamePtr = &targetSvcName
-	}
-
-	var targetUrlPtr *Url
-	targetUrl, targetUrlExists := valuesMap["targetUrl"]
-	if targetUrlExists {
-		targetUrl, err := NewUrl(targetUrl)
-		if err != nil {
-			return err
-		}
-
-		targetUrlPtr = &targetUrl
-	}
-
-	var targetHttpResponseCodePtr *HttpResponseCode
-	targetHttpResponseCode, targetHttpResponseCodeExists := valuesMap["targetHttpResponseCode"]
-	if targetHttpResponseCodeExists {
-		targetHttpResponseCode, err := NewHttpResponseCode(
-			targetHttpResponseCode,
-		)
-		if err != nil {
-			return err
-		}
-
-		targetHttpResponseCodePtr = &targetHttpResponseCode
-	}
-
-	var targetHtmlInlineContentPtr *InlineHtmlContent
-	targetHtmlInlineContent, targetHtmlInlineContentExists := valuesMap["targetHtmlInlineContent"]
-	if targetHtmlInlineContentExists {
-		targetHtmlInlineContent, err := NewInlineHtmlContent(
-			targetHtmlInlineContent,
-		)
-		if err != nil {
-			return err
-		}
-
-		targetHtmlInlineContentPtr = &targetHtmlInlineContent
-	}
-
-	*mmPtr = NewMarketplaceItemMapping(
-		path,
-		matchPattern,
-		targetType,
-		targetSvcNamePtr,
-		targetUrlPtr,
-		targetHttpResponseCodePtr,
-		targetHtmlInlineContentPtr,
-	)
-
-	return nil
 }
