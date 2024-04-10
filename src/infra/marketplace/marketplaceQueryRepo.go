@@ -93,8 +93,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingFactory(
 	}
 
 	var targetSvcNamePtr *valueObject.ServiceName
-	_, rawTargetSvcNameExists := catalogItemMappingMap["targetServiceName"]
-	if rawTargetSvcNameExists {
+	if catalogItemMappingMap["targetServiceName"] != nil {
 		rawTargetSvcName, assertOk := catalogItemMappingMap["targetServiceName"].(string)
 		if !assertOk {
 			return mapping, errors.New("InvalidMappingTargetSvcName")
@@ -107,8 +106,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingFactory(
 	}
 
 	var targetUrlPtr *valueObject.Url
-	_, rawTargetUrlExists := catalogItemMappingMap["targetUrl"]
-	if rawTargetUrlExists {
+	if catalogItemMappingMap["targetUrl"] != nil {
 		rawTargetUrl, assertOk := catalogItemMappingMap["targetUrl"].(string)
 		if !assertOk {
 			return mapping, errors.New("InvalidMappingTargetUrl")
@@ -121,8 +119,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingFactory(
 	}
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
-	_, rawTargetHttpResponseCodeExists := catalogItemMappingMap["targetHttpResponseCode"]
-	if rawTargetHttpResponseCodeExists {
+	if catalogItemMappingMap["targetHttpResponseCode"] != nil {
 		rawTargetHttpResponseCode, assertOk := catalogItemMappingMap["targetHttpResponseCode"].(string)
 		if !assertOk {
 			return mapping, errors.New("InvalidMappingTargetHttpResponseCode")
@@ -135,8 +132,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingFactory(
 	}
 
 	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-	_, rawTargetInlineHtmlContentExists := catalogItemMappingMap["targetInlineHtmlContent"]
-	if rawTargetInlineHtmlContentExists {
+	if catalogItemMappingMap["targetInlineHtmlContent"] != nil {
 		rawTargetInlineHtmlContent, assertOk := catalogItemMappingMap["targetInlineHtmlContent"].(string)
 		if !assertOk {
 			return mapping, errors.New("InvalidMappingTargetInlineHtmlContent")
