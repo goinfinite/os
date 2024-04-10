@@ -177,7 +177,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
-	installedItemDto := dto.CreateNewMarketplaceInstalledItem(
+	installedItemDto := dto.NewPersistMarketplaceInstalledItem(
 		catalogItem.Name,
 		catalogItem.Type,
 		installDir,

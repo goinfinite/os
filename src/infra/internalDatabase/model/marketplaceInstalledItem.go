@@ -27,7 +27,7 @@ func (MarketplaceInstalledItem) TableName() string {
 }
 
 func (MarketplaceInstalledItem) ToModelFromDto(
-	dto dto.CreateMarketplaceInstalledItem,
+	dto dto.PersistMarketplaceInstalledItem,
 ) (MarketplaceInstalledItem, error) {
 	var svcNamesListStr []string
 	for _, svcName := range dto.ServiceNames {

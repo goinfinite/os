@@ -5,7 +5,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type CreateMarketplaceInstalledItem struct {
+type PersistMarketplaceInstalledItem struct {
 	Name             valueObject.MarketplaceItemName `json:"name"`
 	Type             valueObject.MarketplaceItemType `json:"type"`
 	InstallDirectory valueObject.UnixFilePath        `json:"installDirectory"`
@@ -14,15 +14,15 @@ type CreateMarketplaceInstalledItem struct {
 	AvatarUrl        valueObject.Url                 `json:"avatarUrl"`
 }
 
-func CreateNewMarketplaceInstalledItem(
+func NewPersistMarketplaceInstalledItem(
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
 	installDirectory valueObject.UnixFilePath,
 	serviceNames []valueObject.ServiceName,
 	mappings []entity.Mapping,
 	avatarUrl valueObject.Url,
-) CreateMarketplaceInstalledItem {
-	return CreateMarketplaceInstalledItem{
+) PersistMarketplaceInstalledItem {
+	return PersistMarketplaceInstalledItem{
 		Name:             itemName,
 		Type:             itemType,
 		InstallDirectory: installDirectory,
