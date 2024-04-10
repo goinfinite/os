@@ -26,8 +26,10 @@
         "mv /speedia/wp-cli.phar /usr/local/bin/wp",
         "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
         "sos db create -n %dbName% -t mysql",
-        "sos db create-user -n %dbName% -t mysql -u marketplace_wp$(shuf -i 1-1000 -n 1)_db -p $(openssl rand -hex 8) -r all",
-        "wp config create --path=%installDirectory% --dbname=wpDb --dbuser=%dbAdminUser% --dbpass=%dbAdminPass% --allow-root"
+        "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
+        "sos db create-user -n %dbName% -t mysql -u marketplace_wp_dbUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
+        "wp config create --path=%installDirectory% --dbname=%dbName% --dbuser=marketplace_wp_dbUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
+        "rm -rf %installDirectory%/wpDbCredentials"
     ],
     "estimatedSizeBytes": 1000000000,
     "avatarUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/1200px-WordPress_blue_logo.svg.png",
