@@ -134,7 +134,6 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	receivedDataFielsdMap := repo.getReceivedDataFieldsAsMap(installDto.DataFields)
 	receivedDataFielsdMap["installDirectory"] = installDirStr
 	repo.addMissingOptionalDataFields(&receivedDataFielsdMap, catalogItem.DataFields)
-	log.Printf("receivedDataFielsdMap: %+v", receivedDataFielsdMap)
 
 	for _, cmdStep := range catalogItem.CmdSteps {
 		cmdStepRequiredDataFields, err := repo.getCmdStepWithReceivedDataFields(
