@@ -13,7 +13,7 @@
     "dataFields": [
         {
             "key": "locale",
-            "defaultValue": "pt_BR"
+            "defaultValue": "en_US"
         },
         {
             "key": "dbName",
