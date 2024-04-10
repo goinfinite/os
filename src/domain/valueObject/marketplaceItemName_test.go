@@ -32,7 +32,7 @@ func TestMarketplaceItemName(t *testing.T) {
 		}
 	})
 
-	t.Run("ValidMarketplaceItemName", func(t *testing.T) {
+	t.Run("InvalidMarketplaceItemName", func(t *testing.T) {
 		invalidMarketplaceItemNames := []string{
 			"",
 			".",
