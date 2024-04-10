@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -45,7 +46,7 @@ func (repo *MarketplaceCmdRepo) getReceivedDataFieldsAsMap(
 	return receivedDataFieldsMap
 }
 
-func (repo *MarketplaceCmdRepo) addMissingOptionalDataFields(
+func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
 	receivedDataFieldsMap *map[string]string,
 	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) {
@@ -131,14 +132,18 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installDirStr = vhost.RootDirectory.String() + installDto.InstallDirectory.String()
 	}
 
-	receivedDataFielsdMap := repo.getReceivedDataFieldsAsMap(installDto.DataFields)
-	receivedDataFielsdMap["installDirectory"] = installDirStr
-	repo.addMissingOptionalDataFields(&receivedDataFielsdMap, catalogItem.DataFields)
+	receivedDataFieldsMap := repo.getReceivedDataFieldsAsMap(installDto.DataFields)
+	receivedDataFieldsMap["installDirectory"] = installDirStr
+	receivedDataFieldsMap["installUuid"] = uuid.New().String()[:16]
+	repo.addMissingOptionalDataFieldsToMap(
+		&receivedDataFieldsMap,
+		catalogItem.DataFields,
+	)
 
 	for _, cmdStep := range catalogItem.CmdSteps {
 		cmdStepRequiredDataFields, err := repo.getCmdStepWithReceivedDataFields(
 			cmdStep,
-			receivedDataFielsdMap,
+			receivedDataFieldsMap,
 		)
 		if err != nil {
 			return errors.New("GetCmdStepWithDataFieldsError: " + err.Error())
