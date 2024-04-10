@@ -11,15 +11,15 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID            uint `gorm:"primarykey"`
-	Name          string
-	Type          string
-	RootDirectory string
-	Services      string
-	MappingsIds   string
-	AvatarUrl     string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID               uint `gorm:"primarykey"`
+	Name             string
+	Type             string
+	InstallDirectory string
+	ServiceNames     string
+	MappingsIds      string
+	AvatarUrl        string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 func (MarketplaceInstalledItem) TableName() string {
@@ -43,14 +43,14 @@ func (MarketplaceInstalledItem) ToModelFromDto(
 
 	nowTime := time.Now()
 	return MarketplaceInstalledItem{
-		Name:          dto.Name.String(),
-		Type:          dto.Type.String(),
-		RootDirectory: dto.RootDirectory.String(),
-		Services:      svcNamesStr,
-		MappingsIds:   mappingIdsStr,
-		AvatarUrl:     dto.AvatarUrl.String(),
-		CreatedAt:     nowTime,
-		UpdatedAt:     nowTime,
+		Name:             dto.Name.String(),
+		Type:             dto.Type.String(),
+		InstallDirectory: dto.InstallDirectory.String(),
+		ServiceNames:     svcNamesStr,
+		MappingsIds:      mappingIdsStr,
+		AvatarUrl:        dto.AvatarUrl.String(),
+		CreatedAt:        nowTime,
+		UpdatedAt:        nowTime,
 	}, nil
 }
 
@@ -74,14 +74,14 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	rootDirectory, err := valueObject.NewUnixFilePath(model.RootDirectory)
+	installDirectory, err := valueObject.NewUnixFilePath(model.InstallDirectory)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
 
 	svcsNameList := []valueObject.ServiceName{}
-	if len(model.Services) > 0 {
-		rawSvcsNameList := strings.Split(model.Services, ",")
+	if len(model.ServiceNames) > 0 {
+		rawSvcsNameList := strings.Split(model.ServiceNames, ",")
 		for _, rawSvcName := range rawSvcsNameList {
 			svcName, err := valueObject.NewServiceName(rawSvcName)
 			if err != nil {
@@ -109,7 +109,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		id,
 		itemName,
 		itemType,
-		rootDirectory,
+		installDirectory,
 		svcsNameList,
 		mappings,
 		avatarUrl,
