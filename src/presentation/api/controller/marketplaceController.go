@@ -44,7 +44,7 @@ func (controller *MarketplaceController) GetCatalogController(c echo.Context) er
 	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceItems)
 }
 
-func getDataFieldsFromBody(
+func parseDataFieldsFromBody(
 	dataFieldsBodyInput interface{},
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
@@ -77,7 +77,7 @@ func getDataFieldsFromBody(
 // @Tags         marketplace
 // @Accept       json
 // @Produce      json
-// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem"
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (installDirectory is optional)"
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItemController(c echo.Context) error {
@@ -97,7 +97,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 		installDirPtr = &installDir
 	}
 
-	dataFields := getDataFieldsFromBody(requestBody["dataFields"])
+	dataFields := parseDataFieldsFromBody(requestBody["dataFields"])
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
