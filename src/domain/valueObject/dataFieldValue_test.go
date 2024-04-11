@@ -28,7 +28,7 @@ func TestDataFieldValue(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldValue", func(t *testing.T) {
-		invalidLength := 70
+		invalidLength := 2050
 		invalidDataFieldValues := []interface{}{
 			"",
 			"a",
