@@ -12,7 +12,7 @@ import (
 )
 
 func hasRequiredDataFields(
-	receivedDataFields []valueObject.MarketplaceInstalledItemDataField,
+	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) bool {
 	receivedDataFieldsKeysStr := []string{}

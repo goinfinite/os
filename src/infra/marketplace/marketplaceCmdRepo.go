@@ -34,7 +34,7 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) getReceivedDataFieldsAsMap(
-	receivedDataFields []valueObject.MarketplaceInstalledItemDataField,
+	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) map[string]string {
 	receivedDataFieldsMap := map[string]string{}
 
