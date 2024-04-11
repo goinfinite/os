@@ -22,7 +22,7 @@ func TestMarketplaceItemDescription(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemDescription", func(t *testing.T) {
-		invalidLength := 600
+		invalidLength := 2050
 		invalidMarketplaceItemDescriptions := []string{
 			"",
 			"a",

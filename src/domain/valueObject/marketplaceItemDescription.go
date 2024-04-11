@@ -11,7 +11,7 @@ func NewMarketplaceItemDescription(value string) (MarketplaceItemDescription, er
 		return "", errors.New("MarketplaceItemDescriptionTooSmall")
 	}
 
-	if len(value) > 512 {
+	if len(value) > 2048 {
 		return "", errors.New("MarketplaceItemDescriptionTooBig")
 	}
 
