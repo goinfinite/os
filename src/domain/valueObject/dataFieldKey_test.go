@@ -23,7 +23,7 @@ func TestDataFieldKey(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldKey", func(t *testing.T) {
-		invalidLength := 40
+		invalidLength := 70
 		invalidDataFieldKeys := []string{
 			"",
 			"./test",

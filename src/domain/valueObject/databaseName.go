@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const databaseNameRegex string = `^[0-9a-zA-Z_-]{3,32}$`
+const databaseNameRegex string = `^[\w_-]{3,32}$`
 
 type DatabaseName string
 

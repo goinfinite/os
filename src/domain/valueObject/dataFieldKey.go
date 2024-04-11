@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const dataFieldKeyRegex string = `^[0-9a-zA-Z_-]{1,32}$`
+const dataFieldKeyRegex string = `^[\w_-]{1,64}$`
 
 type DataFieldKey string
 

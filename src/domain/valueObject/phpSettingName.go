@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const phpSettingNameRegex string = `^[0-9a-zA-Z_\.-]{3,64}$`
+const phpSettingNameRegex string = `^[\w_\.-]{3,64}$`
 
 type PhpSettingName string
 
