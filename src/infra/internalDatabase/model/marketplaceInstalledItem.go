@@ -16,7 +16,6 @@ type MarketplaceInstalledItem struct {
 	Type             string
 	InstallDirectory string
 	ServiceNames     string
-	MappingsIds      string
 	AvatarUrl        string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
@@ -35,19 +34,12 @@ func (MarketplaceInstalledItem) ToModelFromDto(
 	}
 	svcNamesStr := strings.Join(svcNamesListStr, ",")
 
-	var mappingIdsListStr []string
-	for _, mapping := range dto.Mappings {
-		mappingIdsListStr = append(mappingIdsListStr, mapping.Id.String())
-	}
-	mappingIdsStr := strings.Join(mappingIdsListStr, ",")
-
 	nowTime := time.Now()
 	return MarketplaceInstalledItem{
 		Name:             dto.Name.String(),
 		Type:             dto.Type.String(),
 		InstallDirectory: dto.InstallDirectory.String(),
 		ServiceNames:     svcNamesStr,
-		MappingsIds:      mappingIdsStr,
 		AvatarUrl:        dto.AvatarUrl.String(),
 		CreatedAt:        nowTime,
 		UpdatedAt:        nowTime,

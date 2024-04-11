@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"github.com/speedianet/os/src/infra/infraData"
@@ -182,7 +181,6 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		catalogItem.Type,
 		installDir,
 		catalogItem.ServiceNames,
-		[]entity.Mapping{},
 		catalogItem.AvatarUrl,
 	)
 
