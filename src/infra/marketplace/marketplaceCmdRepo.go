@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"github.com/speedianet/os/src/infra/infraData"
@@ -32,17 +33,33 @@ func NewMarketplaceCmdRepo(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) getReceivedDataFieldsAsMap(
-	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
-) map[string]string {
-	receivedDataFieldsMap := map[string]string{}
+func (repo *MarketplaceCmdRepo) createRequiredServices(
+	catalogRequiredSvcNames []valueObject.ServiceName,
+) error {
+	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
+	svcCmdRepo := servicesInfra.ServicesCmdRepo{}
+	for _, requiredSvcName := range catalogRequiredSvcNames {
+		_, err := svcQueryRepo.GetByName(requiredSvcName)
+		if err == nil {
+			continue
+		}
 
-	for _, receivedDataField := range receivedDataFields {
-		receivedDataFieldKeyStr := receivedDataField.Key.String()
-		receivedDataFieldsMap[receivedDataFieldKeyStr] = receivedDataField.Value.String()
+		requiredSvcAutoCreateMapping := false
+		requiredService := dto.NewCreateInstallableService(
+			requiredSvcName,
+			nil,
+			nil,
+			nil,
+			requiredSvcAutoCreateMapping,
+		)
+
+		err = svcCmdRepo.CreateInstallable(requiredService)
+		if err != nil {
+			return errors.New("InstallRequiredServiceError: " + err.Error())
+		}
 	}
 
-	return receivedDataFieldsMap
+	return nil
 }
 
 func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
@@ -64,7 +81,7 @@ func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) getCmdStepWithReceivedDataFields(
+func (repo *MarketplaceCmdRepo) parseCmdStepWithReceivedDataFields(
 	cmdStep valueObject.MarketplaceItemInstallStep,
 	dataFieldsMap map[string]string,
 ) (string, error) {
@@ -87,65 +104,33 @@ func (repo *MarketplaceCmdRepo) getCmdStepWithReceivedDataFields(
 	return cmdStepWithDataField, nil
 }
 
-func (repo *MarketplaceCmdRepo) InstallItem(
-	installDto dto.InstallMarketplaceCatalogItem,
+func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
+	catalogCmdSteps []valueObject.MarketplaceItemInstallStep,
+	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
+	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
+	installDir valueObject.UnixFilePath,
 ) error {
-	catalogItem, err := repo.queryRepo.GetCatalogItemById(
-		installDto.Id,
-	)
-	if err != nil {
-		return errors.New("MarketplaceCatalogItemNotFound")
+	receivedDataFieldsMap := map[string]string{}
+
+	for _, receivedDataField := range receivedDataFields {
+		receivedDataFieldKeyStr := receivedDataField.Key.String()
+		receivedDataFieldsMap[receivedDataFieldKeyStr] = receivedDataField.Value.String()
 	}
 
-	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
-	svcCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, requiredSvcName := range catalogItem.ServiceNames {
-		_, err := svcQueryRepo.GetByName(requiredSvcName)
-		if err == nil {
-			continue
-		}
-
-		requiredSvcAutoCreateMapping := false
-		requiredService := dto.NewCreateInstallableService(
-			requiredSvcName,
-			nil,
-			nil,
-			nil,
-			requiredSvcAutoCreateMapping,
-		)
-
-		err = svcCmdRepo.CreateInstallable(requiredService)
-		if err != nil {
-			return errors.New("InstallRequiredServiceError: " + err.Error())
-		}
-	}
-
-	installDirStr := infraData.GlobalConfigs.PrimaryPublicDir
-	if installDto.InstallDirectory != nil {
-		vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-		vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
-		if err != nil {
-			return err
-		}
-
-		installDirStr = vhost.RootDirectory.String() + installDto.InstallDirectory.String()
-	}
-
-	receivedDataFieldsMap := repo.getReceivedDataFieldsAsMap(installDto.DataFields)
-	receivedDataFieldsMap["installDirectory"] = installDirStr
+	receivedDataFieldsMap["installDirectory"] = installDir.String()
 	receivedDataFieldsMap["installUuid"] = uuid.New().String()[:16]
 	repo.addMissingOptionalDataFieldsToMap(
 		&receivedDataFieldsMap,
-		catalogItem.DataFields,
+		catalogDataFields,
 	)
 
-	for _, cmdStep := range catalogItem.CmdSteps {
-		cmdStepRequiredDataFields, err := repo.getCmdStepWithReceivedDataFields(
+	for _, cmdStep := range catalogCmdSteps {
+		cmdStepRequiredDataFields, err := repo.parseCmdStepWithReceivedDataFields(
 			cmdStep,
 			receivedDataFieldsMap,
 		)
 		if err != nil {
-			return errors.New("GetCmdStepWithDataFieldsError: " + err.Error())
+			return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 		}
 
 		_, err = infraHelper.RunCmdWithSubShell(cmdStepRequiredDataFields)
@@ -156,45 +141,108 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		}
 	}
 
-	for _, catalogItemMapping := range catalogItem.Mappings {
+	return nil
+}
+
+func (repo *MarketplaceCmdRepo) createMappings(
+	hostname valueObject.Fqdn,
+	catalogMappings []valueObject.MarketplaceItemMapping,
+) error {
+	for _, catalogMapping := range catalogMappings {
 		createCatalogItemMapping := dto.NewCreateMapping(
-			installDto.Hostname,
-			catalogItemMapping.Path,
-			catalogItemMapping.MatchPattern,
-			catalogItemMapping.TargetType,
-			catalogItemMapping.TargetServiceName,
-			catalogItemMapping.TargetUrl,
-			catalogItemMapping.TargetHttpResponseCode,
-			catalogItemMapping.TargetInlineHtmlContent,
+			hostname,
+			catalogMapping.Path,
+			catalogMapping.MatchPattern,
+			catalogMapping.TargetType,
+			catalogMapping.TargetServiceName,
+			catalogMapping.TargetUrl,
+			catalogMapping.TargetHttpResponseCode,
+			catalogMapping.TargetInlineHtmlContent,
 		)
 
 		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err = vhostCmdRepo.CreateMapping(createCatalogItemMapping)
+		err := vhostCmdRepo.CreateMapping(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
 		}
 	}
 
-	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
-	installedItemDto := dto.NewPersistMarketplaceInstalledItem(
-		catalogItem.Name,
-		catalogItem.Type,
-		installDir,
-		catalogItem.ServiceNames,
-		catalogItem.AvatarUrl,
-	)
+	return nil
+}
 
-	installedItemModel, err := dbModel.MarketplaceInstalledItem{}.ToModelFromDto(
-		installedItemDto,
-	)
-	if err != nil {
-		return err
+func (repo *MarketplaceCmdRepo) persistInstalledItem(
+	catalogItem entity.MarketplaceCatalogItem,
+	installDir valueObject.UnixFilePath,
+) error {
+	svcNamesListStr := []string{}
+	for _, svcName := range catalogItem.ServiceNames {
+		svcNamesListStr = append(svcNamesListStr, svcName.String())
+	}
+	svcNamesStr := strings.Join(svcNamesListStr, ",")
+
+	installedItemModel := dbModel.MarketplaceInstalledItem{
+		Name:             catalogItem.Name.String(),
+		Type:             catalogItem.Type.String(),
+		InstallDirectory: installDir.String(),
+		ServiceNames:     svcNamesStr,
+		AvatarUrl:        catalogItem.AvatarUrl.String(),
 	}
 
-	err = repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
+	err := repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (repo *MarketplaceCmdRepo) InstallItem(
+	installDto dto.InstallMarketplaceCatalogItem,
+) error {
+	catalogItem, err := repo.queryRepo.GetCatalogItemById(
+		installDto.Id,
+	)
+	if err != nil {
+		return errors.New("MarketplaceCatalogItemNotFound")
+	}
+
+	err = repo.createRequiredServices(catalogItem.ServiceNames)
+	if err != nil {
+		return err
+	}
+
+	installDirStr := infraData.GlobalConfigs.PrimaryPublicDir
+	if installDto.InstallDirectory != nil {
+		vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+		vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+		if err != nil {
+			return err
+		}
+
+		installDirStr = installDto.InstallDirectory.String()
+		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
+		if !hasLeadingSlash {
+			installDirStr = "/" + installDirStr
+		}
+
+		installDirStr = vhost.RootDirectory.String() + installDirStr
+	}
+	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
+
+	err = repo.runCmdStepsWithDataFields(
+		catalogItem.CmdSteps,
+		catalogItem.DataFields,
+		installDto.DataFields,
+		installDir,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = repo.createMappings(installDto.Hostname, catalogItem.Mappings)
+	if err != nil {
+		return err
+	}
+
+	return repo.persistInstalledItem(catalogItem, installDir)
 }

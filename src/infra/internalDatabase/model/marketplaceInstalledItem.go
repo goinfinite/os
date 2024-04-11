@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -23,27 +22,6 @@ type MarketplaceInstalledItem struct {
 
 func (MarketplaceInstalledItem) TableName() string {
 	return "marketplace_installed_items"
-}
-
-func (MarketplaceInstalledItem) ToModelFromDto(
-	dto dto.PersistMarketplaceInstalledItem,
-) (MarketplaceInstalledItem, error) {
-	var svcNamesListStr []string
-	for _, svcName := range dto.ServiceNames {
-		svcNamesListStr = append(svcNamesListStr, svcName.String())
-	}
-	svcNamesStr := strings.Join(svcNamesListStr, ",")
-
-	nowTime := time.Now()
-	return MarketplaceInstalledItem{
-		Name:             dto.Name.String(),
-		Type:             dto.Type.String(),
-		InstallDirectory: dto.InstallDirectory.String(),
-		ServiceNames:     svcNamesStr,
-		AvatarUrl:        dto.AvatarUrl.String(),
-		CreatedAt:        nowTime,
-		UpdatedAt:        nowTime,
-	}, nil
 }
 
 func (model MarketplaceInstalledItem) ToEntity() (
