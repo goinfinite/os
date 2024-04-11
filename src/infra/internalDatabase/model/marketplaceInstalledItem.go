@@ -51,7 +51,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 ) {
 	var marketplaceInstalledItem entity.MarketplaceInstalledItem
 
-	id, err := valueObject.NewMarketplaceCatalogItemId(model.ID)
+	id, err := valueObject.NewMarketplaceInstalledItemId(model.ID)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
