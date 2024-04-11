@@ -208,7 +208,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	catalogItemId, _ := valueObject.NewMarketplaceItemId(1)
+	catalogItemId, _ := valueObject.NewMarketplaceCatalogItemId(1)
 
 	rawCatalogItemName, assertOk := catalogItemMap["name"].(string)
 	if !assertOk {
@@ -387,7 +387,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 		}
 
 		catalogItemIdInt := catalogItemFileIndex + 1
-		catalogItemId, _ := valueObject.NewMarketplaceItemId(catalogItemIdInt)
+		catalogItemId, _ := valueObject.NewMarketplaceCatalogItemId(catalogItemIdInt)
 		catalogItem.Id = catalogItemId
 
 		catalogItems = append(catalogItems, catalogItem)
@@ -397,7 +397,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetCatalogItemById(
-	id valueObject.MarketplaceItemId,
+	id valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 

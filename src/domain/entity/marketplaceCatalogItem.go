@@ -5,7 +5,7 @@ import (
 )
 
 type MarketplaceCatalogItem struct {
-	Id                 valueObject.MarketplaceItemId                 `json:"id" yaml:"id"`
+	Id                 valueObject.MarketplaceCatalogItemId          `json:"id" yaml:"id"`
 	Name               valueObject.MarketplaceItemName               `json:"name" yaml:"name"`
 	Type               valueObject.MarketplaceItemType               `json:"type" yaml:"type"`
 	Description        valueObject.MarketplaceItemDescription        `json:"description" yaml:"description"`
@@ -19,7 +19,7 @@ type MarketplaceCatalogItem struct {
 }
 
 func NewMarketplaceCatalogItem(
-	id valueObject.MarketplaceItemId,
+	id valueObject.MarketplaceCatalogItemId,
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
 	description valueObject.MarketplaceItemDescription,

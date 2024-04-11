@@ -5,19 +5,19 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id               valueObject.MarketplaceItemId   `json:"id"`
-	Name             valueObject.MarketplaceItemName `json:"name"`
-	Type             valueObject.MarketplaceItemType `json:"type"`
-	InstallDirectory valueObject.UnixFilePath        `json:"installDirectory"`
-	ServiceNames     []valueObject.ServiceName       `json:"serviceNames"`
-	Mappings         []Mapping                       `json:"mappings"`
-	AvatarUrl        valueObject.Url                 `json:"avatarUrl"`
-	CreatedAt        valueObject.UnixTime            `json:"createdAt"`
-	UpdatedAt        valueObject.UnixTime            `json:"updatedAt"`
+	Id               valueObject.MarketplaceCatalogItemId `json:"id"`
+	Name             valueObject.MarketplaceItemName      `json:"name"`
+	Type             valueObject.MarketplaceItemType      `json:"type"`
+	InstallDirectory valueObject.UnixFilePath             `json:"installDirectory"`
+	ServiceNames     []valueObject.ServiceName            `json:"serviceNames"`
+	Mappings         []Mapping                            `json:"mappings"`
+	AvatarUrl        valueObject.Url                      `json:"avatarUrl"`
+	CreatedAt        valueObject.UnixTime                 `json:"createdAt"`
+	UpdatedAt        valueObject.UnixTime                 `json:"updatedAt"`
 }
 
 func NewMarketplaceInstalledItem(
-	id valueObject.MarketplaceItemId,
+	id valueObject.MarketplaceCatalogItemId,
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
 	installDirectory valueObject.UnixFilePath,

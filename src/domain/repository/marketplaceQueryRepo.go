@@ -7,6 +7,6 @@ import (
 
 type MarketplaceQueryRepo interface {
 	GetCatalogItems() ([]entity.MarketplaceCatalogItem, error)
-	GetCatalogItemById(id valueObject.MarketplaceItemId) (entity.MarketplaceCatalogItem, error)
+	GetCatalogItemById(id valueObject.MarketplaceCatalogItemId) (entity.MarketplaceCatalogItem, error)
 	GetInstalledItems() ([]entity.MarketplaceInstalledItem, error)
 }

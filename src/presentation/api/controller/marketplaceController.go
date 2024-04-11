@@ -86,7 +86,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	id := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
+	id := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	var installDirPtr *valueObject.UnixFilePath
