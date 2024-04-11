@@ -13,7 +13,7 @@ import (
 
 func hasRequiredDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
-	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
+	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) bool {
 	receivedDataFieldsKeysStr := []string{}
 	for _, receivedDataField := range receivedDataFields {
@@ -24,12 +24,12 @@ func hasRequiredDataFields(
 	}
 
 	hasRequiredDataFields := true
-	for _, requiredDataField := range requiredDataFields {
-		if !requiredDataField.IsRequired {
+	for _, catalogDataField := range catalogDataFields {
+		if !catalogDataField.IsRequired {
 			continue
 		}
 
-		requiredDataFieldStr := requiredDataField.Key.String()
+		requiredDataFieldStr := catalogDataField.Key.String()
 		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
 			hasRequiredDataFields = false
 			break
