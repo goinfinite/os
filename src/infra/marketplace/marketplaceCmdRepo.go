@@ -18,8 +18,8 @@ import (
 )
 
 type MarketplaceCmdRepo struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	queryRepo       *MarketplaceQueryRepo
+	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
+	marketplaceQueryRepo *MarketplaceQueryRepo
 }
 
 func NewMarketplaceCmdRepo(
@@ -28,8 +28,8 @@ func NewMarketplaceCmdRepo(
 	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
 
 	return &MarketplaceCmdRepo{
-		persistentDbSvc: persistentDbSvc,
-		queryRepo:       marketplaceQueryRepo,
+		persistentDbSvc:      persistentDbSvc,
+		marketplaceQueryRepo: marketplaceQueryRepo,
 	}
 }
 
@@ -207,7 +207,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.queryRepo.GetCatalogItemById(
+	catalogItem, err := repo.marketplaceQueryRepo.GetCatalogItemById(
 		installDto.Id,
 	)
 	if err != nil {
