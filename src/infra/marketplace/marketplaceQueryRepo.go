@@ -138,7 +138,8 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 			rawTargetSvcName, assertOk := rawItemMappingMap["targetServiceName"].(string)
 			if !assertOk {
 				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingServiceName: %s", rawPath,
+					"InvalidMarketplaceCatalogItemMappingTargetServiceName: %s",
+					rawPath,
 				)
 				continue
 			}
