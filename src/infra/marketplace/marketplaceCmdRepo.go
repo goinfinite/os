@@ -86,17 +86,17 @@ func (repo *MarketplaceCmdRepo) parseCmdStepWithReceivedDataFields(
 	dataFieldsMap map[string]string,
 ) (string, error) {
 	cmdStepStr := cmdStep.String()
-	cmdStepRequiredDataFields, _ := infraHelper.GetAllRegexGroupMatches(
+	cmdStepDataFieldKeys, _ := infraHelper.GetAllRegexGroupMatches(
 		cmdStepStr,
 		`%(.*?)%`,
 	)
 
 	cmdStepWithDataField := cmdStepStr
-	for _, cmdStepRequiredDataField := range cmdStepRequiredDataFields {
-		requiredDataFieldValue := dataFieldsMap[cmdStepRequiredDataField]
+	for _, cmdStepDataFieldKey := range cmdStepDataFieldKeys {
+		requiredDataFieldValue := dataFieldsMap[cmdStepDataFieldKey]
 		cmdStepWithDataField = strings.ReplaceAll(
 			cmdStepWithDataField,
-			"%"+cmdStepRequiredDataField+"%",
+			"%"+cmdStepDataFieldKey+"%",
 			requiredDataFieldValue,
 		)
 	}
@@ -125,7 +125,7 @@ func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
 	)
 
 	for _, cmdStep := range catalogCmdSteps {
-		cmdStepRequiredDataFields, err := repo.parseCmdStepWithReceivedDataFields(
+		cmdStepWithDataFields, err := repo.parseCmdStepWithReceivedDataFields(
 			cmdStep,
 			receivedDataFieldsMap,
 		)
@@ -133,10 +133,10 @@ func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
 			return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(cmdStepRequiredDataFields)
+		_, err = infraHelper.RunCmdWithSubShell(cmdStepWithDataFields)
 		if err != nil {
 			return errors.New(
-				"RunCmdStepError (" + cmdStepRequiredDataFields + "): " + err.Error(),
+				"RunCmdStepError (" + cmdStepWithDataFields + "): " + err.Error(),
 			)
 		}
 	}
