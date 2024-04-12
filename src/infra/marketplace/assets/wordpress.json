@@ -32,9 +32,12 @@
         "rm -rf %installDirectory%/wpDbCredentials"
     ],
     "estimatedSizeBytes": 1000000000,
-    "avatarUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/1200px-WordPress_blue_logo.svg.png",
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-logo-blue.svg",
     "screenshotUrls": [
-        "https://assets-global.website-files.com/6411daab15c8848a5e4e0153/641b3f9ce3cdde01161582b2_629712455650ab2e848fe8c4_logo-wordpress.png",
-        "https://kinsta.com/wp-content/uploads/2018/02/what-is-wordpress.png"
+        "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",
+        "https://speedia.net/assets/os/marketplace/wordpress/wp-themes.jpg",
+        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-1.jpg",
+        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-2.jpg",
+        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-3.jp"
     ]
 }
