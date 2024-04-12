@@ -60,142 +60,288 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 	return catalogItemMap, nil
 }
 
-func (repo *MarketplaceQueryRepo) catalogItemMappingFactory(
-	catalogItemMappingMap map[string]interface{},
-) (valueObject.MarketplaceItemMapping, error) {
-	var mapping valueObject.MarketplaceItemMapping
+func (repo *MarketplaceQueryRepo) parseCatalogItemServiceNames(
+	catalogItemSvcNamesMap interface{},
+) ([]valueObject.ServiceName, error) {
+	itemSvcNames := []valueObject.ServiceName{}
 
-	rawPath, assertOk := catalogItemMappingMap["path"].(string)
+	rawItemSvcNames, assertOk := catalogItemSvcNamesMap.([]interface{})
 	if !assertOk {
-		return mapping, errors.New("InvalidMappingPath")
-	}
-	path, err := valueObject.NewMappingPath(rawPath)
-	if err != nil {
-		return mapping, err
+		return itemSvcNames, errors.New("InvalidMarketplaceCatalogItemServiceNames")
 	}
 
-	rawMatchPattern, assertOk := catalogItemMappingMap["matchPattern"].(string)
-	if !assertOk {
-		return mapping, errors.New("InvalidMappingMatchPattern")
-	}
-	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
-	if err != nil {
-		return mapping, err
-	}
-
-	rawTargetType, assertOk := catalogItemMappingMap["targetType"].(string)
-	if !assertOk {
-		return mapping, errors.New("InvalidMappingTargetType")
-	}
-	targetType, err := valueObject.NewMappingTargetType(rawTargetType)
-	if err != nil {
-		return mapping, err
-	}
-
-	var targetSvcNamePtr *valueObject.ServiceName
-	if catalogItemMappingMap["targetServiceName"] != nil {
-		rawTargetSvcName, assertOk := catalogItemMappingMap["targetServiceName"].(string)
-		if !assertOk {
-			return mapping, errors.New("InvalidMappingTargetSvcName")
-		}
-		targetSvcName, err := valueObject.NewServiceName(rawTargetSvcName)
+	for _, rawItemSvcName := range rawItemSvcNames {
+		itemSvcName, err := valueObject.NewServiceName(rawItemSvcName.(string))
 		if err != nil {
-			return mapping, err
+			log.Printf("%s: %s", err.Error(), rawItemSvcName)
+			continue
 		}
-		targetSvcNamePtr = &targetSvcName
+
+		itemSvcNames = append(itemSvcNames, itemSvcName)
 	}
 
-	var targetUrlPtr *valueObject.Url
-	if catalogItemMappingMap["targetUrl"] != nil {
-		rawTargetUrl, assertOk := catalogItemMappingMap["targetUrl"].(string)
-		if !assertOk {
-			return mapping, errors.New("InvalidMappingTargetUrl")
-		}
-		targetUrl, err := valueObject.NewUrl(rawTargetUrl)
-		if err != nil {
-			return mapping, err
-		}
-		targetUrlPtr = &targetUrl
-	}
-
-	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
-	if catalogItemMappingMap["targetHttpResponseCode"] != nil {
-		rawTargetHttpResponseCode, assertOk := catalogItemMappingMap["targetHttpResponseCode"].(string)
-		if !assertOk {
-			return mapping, errors.New("InvalidMappingTargetHttpResponseCode")
-		}
-		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(rawTargetHttpResponseCode)
-		if err != nil {
-			return mapping, err
-		}
-		targetHttpResponseCodePtr = &targetHttpResponseCode
-	}
-
-	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-	if catalogItemMappingMap["targetInlineHtmlContent"] != nil {
-		rawTargetInlineHtmlContent, assertOk := catalogItemMappingMap["targetInlineHtmlContent"].(string)
-		if !assertOk {
-			return mapping, errors.New("InvalidMappingTargetInlineHtmlContent")
-		}
-		targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(rawTargetInlineHtmlContent)
-		if err != nil {
-			return mapping, err
-		}
-		targetInlineHtmlContentPtr = &targetInlineHtmlContent
-	}
-
-	return valueObject.NewMarketplaceItemMapping(
-		path,
-		matchPattern,
-		targetType,
-		targetSvcNamePtr,
-		targetUrlPtr,
-		targetHttpResponseCodePtr,
-		targetInlineHtmlContentPtr,
-	), nil
+	return itemSvcNames, nil
 }
 
-func (repo *MarketplaceQueryRepo) catalogItemDataFieldFactory(
-	catalogItemDataFieldMap map[string]interface{},
-) (valueObject.MarketplaceCatalogItemDataField, error) {
-	var dataField valueObject.MarketplaceCatalogItemDataField
+func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
+	catalogItemMappingsMap interface{},
+) ([]valueObject.MarketplaceItemMapping, error) {
+	itemMappings := []valueObject.MarketplaceItemMapping{}
 
-	rawKey, assertOk := catalogItemDataFieldMap["key"].(string)
+	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
 	if !assertOk {
-		return dataField, errors.New("InvalidDataFieldKey")
-	}
-	key, err := valueObject.NewDataFieldKey(rawKey)
-	if err != nil {
-		return dataField, err
+		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
 	}
 
-	var defaultValuePtr *valueObject.DataFieldValue
-	if catalogItemDataFieldMap["defaultValue"] != nil {
-		rawDefaultValue, assertOk := catalogItemDataFieldMap["defaultValue"].(string)
+	for _, rawItemMapping := range rawItemMappings {
+		rawItemMappingMap, assertOk := rawItemMapping.(map[string]interface{})
 		if !assertOk {
-			return dataField, errors.New("InvalidDataFieldDefaultValue")
+			log.Printf("InvalidMarketplaceCatalogItemMapping: %+v", rawItemMapping)
+			continue
 		}
-		defaultValue, err := valueObject.NewDataFieldValue(rawDefaultValue)
+
+		rawPath, assertOk := rawItemMappingMap["path"].(string)
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemMappingPath: %s", rawPath)
+			continue
+		}
+		path, err := valueObject.NewMappingPath(rawPath)
 		if err != nil {
-			return dataField, err
+			log.Printf("%s (%s): %s", err.Error(), rawPath, rawPath)
+			continue
 		}
-		defaultValuePtr = &defaultValue
-	}
 
-	isRequired := false
-	if catalogItemDataFieldMap["isRequired"] != nil {
-		rawIsRequired, assertOk := catalogItemDataFieldMap["isRequired"].(bool)
+		rawMatchPattern, assertOk := rawItemMappingMap["matchPattern"].(string)
 		if !assertOk {
-			return dataField, errors.New("InvalidDataFieldIsRequired")
+			log.Printf("InvalidMarketplaceCatalogItemMappingMatchPattern: %s", rawPath)
+			continue
 		}
-		isRequired = rawIsRequired
+		matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
+		if err != nil {
+			log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
+			continue
+		}
+
+		rawTargetType, assertOk := rawItemMappingMap["targetType"].(string)
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemMappingTargetType: %s", rawPath)
+			continue
+		}
+		targetType, err := valueObject.NewMappingTargetType(rawTargetType)
+		if err != nil {
+			log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
+			continue
+		}
+
+		var targetSvcNamePtr *valueObject.ServiceName
+		if rawItemMappingMap["targetServiceName"] != nil {
+			rawTargetSvcName, assertOk := rawItemMappingMap["targetServiceName"].(string)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemMappingServiceName: %s", rawPath,
+				)
+				continue
+			}
+			targetSvcName, err := valueObject.NewServiceName(rawTargetSvcName)
+			if err != nil {
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetSvcName)
+				continue
+			}
+			targetSvcNamePtr = &targetSvcName
+		}
+
+		var targetUrlPtr *valueObject.Url
+		if rawItemMappingMap["targetUrl"] != nil {
+			rawTargetUrl, assertOk := rawItemMappingMap["targetUrl"].(string)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemMappingTargetUrl: %s", rawPath,
+				)
+				continue
+			}
+			targetUrl, err := valueObject.NewUrl(rawTargetUrl)
+			if err != nil {
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetUrl)
+				continue
+			}
+			targetUrlPtr = &targetUrl
+		}
+
+		var targetHttpResCodePtr *valueObject.HttpResponseCode
+		if rawItemMappingMap["targetHttpResponseCode"] != nil {
+			rawTargetHttpResCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemMappingTargetHttpResponseCode: %s",
+					rawPath,
+				)
+				continue
+			}
+			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+				rawTargetHttpResCode,
+			)
+			if err != nil {
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetHttpResCode)
+				continue
+			}
+			targetHttpResCodePtr = &targetHttpResponseCode
+		}
+
+		var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
+		if rawItemMappingMap["targetInlineHtmlContent"] != nil {
+			rawTargetInlineHtmlContent, assertOk := rawItemMappingMap["targetInlineHtmlContent"].(string)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemMappingTargetInlinteHtmlContent: %s",
+					rawPath,
+				)
+				continue
+			}
+			targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(
+				rawTargetInlineHtmlContent,
+			)
+			if err != nil {
+				log.Printf(
+					"%s (%s): %s", err.Error(), rawPath, rawTargetInlineHtmlContent,
+				)
+				continue
+			}
+			targetInlineHtmlContentPtr = &targetInlineHtmlContent
+		}
+
+		itemMapping := valueObject.NewMarketplaceItemMapping(
+			path,
+			matchPattern,
+			targetType,
+			targetSvcNamePtr,
+			targetUrlPtr,
+			targetHttpResCodePtr,
+			targetInlineHtmlContentPtr,
+		)
+		itemMappings = append(itemMappings, itemMapping)
 	}
 
-	return valueObject.NewMarketplaceCatalogItemDataField(
-		key,
-		defaultValuePtr,
-		isRequired,
-	)
+	return itemMappings, nil
+}
+
+func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
+	catalogItemDataFieldsMap interface{},
+) ([]valueObject.MarketplaceCatalogItemDataField, error) {
+	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
+
+	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
+	if !assertOk {
+		return itemDataFields, errors.New("InvalidMarketplaceCatalogItemDataFields")
+	}
+
+	for _, rawItemDataField := range rawItemDataFields {
+		rawItemDataFieldMap, assertOk := rawItemDataField.(map[string]interface{})
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemDataField: %+v", rawItemDataField)
+			continue
+		}
+
+		rawKey, assertOk := rawItemDataFieldMap["key"].(string)
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemDataFieldKey: %s", rawKey)
+			continue
+		}
+		key, err := valueObject.NewDataFieldKey(rawKey)
+		if err != nil {
+			log.Printf("%s (%s): %s", err.Error(), rawKey, rawKey)
+			continue
+		}
+
+		var defaultValuePtr *valueObject.DataFieldValue
+		if rawItemDataFieldMap["defaultValue"] != nil {
+			rawDefaultValue, assertOk := rawItemDataFieldMap["defaultValue"].(string)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemDataFieldDefaultValue: %s", rawKey,
+				)
+				continue
+			}
+			defaultValue, err := valueObject.NewDataFieldValue(rawDefaultValue)
+			if err != nil {
+				log.Printf("%s (%s): %s", err.Error(), rawKey, rawDefaultValue)
+				continue
+			}
+			defaultValuePtr = &defaultValue
+		}
+
+		isRequired := false
+		if rawItemDataFieldMap["isRequired"] != nil {
+			rawIsRequired, assertOk := rawItemDataFieldMap["isRequired"].(bool)
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemDataFieldIsRequired: %s", rawKey,
+				)
+				continue
+			}
+			isRequired = rawIsRequired
+		}
+
+		itemDataField, err := valueObject.NewMarketplaceCatalogItemDataField(
+			key,
+			defaultValuePtr,
+			isRequired,
+		)
+		if err != nil {
+			log.Printf("%s (%s)", err.Error(), rawKey)
+			continue
+		}
+		itemDataFields = append(itemDataFields, itemDataField)
+	}
+
+	return itemDataFields, nil
+}
+
+func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
+	catalogItemCmdStepsMap interface{},
+) ([]valueObject.MarketplaceItemInstallStep, error) {
+	itemCmdSteps := []valueObject.MarketplaceItemInstallStep{}
+
+	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
+	if !assertOk {
+		return itemCmdSteps, errors.New("InvalidMarketplaceCatalogItemCmdSteps")
+	}
+
+	for _, rawItemCmdStep := range rawItemCmdSteps {
+		itemCmdStep, err := valueObject.NewMarketplaceItemInstallStep(
+			rawItemCmdStep.(string),
+		)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawItemCmdStep)
+			continue
+		}
+
+		itemCmdSteps = append(itemCmdSteps, itemCmdStep)
+	}
+
+	return itemCmdSteps, nil
+}
+
+func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
+	catalogItemUrlsMap interface{},
+) ([]valueObject.Url, error) {
+	itemUrls := []valueObject.Url{}
+
+	rawItemUrls, assertOk := catalogItemUrlsMap.([]interface{})
+	if !assertOk {
+		return itemUrls, errors.New("InvalidMarketplaceCatalogItemUrls")
+	}
+
+	for _, rawItemUrl := range rawItemUrls {
+		itemUrl, err := valueObject.NewUrl(rawItemUrl.(string))
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawItemUrl)
+			continue
+		}
+
+		itemUrls = append(itemUrls, itemUrl)
+	}
+
+	return itemUrls, nil
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
@@ -235,64 +381,32 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	rawCatalogItemSvcNames, assertOk := catalogItemMap["serviceNames"].([]interface{})
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemServiceNames")
-	}
-	catalogItemSvcNames := []valueObject.ServiceName{}
-	for _, rawCatalogItemSvcName := range rawCatalogItemSvcNames {
-		catalogItemSvcName, err := valueObject.NewServiceName(rawCatalogItemSvcName.(string))
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawCatalogItemSvcName)
-			continue
-		}
-
-		catalogItemSvcNames = append(catalogItemSvcNames, catalogItemSvcName)
+	catalogItemSvcNames, err := repo.parseCatalogItemServiceNames(
+		catalogItemMap["serviceNames"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
 
-	rawCatalogItemMappings, assertOk := catalogItemMap["mappings"].([]interface{})
-	if !assertOk {
-		log.Printf("InvalidMarketplaceCatalogItemMappings")
-	}
-	catalogItemMappings := []valueObject.MarketplaceItemMapping{}
-	for _, rawCatalogItemMapping := range rawCatalogItemMappings {
-		catalogItemMapping, err := repo.catalogItemMappingFactory(rawCatalogItemMapping.(map[string]interface{}))
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawCatalogItemMapping)
-			continue
-		}
-
-		catalogItemMappings = append(catalogItemMappings, catalogItemMapping)
+	catalogItemMappings, err := repo.parseCatalogItemMappings(
+		catalogItemMap["mappings"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
 
-	rawCatalogItemDataFields, assertOk := catalogItemMap["dataFields"].([]interface{})
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemDataFields")
-	}
-	catalogItemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
-	for _, rawCatalogItemDataField := range rawCatalogItemDataFields {
-		catalogItemDataField, err := repo.catalogItemDataFieldFactory(rawCatalogItemDataField.(map[string]interface{}))
-		if err != nil {
-			log.Printf("%s: %v", err.Error(), rawCatalogItemDataField)
-			return catalogItem, err
-		}
-
-		catalogItemDataFields = append(catalogItemDataFields, catalogItemDataField)
+	catalogItemDataFields, err := repo.parseCatalogItemDataFields(
+		catalogItemMap["dataFields"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
 
-	rawCatalogItemCmdSteps, assertOk := catalogItemMap["cmdSteps"].([]interface{})
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemCmdSteps")
-	}
-	catalogItemCmdSteps := []valueObject.MarketplaceItemInstallStep{}
-	for _, rawCatalogItemCmdStep := range rawCatalogItemCmdSteps {
-		catalogItemCmdStep, err := valueObject.NewMarketplaceItemInstallStep(rawCatalogItemCmdStep.(string))
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawCatalogItemCmdStep)
-			return catalogItem, err
-		}
-
-		catalogItemCmdSteps = append(catalogItemCmdSteps, catalogItemCmdStep)
+	catalogItemCmdSteps, err := repo.parseCatalogItemCmdSteps(
+		catalogItemMap["cmdSteps"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
 
 	rawCatalogEstimatedSizeBytes, assertOk := catalogItemMap["estimatedSizeBytes"].(float64)
@@ -310,19 +424,11 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	rawCatalogItemScreenshotUrls, assertOk := catalogItemMap["screenshotUrls"].([]interface{})
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemScreenshotUrls")
-	}
-	catalogItemScreenshotUrls := []valueObject.Url{}
-	for _, rawCatalogItemScreenshotUrl := range rawCatalogItemScreenshotUrls {
-		catalogItemScreenshotUrl, err := valueObject.NewUrl(rawCatalogItemScreenshotUrl.(string))
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawCatalogItemScreenshotUrl)
-			continue
-		}
-
-		catalogItemScreenshotUrls = append(catalogItemScreenshotUrls, catalogItemScreenshotUrl)
+	catalogItemScreenshotUrls, err := repo.parseCatalogItemScreenshotUrls(
+		catalogItemMap["screenshotUrls"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
 
 	var placeholderCatalogItemId valueObject.MarketplaceCatalogItemId
