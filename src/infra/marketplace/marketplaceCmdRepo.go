@@ -81,27 +81,34 @@ func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) parseCmdStepWithReceivedDataFields(
-	cmdStep valueObject.MarketplaceItemInstallStep,
+func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
+	cmdSteps []valueObject.MarketplaceItemInstallStep,
 	dataFieldsMap map[string]string,
-) (string, error) {
-	cmdStepStr := cmdStep.String()
-	cmdStepDataFieldKeys, _ := infraHelper.GetAllRegexGroupMatches(
-		cmdStepStr,
-		`%(.*?)%`,
-	)
+) ([]valueObject.MarketplaceItemInstallStep, error) {
+	cmdStepsWithDataFields := []valueObject.MarketplaceItemInstallStep{}
 
-	cmdStepWithDataField := cmdStepStr
-	for _, cmdStepDataFieldKey := range cmdStepDataFieldKeys {
-		requiredDataFieldValue := dataFieldsMap[cmdStepDataFieldKey]
-		cmdStepWithDataField = strings.ReplaceAll(
-			cmdStepWithDataField,
-			"%"+cmdStepDataFieldKey+"%",
-			requiredDataFieldValue,
+	for _, cmdStep := range cmdSteps {
+		cmdStepStr := cmdStep.String()
+		cmdStepDataFieldKeys, _ := infraHelper.GetAllRegexGroupMatches(
+			cmdStepStr,
+			`%(.*?)%`,
 		)
+
+		for _, cmdStepDataFieldKey := range cmdStepDataFieldKeys {
+			dataFieldValue := dataFieldsMap[cmdStepDataFieldKey]
+			cmdStepWithDataFieldStr := strings.ReplaceAll(
+				cmdStepStr,
+				"%"+cmdStepDataFieldKey+"%",
+				dataFieldValue,
+			)
+			cmdStepStr = cmdStepWithDataFieldStr
+		}
+
+		cmdStepWithDataField, _ := valueObject.NewMarketplaceItemInstallStep(cmdStepStr)
+		cmdStepsWithDataFields = append(cmdStepsWithDataFields, cmdStepWithDataField)
 	}
 
-	return cmdStepWithDataField, nil
+	return cmdStepsWithDataFields, nil
 }
 
 func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
@@ -124,19 +131,20 @@ func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
 		catalogDataFields,
 	)
 
-	for _, cmdStep := range catalogCmdSteps {
-		cmdStepWithDataFields, err := repo.parseCmdStepWithReceivedDataFields(
-			cmdStep,
-			receivedDataFieldsMap,
-		)
-		if err != nil {
-			return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
-		}
+	cmdStepWithDataFields, err := repo.parseCmdStepsWithDataFields(
+		catalogCmdSteps,
+		receivedDataFieldsMap,
+	)
+	if err != nil {
+		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	}
 
-		_, err = infraHelper.RunCmdWithSubShell(cmdStepWithDataFields)
+	for _, cmdStepWithDataField := range cmdStepWithDataFields {
+		cmdStepWithDataFieldStr := cmdStepWithDataField.String()
+		_, err = infraHelper.RunCmdWithSubShell(cmdStepWithDataFieldStr)
 		if err != nil {
 			return errors.New(
-				"RunCmdStepError (" + cmdStepWithDataFields + "): " + err.Error(),
+				"RunCmdStepError (" + cmdStepWithDataFieldStr + "): " + err.Error(),
 			)
 		}
 	}
