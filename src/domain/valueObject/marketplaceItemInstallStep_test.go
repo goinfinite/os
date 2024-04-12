@@ -26,7 +26,7 @@ func TestMarketplaceItemInstallStep(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemInstallStep", func(t *testing.T) {
-		invalidLength := 700
+		invalidLength := 4100
 		invalidMarketplaceItemInstallSteps := []string{
 			"",
 			testHelpers.GenerateString(invalidLength),

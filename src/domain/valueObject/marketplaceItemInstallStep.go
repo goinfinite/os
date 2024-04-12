@@ -11,7 +11,7 @@ func NewMarketplaceItemInstallStep(value string) (MarketplaceItemInstallStep, er
 		return "", errors.New("MarketplaceItemInstallStepTooSmall")
 	}
 
-	if len(value) > 512 {
+	if len(value) > 4096 {
 		return "", errors.New("MarketplaceItemInstallStepTooBig")
 	}
 
