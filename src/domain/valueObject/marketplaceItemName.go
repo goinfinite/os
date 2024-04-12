@@ -8,7 +8,7 @@ import (
 
 type MarketplaceItemName string
 
-const marketplaceItemNameRegexExpression = `^[a-z0-9\-]{5,30}$`
+const marketplaceItemNameRegexExpression = `^\p{L}[\p{L}\'\ \-]{3,30}$`
 
 func NewMarketplaceItemName(value string) (MarketplaceItemName, error) {
 	value = strings.ToLower(value)

@@ -38,9 +38,7 @@ func TestMarketplaceItemName(t *testing.T) {
 			".",
 			"..",
 			"/",
-			"name with space",
 			"A very long name without any reason just for the test",
-			"ççççççç",
 			"<root>",
 		}
 		for _, min := range invalidMarketplaceItemNames {
