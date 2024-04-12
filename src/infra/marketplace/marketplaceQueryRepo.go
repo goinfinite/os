@@ -208,8 +208,6 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	catalogItemId, _ := valueObject.NewMarketplaceCatalogItemId(1)
-
 	rawCatalogItemName, assertOk := catalogItemMap["name"].(string)
 	if !assertOk {
 		return catalogItem, errors.New("InvalidMarketplaceCatalogItemName")
@@ -327,8 +325,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		catalogItemScreenshotUrls = append(catalogItemScreenshotUrls, catalogItemScreenshotUrl)
 	}
 
+	var placeholderCatalogItemId valueObject.MarketplaceCatalogItemId
 	return entity.NewMarketplaceCatalogItem(
-		catalogItemId,
+		placeholderCatalogItemId,
 		catalogItemName,
 		catalogItemType,
 		catalogItemDescription,
