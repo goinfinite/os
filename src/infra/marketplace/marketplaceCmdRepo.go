@@ -168,13 +168,13 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	for preparedCmdStepIndex, preparedCmdStep := range preparedCmdSteps {
-		preparedCmdStepStr := preparedCmdStep.String()
-		_, err = infraHelper.RunCmdWithSubShell(preparedCmdStepStr)
+	for stepIndex, cmdStep := range preparedCmdSteps {
+		cmdStepStr := cmdStep.String()
+		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
 		if err != nil {
-			preparedCmdStepIndexStr := strconv.Itoa(preparedCmdStepIndex)
+			stepIndexStr := strconv.Itoa(stepIndex)
 			return errors.New(
-				"RunCmdStepError (" + preparedCmdStepIndexStr + "): " + err.Error(),
+				"RunCmdStepError (" + stepIndexStr + "): " + err.Error(),
 			)
 		}
 	}
