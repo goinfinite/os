@@ -84,11 +84,11 @@ func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 		}
 
 		catalogDataFieldKeyStr := catalogDataField.Key.String()
-		alreadyFilled := slices.Contains(
+		catalogDataFieldAlreadyFilled := slices.Contains(
 			receivedDataFieldsKeys,
 			catalogDataFieldKeyStr,
 		)
-		if alreadyFilled {
+		if catalogDataFieldAlreadyFilled {
 			continue
 		}
 
