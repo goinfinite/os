@@ -117,6 +117,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	installDir valueObject.UnixFilePath,
+	installUuid string,
 ) error {
 	receivedDataFieldsMap := map[string]string{}
 
@@ -126,7 +127,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	}
 
 	receivedDataFieldsMap["installDirectory"] = installDir.String()
-	receivedDataFieldsMap["installUuid"] = uuid.New().String()[:16]
+	receivedDataFieldsMap["installUuid"] = installUuid
 	repo.addMissingOptionalDataFieldsToMap(
 		&receivedDataFieldsMap,
 		catalogDataFields,
@@ -183,6 +184,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
 	installDir valueObject.UnixFilePath,
+	installUuid string,
 ) error {
 	svcNamesListStr := []string{}
 	for _, svcName := range catalogItem.ServiceNames {
@@ -194,6 +196,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Name:             catalogItem.Name.String(),
 		Type:             catalogItem.Type.String(),
 		InstallDirectory: installDir.String(),
+		InstallUuid:      installUuid,
 		ServiceNames:     svcNamesStr,
 		AvatarUrl:        catalogItem.AvatarUrl.String(),
 	}
@@ -239,11 +242,14 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
+	installUuid := uuid.New().String()[:16]
+
 	err = repo.runCmdSteps(
 		catalogItem.CmdSteps,
 		catalogItem.DataFields,
 		installDto.DataFields,
 		installDir,
+		installUuid,
 	)
 	if err != nil {
 		return err
@@ -254,5 +260,5 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	return repo.persistInstalledItem(catalogItem, installDir)
+	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
 }

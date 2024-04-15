@@ -14,6 +14,7 @@ type MarketplaceInstalledItem struct {
 	Name             string
 	Type             string
 	InstallDirectory string
+	InstallUuid      string
 	ServiceNames     string
 	AvatarUrl        string
 	CreatedAt        time.Time
