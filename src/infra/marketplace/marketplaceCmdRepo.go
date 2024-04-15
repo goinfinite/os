@@ -81,7 +81,7 @@ func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
+func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 	cmdSteps []valueObject.MarketplaceItemCmdStep,
 	dataFieldsMap map[string]string,
 ) ([]valueObject.MarketplaceItemCmdStep, error) {
@@ -131,7 +131,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		catalogDataFields,
 	)
 
-	cmdStepWithDataFields, err := repo.parseCmdStepsWithDataFields(
+	cmdStepWithDataFields, err := repo.replaceCmdStepsPlaceholders(
 		catalogCmdSteps,
 		receivedDataFieldsMap,
 	)
