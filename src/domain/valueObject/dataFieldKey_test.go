@@ -27,6 +27,8 @@ func TestDataFieldKey(t *testing.T) {
 		invalidDataFieldKeys := []string{
 			"",
 			"./test",
+			"-key",
+			"anotherkey-",
 			testHelpers.GenerateString(invalidLength),
 		}
 
