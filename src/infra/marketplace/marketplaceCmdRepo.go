@@ -3,6 +3,7 @@ package marketplaceInfra
 import (
 	"errors"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -139,12 +140,13 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	for _, preparedCmdStep := range preparedCmdSteps {
+	for preparedCmdStepIndex, preparedCmdStep := range preparedCmdSteps {
 		preparedCmdStepStr := preparedCmdStep.String()
 		_, err = infraHelper.RunCmdWithSubShell(preparedCmdStepStr)
 		if err != nil {
+			preparedCmdStepIndexStr := strconv.Itoa(preparedCmdStepIndex)
 			return errors.New(
-				"RunCmdStepError (" + preparedCmdStepStr + "): " + err.Error(),
+				"RunCmdStepError (" + preparedCmdStepIndexStr + "): " + err.Error(),
 			)
 		}
 	}
