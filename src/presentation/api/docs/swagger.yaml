@@ -96,6 +96,8 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
+      targetInlineHtmlContent:
+        type: string
       targetServiceName:
         type: string
       targetType:
@@ -137,6 +139,19 @@ definitions:
       destinationPath:
         type: string
       sourcePath:
+        type: string
+    type: object
+  dto.InstallMarketplaceCatalogItem:
+    properties:
+      dataFields:
+        items:
+          $ref: '#/definitions/valueObject.MarketplaceInstallableItemDataField'
+        type: array
+      hostname:
+        type: string
+      id:
+        type: integer
+      installDirectory:
         type: string
     type: object
   dto.Login:
@@ -331,6 +346,8 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
+      targetInlineHtmlContent:
+        type: string
       targetServiceName:
         type: string
       targetType:
@@ -399,18 +416,18 @@ definitions:
         items:
           type: string
         type: array
+      certificateAuthority:
+        type: string
       certificateContent:
         type: string
       commonName:
         type: string
       expiresAt:
         type: integer
-      id:
-        type: string
-      isCA:
-        type: boolean
       issuedAt:
         type: integer
+      sslId:
+        type: string
     type: object
   entity.SslPair:
     properties:
@@ -496,6 +513,13 @@ definitions:
         type: integer
       storageTotal:
         type: integer
+    type: object
+  valueObject.MarketplaceInstallableItemDataField:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
     type: object
   valueObject.PortBinding:
     properties:
@@ -1091,6 +1115,61 @@ paths:
       summary: UploadFiles
       tags:
       - files
+  /marketplace/catalog/:
+    get:
+      consumes:
+      - application/json
+      description: List marketplace catalog services names, types, steps and more.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: GetMarketplaceCatalog
+      tags:
+      - marketplace
+    post:
+      consumes:
+      - application/json
+      description: Install a marketplace catalog item.
+      parameters:
+      - description: InstallMarketplaceCatalogItem (installDirectory is optional)
+        in: body
+        name: InstallMarketplaceCatalogItem
+        required: true
+        schema:
+          $ref: '#/definitions/dto.InstallMarketplaceCatalogItem'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: MarketplaceCatalogItemInstalled
+          schema:
+            type: object
+      summary: InstallMarketplaceCatalogItem
+      tags:
+      - marketplace
+  /marketplace/installed/:
+    get:
+      consumes:
+      - application/json
+      description: List marketplace installed items.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: GetMarketplaceInstalledItems
+      tags:
+      - marketplace
   /o11y/overview/:
     get:
       consumes:
