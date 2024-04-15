@@ -84,7 +84,11 @@ func (repo *MarketplaceCmdRepo) getMissingOptionalDataFields(
 		}
 
 		catalogDataFieldKeyStr := catalogDataField.Key.String()
-		if slices.Contains(receivedDataFieldsKeys, catalogDataFieldKeyStr) {
+		alreadyFilled := slices.Contains(
+			receivedDataFieldsKeys,
+			catalogDataFieldKeyStr,
+		)
+		if alreadyFilled {
 			continue
 		}
 
