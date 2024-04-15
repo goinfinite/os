@@ -3,6 +3,7 @@ package marketplaceInfra
 import (
 	"errors"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -63,30 +64,61 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
-	receivedDataFieldsMap *map[string]string,
-	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
-) {
-	for _, requiredDataField := range requiredDataFields {
-		if requiredDataField.IsRequired {
-			continue
-		}
+func (repo *MarketplaceCmdRepo) getMissingOptionalDataFields(
+	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
+	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
+) ([]valueObject.MarketplaceInstallableItemDataField, error) {
+	missingCatalogOptionalDataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
-		requiredKeyStr := requiredDataField.Key.String()
-		if len((*receivedDataFieldsMap)[requiredKeyStr]) != 0 {
-			continue
-		}
-
-		requiredDefaultValueStr := requiredDataField.DefaultValue.String()
-		(*receivedDataFieldsMap)[requiredKeyStr] = requiredDefaultValueStr
+	receivedDataFieldsKeys := []string{}
+	for _, receivedDataField := range receivedDataFields {
+		receivedDataFieldsKeys = append(
+			receivedDataFieldsKeys,
+			receivedDataField.Key.String(),
+		)
 	}
+
+	for _, catalogDataField := range catalogDataFields {
+		if catalogDataField.IsRequired {
+			continue
+		}
+
+		catalogDataFieldKeyStr := catalogDataField.Key.String()
+		if slices.Contains(receivedDataFieldsKeys, catalogDataFieldKeyStr) {
+			continue
+		}
+
+		if catalogDataField.DefaultValue == nil {
+			return missingCatalogOptionalDataFields, errors.New(
+				"CatalogOptionalDataFieldWithoutDefaultValue: " +
+					catalogDataFieldKeyStr,
+			)
+		}
+
+		catalogDataFieldAsInstallable, _ := valueObject.NewMarketplaceInstallableItemDataField(
+			catalogDataField.Key,
+			*catalogDataField.DefaultValue,
+		)
+		missingCatalogOptionalDataFields = append(
+			missingCatalogOptionalDataFields,
+			catalogDataFieldAsInstallable,
+		)
+	}
+
+	return missingCatalogOptionalDataFields, nil
 }
 
 func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 	cmdSteps []valueObject.MarketplaceItemCmdStep,
-	dataFieldsMap map[string]string,
+	dataFields []valueObject.MarketplaceInstallableItemDataField,
 ) ([]valueObject.MarketplaceItemCmdStep, error) {
 	cmdStepsWithDataFields := []valueObject.MarketplaceItemCmdStep{}
+
+	dataFieldsMap := map[string]string{}
+	for _, dataField := range dataFields {
+		dataFieldKeyStr := dataField.Key.String()
+		dataFieldsMap[dataFieldKeyStr] = dataField.Value.String()
+	}
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
@@ -119,7 +151,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	installDir valueObject.UnixFilePath,
 	installUuid string,
 ) error {
-	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDir")
+	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
 	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
 	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installDirDataFieldKey,
@@ -139,20 +171,23 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		installUuidDataField,
 	)
 
-	receivedDataFieldsMap := map[string]string{}
-	for _, receivedDataField := range receivedDataFields {
-		receivedDataFieldKeyStr := receivedDataField.Key.String()
-		receivedDataFieldsMap[receivedDataFieldKeyStr] = receivedDataField.Value.String()
-	}
-
-	repo.addMissingOptionalDataFieldsToMap(
-		&receivedDataFieldsMap,
+	missingCatalogOptionalDataFields, err := repo.getMissingOptionalDataFields(
+		receivedDataFields,
 		catalogDataFields,
 	)
+	if err != nil {
+		return err
+	}
+	receivedDataFields = slices.Concat(
+		receivedDataFields,
+		missingCatalogOptionalDataFields,
+	)
+
+	log.Printf("ReceivedDataFields: %+v", receivedDataFields)
 
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
 		catalogCmdSteps,
-		receivedDataFieldsMap,
+		receivedDataFields,
 	)
 	if err != nil {
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
