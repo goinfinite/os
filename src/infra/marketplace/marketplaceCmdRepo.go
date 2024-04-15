@@ -158,8 +158,6 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		missingCatalogOptionalDataFields,
 	)
 
-	log.Printf("ReceivedDataFields: %+v", receivedDataFields)
-
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
 		catalogCmdSteps,
 		receivedDataFields,
