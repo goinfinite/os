@@ -119,15 +119,32 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	installDir valueObject.UnixFilePath,
 	installUuid string,
 ) error {
-	receivedDataFieldsMap := map[string]string{}
+	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDir")
+	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
+	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installDirDataFieldKey,
+		installDirDataFieldValue,
+	)
 
+	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
+	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
+	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installUuidDataFieldKey,
+		installUuidDataFieldValue,
+	)
+
+	receivedDataFields = append(
+		receivedDataFields,
+		installDirDataField,
+		installUuidDataField,
+	)
+
+	receivedDataFieldsMap := map[string]string{}
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldKeyStr := receivedDataField.Key.String()
 		receivedDataFieldsMap[receivedDataFieldKeyStr] = receivedDataField.Value.String()
 	}
 
-	receivedDataFieldsMap["installDirectory"] = installDir.String()
-	receivedDataFieldsMap["installUuid"] = installUuid
 	repo.addMissingOptionalDataFieldsToMap(
 		&receivedDataFieldsMap,
 		catalogDataFields,
