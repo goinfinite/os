@@ -89,11 +89,11 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	)
 
 	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
-	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItemsController)
+	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
 
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
-	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalogController)
-	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItemController)
+	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalog)
+	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
 }
 
 func (router Router) o11yRoutes(baseRoute *echo.Group) {
