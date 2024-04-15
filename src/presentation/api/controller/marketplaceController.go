@@ -34,7 +34,7 @@ func NewMarketplaceController(
 // @Produce      json
 // @Success      200 {string} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
-func (controller *MarketplaceController) GetCatalogController(c echo.Context) error {
+func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
 	if err != nil {
@@ -80,7 +80,7 @@ func parseDataFieldsFromBody(
 // @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (installDirectory is optional)"
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
-func (controller *MarketplaceController) InstallCatalogItemController(c echo.Context) error {
+func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
 	requiredParams := []string{"id", "hostname", "dataFields"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -128,7 +128,7 @@ func (controller *MarketplaceController) InstallCatalogItemController(c echo.Con
 // @Produce      json
 // @Success      200 {string} entity.MarketplaceInstalledItem
 // @Router       /marketplace/installed/ [get]
-func (controller *MarketplaceController) GetInstalledItemsController(c echo.Context) error {
+func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
