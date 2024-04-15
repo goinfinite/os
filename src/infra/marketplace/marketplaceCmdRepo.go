@@ -131,7 +131,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		catalogDataFields,
 	)
 
-	cmdStepWithDataFields, err := repo.replaceCmdStepsPlaceholders(
+	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
 		catalogCmdSteps,
 		receivedDataFieldsMap,
 	)
@@ -139,12 +139,12 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	for _, cmdStepWithDataField := range cmdStepWithDataFields {
-		cmdStepWithDataFieldStr := cmdStepWithDataField.String()
-		_, err = infraHelper.RunCmdWithSubShell(cmdStepWithDataFieldStr)
+	for _, preparedCmdStep := range preparedCmdSteps {
+		preparedCmdStepStr := preparedCmdStep.String()
+		_, err = infraHelper.RunCmdWithSubShell(preparedCmdStepStr)
 		if err != nil {
 			return errors.New(
-				"RunCmdStepError (" + cmdStepWithDataFieldStr + "): " + err.Error(),
+				"RunCmdStepError (" + preparedCmdStepStr + "): " + err.Error(),
 			)
 		}
 	}
