@@ -299,8 +299,8 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
-) ([]valueObject.MarketplaceItemInstallStep, error) {
-	itemCmdSteps := []valueObject.MarketplaceItemInstallStep{}
+) ([]valueObject.MarketplaceItemCmdStep, error) {
+	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
 
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
@@ -308,7 +308,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	}
 
 	for _, rawItemCmdStep := range rawItemCmdSteps {
-		itemCmdStep, err := valueObject.NewMarketplaceItemInstallStep(
+		itemCmdStep, err := valueObject.NewMarketplaceItemCmdStep(
 			rawItemCmdStep.(string),
 		)
 		if err != nil {

@@ -12,7 +12,7 @@ type MarketplaceCatalogItem struct {
 	ServiceNames       []valueObject.ServiceName                     `json:"services" yaml:"serviceNames"`
 	Mappings           []valueObject.MarketplaceItemMapping          `json:"mappings" yaml:"mappings"`
 	DataFields         []valueObject.MarketplaceCatalogItemDataField `json:"dataFields" yaml:"dataFields"`
-	CmdSteps           []valueObject.MarketplaceItemInstallStep      `json:"cmdSteps" yaml:"cmdSteps"`
+	CmdSteps           []valueObject.MarketplaceItemCmdStep          `json:"cmdSteps" yaml:"cmdSteps"`
 	EstimatedSizeBytes valueObject.Byte                              `json:"estimatedSizeBytes" yaml:"estimatedSizeBytes"`
 	AvatarUrl          valueObject.Url                               `json:"avatarUrl" yaml:"avatarUrl"`
 	ScreenshotUrls     []valueObject.Url                             `json:"screenshotUrls" yaml:"screenshotUrls"`
@@ -26,7 +26,7 @@ func NewMarketplaceCatalogItem(
 	serviceNames []valueObject.ServiceName,
 	mappings []valueObject.MarketplaceItemMapping,
 	dataFields []valueObject.MarketplaceCatalogItemDataField,
-	cmdSteps []valueObject.MarketplaceItemInstallStep,
+	cmdSteps []valueObject.MarketplaceItemCmdStep,
 	estimatedSizeBytes valueObject.Byte,
 	avatarUrl valueObject.Url,
 	screenshotUrls []valueObject.Url,

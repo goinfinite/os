@@ -82,10 +82,10 @@ func (repo *MarketplaceCmdRepo) addMissingOptionalDataFieldsToMap(
 }
 
 func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
-	cmdSteps []valueObject.MarketplaceItemInstallStep,
+	cmdSteps []valueObject.MarketplaceItemCmdStep,
 	dataFieldsMap map[string]string,
-) ([]valueObject.MarketplaceItemInstallStep, error) {
-	cmdStepsWithDataFields := []valueObject.MarketplaceItemInstallStep{}
+) ([]valueObject.MarketplaceItemCmdStep, error) {
+	cmdStepsWithDataFields := []valueObject.MarketplaceItemCmdStep{}
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
@@ -104,7 +104,7 @@ func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
 			cmdStepStr = cmdStepWithDataFieldStr
 		}
 
-		cmdStepWithDataField, _ := valueObject.NewMarketplaceItemInstallStep(cmdStepStr)
+		cmdStepWithDataField, _ := valueObject.NewMarketplaceItemCmdStep(cmdStepStr)
 		cmdStepsWithDataFields = append(cmdStepsWithDataFields, cmdStepWithDataField)
 	}
 
@@ -112,7 +112,7 @@ func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
-	catalogCmdSteps []valueObject.MarketplaceItemInstallStep,
+	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	installDir valueObject.UnixFilePath,

@@ -4,22 +4,22 @@ import (
 	"errors"
 )
 
-type MarketplaceItemInstallStep string
+type MarketplaceItemCmdStep string
 
-func NewMarketplaceItemInstallStep(value string) (MarketplaceItemInstallStep, error) {
+func NewMarketplaceItemCmdStep(value string) (MarketplaceItemCmdStep, error) {
 	if len(value) < 1 {
-		return "", errors.New("MarketplaceItemInstallStepTooSmall")
+		return "", errors.New("MarketplaceItemCmdStepTooSmall")
 	}
 
 	if len(value) > 4096 {
-		return "", errors.New("MarketplaceItemInstallStepTooBig")
+		return "", errors.New("MarketplaceItemCmdStepTooBig")
 	}
 
-	return MarketplaceItemInstallStep(value), nil
+	return MarketplaceItemCmdStep(value), nil
 }
 
-func NewMarketplaceItemInstallStepPanic(value string) MarketplaceItemInstallStep {
-	miis, err := NewMarketplaceItemInstallStep(value)
+func NewMarketplaceItemCmdStepPanic(value string) MarketplaceItemCmdStep {
+	miis, err := NewMarketplaceItemCmdStep(value)
 	if err != nil {
 		panic(err)
 	}
@@ -27,6 +27,6 @@ func NewMarketplaceItemInstallStepPanic(value string) MarketplaceItemInstallStep
 	return miis
 }
 
-func (miis MarketplaceItemInstallStep) String() string {
+func (miis MarketplaceItemCmdStep) String() string {
 	return string(miis)
 }

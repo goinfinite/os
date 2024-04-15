@@ -6,9 +6,9 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
-func TestMarketplaceItemInstallStep(t *testing.T) {
-	t.Run("ValidMarketplaceItemInstallStep", func(t *testing.T) {
-		validMarketplaceItemInstallSteps := []string{
+func TestMarketplaceItemCmdStep(t *testing.T) {
+	t.Run("ValidMarketplaceItemCmdStep", func(t *testing.T) {
+		validMarketplaceItemCmdSteps := []string{
 			"ls -l",
 			"cat file.txt | grep \"pattern\" | sort",
 			"echo \"Today is $(date +%A)\"",
@@ -17,23 +17,23 @@ func TestMarketplaceItemInstallStep(t *testing.T) {
 			"wget https://github.com/speedianet/os -O $PATH",
 		}
 
-		for _, miis := range validMarketplaceItemInstallSteps {
-			_, err := NewMarketplaceItemInstallStep(miis)
+		for _, miis := range validMarketplaceItemCmdSteps {
+			_, err := NewMarketplaceItemCmdStep(miis)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", miis, err.Error())
 			}
 		}
 	})
 
-	t.Run("InvalidMarketplaceItemInstallStep", func(t *testing.T) {
+	t.Run("InvalidMarketplaceItemCmdStep", func(t *testing.T) {
 		invalidLength := 4100
-		invalidMarketplaceItemInstallSteps := []string{
+		invalidMarketplaceItemCmdSteps := []string{
 			"",
 			testHelpers.GenerateString(invalidLength),
 		}
 
-		for _, miis := range invalidMarketplaceItemInstallSteps {
-			_, err := NewMarketplaceItemInstallStep(miis)
+		for _, miis := range invalidMarketplaceItemCmdSteps {
+			_, err := NewMarketplaceItemCmdStep(miis)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", miis)
 			}
