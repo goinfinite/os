@@ -148,29 +148,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
-	installDir valueObject.UnixFilePath,
-	installUuid string,
 ) error {
-	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
-	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
-	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installDirDataFieldKey,
-		installDirDataFieldValue,
-	)
-
-	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
-	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
-	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installUuidDataFieldKey,
-		installUuidDataFieldValue,
-	)
-
-	receivedDataFields = append(
-		receivedDataFields,
-		installDirDataField,
-		installUuidDataField,
-	)
-
 	missingCatalogOptionalDataFields, err := repo.getMissingOptionalDataFields(
 		receivedDataFields,
 		catalogDataFields,
@@ -294,14 +272,32 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
+	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
+	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
+	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installDirDataFieldKey,
+		installDirDataFieldValue,
+	)
+
 	installUuid := uuid.New().String()[:16]
+	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
+	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
+	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installUuidDataFieldKey,
+		installUuidDataFieldValue,
+	)
+
+	receivedDataFields := installDto.DataFields
+	receivedDataFields = append(
+		receivedDataFields,
+		installDirDataField,
+		installUuidDataField,
+	)
 
 	err = repo.runCmdSteps(
 		catalogItem.CmdSteps,
 		catalogItem.DataFields,
-		installDto.DataFields,
-		installDir,
-		installUuid,
+		receivedDataFields,
 	)
 	if err != nil {
 		return err
