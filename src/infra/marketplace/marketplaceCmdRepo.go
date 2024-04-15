@@ -111,7 +111,7 @@ func (repo *MarketplaceCmdRepo) parseCmdStepsWithDataFields(
 	return cmdStepsWithDataFields, nil
 }
 
-func (repo *MarketplaceCmdRepo) runCmdStepsWithDataFields(
+func (repo *MarketplaceCmdRepo) runCmdSteps(
 	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
@@ -237,7 +237,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
-	err = repo.runCmdStepsWithDataFields(
+	err = repo.runCmdSteps(
 		catalogItem.CmdSteps,
 		catalogItem.DataFields,
 		installDto.DataFields,
