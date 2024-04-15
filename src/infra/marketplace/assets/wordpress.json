@@ -27,8 +27,8 @@
         "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
         "sos db create -n %dbName% -t mysql",
         "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
-        "sos db create-user -n %dbName% -t mysql -u marketplace_wp_dbUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
-        "wp config create --path=%installDirectory% --dbname=%dbName% --dbuser=marketplace_wp_dbUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
+        "sos db create-user -n %dbName% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
+        "wp config create --path=%installDirectory% --dbname=%dbName% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
         "rm -rf %installDirectory%/wpDbCredentials"
     ],
     "estimatedSizeBytes": 1000000000,
