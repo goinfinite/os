@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const phpSettingNameRegex string = `^[\w_\.-]{3,64}$`
+const phpSettingNameRegex string = `^\w[\w\.-]{1,62}\w$`
 
 type PhpSettingName string
 

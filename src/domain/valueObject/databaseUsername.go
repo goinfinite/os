@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const databaseUsernameRegex string = `^[\w_-]+$`
+const databaseUsernameRegex string = `^\w[\w-]+\w$`
 
 type DatabaseUsername string
 
