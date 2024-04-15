@@ -88,13 +88,6 @@ func (repo *MarketplaceCmdRepo) getMissingOptionalDataFields(
 			continue
 		}
 
-		if catalogDataField.DefaultValue == nil {
-			return missingCatalogOptionalDataFields, errors.New(
-				"CatalogOptionalDataFieldWithoutDefaultValue: " +
-					catalogDataFieldKeyStr,
-			)
-		}
-
 		catalogDataFieldAsInstallable, _ := valueObject.NewMarketplaceInstallableItemDataField(
 			catalogDataField.Key,
 			*catalogDataField.DefaultValue,
