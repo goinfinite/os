@@ -64,7 +64,7 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) getMissingOptionalDataFields(
+func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) ([]valueObject.MarketplaceInstallableItemDataField, error) {
@@ -146,7 +146,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
-	missingCatalogOptionalDataFields, err := repo.getMissingOptionalDataFields(
+	missingCatalogOptionalDataFields, err := repo.interpolateMissingDataFields(
 		receivedDataFields,
 		catalogDataFields,
 	)
