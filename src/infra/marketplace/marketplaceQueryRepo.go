@@ -527,7 +527,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 		return catalogItem, nil
 	}
 
-	return catalogItem, nil
+	return catalogItem, errors.New("CatalogItemNotFound")
 }
 
 func (repo *MarketplaceQueryRepo) GetInstalledItems() (
@@ -578,5 +578,5 @@ func (repo *MarketplaceQueryRepo) GetInstalledItemById(
 		return installedItem, nil
 	}
 
-	return installedItem, nil
+	return installedItem, errors.New("InstalledItemNotFound")
 }
