@@ -90,6 +90,10 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 
 	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
 	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
+	marketplaceInstalledsGroup.DELETE(
+		"/:marketplaceInstalledItemId/",
+		marketplaceController.DeleteInstalledItem,
+	)
 
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
 	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalog)

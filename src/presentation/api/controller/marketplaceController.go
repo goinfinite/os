@@ -130,10 +130,41 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Router       /marketplace/installed/ [get]
 func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+
 	marketplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceInstalledItems)
+}
+
+// DeleteMarketplaceInstalledItem godoc
+// @Summary      DeleteMarketplaceInstalledItem
+// @Description  Delete/Uninstall a marketplace installed item.
+// @Tags         marketplace
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        marketplaceInstalledItemId path uint true "MarketplaceInstalledItemId"
+// @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
+// @Router       /marketplace/installed/{marketplaceInstalledItemId} [delete]
+func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
+	marketplaceInstalledItemId := valueObject.NewMarketplaceInstalledItemIdPanic(
+		c.Param("marketplaceInstalledItemId"),
+	)
+
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
+
+	err := useCase.DeleteMarketplaceInstalledItem(
+		marketplaceQueryRepo,
+		marketplaceCmdRepo,
+		marketplaceInstalledItemId,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "MarketplaceInstalledItemDeleted")
 }
