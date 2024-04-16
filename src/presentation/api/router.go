@@ -4,7 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/labstack/echo/v4"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiController "github.com/speedianet/os/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -12,12 +12,17 @@ import (
 )
 
 type Router struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
+func NewRouter(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *Router {
 	return &Router{
-		transientDbSvc: transientDbSvc,
+		transientDbSvc:  transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
 	}
 }
 
@@ -77,6 +82,20 @@ func (router Router) filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/upload/", apiController.UploadFilesController)
 }
 
+func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
+	marketplaceGroup := baseRoute.Group("/marketplace")
+	marketplaceController := apiController.NewMarketplaceController(
+		router.persistentDbSvc,
+	)
+
+	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
+	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
+
+	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
+	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalog)
+	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
+}
+
 func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 
@@ -129,6 +148,7 @@ func (router Router) RegisterRoutes(baseRoute *echo.Group) {
 	router.cronRoutes(baseRoute)
 	router.databaseRoutes(baseRoute)
 	router.filesRoutes(baseRoute)
+	router.marketplaceRoutes(baseRoute)
 	router.o11yRoutes(baseRoute)
 	router.runtimeRoutes(baseRoute)
 	router.servicesRoutes(baseRoute)

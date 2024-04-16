@@ -9,17 +9,17 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	infraData "github.com/speedianet/os/src/infra/infraData"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type WebServerSetup struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc *internalDbInfra.TransientDatabaseService
 }
 
 func NewWebServerSetup(
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
 		transientDbSvc: transientDbSvc,

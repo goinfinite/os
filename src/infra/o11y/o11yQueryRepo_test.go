@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func TestGetOverview(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	transientDbSvc, err := internalDatabaseInfra.NewTransientDatabaseService()
+	transientDbSvc, err := internalDbInfra.NewTransientDatabaseService()
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
 	}

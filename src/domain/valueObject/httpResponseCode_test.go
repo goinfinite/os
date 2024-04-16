@@ -22,7 +22,11 @@ func TestNewHttpResponseCode(t *testing.T) {
 		for _, responseCode := range validResponseCodes {
 			_, err := NewHttpResponseCode(responseCode)
 			if err != nil {
-				t.Errorf("ExpectingNoErrorButGot: %s", err.Error())
+				t.Errorf(
+					"Expected no error for %v, got %s",
+					responseCode,
+					err.Error(),
+				)
 			}
 		}
 	})
@@ -40,7 +44,7 @@ func TestNewHttpResponseCode(t *testing.T) {
 		for _, responseCode := range invalidResponseCodes {
 			_, err := NewHttpResponseCode(responseCode)
 			if err == nil {
-				t.Errorf("ExpectingErrorButDidNotGetFor: %v", responseCode)
+				t.Errorf("Expected error for %s, got nil", responseCode)
 			}
 		}
 	})

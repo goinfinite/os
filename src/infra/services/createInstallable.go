@@ -13,6 +13,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 )
 
 var supportedServicesVersion = map[string]string{
@@ -287,13 +288,14 @@ func addNode(createDto dto.CreateInstallableService) error {
 		return errors.New("InstallNodeError: " + err.Error())
 	}
 
-	appHtmlDir := "/app/html"
-	err = infraHelper.MakeDir(appHtmlDir)
+	err = infraHelper.MakeDir(infraData.GlobalConfigs.PrimaryPublicDir)
 	if err != nil {
 		return errors.New("CreateBaseDirError: " + err.Error())
 	}
 
-	startupFile := valueObject.NewUnixFilePathPanic(appHtmlDir + "/index.js")
+	startupFile := valueObject.NewUnixFilePathPanic(
+		infraData.GlobalConfigs.PrimaryPublicDir + "/index.js",
+	)
 	if createDto.StartupFile != nil {
 		startupFile = *createDto.StartupFile
 	}

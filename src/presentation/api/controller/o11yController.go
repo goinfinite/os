@@ -5,17 +5,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
 type O11yController struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc *internalDbInfra.TransientDatabaseService
 }
 
 func NewO11yController(
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yController {
 	return &O11yController{
 		transientDbSvc: transientDbSvc,

@@ -915,6 +915,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/marketplace/catalog/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List marketplace catalog services names, types, steps and more.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marketplace"
+                ],
+                "summary": "GetMarketplaceCatalog",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Install a marketplace catalog item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marketplace"
+                ],
+                "summary": "InstallMarketplaceCatalogItem",
+                "parameters": [
+                    {
+                        "description": "InstallMarketplaceCatalogItem (installDirectory is optional)",
+                        "name": "InstallMarketplaceCatalogItem",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.InstallMarketplaceCatalogItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "MarketplaceCatalogItemInstalled",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/installed/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List marketplace installed items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marketplace"
+                ],
+                "summary": "GetMarketplaceInstalledItems",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
@@ -1708,6 +1796,9 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
+                "targetInlineHtmlContent": {
+                    "type": "string"
+                },
                 "targetServiceName": {
                     "type": "string"
                 },
@@ -1771,6 +1862,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InstallMarketplaceCatalogItem": {
+            "type": "object",
+            "properties": {
+                "dataFields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.MarketplaceInstallableItemDataField"
+                    }
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installDirectory": {
                     "type": "string"
                 }
             }
@@ -2070,6 +2181,9 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
+                "targetInlineHtmlContent": {
+                    "type": "string"
+                },
                 "targetServiceName": {
                     "type": "string"
                 },
@@ -2175,6 +2289,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "certificateAuthority": {
+                    "type": "string"
+                },
                 "certificateContent": {
                     "type": "string"
                 },
@@ -2184,14 +2301,11 @@ const docTemplate = `{
                 "expiresAt": {
                     "type": "integer"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "isCA": {
-                    "type": "boolean"
-                },
                 "issuedAt": {
                     "type": "integer"
+                },
+                "sslId": {
+                    "type": "string"
                 }
             }
         },
@@ -2321,6 +2435,17 @@ const docTemplate = `{
                 },
                 "storageTotal": {
                     "type": "integer"
+                }
+            }
+        },
+        "valueObject.MarketplaceInstallableItemDataField": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
