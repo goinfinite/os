@@ -559,3 +559,24 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 
 	return installedItemEntities, nil
 }
+
+func (repo *MarketplaceQueryRepo) GetInstalledItemById(
+	id valueObject.MarketplaceInstalledItemId,
+) (entity.MarketplaceInstalledItem, error) {
+	var installedItem entity.MarketplaceInstalledItem
+
+	installedItems, err := repo.GetInstalledItems()
+	if err != nil {
+		return installedItem, err
+	}
+
+	for _, installedItem := range installedItems {
+		if installedItem.Id.Get() != id.Get() {
+			continue
+		}
+
+		return installedItem, nil
+	}
+
+	return installedItem, nil
+}
