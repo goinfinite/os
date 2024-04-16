@@ -305,3 +305,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
 }
+
+func (repo *MarketplaceCmdRepo) UninstallItem(
+	installedId valueObject.MarketplaceInstalledItemId,
+) error {
+	return nil
+}
