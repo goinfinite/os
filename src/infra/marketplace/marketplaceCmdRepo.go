@@ -3,6 +3,7 @@ package marketplaceInfra
 import (
 	"errors"
 	"log"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -306,8 +307,96 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
 }
 
+func (repo *MarketplaceCmdRepo) getInstalledItemUnusedServices(
+	installedItemServices []valueObject.ServiceName,
+) ([]valueObject.ServiceName, error) {
+	unusedServiceNames := []valueObject.ServiceName{}
+
+	installedItems, err := repo.marketplaceQueryRepo.GetInstalledItems()
+	if err != nil {
+		return unusedServiceNames, errors.New("InstalledItemsNotFound")
+	}
+
+	if len(installedItems) == 0 {
+		unusedServiceNames = installedItemServices
+		return unusedServiceNames, nil
+	}
+
+	for _, installedItem := range installedItems {
+		for _, serviceName := range installedItemServices {
+			isUsed := slices.Contains(installedItem.ServiceNames, serviceName)
+			if isUsed {
+				continue
+			}
+
+			unusedServiceNames = append(unusedServiceNames, serviceName)
+			break
+		}
+	}
+
+	return unusedServiceNames, nil
+}
+
+func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
+	serviceNames []valueObject.ServiceName,
+) error {
+	unusedServiceNames, err := repo.getInstalledItemUnusedServices(serviceNames)
+	if err != nil {
+		return err
+	}
+
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	for _, serviceName := range unusedServiceNames {
+		err = servicesCmdRepo.Uninstall(serviceName)
+		if err != nil {
+			log.Printf("UninstallUnusedServiceError: %s", err.Error())
+			continue
+		}
+	}
+
+	return nil
+}
+
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	installedId valueObject.MarketplaceInstalledItemId,
 ) error {
+	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(installedId)
+	if err != nil {
+		return err
+	}
+
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	for _, installedItemMapping := range installedItem.Mappings {
+		err = vhostCmdRepo.DeleteMapping(installedItemMapping)
+		if err != nil {
+			log.Printf(
+				"DeleteInstalledItemMappingError (%s): %s",
+				installedItemMapping.Path,
+				err.Error(),
+			)
+			continue
+		}
+	}
+
+	installedItemModel := dbModel.MarketplaceInstalledItem{
+		ID: uint(installedId.Get()),
+	}
+	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
+	if err != nil {
+		return err
+	}
+
+	err = repo.uninstallUnusedServices(installedItem.ServiceNames)
+	if err != nil {
+		return err
+	}
+
+	installDirStr := installedItem.InstallDirectory.String()
+	err = os.RemoveAll(installDirStr)
+	if err != nil {
+		return errors.New("DeleteInstalledItemFilesError: " + err.Error())
+	}
+	infraHelper.MakeDir(installDirStr)
+
 	return nil
 }
