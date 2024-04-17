@@ -7,7 +7,8 @@
         {
             "path": "/php-ws",
             "matchPattern": "begins-with",
-            "targetType": "service"
+            "targetType": "service",
+            "targetServiceName": "php"
         }
     ],
     "dataFields": [
