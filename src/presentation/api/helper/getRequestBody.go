@@ -55,5 +55,9 @@ func GetRequestBody(c echo.Context) (map[string]interface{}, error) {
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "InvalidContentType")
 	}
 
-	return requestData, echo.NewHTTPError(http.StatusBadRequest, "EmptyRequestBody")
+	if len(requestData) == 0 {
+		return nil, echo.NewHTTPError(http.StatusBadRequest, "EmptyRequestBody")
+	}
+
+	return requestData, nil
 }

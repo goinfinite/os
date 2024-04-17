@@ -6,7 +6,7 @@ import (
 
 func TestNewUrl(t *testing.T) {
 	t.Run("ValidUrl", func(t *testing.T) {
-		validUrl := []string{
+		validUrls := []string{
 			// cSpell:disable
 			"localhost",
 			"localhost:8080",
@@ -18,19 +18,20 @@ func TestNewUrl(t *testing.T) {
 			"http://localhost:8080/v1/ticket/253/attachment/b8680d5cc332672c649f4ff8d9e3b77f.svg",
 			"https://www.cnn.com/politics/live-news/house-speaker-vote-10-20-23/index.html",
 			"https://blog.goinfinite.net/2023/10/vulnerabilidades-top-10-da-owasp-parte-1/",
+			"https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/1200px-WordPress_blue_logo.svg.png",
 			// cSpell:enable
 		}
 
-		for _, url := range validUrl {
+		for _, url := range validUrls {
 			_, err := NewUrl(url)
 			if err != nil {
-				t.Errorf("ExpectingNoErrorButGot: %s [%s]", err.Error(), url)
+				t.Errorf("Expected no error for '%s', got '%s'", url, err.Error())
 			}
 		}
 	})
 
 	t.Run("InvalidUrl", func(t *testing.T) {
-		invalidUrl := []string{
+		invalidUrls := []string{
 			// cSpell:disable
 			"",
 			" ",
@@ -53,10 +54,10 @@ func TestNewUrl(t *testing.T) {
 			// cSpell:enable
 		}
 
-		for _, url := range invalidUrl {
+		for _, url := range invalidUrls {
 			_, err := NewUrl(url)
 			if err == nil {
-				t.Errorf("ExpectingErrorButDidNotGetFor: %v", url)
+				t.Errorf("Expected error for '%s', got nil", url)
 			}
 		}
 	})
@@ -65,7 +66,7 @@ func TestNewUrl(t *testing.T) {
 		url, _ := NewUrl("localhost:8080")
 		port, _ := url.GetPort()
 		if port.Get() != 8080 {
-			t.Errorf("ExpectingPort8080ButGot: %v", port.Get())
+			t.Errorf("Expected port '8080', got '%d'", port.Get())
 		}
 	})
 }

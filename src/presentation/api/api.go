@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiInit "github.com/speedianet/os/src/presentation/api/init"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
@@ -30,7 +30,10 @@ import (
 
 // @host		localhost:1618
 // @BasePath	/v1
-func ApiInit(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) {
+func ApiInit(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) {
 	sharedMiddleware.CheckEnvs()
 	apiInit.WebServerSetup(transientDbSvc)
 
@@ -49,7 +52,7 @@ func ApiInit(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) {
 	e.Use(apiMiddleware.SetDefaultHeaders)
 	e.Use(apiMiddleware.Auth(basePath))
 
-	router := NewRouter(transientDbSvc)
+	router := NewRouter(transientDbSvc, persistentDbSvc)
 	router.RegisterRoutes(baseRoute)
 
 	e.Start(":1618")

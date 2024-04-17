@@ -2,14 +2,14 @@ package cliController
 
 import (
 	"github.com/speedianet/os/src/domain/useCase"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 
 func GetO11yOverviewController(
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "overview",
