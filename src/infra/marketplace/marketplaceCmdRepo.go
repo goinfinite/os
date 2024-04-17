@@ -336,7 +336,6 @@ func (repo *MarketplaceCmdRepo) getInstalledItemUnusedServices(
 		}
 
 		unusedServiceNames = append(unusedServiceNames, serviceName)
-		break
 	}
 
 	return unusedServiceNames, nil
