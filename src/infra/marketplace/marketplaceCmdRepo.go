@@ -322,16 +322,21 @@ func (repo *MarketplaceCmdRepo) getInstalledItemUnusedServices(
 		return unusedServiceNames, nil
 	}
 
+	servicesInUse := []valueObject.ServiceName{}
 	for _, installedItem := range installedItems {
-		for _, serviceName := range installedItemServices {
-			isUsed := slices.Contains(installedItem.ServiceNames, serviceName)
-			if isUsed {
-				continue
-			}
+		servicesInUse = slices.Concat(
+			servicesInUse,
+			installedItem.ServiceNames,
+		)
+	}
 
-			unusedServiceNames = append(unusedServiceNames, serviceName)
-			break
+	for _, serviceName := range installedItemServices {
+		if slices.Contains(servicesInUse, serviceName) {
+			continue
 		}
+
+		unusedServiceNames = append(unusedServiceNames, serviceName)
+		break
 	}
 
 	return unusedServiceNames, nil
