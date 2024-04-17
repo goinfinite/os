@@ -11,7 +11,7 @@ type MappingPath string
 
 func NewMappingPath(value string) (MappingPath, error) {
 	mappingPath := MappingPath(value)
-	if !mappingPath.isValid(value) {
+	if !mappingPath.isValid() {
 		return "", errors.New("InvalidMappingPath")
 	}
 	return mappingPath, nil
@@ -25,9 +25,9 @@ func NewMappingPathPanic(value string) MappingPath {
 	return mappingPath
 }
 
-func (MappingPath) isValid(value string) bool {
+func (mappingPath MappingPath) isValid() bool {
 	re := regexp.MustCompile(mappingPathRegex)
-	return re.MatchString(value)
+	return re.MatchString(string(mappingPath))
 }
 
 func (mappingPath MappingPath) String() string {

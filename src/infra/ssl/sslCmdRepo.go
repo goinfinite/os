@@ -213,7 +213,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("DomainIsNotMappedToServer")
 	}
 
-	vhostRootDir := "/app/html"
+	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
 		vhostRootDir += "/" + firstVhostStr
 	}

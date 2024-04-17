@@ -22,7 +22,7 @@ func RunCmd(command string, args ...string) (string, error) {
 	cmdObj := exec.Command(command, args...)
 	cmdObj.Stdout = &stdout
 	cmdObj.Stderr = &stderr
-	cmdObj.Env = append(cmdObj.Env, "DEBIAN_FRONTEND=noninteractive")
+	cmdObj.Env = append(cmdObj.Environ(), "DEBIAN_FRONTEND=noninteractive")
 
 	err := cmdObj.Run()
 	stdOut := strings.TrimSpace(stdout.String())

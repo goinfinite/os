@@ -3,19 +3,24 @@ package cli
 import (
 	"fmt"
 
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	api "github.com/speedianet/os/src/presentation/api"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
 
 type Router struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
+func NewRouter(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *Router {
 	return &Router{
-		transientDbSvc: transientDbSvc,
+		transientDbSvc:  transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
 	}
 }
 
@@ -101,7 +106,7 @@ func (router Router) serveRoutes() {
 		Use:   "serve",
 		Short: "Start the SOS server (default to port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
-			api.ApiInit(router.transientDbSvc)
+			api.ApiInit(router.transientDbSvc, router.persistentDbSvc)
 		},
 	}
 
