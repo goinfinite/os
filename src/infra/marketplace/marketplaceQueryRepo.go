@@ -41,7 +41,8 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 	defer catalogItemFile.Close()
 
 	catalogItemFileExt, _ := catalogItemFilePath.GetFileExtension()
-	if catalogItemFileExt == "yaml" {
+	isYamlFile := catalogItemFileExt == "yml" || catalogItemFileExt == "yaml"
+	if isYamlFile {
 		catalogItemYamlDecoder := yaml.NewDecoder(catalogItemFile)
 		err = catalogItemYamlDecoder.Decode(&catalogItemMap)
 		if err != nil {
@@ -419,7 +420,12 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	rawCatalogEstimatedSizeBytes, assertOk := catalogItemMap["estimatedSizeBytes"].(float64)
 	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogEstimatedSizeBytes")
+		rawCatalogEstimatedSizeBytesInt, assertOk := catalogItemMap["estimatedSizeBytes"].(int)
+		if !assertOk {
+			return catalogItem, errors.New("InvalidMarketplaceCatalogEstimatedSizeBytes")
+		}
+
+		rawCatalogEstimatedSizeBytes = float64(rawCatalogEstimatedSizeBytesInt)
 	}
 	catalogEstimatedSizeBytes := valueObject.Byte(rawCatalogEstimatedSizeBytes)
 
