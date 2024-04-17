@@ -1003,6 +1003,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/marketplace/installed/{marketplaceInstalledItemId}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete/Uninstall a marketplace installed item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marketplace"
+                ],
+                "summary": "DeleteMarketplaceInstalledItem",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MarketplaceInstalledItemId",
+                        "name": "marketplaceInstalledItemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MarketplaceInstalledItemDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
