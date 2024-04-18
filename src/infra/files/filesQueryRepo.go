@@ -89,7 +89,10 @@ func (repo FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileSize := valueObject.Byte(fileInfo.Size())
+	unixFileSize, err := valueObject.NewByte(fileInfo.Size())
+	if err != nil {
+		return unixFile, err
+	}
 
 	var unixFileContentPtr *valueObject.UnixFileContent
 	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {

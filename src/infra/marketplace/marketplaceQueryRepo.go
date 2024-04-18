@@ -418,16 +418,12 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	rawCatalogEstimatedSizeBytes, assertOk := catalogItemMap["estimatedSizeBytes"].(float64)
-	if !assertOk {
-		rawCatalogEstimatedSizeBytesInt, assertOk := catalogItemMap["estimatedSizeBytes"].(int)
-		if !assertOk {
-			return catalogItem, errors.New("InvalidMarketplaceCatalogEstimatedSizeBytes")
-		}
-
-		rawCatalogEstimatedSizeBytes = float64(rawCatalogEstimatedSizeBytesInt)
+	catalogEstimatedSizeBytes, err := valueObject.NewByte(
+		catalogItemMap["estimatedSizeBytes"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
-	catalogEstimatedSizeBytes := valueObject.Byte(rawCatalogEstimatedSizeBytes)
 
 	rawCatalogItemAvatarUrl, assertOk := catalogItemMap["avatarUrl"].(string)
 	if !assertOk {
