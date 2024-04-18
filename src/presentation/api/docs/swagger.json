@@ -997,7 +997,7 @@
                 }
             }
         },
-        "/marketplace/installed/{marketplaceInstalledItemId}": {
+        "/marketplace/installed/{installedId}": {
             "delete": {
                 "security": [
                     {
@@ -1019,7 +1019,7 @@
                     {
                         "type": "integer",
                         "description": "MarketplaceInstalledItemId",
-                        "name": "marketplaceInstalledItemId",
+                        "name": "installedId",
                         "in": "path",
                         "required": true
                     }

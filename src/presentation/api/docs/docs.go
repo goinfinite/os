@@ -1003,7 +1003,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/installed/{marketplaceInstalledItemId}": {
+        "/marketplace/installed/{installedId}": {
             "delete": {
                 "security": [
                     {
@@ -1025,7 +1025,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "MarketplaceInstalledItemId",
-                        "name": "marketplaceInstalledItemId",
+                        "name": "installedId",
                         "in": "path",
                         "required": true
                     }
