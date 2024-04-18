@@ -49,6 +49,10 @@ func parseDataFieldsFromBody(
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
+	if dataFieldsBodyInput == nil {
+		return dataFields
+	}
+
 	dataFieldsInterfaceSlice, assertOk := dataFieldsBodyInput.([]interface{})
 	if !assertOk {
 		panic("InvalidDataField")
@@ -81,7 +85,7 @@ func parseDataFieldsFromBody(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requiredParams := []string{"id", "hostname", "dataFields"}
+	requiredParams := []string{"id", "hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
