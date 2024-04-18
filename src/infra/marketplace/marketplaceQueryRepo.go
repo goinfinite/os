@@ -512,7 +512,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetCatalogItemById(
-	id valueObject.MarketplaceCatalogItemId,
+	catalogId valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
@@ -522,7 +522,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	}
 
 	for _, catalogItem := range catalogItems {
-		if catalogItem.Id.Get() != id.Get() {
+		if catalogItem.Id.Get() != catalogId.Get() {
 			continue
 		}
 
@@ -563,7 +563,7 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetInstalledItemById(
-	id valueObject.MarketplaceInstalledItemId,
+	installedId valueObject.MarketplaceInstalledItemId,
 ) (entity.MarketplaceInstalledItem, error) {
 	var installedItem entity.MarketplaceInstalledItem
 
@@ -573,7 +573,7 @@ func (repo *MarketplaceQueryRepo) GetInstalledItemById(
 	}
 
 	for _, installedItem := range installedItems {
-		if installedItem.Id.Get() != id.Get() {
+		if installedItem.Id.Get() != installedId.Get() {
 			continue
 		}
 

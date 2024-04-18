@@ -86,7 +86,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	id := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
+	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	var installDirPtr *valueObject.UnixFilePath
@@ -104,7 +104,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(id, hostname, installDirPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, installDirPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
@@ -146,12 +146,12 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        marketplaceInstalledItemId path uint true "MarketplaceInstalledItemId"
+// @Param        installedId path uint true "MarketplaceInstalledItemId"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
-// @Router       /marketplace/installed/{marketplaceInstalledItemId} [delete]
+// @Router       /marketplace/installed/{installedId} [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	marketplaceInstalledItemId := valueObject.NewMarketplaceInstalledItemIdPanic(
-		c.Param("marketplaceInstalledItemId"),
+	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
+		c.Param("installedId"),
 	)
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
@@ -160,7 +160,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	err := useCase.DeleteMarketplaceInstalledItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
-		marketplaceInstalledItemId,
+		installedId,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
