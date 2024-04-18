@@ -231,6 +231,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 ) ([]valueObject.MarketplaceCatalogItemDataField, error) {
 	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
 
+	if catalogItemDataFieldsMap == nil {
+		return itemDataFields, nil
+	}
+
 	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
 	if !assertOk {
 		return itemDataFields, errors.New("InvalidMarketplaceCatalogItemDataFields")
@@ -309,6 +313,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
 ) ([]valueObject.MarketplaceItemCmdStep, error) {
 	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+
+	if catalogItemCmdStepsMap == nil {
+		return itemCmdSteps, nil
+	}
 
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
