@@ -84,6 +84,7 @@ func (router Router) marketplaceRoutes() {
 		router.persistentDbSvc,
 	)
 	marketplaceCmd.AddCommand(marketplaceController.GetCatalog())
+	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
 }
 
 func (router Router) o11yRoutes() {

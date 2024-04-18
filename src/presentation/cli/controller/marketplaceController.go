@@ -1,9 +1,14 @@
 package cliController
 
 import (
+	"strings"
+
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
+	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
+	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +27,7 @@ func NewMarketplaceController(
 
 func (controller MarketplaceController) GetCatalog() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   "list-catalog",
 		Short: "GetCatalogItems",
 		Run: func(cmd *cobra.Command, args []string) {
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
@@ -37,5 +42,85 @@ func (controller MarketplaceController) GetCatalog() *cobra.Command {
 			cliHelper.ResponseWrapper(true, catalogItems)
 		},
 	}
+	return cmd
+}
+
+func parseDataFields(
+	dataFieldsStr []string,
+) []valueObject.MarketplaceInstallableItemDataField {
+	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
+
+	for _, dataFieldStr := range dataFieldsStr {
+		dataFieldsParts := strings.Split(dataFieldStr, ":")
+		if len(dataFieldsParts) < 2 {
+			panic("InvalidDataFields")
+		}
+
+		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
+			valueObject.NewDataFieldKeyPanic(dataFieldsParts[0]),
+			valueObject.NewDataFieldValuePanic(dataFieldsParts[1]),
+		)
+		dataFields = append(dataFields, dataField)
+	}
+
+	return dataFields
+}
+
+func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
+	var catalogIdInt int
+	var hostnameStr string
+	var installDirStr string
+	var dataFieldsStr []string
+
+	cmd := &cobra.Command{
+		Use:   "install",
+		Short: "InstallCatalogItem",
+		Run: func(cmd *cobra.Command, args []string) {
+			catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(catalogIdInt)
+			hostname := valueObject.NewFqdnPanic(hostnameStr)
+
+			var installDirPtr *valueObject.UnixFilePath
+			if installDirStr != "" {
+				installDir := valueObject.NewUnixFilePathPanic(installDirStr)
+				installDirPtr = &installDir
+			}
+
+			// Format: key:value,key:value
+			dataFields := parseDataFields(dataFieldsStr)
+
+			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+			marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
+			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+
+			dto := dto.NewInstallMarketplaceCatalogItem(
+				catalogId,
+				hostname,
+				installDirPtr,
+				dataFields,
+			)
+			err := useCase.InstallMarketplaceCatalogItem(
+				marketplaceQueryRepo,
+				marketplaceCmdRepo,
+				vhostQueryRepo,
+				vhostCmdRepo,
+				dto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "MarketplaceCatalogItemInstalled")
+		},
+	}
+
+	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogId")
+	cmd.MarkFlagRequired("catalogId")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(&installDirStr, "installDir", "d", "", "InstallDir")
+	cmd.Flags().StringSliceVarP(
+		&dataFieldsStr, "dataFields", "f", []string{}, "DataFields (key:value)",
+	)
 	return cmd
 }
