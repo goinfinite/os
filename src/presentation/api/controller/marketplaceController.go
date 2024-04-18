@@ -36,12 +36,13 @@ func NewMarketplaceController(
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
-	marketplaceItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
+
+	catalogItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, catalogItems)
 }
 
 func parseDataFieldsFromBody(
@@ -131,12 +132,12 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 
-	marketplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
+	installedItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceInstalledItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, installedItems)
 }
 
 // DeleteMarketplaceInstalledItem godoc
