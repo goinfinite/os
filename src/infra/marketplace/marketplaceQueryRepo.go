@@ -89,6 +89,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 ) ([]valueObject.MarketplaceItemMapping, error) {
 	itemMappings := []valueObject.MarketplaceItemMapping{}
 
+	if catalogItemMappingsMap == nil {
+		return itemMappings, nil
+	}
+
 	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
 	if !assertOk {
 		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
