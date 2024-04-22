@@ -307,7 +307,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
 }
 
-func (repo *MarketplaceCmdRepo) getServicesInUse() (
+func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
 	[]valueObject.ServiceName, error,
 ) {
 	servicesInUse := []valueObject.ServiceName{}
@@ -330,14 +330,16 @@ func (repo *MarketplaceCmdRepo) getServicesInUse() (
 func (repo *MarketplaceCmdRepo) uninstallServices(
 	installedServiceNames []valueObject.ServiceName,
 ) error {
-	servicesInUse, err := repo.getServicesInUse()
+	serviceNamesInUse, err := repo.getServiceNamesInUse()
 	if err != nil {
 		return err
 	}
 
 	unusedServices := []valueObject.ServiceName{}
 	for _, installedServiceName := range installedServiceNames {
-		isInstalledServiceInUse := slices.Contains(servicesInUse, installedServiceName)
+		isInstalledServiceInUse := slices.Contains(
+			serviceNamesInUse, installedServiceName,
+		)
 		if isInstalledServiceInUse {
 			continue
 		}
