@@ -546,6 +546,10 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 		)
 	}
 
+	if len(installedItemModels) == 0 {
+		return installedItemEntities, errors.New("MarketplaceInstalledItemsNotFound")
+	}
+
 	for _, installedItemModel := range installedItemModels {
 		installedItemEntity, err := installedItemModel.ToEntity()
 		if err != nil {
