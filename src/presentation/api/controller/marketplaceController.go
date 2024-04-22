@@ -150,7 +150,7 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 // @Param        installedId path uint true "MarketplaceInstalledItemId"
 // @Param        shouldUninstallServices body bool false "ShouldUninstallServices"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
-// @Router       /marketplace/installed/{installedId} [delete]
+// @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
