@@ -363,6 +363,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	installedId valueObject.MarketplaceInstalledItemId,
+	shouldUninstallServices bool,
 ) error {
 	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(installedId)
 	if err != nil {
@@ -390,9 +391,11 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	err = repo.uninstallUnusedServices(installedItem.ServiceNames)
-	if err != nil {
-		return err
+	if shouldUninstallServices {
+		err = repo.uninstallUnusedServices(installedItem.ServiceNames)
+		if err != nil {
+			return err
+		}
 	}
 
 	installDirStr := installedItem.InstallDirectory.String()

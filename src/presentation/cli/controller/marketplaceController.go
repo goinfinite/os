@@ -114,13 +114,58 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogId")
+	cmd.Flags().IntVarP(
+		&catalogIdInt, "catalogId", "i", 0, "Catalog item ID",
+	)
 	cmd.MarkFlagRequired("catalogId")
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.Flags().StringVarP(
+		&hostnameStr, "hostname", "n", "", "Hostname on which it will be installed",
+	)
 	cmd.MarkFlagRequired("hostname")
-	cmd.Flags().StringVarP(&installDirStr, "installDir", "d", "", "InstallDir")
+	cmd.Flags().StringVarP(
+		&installDirStr, "installDir", "d", "", "Directory that stores installed files",
+	)
 	cmd.Flags().StringSliceVarP(
-		&dataFieldsStr, "dataFields", "f", []string{}, "DataFields (key:value)",
+		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",
+	)
+	return cmd
+}
+
+func (controller MarketplaceController) DeleteInstalledItem() *cobra.Command {
+	var installedIdInt int
+	var shouldUninstallServices bool
+
+	cmd := &cobra.Command{
+		Use:   "uninstall",
+		Short: "DeleteInstalledItem",
+		Run: func(cmd *cobra.Command, args []string) {
+			installedId := valueObject.NewMarketplaceInstalledItemIdPanic(installedIdInt)
+
+			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+			marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
+
+			err := useCase.DeleteMarketplaceInstalledItem(
+				marketplaceQueryRepo,
+				marketplaceCmdRepo,
+				installedId,
+				shouldUninstallServices,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "MarketplaceInstalledItemDeleted")
+		},
+	}
+
+	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "Installed item ID")
+	cmd.MarkFlagRequired("installedId")
+	cmd.Flags().BoolVarP(
+		&shouldUninstallServices,
+		"shouldUninstallServices",
+		"u",
+		true,
+		"Should uninstall installed item services",
 	)
 	return cmd
 }
