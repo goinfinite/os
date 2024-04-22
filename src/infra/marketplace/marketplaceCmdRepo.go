@@ -307,22 +307,16 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
 }
 
-func (repo *MarketplaceCmdRepo) getInstalledItemUnusedServices(
-	installedItemServices []valueObject.ServiceName,
-) ([]valueObject.ServiceName, error) {
-	unusedServiceNames := []valueObject.ServiceName{}
+func (repo *MarketplaceCmdRepo) getServicesInUse() (
+	[]valueObject.ServiceName, error,
+) {
+	servicesInUse := []valueObject.ServiceName{}
 
 	installedItems, err := repo.marketplaceQueryRepo.GetInstalledItems()
 	if err != nil {
-		return unusedServiceNames, errors.New("InstalledItemsNotFound")
+		return servicesInUse, err
 	}
 
-	if len(installedItems) == 0 {
-		unusedServiceNames = installedItemServices
-		return unusedServiceNames, nil
-	}
-
-	servicesInUse := []valueObject.ServiceName{}
 	for _, installedItem := range installedItems {
 		servicesInUse = slices.Concat(
 			servicesInUse,
@@ -330,28 +324,30 @@ func (repo *MarketplaceCmdRepo) getInstalledItemUnusedServices(
 		)
 	}
 
-	for _, serviceName := range installedItemServices {
-		if slices.Contains(servicesInUse, serviceName) {
-			continue
-		}
-
-		unusedServiceNames = append(unusedServiceNames, serviceName)
-	}
-
-	return unusedServiceNames, nil
+	return servicesInUse, nil
 }
 
-func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
-	serviceNames []valueObject.ServiceName,
+func (repo *MarketplaceCmdRepo) uninstallServices(
+	installedServices []valueObject.ServiceName,
 ) error {
-	unusedServiceNames, err := repo.getInstalledItemUnusedServices(serviceNames)
+	servicesInUse, err := repo.getServicesInUse()
 	if err != nil {
 		return err
 	}
 
+	unusedServices := []valueObject.ServiceName{}
+	for _, installedService := range installedServices {
+		isInstalledServiceInUse := slices.Contains(servicesInUse, installedService)
+		if isInstalledServiceInUse {
+			continue
+		}
+
+		unusedServices = append(unusedServices, installedService)
+	}
+
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, serviceName := range unusedServiceNames {
-		err = servicesCmdRepo.Uninstall(serviceName)
+	for _, unusedService := range unusedServices {
+		err = servicesCmdRepo.Uninstall(unusedService)
 		if err != nil {
 			log.Printf("UninstallUnusedServiceError: %s", err.Error())
 			continue
@@ -392,7 +388,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if shouldUninstallServices {
-		err = repo.uninstallUnusedServices(installedItem.ServiceNames)
+		err = repo.uninstallServices(installedItem.ServiceNames)
 		if err != nil {
 			return err
 		}
