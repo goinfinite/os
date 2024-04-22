@@ -401,7 +401,11 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	if err != nil {
 		return errors.New("DeleteInstalledItemFilesError: " + err.Error())
 	}
-	infraHelper.MakeDir(installDirStr)
+
+	err = infraHelper.MakeDir(installDirStr)
+	if err != nil {
+		return errors.New("CreateEmptyInstallDirectoryError: " + err.Error())
+	}
 
 	return nil
 }
