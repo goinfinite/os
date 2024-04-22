@@ -1003,7 +1003,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/installed/{installedId}": {
+        "/marketplace/installed/{installedId}/": {
             "delete": {
                 "security": [
                     {
@@ -1028,6 +1028,14 @@ const docTemplate = `{
                         "name": "installedId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "ShouldUninstallServices",
+                        "name": "shouldUninstallServices",
+                        "in": "body",
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ],
                 "responses": {
