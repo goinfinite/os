@@ -9,6 +9,9 @@ mappings:
     matchPattern: begins-with
     targetType: service
     targetServiceName: php
+  - path: /
+    matchPattern: begins-with
+    targetType: static-files
 dataFields:
   - key: dbName
     isRequired: true
