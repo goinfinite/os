@@ -130,7 +130,7 @@ func RemoveSslPairVhostsController(c echo.Context) error {
 	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
 	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
 
-	dto := dto.NewRemoveSslPairVhosts(sslPairId, virtualHosts)
+	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo()

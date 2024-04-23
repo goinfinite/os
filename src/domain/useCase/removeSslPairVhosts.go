@@ -12,14 +12,14 @@ func RemoveSslPairVhosts(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	removeSslPairVhosts dto.RemoveSslPairVhosts,
+	deleteSslPairVhosts dto.DeleteSslPairVhosts,
 ) error {
-	_, err := sslQueryRepo.GetSslPairById(removeSslPairVhosts.SslPairId)
+	_, err := sslQueryRepo.GetSslPairById(deleteSslPairVhosts.SslPairId)
 	if err != nil {
 		return errors.New("SslPairNotFound")
 	}
 
-	for _, vhost := range removeSslPairVhosts.VirtualHosts {
+	for _, vhost := range deleteSslPairVhosts.VirtualHosts {
 		_, err := vhostQueryRepo.GetByHostname(vhost)
 		if err != nil {
 			log.Printf("VhostNotFound: %s", vhost.String())
