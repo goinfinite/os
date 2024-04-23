@@ -1170,6 +1170,34 @@ paths:
       summary: GetMarketplaceInstalledItems
       tags:
       - marketplace
+  /marketplace/installed/{installedId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete/Uninstall a marketplace installed item.
+      parameters:
+      - description: MarketplaceInstalledItemId
+        in: path
+        name: installedId
+        required: true
+        type: integer
+      - description: ShouldUninstallServices
+        in: body
+        name: shouldUninstallServices
+        schema:
+          type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MarketplaceInstalledItemDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteMarketplaceInstalledItem
+      tags:
+      - marketplace
   /o11y/overview/:
     get:
       consumes:

@@ -41,7 +41,8 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 	defer catalogItemFile.Close()
 
 	catalogItemFileExt, _ := catalogItemFilePath.GetFileExtension()
-	if catalogItemFileExt == "yaml" {
+	isYamlFile := catalogItemFileExt == "yml" || catalogItemFileExt == "yaml"
+	if isYamlFile {
 		catalogItemYamlDecoder := yaml.NewDecoder(catalogItemFile)
 		err = catalogItemYamlDecoder.Decode(&catalogItemMap)
 		if err != nil {
@@ -417,11 +418,12 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	rawCatalogEstimatedSizeBytes, assertOk := catalogItemMap["estimatedSizeBytes"].(float64)
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogEstimatedSizeBytes")
+	catalogEstimatedSizeBytes, err := valueObject.NewByte(
+		catalogItemMap["estimatedSizeBytes"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
-	catalogEstimatedSizeBytes := valueObject.Byte(rawCatalogEstimatedSizeBytes)
 
 	rawCatalogItemAvatarUrl, assertOk := catalogItemMap["avatarUrl"].(string)
 	if !assertOk {
@@ -510,7 +512,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetCatalogItemById(
-	id valueObject.MarketplaceCatalogItemId,
+	catalogId valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
@@ -520,14 +522,14 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	}
 
 	for _, catalogItem := range catalogItems {
-		if catalogItem.Id.Get() != id.Get() {
+		if catalogItem.Id.Get() != catalogId.Get() {
 			continue
 		}
 
 		return catalogItem, nil
 	}
 
-	return catalogItem, nil
+	return catalogItem, errors.New("CatalogItemNotFound")
 }
 
 func (repo *MarketplaceQueryRepo) GetInstalledItems() (
@@ -544,6 +546,10 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 		)
 	}
 
+	if len(installedItemModels) == 0 {
+		return installedItemEntities, errors.New("MarketplaceInstalledItemsNotFound")
+	}
+
 	for _, installedItemModel := range installedItemModels {
 		installedItemEntity, err := installedItemModel.ToEntity()
 		if err != nil {
@@ -558,4 +564,25 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 	}
 
 	return installedItemEntities, nil
+}
+
+func (repo *MarketplaceQueryRepo) GetInstalledItemById(
+	installedId valueObject.MarketplaceInstalledItemId,
+) (entity.MarketplaceInstalledItem, error) {
+	var installedItem entity.MarketplaceInstalledItem
+
+	installedItems, err := repo.GetInstalledItems()
+	if err != nil {
+		return installedItem, err
+	}
+
+	for _, installedItem := range installedItems {
+		if installedItem.Id.Get() != installedId.Get() {
+			continue
+		}
+
+		return installedItem, nil
+	}
+
+	return installedItem, errors.New("InstalledItemNotFound")
 }

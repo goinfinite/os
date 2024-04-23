@@ -72,6 +72,21 @@ func (router Router) databaseRoutes() {
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
+func (router Router) marketplaceRoutes() {
+	var marketplaceCmd = &cobra.Command{
+		Use:   "mktplace",
+		Short: "Marketplace",
+	}
+
+	rootCmd.AddCommand(marketplaceCmd)
+
+	marketplaceController := cliController.NewMarketplaceController(
+		router.persistentDbSvc,
+	)
+	marketplaceCmd.AddCommand(marketplaceController.GetCatalog())
+	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
+}
+
 func (router Router) o11yRoutes() {
 	var o11yCmd = &cobra.Command{
 		Use:   "o11y",
@@ -168,6 +183,7 @@ func (router Router) RegisterRoutes() {
 	router.accountRoutes()
 	router.cronRoutes()
 	router.databaseRoutes()
+	router.marketplaceRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
 	router.serveRoutes()
