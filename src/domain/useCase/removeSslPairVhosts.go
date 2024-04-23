@@ -28,7 +28,11 @@ func RemoveSslPairVhosts(
 
 		err = sslCmdRepo.RemoveVhostFromSslPair(vhost)
 		if err != nil {
-			log.Printf("RemoveVhostFromSslPairError: %s", err.Error())
+			log.Printf(
+				"RemoveVhostFromSslPairError (%s): %s",
+				vhost.String(),
+				err.Error(),
+			)
 		}
 	}
 
