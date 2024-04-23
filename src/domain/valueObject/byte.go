@@ -1,6 +1,21 @@
 package valueObject
 
+import (
+	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
+
 type Byte int64
+
+func NewByte(value interface{}) (Byte, error) {
+	byteUint, err := voHelper.InterfaceToUint(value)
+	if err != nil {
+		return 0, errors.New("InvalidByte")
+	}
+
+	return Byte(byteUint), nil
+}
 
 func (b Byte) Get() int64 {
 	return int64(b)

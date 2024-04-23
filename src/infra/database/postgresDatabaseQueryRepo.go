@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -65,12 +64,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseSize(
 		return 0, errors.New("GetDatabaseSizeError: " + err.Error())
 	}
 
-	dbSizeInBytes, err := strconv.ParseInt(rawDbSize, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return valueObject.Byte(dbSizeInBytes), nil
+	return valueObject.NewByte(rawDbSize)
 }
 
 func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
@@ -128,7 +122,7 @@ func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
 	for _, dbName := range dbNames {
 		dbSize, err := repo.getDatabaseSize(dbName)
 		if err != nil {
-			dbSize = valueObject.Byte(0)
+			dbSize, _ = valueObject.NewByte(0)
 		}
 
 		dbUsernames, err := repo.getDatabaseUsernames(dbName)

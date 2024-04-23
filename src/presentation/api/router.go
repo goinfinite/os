@@ -91,7 +91,7 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
 	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
 	marketplaceInstalledsGroup.DELETE(
-		"/:marketplaceInstalledItemId/",
+		"/:installedId/",
 		marketplaceController.DeleteInstalledItem,
 	)
 

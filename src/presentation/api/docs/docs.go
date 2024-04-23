@@ -1003,7 +1003,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/installed/{marketplaceInstalledItemId}": {
+        "/marketplace/installed/{installedId}/": {
             "delete": {
                 "security": [
                     {
@@ -1025,9 +1025,17 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "MarketplaceInstalledItemId",
-                        "name": "marketplaceInstalledItemId",
+                        "name": "installedId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "ShouldUninstallServices",
+                        "name": "shouldUninstallServices",
+                        "in": "body",
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ],
                 "responses": {

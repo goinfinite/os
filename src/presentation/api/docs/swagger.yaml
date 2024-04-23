@@ -1170,7 +1170,7 @@ paths:
       summary: GetMarketplaceInstalledItems
       tags:
       - marketplace
-  /marketplace/installed/{marketplaceInstalledItemId}:
+  /marketplace/installed/{installedId}/:
     delete:
       consumes:
       - application/json
@@ -1178,9 +1178,14 @@ paths:
       parameters:
       - description: MarketplaceInstalledItemId
         in: path
-        name: marketplaceInstalledItemId
+        name: installedId
         required: true
         type: integer
+      - description: ShouldUninstallServices
+        in: body
+        name: shouldUninstallServices
+        schema:
+          type: boolean
       produces:
       - application/json
       responses:

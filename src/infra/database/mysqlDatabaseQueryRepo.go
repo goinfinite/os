@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -63,12 +62,7 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseSize(dbName valueObject.DatabaseNa
 		return 0, errors.New("GetDatabaseSizeError")
 	}
 
-	dbSizeInBytes, err := strconv.ParseInt(dbSizeStr, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return valueObject.Byte(dbSizeInBytes), nil
+	return valueObject.NewByte(dbSizeStr)
 }
 
 func (repo MysqlDatabaseQueryRepo) getDatabaseUsernames(
@@ -151,7 +145,7 @@ func (repo MysqlDatabaseQueryRepo) Get() ([]entity.Database, error) {
 	for _, dbName := range dbNames {
 		dbSize, err := repo.getDatabaseSize(dbName)
 		if err != nil {
-			dbSize = valueObject.Byte(0)
+			dbSize, _ = valueObject.NewByte(0)
 		}
 
 		dbUsernames, err := repo.getDatabaseUsernames(dbName)

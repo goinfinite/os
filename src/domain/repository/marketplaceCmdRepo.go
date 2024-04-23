@@ -7,5 +7,8 @@ import (
 
 type MarketplaceCmdRepo interface {
 	InstallItem(installDto dto.InstallMarketplaceCatalogItem) error
-	UninstallItem(installedId valueObject.MarketplaceInstalledItemId) error
+	UninstallItem(
+		installedId valueObject.MarketplaceInstalledItemId,
+		shouldUninstallServices bool,
+	) error
 }

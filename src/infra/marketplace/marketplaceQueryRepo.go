@@ -430,16 +430,12 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	rawCatalogEstimatedSizeBytes, assertOk := catalogItemMap["estimatedSizeBytes"].(float64)
-	if !assertOk {
-		rawCatalogEstimatedSizeBytesInt, assertOk := catalogItemMap["estimatedSizeBytes"].(int)
-		if !assertOk {
-			return catalogItem, errors.New("InvalidMarketplaceCatalogEstimatedSizeBytes")
-		}
-
-		rawCatalogEstimatedSizeBytes = float64(rawCatalogEstimatedSizeBytesInt)
+	catalogEstimatedSizeBytes, err := valueObject.NewByte(
+		catalogItemMap["estimatedSizeBytes"],
+	)
+	if err != nil {
+		return catalogItem, err
 	}
-	catalogEstimatedSizeBytes := valueObject.Byte(rawCatalogEstimatedSizeBytes)
 
 	rawCatalogItemAvatarUrl, assertOk := catalogItemMap["avatarUrl"].(string)
 	if !assertOk {
@@ -528,7 +524,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetCatalogItemById(
-	id valueObject.MarketplaceCatalogItemId,
+	catalogId valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
@@ -538,7 +534,7 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	}
 
 	for _, catalogItem := range catalogItems {
-		if catalogItem.Id.Get() != id.Get() {
+		if catalogItem.Id.Get() != catalogId.Get() {
 			continue
 		}
 
@@ -562,6 +558,10 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 		)
 	}
 
+	if len(installedItemModels) == 0 {
+		return installedItemEntities, errors.New("MarketplaceInstalledItemsNotFound")
+	}
+
 	for _, installedItemModel := range installedItemModels {
 		installedItemEntity, err := installedItemModel.ToEntity()
 		if err != nil {
@@ -579,7 +579,7 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 }
 
 func (repo *MarketplaceQueryRepo) GetInstalledItemById(
-	id valueObject.MarketplaceInstalledItemId,
+	installedId valueObject.MarketplaceInstalledItemId,
 ) (entity.MarketplaceInstalledItem, error) {
 	var installedItem entity.MarketplaceInstalledItem
 
@@ -589,7 +589,7 @@ func (repo *MarketplaceQueryRepo) GetInstalledItemById(
 	}
 
 	for _, installedItem := range installedItems {
-		if installedItem.Id.Get() != id.Get() {
+		if installedItem.Id.Get() != installedId.Get() {
 			continue
 		}
 
