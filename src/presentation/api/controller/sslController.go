@@ -111,8 +111,8 @@ func CreateSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
-// RemoveSslPairVhosts    	 godoc
-// @Summary      RemoveSslPairVhosts
+// DeleteSsslPairVhosts    	 godoc
+// @Summary      DeleteSsslPairVhosts
 // @Description  Create a new ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -121,7 +121,7 @@ func CreateSslPairController(c echo.Context) error {
 // @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /ssl/ [put]
-func RemoveSslPairVhostsController(c echo.Context) error {
+func DeleteSsslPairVhostsController(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 

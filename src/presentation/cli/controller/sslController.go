@@ -89,7 +89,7 @@ func CreateSslPairController() *cobra.Command {
 	return cmd
 }
 
-func RemoveSslPairVhostsController() *cobra.Command {
+func DeleteSsslPairVhostsController() *cobra.Command {
 	var sslPairIdStr string
 	var virtualHostsSlice []string
 
