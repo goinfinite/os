@@ -36,12 +36,13 @@ func NewMarketplaceController(
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
-	marketplaceItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
+
+	catalogItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, catalogItems)
 }
 
 func parseDataFieldsFromBody(
@@ -86,7 +87,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	id := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
+	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	var installDirPtr *valueObject.UnixFilePath
@@ -104,7 +105,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(id, hostname, installDirPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, installDirPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
@@ -130,10 +131,56 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Router       /marketplace/installed/ [get]
 func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
-	marketplaceInstalledItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
+
+	installedItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, marketplaceInstalledItems)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, installedItems)
+}
+
+// DeleteMarketplaceInstalledItem godoc
+// @Summary      DeleteMarketplaceInstalledItem
+// @Description  Delete/Uninstall a marketplace installed item.
+// @Tags         marketplace
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        installedId path uint true "MarketplaceInstalledItemId"
+// @Param        shouldUninstallServices body bool false "ShouldUninstallServices"
+// @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
+// @Router       /marketplace/installed/{installedId}/ [delete]
+func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
+		c.Param("installedId"),
+	)
+
+	shouldUninstallServices := true
+	if requestBody["shouldUninstallServices"] != nil {
+		var err error
+		shouldUninstallServices, err = apiHelper.ParseBoolParam(
+			requestBody["shouldUninstallServices"],
+		)
+		if err != nil {
+			panic("InvalidShouldUninstallServices")
+		}
+	}
+
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
+
+	err := useCase.DeleteMarketplaceInstalledItem(
+		marketplaceQueryRepo,
+		marketplaceCmdRepo,
+		installedId,
+		shouldUninstallServices,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "MarketplaceInstalledItemDeleted")
 }
