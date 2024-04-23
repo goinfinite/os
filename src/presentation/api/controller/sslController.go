@@ -113,7 +113,7 @@ func CreateSslPairController(c echo.Context) error {
 
 // DeleteSsslPairVhosts    	 godoc
 // @Summary      DeleteSsslPairVhosts
-// @Description  Create a new ssl pair.
+// @Description  Delete vhosts from a ssl pair.
 // @Tags         ssl
 // @Accept       json
 // @Produce      json
