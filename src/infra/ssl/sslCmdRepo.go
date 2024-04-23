@@ -340,6 +340,6 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 	return nil
 }
 
-func (repo SslCmdRepo) RemoveVhostFromSslPair(vhost valueObject.Fqdn) error {
+func (repo SslCmdRepo) DeleteSslPairVhosts(vhost valueObject.Fqdn) error {
 	return repo.ReplaceWithSelfSigned(vhost)
 }

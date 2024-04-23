@@ -10,5 +10,5 @@ type SslCmdRepo interface {
 	Create(createSslPair dto.CreateSslPair) error
 	Delete(sslId valueObject.SslId) error
 	ReplaceWithValidSsl(sslPair entity.SslPair) error
-	RemoveVhostFromSslPair(vhost valueObject.Fqdn) error
+	DeleteSslPairVhosts(vhost valueObject.Fqdn) error
 }

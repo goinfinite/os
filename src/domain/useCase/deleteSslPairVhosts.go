@@ -26,10 +26,10 @@ func DeleteSslPairVhosts(
 			continue
 		}
 
-		err = sslCmdRepo.RemoveVhostFromSslPair(vhost)
+		err = sslCmdRepo.DeleteSslPairVhosts(vhost)
 		if err != nil {
 			log.Printf(
-				"RemoveVhostFromSslPairError (%s): %s",
+				"DeleteSslPairVhostsError (%s): %s",
 				vhost.String(),
 				err.Error(),
 			)
