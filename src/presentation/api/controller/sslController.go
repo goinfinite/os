@@ -162,8 +162,8 @@ func SslCertificateWatchdogController() {
 	}
 }
 
-// DeleteSsslPairVhosts    	 godoc
-// @Summary      DeleteSsslPairVhosts
+// DeleteSslPairVhosts    	 godoc
+// @Summary      DeleteSslPairVhosts
 // @Description  Delete vhosts from a ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -172,7 +172,7 @@ func SslCertificateWatchdogController() {
 // @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /ssl/vhost/ [put]
-func DeleteSsslPairVhostsController(c echo.Context) error {
+func DeleteSslPairVhostsController(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
