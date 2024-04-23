@@ -118,7 +118,7 @@ func CreateSslPairController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        removeSslPairVhostsDto 	  body    dto.RemoveSslPairVhosts  true  "SslPairVhostsRemoved"
+// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /ssl/ [put]
 func RemoveSslPairVhostsController(c echo.Context) error {
@@ -136,7 +136,7 @@ func RemoveSslPairVhostsController(c echo.Context) error {
 	sslCmdRepo := sslInfra.NewSslCmdRepo()
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
-	err := useCase.RemoveSslPairVhosts(
+	err := useCase.DeleteSslPairVhosts(
 		sslQueryRepo,
 		sslCmdRepo,
 		vhostQueryRepo,
@@ -146,7 +146,7 @@ func RemoveSslPairVhostsController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsRemoved")
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsDeleted")
 }
 
 // DeleteSsl	 godoc

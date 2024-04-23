@@ -109,7 +109,7 @@ func RemoveSslPairVhostsController() *cobra.Command {
 			sslQueryRepo := sslInfra.SslQueryRepo{}
 			sslCmdRepo := sslInfra.NewSslCmdRepo()
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			err := useCase.RemoveSslPairVhosts(
+			err := useCase.DeleteSslPairVhosts(
 				sslQueryRepo,
 				sslCmdRepo,
 				vhostQueryRepo,

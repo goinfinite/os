@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func RemoveSslPairVhosts(
+func DeleteSslPairVhosts(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
