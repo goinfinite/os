@@ -111,44 +111,6 @@ func CreateSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
-// DeleteSsslPairVhosts    	 godoc
-// @Summary      DeleteSsslPairVhosts
-// @Description  Delete vhosts from a ssl pair.
-// @Tags         ssl
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
-// @Success      200 {object} object{} "SslPairVhostsRemoved"
-// @Router       /ssl/ [put]
-func DeleteSsslPairVhostsController(c echo.Context) error {
-	requiredParams := []string{"sslPairId", "virtualHosts"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
-	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
-
-	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
-
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-
-	err := useCase.DeleteSslPairVhosts(
-		sslQueryRepo,
-		sslCmdRepo,
-		vhostQueryRepo,
-		dto,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsDeleted")
-}
-
 // DeleteSsl	 godoc
 // @Summary      DeleteSslPair
 // @Description  Delete a ssl pair.
@@ -198,4 +160,42 @@ func SslCertificateWatchdogController() {
 		)
 		sslCertificateWatchdog.Execute()
 	}
+}
+
+// DeleteSsslPairVhosts    	 godoc
+// @Summary      DeleteSsslPairVhosts
+// @Description  Delete vhosts from a ssl pair.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
+// @Success      200 {object} object{} "SslPairVhostsRemoved"
+// @Router       /ssl/vhost/ [put]
+func DeleteSsslPairVhostsController(c echo.Context) error {
+	requiredParams := []string{"sslPairId", "virtualHosts"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
+	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
+
+	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+
+	err := useCase.DeleteSslPairVhosts(
+		sslQueryRepo,
+		sslCmdRepo,
+		vhostQueryRepo,
+		dto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsDeleted")
 }
