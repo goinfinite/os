@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"reflect"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -34,19 +33,32 @@ func GetSslPairsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, sslPairsList)
 }
 
-func parseVirtualHosts(vhosts []interface{}) []valueObject.Fqdn {
-	var virtualHosts []valueObject.Fqdn
+func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
+	var vhosts []valueObject.Fqdn
 
-	for _, vhost := range vhosts {
-		vhostStr, assertOk := vhost.(string)
-		if !assertOk {
-			panic("InvalidVirtualHosts")
+	switch rawVhosts := vhostsBodyInput.(type) {
+	case string:
+		vhosts = append(
+			vhosts,
+			valueObject.NewFqdnPanic(rawVhosts),
+		)
+	case []interface{}:
+		for _, rawVhostInterface := range rawVhosts {
+			vhostStr, assertOk := rawVhostInterface.(string)
+			if !assertOk {
+				continue
+			}
+
+			vhost, err := valueObject.NewFqdn(vhostStr)
+			if err != nil {
+				continue
+			}
+
+			vhosts = append(vhosts, vhost)
 		}
-
-		virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhostStr))
 	}
 
-	return virtualHosts
+	return vhosts
 }
 
 // CreateSsl    	 godoc
@@ -76,18 +88,10 @@ func CreateSslPairController(c echo.Context) error {
 	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
 	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
 
-	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
-	if !assertOk {
-		virtualHostStr, assertOk := requestBody["virtualHosts"].(string)
-		if !assertOk {
-			panic("InvalidVirtualHosts")
-		}
-
-		virtualHosts = []interface{}{virtualHostStr}
-	}
+	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
 
 	createSslPairDto := dto.NewCreateSslPair(
-		parseVirtualHosts(virtualHosts),
+		virtualHosts,
 		sslCertificate,
 		sslPrivateKey,
 	)
@@ -107,32 +111,6 @@ func CreateSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
-func getVhostsSliceFromBody(vhostBodyInput interface{}) []valueObject.Fqdn {
-	var vhosts []valueObject.Fqdn
-
-	vhostBodyInputType := reflect.TypeOf(vhostBodyInput).Kind()
-
-	switch vhostBodyInputType {
-	case reflect.String:
-		vhosts = append(
-			vhosts,
-			valueObject.NewFqdnPanic(vhostBodyInput.(string)),
-		)
-	case reflect.Slice:
-		for _, vhostBodyInterface := range vhostBodyInput.([]interface{}) {
-			vhostStr := vhostBodyInterface.(string)
-			vhost, err := valueObject.NewFqdn(vhostStr)
-			if err != nil {
-				continue
-			}
-
-			vhosts = append(vhosts, vhost)
-		}
-	}
-
-	return vhosts
-}
-
 // RemoveSslPairVhosts    	 godoc
 // @Summary      RemoveSslPairVhosts
 // @Description  Create a new ssl pair.
@@ -150,13 +128,14 @@ func RemoveSslPairVhostsController(c echo.Context) error {
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
-	virtualHosts := getVhostsSliceFromBody(requestBody["virtualHosts"])
+	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
 
 	dto := dto.NewRemoveSslPairVhosts(sslPairId, virtualHosts)
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo()
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+
 	err := useCase.RemoveSslPairVhosts(
 		sslQueryRepo,
 		sslCmdRepo,
