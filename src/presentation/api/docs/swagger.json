@@ -997,6 +997,51 @@
                 }
             }
         },
+        "/marketplace/installed/{installedId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete/Uninstall a marketplace installed item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marketplace"
+                ],
+                "summary": "DeleteMarketplaceInstalledItem",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MarketplaceInstalledItemId",
+                        "name": "installedId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ShouldUninstallServices",
+                        "name": "shouldUninstallServices",
+                        "in": "body",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MarketplaceInstalledItemDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/o11y/overview/": {
             "get": {
                 "security": [
