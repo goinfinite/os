@@ -1,0 +1,43 @@
+{
+    "name": "drupal",
+    "type": "app",
+    "description": "Drupal is an open source platform for building amazing digital experiences. It&#039;s made by a dedicated community. Anyone can use it, and it will always be free.",
+    "serviceNames": ["php", "mysql"],
+    "mappings": [
+        {
+            "path": "/php-ws",
+            "matchPattern": "begins-with",
+            "targetType": "service",
+            "targetServiceName": "php"
+        },
+        {
+            "path": "/",
+            "matchPattern": "begins-with",
+            "targetType": "static-files"
+        }
+    ],
+    "dataFields": [
+        {
+            "key": "dbName",
+            "isRequired": true
+        }
+    ],
+    "cmdSteps": [
+        "wget -O %installDirectory%/composer-setup.php https://getcomposer.org/installer",
+        "php -r \"if (hash_file('sha384', '%installDirectory%/composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('%installDirectory%/composer-setup.php'); } echo PHP_EOL;\"",
+        "php %installDirectory%/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
+        "rm -rf %installDirectory%/composer-setup.php",
+        "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project %installDirectory% -q -n --prefer-dist",
+        "sos db create -n %dbName% -t mysql",
+        "echo $(openssl rand -hex 8) > %installDirectory%/drupalDbCredentials",
+        "sos db create-user -n %dbName% -t mysql -u drupalUser_%installUuid% -p $(cat %installDirectory%/drupalDbCredentials) -r all",
+        "rm -rf %installDirectory%/drupalDbCredentials",
+        "sos runtime php update-module -n sqlite3 -v 8.2",
+        "sos runtime php update-module -n pdo_sqlite -v 8.2"
+    ],
+    "estimatedSizeBytes": 450000000,
+    "avatarUrl": "https://www.google.com",
+    "screenshotUrls": [
+        "https://www.google.com"
+    ]
+}
