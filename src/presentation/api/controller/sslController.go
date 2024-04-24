@@ -185,12 +185,10 @@ func DeleteSslPairVhostsController(c echo.Context) error {
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo()
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	err := useCase.DeleteSslPairVhosts(
 		sslQueryRepo,
 		sslCmdRepo,
-		vhostQueryRepo,
 		dto,
 	)
 	if err != nil {

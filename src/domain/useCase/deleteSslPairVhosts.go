@@ -11,29 +11,17 @@ import (
 func DeleteSslPairVhosts(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
-	deleteSslPairVhosts dto.DeleteSslPairVhosts,
+	dto dto.DeleteSslPairVhosts,
 ) error {
-	_, err := sslQueryRepo.GetSslPairById(deleteSslPairVhosts.SslPairId)
+	_, err := sslQueryRepo.GetSslPairById(dto.SslPairId)
 	if err != nil {
 		return errors.New("SslPairNotFound")
 	}
 
-	for _, vhost := range deleteSslPairVhosts.VirtualHosts {
-		_, err := vhostQueryRepo.GetByHostname(vhost)
-		if err != nil {
-			log.Printf("VhostNotFound: %s", vhost.String())
-			continue
-		}
-
-		err = sslCmdRepo.DeleteSslPairVhosts(vhost)
-		if err != nil {
-			log.Printf(
-				"DeleteSslPairVhostsError (%s): %s",
-				vhost.String(),
-				err.Error(),
-			)
-		}
+	err = sslCmdRepo.DeleteSslPairVhosts(dto)
+	if err != nil {
+		log.Printf("DeleteSslPairVhostsError: %s", err.Error())
+		return errors.New("DeleteSslPairVhostsInfraError")
 	}
 
 	return nil
