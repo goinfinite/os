@@ -481,10 +481,6 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 		)
 	}
 
-	if len(catalogItemFiles) == 0 {
-		return catalogItems, errors.New("MarketplaceItemsEmpty")
-	}
-
 	for catalogItemFileIndex, catalogItemFile := range catalogItemFiles {
 		catalogItemFileName := catalogItemFile.Name()
 
@@ -556,10 +552,6 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 		return installedItemEntities, errors.New(
 			"DatabaseQueryMarketplaceInstalledItemsError",
 		)
-	}
-
-	if len(installedItemModels) == 0 {
-		return installedItemEntities, errors.New("MarketplaceInstalledItemsNotFound")
 	}
 
 	for _, installedItemModel := range installedItemModels {
