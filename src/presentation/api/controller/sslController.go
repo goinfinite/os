@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -34,28 +35,29 @@ func GetSslPairsController(c echo.Context) error {
 }
 
 func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
-	var vhosts []valueObject.Fqdn
+	rawVhosts := []interface{}{}
 
-	switch rawVhosts := vhostsBodyInput.(type) {
-	case string:
-		vhosts = append(
-			vhosts,
-			valueObject.NewFqdnPanic(rawVhosts),
-		)
-	case []interface{}:
-		for _, rawVhostInterface := range rawVhosts {
-			vhostStr, assertOk := rawVhostInterface.(string)
-			if !assertOk {
-				continue
-			}
-
-			vhost, err := valueObject.NewFqdn(vhostStr)
-			if err != nil {
-				continue
-			}
-
-			vhosts = append(vhosts, vhost)
+	rawVhostsInterface, assertOk := vhostsBodyInput.([]interface{})
+	if !assertOk {
+		rawVhostStr, assertOk := vhostsBodyInput.(string)
+		if !assertOk {
+			panic("InvalidVirtualHosts")
 		}
+
+		rawVhostInterface := interface{}(rawVhostStr)
+		rawVhosts = append(rawVhosts, rawVhostInterface)
+	}
+
+	rawVhosts = slices.Concat(rawVhosts, rawVhostsInterface)
+
+	vhosts := []valueObject.Fqdn{}
+	for _, rawVhost := range rawVhosts {
+		rawVhostStr, assertOk := rawVhost.(string)
+		if !assertOk {
+			continue
+		}
+
+		vhosts = append(vhosts, valueObject.NewFqdnPanic(rawVhostStr))
 	}
 
 	return vhosts
