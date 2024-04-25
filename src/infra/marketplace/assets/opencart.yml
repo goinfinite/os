@@ -5,13 +5,10 @@ serviceNames:
   - php
   - mysql
 mappings:
-  - path: /php-ws
+  - path: /
     matchPattern: begins-with
     targetType: service
     targetServiceName: php
-  - path: /
-    matchPattern: begins-with
-    targetType: static-files
 dataFields:
   - key: dbName
     isRequired: true
