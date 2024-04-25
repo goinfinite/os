@@ -341,10 +341,10 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 }
 
 func (repo SslCmdRepo) DeleteSslPairVhosts(
-	deleteSslPairVhostsDto dto.DeleteSslPairVhosts,
+	deleteDto dto.DeleteSslPairVhosts,
 ) error {
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	for _, vhost := range deleteSslPairVhostsDto.VirtualHosts {
+	for _, vhost := range deleteDto.VirtualHosts {
 		_, err := vhostQueryRepo.GetByHostname(vhost)
 		if err != nil {
 			continue
