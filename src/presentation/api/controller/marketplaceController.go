@@ -32,7 +32,7 @@ func NewMarketplaceController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {string} entity.MarketplaceCatalogItem
+// @Success      200 {array} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
@@ -131,7 +131,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {string} entity.MarketplaceInstalledItem
+// @Success      200 {array} entity.MarketplaceInstalledItem
 // @Router       /marketplace/installed/ [get]
 func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
