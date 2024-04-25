@@ -33,19 +33,28 @@ func GetSslPairsController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, sslPairsList)
 }
 
-func parseVirtualHosts(vhosts []interface{}) []valueObject.Fqdn {
-	var virtualHosts []valueObject.Fqdn
-
-	for _, vhost := range vhosts {
-		vhostStr, assertOk := vhost.(string)
-		if !assertOk {
-			panic("InvalidVirtualHosts")
-		}
-
-		virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhostStr))
+func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
+	_, isStringType := vhostsBodyInput.(string)
+	if isStringType {
+		vhostsBodyInput = []interface{}{vhostsBodyInput}
 	}
 
-	return virtualHosts
+	rawVhosts, isInterfaceSliceType := vhostsBodyInput.([]interface{})
+	if !isInterfaceSliceType {
+		panic("InvalidVirtualHosts")
+	}
+
+	vhosts := []valueObject.Fqdn{}
+	for _, rawVhost := range rawVhosts {
+		rawVhostStr, assertOk := rawVhost.(string)
+		if !assertOk {
+			continue
+		}
+
+		vhosts = append(vhosts, valueObject.NewFqdnPanic(rawVhostStr))
+	}
+
+	return vhosts
 }
 
 // CreateSsl    	 godoc
@@ -75,18 +84,10 @@ func CreateSslPairController(c echo.Context) error {
 	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
 	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
 
-	virtualHosts, assertOk := requestBody["virtualHosts"].([]interface{})
-	if !assertOk {
-		virtualHostStr, assertOk := requestBody["virtualHosts"].(string)
-		if !assertOk {
-			panic("InvalidVirtualHosts")
-		}
-
-		virtualHosts = []interface{}{virtualHostStr}
-	}
+	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
 
 	createSslPairDto := dto.NewCreateSslPair(
-		parseVirtualHosts(virtualHosts),
+		virtualHosts,
 		sslCertificate,
 		sslPrivateKey,
 	)
@@ -155,4 +156,40 @@ func SslCertificateWatchdogController() {
 		)
 		sslCertificateWatchdog.Execute()
 	}
+}
+
+// DeleteSslPairVhosts    	 godoc
+// @Summary      DeleteSslPairVhosts
+// @Description  Delete vhosts from a ssl pair.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
+// @Success      200 {object} object{} "SslPairVhostsRemoved"
+// @Router       /ssl/vhost/ [put]
+func DeleteSslPairVhostsController(c echo.Context) error {
+	requiredParams := []string{"sslPairId", "virtualHosts"}
+	requestBody, _ := apiHelper.GetRequestBody(c)
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
+
+	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
+	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
+
+	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo()
+
+	err := useCase.DeleteSslPairVhosts(
+		sslQueryRepo,
+		sslCmdRepo,
+		dto,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairVhostsDeleted")
 }
