@@ -10,6 +10,4 @@ mappings:
     targetType: service
     targetServiceName: php
 estimatedSizeBytes: 2000000000
-avatarUrl: https://www.google.com
-screenshotUrls:
-  - https://www.google.com
+avatarUrl: https://speedia.net/assets/os/marketplace/php-mysql/php-mysql-avatar.jpg
