@@ -347,6 +347,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 ) ([]valueObject.Url, error) {
 	itemUrls := []valueObject.Url{}
 
+	if catalogItemUrlsMap == nil {
+		return itemUrls, nil
+	}
+
 	rawItemUrls, assertOk := catalogItemUrlsMap.([]interface{})
 	if !assertOk {
 		return itemUrls, errors.New("InvalidMarketplaceCatalogItemUrls")
