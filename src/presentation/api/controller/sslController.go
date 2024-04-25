@@ -197,5 +197,5 @@ func DeleteSslPairVhostsController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairVhostsDeleted")
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairVhostsDeleted")
 }
