@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -35,20 +34,15 @@ func GetSslPairsController(c echo.Context) error {
 }
 
 func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
-	rawVhosts := []interface{}{}
-
-	rawVhostsInterface, assertOk := vhostsBodyInput.([]interface{})
-	if !assertOk {
-		rawVhostStr, assertOk := vhostsBodyInput.(string)
-		if !assertOk {
-			panic("InvalidVirtualHosts")
-		}
-
-		rawVhostInterface := interface{}(rawVhostStr)
-		rawVhosts = append(rawVhosts, rawVhostInterface)
+	_, isStringType := vhostsBodyInput.(string)
+	if isStringType {
+		vhostsBodyInput = []interface{}{vhostsBodyInput}
 	}
 
-	rawVhosts = slices.Concat(rawVhosts, rawVhostsInterface)
+	rawVhosts, isInterfaceSliceType := vhostsBodyInput.([]interface{})
+	if !isInterfaceSliceType {
+		panic("InvalidVirtualHosts")
+	}
 
 	vhosts := []valueObject.Fqdn{}
 	for _, rawVhost := range rawVhosts {
