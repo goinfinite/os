@@ -36,8 +36,10 @@
         "rm -rf /speedia/joomla && rm -rf %installDirectory%/joomlaDbCredentials"
     ],
     "estimatedSizeBytes": 450000000,
-    "avatarUrl": "https://www.google.com",
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
     "screenshotUrls": [
-        "https://www.google.com"
+        "https://speedia.net/assets/os/marketplace/joomla/joomla-1.jpg",
+        "https://speedia.net/assets/os/marketplace/joomla/joomla-2.jpg",
+        "https://speedia.net/assets/os/marketplace/joomla/joomla-3.jpg"
     ]
 }
