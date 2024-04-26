@@ -294,7 +294,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isHttpSupported {
 		locationContent += `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["http"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["http"] + `";
 `
 	}
 
@@ -302,18 +302,18 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isHttpsSupported {
 		locationContent += `
 	set $protocol "https";
-	set $backend "localhost:` + protocolPortsMap["https"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["https"] + `";
 `
 	}
 
 	if isHttpSupported && isHttpsSupported {
 		locationContent = `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["http"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["http"] + `";
 
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["https"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["https"] + `";
 	}
 `
 	}
@@ -325,7 +325,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isWsSupported && !isHttpOrHttpsSupported {
 		locationContent += `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 `
 	}
 
@@ -333,7 +333,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	if ($scheme = http) {
 		set $protocol "http";
-		set $backend "localhost:` + protocolPortsMap["ws"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 	}
 `
 	}
@@ -341,7 +341,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if !isWsSupported && isWssSupported && !isHttpOrHttpsSupported {
 		locationContent += `
 	set $protocol "https";
-	set $backend "localhost:` + protocolPortsMap["wss"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 `
 	}
 
@@ -349,7 +349,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 	}
 `
 	}
@@ -358,11 +358,11 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isWsAndWssSupported && !isHttpOrHttpsSupported {
 		locationContent = `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 	}
 `
 	}
@@ -382,7 +382,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isGrpcSupported && !isHttpOrHttpsSupported {
 		locationContent += `
 	set $protocol "grpc";
-	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 `
 	}
 
@@ -390,7 +390,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	if ($scheme = grpc) {
 		set $protocol "grpc";
-		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 	}
 `
 	}
@@ -399,7 +399,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isGrpcsSupported && !isHttpOrHttpsSupported {
 		locationContent += `
 	set $protocol "grpcs";
-	set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 `
 	}
 
@@ -407,7 +407,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 		locationContent += `
 	if ($scheme = grpcs) {
 		set $protocol "grpcs";
-		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 	}
 		`
 	}
@@ -434,11 +434,11 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isGrpcAndGrpcsSupported && !isHttpOrHttpsSupported {
 		locationContent = `
 	set $protocol "grpc";
-	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 
 	if ($scheme = grpcs) {
 		set $protocol "grpcs";
-		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 	}
 `
 	}
@@ -475,7 +475,7 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	if isTcpSupported {
 		locationContent += `
 	set $protocol "tcp";
-	set $backend "localhost:` + protocolPortsMap["tcp"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["tcp"] + `";
 	proxy_pass $protocol://$backend;
 `
 	}
