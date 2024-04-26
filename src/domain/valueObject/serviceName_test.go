@@ -1,6 +1,8 @@
 package valueObject
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestServiceName(t *testing.T) {
 	t.Run("ValidServiceNames", func(t *testing.T) {

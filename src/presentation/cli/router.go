@@ -3,19 +3,24 @@ package cli
 import (
 	"fmt"
 
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	api "github.com/speedianet/os/src/presentation/api"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
 
 type Router struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewRouter(transientDbSvc *internalDatabaseInfra.TransientDatabaseService) *Router {
+func NewRouter(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *Router {
 	return &Router{
-		transientDbSvc: transientDbSvc,
+		transientDbSvc:  transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
 	}
 }
 
@@ -67,6 +72,21 @@ func (router Router) databaseRoutes() {
 	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
 }
 
+func (router Router) marketplaceRoutes() {
+	var marketplaceCmd = &cobra.Command{
+		Use:   "mktplace",
+		Short: "Marketplace",
+	}
+
+	rootCmd.AddCommand(marketplaceCmd)
+
+	marketplaceController := cliController.NewMarketplaceController(
+		router.persistentDbSvc,
+	)
+	marketplaceCmd.AddCommand(marketplaceController.GetCatalog())
+	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
+}
+
 func (router Router) o11yRoutes() {
 	var o11yCmd = &cobra.Command{
 		Use:   "o11y",
@@ -101,7 +121,7 @@ func (router Router) serveRoutes() {
 		Use:   "serve",
 		Short: "Start the SOS server (default to port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
-			api.ApiInit(router.transientDbSvc)
+			api.ApiInit(router.transientDbSvc, router.persistentDbSvc)
 		},
 	}
 
@@ -132,6 +152,7 @@ func (router Router) sslRoutes() {
 	rootCmd.AddCommand(sslCmd)
 	sslCmd.AddCommand(cliController.GetSslPairsController())
 	sslCmd.AddCommand(cliController.CreateSslPairController())
+	sslCmd.AddCommand(cliController.DeleteSslPairVhostsController())
 	sslCmd.AddCommand(cliController.DeleteSslPairController())
 }
 
@@ -163,6 +184,7 @@ func (router Router) RegisterRoutes() {
 	router.accountRoutes()
 	router.cronRoutes()
 	router.databaseRoutes()
+	router.marketplaceRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
 	router.serveRoutes()

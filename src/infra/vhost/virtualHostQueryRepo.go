@@ -11,6 +11,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	infraData "github.com/speedianet/os/src/infra/infraData"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	"golang.org/x/exp/slices"
 )
@@ -90,7 +91,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 			rootDirectorySuffix = ""
 		}
 		rootDirectory, err := valueObject.NewUnixFilePath(
-			"/app/html" + rootDirectorySuffix,
+			infraData.GlobalConfigs.PrimaryPublicDir + rootDirectorySuffix,
 		)
 		if err != nil {
 			log.Printf("InvalidRootDirectory: %s", rootDirectorySuffix)

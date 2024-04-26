@@ -21,7 +21,7 @@ func TestNewMappingPath(t *testing.T) {
 		for _, path := range validMappingPaths {
 			_, err := NewMappingPath(path)
 			if err != nil {
-				t.Errorf("ExpectingNoErrorButGot: %s [%s]", err.Error(), path)
+				t.Errorf("Expected no error for %s, got %s", path, err.Error())
 			}
 		}
 	})
@@ -39,7 +39,7 @@ func TestNewMappingPath(t *testing.T) {
 		for _, path := range invalidMappingPaths {
 			_, err := NewMappingPath(path)
 			if err == nil {
-				t.Errorf("ExpectingErrorButDidNotGetFor: %v", path)
+				t.Errorf("Expected error for %s, got nil", path)
 			}
 		}
 	})

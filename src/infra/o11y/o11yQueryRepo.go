@@ -14,17 +14,17 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDatabaseInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService
+	transientDbSvc *internalDbInfra.TransientDatabaseService
 }
 
 func NewO11yQueryRepo(
-	transientDbSvc *internalDatabaseInfra.TransientDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yQueryRepo {
 	return &O11yQueryRepo{
 		transientDbSvc: transientDbSvc,
@@ -114,7 +114,7 @@ func (repo *O11yQueryRepo) getCpuQuota() (int64, error) {
 	return cpuQuotaInt, nil
 }
 
-func (repo *O11yQueryRepo) getMemoryLimit() (int64, error) {
+func (repo *O11yQueryRepo) getMemoryLimit() (valueObject.Byte, error) {
 	memLimitFile := "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 	if repo.isCgroupV2() {
 		memLimitFile = "/sys/fs/cgroup/memory.max"
@@ -136,24 +136,40 @@ func (repo *O11yQueryRepo) getMemoryLimit() (int64, error) {
 		memLimitInt = int64(sysInfo.Totalram * uint64(sysInfo.Unit))
 	}
 
-	return memLimitInt, nil
+	return valueObject.NewByte(memLimitInt)
 }
 
 func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
+	var storageInfo valueObject.StorageInfo
+
 	var stat syscall.Statfs_t
 	err := syscall.Statfs("/", &stat)
 	if err != nil {
-		return valueObject.StorageInfo{}, errors.New("StorageInfoError")
+		return storageInfo, errors.New("StorageInfoError")
 	}
 
-	storageTotal := stat.Blocks * uint64(stat.Bsize)
-	storageAvailable := stat.Bavail * uint64(stat.Bsize)
-	storageUsed := storageTotal - storageAvailable
+	storageTotalUint := stat.Blocks * uint64(stat.Bsize)
+	storageTotal, err := valueObject.NewByte(storageTotalUint)
+	if err != nil {
+		return storageInfo, err
+	}
+
+	storageAvailableUint := stat.Bavail * uint64(stat.Bsize)
+	storageAvailable, err := valueObject.NewByte(storageAvailableUint)
+	if err != nil {
+		return storageInfo, err
+	}
+
+	storageUsedUint := storageTotalUint - storageAvailableUint
+	storageUsed, err := valueObject.NewByte(storageUsedUint)
+	if err != nil {
+		return storageInfo, err
+	}
 
 	return valueObject.NewStorageInfo(
-		valueObject.Byte(storageTotal),
-		valueObject.Byte(storageAvailable),
-		valueObject.Byte(storageUsed),
+		storageTotal,
+		storageAvailable,
+		storageUsed,
 	), nil
 }
 
@@ -207,7 +223,7 @@ func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error)
 		cpuModel,
 		cpuCores,
 		cpuFrequencyFloat,
-		valueObject.Byte(memoryLimit),
+		memoryLimit,
 		storageInfo.Total,
 	), nil
 }

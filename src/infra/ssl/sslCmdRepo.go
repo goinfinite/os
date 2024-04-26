@@ -213,7 +213,7 @@ func (repo SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("DomainIsNotMappedToServer")
 	}
 
-	vhostRootDir := "/app/html"
+	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
 		vhostRootDir += "/" + firstVhostStr
 	}
@@ -334,6 +334,29 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhost.String())
 			continue
+		}
+	}
+
+	return nil
+}
+
+func (repo SslCmdRepo) DeleteSslPairVhosts(
+	deleteDto dto.DeleteSslPairVhosts,
+) error {
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	for _, vhost := range deleteDto.VirtualHosts {
+		_, err := vhostQueryRepo.GetByHostname(vhost)
+		if err != nil {
+			continue
+		}
+
+		err = repo.ReplaceWithSelfSigned(vhost)
+		if err != nil {
+			log.Printf(
+				"DeleteSslPairVhostsError (%s): %s",
+				vhost.String(),
+				err.Error(),
+			)
 		}
 	}
 
