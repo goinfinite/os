@@ -181,6 +181,22 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	return nil
 }
 
+func (repo *MarketplaceCmdRepo) updateInstalledFilesOwnership(
+	installDir valueObject.UnixFilePath,
+) error {
+	installDirStr := installDir.String()
+	_, err := infraHelper.RunCmdWithSubShell(
+		"chown -R nobody:nogroup " + installDirStr,
+	)
+	if err != nil {
+		return errors.New(
+			"UpdateInstalledFilesOwnershipError (" + installDirStr + "): " + err.Error(),
+		)
+	}
+
+	return nil
+}
+
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
@@ -295,6 +311,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		catalogItem.DataFields,
 		receivedDataFields,
 	)
+	if err != nil {
+		return err
+	}
+
+	err = repo.updateInstalledFilesOwnership(installDir)
 	if err != nil {
 		return err
 	}
