@@ -484,76 +484,6 @@ func (repo VirtualHostCmdRepo) serviceLocationContentFactory(
 	return locationContent, nil
 }
 
-func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) error {
-	locationStartBlock := repo.mappingToLocationStartBlock(
-		createMapping.MatchPattern,
-		createMapping.Path,
-	)
-
-	responseCodeStr := ""
-	if createMapping.TargetHttpResponseCode != nil {
-		responseCodeStr = createMapping.TargetHttpResponseCode.String()
-	}
-	locationContent := "	return " + responseCodeStr
-
-	isStaticFiles := createMapping.TargetType.String() == "static-files"
-	if isStaticFiles {
-		locationContent = "	try_files $uri $uri/ index.html?$query_string"
-	}
-
-	if createMapping.TargetType.String() == "url" {
-		locationContent += " " + createMapping.TargetUrl.String()
-	}
-
-	if createMapping.TargetType.String() == "inline-html" {
-		locationContent = "	add_header Content-Type text/html;\n" + locationContent
-		locationContent += " '" + createMapping.TargetInlineHtmlContent.String() + "'"
-	}
-
-	locationContent += ";"
-
-	isService := createMapping.TargetType.String() == "service"
-	if isService {
-		var err error
-		locationContent, err = repo.serviceLocationContentFactory(createMapping)
-		if err != nil {
-			return errors.New("ServiceLocationContentFactoryFailed: " + err.Error())
-		}
-	}
-
-	locationBlock := locationStartBlock + `
-` + locationContent + `
-}
-`
-
-	vhostQueryRepo := VirtualHostQueryRepo{}
-	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
-		createMapping.Hostname,
-	)
-	if err != nil {
-		return errors.New("GetVirtualHostMappingsFilePathFailed")
-	}
-
-	isPhpService := isService && createMapping.TargetServiceName.String() == "php"
-	if isPhpService {
-		err = repo.CreatePhpVirtualHost(createMapping.Hostname)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = infraHelper.UpdateFile(
-		mappingFilePath.String(),
-		locationBlock,
-		false,
-	)
-	if err != nil {
-		return errors.New("CreateMappingFailed")
-	}
-
-	return repo.ReloadWebServer()
-}
-
 func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 	vhostQueryRepo := VirtualHostQueryRepo{}
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
@@ -652,7 +582,7 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		return err
 	}
 
-	mappingDto := dto.NewCreateMapping(
+	_ = dto.NewCreateMapping(
 		mapping.Hostname,
 		mapping.Path,
 		mapping.MatchPattern,
@@ -663,5 +593,6 @@ func (repo VirtualHostCmdRepo) RecreateMapping(mapping entity.Mapping) error {
 		mapping.TargetInlineHtmlContent,
 	)
 
-	return repo.CreateMapping(mappingDto)
+	//return repo.CreateMapping(mappingDto)
+	return nil
 }
