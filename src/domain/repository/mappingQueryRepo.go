@@ -8,4 +8,5 @@ import (
 type MappingQueryRepo interface {
 	GetById(id valueObject.MappingId) (entity.Mapping, error)
 	GetByHostname(hostname valueObject.Fqdn) ([]entity.Mapping, error)
+	GetByServiceName(serviceName valueObject.ServiceName) ([]entity.Mapping, error)
 }

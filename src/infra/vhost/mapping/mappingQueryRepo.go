@@ -62,3 +62,32 @@ func (repo *MappingQueryRepo) GetByHostname(
 
 	return mappingEntities, nil
 }
+
+func (repo *MappingQueryRepo) GetByServiceName(
+	serviceName valueObject.ServiceName,
+) ([]entity.Mapping, error) {
+	mappingEntities := []entity.Mapping{}
+
+	mappingModels := []dbModel.Mapping{}
+
+	svcNameStr := serviceName.String()
+	svcNamePtr := &svcNameStr
+	err := repo.persistentDbSvc.Handler.Model(
+		dbModel.Mapping{TargetValue: svcNamePtr},
+	).Find(&mappingModels).Error
+	if err != nil {
+		return mappingEntities, errors.New("DbQueryMappingsError")
+	}
+
+	for _, mappingModel := range mappingModels {
+		mappingEntity, err := mappingModel.ToEntity()
+		if err != nil {
+			log.Printf("MappingModelToEntityError: %s", err.Error())
+			continue
+		}
+
+		mappingEntities = append(mappingEntities, mappingEntity)
+	}
+
+	return mappingEntities, nil
+}
