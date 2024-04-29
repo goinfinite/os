@@ -369,9 +369,9 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 	for _, installedItemMapping := range installedItem.Mappings {
-		err = vhostCmdRepo.DeleteMapping(installedItemMapping)
+		err = mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
 			log.Printf(
 				"DeleteInstalledItemMappingError (%s): %s",
