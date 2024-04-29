@@ -154,7 +154,7 @@ func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	mappingsGroup.GET("/", vhostController.GetVirtualHostsWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateVirtualHostMapping)
 	mappingsGroup.DELETE(
-		"/:hostname/:mappingId/",
+		"/:mappingId/",
 		vhostController.DeleteVirtualHostMapping,
 	)
 }

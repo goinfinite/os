@@ -260,20 +260,18 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 // @Param        hostname path string true "Hostname"
 // @Param        mappingId path uint true "MappingId"
 // @Success      200 {object} object{} "MappingDeleted"
-// @Router       /vhosts/mapping/{hostname}/{mappingId}/ [delete]
+// @Router       /vhosts/mapping/{mappingId}/ [delete]
 func (controller VirtualHostController) DeleteVirtualHostMapping(
 	c echo.Context,
 ) error {
-	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteMapping(
-		vhostQueryRepo,
-		vhostCmdRepo,
-		hostname,
+		mappingQueryRepo,
+		mappingCmdRepo,
 		mappingId,
 	)
 	if err != nil {

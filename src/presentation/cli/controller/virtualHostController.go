@@ -267,23 +267,20 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 }
 
 func (controller VirtualHostController) DeleteVirtualHostMapping() *cobra.Command {
-	var hostnameStr string
 	var mappingIdUint uint
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
 
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteMapping(
-				vhostQueryRepo,
-				vhostCmdRepo,
-				hostname,
+				mappingQueryRepo,
+				mappingCmdRepo,
 				mappingId,
 			)
 			if err != nil {
@@ -294,8 +291,6 @@ func (controller VirtualHostController) DeleteVirtualHostMapping() *cobra.Comman
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHost Hostname")
-	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().UintVarP(&mappingIdUint, "id", "i", 0, "MappingId")
 	cmd.MarkFlagRequired("id")
 	return cmd
