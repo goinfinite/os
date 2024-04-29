@@ -35,30 +35,30 @@ func NewMappingCmdRepo(
 func (repo *MappingCmdRepo) mappingConfigFactory(
 	mapping entity.Mapping,
 ) (string, error) {
-	nginxConfig := "location " + mapping.Path.String() + " {"
+	mappingConfig := "location " + mapping.Path.String() + " {"
 
 	switch mapping.TargetType.String() {
 	case "url":
-		nginxConfig += `
+		mappingConfig += `
 	return 301 ` + mapping.TargetUrl.String() + `;`
 	case "service":
-		nginxConfig += ``
+		mappingConfig += ``
 	case "response-code":
-		nginxConfig += `
+		mappingConfig += `
 	return ` + mapping.TargetHttpResponseCode.String() + `;`
 	case "inline-html":
-		nginxConfig += `
+		mappingConfig += `
 	add_header Content-Type text/html;
 	return 200 ` + mapping.TargetInlineHtmlContent.String() + `;`
 	case "static-files":
-		nginxConfig += `
+		mappingConfig += `
 	try_files $uri $uri/ index.html?$query_string;`
 	}
 
-	nginxConfig += `
+	mappingConfig += `
 }
 `
-	return nginxConfig, nil
+	return mappingConfig, nil
 }
 
 func (repo *MappingCmdRepo) rebuildMappingFile(
