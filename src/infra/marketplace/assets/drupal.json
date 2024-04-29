@@ -28,7 +28,8 @@
         "sos db create-user -n %dbName% -t mysql -u drupalUser_%installUuid% -p $(cat %installDirectory%/drupalDbCredentials) -r all",
         "rm -rf %installDirectory%/drupalDbCredentials",
         "sos runtime php update-module -n sqlite3 -v 8.2",
-        "sos runtime php update-module -n pdo_sqlite -v 8.2"
+        "sos runtime php update-module -n pdo_sqlite -v 8.2",
+        "mv %installDirectory%/web/* . && rm -rf %installDirectory%/web"
     ],
     "estimatedSizeBytes": 450000000,
     "avatarUrl": "https://www.google.com",
