@@ -128,3 +128,58 @@ func (repo *MappingCmdRepo) Create(
 
 	return mappingId, vhostCmdRepo.ReloadWebServer()
 }
+
+func (repo *MappingCmdRepo) DeleteMapping(mappingId valueObject.MappingId) error {
+	mapping, err := repo.mappingQueryRepo.GetById(mappingId)
+	if err != nil {
+		return err
+	}
+
+	err = repo.persistentDbSvc.Handler.Delete(
+		dbModel.Mapping{},
+		mappingId.Get(),
+	).Error
+	if err != nil {
+		return err
+	}
+
+	return repo.rebuildMappingFile(mapping.Hostname)
+}
+
+func (repo *MappingCmdRepo) DeleteAutoMapping(
+	serviceName valueObject.ServiceName,
+) error {
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	if err != nil {
+		return errors.New("PrimaryVhostNotFound")
+	}
+
+	primaryVhostMappings, err := repo.mappingQueryRepo.GetByHostname(primaryVhost)
+	if err != nil {
+		return errors.New("GetPrimaryVhostMappingsError: " + err.Error())
+	}
+
+	var mappingIdToDelete *valueObject.MappingId
+	for _, primaryVhostMapping := range primaryVhostMappings {
+		if primaryVhostMapping.TargetType.String() != "service" {
+			continue
+		}
+
+		targetServiceName := primaryVhostMapping.TargetServiceName
+		if targetServiceName == nil {
+			continue
+		}
+
+		if targetServiceName.String() != serviceName.String() {
+			continue
+		}
+
+		mappingIdToDelete = &primaryVhostMapping.Id
+	}
+
+	if mappingIdToDelete == nil {
+		return nil
+	}
+
+	return repo.DeleteMapping(*mappingIdToDelete)
+}

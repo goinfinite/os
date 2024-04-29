@@ -7,4 +7,6 @@ import (
 
 type MappingCmdRepo interface {
 	Create(createDto dto.CreateMapping) (valueObject.MappingId, error)
+	DeleteMapping(mappingId valueObject.MappingId) error
+	DeleteAutoMapping(serviceName valueObject.ServiceName) error
 }
