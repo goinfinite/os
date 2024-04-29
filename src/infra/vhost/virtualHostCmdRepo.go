@@ -17,7 +17,7 @@ import (
 type VirtualHostCmdRepo struct {
 }
 
-func (repo VirtualHostCmdRepo) reloadWebServer() error {
+func (repo VirtualHostCmdRepo) ReloadWebServer() error {
 	_, err := infraHelper.RunCmdWithSubShell(
 		"nginx -t && nginx -s reload && sleep 2",
 	)
@@ -64,10 +64,10 @@ func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) erro
 
 	// TODO: Regenerate cert for primary domain to include new alias
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
-func (repo VirtualHostCmdRepo) createPhpVirtualHost(hostname valueObject.Fqdn) error {
+func (repo VirtualHostCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
 	vhostExists := true
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
@@ -201,7 +201,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
@@ -223,7 +223,7 @@ func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
 		return errors.New("DeleteAliasFailed")
 	}
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
@@ -245,7 +245,7 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 		return errors.New("DeleteVirtualHostFailed")
 	}
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) mappingToLocationStartBlock(
@@ -536,7 +536,7 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 
 	isPhpService := isService && createMapping.TargetServiceName.String() == "php"
 	if isPhpService {
-		err = repo.createPhpVirtualHost(createMapping.Hostname)
+		err = repo.CreatePhpVirtualHost(createMapping.Hostname)
 		if err != nil {
 			return err
 		}
@@ -551,7 +551,7 @@ func (repo VirtualHostCmdRepo) CreateMapping(createMapping dto.CreateMapping) er
 		return errors.New("CreateMappingFailed")
 	}
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
@@ -591,7 +591,7 @@ func (repo VirtualHostCmdRepo) DeleteMapping(mapping entity.Mapping) error {
 		return errors.New("DeleteMappingFailed")
 	}
 
-	return repo.reloadWebServer()
+	return repo.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) DeleteAutoMapping(
