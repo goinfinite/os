@@ -19,8 +19,7 @@ func CreateMapping(
 ) error {
 	vhost, err := vhostQueryRepo.GetByHostname(createMapping.Hostname)
 	if err != nil {
-		log.Printf("GetVhostError: %s", err.Error())
-		return errors.New("GetVhostInfraError")
+		return errors.New("VhostNotFound")
 	}
 
 	if vhost.Type.String() == "alias" {
@@ -29,8 +28,7 @@ func CreateMapping(
 
 	mappings, err := mappingQueryRepo.GetByHostname(createMapping.Hostname)
 	if err != nil {
-		log.Printf("GetMappingsError: %s", err.Error())
-		return errors.New("GetMappingsInfraError")
+		return errors.New("MappingsNotFound")
 	}
 
 	for _, mapping := range mappings {
