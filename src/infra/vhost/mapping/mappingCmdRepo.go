@@ -381,7 +381,7 @@ func (repo *MappingCmdRepo) Create(
 	return mappingId, repo.vhostCmdRepo.ReloadWebServer()
 }
 
-func (repo *MappingCmdRepo) DeleteMapping(mappingId valueObject.MappingId) error {
+func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 	mapping, err := repo.mappingQueryRepo.GetById(mappingId)
 	if err != nil {
 		return err
@@ -403,7 +403,7 @@ func (repo *MappingCmdRepo) DeleteMapping(mappingId valueObject.MappingId) error
 	return repo.vhostCmdRepo.ReloadWebServer()
 }
 
-func (repo *MappingCmdRepo) DeleteAutoMapping(
+func (repo *MappingCmdRepo) DeleteAuto(
 	serviceName valueObject.ServiceName,
 ) error {
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
@@ -438,5 +438,5 @@ func (repo *MappingCmdRepo) DeleteAutoMapping(
 		return nil
 	}
 
-	return repo.DeleteMapping(*mappingIdToDelete)
+	return repo.Delete(*mappingIdToDelete)
 }

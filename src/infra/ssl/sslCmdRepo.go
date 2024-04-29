@@ -206,7 +206,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("VhostMappingsNotFound")
 	}
 
-	err = mappingCmdRepo.DeleteMapping(mappingId)
+	err = mappingCmdRepo.Delete(mappingId)
 	if err != nil {
 		return errors.New("DeleteOwnershipValidationMappingError: " + err.Error())
 	}

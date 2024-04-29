@@ -18,7 +18,7 @@ func DeleteMapping(
 		return errors.New("MappingNotFound")
 	}
 
-	err = cmdRepo.DeleteMapping(mappingId)
+	err = cmdRepo.Delete(mappingId)
 	if err != nil {
 		log.Printf("DeleteMappingError: %v", err)
 		return errors.New("DeleteMappingInfraError")
