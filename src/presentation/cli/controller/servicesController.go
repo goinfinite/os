@@ -105,15 +105,15 @@ func (controller ServicesController) CreateInstallableService() *cobra.Command {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.CreateInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
+				mappingCmdRepo,
 				vhostQueryRepo,
-				vhostCmdRepo,
 				createInstallableServiceDto,
 			)
 			if err != nil {
@@ -184,15 +184,15 @@ func (controller ServicesController) CreateCustomService() *cobra.Command {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.CreateCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
+				mappingCmdRepo,
 				vhostQueryRepo,
-				vhostCmdRepo,
 				createCustomServiceDto,
 			)
 			if err != nil {

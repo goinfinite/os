@@ -148,15 +148,15 @@ func (controller ServicesController) CreateInstallableService(c echo.Context) er
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
+		mappingCmdRepo,
 		vhostQueryRepo,
-		vhostCmdRepo,
 		createInstallableServiceDto,
 	)
 
@@ -227,15 +227,15 @@ func (controller ServicesController) CreateCustomService(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.CreateCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
+		mappingCmdRepo,
 		vhostQueryRepo,
-		vhostCmdRepo,
 		createCustomServiceDto,
 	)
 

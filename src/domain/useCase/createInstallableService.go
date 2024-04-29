@@ -12,8 +12,8 @@ func CreateInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingQueryRepo repository.MappingQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(createDto.Name)
@@ -81,7 +81,7 @@ func CreateInstallableService(
 		return errors.New("CreateServiceMappingError")
 	}
 
-	err = vhostCmdRepo.CreateMapping(serviceMapping)
+	_, err = mappingCmdRepo.Create(serviceMapping)
 	if err != nil {
 		log.Printf("CreateServiceMappingError: %s", err.Error())
 		return errors.New("CreateServiceMappingInfraError")
