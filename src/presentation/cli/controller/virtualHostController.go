@@ -141,12 +141,19 @@ func (controller VirtualHostController) GetVirtualHostsWithMappings() *cobra.Com
 		Short: "GetVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostQueryRepo)
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
+				controller.persistentDbSvc,
+			)
+
+			vhostsWithMappings, err := useCase.GetVirtualHostsWithMappings(
+				vhostQueryRepo,
+				mappingQueryRepo,
+			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, vhostsList)
+			cliHelper.ResponseWrapper(true, vhostsWithMappings)
 		},
 	}
 

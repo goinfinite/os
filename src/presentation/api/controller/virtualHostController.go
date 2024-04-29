@@ -146,12 +146,17 @@ func (controller VirtualHostController) GetVirtualHostsWithMappings(
 	c echo.Context,
 ) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostsQueryRepo)
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+
+	vhostsWithMappings, err := useCase.GetVirtualHostsWithMappings(
+		vhostsQueryRepo,
+		mappingQueryRepo,
+	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsWithMappings)
 }
 
 // CreateMapping godoc
