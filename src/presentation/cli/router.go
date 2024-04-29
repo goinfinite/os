@@ -135,12 +135,16 @@ func (router Router) servicesRoutes() {
 	}
 
 	rootCmd.AddCommand(servicesCmd)
-	servicesCmd.AddCommand(cliController.GetServicesController())
-	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
-	servicesCmd.AddCommand(cliController.CreateInstallableServiceController())
-	servicesCmd.AddCommand(cliController.CreateCustomServiceController())
-	servicesCmd.AddCommand(cliController.UpdateServiceController())
-	servicesCmd.AddCommand(cliController.DeleteServiceController())
+
+	servicesController := cliController.NewServicesController(
+		router.persistentDbSvc,
+	)
+	servicesCmd.AddCommand(servicesController.GetServices())
+	servicesCmd.AddCommand(servicesController.GetInstallableServices())
+	servicesCmd.AddCommand(servicesController.CreateInstallableService())
+	servicesCmd.AddCommand(servicesController.CreateCustomService())
+	servicesCmd.AddCommand(servicesController.UpdateService())
+	servicesCmd.AddCommand(servicesController.DeleteService())
 }
 
 func (router Router) sslRoutes() {

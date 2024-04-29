@@ -4,13 +4,27 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 
-func GetServicesController() *cobra.Command {
+type ServicesController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewServicesController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *ServicesController {
+	return &ServicesController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+func (controller ServicesController) GetServices() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetServices",
@@ -28,7 +42,7 @@ func GetServicesController() *cobra.Command {
 	return cmd
 }
 
-func GetInstallableServicesController() *cobra.Command {
+func (controller ServicesController) GetInstallableServices() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-installables",
 		Short: "GetInstallableServices",
@@ -46,7 +60,7 @@ func GetInstallableServicesController() *cobra.Command {
 	return cmd
 }
 
-func CreateInstallableServiceController() *cobra.Command {
+func (controller ServicesController) CreateInstallableService() *cobra.Command {
 	var nameStr string
 	var versionStr string
 	var startupFileStr string
@@ -125,7 +139,7 @@ func CreateInstallableServiceController() *cobra.Command {
 	return cmd
 }
 
-func CreateCustomServiceController() *cobra.Command {
+func (controller ServicesController) CreateCustomService() *cobra.Command {
 	var nameStr string
 	var typeStr string
 	var commandStr string
@@ -167,12 +181,14 @@ func CreateCustomServiceController() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.CreateCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				mappingQueryRepo,
 				vhostQueryRepo,
 				vhostCmdRepo,
 				createCustomServiceDto,
@@ -205,7 +221,7 @@ func CreateCustomServiceController() *cobra.Command {
 	return cmd
 }
 
-func UpdateServiceController() *cobra.Command {
+func (controller ServicesController) UpdateService() *cobra.Command {
 	var nameStr string
 	var typeStr string
 	var commandStr string
@@ -302,7 +318,7 @@ func UpdateServiceController() *cobra.Command {
 	return cmd
 }
 
-func DeleteServiceController() *cobra.Command {
+func (controller ServicesController) DeleteService() *cobra.Command {
 	var nameStr string
 
 	cmd := &cobra.Command{

@@ -115,12 +115,16 @@ func (router Router) runtimeRoutes(baseRoute *echo.Group) {
 
 func (router Router) servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
-	servicesGroup.GET("/", apiController.GetServicesController)
-	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
-	servicesGroup.POST("/installables/", apiController.CreateInstallableServiceController)
-	servicesGroup.POST("/custom/", apiController.CreateCustomServiceController)
-	servicesGroup.PUT("/", apiController.UpdateServiceController)
-	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
+	servicesController := apiController.NewServicesController(
+		router.persistentDbSvc,
+	)
+
+	servicesGroup.GET("/", servicesController.GetServices)
+	servicesGroup.GET("/installables/", servicesController.GetInstallableServices)
+	servicesGroup.POST("/installables/", servicesController.CreateInstallableService)
+	servicesGroup.POST("/custom/", servicesController.CreateCustomService)
+	servicesGroup.PUT("/", servicesController.UpdateService)
+	servicesGroup.DELETE("/:svcName/", servicesController.DeleteService)
 }
 
 func (router Router) sslRoutes(baseRoute *echo.Group) {
