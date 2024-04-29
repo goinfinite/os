@@ -154,10 +154,14 @@ func (router Router) sslRoutes() {
 	}
 
 	rootCmd.AddCommand(sslCmd)
-	sslCmd.AddCommand(cliController.GetSslPairsController())
-	sslCmd.AddCommand(cliController.CreateSslPairController())
-	sslCmd.AddCommand(cliController.DeleteSslPairVhostsController())
-	sslCmd.AddCommand(cliController.DeleteSslPairController())
+
+	sslController := cliController.NewSslController(
+		router.persistentDbSvc,
+	)
+	sslCmd.AddCommand(sslController.GetSslPairs())
+	sslCmd.AddCommand(sslController.CreateSslPair())
+	sslCmd.AddCommand(sslController.DeleteSslPairVhosts())
+	sslCmd.AddCommand(sslController.DeleteSslPair())
 }
 
 func (router Router) virtualHostRoutes() {

@@ -129,11 +129,15 @@ func (router Router) servicesRoutes(baseRoute *echo.Group) {
 
 func (router Router) sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
-	sslGroup.GET("/", apiController.GetSslPairsController)
-	sslGroup.POST("/", apiController.CreateSslPairController)
-	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
-	sslGroup.PUT("/vhost/", apiController.DeleteSslPairVhostsController)
-	go apiController.SslCertificateWatchdogController()
+	sslController := apiController.NewSslController(
+		router.persistentDbSvc,
+	)
+
+	sslGroup.GET("/", sslController.GetSslPairs)
+	sslGroup.POST("/", sslController.CreateSslPair)
+	sslGroup.DELETE("/:sslPairId/", sslController.DeleteSslPair)
+	sslGroup.PUT("/vhost/", sslController.DeleteSslPairVhosts)
+	go sslController.SslCertificateWatchdog()
 }
 
 func (router Router) vhostsRoutes(baseRoute *echo.Group) {

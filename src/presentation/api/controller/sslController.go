@@ -9,10 +9,23 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
+
+type SslController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewSslController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *SslController {
+	return &SslController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 // GetSslPairs	 godoc
 // @Summary      GetSslPair
@@ -23,7 +36,7 @@ import (
 // @Security     Bearer
 // @Success      200 {array} entity.SslPair
 // @Router       /ssl/ [get]
-func GetSslPairsController(c echo.Context) error {
+func (controller SslController) GetSslPairs(c echo.Context) error {
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
 	if err != nil {
@@ -67,7 +80,7 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
-func CreateSslPairController(c echo.Context) error {
+func (controller SslController) CreateSslPair(c echo.Context) error {
 	requiredParams := []string{"virtualHosts", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -92,7 +105,7 @@ func CreateSslPairController(c echo.Context) error {
 		sslPrivateKey,
 	)
 
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	err := useCase.CreateSslPair(
@@ -117,11 +130,11 @@ func CreateSslPairController(c echo.Context) error {
 // @Param        sslPairId 	  path   string  true  "SslPairId"
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /ssl/{sslPairId}/ [delete]
-func DeleteSslPairController(c echo.Context) error {
+func (controller SslController) DeleteSslPair(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteSslPair(
 		sslQueryRepo,
@@ -135,7 +148,7 @@ func DeleteSslPairController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
 }
 
-func SslCertificateWatchdogController() {
+func (controller SslController) SslCertificateWatchdog() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
 	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
@@ -143,7 +156,7 @@ func SslCertificateWatchdogController() {
 	defer timer.Stop()
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
@@ -168,7 +181,7 @@ func SslCertificateWatchdogController() {
 // @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /ssl/vhost/ [put]
-func DeleteSslPairVhostsController(c echo.Context) error {
+func (controller SslController) DeleteSslPairVhosts(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -180,7 +193,7 @@ func DeleteSslPairVhostsController(c echo.Context) error {
 	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo()
+	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteSslPairVhosts(
 		sslQueryRepo,
