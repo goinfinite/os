@@ -18,6 +18,7 @@ import (
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 )
 
 type MarketplaceCmdRepo struct {
@@ -197,8 +198,8 @@ func (repo *MarketplaceCmdRepo) createMappings(
 			catalogMapping.TargetInlineHtmlContent,
 		)
 
-		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err := vhostCmdRepo.CreateMapping(createCatalogItemMapping)
+		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
+		_, err := mappingCmdRepo.Create(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
 		}
