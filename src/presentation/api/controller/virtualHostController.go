@@ -226,13 +226,15 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 		targetInlineHtmlContentPtr,
 	)
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 	err := useCase.CreateMapping(
-		vhostQueryRepo,
+		mappingQueryRepo,
 		mappingCmdRepo,
+		vhostQueryRepo,
 		svcsQueryRepo,
 		createMappingDto,
 	)

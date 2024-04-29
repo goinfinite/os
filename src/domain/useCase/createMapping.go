@@ -11,44 +11,38 @@ import (
 )
 
 func CreateMapping(
-	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
 	createMapping dto.CreateMapping,
 ) error {
-	vhostWithMappings, err := vhostQueryRepo.GetWithMappings()
+	vhost, err := vhostQueryRepo.GetByHostname(createMapping.Hostname)
 	if err != nil {
-		log.Printf("GetVirtualHostsError: %s", err.Error())
-		return errors.New("GetVirtualHostsInfraError")
+		log.Printf("GetVhostError: %s", err.Error())
+		return errors.New("GetVhostInfraError")
 	}
 
-	vhostIndex := -1
-	for vhostWithMappingIndex, vhostWithMapping := range vhostWithMappings {
-		if vhostWithMapping.Hostname != createMapping.Hostname {
+	if vhost.Type.String() == "alias" {
+		return errors.New("AliasCannotHaveMappings")
+	}
+
+	mappings, err := mappingQueryRepo.GetByHostname(createMapping.Hostname)
+	if err != nil {
+		log.Printf("GetMappingsError: %s", err.Error())
+		return errors.New("GetMappingsInfraError")
+	}
+
+	for _, mapping := range mappings {
+		if mapping.MatchPattern != createMapping.MatchPattern {
 			continue
 		}
 
-		for _, mapping := range vhostWithMapping.Mappings {
-			if mapping.MatchPattern != createMapping.MatchPattern {
-				continue
-			}
-
-			if mapping.Path != createMapping.Path {
-				continue
-			}
-
-			return errors.New("MappingAlreadyExists")
+		if mapping.Path != createMapping.Path {
+			continue
 		}
 
-		vhostIndex = vhostWithMappingIndex
-	}
-
-	if vhostIndex == -1 {
-		return errors.New("VirtualHostNotFound")
-	}
-
-	if vhostWithMappings[vhostIndex].Type.String() == "alias" {
-		return errors.New("AliasCannotHaveMappings")
+		return errors.New("MappingAlreadyExists")
 	}
 
 	isServiceTarget := createMapping.TargetType.String() == "service"
@@ -109,7 +103,7 @@ func CreateMapping(
 	if !pathStartsWithSlash {
 		createMapping.Path, err = valueObject.NewMappingPath("/" + pathStr)
 		if err != nil {
-			return errors.New("AutoCorrectMappingPathError")
+			return errors.New("CorrectAutoMappingPathError")
 		}
 	}
 
