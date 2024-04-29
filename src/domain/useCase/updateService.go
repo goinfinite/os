@@ -12,7 +12,7 @@ import (
 func updateServiceStatus(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	serviceEntity entity.Service,
 	updateDto dto.UpdateService,
 ) error {
@@ -34,7 +34,7 @@ func updateServiceStatus(
 		return DeleteService(
 			queryRepo,
 			cmdRepo,
-			vhostCmdRepo,
+			mappingCmdRepo,
 			updateDto.Name,
 		)
 	default:
@@ -45,8 +45,8 @@ func updateServiceStatus(
 func UpdateService(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
+	mappingQueryRepo repository.MappingQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
 	serviceEntity, err := queryRepo.GetByName(updateDto.Name)
@@ -64,7 +64,7 @@ func UpdateService(
 		return updateServiceStatus(
 			queryRepo,
 			cmdRepo,
-			vhostCmdRepo,
+			mappingCmdRepo,
 			serviceEntity,
 			updateDto,
 		)
@@ -80,24 +80,13 @@ func UpdateService(
 		return nil
 	}
 
-	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+	mappingsToRecreate, err := mappingQueryRepo.GetByServiceName(updateDto.Name)
 	if err != nil {
 		return err
 	}
 
-	var mappingsToRecreate []entity.Mapping
-	for _, vhostWithMapping := range vhostsWithMappings {
-		for _, vhostMapping := range vhostWithMapping.Mappings {
-			if vhostMapping.TargetServiceName.String() != updateDto.Name.String() {
-				continue
-			}
-
-			mappingsToRecreate = append(mappingsToRecreate, vhostMapping)
-		}
-	}
-
 	for _, mappingToRecreate := range mappingsToRecreate {
-		err = vhostCmdRepo.RecreateMapping(mappingToRecreate)
+		err = mappingCmdRepo.Recreate(mappingToRecreate)
 		if err != nil {
 			log.Printf("RecreateMappingError: %s", err.Error())
 		}

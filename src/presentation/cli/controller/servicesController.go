@@ -289,14 +289,14 @@ func (controller ServicesController) UpdateService() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.UpdateService(
 				servicesQueryRepo,
 				servicesCmdRepo,
-				vhostQueryRepo,
-				vhostCmdRepo,
+				mappingQueryRepo,
+				mappingCmdRepo,
 				updateSvcDto,
 			)
 			if err != nil {
@@ -331,12 +331,12 @@ func (controller ServicesController) DeleteService() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteService(
 				servicesQueryRepo,
 				servicesCmdRepo,
-				vhostCmdRepo,
+				mappingCmdRepo,
 				svcName,
 			)
 			if err != nil {
