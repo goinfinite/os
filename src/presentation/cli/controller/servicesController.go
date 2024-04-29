@@ -104,12 +104,14 @@ func (controller ServicesController) CreateInstallableService() *cobra.Command {
 
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			err := useCase.CreateInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
+				mappingQueryRepo,
 				vhostQueryRepo,
 				vhostCmdRepo,
 				createInstallableServiceDto,
