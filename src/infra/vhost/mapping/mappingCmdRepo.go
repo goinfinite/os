@@ -16,16 +16,19 @@ import (
 type MappingCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	mappingQueryRepo *MappingQueryRepo
+	vhostCmdRepo     vhostInfra.VirtualHostCmdRepo
 }
 
 func NewMappingCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MappingCmdRepo {
 	mappingQueryRepo := NewMappingQueryRepo(persistentDbSvc)
+	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	return &MappingCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
 		mappingQueryRepo: mappingQueryRepo,
+		vhostCmdRepo:     vhostCmdRepo,
 	}
 }
 
@@ -100,12 +103,10 @@ func (repo *MappingCmdRepo) Create(
 ) (valueObject.MappingId, error) {
 	var mappingId valueObject.MappingId
 
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-
 	isServiceMapping := createDto.TargetType.String() == "service"
 	isPhpServiceMapping := isServiceMapping && createDto.TargetServiceName.String() == "php"
 	if isPhpServiceMapping {
-		err := vhostCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
+		err := repo.vhostCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
 		if err != nil {
 			return mappingId, err
 		}
@@ -126,7 +127,7 @@ func (repo *MappingCmdRepo) Create(
 		return mappingId, err
 	}
 
-	return mappingId, vhostCmdRepo.ReloadWebServer()
+	return mappingId, repo.vhostCmdRepo.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) DeleteMapping(mappingId valueObject.MappingId) error {
@@ -143,7 +144,12 @@ func (repo *MappingCmdRepo) DeleteMapping(mappingId valueObject.MappingId) error
 		return err
 	}
 
-	return repo.rebuildMappingFile(mapping.Hostname)
+	err = repo.rebuildMappingFile(mapping.Hostname)
+	if err != nil {
+		return err
+	}
+
+	return repo.vhostCmdRepo.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) DeleteAutoMapping(
