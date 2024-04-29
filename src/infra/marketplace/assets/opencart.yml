@@ -9,20 +9,17 @@ mappings:
     matchPattern: begins-with
     targetType: service
     targetServiceName: php
-dataFields:
-  - key: dbName
-    isRequired: true
 cmdSteps:
   - wget -O /speedia/opencart.zip https://github.com/opencart/opencart/releases/download/4.0.2.3/opencart-4.0.2.3.zip
   - unzip /speedia/opencart.zip
   - mv /speedia/opencart-*/upload/* %installDirectory% && rm -rf /speedia/opencart*
   - mv %installDirectory%/config-dist.php %installDirectory%/config.php && chmod 0777 %installDirectory%/config.php
   - mv %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php && chmod 0777 %installDirectory%/admin/config.php
-  - sos db create -n %dbName% -t mysql
+  - sos db create -n openCartDb -t mysql
   - echo $(openssl rand -hex 8) > %installDirectory%/openCartDbCredentials
-  - sos db create-user -n %dbName% -t mysql -u openCartUser_%installUuid% -p $(cat %installDirectory%/openCartDbCredentials) -r all
-  - echo -e "<?php\ndefine('DB_DRIVER', 'mysqli');\ndefine('DB_HOSTNAME', 'localhost');\ndefine('DB_USERNAME', 'openCartUser_%installUuid%');\ndefine('DB_PASSWORD', '$(cat %installDirectory%/openCartDbCredentials)');\ndefine('DB_DATABASE', '%dbName%');\n?>" > %installDirectory%/config.php
-  - echo -e "<?php\ndefine('DB_DRIVER', 'mysqli');\ndefine('DB_HOSTNAME', 'localhost');\ndefine('DB_USERNAME', 'openCartUser_%installUuid%');\ndefine('DB_PASSWORD', '$(cat %installDirectory%/openCartDbCredentials)');\ndefine('DB_DATABASE', '%dbName%');\n?>" > %installDirectory%/admin/config.php
+  - sos db create-user -n openCartDb -t mysql -u openCartUser_%installUuid% -p $(cat %installDirectory%/openCartDbCredentials) -r all
+  - echo -e "<?php\ndefine('DB_DRIVER', 'mysqli');\ndefine('DB_HOSTNAME', 'localhost');\ndefine('DB_USERNAME', 'openCartUser_%installUuid%');\ndefine('DB_PASSWORD', '$(cat %installDirectory%/openCartDbCredentials)');\ndefine('DB_DATABASE', 'openCartDb');\n?>" > %installDirectory%/config.php
+  - echo -e "<?php\ndefine('DB_DRIVER', 'mysqli');\ndefine('DB_HOSTNAME', 'localhost');\ndefine('DB_USERNAME', 'openCartUser_%installUuid%');\ndefine('DB_PASSWORD', '$(cat %installDirectory%/openCartDbCredentials)');\ndefine('DB_DATABASE', 'openCartDb');\n?>" > %installDirectory%/admin/config.php
   - rm -rf %installDirectory%/openCartDbCredentials
 estimatedSizeBytes: 1000000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"

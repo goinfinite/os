@@ -13,10 +13,6 @@
     ],
     "dataFields": [
         {
-            "key": "dbName",
-            "isRequired": true
-        },
-        {
             "key": "userMail",
             "isRequired": true
         }
@@ -24,9 +20,9 @@
     "cmdSteps": [
         "wget -O /speedia/joomla.zip https://downloads.joomla.org/cms/joomla5/5-1-0/Joomla_5-1-0-Stable-Full_Package.zip?format=zip",
         "mkdir /speedia/joomla && unzip /speedia/joomla.zip -d /speedia/joomla && rm -rf /speedia/joomla.zip",
-        "sos db create -n %dbName% -t mysql",
+        "sos db create -n joomlaDb -t mysql",
         "echo $(openssl rand -hex 8) > %installDirectory%/joomlaDbCredentials",
-        "sos db create-user -n %dbName% -t mysql -u joomlaUser_%installUuid% -p $(cat %installDirectory%/joomlaDbCredentials) -r all",
+        "sos db create-user -n joomlaDb -t mysql -u joomlaUser_%installUuid% -p $(cat %installDirectory%/joomlaDbCredentials) -r all",
         "php /speedia/joomla/installation/joomla.php install --site-name=baseWebsite --admin-user=joomlaUser_%installUuid% --admin-username=joomlaUser_%installUuid% --admin-password=$(cat %installDirectory%/joomlaDbCredentials) --admin-email=%userMail% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=$(cat %installDirectory%/joomlaDbCredentials) --db-name=%dbName% --db-prefix=joomla_ --db-encryption=0 --public-folder=%installDirectory%",
         "rm -rf /speedia/joomla && rm -rf %installDirectory%/joomlaDbCredentials"
     ],
