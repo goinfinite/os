@@ -85,6 +85,7 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) 
 func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 	err := dbSvc.Handler.AutoMigrate(
 		&dbModel.MarketplaceInstalledItem{},
+		&dbModel.Mapping{},
 	)
 	if err != nil {
 		return errors.New("DatabaseMigrationError")
