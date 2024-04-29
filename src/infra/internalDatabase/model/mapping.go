@@ -104,7 +104,7 @@ func (model Mapping) ToEntity() (entity.Mapping, error) {
 	}
 
 	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-	if targetType.String() == "response-code" {
+	if targetType.String() == "inline-html" {
 		targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(
 			*model.TargetValue,
 		)
