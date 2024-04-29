@@ -11,12 +11,12 @@ import (
 )
 
 func CreateMapping(
-	queryRepo repository.VirtualHostQueryRepo,
-	cmdRepo repository.VirtualHostCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
 	createMapping dto.CreateMapping,
 ) error {
-	vhostWithMappings, err := queryRepo.GetWithMappings()
+	vhostWithMappings, err := vhostQueryRepo.GetWithMappings()
 	if err != nil {
 		log.Printf("GetVirtualHostsError: %s", err.Error())
 		return errors.New("GetVirtualHostsInfraError")
@@ -113,7 +113,7 @@ func CreateMapping(
 		}
 	}
 
-	err = cmdRepo.CreateMapping(createMapping)
+	_, err = mappingCmdRepo.Create(createMapping)
 	if err != nil {
 		log.Printf("CreateMappingError: %s", err.Error())
 		return errors.New("CreateMappingInfraError")
