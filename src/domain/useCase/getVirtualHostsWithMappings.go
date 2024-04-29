@@ -22,7 +22,7 @@ func GetVirtualHostsWithMappings(
 	for _, vhost := range vhosts {
 		mappings, err := mappingQueryRepo.GetByHostname(vhost.Hostname)
 		if err != nil {
-			log.Printf("MappingsNotFound: %s", vhost.Hostname)
+			log.Printf("[%s] GetMappingsError: %s", vhost.Hostname, err.Error())
 			continue
 		}
 
