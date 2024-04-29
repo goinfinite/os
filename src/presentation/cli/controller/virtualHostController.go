@@ -5,13 +5,27 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 
-func GetVirtualHostsController() *cobra.Command {
+type VirtualHostController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewVirtualHostController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *VirtualHostController {
+	return &VirtualHostController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+func (controller VirtualHostController) GetVirtualHosts() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetVirtualHosts",
@@ -29,7 +43,7 @@ func GetVirtualHostsController() *cobra.Command {
 	return cmd
 }
 
-func CreateVirtualHostController() *cobra.Command {
+func (controller VirtualHostController) CreateVirtualHost() *cobra.Command {
 	var hostnameStr string
 	var typeStr string
 	var parentHostnameStr string
@@ -85,7 +99,7 @@ func CreateVirtualHostController() *cobra.Command {
 	return cmd
 }
 
-func DeleteVirtualHostController() *cobra.Command {
+func (controller VirtualHostController) DeleteVirtualHost() *cobra.Command {
 	var hostnameStr string
 
 	cmd := &cobra.Command{
@@ -121,7 +135,7 @@ func DeleteVirtualHostController() *cobra.Command {
 	return cmd
 }
 
-func GetVirtualHostsWithMappingsController() *cobra.Command {
+func (controller VirtualHostController) GetVirtualHostsWithMappings() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetVirtualHostsWithMappings",
@@ -139,7 +153,7 @@ func GetVirtualHostsWithMappingsController() *cobra.Command {
 	return cmd
 }
 
-func CreateVirtualHostMappingController() *cobra.Command {
+func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Command {
 	var hostnameStr string
 	var pathStr string
 	var matchPatternStr string
@@ -202,12 +216,12 @@ func CreateVirtualHostMappingController() *cobra.Command {
 			)
 
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 			err := useCase.CreateMapping(
 				vhostQueryRepo,
-				vhostCmdRepo,
+				mappingCmdRepo,
 				svcsQueryRepo,
 				createMappingDto,
 			)
@@ -243,7 +257,7 @@ func CreateVirtualHostMappingController() *cobra.Command {
 	return cmd
 }
 
-func DeleteVirtualHostMappingController() *cobra.Command {
+func (controller VirtualHostController) DeleteVirtualHostMapping() *cobra.Command {
 	var hostnameStr string
 	var mappingIdUint uint
 

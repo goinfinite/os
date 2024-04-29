@@ -163,9 +163,13 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	rootCmd.AddCommand(vhostCmd)
-	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
-	vhostCmd.AddCommand(cliController.CreateVirtualHostController())
-	vhostCmd.AddCommand(cliController.DeleteVirtualHostController())
+
+	vhostController := cliController.NewVirtualHostController(
+		router.persistentDbSvc,
+	)
+	vhostCmd.AddCommand(vhostController.GetVirtualHosts())
+	vhostCmd.AddCommand(vhostController.CreateVirtualHost())
+	vhostCmd.AddCommand(vhostController.DeleteVirtualHost())
 
 	var mappingCmd = &cobra.Command{
 		Use:   "mapping",
@@ -173,9 +177,9 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	vhostCmd.AddCommand(mappingCmd)
-	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
-	mappingCmd.AddCommand(cliController.CreateVirtualHostMappingController())
-	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
+	mappingCmd.AddCommand(vhostController.GetVirtualHostsWithMappings())
+	mappingCmd.AddCommand(vhostController.CreateVirtualHostMapping())
+	mappingCmd.AddCommand(vhostController.DeleteVirtualHostMapping())
 }
 
 func (router Router) RegisterRoutes() {
