@@ -196,13 +196,13 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		expectedOwnershipHash,
 	)
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostMappings, err := vhostQueryRepo.GetMappingsByHostname(firstVhost)
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
+	mappings, err := mappingQueryRepo.GetByHostname(firstVhost)
 	if err != nil {
 		return errors.New("GetVhostMappingsError: " + err.Error())
 	}
 
-	if len(vhostMappings) == 0 {
+	if len(mappings) == 0 {
 		return errors.New("VhostMappingsNotFound")
 	}
 
