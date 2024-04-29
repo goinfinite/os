@@ -134,15 +134,20 @@ func (router Router) sslRoutes(baseRoute *echo.Group) {
 
 func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
-	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
-	vhostsGroup.POST("/", apiController.CreateVirtualHostController)
-	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
+	vhostController := apiController.NewVirtualHostController(
+		router.persistentDbSvc,
+	)
 
-	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
-	vhostsGroup.POST("/mapping/", apiController.CreateVirtualHostMappingController)
-	vhostsGroup.DELETE(
-		"/mapping/:hostname/:mappingId/",
-		apiController.DeleteVirtualHostMappingController,
+	vhostsGroup.GET("/", vhostController.GetVirtualHosts)
+	vhostsGroup.POST("/", vhostController.CreateVirtualHost)
+	vhostsGroup.DELETE("/:hostname/", vhostController.DeleteVirtualHost)
+
+	mappingsGroup := vhostsGroup.Group("/mapping")
+	mappingsGroup.GET("/", vhostController.GetVirtualHostsWithMappings)
+	mappingsGroup.POST("/", vhostController.CreateVirtualHostMapping)
+	mappingsGroup.DELETE(
+		"/:hostname/:mappingId/",
+		vhostController.DeleteVirtualHostMapping,
 	)
 }
 

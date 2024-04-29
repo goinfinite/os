@@ -8,10 +8,24 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
+
+type VirtualHostController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewVirtualHostController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *VirtualHostController {
+	return &VirtualHostController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 // GetVirtualHosts	 godoc
 // @Summary      GetVirtualHosts
@@ -22,7 +36,7 @@ import (
 // @Produce      json
 // @Success      200 {array} entity.VirtualHost
 // @Router       /vhosts/ [get]
-func GetVirtualHostsController(c echo.Context) error {
+func (controller VirtualHostController) GetVirtualHosts(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
 	if err != nil {
@@ -42,7 +56,7 @@ func GetVirtualHostsController(c echo.Context) error {
 // @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
-func CreateVirtualHostController(c echo.Context) error {
+func (controller VirtualHostController) CreateVirtualHost(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -95,7 +109,7 @@ func CreateVirtualHostController(c echo.Context) error {
 // @Param        hostname path string true "Hostname"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /vhosts/{hostname}/ [delete]
-func DeleteVirtualHostController(c echo.Context) error {
+func (controller VirtualHostController) DeleteVirtualHost(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -128,7 +142,9 @@ func DeleteVirtualHostController(c echo.Context) error {
 // @Produce      json
 // @Success      200 {array} dto.VirtualHostWithMappings
 // @Router       /vhosts/mapping/ [get]
-func GetVirtualHostsWithMappingsController(c echo.Context) error {
+func (controller VirtualHostController) GetVirtualHostsWithMappings(
+	c echo.Context,
+) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHostsWithMappings(vhostsQueryRepo)
 	if err != nil {
@@ -148,7 +164,9 @@ func GetVirtualHostsWithMappingsController(c echo.Context) error {
 // @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
-func CreateVirtualHostMappingController(c echo.Context) error {
+func (controller VirtualHostController) CreateVirtualHostMapping(
+	c echo.Context,
+) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -209,12 +227,12 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 	)
 
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 	err := useCase.CreateMapping(
 		vhostQueryRepo,
-		vhostCmdRepo,
+		mappingCmdRepo,
 		svcsQueryRepo,
 		createMappingDto,
 	)
@@ -236,7 +254,9 @@ func CreateVirtualHostMappingController(c echo.Context) error {
 // @Param        mappingId path uint true "MappingId"
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /vhosts/mapping/{hostname}/{mappingId}/ [delete]
-func DeleteVirtualHostMappingController(c echo.Context) error {
+func (controller VirtualHostController) DeleteVirtualHostMapping(
+	c echo.Context,
+) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 
