@@ -440,3 +440,24 @@ func (repo *MappingCmdRepo) DeleteAuto(
 
 	return repo.Delete(*mappingIdToDelete)
 }
+
+func (repo *MappingCmdRepo) Recreate(mapping entity.Mapping) error {
+	err := repo.Delete(mapping.Id)
+	if err != nil {
+		return err
+	}
+
+	createDto := dto.NewCreateMapping(
+		mapping.Hostname,
+		mapping.Path,
+		mapping.MatchPattern,
+		mapping.TargetType,
+		mapping.TargetServiceName,
+		mapping.TargetUrl,
+		mapping.TargetHttpResponseCode,
+		mapping.TargetInlineHtmlContent,
+	)
+
+	_, err = repo.Create(createDto)
+	return err
+}
