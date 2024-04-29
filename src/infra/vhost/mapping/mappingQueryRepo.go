@@ -25,7 +25,7 @@ func NewMappingQueryRepo(
 func (repo *MappingQueryRepo) GetByHostname(
 	hostname valueObject.Fqdn,
 ) ([]entity.Mapping, error) {
-	var mappingEntities []entity.Mapping
+	mappingEntities := []entity.Mapping{}
 
 	mappingModels := []dbModel.Mapping{}
 	err := repo.persistentDbSvc.Handler.Model(
