@@ -22,6 +22,21 @@ func NewMappingQueryRepo(
 	}
 }
 
+func (repo *MappingQueryRepo) GetById(
+	id valueObject.MappingId,
+) (entity.Mapping, error) {
+	var mapping entity.Mapping
+
+	mappingModel := dbModel.Mapping{ID: uint(id.Get())}
+	err := repo.persistentDbSvc.Handler.Model(&mappingModel).
+		First(&mappingModel).Error
+	if err != nil {
+		return mapping, errors.New("MappingNotFound")
+	}
+
+	return mappingModel.ToEntity()
+}
+
 func (repo *MappingQueryRepo) GetByHostname(
 	hostname valueObject.Fqdn,
 ) ([]entity.Mapping, error) {
