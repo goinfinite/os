@@ -25,7 +25,7 @@ cmdSteps:
   - echo -e "<?php\ndefine('DB_DRIVER', 'mysqli');\ndefine('DB_HOSTNAME', 'localhost');\ndefine('DB_USERNAME', 'openCartUser_%installUuid%');\ndefine('DB_PASSWORD', '$(cat %installDirectory%/openCartDbCredentials)');\ndefine('DB_DATABASE', '%dbName%');\n?>" > %installDirectory%/admin/config.php
   - rm -rf %installDirectory%/openCartDbCredentials
 estimatedSizeBytes: 1000000000
-avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-logo-blue.svg"
+avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
   - "https://speedia.net/assets/os/marketplace/opencart/oc-1.jpg"
   - "https://speedia.net/assets/os/marketplace/opencart/oc-2.jpg"

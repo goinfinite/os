@@ -33,7 +33,7 @@
         "rm -rf %installDirectory%/wpDbCredentials"
     ],
     "estimatedSizeBytes": 1000000000,
-    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-logo-blue.svg",
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
     "screenshotUrls": [
         "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",
         "https://speedia.net/assets/os/marketplace/wordpress/wp-themes.jpg",

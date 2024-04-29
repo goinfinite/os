@@ -32,8 +32,11 @@
         "mv %installDirectory%/web/* . && rm -rf %installDirectory%/web"
     ],
     "estimatedSizeBytes": 450000000,
-    "avatarUrl": "https://www.google.com",
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
     "screenshotUrls": [
-        "https://www.google.com"
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-1.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-2.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-3.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-4.jpg"
     ]
 }
