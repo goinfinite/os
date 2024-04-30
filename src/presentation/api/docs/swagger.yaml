@@ -355,6 +355,62 @@ definitions:
       targetUrl:
         type: string
     type: object
+  entity.MarketplaceCatalogItem:
+    properties:
+      avatarUrl:
+        type: string
+      dataFields:
+        items:
+          $ref: '#/definitions/valueObject.MarketplaceCatalogItemDataField'
+        type: array
+      description:
+        type: string
+      estimatedSizeBytes:
+        type: integer
+      id:
+        type: integer
+      mappings:
+        items:
+          $ref: '#/definitions/valueObject.MarketplaceItemMapping'
+        type: array
+      name:
+        type: string
+      screenshotUrls:
+        items:
+          type: string
+        type: array
+      services:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+  entity.MarketplaceInstalledItem:
+    properties:
+      avatarUrl:
+        type: string
+      createdAt:
+        type: integer
+      id:
+        type: integer
+      installDirectory:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
+      name:
+        type: string
+      serviceNames:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updatedAt:
+        type: integer
+    type: object
   entity.O11yOverview:
     properties:
       currentUsage:
@@ -514,11 +570,37 @@ definitions:
       storageTotal:
         type: integer
     type: object
+  valueObject.MarketplaceCatalogItemDataField:
+    properties:
+      defaultValue:
+        type: string
+      isRequired:
+        type: boolean
+      key:
+        type: string
+    type: object
   valueObject.MarketplaceInstallableItemDataField:
     properties:
       key:
         type: string
       value:
+        type: string
+    type: object
+  valueObject.MarketplaceItemMapping:
+    properties:
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetInlineHtmlContent:
+        type: string
+      targetServiceName:
+        type: string
+      targetType:
+        type: string
+      targetUrl:
         type: string
     type: object
   valueObject.PortBinding:
@@ -1126,7 +1208,9 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/entity.MarketplaceCatalogItem'
+            type: array
       security:
       - Bearer: []
       summary: GetMarketplaceCatalog
@@ -1164,7 +1248,9 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/entity.MarketplaceInstalledItem'
+            type: array
       security:
       - Bearer: []
       summary: GetMarketplaceInstalledItems

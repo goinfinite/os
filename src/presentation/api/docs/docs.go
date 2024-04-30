@@ -937,7 +937,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.MarketplaceCatalogItem"
+                            }
                         }
                     }
                 }
@@ -997,7 +1000,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.MarketplaceInstalledItem"
+                            }
                         }
                     }
                 }
@@ -2240,6 +2246,91 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.MarketplaceCatalogItem": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "dataFields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.MarketplaceCatalogItemDataField"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "estimatedSizeBytes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.MarketplaceItemMapping"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "screenshotUrls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.MarketplaceInstalledItem": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installDirectory": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Mapping"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "serviceNames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.O11yOverview": {
             "type": "object",
             "properties": {
@@ -2483,6 +2574,20 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.MarketplaceCatalogItemDataField": {
+            "type": "object",
+            "properties": {
+                "defaultValue": {
+                    "type": "string"
+                },
+                "isRequired": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
         "valueObject.MarketplaceInstallableItemDataField": {
             "type": "object",
             "properties": {
@@ -2490,6 +2595,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "valueObject.MarketplaceItemMapping": {
+            "type": "object",
+            "properties": {
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetInlineHtmlContent": {
+                    "type": "string"
+                },
+                "targetServiceName": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetUrl": {
                     "type": "string"
                 }
             }
