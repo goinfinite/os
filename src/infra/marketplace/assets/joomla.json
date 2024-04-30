@@ -1,5 +1,5 @@
 {
-    "name": "joomla",
+    "name": "Joomla",
     "type": "app",
     "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
     "serviceNames": ["php", "mysql"],

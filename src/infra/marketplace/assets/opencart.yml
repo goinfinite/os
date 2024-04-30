@@ -1,4 +1,4 @@
-name: opencart
+name: OpenCart
 type: app
 description: The best free and open-source eCommerce platform. Everything you need to create, scale and run your business.
 serviceNames:
