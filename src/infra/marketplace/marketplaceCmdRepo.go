@@ -292,8 +292,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 
 	installUuid := uuid.New().String()[:16]
+	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
-	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
+	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(
+		installUuidWithoutHyphens,
+	)
 	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installUuidDataFieldKey,
 		installUuidDataFieldValue,
