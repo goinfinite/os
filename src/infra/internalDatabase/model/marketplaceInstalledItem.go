@@ -50,6 +50,13 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
+	installUuid, err := valueObject.NewMarketplaceInstalledItemUuid(
+		model.InstallUuid,
+	)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
 	svcsNameList := []valueObject.ServiceName{}
 	if len(model.ServiceNames) > 0 {
 		rawSvcsNameList := strings.Split(model.ServiceNames, ",")
@@ -81,6 +88,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		itemName,
 		itemType,
 		installDirectory,
+		installUuid,
 		svcsNameList,
 		mappings,
 		avatarUrl,

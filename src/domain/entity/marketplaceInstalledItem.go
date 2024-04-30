@@ -5,15 +5,16 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id               valueObject.MarketplaceInstalledItemId `json:"id"`
-	Name             valueObject.MarketplaceItemName        `json:"name"`
-	Type             valueObject.MarketplaceItemType        `json:"type"`
-	InstallDirectory valueObject.UnixFilePath               `json:"installDirectory"`
-	ServiceNames     []valueObject.ServiceName              `json:"serviceNames"`
-	Mappings         []Mapping                              `json:"mappings"`
-	AvatarUrl        valueObject.Url                        `json:"avatarUrl"`
-	CreatedAt        valueObject.UnixTime                   `json:"createdAt"`
-	UpdatedAt        valueObject.UnixTime                   `json:"updatedAt"`
+	Id               valueObject.MarketplaceInstalledItemId   `json:"id"`
+	Name             valueObject.MarketplaceItemName          `json:"name"`
+	Type             valueObject.MarketplaceItemType          `json:"type"`
+	InstallDirectory valueObject.UnixFilePath                 `json:"installDirectory"`
+	InstallUuid      valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
+	ServiceNames     []valueObject.ServiceName                `json:"serviceNames"`
+	Mappings         []Mapping                                `json:"mappings"`
+	AvatarUrl        valueObject.Url                          `json:"avatarUrl"`
+	CreatedAt        valueObject.UnixTime                     `json:"createdAt"`
+	UpdatedAt        valueObject.UnixTime                     `json:"updatedAt"`
 }
 
 func NewMarketplaceInstalledItem(
@@ -21,6 +22,7 @@ func NewMarketplaceInstalledItem(
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
 	installDirectory valueObject.UnixFilePath,
+	installUuid valueObject.MarketplaceInstalledItemUuid,
 	serviceNames []valueObject.ServiceName,
 	mappings []Mapping,
 	avatarUrl valueObject.Url,
@@ -32,6 +34,7 @@ func NewMarketplaceInstalledItem(
 		Name:             itemName,
 		Type:             itemType,
 		InstallDirectory: installDirectory,
+		InstallUuid:      installUuid,
 		ServiceNames:     serviceNames,
 		Mappings:         mappings,
 		AvatarUrl:        avatarUrl,
