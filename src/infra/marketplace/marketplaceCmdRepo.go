@@ -65,6 +65,44 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 	return nil
 }
 
+func (repo *MarketplaceCmdRepo) parseSystemDataFields(
+	installDir valueObject.UnixFilePath,
+	installHostname valueObject.Fqdn,
+	installUuid string,
+) []valueObject.MarketplaceInstallableItemDataField {
+	systemDataFields := []valueObject.MarketplaceInstallableItemDataField{}
+
+	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
+	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
+	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installDirDataFieldKey,
+		installDirDataFieldValue,
+	)
+
+	installHostnameDataFieldKey, _ := valueObject.NewDataFieldKey("installHostname")
+	installHostnameDataFieldValue, _ := valueObject.NewDataFieldValue(
+		installHostname.String(),
+	)
+	installHostnameDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installHostnameDataFieldKey,
+		installHostnameDataFieldValue,
+	)
+
+	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
+	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
+	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installUuidDataFieldKey,
+		installUuidDataFieldValue,
+	)
+
+	return append(
+		systemDataFields,
+		installDirDataField,
+		installHostnameDataField,
+		installUuidDataField,
+	)
+}
+
 func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
@@ -302,30 +340,15 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
-	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
-	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
-	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installDirDataFieldKey,
-		installDirDataFieldValue,
-	)
-
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
-	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
-	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(
+
+	systemDataFields := repo.parseSystemDataFields(
+		installDir,
+		installDto.Hostname,
 		installUuidWithoutHyphens,
 	)
-	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installUuidDataFieldKey,
-		installUuidDataFieldValue,
-	)
-
-	receivedDataFields := installDto.DataFields
-	receivedDataFields = append(
-		receivedDataFields,
-		installDirDataField,
-		installUuidDataField,
-	)
+	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
 	err = repo.runCmdSteps(
 		catalogItem.CmdSteps,
@@ -346,7 +369,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	return repo.persistInstalledItem(catalogItem, installDir, installUuid)
+	return repo.persistInstalledItem(
+		catalogItem,
+		installDir,
+		installUuidWithoutHyphens,
+	)
 }
 
 func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
