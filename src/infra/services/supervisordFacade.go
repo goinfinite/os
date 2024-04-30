@@ -145,7 +145,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		if err != nil {
 			return err
 		}
-	case "mariadb":
+	case "mariadb", "mysql":
 		err := facade.stopMariaDb()
 		if err != nil {
 			return err
