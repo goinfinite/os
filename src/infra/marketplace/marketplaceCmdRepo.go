@@ -181,16 +181,34 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) updateInstalledFilesOwnership(
+func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 	installDir valueObject.UnixFilePath,
 ) error {
 	installDirStr := installDir.String()
 	_, err := infraHelper.RunCmdWithSubShell(
-		"chown -R nobody:nogroup " + installDirStr,
+		"chown -R nobody:nogroup -L " + installDirStr,
 	)
 	if err != nil {
 		return errors.New(
 			"UpdateInstalledFilesOwnershipError (" + installDirStr + "): " + err.Error(),
+		)
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"find -L " + installDirStr + " -type d -exec chmod 755 {} \\;",
+	)
+	if err != nil {
+		return errors.New(
+			"UpdateInstalledDirectoriesPermissionsError (" + installDirStr + "): " + err.Error(),
+		)
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"find -L " + installDirStr + " -type f -exec chmod 644 {} \\;",
+	)
+	if err != nil {
+		return errors.New(
+			"UpdateInstalledFilesPermissionsError (" + installDirStr + "): " + err.Error(),
 		)
 	}
 
@@ -318,7 +336,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.updateInstalledFilesOwnership(installDir)
+	err = repo.updateFilesOwnershipAndPermissions(installDir)
 	if err != nil {
 		return err
 	}
