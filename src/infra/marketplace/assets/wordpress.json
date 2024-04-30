@@ -18,14 +18,14 @@
         }
     ],
     "cmdSteps": [
-        "wget -O /speedia/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar",
-        "chmod +x /speedia/wp-cli.phar",
-        "mv /speedia/wp-cli.phar /usr/local/bin/wp",
+        "wget -O %installDirectory%/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar",
+        "chmod +x %installDirectory%/wp-cli.phar",
+        "mv %installDirectory%/wp-cli.phar /usr/local/bin/wp",
         "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
-        "sos db create -n wordpressDb -t mysql",
+        "sos db create -n wordpressDb_%installUuid% -t mysql",
         "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
-        "sos db create-user -n wordpressDb -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
-        "wp config create --path=%installDirectory% --dbname=wordpressDb --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
+        "sos db create-user -n wordpressDb_%installUuid% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
+        "wp config create --path=%installDirectory% --dbname=wordpressDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
         "rm -rf %installDirectory%/wpDbCredentials"
     ],
     "estimatedSizeBytes": 1000000000,
