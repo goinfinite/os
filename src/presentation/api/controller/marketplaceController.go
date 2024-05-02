@@ -152,21 +152,19 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 // @Produce      json
 // @Security     Bearer
 // @Param        installedId path uint true "MarketplaceInstalledItemId"
-// @Param        shouldUninstallServices body bool false "ShouldUninstallServices"
+// @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	requestBody, _ := apiHelper.GetRequestBody(c)
-
 	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
 		c.Param("installedId"),
 	)
 
 	shouldUninstallServices := true
-	if requestBody["shouldUninstallServices"] != nil {
+	if c.QueryParam("shouldUninstallServices") != "" {
 		var err error
 		shouldUninstallServices, err = apiHelper.ParseBoolParam(
-			requestBody["shouldUninstallServices"],
+			c.QueryParam("shouldUninstallServices"),
 		)
 		if err != nil {
 			panic("InvalidShouldUninstallServices")
