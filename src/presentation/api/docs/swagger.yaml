@@ -405,6 +405,8 @@ definitions:
         type: integer
       installDirectory:
         type: string
+      installUuid:
+        type: string
       mappings:
         items:
           $ref: '#/definitions/entity.Mapping'
@@ -1277,10 +1279,13 @@ paths:
         required: true
         type: integer
       - description: ShouldUninstallServices
-        in: body
+        in: query
         name: shouldUninstallServices
-        schema:
-          type: boolean
+        type: boolean
+      - description: ShouldRemoveFiles
+        in: query
+        name: shouldRemoveFiles
+        type: boolean
       produces:
       - application/json
       responses:
@@ -1534,29 +1539,6 @@ paths:
       summary: CreateNewSslPair
       tags:
       - ssl
-    put:
-      consumes:
-      - application/json
-      description: Delete vhosts from a ssl pair.
-      parameters:
-      - description: SslPairVhostsDeleted
-        in: body
-        name: deleteSslPairVhostsDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.DeleteSslPairVhosts'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: SslPairVhostsRemoved
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: DeleteSsslPairVhosts
-      tags:
-      - ssl
   /ssl/{sslPairId}/:
     delete:
       consumes:
@@ -1578,6 +1560,30 @@ paths:
       security:
       - Bearer: []
       summary: DeleteSslPair
+      tags:
+      - ssl
+  /ssl/vhost/:
+    put:
+      consumes:
+      - application/json
+      description: Delete vhosts from a ssl pair.
+      parameters:
+      - description: SslPairVhostsDeleted
+        in: body
+        name: deleteSslPairVhostsDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteSslPairVhosts'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SslPairVhostsRemoved
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSslPairVhosts
       tags:
       - ssl
   /vhosts/:

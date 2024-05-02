@@ -1036,12 +1036,16 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "boolean",
                         "description": "ShouldUninstallServices",
                         "name": "shouldUninstallServices",
-                        "in": "body",
-                        "schema": {
-                            "type": "boolean"
-                        }
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "ShouldRemoveFiles",
+                        "name": "shouldRemoveFiles",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1405,43 +1409,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete vhosts from a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSsslPairVhosts",
-                "parameters": [
-                    {
-                        "description": "SslPairVhostsDeleted",
-                        "name": "deleteSslPairVhostsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairVhostsRemoved",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
@@ -1473,6 +1440,45 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "SslPairCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/ssl/vhost/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete vhosts from a ssl pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "DeleteSslPairVhosts",
+                "parameters": [
+                    {
+                        "description": "SslPairVhostsDeleted",
+                        "name": "deleteSslPairVhostsDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SslPairVhostsRemoved",
                         "schema": {
                             "type": "object"
                         }
@@ -2357,6 +2363,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "installDirectory": {
+                    "type": "string"
+                },
+                "installUuid": {
                     "type": "string"
                 },
                 "mappings": {
