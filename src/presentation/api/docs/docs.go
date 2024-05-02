@@ -1983,14 +1983,14 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.MarketplaceInstallableItemDataField"
                     }
                 },
+                "directory": {
+                    "type": "string"
+                },
                 "hostname": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
-                },
-                "installDirectory": {
-                    "type": "string"
                 }
             }
         },
@@ -2358,6 +2358,9 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"

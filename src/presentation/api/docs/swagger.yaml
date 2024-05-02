@@ -156,12 +156,12 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.MarketplaceInstallableItemDataField'
         type: array
+      directory:
+        type: string
       hostname:
         type: string
       id:
         type: integer
-      installDirectory:
-        type: string
     type: object
   dto.Login:
     properties:
@@ -401,6 +401,8 @@ definitions:
         type: string
       createdAt:
         type: integer
+      hostname:
+        type: string
       id:
         type: integer
       installDirectory:
