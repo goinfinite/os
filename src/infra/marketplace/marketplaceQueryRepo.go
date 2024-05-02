@@ -251,7 +251,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			continue
 		}
 
-		rawKey, assertOk := rawItemDataFieldMap["key"].(string)
+		rawKey, assertOk := rawItemDataFieldMap["name"].(string)
 		if !assertOk {
 			log.Printf("InvalidMarketplaceCatalogItemDataFieldKey: %s", rawKey)
 			continue
