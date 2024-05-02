@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const dataFieldLabelRegex string = `^\w[\w-]{1,128}\w$`
+const dataFieldLabelRegex string = `^\w[\w-\s]{1,128}\w$`
 
 type DataFieldLabel string
 

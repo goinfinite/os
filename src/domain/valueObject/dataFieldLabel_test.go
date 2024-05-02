@@ -9,9 +9,12 @@ import (
 func TestDataFieldLabel(t *testing.T) {
 	t.Run("ValidDataFieldLabel", func(t *testing.T) {
 		validDataFieldLabels := []string{
-			"username",
-			"user-email",
-			"Service-Name_With_Port80",
+			"Administrator Email",
+			"Super administrator password",
+			"Public directory to install",
+			"Your own custom domain",
+			"Container port binding",
+			"Customem phone number",
 		}
 
 		for _, dfl := range validDataFieldLabels {
