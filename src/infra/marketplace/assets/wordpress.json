@@ -14,7 +14,16 @@
     "dataFields": [
         {
             "key": "locale",
-            "defaultValue": "en_US"
+            "defaultValue": "en_US",
+            "options": [
+                "en_US",
+                "pt_BR",
+                "pt_PT",
+                "es_ES",
+                "de_DE",
+                "it_IT",
+                "fr_FR"
+            ]
         }
     ],
     "cmdSteps": [
