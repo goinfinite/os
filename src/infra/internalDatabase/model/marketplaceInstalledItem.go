@@ -12,6 +12,7 @@ import (
 type MarketplaceInstalledItem struct {
 	ID               uint `gorm:"primarykey"`
 	Name             string
+	Hostname         string
 	Type             string
 	InstallDirectory string
 	InstallUuid      string
@@ -36,6 +37,11 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	}
 
 	itemName, err := valueObject.NewMarketplaceItemName(model.Name)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
+	hostname, err := valueObject.NewFqdn(model.Hostname)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -86,6 +92,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	return entity.NewMarketplaceInstalledItem(
 		id,
 		itemName,
+		hostname,
 		itemType,
 		installDirectory,
 		installUuid,
