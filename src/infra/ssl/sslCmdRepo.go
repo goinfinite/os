@@ -339,3 +339,26 @@ func (repo SslCmdRepo) Delete(sslId valueObject.SslId) error {
 
 	return nil
 }
+
+func (repo SslCmdRepo) DeleteSslPairVhosts(
+	deleteDto dto.DeleteSslPairVhosts,
+) error {
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	for _, vhost := range deleteDto.VirtualHosts {
+		_, err := vhostQueryRepo.GetByHostname(vhost)
+		if err != nil {
+			continue
+		}
+
+		err = repo.ReplaceWithSelfSigned(vhost)
+		if err != nil {
+			log.Printf(
+				"DeleteSslPairVhostsError (%s): %s",
+				vhost.String(),
+				err.Error(),
+			)
+		}
+	}
+
+	return nil
+}

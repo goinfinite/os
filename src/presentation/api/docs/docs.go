@@ -1405,6 +1405,43 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete vhosts from a ssl pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "DeleteSsslPairVhosts",
+                "parameters": [
+                    {
+                        "description": "SslPairVhostsDeleted",
+                        "name": "deleteSslPairVhostsDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SslPairVhostsRemoved",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -1903,6 +1940,20 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.DeleteSslPairVhosts": {
+            "type": "object",
+            "properties": {
+                "sslPairId": {
+                    "type": "string"
+                },
+                "virtualHosts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

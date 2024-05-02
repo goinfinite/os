@@ -224,7 +224,7 @@ func addPhp() error {
 		return errors.New("ChownConfDirError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir("/app/logs/php")
+	err = infraHelper.MakeDir("/app/logs/php-webserver")
 	if err != nil {
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
@@ -233,7 +233,7 @@ func addPhp() error {
 		"chown",
 		"-R",
 		"nobody:nogroup",
-		"/app/logs/php",
+		"/app/logs/php-webserver",
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())

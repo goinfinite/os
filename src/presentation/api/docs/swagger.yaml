@@ -134,6 +134,15 @@ definitions:
       type:
         type: string
     type: object
+  dto.DeleteSslPairVhosts:
+    properties:
+      sslPairId:
+        type: string
+      virtualHosts:
+        items:
+          type: string
+        type: array
+    type: object
   dto.ExtractUnixFiles:
     properties:
       destinationPath:
@@ -1523,6 +1532,29 @@ paths:
       security:
       - Bearer: []
       summary: CreateNewSslPair
+      tags:
+      - ssl
+    put:
+      consumes:
+      - application/json
+      description: Delete vhosts from a ssl pair.
+      parameters:
+      - description: SslPairVhostsDeleted
+        in: body
+        name: deleteSslPairVhostsDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteSslPairVhosts'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SslPairVhostsRemoved
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSsslPairVhosts
       tags:
       - ssl
   /ssl/{sslPairId}/:
