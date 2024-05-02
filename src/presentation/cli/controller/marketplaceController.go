@@ -123,7 +123,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	)
 	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().StringVarP(
-		&installDirStr, "installDir", "d", "", "Directory that stores installed files",
+		&installDirStr, "directory", "d", "", "Directory that stores installed files",
 	)
 	cmd.Flags().StringSliceVarP(
 		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",

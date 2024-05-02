@@ -82,7 +82,7 @@ func parseDataFieldsFromBody(
 // @Tags         marketplace
 // @Accept       json
 // @Produce      json
-// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (installDirectory is optional)"
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (directory is optional)"
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
@@ -95,9 +95,9 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	var installDirPtr *valueObject.UnixFilePath
-	if requestBody["installDirectory"] != nil {
+	if requestBody["directory"] != nil {
 		installDir := valueObject.NewUnixFilePathPanic(
-			requestBody["installDirectory"].(string),
+			requestBody["directory"].(string),
 		)
 		installDirPtr = &installDir
 	}

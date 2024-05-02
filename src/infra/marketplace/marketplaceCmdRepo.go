@@ -13,7 +13,6 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -281,6 +280,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
+	hostname valueObject.Fqdn,
 	installDir valueObject.UnixFilePath,
 	installUuid string,
 ) error {
@@ -292,6 +292,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
 		Name:             catalogItem.Name.String(),
+		Hostname:         hostname.String(),
 		Type:             catalogItem.Type.String(),
 		InstallDirectory: installDir.String(),
 		InstallUuid:      installUuid,
@@ -322,23 +323,23 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	installDirStr := infraData.GlobalConfigs.PrimaryPublicDir
-	if installDto.InstallDirectory != nil {
-		vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-		vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
-		if err != nil {
-			return err
-		}
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	if err != nil {
+		return err
+	}
+	installDir := vhost.RootDirectory
 
-		installDirStr = installDto.InstallDirectory.String()
+	if installDto.Directory != nil {
+		installDirStr := installDto.Directory.String()
 		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
 		if !hasLeadingSlash {
 			installDirStr = "/" + installDirStr
 		}
 
 		installDirStr = vhost.RootDirectory.String() + installDirStr
+		installDir, _ = valueObject.NewUnixFilePath(installDirStr)
 	}
-	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
@@ -371,6 +372,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	return repo.persistInstalledItem(
 		catalogItem,
+		installDto.Hostname,
 		installDir,
 		installUuidWithoutHyphens,
 	)
