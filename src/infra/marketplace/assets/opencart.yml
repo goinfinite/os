@@ -11,15 +11,15 @@ mappings:
     targetServiceName: php
 dataFields:
   - name: adminUsername
-    label: adminUser
+    label: Admin Username
     type: text
     isRequired: true
   - name: adminPassword
-    label: adminPass
+    label: Admin Password
     type: password
     isRequired: true
   - name: adminMailAddress
-    label: adminMail
+    label: Admin Email
     type: email
     isRequired: true
 cmdSteps:

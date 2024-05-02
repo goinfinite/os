@@ -14,7 +14,7 @@
     "dataFields": [
         {
             "name": "adminMailAddress",
-            "label": "adminMail",
+            "label": "Admin Email",
             "type": "email",
             "isRequired": true
         }
