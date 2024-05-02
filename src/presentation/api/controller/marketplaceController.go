@@ -153,6 +153,7 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 // @Security     Bearer
 // @Param        installedId path uint true "MarketplaceInstalledItemId"
 // @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
+// @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
@@ -171,14 +172,28 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 		}
 	}
 
+	shouldRemoveFiles := true
+	if c.QueryParam("shouldRemoveFiles") != "" {
+		var err error
+		shouldRemoveFiles, err = apiHelper.ParseBoolParam(
+			c.QueryParam("shouldRemoveFiles"),
+		)
+		if err != nil {
+			panic("InvalidShouldRemoveFiles")
+		}
+	}
+
+	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
+		installedId, shouldUninstallServices, shouldRemoveFiles,
+	)
+
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteMarketplaceInstalledItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
-		installedId,
-		shouldUninstallServices,
+		deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
