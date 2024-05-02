@@ -1,11 +1,11 @@
 package valueObject
 
 type MarketplaceCatalogItemDataField struct {
-	Key          DataFieldKey     `json:"key"`
+	Key          DataFieldKey     `json:"name"`
 	Label        DataFieldLabel   `json:"label"`
 	HtmlType     HtmlType         `json:"type"`
 	DefaultValue *DataFieldValue  `json:"defaultValue,omitempty"`
-	Options      []DataFieldValue `json:"options"`
+	Options      []DataFieldValue `json:"options,omitempty"`
 	IsRequired   bool             `json:"isRequired"`
 }
 
