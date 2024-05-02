@@ -13,7 +13,9 @@
     ],
     "dataFields": [
         {
-            "key": "locale",
+            "name": "locale",
+            "label": "locale",
+            "type": "text",
             "defaultValue": "en_US",
             "options": [
                 "en_US",
@@ -24,6 +26,24 @@
                 "it_IT",
                 "fr_FR"
             ]
+        },
+        {
+            "name": "adminUsername",
+            "label": "adminUser",
+            "type": "text",
+            "isRequired": true
+        },
+        {
+            "name": "adminPassword",
+            "label": "adminPass",
+            "type": "password",
+            "isRequired": true
+        },
+        {
+            "name": "adminMailAddress",
+            "label": "adminMail",
+            "type": "email",
+            "isRequired": true
         }
     ],
     "cmdSteps": [
@@ -35,7 +55,8 @@
         "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
         "sos db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
         "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
-        "rm -rf %installDirectory%/wpDbCredentials"
+        "rm -rf %installDirectory%/wpDbCredentials",
+        "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
     ],
     "estimatedSizeBytes": 1000000000,
     "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",

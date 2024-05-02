@@ -10,11 +10,17 @@ mappings:
     targetType: service
     targetServiceName: php
 dataFields:
-  - key: ocUser
+  - name: adminUsername
+    label: adminUser
+    type: text
     isRequired: true
-  - key: ocPassword
+  - name: adminPassword
+    label: adminPass
+    type: password
     isRequired: true
-  - key: ocEmail
+  - name: adminMailAddress
+    label: adminMail
+    type: email
     isRequired: true
 cmdSteps:
   - wget -O /speedia/opencart.zip https://github.com/opencart/opencart/releases/download/4.0.2.3/opencart-4.0.2.3.zip
@@ -25,8 +31,8 @@ cmdSteps:
   - sos runtime php update -v 82 -S allow_url_fopen -V on
   - sos db create -n ocDb_%installUuid% -t mysql
   - echo $(openssl rand -hex 8) > %installDirectory%/ocDbCredentials
-  - sos db create-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid% -p $(cat %installDirectory%/ocDbCredentials) -r all
-  - php %installDirectory%/install/cli_install.php install --username %ocUser% --password %ocPassword% --email %ocEmail% --http_server http://%installHostname%/ --db_driver mysqli --db_hostname localhost --db_username ocUser_%installUuid% --db_password $(cat %installDirectory%/ocDbCredentials) --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
+  - sos db create-user -n ocDb_%installUuid% -t mysql -u adminUsername_%installUuid% -p $(cat %installDirectory%/ocDbCredentials) -r all
+  - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server http://%installHostname%/ --db_driver mysqli --db_hostname localhost --db_username adminUsername_%installUuid% --db_password $(cat %installDirectory%/ocDbCredentials) --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
   - rm -rf %installDirectory%/ocDbCredentials
 estimatedSizeBytes: 1000000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
