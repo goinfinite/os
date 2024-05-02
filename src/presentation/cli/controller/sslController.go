@@ -80,7 +80,7 @@ func CreateSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&virtualHostsSlice, "virtualHosts", "t", []string{}, "VirtualHosts")
+	cmd.Flags().StringSliceVarP(&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts")
 	cmd.MarkFlagRequired("virtualHosts")
 	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "CertificateFilePath")
 	cmd.MarkFlagRequired("certFilePath")
@@ -114,7 +114,47 @@ func DeleteSslPairController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslPairIdStr, "sslPairId", "s", "", "SslPairId")
+	cmd.Flags().StringVarP(&sslPairIdStr, "id", "i", "", "SslPairId")
 	cmd.MarkFlagRequired("sslPairId")
+	return cmd
+}
+
+func DeleteSslPairVhostsController() *cobra.Command {
+	var sslPairIdStr string
+	var virtualHostsSlice []string
+
+	cmd := &cobra.Command{
+		Use:   "remove-vhosts",
+		Short: "RemoveSslPairVhosts",
+		Run: func(cmd *cobra.Command, args []string) {
+			sslPairId := valueObject.NewSslIdPanic(sslPairIdStr)
+
+			var virtualHosts []valueObject.Fqdn
+			for _, vhost := range virtualHostsSlice {
+				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+			}
+
+			dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
+
+			sslQueryRepo := sslInfra.SslQueryRepo{}
+			sslCmdRepo := sslInfra.NewSslCmdRepo()
+
+			err := useCase.DeleteSslPairVhosts(
+				sslQueryRepo,
+				sslCmdRepo,
+				dto,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "SslPairVhostsRemoved")
+		},
+	}
+
+	cmd.Flags().StringVarP(&sslPairIdStr, "id", "i", "", "SslPairId")
+	cmd.MarkFlagRequired("sslPairId")
+	cmd.Flags().StringSliceVarP(&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts")
+	cmd.MarkFlagRequired("virtualHosts")
 	return cmd
 }

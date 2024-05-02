@@ -347,7 +347,7 @@ func (repo VirtualHostQueryRepo) locationBlockToMapping(
 
 	var targetServiceNamePtr *valueObject.ServiceName
 	if targetTypeStr == "service" {
-		hostnamePortRegex := regexp.MustCompile(`(?m)localhost:\d{1,5}`)
+		hostnamePortRegex := regexp.MustCompile(`(?m)127.0.0.1:\d{1,5}`)
 		hostnamePortMatches := hostnamePortRegex.FindStringSubmatch(blockContent)
 		if len(hostnamePortMatches) == 0 {
 			return mapping, errors.New("GetServicePortsFailed")

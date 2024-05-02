@@ -61,13 +61,17 @@ func UpdateService(
 	}
 
 	if shouldUpdateStatus {
-		return updateServiceStatus(
+		err = updateServiceStatus(
 			queryRepo,
 			cmdRepo,
 			vhostCmdRepo,
 			serviceEntity,
 			updateDto,
 		)
+		if err != nil {
+			log.Printf("UpdateServiceStatusError: %s", err.Error())
+			return errors.New("UpdateServiceStatusInfraError")
+		}
 	}
 
 	err = cmdRepo.Update(updateDto)
