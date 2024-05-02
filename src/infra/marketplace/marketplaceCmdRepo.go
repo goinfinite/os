@@ -429,10 +429,11 @@ func (repo *MarketplaceCmdRepo) uninstallServices(
 }
 
 func (repo *MarketplaceCmdRepo) UninstallItem(
-	installedId valueObject.MarketplaceInstalledItemId,
-	shouldUninstallServices bool,
+	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(installedId)
+	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(
+		deleteDto.InstalledId,
+	)
 	if err != nil {
 		return err
 	}
@@ -451,29 +452,31 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
-		ID: uint(installedId.Get()),
+		ID: uint(deleteDto.InstalledId.Get()),
 	}
 	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
 	if err != nil {
 		return err
 	}
 
-	if shouldUninstallServices {
+	if deleteDto.ShouldUninstallServices {
 		err = repo.uninstallServices(installedItem.ServiceNames)
 		if err != nil {
 			return err
 		}
 	}
 
-	installDirStr := installedItem.InstallDirectory.String()
-	err = os.RemoveAll(installDirStr)
-	if err != nil {
-		return errors.New("DeleteInstalledItemFilesError: " + err.Error())
-	}
+	if deleteDto.ShouldRemoveFiles {
+		installDirStr := installedItem.InstallDirectory.String()
+		err = os.RemoveAll(installDirStr)
+		if err != nil {
+			return errors.New("DeleteInstalledItemFilesError: " + err.Error())
+		}
 
-	err = infraHelper.MakeDir(installDirStr)
-	if err != nil {
-		return errors.New("CreateEmptyInstallDirectoryError: " + err.Error())
+		err = infraHelper.MakeDir(installDirStr)
+		if err != nil {
+			return errors.New("CreateEmptyInstallDirectoryError: " + err.Error())
+		}
 	}
 
 	return nil
