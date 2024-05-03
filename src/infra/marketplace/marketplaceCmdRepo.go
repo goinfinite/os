@@ -307,20 +307,20 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	installDir valueObject.UnixFilePath,
 	installUuid string,
 ) error {
-	svcNamesListStr := []string{}
+	requiredSvcNamesListStr := []string{}
 	for _, svcName := range catalogItem.ServiceNames {
-		svcNamesListStr = append(svcNamesListStr, svcName.String())
+		requiredSvcNamesListStr = append(requiredSvcNamesListStr, svcName.String())
 	}
-	svcNamesStr := strings.Join(svcNamesListStr, ",")
+	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
-		Name:             catalogItem.Name.String(),
-		Hostname:         hostname.String(),
-		Type:             catalogItem.Type.String(),
-		InstallDirectory: installDir.String(),
-		InstallUuid:      installUuid,
-		ServiceNames:     svcNamesStr,
-		AvatarUrl:        catalogItem.AvatarUrl.String(),
+		Name:                 catalogItem.Name.String(),
+		Hostname:             hostname.String(),
+		Type:                 catalogItem.Type.String(),
+		InstallDirectory:     installDir.String(),
+		InstallUuid:          installUuid,
+		RequiredServiceNames: requiredSvcNamesStr,
+		AvatarUrl:            catalogItem.AvatarUrl.String(),
 	}
 
 	err := repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
@@ -422,7 +422,7 @@ func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
 	for _, installedItem := range installedItems {
 		servicesInUse = slices.Concat(
 			servicesInUse,
-			installedItem.ServiceNames,
+			installedItem.RequiredServiceNames,
 		)
 	}
 
@@ -493,7 +493,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if deleteDto.ShouldUninstallServices {
-		err = repo.uninstallServices(installedItem.ServiceNames)
+		err = repo.uninstallServices(installedItem.RequiredServiceNames)
 		if err != nil {
 			return err
 		}

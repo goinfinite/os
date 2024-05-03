@@ -10,16 +10,16 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID               uint `gorm:"primarykey"`
-	Name             string
-	Hostname         string
-	Type             string
-	InstallDirectory string
-	InstallUuid      string
-	ServiceNames     string
-	AvatarUrl        string
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID                   uint `gorm:"primarykey"`
+	Name                 string
+	Hostname             string
+	Type                 string
+	InstallDirectory     string
+	InstallUuid          string
+	RequiredServiceNames string
+	AvatarUrl            string
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
 }
 
 func (MarketplaceInstalledItem) TableName() string {
@@ -63,16 +63,16 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	svcsNameList := []valueObject.ServiceName{}
-	if len(model.ServiceNames) > 0 {
-		rawSvcsNameList := strings.Split(model.ServiceNames, ",")
+	requiredSvcsNameList := []valueObject.ServiceName{}
+	if len(model.RequiredServiceNames) > 0 {
+		rawSvcsNameList := strings.Split(model.RequiredServiceNames, ",")
 		for _, rawSvcName := range rawSvcsNameList {
 			svcName, err := valueObject.NewServiceName(rawSvcName)
 			if err != nil {
 				log.Printf("%s: %s", err.Error(), rawSvcName)
 			}
 
-			svcsNameList = append(svcsNameList, svcName)
+			requiredSvcsNameList = append(requiredSvcsNameList, svcName)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		itemType,
 		installDirectory,
 		installUuid,
-		svcsNameList,
+		requiredSvcsNameList,
 		mappings,
 		avatarUrl,
 		createdAt,
