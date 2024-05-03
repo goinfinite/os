@@ -246,9 +246,9 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) parseMappingsToCorrectPath(
+func (repo *MarketplaceCmdRepo) updateMappingsBase(
 	catalogMappings []valueObject.MarketplaceItemMapping,
-	dtoDirectory valueObject.UnixFilePath,
+	urlDirectory valueObject.UnixFilePath,
 ) []valueObject.MarketplaceItemMapping {
 	for mappingIndex := range catalogMappings {
 		catalogMapping := &catalogMappings[mappingIndex]
@@ -258,12 +258,14 @@ func (repo *MarketplaceCmdRepo) parseMappingsToCorrectPath(
 			continue
 		}
 
-		correctMappingPath, err := valueObject.NewMappingPath(dtoDirectory.String())
+		urlDirectoryAsMappingBase, err := valueObject.NewMappingPath(
+			urlDirectory.String(),
+		)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), dtoDirectory.String())
+			log.Printf("%s: %s", err.Error(), urlDirectory.String())
 			continue
 		}
-		catalogMapping.Path = correctMappingPath
+		catalogMapping.Path = urlDirectoryAsMappingBase
 	}
 
 	return catalogMappings
@@ -384,7 +386,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
 	if !isRootDirectory {
-		catalogItem.Mappings = repo.parseMappingsToCorrectPath(
+		catalogItem.Mappings = repo.updateMappingsBase(
 			catalogItem.Mappings,
 			*installDto.UrlDirectory,
 		)
