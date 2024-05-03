@@ -959,7 +959,7 @@ const docTemplate = `{
                 "summary": "InstallMarketplaceCatalogItem",
                 "parameters": [
                     {
-                        "description": "InstallMarketplaceCatalogItem (installDirectory is optional)",
+                        "description": "InstallMarketplaceCatalogItem (directory is optional)",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
@@ -2646,7 +2646,19 @@ const docTemplate = `{
                 "isRequired": {
                     "type": "boolean"
                 },
-                "key": {
+                "label": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
                     "type": "string"
                 }
             }
