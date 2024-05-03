@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -13,7 +14,6 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	infraData "github.com/speedianet/os/src/infra/infraData"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
-	"golang.org/x/exp/slices"
 )
 
 var configurationsDir string = "/app/conf/nginx"
