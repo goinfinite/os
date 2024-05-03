@@ -161,25 +161,25 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 		c.Param("installedId"),
 	)
 
+	var err error
+
 	shouldUninstallServices := true
 	if c.QueryParam("shouldUninstallServices") != "" {
-		var err error
 		shouldUninstallServices, err = apiHelper.ParseBoolParam(
 			c.QueryParam("shouldUninstallServices"),
 		)
 		if err != nil {
-			panic("InvalidShouldUninstallServices")
+			shouldUninstallServices = false
 		}
 	}
 
 	shouldRemoveFiles := true
 	if c.QueryParam("shouldRemoveFiles") != "" {
-		var err error
 		shouldRemoveFiles, err = apiHelper.ParseBoolParam(
 			c.QueryParam("shouldRemoveFiles"),
 		)
 		if err != nil {
-			panic("InvalidShouldRemoveFiles")
+			shouldRemoveFiles = false
 		}
 	}
 
@@ -190,7 +190,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.DeleteMarketplaceInstalledItem(
+	err = useCase.DeleteMarketplaceInstalledItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
 		deleteMarketplaceInstalledItem,
