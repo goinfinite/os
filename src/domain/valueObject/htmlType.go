@@ -13,10 +13,8 @@ var validHtmlTypes = []string{
 	"checkbox",
 	"color",
 	"date",
-	"datetime-local",
 	"email",
 	"image",
-	"month",
 	"number",
 	"password",
 	"radio",
@@ -26,7 +24,6 @@ var validHtmlTypes = []string{
 	"text",
 	"time",
 	"url",
-	"week",
 }
 
 func NewHtmlType(value string) (HtmlType, error) {

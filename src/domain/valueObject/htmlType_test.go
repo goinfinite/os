@@ -10,10 +10,8 @@ func TestHtmlType(t *testing.T) {
 			"checkbox",
 			"color",
 			"date",
-			"datetime-local",
 			"email",
 			"image",
-			"month",
 			"number",
 			"password",
 			"radio",
@@ -23,7 +21,6 @@ func TestHtmlType(t *testing.T) {
 			"text",
 			"time",
 			"url",
-			"week",
 		}
 
 		for _, ht := range validHtmlTypes {
@@ -37,10 +34,13 @@ func TestHtmlType(t *testing.T) {
 	t.Run("InvalidHtmlType", func(t *testing.T) {
 		invalidHtmlTypes := []string{
 			"button",
+			"datetime-local",
 			"file",
 			"hidden",
+			"month",
 			"reset",
 			"submit",
+			"week",
 		}
 
 		for _, ht := range invalidHtmlTypes {
