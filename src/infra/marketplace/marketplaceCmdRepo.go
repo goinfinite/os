@@ -227,25 +227,19 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 	)
 	if err != nil {
 		return errors.New(
-			"UpdateInstalledFilesOwnershipError (" + installDirStr + "): " + err.Error(),
+			"UpdateInstalledFilesOwnershipError (" + installDirStr + "): " +
+				err.Error(),
 		)
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"find -L " + installDirStr + " -type d -exec chmod 755 {} \\;",
+		`find ` + installDirStr + ` -type d -exec chmod 755 {} \; && find ` +
+			installDirStr + ` -type f -exec chmod 644 {} \;`,
 	)
 	if err != nil {
 		return errors.New(
-			"UpdateInstalledDirectoriesPermissionsError (" + installDirStr + "): " + err.Error(),
-		)
-	}
-
-	_, err = infraHelper.RunCmdWithSubShell(
-		"find -L " + installDirStr + " -type f -exec chmod 644 {} \\;",
-	)
-	if err != nil {
-		return errors.New(
-			"UpdateInstalledFilesPermissionsError (" + installDirStr + "): " + err.Error(),
+			"UpdateInstalledDirsAndFilesPermissionsError (" + installDirStr + "): " +
+				err.Error(),
 		)
 	}
 
