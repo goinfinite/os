@@ -69,7 +69,7 @@ func parseDataFields(
 func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	var catalogIdInt int
 	var hostnameStr string
-	var installDirStr string
+	var urlDirectory string
 	var dataFieldsStr []string
 
 	cmd := &cobra.Command{
@@ -79,10 +79,10 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 			catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(catalogIdInt)
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			var installDirPtr *valueObject.UnixFilePath
-			if installDirStr != "" {
-				installDir := valueObject.NewUnixFilePathPanic(installDirStr)
-				installDirPtr = &installDir
+			var urlDirectoryPtr *valueObject.UnixFilePath
+			if urlDirectory != "" {
+				urlDirectory := valueObject.NewUnixFilePathPanic(urlDirectory)
+				urlDirectoryPtr = &urlDirectory
 			}
 
 			// Format: key:value,key:value
@@ -96,7 +96,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 			dto := dto.NewInstallMarketplaceCatalogItem(
 				catalogId,
 				hostname,
-				installDirPtr,
+				urlDirectoryPtr,
 				dataFields,
 			)
 			err := useCase.InstallMarketplaceCatalogItem(
@@ -123,7 +123,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	)
 	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().StringVarP(
-		&installDirStr, "directory", "d", "", "Directory that stores installed files",
+		&urlDirectory, "urlDirectory", "d", "", "Directory that stores installed files",
 	)
 	cmd.Flags().StringSliceVarP(
 		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",
