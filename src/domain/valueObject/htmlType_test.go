@@ -7,7 +7,7 @@ import (
 func TestHtmlType(t *testing.T) {
 	t.Run("ValidHtmlType", func(t *testing.T) {
 		validHtmlTypes := []string{
-			"checkbock",
+			"checkbox",
 			"color",
 			"date",
 			"datetime-local",

@@ -10,7 +10,7 @@ import (
 type HtmlType string
 
 var validHtmlTypes = []string{
-	"checkbock",
+	"checkbox",
 	"color",
 	"date",
 	"datetime-local",
