@@ -71,14 +71,14 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 ) []valueObject.MarketplaceInstallableItemDataField {
 	systemDataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
-	installDirDataFieldKey, _ := valueObject.NewDataFieldKey("installDirectory")
+	installDirDataFieldKey, _ := valueObject.NewDataFieldName("installDirectory")
 	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
 	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installDirDataFieldKey,
 		installDirDataFieldValue,
 	)
 
-	installHostnameDataFieldKey, _ := valueObject.NewDataFieldKey("installHostname")
+	installHostnameDataFieldKey, _ := valueObject.NewDataFieldName("installHostname")
 	installHostnameDataFieldValue, _ := valueObject.NewDataFieldValue(
 		installHostname.String(),
 	)
@@ -87,7 +87,7 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 		installHostnameDataFieldValue,
 	)
 
-	installUuidDataFieldKey, _ := valueObject.NewDataFieldKey("installUuid")
+	installUuidDataFieldKey, _ := valueObject.NewDataFieldName("installUuid")
 	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
 	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installUuidDataFieldKey,
@@ -112,7 +112,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldsKeys = append(
 			receivedDataFieldsKeys,
-			receivedDataField.Key.String(),
+			receivedDataField.Name.String(),
 		)
 	}
 
@@ -121,7 +121,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 			continue
 		}
 
-		catalogDataFieldKeyStr := catalogDataField.Key.String()
+		catalogDataFieldKeyStr := catalogDataField.Name.String()
 		catalogDataFieldAlreadyFilled := slices.Contains(
 			receivedDataFieldsKeys,
 			catalogDataFieldKeyStr,
@@ -131,7 +131,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 		}
 
 		catalogDataFieldAsInstallable, _ := valueObject.NewMarketplaceInstallableItemDataField(
-			catalogDataField.Key,
+			catalogDataField.Name,
 			*catalogDataField.DefaultValue,
 		)
 		missingCatalogOptionalDataFields = append(
@@ -151,7 +151,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	dataFieldsMap := map[string]string{}
 	for _, dataField := range dataFields {
-		dataFieldKeyStr := dataField.Key.String()
+		dataFieldKeyStr := dataField.Name.String()
 		dataFieldsMap[dataFieldKeyStr] = dataField.Value.String()
 	}
 
@@ -353,8 +353,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDir := vhost.RootDirectory
 
-	if installDto.Directory != nil {
-		installDirStr := installDto.Directory.String()
+	if installDto.UrlDirectory != nil {
+		installDirStr := installDto.UrlDirectory.String()
 		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
 		if !hasLeadingSlash {
 			installDirStr = "/" + installDirStr
@@ -392,7 +392,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if !isRootDirectory {
 		catalogItem.Mappings = repo.parseMappingsToCorrectPath(
 			catalogItem.Mappings,
-			*installDto.Directory,
+			*installDto.UrlDirectory,
 		)
 	}
 
@@ -500,7 +500,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if deleteDto.ShouldRemoveFiles {
-		installDirStr := installedItem.InstallDirectory.String()
+		installDirStr := installedItem.UrlDirectory.String()
 		err = os.RemoveAll(installDirStr)
 		if err != nil {
 			return errors.New("DeleteInstalledItemFilesError: " + err.Error())

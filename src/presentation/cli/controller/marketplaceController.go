@@ -57,7 +57,7 @@ func parseDataFields(
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldKeyPanic(dataFieldsParts[0]),
+			valueObject.NewDataFieldNamePanic(dataFieldsParts[0]),
 			valueObject.NewDataFieldValuePanic(dataFieldsParts[1]),
 		)
 		dataFields = append(dataFields, dataField)

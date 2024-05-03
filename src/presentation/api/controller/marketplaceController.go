@@ -66,7 +66,7 @@ func parseDataFieldsFromBody(
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldKeyPanic(dataFieldMap["name"].(string)),
+			valueObject.NewDataFieldNamePanic(dataFieldMap["name"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 		)
 

@@ -15,7 +15,7 @@ func TestDataFieldKey(t *testing.T) {
 		}
 
 		for _, dfk := range validDataFieldKeys {
-			_, err := NewDataFieldKey(dfk)
+			_, err := NewDataFieldName(dfk)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", dfk, err.Error())
 			}
@@ -33,7 +33,7 @@ func TestDataFieldKey(t *testing.T) {
 		}
 
 		for _, dfk := range invalidDataFieldKeys {
-			_, err := NewDataFieldKey(dfk)
+			_, err := NewDataFieldName(dfk)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", dfk)
 			}

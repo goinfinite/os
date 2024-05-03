@@ -256,7 +256,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			log.Printf("InvalidMarketplaceCatalogItemDataFieldKey: %s", rawKey)
 			continue
 		}
-		key, err := valueObject.NewDataFieldKey(rawKey)
+		key, err := valueObject.NewDataFieldName(rawKey)
 		if err != nil {
 			log.Printf("%s (%s): %s", err.Error(), rawKey, rawKey)
 			continue

@@ -1,7 +1,7 @@
 package valueObject
 
 type MarketplaceCatalogItemDataField struct {
-	Key          DataFieldKey     `json:"name"`
+	Name         DataFieldName    `json:"name"`
 	Label        DataFieldLabel   `json:"label"`
 	HtmlType     HtmlType         `json:"type"`
 	DefaultValue *DataFieldValue  `json:"defaultValue,omitempty"`
@@ -10,7 +10,7 @@ type MarketplaceCatalogItemDataField struct {
 }
 
 func NewMarketplaceCatalogItemDataField(
-	key DataFieldKey,
+	name DataFieldName,
 	label DataFieldLabel,
 	htmlType HtmlType,
 	defaultValue *DataFieldValue,
@@ -18,7 +18,7 @@ func NewMarketplaceCatalogItemDataField(
 	isRequired bool,
 ) (MarketplaceCatalogItemDataField, error) {
 	return MarketplaceCatalogItemDataField{
-		Key:          key,
+		Name:         name,
 		Label:        label,
 		HtmlType:     htmlType,
 		DefaultValue: defaultValue,
