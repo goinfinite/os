@@ -20,7 +20,7 @@
         }
     ],
     "cmdSteps": [
-        "wget -O /app/joomla.zip https://downloads.joomla.org/cms/joomla5/5-1-0/Joomla_5-1-0-Stable-Full_Package.zip?format=zip",
+        "curl -skL -o /app/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
         "mkdir /app/joomla && unzip /app/joomla.zip -d /app/joomla && rm -rf /app/joomla.zip",
         "sos db create -n joomlaDb_%installUuid% -t mysql",
         "echo $(openssl rand -hex 8) > %installDirectory%/joomlaDbCredentials",

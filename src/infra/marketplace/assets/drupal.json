@@ -12,7 +12,7 @@
         }
     ],
     "cmdSteps": [
-        "wget -O /app/composer-setup.php https://getcomposer.org/installer",
+        "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
         "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
         "rm -rf /app/composer-setup.php",
         "sos runtime php update-module -n sqlite3 -v 8.2 && sos runtime php update-module -n pdo_sqlite -v 8.2",
