@@ -17,7 +17,7 @@
         "rm -rf /app/composer-setup.php",
         "sos runtime php update-module -n sqlite3 -v 8.2 && sos runtime php update-module -n pdo_sqlite -v 8.2",
         "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal -q -n --no-dev",
-        "rm -rf /app && ln -s /app/drupal/web %installDirectory%",
+        "mkdir -p %installDirectory% && ln -s /app/drupal/web %installDirectory%",
         "sos db create -n drupalDb_%installUuid% -t mysql",
         "echo $(openssl rand -hex 8) > /app/drupal/drupalDbCredentials",
         "sos db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p $(cat /app/drupal/drupalDbCredentials) -r all",
