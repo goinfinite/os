@@ -252,6 +252,29 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 	return nil
 }
 
+func (repo *MarketplaceCmdRepo) parseMappingsToCorrectPath(
+	catalogMappings []valueObject.MarketplaceItemMapping,
+	dtoDirectory valueObject.UnixFilePath,
+) []valueObject.MarketplaceItemMapping {
+	for mappingIndex := range catalogMappings {
+		catalogMapping := &catalogMappings[mappingIndex]
+
+		isPathRoot := catalogMapping.Path.String() == "/"
+		if !isPathRoot {
+			continue
+		}
+
+		correctMappingPath, err := valueObject.NewMappingPath(dtoDirectory.String())
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), dtoDirectory.String())
+			continue
+		}
+		catalogMapping.Path = correctMappingPath
+	}
+
+	return catalogMappings
+}
+
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
@@ -363,6 +386,14 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	err = repo.updateFilesOwnershipAndPermissions(installDir)
 	if err != nil {
 		return err
+	}
+
+	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
+	if !isRootDirectory {
+		catalogItem.Mappings = repo.parseMappingsToCorrectPath(
+			catalogItem.Mappings,
+			*installDto.Directory,
+		)
 	}
 
 	err = repo.createMappings(installDto.Hostname, catalogItem.Mappings)
