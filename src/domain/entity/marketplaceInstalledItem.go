@@ -5,17 +5,17 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id               valueObject.MarketplaceInstalledItemId   `json:"id"`
-	Name             valueObject.MarketplaceItemName          `json:"name"`
-	Hostname         valueObject.Fqdn                         `json:"hostname"`
-	Type             valueObject.MarketplaceItemType          `json:"type"`
-	InstallDirectory valueObject.UnixFilePath                 `json:"installDirectory"`
-	InstallUuid      valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
-	ServiceNames     []valueObject.ServiceName                `json:"serviceNames"`
-	Mappings         []Mapping                                `json:"mappings"`
-	AvatarUrl        valueObject.Url                          `json:"avatarUrl"`
-	CreatedAt        valueObject.UnixTime                     `json:"createdAt"`
-	UpdatedAt        valueObject.UnixTime                     `json:"updatedAt"`
+	Id           valueObject.MarketplaceInstalledItemId   `json:"id"`
+	Name         valueObject.MarketplaceItemName          `json:"name"`
+	Hostname     valueObject.Fqdn                         `json:"hostname"`
+	Type         valueObject.MarketplaceItemType          `json:"type"`
+	UrlDirectory valueObject.UnixFilePath                 `json:"urlDirectory"`
+	InstallUuid  valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
+	ServiceNames []valueObject.ServiceName                `json:"serviceNames"`
+	Mappings     []Mapping                                `json:"mappings"`
+	AvatarUrl    valueObject.Url                          `json:"avatarUrl"`
+	CreatedAt    valueObject.UnixTime                     `json:"createdAt"`
+	UpdatedAt    valueObject.UnixTime                     `json:"updatedAt"`
 }
 
 func NewMarketplaceInstalledItem(
@@ -23,7 +23,7 @@ func NewMarketplaceInstalledItem(
 	itemName valueObject.MarketplaceItemName,
 	hostname valueObject.Fqdn,
 	itemType valueObject.MarketplaceItemType,
-	installDirectory valueObject.UnixFilePath,
+	urlDirectory valueObject.UnixFilePath,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 	serviceNames []valueObject.ServiceName,
 	mappings []Mapping,
@@ -32,16 +32,16 @@ func NewMarketplaceInstalledItem(
 	updatedAt valueObject.UnixTime,
 ) MarketplaceInstalledItem {
 	return MarketplaceInstalledItem{
-		Id:               id,
-		Name:             itemName,
-		Hostname:         hostname,
-		Type:             itemType,
-		InstallDirectory: installDirectory,
-		InstallUuid:      installUuid,
-		ServiceNames:     serviceNames,
-		Mappings:         mappings,
-		AvatarUrl:        avatarUrl,
-		CreatedAt:        createdAt,
-		UpdatedAt:        createdAt,
+		Id:           id,
+		Name:         itemName,
+		Hostname:     hostname,
+		Type:         itemType,
+		UrlDirectory: urlDirectory,
+		InstallUuid:  installUuid,
+		ServiceNames: serviceNames,
+		Mappings:     mappings,
+		AvatarUrl:    avatarUrl,
+		CreatedAt:    createdAt,
+		UpdatedAt:    createdAt,
 	}
 }
