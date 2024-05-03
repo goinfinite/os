@@ -1,6 +1,6 @@
 name: OpenCart
 type: app
-description: The best free and open-source eCommerce platform. Everything you need to create, scale and run your business.
+description: OpenCart is free open source e-commerce platform for online merchants. OpenCart provides a professional and reliable foundation from which to build a successful online store.
 serviceNames:
   - php
   - mysql

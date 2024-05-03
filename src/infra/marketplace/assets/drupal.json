@@ -1,7 +1,7 @@
 {
     "name": "Drupal",
     "type": "app",
-    "description": "Drupal is an open source platform for building amazing digital experiences. It&#039;s made by a dedicated community. Anyone can use it, and it will always be free.",
+    "description": "Drupal is an open source platform for building amazing digital experiences. It's made by a dedicated community. Anyone can use it, and it will always be free.",
     "serviceNames": ["php", "mysql"],
     "mappings": [
         {
