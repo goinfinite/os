@@ -14,14 +14,14 @@ func NewMappingTargetValue(value interface{}) (MappingTargetValue, error) {
 		return "", errors.New("InvalidMappingTargetValue")
 	}
 
-	targetServiceName, err := NewServiceName(mtvStr)
-	if err == nil {
-		return MappingTargetValue(targetServiceName.String()), nil
-	}
-
 	targetUrl, err := NewUrl(mtvStr)
 	if err == nil {
 		return MappingTargetValue(targetUrl.String()), nil
+	}
+
+	targetServiceName, err := NewServiceName(mtvStr)
+	if err == nil {
+		return MappingTargetValue(targetServiceName.String()), nil
 	}
 
 	targetHttpResponseCode, err := NewHttpResponseCode(mtvStr)
@@ -48,6 +48,47 @@ func NewMappingTargetValuePanic(value interface{}) MappingTargetValue {
 	}
 
 	return mtv
+}
+
+func NewMappingTargetValueBasedOnType(
+	value interface{},
+	targetType MappingTargetType,
+) (MappingTargetValue, error) {
+	var mtv MappingTargetValue
+
+	mtvStr, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return "", errors.New("InvalidMappingTargetValue")
+	}
+
+	switch targetType.String() {
+	case "url":
+		targetUrl, err := NewUrl(mtvStr)
+		if err == nil {
+			return MappingTargetValue(targetUrl.String()), nil
+		}
+	case "service":
+		targetServiceName, err := NewServiceName(mtvStr)
+		if err == nil {
+			return MappingTargetValue(targetServiceName.String()), nil
+		}
+	case "response-code":
+		targetHttpResponseCode, err := NewHttpResponseCode(mtvStr)
+		if err == nil {
+			return MappingTargetValue(
+				targetHttpResponseCode.String(),
+			), nil
+		}
+	case "inline-html":
+		targetInlineHtmlContent, err := NewInlineHtmlContent(mtvStr)
+		if err == nil {
+			return MappingTargetValue(
+				targetInlineHtmlContent.String(),
+			), nil
+		}
+	}
+
+	return mtv, errors.New("InvalidMappingTargetValue")
 }
 
 func (mtv MappingTargetValue) String() string {
