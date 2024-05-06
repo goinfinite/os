@@ -258,14 +258,14 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 			continue
 		}
 
-		urlPathAsMappingBase, err := valueObject.NewMappingPath(
+		newMappingBase, err := valueObject.NewMappingPath(
 			urlPath.String(),
 		)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), urlPath.String())
 			continue
 		}
-		catalogMapping.Path = urlPathAsMappingBase
+		catalogMapping.Path = newMappingBase
 	}
 
 	return catalogMappings
