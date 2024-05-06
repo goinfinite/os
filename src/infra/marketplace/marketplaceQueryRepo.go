@@ -273,14 +273,14 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			continue
 		}
 
-		rawHtmlType, assertOk := rawItemDataFieldMap["type"].(string)
+		rawFieldType, assertOk := rawItemDataFieldMap["type"].(string)
 		if !assertOk {
 			log.Printf("InvalidMarketplaceCatalogItemDataFieldType: %s", rawKey)
 			continue
 		}
-		htmlType, err := valueObject.NewHtmlType(rawHtmlType)
+		fieldType, err := valueObject.NewDataFieldType(rawFieldType)
 		if err != nil {
-			log.Printf("%s (%s): %s", err.Error(), rawKey, rawHtmlType)
+			log.Printf("%s (%s): %s", err.Error(), rawKey, rawFieldType)
 			continue
 		}
 
@@ -343,7 +343,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 		itemDataField, err := valueObject.NewMarketplaceCatalogItemDataField(
 			key,
 			label,
-			htmlType,
+			fieldType,
 			defaultValuePtr,
 			options,
 			isRequired,
