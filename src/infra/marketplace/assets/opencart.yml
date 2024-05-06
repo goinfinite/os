@@ -28,7 +28,7 @@ cmdSteps:
   - mkdir -p %installDirectory% && mv /app/opencart-*/upload/* %installDirectory% && rm -rf /app/opencart*
   - mv %installDirectory%/config-dist.php %installDirectory%/config.php
   - mv %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
-  - sos runtime php update -v 82 -S allow_url_fopen -V on
+  - sos runtime php update -v 82 -H %installHostname%
   - sos db create -n ocDb_%installUuid% -t mysql
   - echo $(openssl rand -hex 8) > %installDirectory%/ocDbCredentials
   - sos db create-user -n ocDb_%installUuid% -t mysql -u adminUsername_%installUuid% -p $(cat %installDirectory%/ocDbCredentials) -r all
