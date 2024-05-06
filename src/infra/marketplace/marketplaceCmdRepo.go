@@ -66,6 +66,7 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installDir valueObject.UrlPath,
+	installUrlPathStr string,
 	installHostname valueObject.Fqdn,
 	installUuid string,
 ) []valueObject.MarketplaceInstallableItemDataField {
@@ -76,6 +77,13 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installDirDataFieldKey,
 		installDirDataFieldValue,
+	)
+
+	installUrlPathDataFieldKey, _ := valueObject.NewDataFieldName("installUrlPath")
+	installUrlPathDataFieldValue, _ := valueObject.NewDataFieldValue(installUrlPathStr)
+	installUrlPathDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		installUrlPathDataFieldKey,
+		installUrlPathDataFieldValue,
 	)
 
 	installHostnameDataFieldKey, _ := valueObject.NewDataFieldName("installHostname")
@@ -97,6 +105,7 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	return append(
 		systemDataFields,
 		installDirDataField,
+		installUrlPathDataField,
 		installHostnameDataField,
 		installUuidDataField,
 	)
@@ -206,6 +215,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 
 	for stepIndex, cmdStep := range preparedCmdSteps {
 		cmdStepStr := cmdStep.String()
+		log.Printf("CmdStep (%d): %s", stepIndex, cmdStepStr)
 		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
@@ -342,18 +352,17 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if err != nil {
 		return err
 	}
-	installDirStr := vhost.RootDirectory.String()
 
+	installUrlPathStr := "/"
 	if installDto.UrlPath != nil {
-		installDirStr = installDto.UrlPath.String()
-		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
+		installUrlPathStr = installDto.UrlPath.String()
+
+		hasLeadingSlash := strings.HasPrefix(installUrlPathStr, "/")
 		if !hasLeadingSlash {
-			installDirStr = "/" + installDirStr
+			installUrlPathStr = "/" + installUrlPathStr
 		}
-
-		installDirStr = vhost.RootDirectory.String() + installDirStr
 	}
-
+	installDirStr := vhost.RootDirectory.String() + installUrlPathStr
 	installDir, _ := valueObject.NewUrlPath(installDirStr)
 
 	installUuid := uuid.New().String()[:16]
@@ -361,6 +370,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	systemDataFields := repo.parseSystemDataFields(
 		installDir,
+		installUrlPathStr,
 		installDto.Hostname,
 		installUuidWithoutHyphens,
 	)
@@ -492,7 +502,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if deleteDto.ShouldRemoveFiles {
-		installDirStr := installedItem.UrlPath.String()
+		installDirStr := installedItem.InstallDirectory.String()
 		err = os.RemoveAll(installDirStr)
 		if err != nil {
 			return errors.New("DeleteInstalledItemFilesError: " + err.Error())
