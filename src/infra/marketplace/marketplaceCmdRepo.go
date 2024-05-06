@@ -65,7 +65,7 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
-	installDir valueObject.UnixFilePath,
+	installDir valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
 ) []valueObject.MarketplaceInstallableItemDataField {
@@ -219,7 +219,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 }
 
 func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
-	installDir valueObject.UnixFilePath,
+	installDir valueObject.UrlPath,
 ) error {
 	installDirStr := installDir.String()
 	_, err := infraHelper.RunCmdWithSubShell(
@@ -248,7 +248,7 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 
 func (repo *MarketplaceCmdRepo) updateMappingsBase(
 	catalogMappings []valueObject.MarketplaceItemMapping,
-	urlDirectory valueObject.UnixFilePath,
+	urlPath valueObject.UrlPath,
 ) []valueObject.MarketplaceItemMapping {
 	for mappingIndex := range catalogMappings {
 		catalogMapping := &catalogMappings[mappingIndex]
@@ -258,14 +258,14 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 			continue
 		}
 
-		urlDirectoryAsMappingBase, err := valueObject.NewMappingPath(
-			urlDirectory.String(),
+		urlPathAsMappingBase, err := valueObject.NewMappingPath(
+			urlPath.String(),
 		)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), urlDirectory.String())
+			log.Printf("%s: %s", err.Error(), urlPath.String())
 			continue
 		}
-		catalogMapping.Path = urlDirectoryAsMappingBase
+		catalogMapping.Path = urlPathAsMappingBase
 	}
 
 	return catalogMappings
@@ -300,7 +300,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
 	hostname valueObject.Fqdn,
-	installDir valueObject.UnixFilePath,
+	installDir valueObject.UrlPath,
 	installUuid string,
 ) error {
 	requiredSvcNamesListStr := []string{}
@@ -347,18 +347,19 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if err != nil {
 		return err
 	}
-	installDir := vhost.RootDirectory
+	installDirStr := vhost.RootDirectory.String()
 
-	if installDto.UrlDirectory != nil {
-		installDirStr := installDto.UrlDirectory.String()
+	if installDto.UrlPath != nil {
+		installDirStr := installDto.UrlPath.String()
 		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
 		if !hasLeadingSlash {
 			installDirStr = "/" + installDirStr
 		}
 
 		installDirStr = vhost.RootDirectory.String() + installDirStr
-		installDir, _ = valueObject.NewUnixFilePath(installDirStr)
 	}
+
+	installDir, _ := valueObject.NewUrlPath(installDirStr)
 
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
@@ -388,7 +389,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if !isRootDirectory {
 		catalogItem.Mappings = repo.updateMappingsBase(
 			catalogItem.Mappings,
-			*installDto.UrlDirectory,
+			*installDto.UrlPath,
 		)
 	}
 
@@ -496,7 +497,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if deleteDto.ShouldRemoveFiles {
-		installDirStr := installedItem.UrlDirectory.String()
+		installDirStr := installedItem.UrlPath.String()
 		err = os.RemoveAll(installDirStr)
 		if err != nil {
 			return errors.New("DeleteInstalledItemFilesError: " + err.Error())

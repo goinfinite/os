@@ -5,22 +5,22 @@ import (
 )
 
 type InstallMarketplaceCatalogItem struct {
-	Id           valueObject.MarketplaceCatalogItemId
-	Hostname     valueObject.Fqdn
-	UrlDirectory *valueObject.UnixFilePath
-	DataFields   []valueObject.MarketplaceInstallableItemDataField
+	Id         valueObject.MarketplaceCatalogItemId
+	Hostname   valueObject.Fqdn
+	UrlPath    *valueObject.UrlPath
+	DataFields []valueObject.MarketplaceInstallableItemDataField
 }
 
 func NewInstallMarketplaceCatalogItem(
 	id valueObject.MarketplaceCatalogItemId,
 	hostname valueObject.Fqdn,
-	urlDirectory *valueObject.UnixFilePath,
+	urlPath *valueObject.UrlPath,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
 ) InstallMarketplaceCatalogItem {
 	return InstallMarketplaceCatalogItem{
-		Id:           id,
-		Hostname:     hostname,
-		UrlDirectory: urlDirectory,
-		DataFields:   dataFields,
+		Id:         id,
+		Hostname:   hostname,
+		UrlPath:    urlPath,
+		DataFields: dataFields,
 	}
 }

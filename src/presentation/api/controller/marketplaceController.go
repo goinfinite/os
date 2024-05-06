@@ -94,12 +94,12 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
-	var urlDirectoryPtr *valueObject.UnixFilePath
+	var urlPathPtr *valueObject.UrlPath
 	if requestBody["directory"] != nil {
-		urlDirectory := valueObject.NewUnixFilePathPanic(
+		urlPath := valueObject.NewUrlPathPanic(
 			requestBody["directory"].(string),
 		)
-		urlDirectoryPtr = &urlDirectory
+		urlPathPtr = &urlPath
 	}
 
 	dataFields := parseDataFieldsFromBody(requestBody["dataFields"])
@@ -109,7 +109,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlDirectoryPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlPathPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,

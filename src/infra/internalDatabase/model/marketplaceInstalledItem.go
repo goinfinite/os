@@ -51,7 +51,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	installDirectory, err := valueObject.NewUnixFilePath(model.InstallDirectory)
+	installDirectory, err := valueObject.NewUrlPath(model.InstallDirectory)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
