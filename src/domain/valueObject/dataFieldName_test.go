@@ -6,25 +6,25 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
-func TestDataFieldKey(t *testing.T) {
-	t.Run("ValidDataFieldKey", func(t *testing.T) {
-		validDataFieldKeys := []string{
+func TestDataFieldName(t *testing.T) {
+	t.Run("ValidDataFieldName", func(t *testing.T) {
+		validDataFieldNames := []string{
 			"username",
 			"user-email",
 			"Service-Name_With_Port80",
 		}
 
-		for _, dfk := range validDataFieldKeys {
-			_, err := NewDataFieldName(dfk)
+		for _, dfn := range validDataFieldNames {
+			_, err := NewDataFieldName(dfn)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", dfk, err.Error())
+				t.Errorf("Expected no error for %s, got %s", dfn, err.Error())
 			}
 		}
 	})
 
-	t.Run("InvalidDataFieldKey", func(t *testing.T) {
+	t.Run("InvalidDataFieldName", func(t *testing.T) {
 		invalidLength := 70
-		invalidDataFieldKeys := []string{
+		invalidDataFieldNames := []string{
 			"",
 			"./test",
 			"-key",
@@ -32,10 +32,10 @@ func TestDataFieldKey(t *testing.T) {
 			testHelpers.GenerateString(invalidLength),
 		}
 
-		for _, dfk := range invalidDataFieldKeys {
-			_, err := NewDataFieldName(dfk)
+		for _, dfn := range invalidDataFieldNames {
+			_, err := NewDataFieldName(dfn)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", dfk)
+				t.Errorf("Expected error for %s, got nil", dfn)
 			}
 		}
 	})
