@@ -19,6 +19,15 @@ func NewUrlPath(value string) (UrlPath, error) {
 	return UrlPath(value), nil
 }
 
+func NewUrlPathPanic(value string) UrlPath {
+	vo, err := NewUrlPath(value)
+	if err != nil {
+		panic(err)
+	}
+
+	return vo
+}
+
 func (vo UrlPath) String() string {
 	return string(vo)
 }
