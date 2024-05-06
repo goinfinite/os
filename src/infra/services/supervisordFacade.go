@@ -95,7 +95,7 @@ func (facade SupervisordFacade) stopNginx() error {
 }
 
 func (facade SupervisordFacade) stopPhp() error {
-	err := facade.stopServiceByName("php")
+	err := facade.stopServiceByName("php-webserver")
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		if err != nil {
 			return err
 		}
-	case "php":
+	case "php", "php-webserver":
 		err := facade.stopPhp()
 		if err != nil {
 			return err
