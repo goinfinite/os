@@ -226,10 +226,7 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 		"chown -R nobody:nogroup -L " + installDirStr,
 	)
 	if err != nil {
-		return errors.New(
-			"UpdateInstalledFilesOwnershipError (" + installDirStr + "): " +
-				err.Error(),
-		)
+		return errors.New("ChownError (" + installDirStr + "): " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
@@ -237,10 +234,7 @@ func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
 			installDirStr + ` -type f -exec chmod 644 {} \;`,
 	)
 	if err != nil {
-		return errors.New(
-			"UpdateInstalledDirsAndFilesPermissionsError (" + installDirStr + "): " +
-				err.Error(),
-		)
+		return errors.New("ChmodError (" + installDirStr + "): " + err.Error())
 	}
 
 	return nil
@@ -382,7 +376,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	err = repo.updateFilesOwnershipAndPermissions(installDir)
 	if err != nil {
-		return err
+		return errors.New("UpdatePermissionsAndOwnership: " + err.Error())
 	}
 
 	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
