@@ -350,7 +350,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	installDirStr := vhost.RootDirectory.String()
 
 	if installDto.UrlPath != nil {
-		installDirStr := installDto.UrlPath.String()
+		installDirStr = installDto.UrlPath.String()
 		hasLeadingSlash := strings.HasPrefix(installDirStr, "/")
 		if !hasLeadingSlash {
 			installDirStr = "/" + installDirStr
