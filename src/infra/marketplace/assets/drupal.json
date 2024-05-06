@@ -15,7 +15,7 @@
         "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
         "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
         "rm -rf /app/composer-setup.php",
-        "sos runtime php update-module -n sqlite3 -v 8.2 && sos runtime php update-module -n pdo_sqlite -v 8.2",
+        "sos runtime php update-module -n sqlite3 -v 8.2 -H %installHostname% && sos runtime php update-module -n pdo_sqlite -v 8.2 -H %installHostname%",
         "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal -q -n --no-dev",
         "mkdir -p %installDirectory% && ln -s /app/drupal/web %installDirectory%",
         "sos db create -n drupalDb_%installUuid% -t mysql",
