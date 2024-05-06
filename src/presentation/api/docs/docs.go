@@ -1983,14 +1983,14 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.MarketplaceInstallableItemDataField"
                     }
                 },
-                "directory": {
-                    "type": "string"
-                },
                 "hostname": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "urlPath": {
+                    "type": "string"
                 }
             }
         },
@@ -2380,7 +2380,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "serviceNames": {
+                "requiredServiceNames": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2666,7 +2666,7 @@ const docTemplate = `{
         "valueObject.MarketplaceInstallableItemDataField": {
             "type": "object",
             "properties": {
-                "key": {
+                "name": {
                     "type": "string"
                 },
                 "value": {
