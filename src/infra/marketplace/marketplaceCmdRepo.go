@@ -244,14 +244,13 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 	catalogMappings []valueObject.MarketplaceItemMapping,
 	urlPath valueObject.UrlPath,
 ) []valueObject.MarketplaceItemMapping {
-	for mappingIndex := range catalogMappings {
-		catalogMapping := &catalogMappings[mappingIndex]
-
+	for mappingIndex, catalogMapping := range catalogMappings {
 		isPathRoot := catalogMapping.Path.String() == "/"
 		if !isPathRoot {
 			continue
 		}
 
+		catalogMappingWithNewPath := catalogMapping
 		newMappingBase, err := valueObject.NewMappingPath(
 			urlPath.String(),
 		)
@@ -259,7 +258,9 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 			log.Printf("%s: %s", err.Error(), urlPath.String())
 			continue
 		}
-		catalogMapping.Path = newMappingBase
+		catalogMappingWithNewPath.Path = newMappingBase
+
+		catalogMappings[mappingIndex] = catalogMappingWithNewPath
 	}
 
 	return catalogMappings
