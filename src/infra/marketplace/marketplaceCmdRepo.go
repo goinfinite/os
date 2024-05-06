@@ -215,7 +215,6 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 
 	for stepIndex, cmdStep := range preparedCmdSteps {
 		cmdStepStr := cmdStep.String()
-		log.Printf("CmdStep (%d): %s", stepIndex, cmdStepStr)
 		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
