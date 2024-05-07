@@ -227,7 +227,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) updateFilePrivileges(
+func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 	installDir valueObject.UnixFilePath,
 ) error {
 	installDirStr := installDir.String()
@@ -382,9 +382,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.updateFilePrivileges(installDir)
+	err = repo.updateFilesPrivileges(installDir)
 	if err != nil {
-		return errors.New("UpdatePermissionsAndOwnership: " + err.Error())
+		return errors.New("UpdateFilesPrivileges: " + err.Error())
 	}
 
 	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
