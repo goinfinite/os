@@ -14,6 +14,7 @@ type MarketplaceInstalledItem struct {
 	Name                 string
 	Hostname             string
 	Type                 string
+	UrlPath              string
 	InstallDirectory     string
 	InstallUuid          string
 	RequiredServiceNames string
@@ -47,6 +48,11 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	}
 
 	itemType, err := valueObject.NewMarketplaceItemType(model.Type)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
+	urlPath, err := valueObject.NewUrlPath(model.UrlPath)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -94,6 +100,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		itemName,
 		hostname,
 		itemType,
+		urlPath,
 		installDirectory,
 		installUuid,
 		requiredSvcsNameList,

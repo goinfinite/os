@@ -9,6 +9,7 @@ type MarketplaceInstalledItem struct {
 	Name                 valueObject.MarketplaceItemName          `json:"name"`
 	Hostname             valueObject.Fqdn                         `json:"hostname"`
 	Type                 valueObject.MarketplaceItemType          `json:"type"`
+	UrlPath              valueObject.UrlPath                      `json:"urlPath"`
 	InstallDirectory     valueObject.UnixFilePath                 `json:"installDirectory"`
 	InstallUuid          valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
 	RequiredServiceNames []valueObject.ServiceName                `json:"requiredServiceNames"`
@@ -23,6 +24,7 @@ func NewMarketplaceInstalledItem(
 	itemName valueObject.MarketplaceItemName,
 	hostname valueObject.Fqdn,
 	itemType valueObject.MarketplaceItemType,
+	urlPath valueObject.UrlPath,
 	installDirectory valueObject.UnixFilePath,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 	requiredServiceNames []valueObject.ServiceName,
@@ -36,6 +38,7 @@ func NewMarketplaceInstalledItem(
 		Name:                 itemName,
 		Hostname:             hostname,
 		Type:                 itemType,
+		UrlPath:              urlPath,
 		InstallDirectory:     installDirectory,
 		InstallUuid:          installUuid,
 		RequiredServiceNames: requiredServiceNames,
