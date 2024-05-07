@@ -15,7 +15,7 @@ func NewDataFieldValue(value interface{}) (DataFieldValue, error) {
 	}
 
 	if len(dataFieldValueStr) == 0 {
-		return "", errors.New("EmptyDataField")
+		return "", errors.New("EmptyDataFieldValue")
 	}
 
 	if len(dataFieldValueStr) >= 2048 {
