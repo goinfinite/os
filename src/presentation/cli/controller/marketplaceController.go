@@ -57,7 +57,7 @@ func parseDataFields(
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldKeyPanic(dataFieldsParts[0]),
+			valueObject.NewDataFieldNamePanic(dataFieldsParts[0]),
 			valueObject.NewDataFieldValuePanic(dataFieldsParts[1]),
 		)
 		dataFields = append(dataFields, dataField)
@@ -69,7 +69,7 @@ func parseDataFields(
 func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	var catalogIdInt int
 	var hostnameStr string
-	var installDirStr string
+	var urlPath string
 	var dataFieldsStr []string
 
 	cmd := &cobra.Command{
@@ -79,10 +79,10 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 			catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(catalogIdInt)
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			var installDirPtr *valueObject.UnixFilePath
-			if installDirStr != "" {
-				installDir := valueObject.NewUnixFilePathPanic(installDirStr)
-				installDirPtr = &installDir
+			var urlPathPtr *valueObject.UrlPath
+			if urlPath != "" {
+				urlPath := valueObject.NewUrlPathPanic(urlPath)
+				urlPathPtr = &urlPath
 			}
 
 			// Format: key:value,key:value
@@ -96,7 +96,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 			dto := dto.NewInstallMarketplaceCatalogItem(
 				catalogId,
 				hostname,
-				installDirPtr,
+				urlPathPtr,
 				dataFields,
 			)
 			err := useCase.InstallMarketplaceCatalogItem(
@@ -123,7 +123,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	)
 	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().StringVarP(
-		&installDirStr, "installDir", "d", "", "Directory that stores installed files",
+		&urlPath, "urlPath", "d", "", "Directory that stores installed files",
 	)
 	cmd.Flags().StringSliceVarP(
 		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",
@@ -134,6 +134,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 func (controller MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var installedIdInt int
 	var shouldUninstallServices bool
+	var shouldRemoveFiles bool
 
 	cmd := &cobra.Command{
 		Use:   "uninstall",
@@ -141,14 +142,17 @@ func (controller MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			installedId := valueObject.NewMarketplaceInstalledItemIdPanic(installedIdInt)
 
+			deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
+				installedId, shouldUninstallServices, shouldRemoveFiles,
+			)
+
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 			marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteMarketplaceInstalledItem(
 				marketplaceQueryRepo,
 				marketplaceCmdRepo,
-				installedId,
-				shouldUninstallServices,
+				deleteMarketplaceInstalledItem,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -163,9 +167,16 @@ func (controller MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	cmd.Flags().BoolVarP(
 		&shouldUninstallServices,
 		"shouldUninstallServices",
-		"u",
+		"s",
 		true,
 		"Should uninstall installed item services",
+	)
+	cmd.Flags().BoolVarP(
+		&shouldRemoveFiles,
+		"shouldRemoveFiles",
+		"f",
+		true,
+		"Should remove installed item files",
 	)
 	return cmd
 }

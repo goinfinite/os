@@ -99,10 +99,6 @@ func UpdatePhpConfigController() *cobra.Command {
 				)
 			}
 
-			if len(phpModules) == 0 && len(phpSettings) == 0 {
-				cliHelper.ResponseWrapper(false, "MissingModuleOrSetting")
-			}
-
 			updatePhpConfigsDto := dto.NewUpdatePhpConfigs(
 				hostname,
 				phpVersion,

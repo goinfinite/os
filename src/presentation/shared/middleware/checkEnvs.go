@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/joho/godotenv"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"golang.org/x/exp/slices"
 )
 
 var requiredEnvVars = []string{

@@ -32,7 +32,7 @@ func NewMarketplaceController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {string} entity.MarketplaceCatalogItem
+// @Success      200 {array} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
 func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
@@ -50,6 +50,10 @@ func parseDataFieldsFromBody(
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
+	if dataFieldsBodyInput == nil {
+		return dataFields
+	}
+
 	dataFieldsInterfaceSlice, assertOk := dataFieldsBodyInput.([]interface{})
 	if !assertOk {
 		panic("InvalidDataField")
@@ -62,7 +66,7 @@ func parseDataFieldsFromBody(
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldKeyPanic(dataFieldMap["key"].(string)),
+			valueObject.NewDataFieldNamePanic(dataFieldMap["name"].(string)),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 		)
 
@@ -78,11 +82,11 @@ func parseDataFieldsFromBody(
 // @Tags         marketplace
 // @Accept       json
 // @Produce      json
-// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (installDirectory is optional)"
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (directory is optional)"
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requiredParams := []string{"id", "hostname", "dataFields"}
+	requiredParams := []string{"id", "hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
@@ -90,12 +94,12 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
-	var installDirPtr *valueObject.UnixFilePath
-	if requestBody["installDirectory"] != nil {
-		installDir := valueObject.NewUnixFilePathPanic(
-			requestBody["installDirectory"].(string),
+	var urlPathPtr *valueObject.UrlPath
+	if requestBody["directory"] != nil {
+		urlPath := valueObject.NewUrlPathPanic(
+			requestBody["directory"].(string),
 		)
-		installDirPtr = &installDir
+		urlPathPtr = &urlPath
 	}
 
 	dataFields := parseDataFieldsFromBody(requestBody["dataFields"])
@@ -105,7 +109,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, installDirPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlPathPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
@@ -127,7 +131,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {string} entity.MarketplaceInstalledItem
+// @Success      200 {array} entity.MarketplaceInstalledItem
 // @Router       /marketplace/installed/ [get]
 func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
@@ -148,35 +152,48 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 // @Produce      json
 // @Security     Bearer
 // @Param        installedId path uint true "MarketplaceInstalledItemId"
-// @Param        shouldUninstallServices body bool false "ShouldUninstallServices"
+// @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
+// @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	requestBody, _ := apiHelper.GetRequestBody(c)
-
 	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
 		c.Param("installedId"),
 	)
 
+	var err error
+
 	shouldUninstallServices := true
-	if requestBody["shouldUninstallServices"] != nil {
-		var err error
+	if c.QueryParam("shouldUninstallServices") != "" {
 		shouldUninstallServices, err = apiHelper.ParseBoolParam(
-			requestBody["shouldUninstallServices"],
+			c.QueryParam("shouldUninstallServices"),
 		)
 		if err != nil {
-			panic("InvalidShouldUninstallServices")
+			shouldUninstallServices = false
 		}
 	}
+
+	shouldRemoveFiles := true
+	if c.QueryParam("shouldRemoveFiles") != "" {
+		shouldRemoveFiles, err = apiHelper.ParseBoolParam(
+			c.QueryParam("shouldRemoveFiles"),
+		)
+		if err != nil {
+			shouldRemoveFiles = false
+		}
+	}
+
+	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
+		installedId, shouldUninstallServices, shouldRemoveFiles,
+	)
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.DeleteMarketplaceInstalledItem(
+	err = useCase.DeleteMarketplaceInstalledItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
-		installedId,
-		shouldUninstallServices,
+		deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
