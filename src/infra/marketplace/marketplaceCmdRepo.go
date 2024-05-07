@@ -65,8 +65,8 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
-	installDir valueObject.UrlPath,
-	installUrlPathStr string,
+	installDir valueObject.UnixFilePath,
+	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
 ) []valueObject.MarketplaceInstallableItemDataField {
@@ -80,7 +80,7 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	)
 
 	installUrlPathDataFieldKey, _ := valueObject.NewDataFieldName("installUrlPath")
-	installUrlPathDataFieldValue, _ := valueObject.NewDataFieldValue(installUrlPathStr)
+	installUrlPathDataFieldValue, _ := valueObject.NewDataFieldValue(installUrlPath.String())
 	installUrlPathDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 		installUrlPathDataFieldKey,
 		installUrlPathDataFieldValue,
@@ -228,7 +228,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 }
 
 func (repo *MarketplaceCmdRepo) updateFilePrivileges(
-	installDir valueObject.UrlPath,
+	installDir valueObject.UnixFilePath,
 ) error {
 	installDirStr := installDir.String()
 	_, err := infraHelper.RunCmdWithSubShell(
@@ -304,7 +304,8 @@ func (repo *MarketplaceCmdRepo) createMappings(
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
 	hostname valueObject.Fqdn,
-	installDir valueObject.UrlPath,
+	urlPath valueObject.UrlPath,
+	installDir valueObject.UnixFilePath,
 	installUuid string,
 ) error {
 	requiredSvcNamesListStr := []string{}
@@ -317,6 +318,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Name:                 catalogItem.Name.String(),
 		Hostname:             hostname.String(),
 		Type:                 catalogItem.Type.String(),
+		UrlPath:              urlPath.String(),
 		InstallDirectory:     installDir.String(),
 		InstallUuid:          installUuid,
 		RequiredServiceNames: requiredSvcNamesStr,
@@ -352,24 +354,20 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	installUrlPathStr := "/"
+	installUrlPath, _ := valueObject.NewUrlPath("/")
 	if installDto.UrlPath != nil {
-		installUrlPathStr = installDto.UrlPath.String()
-
-		hasLeadingSlash := strings.HasPrefix(installUrlPathStr, "/")
-		if !hasLeadingSlash {
-			installUrlPathStr = "/" + installUrlPathStr
-		}
+		installUrlPath = *installDto.UrlPath
 	}
-	installDirStr := vhost.RootDirectory.String() + installUrlPathStr
-	installDir, _ := valueObject.NewUrlPath(installDirStr)
+
+	installDirStr := vhost.RootDirectory.String() + installUrlPath.GetWithoutLeadingSlash()
+	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
 
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 
 	systemDataFields := repo.parseSystemDataFields(
 		installDir,
-		installUrlPathStr,
+		installUrlPath,
 		installDto.Hostname,
 		installUuidWithoutHyphens,
 	)
@@ -393,7 +391,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if !isRootDirectory {
 		catalogItem.Mappings = repo.updateMappingsBase(
 			catalogItem.Mappings,
-			*installDto.UrlPath,
+			installUrlPath,
 		)
 	}
 
@@ -405,6 +403,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	return repo.persistInstalledItem(
 		catalogItem,
 		installDto.Hostname,
+		installUrlPath,
 		installDir,
 		installUuidWithoutHyphens,
 	)
