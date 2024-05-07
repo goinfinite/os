@@ -5,6 +5,8 @@ import "testing"
 func TestUrlPath(t *testing.T) {
 	t.Run("ValidUrlPath", func(t *testing.T) {
 		validUrlPath := []string{
+			"blog",
+			"news/new-product-from-Speedia-revolutionizes-the-market",
 			"/app/html",
 			"/info.php",
 			"/app/html/speedia.net",
@@ -27,7 +29,7 @@ func TestUrlPath(t *testing.T) {
 			"/app/html@",
 			"/info.php?id=1",
 			"/path to download",
-			"index.js",
+			"index.js=",
 			"/how-to-get-habbo-coins?/2011",
 		}
 
