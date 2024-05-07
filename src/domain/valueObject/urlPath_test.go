@@ -1,6 +1,10 @@
 package valueObject
 
-import "testing"
+import (
+	"testing"
+
+	testHelpers "github.com/speedianet/os/src/devUtils"
+)
 
 func TestUrlPath(t *testing.T) {
 	t.Run("ValidUrlPath", func(t *testing.T) {
@@ -27,12 +31,14 @@ func TestUrlPath(t *testing.T) {
 	})
 
 	t.Run("InvalidUrlPath", func(t *testing.T) {
+		invalidLength := 260
 		invalidUrlPath := []string{
 			"/app/html@",
 			"/info.php?id=1",
 			"/path to download",
 			"index.js=",
 			"/how-to-get-habbo-coins?/2011",
+			testHelpers.GenerateString(invalidLength),
 		}
 
 		for _, urlPath := range invalidUrlPath {
