@@ -10,17 +10,18 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID                   uint `gorm:"primarykey"`
-	Name                 string
-	Hostname             string
-	Type                 string
-	UrlPath              string
-	InstallDirectory     string
-	InstallUuid          string
+	ID                   uint   `gorm:"primarykey"`
+	Name                 string `gorm:"not null"`
+	Hostname             string `gorm:"not null"`
+	Type                 string `gorm:"not null"`
+	UrlPath              string `gorm:"not null"`
+	InstallDirectory     string `gorm:"not null"`
+	InstallUuid          string `gorm:"not null"`
 	RequiredServiceNames string
-	AvatarUrl            string
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	Mappings             []Mapping
+	AvatarUrl            string    `gorm:"not null"`
+	CreatedAt            time.Time `gorm:"not null"`
+	UpdatedAt            time.Time `gorm:"not null"`
 }
 
 func (MarketplaceInstalledItem) TableName() string {
@@ -77,12 +78,20 @@ func (model MarketplaceInstalledItem) ToEntity() (
 			if err != nil {
 				log.Printf("%s: %s", err.Error(), rawSvcName)
 			}
-
 			requiredSvcsNameList = append(requiredSvcsNameList, svcName)
 		}
 	}
 
 	mappings := []entity.Mapping{}
+	if len(model.Mappings) > 0 {
+		for _, mappingModel := range model.Mappings {
+			mapping, err := mappingModel.ToEntity()
+			if err != nil {
+				return marketplaceInstalledItem, err
+			}
+			mappings = append(mappings, mapping)
+		}
+	}
 
 	avatarUrl, err := valueObject.NewUrl(model.AvatarUrl)
 	if err != nil {

@@ -9,14 +9,15 @@ import (
 )
 
 type Mapping struct {
-	ID           uint `gorm:"primarykey"`
-	Hostname     string
-	Path         string
-	MatchPattern string
-	TargetType   string
-	TargetValue  *string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID                         uint      `gorm:"primarykey"`
+	MarketplaceInstalledItemId uint      `gorm:"not null"`
+	Hostname                   string    `gorm:"not null"`
+	Path                       string    `gorm:"not null"`
+	MatchPattern               string    `gorm:"not null"`
+	TargetType                 string    `gorm:"not null"`
+	TargetValue                *string   `gorm:"not null"`
+	CreatedAt                  time.Time `gorm:"not null"`
+	UpdatedAt                  time.Time `gorm:"not null"`
 }
 
 func (Mapping) TableName() string {
