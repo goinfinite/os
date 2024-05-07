@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const urlPathRegex string = `^\/[\w/.-]*$`
+const urlPathRegex string = `^\/[\w/.-]{0,100}$`
 
 type UrlPath string
 
@@ -36,4 +36,8 @@ func NewUrlPathPanic(value string) UrlPath {
 
 func (vo UrlPath) String() string {
 	return string(vo)
+}
+
+func (vo UrlPath) GetWithoutLeadingSlash() string {
+	return string(vo[1:])
 }
