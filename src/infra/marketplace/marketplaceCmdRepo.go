@@ -308,7 +308,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	installUuid string,
 ) error {
 	requiredSvcNamesListStr := []string{}
-	for _, svcName := range catalogItem.ServiceNames {
+	for _, svcName := range catalogItem.RequiredServiceNames {
 		requiredSvcNamesListStr = append(requiredSvcNamesListStr, svcName.String())
 	}
 	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
@@ -341,7 +341,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	err = repo.createRequiredServices(catalogItem.ServiceNames)
+	err = repo.createRequiredServices(catalogItem.RequiredServiceNames)
 	if err != nil {
 		return err
 	}
