@@ -82,7 +82,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isHttpSupported {
 		svcMappingConfig += `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["http"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["http"] + `";
 `
 	}
 
@@ -90,18 +90,18 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isHttpsSupported {
 		svcMappingConfig += `
 	set $protocol "https";
-	set $backend "localhost:` + protocolPortsMap["https"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["https"] + `";
 `
 	}
 
 	if isHttpSupported && isHttpsSupported {
 		svcMappingConfig = `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["http"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["http"] + `";
 
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["https"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["https"] + `";
 	}
 `
 	}
@@ -113,7 +113,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isWsSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig += `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 `
 	}
 
@@ -121,7 +121,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		svcMappingConfig += `
 	if ($scheme = http) {
 		set $protocol "http";
-		set $backend "localhost:` + protocolPortsMap["ws"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 	}
 `
 	}
@@ -129,7 +129,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if !isWsSupported && isWssSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig += `
 	set $protocol "https";
-	set $backend "localhost:` + protocolPortsMap["wss"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 `
 	}
 
@@ -137,7 +137,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		svcMappingConfig += `
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 	}
 `
 	}
@@ -146,11 +146,11 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isWsAndWssSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig = `
 	set $protocol "http";
-	set $backend "localhost:` + protocolPortsMap["ws"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["ws"] + `";
 
 	if ($scheme = https) {
 		set $protocol "https";
-		set $backend "localhost:` + protocolPortsMap["wss"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["wss"] + `";
 	}
 `
 	}
@@ -170,7 +170,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isGrpcSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig += `
 	set $protocol "grpc";
-	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 `
 	}
 
@@ -178,7 +178,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		svcMappingConfig += `
 	if ($scheme = grpc) {
 		set $protocol "grpc";
-		set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 	}
 `
 	}
@@ -187,7 +187,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isGrpcsSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig += `
 	set $protocol "grpcs";
-	set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 `
 	}
 
@@ -195,7 +195,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		svcMappingConfig += `
 	if ($scheme = grpcs) {
 		set $protocol "grpcs";
-		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 	}
 		`
 	}
@@ -222,11 +222,11 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isGrpcAndGrpcsSupported && !isHttpOrHttpsSupported {
 		svcMappingConfig = `
 	set $protocol "grpc";
-	set $backend "localhost:` + protocolPortsMap["grpc"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["grpc"] + `";
 
 	if ($scheme = grpcs) {
 		set $protocol "grpcs";
-		set $backend "localhost:` + protocolPortsMap["grpcs"] + `";
+		set $backend "127.0.0.1:` + protocolPortsMap["grpcs"] + `";
 	}
 `
 	}
@@ -263,7 +263,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	if isTcpSupported {
 		svcMappingConfig += `
 	set $protocol "tcp";
-	set $backend "localhost:` + protocolPortsMap["tcp"] + `";
+	set $backend "127.0.0.1:` + protocolPortsMap["tcp"] + `";
 	proxy_pass $protocol://$backend;
 `
 	}
