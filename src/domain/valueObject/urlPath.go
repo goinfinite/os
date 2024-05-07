@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const urlPathRegex string = `^\/[\w/.-]{0,100}$`
+const urlPathRegex string = `^\/[\w/.-]{0,256}$`
 
 type UrlPath string
 
