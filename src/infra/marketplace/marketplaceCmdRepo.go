@@ -227,7 +227,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) updateFilesOwnershipAndPermissions(
+func (repo *MarketplaceCmdRepo) updateFilePrivileges(
 	installDir valueObject.UrlPath,
 ) error {
 	installDirStr := installDir.String()
@@ -384,7 +384,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.updateFilesOwnershipAndPermissions(installDir)
+	err = repo.updateFilePrivileges(installDir)
 	if err != nil {
 		return errors.New("UpdatePermissionsAndOwnership: " + err.Error())
 	}
