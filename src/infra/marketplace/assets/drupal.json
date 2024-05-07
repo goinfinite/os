@@ -1,0 +1,34 @@
+{
+    "name": "Drupal",
+    "type": "app",
+    "description": "Drupal is an open source platform for building amazing digital experiences. It's made by a dedicated community. Anyone can use it, and it will always be free.",
+    "serviceNames": ["php", "mysql"],
+    "mappings": [
+        {
+            "path": "/",
+            "matchPattern": "begins-with",
+            "targetType": "service",
+            "targetServiceName": "php"
+        }
+    ],
+    "cmdSteps": [
+        "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
+        "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
+        "rm -rf /app/composer-setup.php",
+        "sos runtime php update-module -n sqlite3 -v 8.2 -H %installHostname% && sos runtime php update-module -n pdo_sqlite -v 8.2 -H %installHostname%",
+        "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal -q -n --no-dev",
+        "mkdir -p %installDirectory% && ln -s /app/drupal/web %installDirectory%",
+        "sos db create -n drupalDb_%installUuid% -t mysql",
+        "echo $(openssl rand -hex 8) > /app/drupal/drupalDbCredentials",
+        "sos db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p $(cat /app/drupal/drupalDbCredentials) -r all",
+        "rm -rf /app/drupal/drupalDbCredentials"
+    ],
+    "estimatedSizeBytes": 450000000,
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
+    "screenshotUrls": [
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-1.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-2.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-3.jpg",
+        "https://speedia.net/assets/os/marketplace/drupal/drupal-4.jpg"
+    ]
+}

@@ -59,45 +59,100 @@ func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
 	return nil
 }
 
-func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
+func (facade SupervisordFacade) stopServiceByName(svcName string) error {
 	_, err := infraHelper.RunCmd(
 		supervisordCmd,
 		"ctl",
 		"stop",
-		name.String(),
+		svcName,
 	)
 	if err != nil {
 		return errors.New("StopServiceError: " + err.Error())
 	}
 
-	switch name.String() {
-	case "nginx":
-		_, _ = infraHelper.RunCmd(
-			"pkill",
-			"nginx",
-		)
-	case "php":
-		_, _ = infraHelper.RunCmd(
-			"/usr/local/lsws/bin/lswsctrl",
-			"stop",
-		)
-		_, _ = infraHelper.RunCmd(
-			"pkill",
-			"lsphp",
-		)
-		_, _ = infraHelper.RunCmd(
-			"pkill",
-			"sleep",
-		)
-	case "mariadb":
-		_, _ = infraHelper.RunCmd(
-			"mysqladmin",
-			"--defaults-file=/root/.my.cnf",
-			"shutdown",
-		)
+	return nil
+}
+
+func (facade SupervisordFacade) stopNginx() error {
+	_, err := infraHelper.RunCmdWithSubShell(
+		"nginx -t",
+	)
+	if err != nil {
+		return errors.New("NginxTestFailed: " + err.Error())
 	}
 
-	err = facade.toggleAutoStart(name, false)
+	err = facade.stopServiceByName("nginx")
+	if err != nil {
+		return err
+	}
+
+	_, _ = infraHelper.RunCmd(
+		"pkill",
+		"nginx",
+	)
+
+	return nil
+}
+
+func (facade SupervisordFacade) stopPhp() error {
+	err := facade.stopServiceByName("php-webserver")
+	if err != nil {
+		return err
+	}
+
+	_, _ = infraHelper.RunCmd(
+		"/usr/local/lsws/bin/lswsctrl",
+		"stop",
+	)
+
+	_, _ = infraHelper.RunCmd(
+		"pkill",
+		"lsphp",
+	)
+
+	_, _ = infraHelper.RunCmd(
+		"pkill",
+		"sleep",
+	)
+
+	return nil
+}
+
+func (facade SupervisordFacade) stopMariaDb() error {
+	err := facade.stopServiceByName("mariadb")
+	if err != nil {
+		return err
+	}
+
+	_, _ = infraHelper.RunCmd(
+		"mysqladmin",
+		"--defaults-file=/root/.my.cnf",
+		"shutdown",
+	)
+
+	return nil
+}
+
+func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
+	switch name.String() {
+	case "nginx":
+		err := facade.stopNginx()
+		if err != nil {
+			return err
+		}
+	case "php", "php-webserver":
+		err := facade.stopPhp()
+		if err != nil {
+			return err
+		}
+	case "mariadb", "mysql":
+		err := facade.stopMariaDb()
+		if err != nil {
+			return err
+		}
+	}
+
+	err := facade.toggleAutoStart(name, false)
 	if err != nil {
 		return err
 	}

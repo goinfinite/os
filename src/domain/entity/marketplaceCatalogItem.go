@@ -5,17 +5,17 @@ import (
 )
 
 type MarketplaceCatalogItem struct {
-	Id                 valueObject.MarketplaceCatalogItemId          `json:"id" yaml:"id"`
-	Name               valueObject.MarketplaceItemName               `json:"name" yaml:"name"`
-	Type               valueObject.MarketplaceItemType               `json:"type" yaml:"type"`
-	Description        valueObject.MarketplaceItemDescription        `json:"description" yaml:"description"`
-	ServiceNames       []valueObject.ServiceName                     `json:"services" yaml:"serviceNames"`
-	Mappings           []valueObject.MarketplaceItemMapping          `json:"mappings" yaml:"mappings"`
-	DataFields         []valueObject.MarketplaceCatalogItemDataField `json:"dataFields" yaml:"dataFields"`
-	CmdSteps           []valueObject.MarketplaceItemCmdStep          `json:"cmdSteps" yaml:"cmdSteps"`
-	EstimatedSizeBytes valueObject.Byte                              `json:"estimatedSizeBytes" yaml:"estimatedSizeBytes"`
-	AvatarUrl          valueObject.Url                               `json:"avatarUrl" yaml:"avatarUrl"`
-	ScreenshotUrls     []valueObject.Url                             `json:"screenshotUrls" yaml:"screenshotUrls"`
+	Id                   valueObject.MarketplaceCatalogItemId          `json:"id"`
+	Name                 valueObject.MarketplaceItemName               `json:"name"`
+	Type                 valueObject.MarketplaceItemType               `json:"type"`
+	Description          valueObject.MarketplaceItemDescription        `json:"description"`
+	RequiredServiceNames []valueObject.ServiceName                     `json:"requiredServiceNames"`
+	Mappings             []valueObject.MarketplaceItemMapping          `json:"mappings"`
+	DataFields           []valueObject.MarketplaceCatalogItemDataField `json:"dataFields"`
+	CmdSteps             []valueObject.MarketplaceItemCmdStep          `json:"-"`
+	EstimatedSizeBytes   valueObject.Byte                              `json:"estimatedSizeBytes"`
+	AvatarUrl            valueObject.Url                               `json:"avatarUrl"`
+	ScreenshotUrls       []valueObject.Url                             `json:"screenshotUrls"`
 }
 
 func NewMarketplaceCatalogItem(
@@ -23,7 +23,7 @@ func NewMarketplaceCatalogItem(
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
 	description valueObject.MarketplaceItemDescription,
-	serviceNames []valueObject.ServiceName,
+	requiredServiceNames []valueObject.ServiceName,
 	mappings []valueObject.MarketplaceItemMapping,
 	dataFields []valueObject.MarketplaceCatalogItemDataField,
 	cmdSteps []valueObject.MarketplaceItemCmdStep,
@@ -32,16 +32,16 @@ func NewMarketplaceCatalogItem(
 	screenshotUrls []valueObject.Url,
 ) MarketplaceCatalogItem {
 	return MarketplaceCatalogItem{
-		Id:                 id,
-		Name:               itemName,
-		Type:               itemType,
-		Description:        description,
-		ServiceNames:       serviceNames,
-		Mappings:           mappings,
-		DataFields:         dataFields,
-		CmdSteps:           cmdSteps,
-		EstimatedSizeBytes: estimatedSizeBytes,
-		AvatarUrl:          avatarUrl,
-		ScreenshotUrls:     screenshotUrls,
+		Id:                   id,
+		Name:                 itemName,
+		Type:                 itemType,
+		Description:          description,
+		RequiredServiceNames: requiredServiceNames,
+		Mappings:             mappings,
+		DataFields:           dataFields,
+		CmdSteps:             cmdSteps,
+		EstimatedSizeBytes:   estimatedSizeBytes,
+		AvatarUrl:            avatarUrl,
+		ScreenshotUrls:       screenshotUrls,
 	}
 }

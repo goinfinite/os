@@ -1,38 +1,65 @@
 {
-    "name": "wordpress",
+    "name": "WordPress",
     "type": "app",
     "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
     "serviceNames": ["php", "mysql"],
     "mappings": [
         {
-            "path": "/php-ws",
+            "path": "/",
             "matchPattern": "begins-with",
-            "targetType": "service"
+            "targetType": "service",
+            "targetServiceName": "php"
         }
     ],
     "dataFields": [
         {
-            "key": "locale",
-            "defaultValue": "en_US"
+            "name": "locale",
+            "label": "WordPress Language",
+            "type": "text",
+            "defaultValue": "en_US",
+            "options": [
+                "en_US",
+                "pt_BR",
+                "pt_PT",
+                "es_ES",
+                "de_DE",
+                "it_IT",
+                "fr_FR"
+            ]
         },
         {
-            "key": "dbName",
+            "name": "adminUsername",
+            "label": "Admin Username",
+            "type": "text",
+            "isRequired": true
+        },
+        {
+            "name": "adminPassword",
+            "label": "Admin Password",
+            "type": "password",
+            "isRequired": true
+        },
+        {
+            "name": "adminMailAddress",
+            "label": "Admin Email",
+            "type": "email",
             "isRequired": true
         }
     ],
     "cmdSteps": [
-        "wget -O /speedia/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar",
-        "chmod +x /speedia/wp-cli.phar",
-        "mv /speedia/wp-cli.phar /usr/local/bin/wp",
+        "curl -skL -o /app/wp-cli.phar https://speedia.net/assets/os/marketplace/wordpress/wp-cli.phar",
+        "chmod +x /app/wp-cli.phar",
+        "mv /app/wp-cli.phar /usr/local/bin/wp",
         "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
-        "sos db create -n %dbName% -t mysql",
+        "sos db create -n wpDb_%installUuid% -t mysql",
         "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
-        "sos db create-user -n %dbName% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
-        "wp config create --path=%installDirectory% --dbname=%dbName% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
-        "rm -rf %installDirectory%/wpDbCredentials"
+        "sos db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
+        "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
+        "rm -rf %installDirectory%/wpDbCredentials",
+        "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
     ],
     "estimatedSizeBytes": 1000000000,
-    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-logo-blue.svg",
+    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
     "screenshotUrls": [
         "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",
         "https://speedia.net/assets/os/marketplace/wordpress/wp-themes.jpg",
