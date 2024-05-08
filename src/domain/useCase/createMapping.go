@@ -26,9 +26,31 @@ func CreateMapping(
 		return errors.New("AliasCannotHaveMappings")
 	}
 
+	hasTargetValue := createMapping.TargetValue != nil
+	hasTargetHttpResponseCode := createMapping.TargetHttpResponseCode != nil
+
+	if !hasTargetValue && !hasTargetHttpResponseCode {
+		return errors.New("MappingMustHaveValueOrHttpResponseCode")
+	}
+
+	targetTypeStr := createMapping.TargetType.String()
+	if targetTypeStr == "response-code" {
+		if !hasTargetHttpResponseCode {
+			httpRespondeCode, _ := valueObject.NewHttpResponseCode(
+				createMapping.TargetValue.String(),
+			)
+			createMapping.TargetHttpResponseCode = &httpRespondeCode
+		}
+	}
+
+	if !hasTargetValue {
+		return errors.New("MappingMustHaveValue")
+	}
+
 	mappings, err := mappingQueryRepo.GetByHostname(createMapping.Hostname)
 	if err != nil {
-		return errors.New("MappingsNotFound")
+		log.Printf("GetMappingsError: %s", err.Error())
+		return errors.New("GetMappingsInfraError")
 	}
 
 	for _, mapping := range mappings {
@@ -43,13 +65,14 @@ func CreateMapping(
 		return errors.New("MappingAlreadyExists")
 	}
 
-	isServiceTarget := createMapping.TargetType.String() == "service"
-	if isServiceTarget {
-		if createMapping.TargetServiceName == nil {
-			return errors.New("TargetServiceNameRequired")
+	if targetTypeStr == "service" {
+		targetValueStr := createMapping.TargetValue.String()
+		svcName, err := valueObject.NewServiceName(targetValueStr)
+		if err != nil {
+			return errors.New(err.Error() + ": " + targetValueStr)
 		}
 
-		service, err := svcsQueryRepo.GetByName(*createMapping.TargetServiceName)
+		service, err := svcsQueryRepo.GetByName(svcName)
 		if err != nil {
 			return err
 		}
@@ -67,33 +90,14 @@ func CreateMapping(
 		}
 	}
 
-	isUrlTarget := createMapping.TargetType.String() == "url"
-	if isUrlTarget && createMapping.TargetUrl == nil {
-		return errors.New("TargetUrlRequired")
+	if targetTypeStr == "url" && !hasTargetHttpResponseCode {
+		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(301)
+		createMapping.TargetHttpResponseCode = &targetHttpResponseCode
 	}
 
-	defaultUrlResponseCode, _ := valueObject.NewHttpResponseCode(301)
-	if isUrlTarget && createMapping.TargetHttpResponseCode == nil {
-		createMapping.TargetHttpResponseCode = &defaultUrlResponseCode
-	}
-
-	isTargetHttpResponseCodeMissing := createMapping.TargetHttpResponseCode == nil
-
-	isResponseCodeTarget := createMapping.TargetType.String() == "response-code"
-	if isResponseCodeTarget && isTargetHttpResponseCodeMissing {
-		return errors.New("TargetHttpResponseCodeRequired")
-	}
-
-	isInlineHtmlTarget := createMapping.TargetType.String() == "inline-html"
-	if isInlineHtmlTarget {
-		if createMapping.TargetInlineHtmlContent == nil {
-			return errors.New("TargetInlineHtmlContentRequired")
-		}
-
-		if isTargetHttpResponseCodeMissing {
-			defaultHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
-			createMapping.TargetHttpResponseCode = &defaultHttpResponseCode
-		}
+	if targetTypeStr == "inline-html" && !hasTargetHttpResponseCode {
+		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+		createMapping.TargetHttpResponseCode = &targetHttpResponseCode
 	}
 
 	pathStr := createMapping.Path.String()
