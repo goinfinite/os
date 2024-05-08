@@ -9,13 +9,14 @@ import (
 )
 
 type Mapping struct {
-	ID                         uint      `gorm:"primarykey"`
-	MarketplaceInstalledItemId uint      `gorm:"not null"`
-	Hostname                   string    `gorm:"not null"`
-	Path                       string    `gorm:"not null"`
-	MatchPattern               string    `gorm:"not null"`
-	TargetType                 string    `gorm:"not null"`
-	TargetValue                *string   `gorm:"not null"`
+	ID                         uint   `gorm:"primarykey"`
+	MarketplaceInstalledItemId uint   `gorm:"not null"`
+	Hostname                   string `gorm:"not null"`
+	Path                       string `gorm:"not null"`
+	MatchPattern               string `gorm:"not null"`
+	TargetType                 string `gorm:"not null"`
+	TargetValue                *string
+	TargetHttpResponseCode     *string
 	CreatedAt                  time.Time `gorm:"not null"`
 	UpdatedAt                  time.Time `gorm:"not null"`
 }
@@ -31,13 +32,15 @@ func NewMapping(
 	matchPattern string,
 	targetType string,
 	targetValue *string,
+	targetHttpResponseCode *string,
 ) Mapping {
 	mappingModel := Mapping{
-		Hostname:     hostname,
-		Path:         path,
-		MatchPattern: matchPattern,
-		TargetType:   targetType,
-		TargetValue:  targetValue,
+		Hostname:               hostname,
+		Path:                   path,
+		MatchPattern:           matchPattern,
+		TargetType:             targetType,
+		TargetValue:            targetValue,
+		TargetHttpResponseCode: targetHttpResponseCode,
 	}
 
 	if id != 0 {
@@ -75,44 +78,26 @@ func (model Mapping) ToEntity() (entity.Mapping, error) {
 		return mapping, err
 	}
 
-	var targetServiceNamePtr *valueObject.ServiceName
-	if targetType.String() == "service" {
-		targetServiceName, err := valueObject.NewServiceName(*model.TargetValue)
+	var targetValuePtr *valueObject.MappingTargetValue
+	if model.TargetValue != nil {
+		targetValue, err := valueObject.NewMappingTargetValue(
+			*model.TargetValue, targetType,
+		)
 		if err != nil {
 			return mapping, err
 		}
-		targetServiceNamePtr = &targetServiceName
-	}
-
-	var targetUrlPtr *valueObject.Url
-	if targetType.String() == "url" {
-		targetUrl, err := valueObject.NewUrl(*model.TargetValue)
-		if err != nil {
-			return mapping, err
-		}
-		targetUrlPtr = &targetUrl
+		targetValuePtr = &targetValue
 	}
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
-	if targetType.String() == "response-code" {
+	if model.TargetHttpResponseCode != nil {
 		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
-			*model.TargetValue,
+			*model.TargetHttpResponseCode,
 		)
 		if err != nil {
 			return mapping, err
 		}
 		targetHttpResponseCodePtr = &targetHttpResponseCode
-	}
-
-	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-	if targetType.String() == "inline-html" {
-		targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(
-			*model.TargetValue,
-		)
-		if err != nil {
-			return mapping, err
-		}
-		targetInlineHtmlContentPtr = &targetInlineHtmlContent
 	}
 
 	return entity.NewMapping(
@@ -121,28 +106,46 @@ func (model Mapping) ToEntity() (entity.Mapping, error) {
 		path,
 		matchPattern,
 		targetType,
-		targetServiceNamePtr,
-		targetUrlPtr,
+		targetValuePtr,
 		targetHttpResponseCodePtr,
-		targetInlineHtmlContentPtr,
 	), nil
+}
+
+func (Mapping) ToModel(mappingEntity entity.Mapping) Mapping {
+	var targetValuePtr *string
+	if mappingEntity.TargetValue != nil {
+		targetValueStr := mappingEntity.TargetValue.String()
+		targetValuePtr = &targetValueStr
+	}
+
+	var targetHttpResponseCodePtr *string
+	if mappingEntity.TargetHttpResponseCode != nil {
+		targetHttpResponseCodeStr := mappingEntity.TargetHttpResponseCode.String()
+		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
+	}
+
+	return NewMapping(
+		uint(mappingEntity.Id),
+		mappingEntity.Hostname.String(),
+		mappingEntity.Path.String(),
+		mappingEntity.MatchPattern.String(),
+		mappingEntity.TargetType.String(),
+		targetValuePtr,
+		targetHttpResponseCodePtr,
+	)
 }
 
 func (Mapping) AddDtoToModel(createDto dto.CreateMapping) Mapping {
 	var targetValuePtr *string
-	switch createDto.TargetType.String() {
-	case "url":
-		targetUrlStr := createDto.TargetUrl.String()
-		targetValuePtr = &targetUrlStr
-	case "service":
-		targetServiceNameStr := createDto.TargetServiceName.String()
-		targetValuePtr = &targetServiceNameStr
-	case "response-code":
+	if createDto.TargetValue != nil {
+		targetValueStr := createDto.TargetValue.String()
+		targetValuePtr = &targetValueStr
+	}
+
+	var targetHttpResponseCodePtr *string
+	if createDto.TargetHttpResponseCode != nil {
 		targetHttpResponseCodeStr := createDto.TargetHttpResponseCode.String()
-		targetValuePtr = &targetHttpResponseCodeStr
-	case "inline-html":
-		targetInlineHtmlContentStr := createDto.TargetInlineHtmlContent.String()
-		targetValuePtr = &targetInlineHtmlContentStr
+		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
 	}
 
 	return NewMapping(
@@ -152,5 +155,6 @@ func (Mapping) AddDtoToModel(createDto dto.CreateMapping) Mapping {
 		createDto.MatchPattern.String(),
 		createDto.TargetType.String(),
 		targetValuePtr,
+		targetHttpResponseCodePtr,
 	)
 }
