@@ -317,7 +317,7 @@ func (repo *MappingCmdRepo) mappingConfigFactory(
 	return mappingConfig, nil
 }
 
-func (repo *MappingCmdRepo) rebuildMappingFile(
+func (repo *MappingCmdRepo) recreateMappingFile(
 	mappingHostname valueObject.Fqdn,
 ) error {
 	mappings, err := repo.mappingQueryRepo.GetByHostname(mappingHostname)
@@ -378,7 +378,7 @@ func (repo *MappingCmdRepo) Create(
 		return mappingId, err
 	}
 
-	err = repo.rebuildMappingFile(createDto.Hostname)
+	err = repo.recreateMappingFile(createDto.Hostname)
 	if err != nil {
 		return mappingId, err
 	}
@@ -400,7 +400,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 		return err
 	}
 
-	err = repo.rebuildMappingFile(mapping.Hostname)
+	err = repo.recreateMappingFile(mapping.Hostname)
 	if err != nil {
 		return err
 	}
