@@ -73,7 +73,10 @@ func (repo *MappingQueryRepo) GetByServiceName(
 	svcNameStr := serviceName.String()
 	svcNamePtr := &svcNameStr
 	err := repo.persistentDbSvc.Handler.Model(
-		dbModel.Mapping{TargetValue: svcNamePtr},
+		dbModel.Mapping{
+			TargetType:  "service",
+			TargetValue: svcNamePtr,
+		},
 	).Find(&mappingModels).Error
 	if err != nil {
 		return mappingEntities, errors.New("DbQueryMappingsError")

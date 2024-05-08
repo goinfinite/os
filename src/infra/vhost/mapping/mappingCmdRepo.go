@@ -61,10 +61,13 @@ func (repo *MappingCmdRepo) mappingToLocationStartBlock(
 	return "location " + locationUri + " {"
 }
 
-func (repo *MappingCmdRepo) getServiceMappingConfig(
-	serviceName valueObject.ServiceName,
-) (string, error) {
+func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, error) {
 	svcMappingConfig := ""
+
+	serviceName, err := valueObject.NewServiceName(svcNameStr)
+	if err != nil {
+		return "", errors.New(err.Error() + ": " + svcNameStr)
+	}
 
 	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
 	service, err := svcQueryRepo.GetByName(serviceName)
@@ -284,10 +287,11 @@ func (repo *MappingCmdRepo) mappingConfigFactory(
 	switch mapping.TargetType.String() {
 	case "url":
 		mappingConfig += `
-	return 301 ` + mapping.TargetUrl.String() + `;`
+	return ` + mapping.TargetHttpResponseCode.String() + ` ` +
+			mapping.TargetValue.String() + `;`
 	case "service":
 		svcMappingConfig, err := repo.getServiceMappingConfig(
-			*mapping.TargetServiceName,
+			mapping.TargetValue.String(),
 		)
 		if err != nil {
 			return mappingConfig, err
@@ -300,7 +304,8 @@ func (repo *MappingCmdRepo) mappingConfigFactory(
 	case "inline-html":
 		mappingConfig += `
 	add_header Content-Type text/html;
-	return 200 ` + mapping.TargetInlineHtmlContent.String() + `;`
+	return ` + mapping.TargetHttpResponseCode.String() + ` "` +
+			mapping.TargetValue.String() + `";`
 	case "static-files":
 		mappingConfig += `
 	try_files $uri $uri/ index.html?$query_string;`
@@ -355,7 +360,7 @@ func (repo *MappingCmdRepo) Create(
 	var mappingId valueObject.MappingId
 
 	isServiceMapping := createDto.TargetType.String() == "service"
-	isPhpServiceMapping := isServiceMapping && createDto.TargetServiceName.String() == "php"
+	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php"
 	if isPhpServiceMapping {
 		err := repo.vhostCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
 		if err != nil {
@@ -422,12 +427,7 @@ func (repo *MappingCmdRepo) DeleteAuto(
 			continue
 		}
 
-		targetServiceName := primaryVhostMapping.TargetServiceName
-		if targetServiceName == nil {
-			continue
-		}
-
-		if targetServiceName.String() != serviceName.String() {
+		if primaryVhostMapping.TargetValue.String() != serviceName.String() {
 			continue
 		}
 
@@ -452,10 +452,8 @@ func (repo *MappingCmdRepo) Recreate(mapping entity.Mapping) error {
 		mapping.Path,
 		mapping.MatchPattern,
 		mapping.TargetType,
-		mapping.TargetServiceName,
-		mapping.TargetUrl,
+		mapping.TargetValue,
 		mapping.TargetHttpResponseCode,
-		mapping.TargetInlineHtmlContent,
 	)
 
 	_, err = repo.Create(createDto)

@@ -179,9 +179,6 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 	path := valueObject.NewMappingPathPanic(requestBody["path"].(string))
-	targetType := valueObject.NewMappingTargetTypePanic(
-		requestBody["targetType"].(string),
-	)
 
 	matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
 	if requestBody["matchPattern"] != nil {
@@ -190,18 +187,16 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 		)
 	}
 
-	var targetServiceNamePtr *valueObject.ServiceName
-	if requestBody["targetServiceName"] != nil {
-		targetServiceName := valueObject.NewServiceNamePanic(
-			requestBody["targetServiceName"].(string),
-		)
-		targetServiceNamePtr = &targetServiceName
-	}
+	targetType := valueObject.NewMappingTargetTypePanic(
+		requestBody["targetType"].(string),
+	)
 
-	var targetUrlPtr *valueObject.Url
-	if requestBody["targetUrl"] != nil {
-		targetUrl := valueObject.NewUrlPanic(requestBody["targetUrl"].(string))
-		targetUrlPtr = &targetUrl
+	var targetValuePtr *valueObject.MappingTargetValue
+	if requestBody["targetValue"] != nil {
+		targetValue := valueObject.NewMappingTargetValuePanic(
+			requestBody["targetValue"], targetType,
+		)
+		targetValuePtr = &targetValue
 	}
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
@@ -212,23 +207,13 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
-	var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-	if requestBody["targetInlineHtmlContent"] != nil {
-		targetInlineHtmlContent := valueObject.NewInlineHtmlContentPanic(
-			requestBody["targetInlineHtmlContent"].(string),
-		)
-		targetInlineHtmlContentPtr = &targetInlineHtmlContent
-	}
-
 	createMappingDto := dto.NewCreateMapping(
 		hostname,
 		path,
 		matchPattern,
 		targetType,
-		targetServiceNamePtr,
-		targetUrlPtr,
+		targetValuePtr,
 		targetHttpResponseCodePtr,
-		targetInlineHtmlContentPtr,
 	)
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)

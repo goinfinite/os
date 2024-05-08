@@ -169,8 +169,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	if err != nil {
 		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
-	inlineHtmlContent, _ := valueObject.NewInlineHtmlContent(
-		expectedOwnershipHash.String(),
+	targetValue, _ := valueObject.NewMappingTargetValue(
+		expectedOwnershipHash.String(), targetType,
 	)
 
 	firstVhost := sslPair.VirtualHosts[0]
@@ -179,10 +179,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		path,
 		matchPattern,
 		targetType,
-		nil,
-		nil,
+		&targetValue,
 		&httpResponseCode,
-		&inlineHtmlContent,
 	)
 
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)

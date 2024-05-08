@@ -279,27 +279,32 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
-) error {
+) (createdMappings []entity.Mapping, err error) {
 	for _, catalogMapping := range catalogMappings {
 		createCatalogItemMapping := dto.NewCreateMapping(
 			hostname,
 			catalogMapping.Path,
 			catalogMapping.MatchPattern,
 			catalogMapping.TargetType,
-			catalogMapping.TargetServiceName,
-			catalogMapping.TargetUrl,
+			catalogMapping.TargetValue,
 			catalogMapping.TargetHttpResponseCode,
-			catalogMapping.TargetInlineHtmlContent,
 		)
 
 		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
-		_, err := mappingCmdRepo.Create(createCatalogItemMapping)
+		mappingId, err := mappingCmdRepo.Create(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
 		}
+
+		createdMapping := entity.NewMapping(
+			mappingId, hostname, catalogMapping.Path, catalogMapping.MatchPattern,
+			catalogMapping.TargetType, catalogMapping.TargetValue,
+			catalogMapping.TargetHttpResponseCode,
+		)
+		createdMappings = append(createdMappings, createdMapping)
 	}
 
-	return nil
+	return createdMappings, nil
 }
 
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
@@ -308,12 +313,19 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	urlPath valueObject.UrlPath,
 	installDir valueObject.UnixFilePath,
 	installUuid string,
+	createdMappings []entity.Mapping,
 ) error {
 	requiredSvcNamesListStr := []string{}
 	for _, svcName := range catalogItem.RequiredServiceNames {
 		requiredSvcNamesListStr = append(requiredSvcNamesListStr, svcName.String())
 	}
 	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
+
+	mappingModels := []dbModel.Mapping{}
+	for _, createdMapping := range createdMappings {
+		mappingModel := dbModel.Mapping{}.ToModel(createdMapping)
+		mappingModels = append(mappingModels, mappingModel)
+	}
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
 		Name:                 catalogItem.Name.String(),
@@ -323,6 +335,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		InstallDirectory:     installDir.String(),
 		InstallUuid:          installUuid,
 		RequiredServiceNames: requiredSvcNamesStr,
+		Mappings:             mappingModels,
 		AvatarUrl:            catalogItem.AvatarUrl.String(),
 	}
 
@@ -396,7 +409,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		)
 	}
 
-	err = repo.createMappings(installDto.Hostname, catalogItem.Mappings)
+	createdMappings, err := repo.createMappings(
+		installDto.Hostname, catalogItem.Mappings,
+	)
 	if err != nil {
 		return err
 	}
@@ -407,6 +422,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath,
 		installDir,
 		installUuidWithoutHyphens,
+		createdMappings,
 	)
 }
 

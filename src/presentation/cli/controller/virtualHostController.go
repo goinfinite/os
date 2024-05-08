@@ -165,10 +165,8 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 	var pathStr string
 	var matchPatternStr string
 	var targetTypeStr string
-	var targetServiceStr string
-	var targetUrlStr string
-	var targetHttpResponseCode uint
-	var targetInlineHtmlContent string
+	var targetValueStr string
+	var targetHttpResponseCodeUint uint
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -176,39 +174,28 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			path := valueObject.NewMappingPathPanic(pathStr)
-			targetType := valueObject.NewMappingTargetTypePanic(targetTypeStr)
 
 			matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
 			if matchPatternStr != "" {
 				matchPattern = valueObject.NewMappingMatchPatternPanic(matchPatternStr)
 			}
 
-			var targetServicePtr *valueObject.ServiceName
-			if targetServiceStr != "" {
-				targetService := valueObject.NewServiceNamePanic(targetServiceStr)
-				targetServicePtr = &targetService
-			}
+			targetType := valueObject.NewMappingTargetTypePanic(targetTypeStr)
 
-			var targetUrlPtr *valueObject.Url
-			if targetUrlStr != "" {
-				targetUrl := valueObject.NewUrlPanic(targetUrlStr)
-				targetUrlPtr = &targetUrl
+			var targetValuePtr *valueObject.MappingTargetValue
+			if targetValueStr != "" {
+				targetValue := valueObject.NewMappingTargetValuePanic(
+					targetValueStr, targetType,
+				)
+				targetValuePtr = &targetValue
 			}
 
 			var targetHttpResponseCodePtr *valueObject.HttpResponseCode
-			if targetHttpResponseCode != 0 {
+			if targetHttpResponseCodeUint != 0 {
 				targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
-					targetHttpResponseCode,
+					targetHttpResponseCodeUint,
 				)
 				targetHttpResponseCodePtr = &targetHttpResponseCode
-			}
-
-			var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-			if targetInlineHtmlContent != "" {
-				targetInlineHtmlContent := valueObject.NewInlineHtmlContentPanic(
-					targetInlineHtmlContent,
-				)
-				targetInlineHtmlContentPtr = &targetInlineHtmlContent
 			}
 
 			createMappingDto := dto.NewCreateMapping(
@@ -216,10 +203,8 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 				path,
 				matchPattern,
 				targetType,
-				targetServicePtr,
-				targetUrlPtr,
+				targetValuePtr,
 				targetHttpResponseCodePtr,
-				targetInlineHtmlContentPtr,
 			)
 
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
@@ -246,22 +231,18 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().StringVarP(&pathStr, "path", "p", "", "MappingPath")
 	cmd.MarkFlagRequired("path")
-	cmd.Flags().StringVarP(&matchPatternStr, "match", "m", "", "MatchPattern (begins-with|contains|ends-with)")
 	cmd.Flags().StringVarP(
-		&targetTypeStr, "type", "t", "", "MappingTargetType (service|url|response-code)",
+		&matchPatternStr, "match", "m", "",
+		"MatchPattern (begins-with|contains|ends-with)",
+	)
+	cmd.Flags().StringVarP(
+		&targetTypeStr, "type", "t", "",
+		"MappingTargetType (url|service|response-code|inline-html|static-files)",
 	)
 	cmd.MarkFlagRequired("type")
-	cmd.Flags().StringVarP(
-		&targetServiceStr, "service", "s", "", "TargetServiceName",
-	)
-	cmd.Flags().StringVarP(
-		&targetUrlStr, "url", "u", "", "TargetUrl",
-	)
+	cmd.Flags().StringVarP(&targetValueStr, "value", "v", "", "MappingTargetValue")
 	cmd.Flags().UintVarP(
-		&targetHttpResponseCode, "response-code", "r", 0, "TargetHttpResponseCode",
-	)
-	cmd.Flags().StringVarP(
-		&targetInlineHtmlContent, "html", "h", "", "TargetInlineHtmlContent",
+		&targetHttpResponseCodeUint, "response-code", "r", 0, "TargetHttpResponseCode",
 	)
 	return cmd
 }

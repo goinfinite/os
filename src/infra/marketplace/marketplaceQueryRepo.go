@@ -138,44 +138,30 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 			continue
 		}
 
-		var targetSvcNamePtr *valueObject.ServiceName
-		if rawItemMappingMap["targetServiceName"] != nil {
-			rawTargetSvcName, assertOk := rawItemMappingMap["targetServiceName"].(string)
+		var targetValuePtr *valueObject.MappingTargetValue
+		if rawItemMappingMap["targetValue"] != nil {
+			rawTargetValue, assertOk := rawItemMappingMap["targetValue"].(string)
 			if !assertOk {
 				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetServiceName: %s",
+					"InvalidMarketplaceCatalogItemMappingTargetValue: %s",
 					rawPath,
 				)
 				continue
 			}
-			targetSvcName, err := valueObject.NewServiceName(rawTargetSvcName)
+
+			targetValue, err := valueObject.NewMappingTargetValue(
+				rawTargetValue, targetType,
+			)
 			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetSvcName)
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
 				continue
 			}
-			targetSvcNamePtr = &targetSvcName
+			targetValuePtr = &targetValue
 		}
 
-		var targetUrlPtr *valueObject.Url
-		if rawItemMappingMap["targetUrl"] != nil {
-			rawTargetUrl, assertOk := rawItemMappingMap["targetUrl"].(string)
-			if !assertOk {
-				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetUrl: %s", rawPath,
-				)
-				continue
-			}
-			targetUrl, err := valueObject.NewUrl(rawTargetUrl)
-			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetUrl)
-				continue
-			}
-			targetUrlPtr = &targetUrl
-		}
-
-		var targetHttpResCodePtr *valueObject.HttpResponseCode
+		var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 		if rawItemMappingMap["targetHttpResponseCode"] != nil {
-			rawTargetHttpResCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
+			rawTargetHttpResponseCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
 			if !assertOk {
 				log.Printf(
 					"InvalidMarketplaceCatalogItemMappingTargetHttpResponseCode: %s",
@@ -183,46 +169,23 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 				)
 				continue
 			}
-			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
-				rawTargetHttpResCode,
-			)
-			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetHttpResCode)
-				continue
-			}
-			targetHttpResCodePtr = &targetHttpResponseCode
-		}
 
-		var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-		if rawItemMappingMap["targetInlineHtmlContent"] != nil {
-			rawTargetInlineHtmlContent, assertOk := rawItemMappingMap["targetInlineHtmlContent"].(string)
-			if !assertOk {
-				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetInlinteHtmlContent: %s",
-					rawPath,
-				)
-				continue
-			}
-			targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(
-				rawTargetInlineHtmlContent,
+			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+				rawTargetHttpResponseCode,
 			)
 			if err != nil {
-				log.Printf(
-					"%s (%s): %s", err.Error(), rawPath, rawTargetInlineHtmlContent,
-				)
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
 				continue
 			}
-			targetInlineHtmlContentPtr = &targetInlineHtmlContent
+			targetHttpResponseCodePtr = &targetHttpResponseCode
 		}
 
 		itemMapping := valueObject.NewMarketplaceItemMapping(
 			path,
 			matchPattern,
 			targetType,
-			targetSvcNamePtr,
-			targetUrlPtr,
-			targetHttpResCodePtr,
-			targetInlineHtmlContentPtr,
+			targetValuePtr,
+			targetHttpResponseCodePtr,
 		)
 		itemMappings = append(itemMappings, itemMapping)
 	}
@@ -596,6 +559,7 @@ func (repo *MarketplaceQueryRepo) GetInstalledItems() (
 
 	installedItemModels := []dbModel.MarketplaceInstalledItem{}
 	err := repo.persistentDbSvc.Handler.Model(&dbModel.MarketplaceInstalledItem{}).
+		Preload("Mappings").
 		Find(&installedItemModels).Error
 	if err != nil {
 		return installedItemEntities, errors.New(
