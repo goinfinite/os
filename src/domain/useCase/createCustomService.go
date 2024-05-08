@@ -30,14 +30,19 @@ func serviceMappingFactory(
 		return serviceMapping, err
 	}
 
+	svcMappingTargetValue, err := valueObject.NewMappingTargetValue(
+		svcName.String(), svcMappingTargetType,
+	)
+	if err != nil {
+		return serviceMapping, err
+	}
+
 	serviceMapping = dto.NewCreateMapping(
 		primaryHostname,
 		svcMappingPath,
 		svcMappingMatchPattern,
 		svcMappingTargetType,
-		&svcName,
-		nil,
-		nil,
+		&svcMappingTargetValue,
 		nil,
 	)
 
