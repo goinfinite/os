@@ -40,6 +40,7 @@ func CreateMapping(
 				createMapping.TargetValue.String(),
 			)
 			createMapping.TargetHttpResponseCode = &httpRespondeCode
+			createMapping.TargetValue = nil
 		}
 	}
 
