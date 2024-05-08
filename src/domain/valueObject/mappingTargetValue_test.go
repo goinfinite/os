@@ -24,7 +24,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range validMappingTargetUrlValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, urlTargetType)
+			_, err := NewMappingTargetValue(mtv, urlTargetType)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
 			}
@@ -54,7 +54,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range invalidMappingTargetUrlValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, urlTargetType)
+			_, err := NewMappingTargetValue(mtv, urlTargetType)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", mtv)
 			}
@@ -74,7 +74,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range validMappingTargetServiceNameValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, svcNameTargetType)
+			_, err := NewMappingTargetValue(mtv, svcNameTargetType)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
 			}
@@ -91,7 +91,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range invalidMappingTargetServiceNameValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, svcNameTargetType)
+			_, err := NewMappingTargetValue(mtv, svcNameTargetType)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", mtv)
 			}
@@ -114,7 +114,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range validMappingTargetResponseCodeValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, responseCodeTargetType)
+			_, err := NewMappingTargetValue(mtv, responseCodeTargetType)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
 			}
@@ -135,7 +135,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range invalidMappingTargetResponseCodeValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, responseCodeTargetType)
+			_, err := NewMappingTargetValue(mtv, responseCodeTargetType)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", mtv)
 			}
@@ -151,7 +151,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range validMappingTargetInlineHtmlContentValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, inlineHtmlContentTargetType)
+			_, err := NewMappingTargetValue(mtv, inlineHtmlContentTargetType)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
 			}
@@ -167,7 +167,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		}
 
 		for _, mtv := range invalidMappingTargetInlineHtmlContentValues {
-			_, err := NewMappingTargetValueBasedOnType(mtv, inlineHtmlContentTargetType)
+			_, err := NewMappingTargetValue(mtv, inlineHtmlContentTargetType)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", mtv)
 			}
