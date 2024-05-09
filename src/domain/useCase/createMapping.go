@@ -28,13 +28,19 @@ func CreateMapping(
 
 	hasTargetValue := createMapping.TargetValue != nil
 	hasTargetHttpResponseCode := createMapping.TargetHttpResponseCode != nil
-
 	if !hasTargetValue && !hasTargetHttpResponseCode {
 		return errors.New("MappingMustHaveValueOrHttpResponseCode")
 	}
 
 	targetTypeStr := createMapping.TargetType.String()
-	if targetTypeStr == "response-code" && !hasTargetHttpResponseCode {
+
+	isResponseCodeMapping := targetTypeStr == "response-code"
+	isTargetValueRequired := !isResponseCodeMapping
+	if isTargetValueRequired && !hasTargetValue {
+		return errors.New("MappingMustHaveValue")
+	}
+
+	if isResponseCodeMapping && !hasTargetHttpResponseCode {
 		targetValuetr := createMapping.TargetValue.String()
 		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValuetr)
 		if err != nil {
@@ -43,10 +49,6 @@ func CreateMapping(
 
 		createMapping.TargetHttpResponseCode = &httpRespondeCode
 		createMapping.TargetValue = nil
-	}
-
-	if !hasTargetValue {
-		return errors.New("MappingMustHaveValue")
 	}
 
 	mappings, err := mappingQueryRepo.GetByHostname(createMapping.Hostname)
