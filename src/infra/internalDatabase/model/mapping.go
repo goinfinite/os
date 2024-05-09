@@ -10,13 +10,13 @@ import (
 
 type Mapping struct {
 	ID                         uint   `gorm:"primarykey"`
-	MarketplaceInstalledItemId uint   `gorm:"not null"`
 	Hostname                   string `gorm:"not null"`
 	Path                       string `gorm:"not null"`
 	MatchPattern               string `gorm:"not null"`
 	TargetType                 string `gorm:"not null"`
 	TargetValue                *string
 	TargetHttpResponseCode     *string
+	MarketplaceInstalledItemId uint
 	CreatedAt                  time.Time `gorm:"not null"`
 	UpdatedAt                  time.Time `gorm:"not null"`
 }
