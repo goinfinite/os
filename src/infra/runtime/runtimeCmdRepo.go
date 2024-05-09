@@ -267,3 +267,63 @@ func (repo RuntimeCmdRepo) UpdatePhpModules(
 
 	return repo.restartPhp()
 }
+
+func (repo RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
+	vhostExists := true
+
+	queryRepo := RuntimeQueryRepo{}
+	vhostPhpConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	if err != nil {
+		if err.Error() != "VirtualHostNotFound" {
+			return err
+		}
+		vhostExists = false
+	}
+
+	if vhostExists {
+		return nil
+	}
+
+	templatePhpVhostConfFilePath := "/app/conf/php/template"
+	err = infraHelper.CopyFile(
+		templatePhpVhostConfFilePath,
+		vhostPhpConfFilePath.String(),
+	)
+	if err != nil {
+		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"sed",
+		"-i",
+		"-e",
+		"s/speedia.net/"+hostname.String()+"/g",
+		vhostPhpConfFilePath.String(),
+	)
+	if err != nil {
+		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
+	}
+
+	phpVhostHttpdConf := `
+virtualhost ` + hostname.String() + ` {
+  vhRoot                  /app/
+  configFile              ` + vhostPhpConfFilePath.String() + `
+  allowSymbolLink         1
+  enableScript            1
+  restrained              0
+  setUIDMode              0
+}
+`
+	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	shouldOverwrite := false
+	err = infraHelper.UpdateFile(
+		phpHttpdConfFilePath,
+		phpVhostHttpdConf,
+		shouldOverwrite,
+	)
+	if err != nil {
+		return errors.New("CreatePhpVirtualHostError: " + err.Error())
+	}
+
+	return nil
+}

@@ -8,7 +8,6 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	infraData "github.com/speedianet/os/src/infra/infraData"
-	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 )
 
 type VirtualHostCmdRepo struct {
@@ -62,66 +61,6 @@ func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) erro
 	// TODO: Regenerate cert for primary domain to include new alias
 
 	return repo.ReloadWebServer()
-}
-
-func (repo VirtualHostCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
-	vhostExists := true
-
-	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	vhostPhpConfFilePath, err := runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
-	if err != nil {
-		if err.Error() != "VirtualHostNotFound" {
-			return err
-		}
-		vhostExists = false
-	}
-
-	if vhostExists {
-		return nil
-	}
-
-	templatePhpVhostConfFilePath := "/app/conf/php/template"
-	err = infraHelper.CopyFile(
-		templatePhpVhostConfFilePath,
-		vhostPhpConfFilePath.String(),
-	)
-	if err != nil {
-		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
-	}
-
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"-e",
-		"s/speedia.net/"+hostname.String()+"/g",
-		vhostPhpConfFilePath.String(),
-	)
-	if err != nil {
-		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
-	}
-
-	phpVhostHttpdConf := `
-virtualhost ` + hostname.String() + ` {
-  vhRoot                  /app/
-  configFile              ` + vhostPhpConfFilePath.String() + `
-  allowSymbolLink         1
-  enableScript            1
-  restrained              0
-  setUIDMode              0
-}
-`
-	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
-	shouldOverwrite := false
-	err = infraHelper.UpdateFile(
-		phpHttpdConfFilePath,
-		phpVhostHttpdConf,
-		shouldOverwrite,
-	)
-	if err != nil {
-		return errors.New("CreatePhpVirtualHostError: " + err.Error())
-	}
-
-	return nil
 }
 
 func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {

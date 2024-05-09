@@ -11,6 +11,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
@@ -370,7 +371,8 @@ func (repo *MappingCmdRepo) Create(
 	isServiceMapping := createDto.TargetType.String() == "service"
 	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php"
 	if isPhpServiceMapping {
-		err := repo.vhostCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
+		runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+		err := runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
 		if err != nil {
 			return mappingId, err
 		}
