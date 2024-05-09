@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"text/template"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -32,33 +33,6 @@ func NewMappingCmdRepo(
 		mappingQueryRepo: mappingQueryRepo,
 		vhostCmdRepo:     vhostCmdRepo,
 	}
-}
-
-func (repo *MappingCmdRepo) mappingToLocationStartBlock(
-	matchPattern valueObject.MappingMatchPattern,
-	path valueObject.MappingPath,
-) string {
-	matchPatternStr := matchPattern.String()
-
-	modifier := ""
-	switch matchPatternStr {
-	case "contains", "ends-with":
-		modifier = "~"
-	case "equals":
-		modifier = "="
-	}
-
-	pathStr := path.String()
-	if matchPatternStr == "ends-with" {
-		pathStr += "$"
-	}
-
-	locationUri := pathStr
-	if modifier != "" {
-		locationUri = modifier + " " + pathStr
-	}
-
-	return "location " + locationUri + " {"
 }
 
 func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, error) {
@@ -275,46 +249,31 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, 
 	return svcMappingConfig, nil
 }
 
-func (repo *MappingCmdRepo) mappingConfigFactory(
-	mapping entity.Mapping,
-) (string, error) {
-	mappingLocationStartBlock := repo.mappingToLocationStartBlock(
-		mapping.MatchPattern,
-		mapping.Path,
-	)
-	mappingConfig := mappingLocationStartBlock
+func (repo *MappingCmdRepo) parseLocationUri(
+	matchPattern valueObject.MappingMatchPattern,
+	path valueObject.MappingPath,
+) string {
+	matchPatternStr := matchPattern.String()
 
-	switch mapping.TargetType.String() {
-	case "url":
-		mappingConfig += `
-	return ` + mapping.TargetHttpResponseCode.String() + ` ` +
-			mapping.TargetValue.String() + `;`
-	case "service":
-		svcMappingConfig, err := repo.getServiceMappingConfig(
-			mapping.TargetValue.String(),
-		)
-		if err != nil {
-			return mappingConfig, err
-		}
-		mappingConfig += `
-` + svcMappingConfig
-	case "response-code":
-		mappingConfig += `
-	return ` + mapping.TargetHttpResponseCode.String() + `;`
-	case "inline-html":
-		mappingConfig += `
-	add_header Content-Type text/html;
-	return ` + mapping.TargetHttpResponseCode.String() + ` "` +
-			mapping.TargetValue.String() + `";`
-	case "static-files":
-		mappingConfig += `
-	try_files $uri $uri/ index.html?$query_string;`
+	modifier := ""
+	switch matchPatternStr {
+	case "contains", "ends-with":
+		modifier = "~"
+	case "equals":
+		modifier = "="
 	}
 
-	mappingConfig += `
-}
-`
-	return mappingConfig, nil
+	pathStr := path.String()
+	if matchPatternStr == "ends-with" {
+		pathStr += "$"
+	}
+
+	locationUri := pathStr
+	if modifier != "" {
+		locationUri = modifier + " " + pathStr
+	}
+
+	return locationUri
 }
 
 func (repo *MappingCmdRepo) recreateMappingFile(
@@ -333,23 +292,47 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 		return errors.New("GetVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	fullMappingConfigContent := ""
-	for _, mapping := range mappings {
-		mappingConfigContent, err := repo.mappingConfigFactory(mapping)
-		if err != nil {
-			log.Printf(
-				"MappingConfigFactoryError (%s): %s",
-				mapping.Path.String(),
-				err.Error(),
-			)
-		}
-		fullMappingConfigContent += mappingConfigContent
+	mappingConfigTemplate := `{{- range . -}}
+location {{ parseLocationUri .MatchPattern .Path }} {
+	{{- if eq .TargetType "url" "response-code" }}
+	return {{ .TargetHttpResponseCode }} {{ .TargetValue }};
+	{{- end }}
+	{{- if eq .TargetType "service" }}
+{{ getServiceMappingConfig .TargetValue.String }}
+	{{- end }}
+	{{- if eq .TargetType "inline-html" }}
+	add_header Content-Type text/html;
+	return {{ .TargetHttpResponseCode }} "{{ .TargetValue }}";
+	{{- end }}
+	{{- if eq .TargetType "static-files" }}
+	try_files $uri $uri/ index.html?$query_string;
+	{{- end }}
+}
+{{ end }}`
+
+	mappingTemplatePtr := template.New("mappingFile")
+	mappingTemplatePtr = mappingTemplatePtr.Funcs(
+		template.FuncMap{
+			"parseLocationUri":        repo.parseLocationUri,
+			"getServiceMappingConfig": repo.getServiceMappingConfig,
+		},
+	)
+
+	mappingTemplatePtr, err = mappingTemplatePtr.Parse(mappingConfigTemplate)
+	if err != nil {
+		return errors.New("TemplateParsingError: " + err.Error())
+	}
+
+	var mappingFileContent strings.Builder
+	err = mappingTemplatePtr.Execute(&mappingFileContent, mappings)
+	if err != nil {
+		return errors.New("TemplateExecutionError: " + err.Error())
 	}
 
 	shouldOverwrite := true
 	return infraHelper.UpdateFile(
 		mappingFilePath.String(),
-		fullMappingConfigContent,
+		mappingFileContent.String(),
 		shouldOverwrite,
 	)
 }
@@ -380,7 +363,7 @@ func (repo *MappingCmdRepo) Create(
 
 	err = repo.recreateMappingFile(createDto.Hostname)
 	if err != nil {
-		return mappingId, err
+		log.Printf("NewRecreateMappingFileFunctionError: %s", err.Error())
 	}
 
 	return mappingId, repo.vhostCmdRepo.ReloadWebServer()
