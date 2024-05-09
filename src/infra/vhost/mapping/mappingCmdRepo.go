@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -424,21 +423,34 @@ func (repo *MappingCmdRepo) DeleteAuto(
 	return repo.Delete(*mappingIdToDelete)
 }
 
-func (repo *MappingCmdRepo) Recreate(mapping entity.Mapping) error {
-	err := repo.Delete(mapping.Id)
+func (repo *MappingCmdRepo) RecreateByServiceName(
+	serviceName valueObject.ServiceName,
+) error {
+	mappings, err := repo.mappingQueryRepo.GetByServiceName(serviceName)
 	if err != nil {
 		return err
 	}
 
-	createDto := dto.NewCreateMapping(
-		mapping.Hostname,
-		mapping.Path,
-		mapping.MatchPattern,
-		mapping.TargetType,
-		mapping.TargetValue,
-		mapping.TargetHttpResponseCode,
-	)
+	for _, mapping := range mappings {
+		err := repo.Delete(mapping.Id)
+		if err != nil {
+			return err
+		}
 
-	_, err = repo.Create(createDto)
-	return err
+		createDto := dto.NewCreateMapping(
+			mapping.Hostname,
+			mapping.Path,
+			mapping.MatchPattern,
+			mapping.TargetType,
+			mapping.TargetValue,
+			mapping.TargetHttpResponseCode,
+		)
+
+		_, err = repo.Create(createDto)
+		if err != nil {
+			log.Printf("%s: %d", err.Error(), mapping.Id.Get())
+		}
+	}
+
+	return nil
 }

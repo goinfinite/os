@@ -84,16 +84,9 @@ func UpdateService(
 		return nil
 	}
 
-	mappingsToRecreate, err := mappingQueryRepo.GetByServiceName(updateDto.Name)
+	err = mappingCmdRepo.RecreateByServiceName(updateDto.Name)
 	if err != nil {
-		return err
-	}
-
-	for _, mappingToRecreate := range mappingsToRecreate {
-		err = mappingCmdRepo.Recreate(mappingToRecreate)
-		if err != nil {
-			log.Printf("RecreateMappingError: %s", err.Error())
-		}
+		log.Printf("RecreateMappingError: %s", err.Error())
 	}
 
 	return nil
