@@ -119,12 +119,12 @@ func (router Router) servicesRoutes(baseRoute *echo.Group) {
 		router.persistentDbSvc,
 	)
 
-	servicesGroup.GET("/", servicesController.GetServices)
-	servicesGroup.GET("/installables/", servicesController.GetInstallableServices)
-	servicesGroup.POST("/installables/", servicesController.CreateInstallableService)
-	servicesGroup.POST("/custom/", servicesController.CreateCustomService)
-	servicesGroup.PUT("/", servicesController.UpdateService)
-	servicesGroup.DELETE("/:svcName/", servicesController.DeleteService)
+	servicesGroup.GET("/", servicesController.Read)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallable)
+	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
+	servicesGroup.POST("/custom/", servicesController.CreateCustom)
+	servicesGroup.PUT("/", servicesController.Update)
+	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
 }
 
 func (router Router) sslRoutes(baseRoute *echo.Group) {
