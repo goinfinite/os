@@ -16,7 +16,8 @@ func GetVirtualHostsWithMappings(
 
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
-		return vhostsWithMappings, errors.New("VhostsNotFound")
+		log.Printf("GetVhostsError: %s", err.Error())
+		return vhostsWithMappings, errors.New("GetVhostsInfraError")
 	}
 
 	for _, vhost := range vhosts {
