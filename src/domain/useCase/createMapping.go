@@ -34,14 +34,12 @@ func CreateMapping(
 	}
 
 	targetTypeStr := createMapping.TargetType.String()
-	if targetTypeStr == "response-code" {
-		if !hasTargetHttpResponseCode {
-			httpRespondeCode, _ := valueObject.NewHttpResponseCode(
-				createMapping.TargetValue.String(),
-			)
-			createMapping.TargetHttpResponseCode = &httpRespondeCode
-			createMapping.TargetValue = nil
-		}
+	if targetTypeStr == "response-code" && !hasTargetHttpResponseCode {
+		httpRespondeCode, _ := valueObject.NewHttpResponseCode(
+			createMapping.TargetValue.String(),
+		)
+		createMapping.TargetHttpResponseCode = &httpRespondeCode
+		createMapping.TargetValue = nil
 	}
 
 	if !hasTargetValue {
