@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -16,6 +17,7 @@ func NewMappingTargetValue(
 	if err != nil {
 		return "", errors.New("InvalidMappingTargetValue")
 	}
+	voStr = strings.TrimSpace(voStr)
 
 	switch targetType.String() {
 	case "url":
