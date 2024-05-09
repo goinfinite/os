@@ -294,6 +294,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		mappingId, err := mappingCmdRepo.Create(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
+			continue
 		}
 
 		createdMapping := entity.NewMapping(
