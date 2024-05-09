@@ -145,11 +145,9 @@ func (controller VirtualHostController) DeleteVirtualHost(c echo.Context) error 
 func (controller VirtualHostController) GetVirtualHostsWithMappings(
 	c echo.Context,
 ) error {
-	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 
 	vhostsWithMappings, err := useCase.GetVirtualHostsWithMappings(
-		vhostsQueryRepo,
 		mappingQueryRepo,
 	)
 	if err != nil {
