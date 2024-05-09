@@ -34,6 +34,32 @@ func NewMappingCmdRepo(
 	}
 }
 
+func (repo *MappingCmdRepo) parseCreateDtoToModel(
+	createDto dto.CreateMapping,
+) dbModel.Mapping {
+	var targetValuePtr *string
+	if createDto.TargetValue != nil {
+		targetValueStr := createDto.TargetValue.String()
+		targetValuePtr = &targetValueStr
+	}
+
+	var targetHttpResponseCodePtr *string
+	if createDto.TargetHttpResponseCode != nil {
+		targetHttpResponseCodeStr := createDto.TargetHttpResponseCode.String()
+		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
+	}
+
+	return dbModel.NewMapping(
+		0,
+		createDto.Hostname.String(),
+		createDto.Path.String(),
+		createDto.MatchPattern.String(),
+		createDto.TargetType.String(),
+		targetValuePtr,
+		targetHttpResponseCodePtr,
+	)
+}
+
 func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, error) {
 	svcMappingConfig := ""
 
@@ -350,7 +376,7 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	mappingModel := dbModel.Mapping{}.AddDtoToModel(createDto)
+	mappingModel := repo.parseCreateDtoToModel(createDto)
 	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
 	if createResult.Error != nil {
 		return mappingId, createResult.Error

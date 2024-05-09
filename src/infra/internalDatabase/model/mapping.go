@@ -3,7 +3,6 @@ package dbModel
 import (
 	"time"
 
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -130,30 +129,6 @@ func (Mapping) ToModel(mappingEntity entity.Mapping) Mapping {
 		mappingEntity.Path.String(),
 		mappingEntity.MatchPattern.String(),
 		mappingEntity.TargetType.String(),
-		targetValuePtr,
-		targetHttpResponseCodePtr,
-	)
-}
-
-func (Mapping) AddDtoToModel(createDto dto.CreateMapping) Mapping {
-	var targetValuePtr *string
-	if createDto.TargetValue != nil {
-		targetValueStr := createDto.TargetValue.String()
-		targetValuePtr = &targetValueStr
-	}
-
-	var targetHttpResponseCodePtr *string
-	if createDto.TargetHttpResponseCode != nil {
-		targetHttpResponseCodeStr := createDto.TargetHttpResponseCode.String()
-		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
-	}
-
-	return NewMapping(
-		0,
-		createDto.Hostname.String(),
-		createDto.Path.String(),
-		createDto.MatchPattern.String(),
-		createDto.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
 	)
