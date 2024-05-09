@@ -11,10 +11,12 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-func hasRequiredDataFields(
+func checkRequiredDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
-) bool {
+) []valueObject.MarketplaceCatalogItemDataField {
+	missingRequiredDataFields := []valueObject.MarketplaceCatalogItemDataField{}
+
 	receivedDataFieldsKeysStr := []string{}
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldsKeysStr = append(
@@ -23,7 +25,6 @@ func hasRequiredDataFields(
 		)
 	}
 
-	hasRequiredDataFields := true
 	for _, catalogDataField := range catalogDataFields {
 		if !catalogDataField.IsRequired {
 			continue
@@ -31,14 +32,14 @@ func hasRequiredDataFields(
 
 		requiredDataFieldStr := catalogDataField.Key.String()
 		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
-			hasRequiredDataFields = false
-			break
+			missingRequiredDataFields = append(
+				missingRequiredDataFields,
+				catalogDataField,
+			)
 		}
-
-		continue
 	}
 
-	return hasRequiredDataFields
+	return missingRequiredDataFields
 }
 
 func InstallMarketplaceCatalogItem(
@@ -60,12 +61,14 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	hasRequiredDataFields := hasRequiredDataFields(
+	missingRequiredDataFields := checkRequiredDataFields(
 		installDto.DataFields,
 		catalogItem.DataFields,
 	)
+
+	hasRequiredDataFields := len(missingRequiredDataFields) > 0
 	if !hasRequiredDataFields {
-		return errors.New("MissingRequiredDataFieldKeys")
+		return errors.New("MissingRequiredDataField")
 	}
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
