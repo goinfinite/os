@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"slices"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -66,9 +67,18 @@ func InstallMarketplaceCatalogItem(
 		catalogItem.DataFields,
 	)
 
-	hasRequiredDataFields := len(missingRequiredDataFields) > 0
+	hasRequiredDataFields := len(missingRequiredDataFields) == 0
 	if !hasRequiredDataFields {
-		return errors.New("MissingRequiredDataField")
+		missingDataFieldsStrList := []string{}
+		for _, missingDataField := range missingRequiredDataFields {
+			missingDataFieldsStrList = append(
+				missingDataFieldsStrList,
+				missingDataField.Name.String(),
+			)
+		}
+		missingDataFieldsStr := strings.Join(missingDataFieldsStrList, ", ")
+
+		return errors.New("MissingRequiredDataField: " + missingDataFieldsStr)
 	}
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
