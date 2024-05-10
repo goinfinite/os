@@ -24,7 +24,7 @@ func NewServicesController(
 	}
 }
 
-func (controller *ServicesController) GetServices() *cobra.Command {
+func (controller *ServicesController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "GetServices",
@@ -42,7 +42,7 @@ func (controller *ServicesController) GetServices() *cobra.Command {
 	return cmd
 }
 
-func (controller *ServicesController) GetInstallableServices() *cobra.Command {
+func (controller *ServicesController) ReadInstallables() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-installables",
 		Short: "GetInstallableServices",
@@ -60,7 +60,7 @@ func (controller *ServicesController) GetInstallableServices() *cobra.Command {
 	return cmd
 }
 
-func (controller *ServicesController) CreateInstallableService() *cobra.Command {
+func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var nameStr string
 	var versionStr string
 	var startupFileStr string
@@ -141,7 +141,7 @@ func (controller *ServicesController) CreateInstallableService() *cobra.Command 
 	return cmd
 }
 
-func (controller *ServicesController) CreateCustomService() *cobra.Command {
+func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var nameStr string
 	var typeStr string
 	var commandStr string
@@ -223,7 +223,7 @@ func (controller *ServicesController) CreateCustomService() *cobra.Command {
 	return cmd
 }
 
-func (controller *ServicesController) UpdateService() *cobra.Command {
+func (controller *ServicesController) Update() *cobra.Command {
 	var nameStr string
 	var typeStr string
 	var commandStr string
@@ -320,7 +320,7 @@ func (controller *ServicesController) UpdateService() *cobra.Command {
 	return cmd
 }
 
-func (controller *ServicesController) DeleteService() *cobra.Command {
+func (controller *ServicesController) Delete() *cobra.Command {
 	var nameStr string
 
 	cmd := &cobra.Command{

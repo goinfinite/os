@@ -26,8 +26,8 @@ func NewServicesController(
 	}
 }
 
-// GetServices	 godoc
-// @Summary      ReadServices
+// Read	 godoc
+// @Summary      Read
 // @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
@@ -45,8 +45,8 @@ func (controller *ServicesController) Read(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
 }
 
-// GetServices	 godoc
-// @Summary      ReadInstallableServices
+// ReadInstallables	 godoc
+// @Summary      ReadInstallables
 // @Description  List installable services.
 // @Tags         services
 // @Security     Bearer
@@ -54,7 +54,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Produce      json
 // @Success      200 {array} entity.InstallableService
 // @Router       /services/installables/ [get]
-func (controller *ServicesController) ReadInstallable(c echo.Context) error {
+func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 	if err != nil {
@@ -83,8 +83,8 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	return svcPortBindings
 }
 
-// CreateInstallableService godoc
-// @Summary      CreateInstallableService
+// CreateInstallable godoc
+// @Summary      CreateInstallable
 // @Description  Install a new installable service.
 // @Tags         services
 // @Accept       json
@@ -167,8 +167,8 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "InstallableServiceCreated")
 }
 
-// CreateCustomService godoc
-// @Summary      CreateCustomService
+// CreateCustom godoc
+// @Summary      CreateCustom
 // @Description  Install a new custom service.
 // @Tags         services
 // @Accept       json
@@ -246,8 +246,8 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "CustomServiceCreated")
 }
 
-// UpdateService godoc
-// @Summary      UpdateService
+// Update godoc
+// @Summary      Update
 // @Description  Update service details.
 // @Tags         services
 // @Accept       json
@@ -340,8 +340,8 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceUpdated")
 }
 
-// DeleteService godoc
-// @Summary      DeleteService
+// Delete godoc
+// @Summary      Delete
 // @Description  Delete/Uninstall a service.
 // @Tags         services
 // @Accept       json

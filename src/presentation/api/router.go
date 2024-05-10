@@ -120,7 +120,7 @@ func (router Router) servicesRoutes(baseRoute *echo.Group) {
 	)
 
 	servicesGroup.GET("/", servicesController.Read)
-	servicesGroup.GET("/installables/", servicesController.ReadInstallable)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
 	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
 	servicesGroup.POST("/custom/", servicesController.CreateCustom)
 	servicesGroup.PUT("/", servicesController.Update)
