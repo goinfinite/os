@@ -3,7 +3,6 @@ package useCase
 import (
 	"errors"
 	"log"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -103,15 +102,6 @@ func CreateMapping(
 	if targetTypeStr == "inline-html" && !hasTargetHttpResponseCode {
 		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
 		createMapping.TargetHttpResponseCode = &targetHttpResponseCode
-	}
-
-	pathStr := createMapping.Path.String()
-	pathStartsWithSlash := strings.HasPrefix(pathStr, "/")
-	if !pathStartsWithSlash {
-		createMapping.Path, err = valueObject.NewMappingPath("/" + pathStr)
-		if err != nil {
-			return errors.New("CorrectAutoMappingPathError")
-		}
 	}
 
 	_, err = mappingCmdRepo.Create(createMapping)
