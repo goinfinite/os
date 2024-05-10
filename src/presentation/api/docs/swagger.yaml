@@ -1382,7 +1382,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: ReadServices
+      summary: Read
       tags:
       - services
     put:
@@ -1405,7 +1405,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: UpdateService
+      summary: Update
       tags:
       - services
   /services/{svcName}/:
@@ -1428,7 +1428,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteService
+      summary: Delete
       tags:
       - services
   /services/custom/:
@@ -1452,7 +1452,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateCustomService
+      summary: CreateCustom
       tags:
       - services
   /services/installables/:
@@ -1471,7 +1471,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: ReadInstallableServices
+      summary: ReadInstallables
       tags:
       - services
     post:
@@ -1494,7 +1494,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateInstallableService
+      summary: CreateInstallable
       tags:
       - services
   /ssl/:

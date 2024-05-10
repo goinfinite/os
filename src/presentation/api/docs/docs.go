@@ -1184,7 +1184,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadServices",
+                "summary": "Read",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1213,7 +1213,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "UpdateService",
+                "summary": "Update",
                 "parameters": [
                     {
                         "description": "UpdateServiceDetails",
@@ -1252,7 +1252,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateCustomService",
+                "summary": "CreateCustom",
                 "parameters": [
                     {
                         "description": "CreateCustomService",
@@ -1291,7 +1291,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadInstallableServices",
+                "summary": "ReadInstallables",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1320,7 +1320,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateInstallableService",
+                "summary": "CreateInstallable",
                 "parameters": [
                     {
                         "description": "CreateInstallableService",
@@ -1359,7 +1359,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "DeleteService",
+                "summary": "Delete",
                 "parameters": [
                     {
                         "type": "string",

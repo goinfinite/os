@@ -1178,7 +1178,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadServices",
+                "summary": "Read",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1207,7 +1207,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "UpdateService",
+                "summary": "Update",
                 "parameters": [
                     {
                         "description": "UpdateServiceDetails",
@@ -1246,7 +1246,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateCustomService",
+                "summary": "CreateCustom",
                 "parameters": [
                     {
                         "description": "CreateCustomService",
@@ -1285,7 +1285,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadInstallableServices",
+                "summary": "ReadInstallables",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1314,7 +1314,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateInstallableService",
+                "summary": "CreateInstallable",
                 "parameters": [
                     {
                         "description": "CreateInstallableService",
@@ -1353,7 +1353,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "DeleteService",
+                "summary": "Delete",
                 "parameters": [
                     {
                         "type": "string",
