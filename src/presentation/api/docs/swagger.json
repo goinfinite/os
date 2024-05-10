@@ -1069,7 +1069,7 @@
                 "tags": [
                     "o11y"
                 ],
-                "summary": "ReadOverview",
+                "summary": "O11yOverview",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1178,7 +1178,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "Read",
+                "summary": "ReadServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1207,7 +1207,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "Update",
+                "summary": "UpdateService",
                 "parameters": [
                     {
                         "description": "UpdateServiceDetails",
@@ -1246,7 +1246,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateCustom",
+                "summary": "CreateCustomService",
                 "parameters": [
                     {
                         "description": "CreateCustomService",
@@ -1285,7 +1285,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadInstallables",
+                "summary": "ReadInstallableServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1314,7 +1314,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateInstallable",
+                "summary": "CreateInstallableService",
                 "parameters": [
                     {
                         "description": "CreateInstallableService",
@@ -1353,7 +1353,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteService",
                 "parameters": [
                     {
                         "type": "string",
@@ -1390,7 +1390,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Read",
+                "summary": "ReadSslPairs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1419,7 +1419,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Create",
+                "summary": "CreateSslPair",
                 "parameters": [
                     {
                         "description": "NewSslPair",
@@ -1458,7 +1458,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "DeleteVhosts",
+                "summary": "DeleteSslPairVhosts",
                 "parameters": [
                     {
                         "description": "SslPairVhostsDeleted",
@@ -1497,7 +1497,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteSslPair",
                 "parameters": [
                     {
                         "type": "string",
@@ -1534,7 +1534,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Get",
+                "summary": "GetVirtualHosts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1563,7 +1563,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Create",
+                "summary": "CreateVirtualHost",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
@@ -1602,7 +1602,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetWithMappings",
+                "summary": "GetVirtualHostsWithMappings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1631,7 +1631,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateMapping",
+                "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
                         "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
@@ -1670,7 +1670,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "DeleteMapping",
+                "summary": "DeleteVirtualHostMapping",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1707,7 +1707,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteVirtualHost",
                 "parameters": [
                     {
                         "type": "string",

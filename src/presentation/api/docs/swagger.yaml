@@ -1312,7 +1312,7 @@ paths:
             $ref: '#/definitions/entity.O11yOverview'
       security:
       - Bearer: []
-      summary: ReadOverview
+      summary: O11yOverview
       tags:
       - o11y
   /runtime/php/{hostname}/:
@@ -1382,7 +1382,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: Read
+      summary: ReadServices
       tags:
       - services
     put:
@@ -1405,7 +1405,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Update
+      summary: UpdateService
       tags:
       - services
   /services/{svcName}/:
@@ -1428,7 +1428,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Delete
+      summary: DeleteService
       tags:
       - services
   /services/custom/:
@@ -1452,7 +1452,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateCustom
+      summary: CreateCustomService
       tags:
       - services
   /services/installables/:
@@ -1471,7 +1471,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: ReadInstallables
+      summary: ReadInstallableServices
       tags:
       - services
     post:
@@ -1494,7 +1494,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateInstallable
+      summary: CreateInstallableService
       tags:
       - services
   /ssl/:
@@ -1513,7 +1513,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: Read
+      summary: ReadSslPairs
       tags:
       - ssl
     post:
@@ -1536,7 +1536,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Create
+      summary: CreateSslPair
       tags:
       - ssl
   /ssl/{sslPairId}/:
@@ -1559,7 +1559,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Delete
+      summary: DeleteSslPair
       tags:
       - ssl
   /ssl/vhost/:
@@ -1583,7 +1583,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteVhosts
+      summary: DeleteSslPairVhosts
       tags:
       - ssl
   /vhosts/:
@@ -1602,7 +1602,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: Get
+      summary: GetVirtualHosts
       tags:
       - vhosts
     post:
@@ -1625,7 +1625,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Create
+      summary: CreateVirtualHost
       tags:
       - vhosts
   /vhosts/{hostname}/:
@@ -1648,7 +1648,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: Delete
+      summary: DeleteVirtualHost
       tags:
       - vhosts
   /vhosts/mapping/:
@@ -1667,7 +1667,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetWithMappings
+      summary: GetVirtualHostsWithMappings
       tags:
       - vhosts
     post:
@@ -1693,7 +1693,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateMapping
+      summary: CreateVirtualHostMapping
       tags:
       - vhosts
   /vhosts/mapping/{mappingId}/:
@@ -1716,7 +1716,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteMapping
+      summary: DeleteVirtualHostMapping
       tags:
       - vhosts
 securityDefinitions:

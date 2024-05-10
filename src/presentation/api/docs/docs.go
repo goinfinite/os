@@ -1075,7 +1075,7 @@ const docTemplate = `{
                 "tags": [
                     "o11y"
                 ],
-                "summary": "ReadOverview",
+                "summary": "O11yOverview",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1184,7 +1184,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "Read",
+                "summary": "ReadServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1213,7 +1213,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "Update",
+                "summary": "UpdateService",
                 "parameters": [
                     {
                         "description": "UpdateServiceDetails",
@@ -1252,7 +1252,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateCustom",
+                "summary": "CreateCustomService",
                 "parameters": [
                     {
                         "description": "CreateCustomService",
@@ -1291,7 +1291,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadInstallables",
+                "summary": "ReadInstallableServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1320,7 +1320,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "CreateInstallable",
+                "summary": "CreateInstallableService",
                 "parameters": [
                     {
                         "description": "CreateInstallableService",
@@ -1359,7 +1359,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteService",
                 "parameters": [
                     {
                         "type": "string",
@@ -1396,7 +1396,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Read",
+                "summary": "ReadSslPairs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1425,7 +1425,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Create",
+                "summary": "CreateSslPair",
                 "parameters": [
                     {
                         "description": "NewSslPair",
@@ -1464,7 +1464,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "DeleteVhosts",
+                "summary": "DeleteSslPairVhosts",
                 "parameters": [
                     {
                         "description": "SslPairVhostsDeleted",
@@ -1503,7 +1503,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteSslPair",
                 "parameters": [
                     {
                         "type": "string",
@@ -1540,7 +1540,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Get",
+                "summary": "GetVirtualHosts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1569,7 +1569,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Create",
+                "summary": "CreateVirtualHost",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
@@ -1608,7 +1608,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetWithMappings",
+                "summary": "GetVirtualHostsWithMappings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1637,7 +1637,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateMapping",
+                "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
                         "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
@@ -1676,7 +1676,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "DeleteMapping",
+                "summary": "DeleteVirtualHostMapping",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1713,7 +1713,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "Delete",
+                "summary": "DeleteVirtualHost",
                 "parameters": [
                     {
                         "type": "string",
