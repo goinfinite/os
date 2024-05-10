@@ -236,7 +236,6 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "Hostname"
 // @Param        mappingId path uint true "MappingId"
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /vhosts/mapping/{mappingId}/ [delete]
