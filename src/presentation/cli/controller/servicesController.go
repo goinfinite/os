@@ -27,7 +27,7 @@ func NewServicesController(
 func (controller *ServicesController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "GetServices",
+		Short: "Get",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
@@ -44,8 +44,8 @@ func (controller *ServicesController) Read() *cobra.Command {
 
 func (controller *ServicesController) ReadInstallables() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-installables",
-		Short: "GetInstallableServices",
+		Use:   "list-installables",
+		Short: "GetInstallables",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
@@ -69,7 +69,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create-installable",
-		Short: "CreateInstallableService",
+		Short: "CreateInstallable",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
@@ -151,7 +151,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create-custom",
-		Short: "CreateCustomService",
+		Short: "CreateCustom",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 			svcType := valueObject.NewServiceTypePanic(typeStr)
@@ -234,7 +234,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "UpdateService",
+		Short: "Update",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
@@ -325,7 +325,7 @@ func (controller *ServicesController) Delete() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "DeleteService",
+		Short: "Delete",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
