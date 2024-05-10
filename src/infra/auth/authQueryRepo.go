@@ -22,10 +22,8 @@ type AuthQueryRepo struct {
 }
 
 func (repo AuthQueryRepo) IsLoginValid(login dto.Login) bool {
-	storedPassHash, err := infraHelper.RunCmd(
-		"bash",
-		"-c",
-		"getent shadow "+login.Username.String()+" | awk -F: '{print $2}'",
+	storedPassHash, err := infraHelper.RunCmdWithSubShell(
+		"getent shadow " + login.Username.String() + " | awk -F: '{print $2}'",
 	)
 	if err != nil {
 		return false
