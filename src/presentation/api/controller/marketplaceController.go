@@ -25,8 +25,8 @@ func NewMarketplaceController(
 	}
 }
 
-// GetMarketplaceCatalog godoc
-// @Summary      GetMarketplaceCatalog
+// ReadCatalog godoc
+// @Summary      ReadCatalog
 // @Description  List marketplace catalog services names, types, steps and more.
 // @Tags         marketplace
 // @Security     Bearer
@@ -34,10 +34,10 @@ func NewMarketplaceController(
 // @Produce      json
 // @Success      200 {array} entity.MarketplaceCatalogItem
 // @Router       /marketplace/catalog/ [get]
-func (controller *MarketplaceController) GetCatalog(c echo.Context) error {
+func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 
-	catalogItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
+	catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -76,8 +76,8 @@ func parseDataFieldsFromBody(
 	return dataFields
 }
 
-// InstallMarketplaceCatalogItem	 godoc
-// @Summary      InstallMarketplaceCatalogItem
+// InstallCatalogItem	 godoc
+// @Summary      InstallCatalogItem
 // @Description  Install a marketplace catalog item.
 // @Tags         marketplace
 // @Accept       json
@@ -124,8 +124,8 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MarketplaceCatalogItemInstalled")
 }
 
-// GetMarketplaceInstalledItems godoc
-// @Summary      GetMarketplaceInstalledItems
+// ReadInstalledItems godoc
+// @Summary      ReadInstalledItems
 // @Description  List marketplace installed items.
 // @Tags         marketplace
 // @Security     Bearer
@@ -133,10 +133,10 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Produce      json
 // @Success      200 {array} entity.MarketplaceInstalledItem
 // @Router       /marketplace/installed/ [get]
-func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error {
+func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 
-	installedItems, err := useCase.GetMarketplaceInstalledItems(marketplaceQueryRepo)
+	installedItems, err := useCase.ReadMarketplaceInstalledItems(marketplaceQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -144,8 +144,8 @@ func (controller *MarketplaceController) GetInstalledItems(c echo.Context) error
 	return apiHelper.ResponseWrapper(c, http.StatusOK, installedItems)
 }
 
-// DeleteMarketplaceInstalledItem godoc
-// @Summary      DeleteMarketplaceInstalledItem
+// DeleteInstalledItem godoc
+// @Summary      DeleteInstalledItem
 // @Description  Delete/Uninstall a marketplace installed item.
 // @Tags         marketplace
 // @Accept       json

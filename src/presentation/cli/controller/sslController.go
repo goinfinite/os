@@ -6,19 +6,32 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/spf13/cobra"
 )
 
-func GetSslPairsController() *cobra.Command {
+type SslController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewSslController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *SslController {
+	return &SslController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+func (controller *SslController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "GetSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
+			sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -30,14 +43,14 @@ func GetSslPairsController() *cobra.Command {
 	return cmd
 }
 
-func CreateSslPairController() *cobra.Command {
+func (controller *SslController) Create() *cobra.Command {
 	var virtualHostsSlice []string
 	var certificateFilePathStr string
 	var keyFilePathStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "CreateNewSslPair",
+		Short: "CreateSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {
@@ -64,7 +77,7 @@ func CreateSslPairController() *cobra.Command {
 				sslPrivateKey,
 			)
 
-			sslCmdRepo := sslInfra.NewSslCmdRepo()
+			sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.CreateSslPair(
@@ -89,7 +102,7 @@ func CreateSslPairController() *cobra.Command {
 	return cmd
 }
 
-func DeleteSslPairController() *cobra.Command {
+func (controller *SslController) Delete() *cobra.Command {
 	var sslPairIdStr string
 
 	cmd := &cobra.Command{
@@ -99,7 +112,7 @@ func DeleteSslPairController() *cobra.Command {
 			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
 			cronQueryRepo := sslInfra.SslQueryRepo{}
-			cronCmdRepo := sslInfra.NewSslCmdRepo()
+			cronCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,
@@ -119,7 +132,7 @@ func DeleteSslPairController() *cobra.Command {
 	return cmd
 }
 
-func DeleteSslPairVhostsController() *cobra.Command {
+func (controller *SslController) DeleteVhosts() *cobra.Command {
 	var sslPairIdStr string
 	var virtualHostsSlice []string
 
@@ -137,7 +150,7 @@ func DeleteSslPairVhostsController() *cobra.Command {
 			dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
 
 			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslCmdRepo := sslInfra.NewSslCmdRepo()
+			sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteSslPairVhosts(
 				sslQueryRepo,

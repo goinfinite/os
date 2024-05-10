@@ -8,12 +8,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func GetO11yOverviewController(
+func ReadO11yOverviewController(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "overview",
-		Short: "GetOverview",
+		Short: "GetO11yOverview",
 		Run: func(cmd *cobra.Command, args []string) {
 			o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
 			o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)

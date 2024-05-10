@@ -932,7 +932,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceCatalog",
+                "summary": "ReadCatalog",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -956,7 +956,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "InstallMarketplaceCatalogItem",
+                "summary": "InstallCatalogItem",
                 "parameters": [
                     {
                         "description": "InstallMarketplaceCatalogItem (directory is optional)",
@@ -995,7 +995,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceInstalledItems",
+                "summary": "ReadInstalledItems",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1026,7 +1026,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "DeleteMarketplaceInstalledItem",
+                "summary": "DeleteInstalledItem",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1184,7 +1184,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "GetServices",
+                "summary": "ReadServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1291,7 +1291,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "GetInstallableServices",
+                "summary": "ReadInstallableServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1396,7 +1396,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "GetSslPair",
+                "summary": "ReadSslPairs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1425,7 +1425,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "CreateNewSslPair",
+                "summary": "CreateSslPair",
                 "parameters": [
                     {
                         "description": "NewSslPair",
@@ -1569,7 +1569,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateNewVirtualHost",
+                "summary": "CreateVirtualHost",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
@@ -1637,7 +1637,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateMapping",
+                "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
                         "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
@@ -1659,7 +1659,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/mapping/{hostname}/{mappingId}/": {
+        "/vhosts/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1676,15 +1676,8 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "DeleteMapping",
+                "summary": "DeleteVirtualHostMapping",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "MappingId",
@@ -1890,16 +1883,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
@@ -2289,16 +2276,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
@@ -2333,13 +2314,13 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "screenshotUrls": {
+                "requiredServiceNames": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "services": {
+                "screenshotUrls": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2391,6 +2372,9 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "integer"
+                },
+                "urlPath": {
+                    "type": "string"
                 }
             }
         },
@@ -2686,16 +2670,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }

@@ -17,6 +17,7 @@ import (
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 )
 
 type MarketplaceCmdRepo struct {
@@ -278,27 +279,33 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
-) error {
+) (createdMappings []entity.Mapping, err error) {
 	for _, catalogMapping := range catalogMappings {
 		createCatalogItemMapping := dto.NewCreateMapping(
 			hostname,
 			catalogMapping.Path,
 			catalogMapping.MatchPattern,
 			catalogMapping.TargetType,
-			catalogMapping.TargetServiceName,
-			catalogMapping.TargetUrl,
+			catalogMapping.TargetValue,
 			catalogMapping.TargetHttpResponseCode,
-			catalogMapping.TargetInlineHtmlContent,
 		)
 
-		vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
-		err := vhostCmdRepo.CreateMapping(createCatalogItemMapping)
+		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
+		mappingId, err := mappingCmdRepo.Create(createCatalogItemMapping)
 		if err != nil {
 			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
+			continue
 		}
+
+		createdMapping := entity.NewMapping(
+			mappingId, hostname, catalogMapping.Path, catalogMapping.MatchPattern,
+			catalogMapping.TargetType, catalogMapping.TargetValue,
+			catalogMapping.TargetHttpResponseCode,
+		)
+		createdMappings = append(createdMappings, createdMapping)
 	}
 
-	return nil
+	return createdMappings, nil
 }
 
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
@@ -307,12 +314,19 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	urlPath valueObject.UrlPath,
 	installDir valueObject.UnixFilePath,
 	installUuid string,
+	createdMappings []entity.Mapping,
 ) error {
 	requiredSvcNamesListStr := []string{}
 	for _, svcName := range catalogItem.RequiredServiceNames {
 		requiredSvcNamesListStr = append(requiredSvcNamesListStr, svcName.String())
 	}
 	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
+
+	mappingModels := []dbModel.Mapping{}
+	for _, createdMapping := range createdMappings {
+		mappingModel := dbModel.Mapping{}.ToModel(createdMapping)
+		mappingModels = append(mappingModels, mappingModel)
+	}
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
 		Name:                 catalogItem.Name.String(),
@@ -322,6 +336,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		InstallDirectory:     installDir.String(),
 		InstallUuid:          installUuid,
 		RequiredServiceNames: requiredSvcNamesStr,
+		Mappings:             mappingModels,
 		AvatarUrl:            catalogItem.AvatarUrl.String(),
 	}
 
@@ -336,7 +351,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.marketplaceQueryRepo.GetCatalogItemById(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(
 		installDto.Id,
 	)
 	if err != nil {
@@ -395,7 +410,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		)
 	}
 
-	err = repo.createMappings(installDto.Hostname, catalogItem.Mappings)
+	createdMappings, err := repo.createMappings(
+		installDto.Hostname, catalogItem.Mappings,
+	)
 	if err != nil {
 		return err
 	}
@@ -406,6 +423,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath,
 		installDir,
 		installUuidWithoutHyphens,
+		createdMappings,
 	)
 }
 
@@ -414,7 +432,7 @@ func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
 ) {
 	servicesInUse := []valueObject.ServiceName{}
 
-	installedItems, err := repo.marketplaceQueryRepo.GetInstalledItems()
+	installedItems, err := repo.marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
 		return servicesInUse, err
 	}
@@ -464,16 +482,16 @@ func (repo *MarketplaceCmdRepo) uninstallServices(
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(
+	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
 		deleteDto.InstalledId,
 	)
 	if err != nil {
 		return err
 	}
 
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 	for _, installedItemMapping := range installedItem.Mappings {
-		err = vhostCmdRepo.DeleteMapping(installedItemMapping)
+		err = mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
 			log.Printf(
 				"DeleteInstalledItemMappingError (%s): %s",

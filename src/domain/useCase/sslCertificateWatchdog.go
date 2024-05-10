@@ -30,9 +30,9 @@ func NewSslCertificateWatchdog(
 }
 
 func (uc SslCertificateWatchdog) Execute() {
-	sslPairs, err := uc.sslQueryRepo.GetSslPairs()
+	sslPairs, err := uc.sslQueryRepo.Read()
 	if err != nil {
-		log.Printf("FailedToGetSslPairs: %s", err.Error())
+		log.Printf("FailedToReadSslPairs: %s", err.Error())
 		return
 	}
 
