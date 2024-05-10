@@ -27,8 +27,8 @@ func NewSslController(
 	}
 }
 
-// Read	 godoc
-// @Summary      Read
+// ReadSslPairs	 godoc
+// @Summary      ReadSslPairs
 // @Description  List ssl pairs.
 // @Tags         ssl
 // @Accept       json
@@ -70,8 +70,8 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 	return vhosts
 }
 
-// Create    	 godoc
-// @Summary      Create
+// CreateSslPair    	 godoc
+// @Summary      CreateSslPair
 // @Description  Create a new ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -120,8 +120,8 @@ func (controller *SslController) Create(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
-// Delete	 godoc
-// @Summary      Delete
+// DeleteSslPair	 godoc
+// @Summary      DeleteSslPair
 // @Description  Delete a ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -171,8 +171,8 @@ func (controller *SslController) SslCertificateWatchdog() {
 	}
 }
 
-// DeleteVhosts    	 godoc
-// @Summary      DeleteVhosts
+// DeleteSslPairVhosts    	 godoc
+// @Summary      DeleteSslPairVhosts
 // @Description  Delete vhosts from a ssl pair.
 // @Tags         ssl
 // @Accept       json

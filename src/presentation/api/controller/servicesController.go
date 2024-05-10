@@ -26,8 +26,8 @@ func NewServicesController(
 	}
 }
 
-// Read	 godoc
-// @Summary      Read
+// ReadServices	 godoc
+// @Summary      ReadServices
 // @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
@@ -45,8 +45,8 @@ func (controller *ServicesController) Read(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
 }
 
-// ReadInstallables	 godoc
-// @Summary      ReadInstallables
+// ReadInstallableServices	 godoc
+// @Summary      ReadInstallableServices
 // @Description  List installable services.
 // @Tags         services
 // @Security     Bearer
@@ -83,8 +83,8 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	return svcPortBindings
 }
 
-// CreateInstallable godoc
-// @Summary      CreateInstallable
+// CreateInstallableService godoc
+// @Summary      CreateInstallableService
 // @Description  Install a new installable service.
 // @Tags         services
 // @Accept       json
@@ -167,8 +167,8 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "InstallableServiceCreated")
 }
 
-// CreateCustom godoc
-// @Summary      CreateCustom
+// CreateCustomService godoc
+// @Summary      CreateCustomService
 // @Description  Install a new custom service.
 // @Tags         services
 // @Accept       json
@@ -246,8 +246,8 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "CustomServiceCreated")
 }
 
-// Update godoc
-// @Summary      Update
+// UpdateService godoc
+// @Summary      UpdateService
 // @Description  Update service details.
 // @Tags         services
 // @Accept       json
@@ -340,8 +340,8 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "ServiceUpdated")
 }
 
-// Delete godoc
-// @Summary      Delete
+// DeleteService godoc
+// @Summary      DeleteService
 // @Description  Delete/Uninstall a service.
 // @Tags         services
 // @Accept       json

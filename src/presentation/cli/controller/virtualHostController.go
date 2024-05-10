@@ -28,7 +28,7 @@ func NewVirtualHostController(
 func (controller *VirtualHostController) Get() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Get",
+		Short: "GetVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostsList, err := useCase.GetVirtualHosts(vhostQueryRepo)
@@ -50,7 +50,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create",
+		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -104,7 +104,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "Delete",
+		Short: "DeleteVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -138,7 +138,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 func (controller *VirtualHostController) GetWithMappings() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "GetWithMappings",
+		Short: "GetVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
 				controller.persistentDbSvc,
@@ -168,7 +168,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "CreateMapping",
+		Short: "CreateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 			path := valueObject.NewMappingPathPanic(pathStr)
@@ -250,7 +250,7 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "DeleteMapping",
+		Short: "DeleteVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
 

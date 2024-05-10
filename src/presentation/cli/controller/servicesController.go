@@ -27,7 +27,7 @@ func NewServicesController(
 func (controller *ServicesController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Get",
+		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
@@ -45,7 +45,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 func (controller *ServicesController) ReadInstallables() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-installables",
-		Short: "GetInstallables",
+		Short: "GetInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
@@ -69,7 +69,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create-installable",
-		Short: "CreateInstallable",
+		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
@@ -151,7 +151,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create-custom",
-		Short: "CreateCustom",
+		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 			svcType := valueObject.NewServiceTypePanic(typeStr)
@@ -234,7 +234,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update",
+		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
@@ -325,7 +325,7 @@ func (controller *ServicesController) Delete() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "Delete",
+		Short: "DeleteService",
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 

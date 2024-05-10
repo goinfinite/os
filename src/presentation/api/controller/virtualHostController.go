@@ -27,8 +27,8 @@ func NewVirtualHostController(
 	}
 }
 
-// Get	 godoc
-// @Summary      Get
+// GetVirtualHosts	 godoc
+// @Summary      GetVirtualHosts
 // @Description  List virtual hosts.
 // @Tags         vhosts
 // @Security     Bearer
@@ -46,8 +46,8 @@ func (controller *VirtualHostController) Get(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
 
-// Create    godoc
-// @Summary      Create
+// CreateVirtualHost    godoc
+// @Summary      CreateVirtualHost
 // @Description  Create a new vhost.
 // @Tags         vhosts
 // @Accept       json
@@ -99,8 +99,8 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "VirtualHostCreated")
 }
 
-// Delete godoc
-// @Summary      Delete
+// DeleteVirtualHost godoc
+// @Summary      DeleteVirtualHost
 // @Description  Delete a vhost.
 // @Tags         vhosts
 // @Accept       json
@@ -133,8 +133,8 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "VirtualHostDeleted")
 }
 
-// GetWithMappings	 godoc
-// @Summary      GetWithMappings
+// GetVirtualHostsWithMappings	 godoc
+// @Summary      GetVirtualHostsWithMappings
 // @Description  List virtual hosts with mappings.
 // @Tags         vhosts
 // @Security     Bearer
@@ -155,8 +155,8 @@ func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsWithMappings)
 }
 
-// CreateMapping godoc
-// @Summary      CreateMapping
+// CreateVirtualHostMapping godoc
+// @Summary      CreateVirtualHostMapping
 // @Description  Create a new vhost mapping.
 // @Tags         vhosts
 // @Accept       json
@@ -229,8 +229,8 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingCreated")
 }
 
-// DeleteMapping godoc
-// @Summary      DeleteMapping
+// DeleteVirtualHostMapping godoc
+// @Summary      DeleteVirtualHostMapping
 // @Description  Delete a vhost mapping.
 // @Tags         vhosts
 // @Accept       json

@@ -28,7 +28,7 @@ func NewSslController(
 func (controller *SslController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Get",
+		Short: "GetSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := sslInfra.SslQueryRepo{}
 			sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
@@ -50,7 +50,7 @@ func (controller *SslController) Create() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create",
+		Short: "CreateSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {

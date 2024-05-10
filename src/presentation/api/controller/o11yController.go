@@ -22,8 +22,8 @@ func NewO11yController(
 	}
 }
 
-// ReadOverview  godoc
-// @Summary      ReadOverview
+// O11yOverview  godoc
+// @Summary      O11yOverview
 // @Description  Show system information and resource usage.
 // @Tags         o11y
 // @Accept       json
