@@ -78,7 +78,8 @@ func CreateMapping(
 
 		service, err := svcsQueryRepo.GetByName(svcName)
 		if err != nil {
-			return err
+			log.Printf("GetServiceByNameError: %s", err.Error())
+			return errors.New("GetServiceByNameInfraError")
 		}
 
 		if len(service.PortBindings) == 0 {
