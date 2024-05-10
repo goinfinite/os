@@ -25,7 +25,7 @@ func NewSslController(
 	}
 }
 
-func (controller SslController) Read() *cobra.Command {
+func (controller *SslController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Get",
@@ -43,7 +43,7 @@ func (controller SslController) Read() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) Create() *cobra.Command {
+func (controller *SslController) Create() *cobra.Command {
 	var virtualHostsSlice []string
 	var certificateFilePathStr string
 	var keyFilePathStr string
@@ -102,7 +102,7 @@ func (controller SslController) Create() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) Delete() *cobra.Command {
+func (controller *SslController) Delete() *cobra.Command {
 	var sslPairIdStr string
 
 	cmd := &cobra.Command{
@@ -132,7 +132,7 @@ func (controller SslController) Delete() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) DeleteVhosts() *cobra.Command {
+func (controller *SslController) DeleteVhosts() *cobra.Command {
 	var sslPairIdStr string
 	var virtualHostsSlice []string
 
