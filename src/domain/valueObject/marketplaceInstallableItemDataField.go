@@ -1,26 +1,26 @@
 package valueObject
 
 type MarketplaceInstallableItemDataField struct {
-	Key   DataFieldKey   `json:"key"`
+	Name  DataFieldName  `json:"name"`
 	Value DataFieldValue `json:"value"`
 }
 
 func NewMarketplaceInstallableItemDataField(
-	key DataFieldKey,
+	name DataFieldName,
 	value DataFieldValue,
 ) (MarketplaceInstallableItemDataField, error) {
 	return MarketplaceInstallableItemDataField{
-		Key:   key,
+		Name:  name,
 		Value: value,
 	}, nil
 }
 
 func NewMarketplaceInstallableItemDataFieldPanic(
-	key DataFieldKey,
+	name DataFieldName,
 	value DataFieldValue,
 ) MarketplaceInstallableItemDataField {
 	marketplaceInstallableItemDataField, err := NewMarketplaceInstallableItemDataField(
-		key,
+		name,
 		value,
 	)
 	if err != nil {

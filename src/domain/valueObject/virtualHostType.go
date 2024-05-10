@@ -2,9 +2,8 @@ package valueObject
 
 import (
 	"errors"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type VirtualHostType string
