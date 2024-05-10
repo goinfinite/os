@@ -6,6 +6,7 @@ type globalConfigs struct {
 	PrimaryPublicDir                 string
 	VirtualHostsConfDir              string
 	MappingsConfDir                  string
+	PublicIpTransientKey             string
 }
 
 var GlobalConfigs = globalConfigs{
@@ -14,4 +15,5 @@ var GlobalConfigs = globalConfigs{
 	PrimaryPublicDir:                 "/app/html",
 	VirtualHostsConfDir:              "/app/conf/nginx",
 	MappingsConfDir:                  "/app/conf/nginx/mapping",
+	PublicIpTransientKey:             "PublicIp",
 }
