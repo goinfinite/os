@@ -13,7 +13,7 @@ func DeleteSslPairVhosts(
 	sslCmdRepo repository.SslCmdRepo,
 	dto dto.DeleteSslPairVhosts,
 ) error {
-	_, err := sslQueryRepo.GetSslPairById(dto.SslPairId)
+	_, err := sslQueryRepo.ReadById(dto.SslPairId)
 	if err != nil {
 		return errors.New("SslPairNotFound")
 	}

@@ -13,7 +13,7 @@ func DeleteSslPair(
 	sslCmdRepo repository.SslCmdRepo,
 	sslId valueObject.SslId,
 ) error {
-	_, err := sslQueryRepo.GetSslPairById(sslId)
+	_, err := sslQueryRepo.ReadById(sslId)
 	if err != nil {
 		log.Printf("SslPairNotFound: %s", err)
 		return errors.New("SslPairNotFound")

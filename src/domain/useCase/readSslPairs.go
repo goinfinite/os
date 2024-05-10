@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetSslPairs(
+func ReadSslPairs(
 	sslQueryRepo repository.SslQueryRepo,
 ) ([]entity.SslPair, error) {
-	return sslQueryRepo.GetSslPairs()
+	return sslQueryRepo.Read()
 }

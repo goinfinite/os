@@ -27,7 +27,7 @@ func NewVirtualHostController(
 
 func (controller *VirtualHostController) Get() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "list",
 		Short: "Get",
 		Run: func(cmd *cobra.Command, args []string) {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -137,7 +137,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 
 func (controller *VirtualHostController) GetWithMappings() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "list",
 		Short: "GetWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(

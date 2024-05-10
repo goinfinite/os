@@ -133,10 +133,10 @@ func (router Router) sslRoutes(baseRoute *echo.Group) {
 		router.persistentDbSvc,
 	)
 
-	sslGroup.GET("/", sslController.GetSslPairs)
-	sslGroup.POST("/", sslController.CreateSslPair)
-	sslGroup.DELETE("/:sslPairId/", sslController.DeleteSslPair)
-	sslGroup.PUT("/vhost/", sslController.DeleteSslPairVhosts)
+	sslGroup.GET("/", sslController.Read)
+	sslGroup.POST("/", sslController.Create)
+	sslGroup.DELETE("/:sslPairId/", sslController.Delete)
+	sslGroup.PUT("/vhost/", sslController.DeleteVhosts)
 	go sslController.SslCertificateWatchdog()
 }
 

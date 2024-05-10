@@ -25,13 +25,13 @@ func NewSslController(
 	}
 }
 
-func (controller SslController) GetSslPairs() *cobra.Command {
+func (controller SslController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "GetSslPairs",
+		Short: "Get",
 		Run: func(cmd *cobra.Command, args []string) {
 			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
+			sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -43,14 +43,14 @@ func (controller SslController) GetSslPairs() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) CreateSslPair() *cobra.Command {
+func (controller SslController) Create() *cobra.Command {
 	var virtualHostsSlice []string
 	var certificateFilePathStr string
 	var keyFilePathStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "CreateNewSslPair",
+		Short: "Create",
 		Run: func(cmd *cobra.Command, args []string) {
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {
@@ -102,7 +102,7 @@ func (controller SslController) CreateSslPair() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) DeleteSslPair() *cobra.Command {
+func (controller SslController) Delete() *cobra.Command {
 	var sslPairIdStr string
 
 	cmd := &cobra.Command{
@@ -132,7 +132,7 @@ func (controller SslController) DeleteSslPair() *cobra.Command {
 	return cmd
 }
 
-func (controller SslController) DeleteSslPairVhosts() *cobra.Command {
+func (controller SslController) DeleteVhosts() *cobra.Command {
 	var sslPairIdStr string
 	var virtualHostsSlice []string
 

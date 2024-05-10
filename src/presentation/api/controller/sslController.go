@@ -27,8 +27,8 @@ func NewSslController(
 	}
 }
 
-// GetSslPairs	 godoc
-// @Summary      GetSslPair
+// Read	 godoc
+// @Summary      Read
 // @Description  List ssl pairs.
 // @Tags         ssl
 // @Accept       json
@@ -36,9 +36,9 @@ func NewSslController(
 // @Security     Bearer
 // @Success      200 {array} entity.SslPair
 // @Router       /ssl/ [get]
-func (controller SslController) GetSslPairs(c echo.Context) error {
+func (controller *SslController) Read(c echo.Context) error {
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslPairsList, err := useCase.GetSslPairs(sslQueryRepo)
+	sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -70,8 +70,8 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 	return vhosts
 }
 
-// CreateSsl    	 godoc
-// @Summary      CreateNewSslPair
+// Create    	 godoc
+// @Summary      Create
 // @Description  Create a new ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -80,7 +80,7 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /ssl/ [post]
-func (controller SslController) CreateSslPair(c echo.Context) error {
+func (controller *SslController) Create(c echo.Context) error {
 	requiredParams := []string{"virtualHosts", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -120,8 +120,8 @@ func (controller SslController) CreateSslPair(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
 }
 
-// DeleteSsl	 godoc
-// @Summary      DeleteSslPair
+// Delete	 godoc
+// @Summary      Delete
 // @Description  Delete a ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -130,7 +130,7 @@ func (controller SslController) CreateSslPair(c echo.Context) error {
 // @Param        sslPairId 	  path   string  true  "SslPairId"
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /ssl/{sslPairId}/ [delete]
-func (controller SslController) DeleteSslPair(c echo.Context) error {
+func (controller *SslController) Delete(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
@@ -148,7 +148,7 @@ func (controller SslController) DeleteSslPair(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
 }
 
-func (controller SslController) SslCertificateWatchdog() {
+func (controller *SslController) SslCertificateWatchdog() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
 	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
@@ -171,8 +171,8 @@ func (controller SslController) SslCertificateWatchdog() {
 	}
 }
 
-// DeleteSslPairVhosts    	 godoc
-// @Summary      DeleteSslPairVhosts
+// DeleteVhosts    	 godoc
+// @Summary      DeleteVhosts
 // @Description  Delete vhosts from a ssl pair.
 // @Tags         ssl
 // @Accept       json
@@ -181,7 +181,7 @@ func (controller SslController) SslCertificateWatchdog() {
 // @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /ssl/vhost/ [put]
-func (controller SslController) DeleteSslPairVhosts(c echo.Context) error {
+func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
