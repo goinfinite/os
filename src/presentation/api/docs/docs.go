@@ -932,7 +932,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceCatalog",
+                "summary": "ReadCatalog",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -956,7 +956,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "InstallMarketplaceCatalogItem",
+                "summary": "InstallCatalogItem",
                 "parameters": [
                     {
                         "description": "InstallMarketplaceCatalogItem (directory is optional)",
@@ -995,7 +995,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceInstalledItems",
+                "summary": "ReadInstalledItems",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1026,7 +1026,7 @@ const docTemplate = `{
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "DeleteMarketplaceInstalledItem",
+                "summary": "DeleteInstalledItem",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1075,7 +1075,7 @@ const docTemplate = `{
                 "tags": [
                     "o11y"
                 ],
-                "summary": "O11yOverview",
+                "summary": "ReadOverview",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1184,7 +1184,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "GetServices",
+                "summary": "ReadServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1291,7 +1291,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "GetInstallableServices",
+                "summary": "ReadInstallableServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1396,7 +1396,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "GetSslPair",
+                "summary": "Read",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1425,7 +1425,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "CreateNewSslPair",
+                "summary": "Create",
                 "parameters": [
                     {
                         "description": "NewSslPair",
@@ -1464,7 +1464,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "DeleteSslPairVhosts",
+                "summary": "DeleteVhosts",
                 "parameters": [
                     {
                         "description": "SslPairVhostsDeleted",
@@ -1503,7 +1503,7 @@ const docTemplate = `{
                 "tags": [
                     "ssl"
                 ],
-                "summary": "DeleteSslPair",
+                "summary": "Delete",
                 "parameters": [
                     {
                         "type": "string",
@@ -1540,7 +1540,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetVirtualHosts",
+                "summary": "Get",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1569,7 +1569,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateNewVirtualHost",
+                "summary": "Create",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
@@ -1608,7 +1608,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetVirtualHostsWithMappings",
+                "summary": "GetWithMappings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1659,7 +1659,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/mapping/{hostname}/{mappingId}/": {
+        "/vhosts/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1678,13 +1678,6 @@ const docTemplate = `{
                 ],
                 "summary": "DeleteMapping",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "MappingId",
@@ -1720,7 +1713,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "DeleteVirtualHost",
+                "summary": "Delete",
                 "parameters": [
                     {
                         "type": "string",
@@ -1890,16 +1883,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
@@ -2289,16 +2276,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
@@ -2333,13 +2314,13 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "screenshotUrls": {
+                "requiredServiceNames": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "services": {
+                "screenshotUrls": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2391,6 +2372,9 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "integer"
+                },
+                "urlPath": {
+                    "type": "string"
                 }
             }
         },
@@ -2686,16 +2670,10 @@ const docTemplate = `{
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
