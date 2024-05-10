@@ -13,17 +13,6 @@ import (
 type VirtualHostCmdRepo struct {
 }
 
-func (repo VirtualHostCmdRepo) ReloadWebServer() error {
-	_, err := infraHelper.RunCmdWithSubShell(
-		"nginx -t && nginx -s reload && sleep 2",
-	)
-	if err != nil {
-		return errors.New("NginxReloadFailed: " + err.Error())
-	}
-
-	return nil
-}
-
 func (repo VirtualHostCmdRepo) getAliasConfigFile(
 	parentHostname valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
@@ -60,7 +49,7 @@ func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) erro
 
 	// TODO: Regenerate cert for primary domain to include new alias
 
-	return repo.ReloadWebServer()
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
@@ -137,7 +126,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
-	return repo.ReloadWebServer()
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
@@ -159,7 +148,7 @@ func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
 		return errors.New("DeleteAliasFailed")
 	}
 
-	return repo.ReloadWebServer()
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
@@ -181,5 +170,5 @@ func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 		return errors.New("DeleteVirtualHostFailed")
 	}
 
-	return repo.ReloadWebServer()
+	return infraHelper.ReloadWebServer()
 }

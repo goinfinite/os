@@ -19,19 +19,16 @@ import (
 type MappingCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	mappingQueryRepo *MappingQueryRepo
-	vhostCmdRepo     vhostInfra.VirtualHostCmdRepo
 }
 
 func NewMappingCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MappingCmdRepo {
 	mappingQueryRepo := NewMappingQueryRepo(persistentDbSvc)
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	return &MappingCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
 		mappingQueryRepo: mappingQueryRepo,
-		vhostCmdRepo:     vhostCmdRepo,
 	}
 }
 
@@ -393,7 +390,7 @@ func (repo *MappingCmdRepo) Create(
 		log.Printf("NewRecreateMappingFileFunctionError: %s", err.Error())
 	}
 
-	return mappingId, repo.vhostCmdRepo.ReloadWebServer()
+	return mappingId, infraHelper.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
@@ -415,7 +412,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 		return err
 	}
 
-	return repo.vhostCmdRepo.ReloadWebServer()
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) DeleteAuto(
