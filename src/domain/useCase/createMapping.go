@@ -44,7 +44,7 @@ func CreateMapping(
 		targetValuetr := createMapping.TargetValue.String()
 		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValuetr)
 		if err != nil {
-			return errors.New(err.Error())
+			return err
 		}
 
 		createMapping.TargetHttpResponseCode = &httpRespondeCode
