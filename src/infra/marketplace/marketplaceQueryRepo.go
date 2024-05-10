@@ -481,7 +481,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	), nil
 }
 
-func (repo *MarketplaceQueryRepo) GetCatalogItems() (
+func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -531,12 +531,12 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 	return catalogItems, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetCatalogItemById(
+func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	catalogId valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
-	catalogItems, err := repo.GetCatalogItems()
+	catalogItems, err := repo.ReadCatalogItems()
 	if err != nil {
 		return catalogItem, err
 	}
@@ -552,54 +552,54 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	return catalogItem, errors.New("CatalogItemNotFound")
 }
 
-func (repo *MarketplaceQueryRepo) GetInstalledItems() (
-	[]entity.MarketplaceInstalledItem, error,
+func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
+	entities []entity.MarketplaceInstalledItem, err error,
 ) {
-	installedItemEntities := []entity.MarketplaceInstalledItem{}
-
-	installedItemModels := []dbModel.MarketplaceInstalledItem{}
-	err := repo.persistentDbSvc.Handler.Model(&dbModel.MarketplaceInstalledItem{}).
+	models := []dbModel.MarketplaceInstalledItem{}
+	err = repo.persistentDbSvc.Handler.
+		Model(models).
 		Preload("Mappings").
-		Find(&installedItemModels).Error
+		Find(&models).Error
 	if err != nil {
-		return installedItemEntities, errors.New(
-			"DatabaseQueryMarketplaceInstalledItemsError",
-		)
+		return entities, errors.New("ReadDatabaseEntriesError")
 	}
 
-	for _, installedItemModel := range installedItemModels {
-		installedItemEntity, err := installedItemModel.ToEntity()
+	for _, installedItemModel := range models {
+		entity, err := installedItemModel.ToEntity()
 		if err != nil {
 			log.Printf("MarketplaceInstalledItemModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		installedItemEntities = append(
-			installedItemEntities,
-			installedItemEntity,
+		entities = append(
+			entities,
+			entity,
 		)
 	}
 
-	return installedItemEntities, nil
+	return entities, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetInstalledItemById(
+func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 	installedId valueObject.MarketplaceInstalledItemId,
-) (entity.MarketplaceInstalledItem, error) {
-	var installedItem entity.MarketplaceInstalledItem
+) (entity entity.MarketplaceInstalledItem, err error) {
+	query := dbModel.Mapping{
+		ID: uint(installedId.Get()),
+	}
 
-	installedItems, err := repo.GetInstalledItems()
+	var model dbModel.MarketplaceInstalledItem
+	err = repo.persistentDbSvc.Handler.
+		Model(query).
+		Preload("Mappings").
+		Find(&model).Error
 	if err != nil {
-		return installedItem, err
+		return entity, errors.New("ReadDatabaseEntryError")
 	}
 
-	for _, installedItem := range installedItems {
-		if installedItem.Id.Get() != installedId.Get() {
-			continue
-		}
-
-		return installedItem, nil
+	entity, err = model.ToEntity()
+	if err != nil {
+		return entity, errors.New("ModelToEntityError")
 	}
 
-	return installedItem, errors.New("InstalledItemNotFound")
+	return entity, nil
 }

@@ -50,10 +50,10 @@ func CreateMapping(
 		createMapping.TargetValue = nil
 	}
 
-	mappings, err := mappingQueryRepo.GetByHostname(createMapping.Hostname)
+	mappings, err := mappingQueryRepo.ReadByHostname(createMapping.Hostname)
 	if err != nil {
-		log.Printf("GetMappingsError: %s", err.Error())
-		return errors.New("GetMappingsInfraError")
+		log.Printf("ReadMappingsError: %s", err.Error())
+		return errors.New("ReadMappingsInfraError")
 	}
 
 	for _, mapping := range mappings {

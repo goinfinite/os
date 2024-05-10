@@ -8,13 +8,13 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetVirtualHostsWithMappings(
+func ReadVirtualHostsWithMappings(
 	mappingQueryRepo repository.MappingQueryRepo,
 ) ([]dto.VirtualHostWithMappings, error) {
-	vhostsWithMappings, err := mappingQueryRepo.GetWithMappings()
+	vhostsWithMappings, err := mappingQueryRepo.ReadWithMappings()
 	if err != nil {
-		log.Printf("GetWithMappingsError: %s", err.Error())
-		return vhostsWithMappings, errors.New("GetWithMappingsInfraError")
+		log.Printf("ReadWithMappingsError: %s", err.Error())
+		return vhostsWithMappings, errors.New("ReadWithMappingsInfraError")
 	}
 
 	return vhostsWithMappings, nil

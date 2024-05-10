@@ -22,8 +22,8 @@ func NewO11yController(
 	}
 }
 
-// O11yOverview  godoc
-// @Summary      O11yOverview
+// ReadOverview  godoc
+// @Summary      ReadOverview
 // @Description  Show system information and resource usage.
 // @Tags         o11y
 // @Accept       json
@@ -31,7 +31,7 @@ func NewO11yController(
 // @Security     Bearer
 // @Success      200 {object} entity.O11yOverview
 // @Router       /o11y/overview/ [get]
-func (controller O11yController) GetO11yOverview(c echo.Context) error {
+func (controller *O11yController) ReadOverview(c echo.Context) error {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(controller.transientDbSvc)
 	o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
 	if err != nil {

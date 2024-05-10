@@ -25,10 +25,10 @@ func NewVirtualHostController(
 	}
 }
 
-func (controller VirtualHostController) GetVirtualHosts() *cobra.Command {
+func (controller *VirtualHostController) Get() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "GetVirtualHosts",
+		Short: "Get",
 		Run: func(cmd *cobra.Command, args []string) {
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 			vhostsList, err := useCase.GetVirtualHosts(vhostQueryRepo)
@@ -43,14 +43,14 @@ func (controller VirtualHostController) GetVirtualHosts() *cobra.Command {
 	return cmd
 }
 
-func (controller VirtualHostController) CreateVirtualHost() *cobra.Command {
+func (controller *VirtualHostController) Create() *cobra.Command {
 	var hostnameStr string
 	var typeStr string
 	var parentHostnameStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "CreateVirtualHost",
+		Short: "Create",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -99,12 +99,12 @@ func (controller VirtualHostController) CreateVirtualHost() *cobra.Command {
 	return cmd
 }
 
-func (controller VirtualHostController) DeleteVirtualHost() *cobra.Command {
+func (controller *VirtualHostController) Delete() *cobra.Command {
 	var hostnameStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "DeleteVirtualHost",
+		Short: "Delete",
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
@@ -135,16 +135,16 @@ func (controller VirtualHostController) DeleteVirtualHost() *cobra.Command {
 	return cmd
 }
 
-func (controller VirtualHostController) GetVirtualHostsWithMappings() *cobra.Command {
+func (controller *VirtualHostController) GetWithMappings() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "GetVirtualHostsWithMappings",
+		Short: "GetWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
 				controller.persistentDbSvc,
 			)
 
-			vhostsWithMappings, err := useCase.GetVirtualHostsWithMappings(
+			vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
 				mappingQueryRepo,
 			)
 			if err != nil {
@@ -158,7 +158,7 @@ func (controller VirtualHostController) GetVirtualHostsWithMappings() *cobra.Com
 	return cmd
 }
 
-func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Command {
+func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	var hostnameStr string
 	var pathStr string
 	var matchPatternStr string
@@ -245,7 +245,7 @@ func (controller VirtualHostController) CreateVirtualHostMapping() *cobra.Comman
 	return cmd
 }
 
-func (controller VirtualHostController) DeleteVirtualHostMapping() *cobra.Command {
+func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 	var mappingIdUint uint
 
 	cmd := &cobra.Command{

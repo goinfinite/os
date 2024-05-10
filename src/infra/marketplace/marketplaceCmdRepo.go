@@ -351,7 +351,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.marketplaceQueryRepo.GetCatalogItemById(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(
 		installDto.Id,
 	)
 	if err != nil {
@@ -432,7 +432,7 @@ func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
 ) {
 	servicesInUse := []valueObject.ServiceName{}
 
-	installedItems, err := repo.marketplaceQueryRepo.GetInstalledItems()
+	installedItems, err := repo.marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
 		return servicesInUse, err
 	}
@@ -482,7 +482,7 @@ func (repo *MarketplaceCmdRepo) uninstallServices(
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.GetInstalledItemById(
+	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
 		deleteDto.InstalledId,
 	)
 	if err != nil {

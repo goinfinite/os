@@ -195,9 +195,9 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
-	mappings, err := mappingQueryRepo.GetByHostname(firstVhost)
+	mappings, err := mappingQueryRepo.ReadByHostname(firstVhost)
 	if err != nil {
-		return errors.New("GetVhostMappingsError: " + err.Error())
+		return errors.New("ReadVhostMappingsError: " + err.Error())
 	}
 
 	if len(mappings) == 0 {

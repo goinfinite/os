@@ -58,8 +58,10 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	)
 }
 
-func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, error) {
-	svcMappingConfig := ""
+func (repo *MappingCmdRepo) getServiceMappingConfig(
+	svcNameStr string,
+) (svcMappingConfig string, err error) {
+	svcMappingConfig = ""
 
 	serviceName, err := valueObject.NewServiceName(svcNameStr)
 	if err != nil {
@@ -275,7 +277,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(svcNameStr string) (string, 
 func (repo *MappingCmdRepo) parseLocationUri(
 	matchPattern valueObject.MappingMatchPattern,
 	path valueObject.MappingPath,
-) string {
+) (locationUri string) {
 	matchPatternStr := matchPattern.String()
 
 	modifier := ""
@@ -291,7 +293,7 @@ func (repo *MappingCmdRepo) parseLocationUri(
 		pathStr += "$"
 	}
 
-	locationUri := pathStr
+	locationUri = pathStr
 	if modifier != "" {
 		locationUri = modifier + " " + pathStr
 	}
@@ -302,7 +304,7 @@ func (repo *MappingCmdRepo) parseLocationUri(
 func (repo *MappingCmdRepo) recreateMappingFile(
 	mappingHostname valueObject.Fqdn,
 ) error {
-	mappings, err := repo.mappingQueryRepo.GetByHostname(mappingHostname)
+	mappings, err := repo.mappingQueryRepo.ReadByHostname(mappingHostname)
 	if err != nil {
 		return err
 	}
@@ -362,9 +364,7 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 
 func (repo *MappingCmdRepo) Create(
 	createDto dto.CreateMapping,
-) (valueObject.MappingId, error) {
-	var mappingId valueObject.MappingId
-
+) (mappingId valueObject.MappingId, err error) {
 	isServiceMapping := createDto.TargetType.String() == "service"
 	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php"
 	if isPhpServiceMapping {
@@ -380,7 +380,7 @@ func (repo *MappingCmdRepo) Create(
 	if createResult.Error != nil {
 		return mappingId, createResult.Error
 	}
-	mappingId, err := valueObject.NewMappingId(mappingModel.ID)
+	mappingId, err = valueObject.NewMappingId(mappingModel.ID)
 	if err != nil {
 		return mappingId, err
 	}
@@ -394,7 +394,7 @@ func (repo *MappingCmdRepo) Create(
 }
 
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
-	mapping, err := repo.mappingQueryRepo.GetById(mappingId)
+	mapping, err := repo.mappingQueryRepo.ReadById(mappingId)
 	if err != nil {
 		return err
 	}
@@ -423,7 +423,7 @@ func (repo *MappingCmdRepo) DeleteAuto(
 		return errors.New("PrimaryVhostNotFound")
 	}
 
-	primaryVhostMappings, err := repo.mappingQueryRepo.GetByHostname(primaryVhost)
+	primaryVhostMappings, err := repo.mappingQueryRepo.ReadByHostname(primaryVhost)
 	if err != nil {
 		return errors.New("GetPrimaryVhostMappingsError: " + err.Error())
 	}
@@ -451,7 +451,7 @@ func (repo *MappingCmdRepo) DeleteAuto(
 func (repo *MappingCmdRepo) RecreateByServiceName(
 	serviceName valueObject.ServiceName,
 ) error {
-	mappings, err := repo.mappingQueryRepo.GetByServiceName(serviceName)
+	mappings, err := repo.mappingQueryRepo.ReadByServiceName(serviceName)
 	if err != nil {
 		return err
 	}

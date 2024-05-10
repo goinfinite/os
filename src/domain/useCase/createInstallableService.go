@@ -60,12 +60,12 @@ func CreateInstallableService(
 	}
 
 	primaryVhost := vhosts[0]
-	primaryVhostMappings, err := mappingQueryRepo.GetByHostname(
+	primaryVhostMappings, err := mappingQueryRepo.ReadByHostname(
 		primaryVhost.Hostname,
 	)
 	if err != nil {
-		log.Printf("GetPrimaryVhostMappingsError: %s", err.Error())
-		return errors.New("GetPrimaryVhostMappingsInfraError")
+		log.Printf("ReadPrimaryVhostMappingsError: %s", err.Error())
+		return errors.New("ReadPrimaryVhostMappingsInfraError")
 	}
 	shouldCreateFirstMapping := len(primaryVhostMappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {

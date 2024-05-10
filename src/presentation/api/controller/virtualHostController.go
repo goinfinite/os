@@ -27,8 +27,8 @@ func NewVirtualHostController(
 	}
 }
 
-// GetVirtualHosts	 godoc
-// @Summary      GetVirtualHosts
+// Get	 godoc
+// @Summary      Get
 // @Description  List virtual hosts.
 // @Tags         vhosts
 // @Security     Bearer
@@ -36,7 +36,7 @@ func NewVirtualHostController(
 // @Produce      json
 // @Success      200 {array} entity.VirtualHost
 // @Router       /vhosts/ [get]
-func (controller VirtualHostController) GetVirtualHosts(c echo.Context) error {
+func (controller *VirtualHostController) Get(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
 	if err != nil {
@@ -46,8 +46,8 @@ func (controller VirtualHostController) GetVirtualHosts(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
 }
 
-// CreateVirtualHost    godoc
-// @Summary      CreateNewVirtualHost
+// Create    godoc
+// @Summary      Create
 // @Description  Create a new vhost.
 // @Tags         vhosts
 // @Accept       json
@@ -56,7 +56,7 @@ func (controller VirtualHostController) GetVirtualHosts(c echo.Context) error {
 // @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
-func (controller VirtualHostController) CreateVirtualHost(c echo.Context) error {
+func (controller *VirtualHostController) Create(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -99,8 +99,8 @@ func (controller VirtualHostController) CreateVirtualHost(c echo.Context) error 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "VirtualHostCreated")
 }
 
-// DeleteVirtualHost godoc
-// @Summary      DeleteVirtualHost
+// Delete godoc
+// @Summary      Delete
 // @Description  Delete a vhost.
 // @Tags         vhosts
 // @Accept       json
@@ -109,7 +109,7 @@ func (controller VirtualHostController) CreateVirtualHost(c echo.Context) error 
 // @Param        hostname path string true "Hostname"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /vhosts/{hostname}/ [delete]
-func (controller VirtualHostController) DeleteVirtualHost(c echo.Context) error {
+func (controller *VirtualHostController) Delete(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -133,8 +133,8 @@ func (controller VirtualHostController) DeleteVirtualHost(c echo.Context) error 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "VirtualHostDeleted")
 }
 
-// GetVirtualHostsWithMappings	 godoc
-// @Summary      GetVirtualHostsWithMappings
+// GetWithMappings	 godoc
+// @Summary      GetWithMappings
 // @Description  List virtual hosts with mappings.
 // @Tags         vhosts
 // @Security     Bearer
@@ -142,12 +142,10 @@ func (controller VirtualHostController) DeleteVirtualHost(c echo.Context) error 
 // @Produce      json
 // @Success      200 {array} dto.VirtualHostWithMappings
 // @Router       /vhosts/mapping/ [get]
-func (controller VirtualHostController) GetVirtualHostsWithMappings(
-	c echo.Context,
-) error {
+func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 
-	vhostsWithMappings, err := useCase.GetVirtualHostsWithMappings(
+	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
 		mappingQueryRepo,
 	)
 	if err != nil {
@@ -167,9 +165,7 @@ func (controller VirtualHostController) GetVirtualHostsWithMappings(
 // @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
-func (controller VirtualHostController) CreateVirtualHostMapping(
-	c echo.Context,
-) error {
+func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -233,7 +229,7 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingCreated")
 }
 
-// DeleteVirtualHost godoc
+// DeleteMapping godoc
 // @Summary      DeleteMapping
 // @Description  Delete a vhost mapping.
 // @Tags         vhosts
@@ -244,9 +240,7 @@ func (controller VirtualHostController) CreateVirtualHostMapping(
 // @Param        mappingId path uint true "MappingId"
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /vhosts/mapping/{mappingId}/ [delete]
-func (controller VirtualHostController) DeleteVirtualHostMapping(
-	c echo.Context,
-) error {
+func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)

@@ -24,80 +24,88 @@ func NewMappingQueryRepo(
 	}
 }
 
-func (repo *MappingQueryRepo) GetById(
+func (repo *MappingQueryRepo) ReadById(
 	id valueObject.MappingId,
-) (entity.Mapping, error) {
-	var mapping entity.Mapping
-
-	mappingModel := dbModel.Mapping{ID: uint(id.Get())}
-	err := repo.persistentDbSvc.Handler.Model(&mappingModel).
-		First(&mappingModel).Error
-	if err != nil {
-		return mapping, errors.New("MappingNotFound")
+) (entity entity.Mapping, err error) {
+	query := dbModel.Mapping{
+		ID: uint(id.Get()),
 	}
 
-	return mappingModel.ToEntity()
+	model := dbModel.Mapping{}
+	err = repo.persistentDbSvc.Handler.
+		Model(&query).
+		First(&model).Error
+	if err != nil {
+		return entity, errors.New("ReadDatabaseEntryError")
+	}
+
+	entity, err = model.ToEntity()
+	if err != nil {
+		return entity, errors.New("ModelToEntityError")
+	}
+
+	return entity, nil
 }
 
-func (repo *MappingQueryRepo) GetByHostname(
+func (repo *MappingQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
-) ([]entity.Mapping, error) {
-	mappingEntities := []entity.Mapping{}
-
-	mappingModels := []dbModel.Mapping{}
-	err := repo.persistentDbSvc.Handler.Model(
-		dbModel.Mapping{Hostname: hostname.String()},
-	).Find(&mappingModels).Error
-	if err != nil {
-		return mappingEntities, errors.New("DbQueryMappingsError")
+) (entities []entity.Mapping, err error) {
+	query := dbModel.Mapping{
+		Hostname: hostname.String(),
 	}
 
-	for _, mappingModel := range mappingModels {
-		mappingEntity, err := mappingModel.ToEntity()
+	models := []dbModel.Mapping{}
+	err = repo.persistentDbSvc.Handler.
+		Model(query).
+		Find(&models).Error
+	if err != nil {
+		return entities, errors.New("ReadDatabaseEntriesError")
+	}
+
+	for _, model := range models {
+		entity, err := model.ToEntity()
 		if err != nil {
-			log.Printf("MappingModelToEntityError: %s", err.Error())
+			log.Printf("ModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		mappingEntities = append(mappingEntities, mappingEntity)
+		entities = append(entities, entity)
 	}
 
-	return mappingEntities, nil
+	return entities, nil
 }
 
-func (repo *MappingQueryRepo) GetByServiceName(
+func (repo *MappingQueryRepo) ReadByServiceName(
 	serviceName valueObject.ServiceName,
-) ([]entity.Mapping, error) {
-	mappingEntities := []entity.Mapping{}
-
-	mappingModels := []dbModel.Mapping{}
-
+) (entities []entity.Mapping, err error) {
 	svcNameStr := serviceName.String()
-	svcNamePtr := &svcNameStr
-	err := repo.persistentDbSvc.Handler.Model(
-		dbModel.Mapping{
-			TargetType:  "service",
-			TargetValue: svcNamePtr,
-		},
-	).Find(&mappingModels).Error
-	if err != nil {
-		return mappingEntities, errors.New("DbQueryMappingsError")
+	query := dbModel.Mapping{
+		TargetType:  "service",
+		TargetValue: &svcNameStr,
 	}
 
-	for _, mappingModel := range mappingModels {
-		mappingEntity, err := mappingModel.ToEntity()
+	models := []dbModel.Mapping{}
+	err = repo.persistentDbSvc.Handler.
+		Model(query).
+		Find(&models).Error
+	if err != nil {
+		return entities, errors.New("ReadDatabaseEntriesError")
+	}
+
+	for _, model := range models {
+		entity, err := model.ToEntity()
 		if err != nil {
-			log.Printf("MappingModelToEntityError: %s", err.Error())
+			log.Printf("ModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		mappingEntities = append(mappingEntities, mappingEntity)
+		entities = append(entities, entity)
 	}
 
-	return mappingEntities, nil
+	return entities, nil
 }
 
-func (repo *MappingQueryRepo) GetWithMappings() (
+func (repo *MappingQueryRepo) ReadWithMappings() (
 	[]dto.VirtualHostWithMappings, error,
 ) {
 	vhostsWithMappings := []dto.VirtualHostWithMappings{}
@@ -109,9 +117,9 @@ func (repo *MappingQueryRepo) GetWithMappings() (
 	}
 
 	for _, vhost := range vhosts {
-		mappings, err := repo.GetByHostname(vhost.Hostname)
+		mappings, err := repo.ReadByHostname(vhost.Hostname)
 		if err != nil {
-			log.Printf("[%s] GetMappingsError: %s", vhost.Hostname, err.Error())
+			log.Printf("[%s] ReadMappingsError: %s", vhost.Hostname, err.Error())
 			continue
 		}
 

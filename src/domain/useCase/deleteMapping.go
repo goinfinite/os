@@ -13,7 +13,7 @@ func DeleteMapping(
 	cmdRepo repository.MappingCmdRepo,
 	mappingId valueObject.MappingId,
 ) error {
-	mapping, err := queryRepo.GetById(mappingId)
+	mapping, err := queryRepo.ReadById(mappingId)
 	if err != nil {
 		return errors.New("MappingNotFound")
 	}

@@ -89,14 +89,14 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	)
 
 	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
-	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
+	marketplaceInstalledsGroup.GET("/", marketplaceController.ReadInstalledItems)
 	marketplaceInstalledsGroup.DELETE(
 		"/:installedId/",
 		marketplaceController.DeleteInstalledItem,
 	)
 
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
-	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalog)
+	marketplaceCatalogGroup.GET("/", marketplaceController.ReadCatalog)
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
 }
 
@@ -104,7 +104,7 @@ func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 
 	o11yController := apiController.NewO11yController(router.transientDbSvc)
-	o11yGroup.GET("/overview/", o11yController.GetO11yOverview)
+	o11yGroup.GET("/overview/", o11yController.ReadOverview)
 }
 
 func (router Router) runtimeRoutes(baseRoute *echo.Group) {
@@ -146,16 +146,16 @@ func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 		router.persistentDbSvc,
 	)
 
-	vhostsGroup.GET("/", vhostController.GetVirtualHosts)
-	vhostsGroup.POST("/", vhostController.CreateVirtualHost)
-	vhostsGroup.DELETE("/:hostname/", vhostController.DeleteVirtualHost)
+	vhostsGroup.GET("/", vhostController.Get)
+	vhostsGroup.POST("/", vhostController.Create)
+	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
 
 	mappingsGroup := vhostsGroup.Group("/mapping")
-	mappingsGroup.GET("/", vhostController.GetVirtualHostsWithMappings)
-	mappingsGroup.POST("/", vhostController.CreateVirtualHostMapping)
+	mappingsGroup.GET("/", vhostController.GetWithMappings)
+	mappingsGroup.POST("/", vhostController.CreateMapping)
 	mappingsGroup.DELETE(
 		"/:mappingId/",
-		vhostController.DeleteVirtualHostMapping,
+		vhostController.DeleteMapping,
 	)
 }
 

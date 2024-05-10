@@ -7,8 +7,8 @@ import (
 )
 
 type MappingQueryRepo interface {
-	GetById(id valueObject.MappingId) (entity.Mapping, error)
-	GetByHostname(hostname valueObject.Fqdn) ([]entity.Mapping, error)
-	GetByServiceName(serviceName valueObject.ServiceName) ([]entity.Mapping, error)
-	GetWithMappings() ([]dto.VirtualHostWithMappings, error)
+	ReadById(id valueObject.MappingId) (entity.Mapping, error)
+	ReadByHostname(hostname valueObject.Fqdn) ([]entity.Mapping, error)
+	ReadByServiceName(serviceName valueObject.ServiceName) ([]entity.Mapping, error)
+	ReadWithMappings() ([]dto.VirtualHostWithMappings, error)
 }

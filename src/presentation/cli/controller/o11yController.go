@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func GetO11yOverviewController(
+func ReadO11yOverviewController(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *cobra.Command {
 	cmd := &cobra.Command{
