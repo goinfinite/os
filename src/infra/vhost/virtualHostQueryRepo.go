@@ -13,9 +13,6 @@ import (
 	infraData "github.com/speedianet/os/src/infra/infraData"
 )
 
-var configurationsDir string = "/app/conf/nginx"
-var mappingsDir string = "/app/conf/nginx/mapping"
-
 type VirtualHostQueryRepo struct {
 }
 
@@ -111,7 +108,7 @@ func (repo VirtualHostQueryRepo) vhostsFactory(
 func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 	vhostsList := []entity.VirtualHost{}
 
-	configsDirHandler, err := os.Open(configurationsDir)
+	configsDirHandler, err := os.Open(infraData.GlobalConfigs.VirtualHostsConfDir)
 	if err != nil {
 		return vhostsList, errors.New("FailedToOpenConfDir: " + err.Error())
 	}
@@ -128,7 +125,7 @@ func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 			continue
 		}
 		filePath, err := valueObject.NewUnixFilePath(
-			configurationsDir + "/" + fileName,
+			infraData.GlobalConfigs.VirtualHostsConfDir + "/" + fileName,
 		)
 		if err != nil {
 			log.Println("InvalidVirtualHostFile: " + fileName)
@@ -187,5 +184,7 @@ func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 		mappingFileName = "primary.conf"
 	}
 
-	return valueObject.NewUnixFilePath(mappingsDir + "/" + mappingFileName)
+	return valueObject.NewUnixFilePath(
+		infraData.GlobalConfigs.MappingsConfDir + "/" + mappingFileName,
+	)
 }
