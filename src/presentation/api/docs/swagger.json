@@ -926,12 +926,15 @@
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceCatalog",
+                "summary": "ReadCatalog",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.MarketplaceCatalogItem"
+                            }
                         }
                     }
                 }
@@ -947,10 +950,10 @@
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "InstallMarketplaceCatalogItem",
+                "summary": "InstallCatalogItem",
                 "parameters": [
                     {
-                        "description": "InstallMarketplaceCatalogItem (installDirectory is optional)",
+                        "description": "InstallMarketplaceCatalogItem (directory is optional)",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
@@ -986,12 +989,15 @@
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "GetMarketplaceInstalledItems",
+                "summary": "ReadInstalledItems",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.MarketplaceInstalledItem"
+                            }
                         }
                     }
                 }
@@ -1014,7 +1020,7 @@
                 "tags": [
                     "marketplace"
                 ],
-                "summary": "DeleteMarketplaceInstalledItem",
+                "summary": "DeleteInstalledItem",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1024,12 +1030,16 @@
                         "required": true
                     },
                     {
+                        "type": "boolean",
                         "description": "ShouldUninstallServices",
                         "name": "shouldUninstallServices",
-                        "in": "body",
-                        "schema": {
-                            "type": "boolean"
-                        }
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "ShouldRemoveFiles",
+                        "name": "shouldRemoveFiles",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1168,7 +1178,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "GetServices",
+                "summary": "ReadServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1275,7 +1285,7 @@
                 "tags": [
                     "services"
                 ],
-                "summary": "GetInstallableServices",
+                "summary": "ReadInstallableServices",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1380,7 +1390,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "GetSslPair",
+                "summary": "ReadSslPairs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1389,43 +1399,6 @@
                             "items": {
                                 "$ref": "#/definitions/entity.SslPair"
                             }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete vhosts from a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSsslPairVhosts",
-                "parameters": [
-                    {
-                        "description": "SslPairVhostsDeleted",
-                        "name": "deleteSslPairVhostsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairVhostsRemoved",
-                        "schema": {
-                            "type": "object"
                         }
                     }
                 }
@@ -1446,7 +1419,7 @@
                 "tags": [
                     "ssl"
                 ],
-                "summary": "CreateNewSslPair",
+                "summary": "CreateSslPair",
                 "parameters": [
                     {
                         "description": "NewSslPair",
@@ -1461,6 +1434,45 @@
                 "responses": {
                     "201": {
                         "description": "SslPairCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/ssl/vhost/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete vhosts from a ssl pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "DeleteSslPairVhosts",
+                "parameters": [
+                    {
+                        "description": "SslPairVhostsDeleted",
+                        "name": "deleteSslPairVhostsDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SslPairVhostsRemoved",
                         "schema": {
                             "type": "object"
                         }
@@ -1551,7 +1563,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateNewVirtualHost",
+                "summary": "CreateVirtualHost",
                 "parameters": [
                     {
                         "description": "NewVirtualHost (only hostname is required).",
@@ -1619,7 +1631,7 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "CreateMapping",
+                "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
                         "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
@@ -1641,7 +1653,7 @@
                 }
             }
         },
-        "/vhosts/mapping/{hostname}/{mappingId}/": {
+        "/vhosts/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1658,15 +1670,8 @@
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "DeleteMapping",
+                "summary": "DeleteVirtualHostMapping",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "MappingId",
@@ -1872,16 +1877,10 @@
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
                     "type": "string"
                 }
             }
@@ -1971,7 +1970,7 @@
                 "id": {
                     "type": "integer"
                 },
-                "installDirectory": {
+                "urlPath": {
                     "type": "string"
                 }
             }
@@ -2271,16 +2270,104 @@
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
-                "targetInlineHtmlContent": {
-                    "type": "string"
-                },
-                "targetServiceName": {
-                    "type": "string"
-                },
                 "targetType": {
                     "type": "string"
                 },
-                "targetUrl": {
+                "targetValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.MarketplaceCatalogItem": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "dataFields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.MarketplaceCatalogItemDataField"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "estimatedSizeBytes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.MarketplaceItemMapping"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "requiredServiceNames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "screenshotUrls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.MarketplaceInstalledItem": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installDirectory": {
+                    "type": "string"
+                },
+                "installUuid": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Mapping"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "requiredServiceNames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "urlPath": {
                     "type": "string"
                 }
             }
@@ -2528,13 +2615,59 @@
                 }
             }
         },
+        "valueObject.MarketplaceCatalogItemDataField": {
+            "type": "object",
+            "properties": {
+                "defaultValue": {
+                    "type": "string"
+                },
+                "isRequired": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "valueObject.MarketplaceInstallableItemDataField": {
             "type": "object",
             "properties": {
-                "key": {
+                "name": {
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "valueObject.MarketplaceItemMapping": {
+            "type": "object",
+            "properties": {
+                "matchPattern": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "targetValue": {
                     "type": "string"
                 }
             }

@@ -96,13 +96,9 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetInlineHtmlContent:
-        type: string
-      targetServiceName:
-        type: string
       targetType:
         type: string
-      targetUrl:
+      targetValue:
         type: string
     type: object
   dto.CreateSslPair:
@@ -160,7 +156,7 @@ definitions:
         type: string
       id:
         type: integer
-      installDirectory:
+      urlPath:
         type: string
     type: object
   dto.Login:
@@ -355,13 +351,71 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetInlineHtmlContent:
-        type: string
-      targetServiceName:
-        type: string
       targetType:
         type: string
-      targetUrl:
+      targetValue:
+        type: string
+    type: object
+  entity.MarketplaceCatalogItem:
+    properties:
+      avatarUrl:
+        type: string
+      dataFields:
+        items:
+          $ref: '#/definitions/valueObject.MarketplaceCatalogItemDataField'
+        type: array
+      description:
+        type: string
+      estimatedSizeBytes:
+        type: integer
+      id:
+        type: integer
+      mappings:
+        items:
+          $ref: '#/definitions/valueObject.MarketplaceItemMapping'
+        type: array
+      name:
+        type: string
+      requiredServiceNames:
+        items:
+          type: string
+        type: array
+      screenshotUrls:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+  entity.MarketplaceInstalledItem:
+    properties:
+      avatarUrl:
+        type: string
+      createdAt:
+        type: integer
+      hostname:
+        type: string
+      id:
+        type: integer
+      installDirectory:
+        type: string
+      installUuid:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
+      name:
+        type: string
+      requiredServiceNames:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updatedAt:
+        type: integer
+      urlPath:
         type: string
     type: object
   entity.O11yOverview:
@@ -523,11 +577,41 @@ definitions:
       storageTotal:
         type: integer
     type: object
+  valueObject.MarketplaceCatalogItemDataField:
+    properties:
+      defaultValue:
+        type: string
+      isRequired:
+        type: boolean
+      label:
+        type: string
+      name:
+        type: string
+      options:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
   valueObject.MarketplaceInstallableItemDataField:
     properties:
-      key:
+      name:
         type: string
       value:
+        type: string
+    type: object
+  valueObject.MarketplaceItemMapping:
+    properties:
+      matchPattern:
+        type: string
+      path:
+        type: string
+      targetHttpResponseCode:
+        type: integer
+      targetType:
+        type: string
+      targetValue:
         type: string
     type: object
   valueObject.PortBinding:
@@ -1135,10 +1219,12 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/entity.MarketplaceCatalogItem'
+            type: array
       security:
       - Bearer: []
-      summary: GetMarketplaceCatalog
+      summary: ReadCatalog
       tags:
       - marketplace
     post:
@@ -1146,7 +1232,7 @@ paths:
       - application/json
       description: Install a marketplace catalog item.
       parameters:
-      - description: InstallMarketplaceCatalogItem (installDirectory is optional)
+      - description: InstallMarketplaceCatalogItem (directory is optional)
         in: body
         name: InstallMarketplaceCatalogItem
         required: true
@@ -1159,7 +1245,7 @@ paths:
           description: MarketplaceCatalogItemInstalled
           schema:
             type: object
-      summary: InstallMarketplaceCatalogItem
+      summary: InstallCatalogItem
       tags:
       - marketplace
   /marketplace/installed/:
@@ -1173,10 +1259,12 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/entity.MarketplaceInstalledItem'
+            type: array
       security:
       - Bearer: []
-      summary: GetMarketplaceInstalledItems
+      summary: ReadInstalledItems
       tags:
       - marketplace
   /marketplace/installed/{installedId}/:
@@ -1191,10 +1279,13 @@ paths:
         required: true
         type: integer
       - description: ShouldUninstallServices
-        in: body
+        in: query
         name: shouldUninstallServices
-        schema:
-          type: boolean
+        type: boolean
+      - description: ShouldRemoveFiles
+        in: query
+        name: shouldRemoveFiles
+        type: boolean
       produces:
       - application/json
       responses:
@@ -1204,7 +1295,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteMarketplaceInstalledItem
+      summary: DeleteInstalledItem
       tags:
       - marketplace
   /o11y/overview/:
@@ -1291,7 +1382,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetServices
+      summary: ReadServices
       tags:
       - services
     put:
@@ -1380,7 +1471,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetInstallableServices
+      summary: ReadInstallableServices
       tags:
       - services
     post:
@@ -1422,7 +1513,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetSslPair
+      summary: ReadSslPairs
       tags:
       - ssl
     post:
@@ -1445,30 +1536,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewSslPair
-      tags:
-      - ssl
-    put:
-      consumes:
-      - application/json
-      description: Delete vhosts from a ssl pair.
-      parameters:
-      - description: SslPairVhostsDeleted
-        in: body
-        name: deleteSslPairVhostsDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.DeleteSslPairVhosts'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: SslPairVhostsRemoved
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: DeleteSsslPairVhosts
+      summary: CreateSslPair
       tags:
       - ssl
   /ssl/{sslPairId}/:
@@ -1492,6 +1560,30 @@ paths:
       security:
       - Bearer: []
       summary: DeleteSslPair
+      tags:
+      - ssl
+  /ssl/vhost/:
+    put:
+      consumes:
+      - application/json
+      description: Delete vhosts from a ssl pair.
+      parameters:
+      - description: SslPairVhostsDeleted
+        in: body
+        name: deleteSslPairVhostsDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteSslPairVhosts'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SslPairVhostsRemoved
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSslPairVhosts
       tags:
       - ssl
   /vhosts/:
@@ -1533,7 +1625,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewVirtualHost
+      summary: CreateVirtualHost
       tags:
       - vhosts
   /vhosts/{hostname}/:
@@ -1601,20 +1693,15 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateMapping
+      summary: CreateVirtualHostMapping
       tags:
       - vhosts
-  /vhosts/mapping/{hostname}/{mappingId}/:
+  /vhosts/mapping/{mappingId}/:
     delete:
       consumes:
       - application/json
       description: Delete a vhost mapping.
       parameters:
-      - description: Hostname
-        in: path
-        name: hostname
-        required: true
-        type: string
       - description: MappingId
         in: path
         name: mappingId
@@ -1629,7 +1716,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteMapping
+      summary: DeleteVirtualHostMapping
       tags:
       - vhosts
 securityDefinitions:

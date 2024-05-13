@@ -5,37 +5,46 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id               valueObject.MarketplaceInstalledItemId `json:"id"`
-	Name             valueObject.MarketplaceItemName        `json:"name"`
-	Type             valueObject.MarketplaceItemType        `json:"type"`
-	InstallDirectory valueObject.UnixFilePath               `json:"installDirectory"`
-	ServiceNames     []valueObject.ServiceName              `json:"serviceNames"`
-	Mappings         []Mapping                              `json:"mappings"`
-	AvatarUrl        valueObject.Url                        `json:"avatarUrl"`
-	CreatedAt        valueObject.UnixTime                   `json:"createdAt"`
-	UpdatedAt        valueObject.UnixTime                   `json:"updatedAt"`
+	Id                   valueObject.MarketplaceInstalledItemId   `json:"id"`
+	Name                 valueObject.MarketplaceItemName          `json:"name"`
+	Hostname             valueObject.Fqdn                         `json:"hostname"`
+	Type                 valueObject.MarketplaceItemType          `json:"type"`
+	UrlPath              valueObject.UrlPath                      `json:"urlPath"`
+	InstallDirectory     valueObject.UnixFilePath                 `json:"installDirectory"`
+	InstallUuid          valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
+	RequiredServiceNames []valueObject.ServiceName                `json:"requiredServiceNames"`
+	Mappings             []Mapping                                `json:"mappings"`
+	AvatarUrl            valueObject.Url                          `json:"avatarUrl"`
+	CreatedAt            valueObject.UnixTime                     `json:"createdAt"`
+	UpdatedAt            valueObject.UnixTime                     `json:"updatedAt"`
 }
 
 func NewMarketplaceInstalledItem(
 	id valueObject.MarketplaceInstalledItemId,
 	itemName valueObject.MarketplaceItemName,
+	hostname valueObject.Fqdn,
 	itemType valueObject.MarketplaceItemType,
+	urlPath valueObject.UrlPath,
 	installDirectory valueObject.UnixFilePath,
-	serviceNames []valueObject.ServiceName,
+	installUuid valueObject.MarketplaceInstalledItemUuid,
+	requiredServiceNames []valueObject.ServiceName,
 	mappings []Mapping,
 	avatarUrl valueObject.Url,
 	createdAt valueObject.UnixTime,
 	updatedAt valueObject.UnixTime,
 ) MarketplaceInstalledItem {
 	return MarketplaceInstalledItem{
-		Id:               id,
-		Name:             itemName,
-		Type:             itemType,
-		InstallDirectory: installDirectory,
-		ServiceNames:     serviceNames,
-		Mappings:         mappings,
-		AvatarUrl:        avatarUrl,
-		CreatedAt:        createdAt,
-		UpdatedAt:        createdAt,
+		Id:                   id,
+		Name:                 itemName,
+		Hostname:             hostname,
+		Type:                 itemType,
+		UrlPath:              urlPath,
+		InstallDirectory:     installDirectory,
+		InstallUuid:          installUuid,
+		RequiredServiceNames: requiredServiceNames,
+		Mappings:             mappings,
+		AvatarUrl:            avatarUrl,
+		CreatedAt:            createdAt,
+		UpdatedAt:            createdAt,
 	}
 }

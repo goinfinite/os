@@ -42,12 +42,13 @@ func ApiInit(
 	basePath := "/v1"
 	baseRoute := e.Group(basePath)
 
-	requestTimeout := 60 * time.Second
-
 	e.Pre(apiMiddleware.TrailingSlash(basePath))
+
+	requestTimeout := 180 * time.Second
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Timeout: requestTimeout,
 	}))
+
 	e.Use(apiMiddleware.PanicHandler)
 	e.Use(apiMiddleware.SetDefaultHeaders)
 	e.Use(apiMiddleware.Auth(basePath))

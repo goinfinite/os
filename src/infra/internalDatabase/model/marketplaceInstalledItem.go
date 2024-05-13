@@ -10,15 +10,18 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID               uint `gorm:"primarykey"`
-	Name             string
-	Type             string
-	InstallDirectory string
-	InstallUuid      string
-	ServiceNames     string
-	AvatarUrl        string
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID                   uint   `gorm:"primarykey"`
+	Name                 string `gorm:"not null"`
+	Hostname             string `gorm:"not null"`
+	Type                 string `gorm:"not null"`
+	UrlPath              string `gorm:"not null"`
+	InstallDirectory     string `gorm:"not null"`
+	InstallUuid          string `gorm:"not null"`
+	RequiredServiceNames string
+	Mappings             []Mapping
+	AvatarUrl            string    `gorm:"not null"`
+	CreatedAt            time.Time `gorm:"not null"`
+	UpdatedAt            time.Time `gorm:"not null"`
 }
 
 func (MarketplaceInstalledItem) TableName() string {
@@ -40,7 +43,17 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
+	hostname, err := valueObject.NewFqdn(model.Hostname)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
 	itemType, err := valueObject.NewMarketplaceItemType(model.Type)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
+	urlPath, err := valueObject.NewUrlPath(model.UrlPath)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -50,20 +63,35 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	svcsNameList := []valueObject.ServiceName{}
-	if len(model.ServiceNames) > 0 {
-		rawSvcsNameList := strings.Split(model.ServiceNames, ",")
+	installUuid, err := valueObject.NewMarketplaceInstalledItemUuid(
+		model.InstallUuid,
+	)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
+	requiredSvcsNameList := []valueObject.ServiceName{}
+	if len(model.RequiredServiceNames) > 0 {
+		rawSvcsNameList := strings.Split(model.RequiredServiceNames, ",")
 		for _, rawSvcName := range rawSvcsNameList {
 			svcName, err := valueObject.NewServiceName(rawSvcName)
 			if err != nil {
 				log.Printf("%s: %s", err.Error(), rawSvcName)
 			}
-
-			svcsNameList = append(svcsNameList, svcName)
+			requiredSvcsNameList = append(requiredSvcsNameList, svcName)
 		}
 	}
 
 	mappings := []entity.Mapping{}
+	if len(model.Mappings) > 0 {
+		for _, mappingModel := range model.Mappings {
+			mapping, err := mappingModel.ToEntity()
+			if err != nil {
+				return marketplaceInstalledItem, err
+			}
+			mappings = append(mappings, mapping)
+		}
+	}
 
 	avatarUrl, err := valueObject.NewUrl(model.AvatarUrl)
 	if err != nil {
@@ -79,9 +107,12 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	return entity.NewMarketplaceInstalledItem(
 		id,
 		itemName,
+		hostname,
 		itemType,
+		urlPath,
 		installDirectory,
-		svcsNameList,
+		installUuid,
+		requiredSvcsNameList,
 		mappings,
 		avatarUrl,
 		createdAt,

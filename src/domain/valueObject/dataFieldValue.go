@@ -14,8 +14,8 @@ func NewDataFieldValue(value interface{}) (DataFieldValue, error) {
 		return "", errors.New("InvalidDataFieldValue")
 	}
 
-	if len(dataFieldValueStr) <= 1 {
-		return "", errors.New("DataFieldValueTooSmall")
+	if len(dataFieldValueStr) == 0 {
+		return "", errors.New("EmptyDataFieldValue")
 	}
 
 	if len(dataFieldValueStr) >= 2048 {

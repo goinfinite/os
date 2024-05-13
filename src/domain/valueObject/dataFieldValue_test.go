@@ -9,6 +9,7 @@ import (
 func TestDataFieldValue(t *testing.T) {
 	t.Run("ValidDataFieldValue", func(t *testing.T) {
 		validDataFieldValues := []interface{}{
+			"/",
 			"This is my username",
 			"new_email@mail.net",
 			"localhost:8000",
@@ -31,7 +32,6 @@ func TestDataFieldValue(t *testing.T) {
 		invalidLength := 2050
 		invalidDataFieldValues := []interface{}{
 			"",
-			"a",
 			testHelpers.GenerateString(invalidLength),
 		}
 

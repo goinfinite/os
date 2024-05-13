@@ -89,6 +89,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 ) ([]valueObject.MarketplaceItemMapping, error) {
 	itemMappings := []valueObject.MarketplaceItemMapping{}
 
+	if catalogItemMappingsMap == nil {
+		return itemMappings, nil
+	}
+
 	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
 	if !assertOk {
 		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
@@ -134,44 +138,30 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 			continue
 		}
 
-		var targetSvcNamePtr *valueObject.ServiceName
-		if rawItemMappingMap["targetServiceName"] != nil {
-			rawTargetSvcName, assertOk := rawItemMappingMap["targetServiceName"].(string)
+		var targetValuePtr *valueObject.MappingTargetValue
+		if rawItemMappingMap["targetValue"] != nil {
+			rawTargetValue, assertOk := rawItemMappingMap["targetValue"].(string)
 			if !assertOk {
 				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetServiceName: %s",
+					"InvalidMarketplaceCatalogItemMappingTargetValue: %s",
 					rawPath,
 				)
 				continue
 			}
-			targetSvcName, err := valueObject.NewServiceName(rawTargetSvcName)
+
+			targetValue, err := valueObject.NewMappingTargetValue(
+				rawTargetValue, targetType,
+			)
 			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetSvcName)
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
 				continue
 			}
-			targetSvcNamePtr = &targetSvcName
+			targetValuePtr = &targetValue
 		}
 
-		var targetUrlPtr *valueObject.Url
-		if rawItemMappingMap["targetUrl"] != nil {
-			rawTargetUrl, assertOk := rawItemMappingMap["targetUrl"].(string)
-			if !assertOk {
-				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetUrl: %s", rawPath,
-				)
-				continue
-			}
-			targetUrl, err := valueObject.NewUrl(rawTargetUrl)
-			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetUrl)
-				continue
-			}
-			targetUrlPtr = &targetUrl
-		}
-
-		var targetHttpResCodePtr *valueObject.HttpResponseCode
+		var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 		if rawItemMappingMap["targetHttpResponseCode"] != nil {
-			rawTargetHttpResCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
+			rawTargetHttpResponseCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
 			if !assertOk {
 				log.Printf(
 					"InvalidMarketplaceCatalogItemMappingTargetHttpResponseCode: %s",
@@ -179,46 +169,23 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 				)
 				continue
 			}
-			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
-				rawTargetHttpResCode,
-			)
-			if err != nil {
-				log.Printf("%s (%s): %s", err.Error(), rawPath, rawTargetHttpResCode)
-				continue
-			}
-			targetHttpResCodePtr = &targetHttpResponseCode
-		}
 
-		var targetInlineHtmlContentPtr *valueObject.InlineHtmlContent
-		if rawItemMappingMap["targetInlineHtmlContent"] != nil {
-			rawTargetInlineHtmlContent, assertOk := rawItemMappingMap["targetInlineHtmlContent"].(string)
-			if !assertOk {
-				log.Printf(
-					"InvalidMarketplaceCatalogItemMappingTargetInlinteHtmlContent: %s",
-					rawPath,
-				)
-				continue
-			}
-			targetInlineHtmlContent, err := valueObject.NewInlineHtmlContent(
-				rawTargetInlineHtmlContent,
+			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+				rawTargetHttpResponseCode,
 			)
 			if err != nil {
-				log.Printf(
-					"%s (%s): %s", err.Error(), rawPath, rawTargetInlineHtmlContent,
-				)
+				log.Printf("%s (%s): %s", err.Error(), rawPath, rawMatchPattern)
 				continue
 			}
-			targetInlineHtmlContentPtr = &targetInlineHtmlContent
+			targetHttpResponseCodePtr = &targetHttpResponseCode
 		}
 
 		itemMapping := valueObject.NewMarketplaceItemMapping(
 			path,
 			matchPattern,
 			targetType,
-			targetSvcNamePtr,
-			targetUrlPtr,
-			targetHttpResCodePtr,
-			targetInlineHtmlContentPtr,
+			targetValuePtr,
+			targetHttpResponseCodePtr,
 		)
 		itemMappings = append(itemMappings, itemMapping)
 	}
@@ -230,6 +197,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 	catalogItemDataFieldsMap interface{},
 ) ([]valueObject.MarketplaceCatalogItemDataField, error) {
 	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
+
+	if catalogItemDataFieldsMap == nil {
+		return itemDataFields, nil
+	}
 
 	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
 	if !assertOk {
@@ -243,14 +214,36 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			continue
 		}
 
-		rawKey, assertOk := rawItemDataFieldMap["key"].(string)
+		rawKey, assertOk := rawItemDataFieldMap["name"].(string)
 		if !assertOk {
 			log.Printf("InvalidMarketplaceCatalogItemDataFieldKey: %s", rawKey)
 			continue
 		}
-		key, err := valueObject.NewDataFieldKey(rawKey)
+		key, err := valueObject.NewDataFieldName(rawKey)
 		if err != nil {
 			log.Printf("%s (%s): %s", err.Error(), rawKey, rawKey)
+			continue
+		}
+
+		rawLabel, assertOk := rawItemDataFieldMap["label"].(string)
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemDataFieldLabel: %s", rawKey)
+			continue
+		}
+		label, err := valueObject.NewDataFieldLabel(rawLabel)
+		if err != nil {
+			log.Printf("%s (%s): %s", err.Error(), rawKey, rawLabel)
+			continue
+		}
+
+		rawFieldType, assertOk := rawItemDataFieldMap["type"].(string)
+		if !assertOk {
+			log.Printf("InvalidMarketplaceCatalogItemDataFieldType: %s", rawKey)
+			continue
+		}
+		fieldType, err := valueObject.NewDataFieldType(rawFieldType)
+		if err != nil {
+			log.Printf("%s (%s): %s", err.Error(), rawKey, rawFieldType)
 			continue
 		}
 
@@ -290,9 +283,32 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			)
 		}
 
+		options := []valueObject.DataFieldValue{}
+		if rawItemDataFieldMap["options"] != nil {
+			rawOptions, assertOk := rawItemDataFieldMap["options"].([]interface{})
+			if !assertOk {
+				log.Printf(
+					"InvalidMarketplaceCatalogItemDataFieldOptions: %s", rawKey,
+				)
+				continue
+			}
+
+			for _, rawOption := range rawOptions {
+				option, err := valueObject.NewDataFieldValue(rawOption)
+				if err != nil {
+					log.Printf("%s (%s): %s", err.Error(), rawKey, rawOption)
+					continue
+				}
+				options = append(options, option)
+			}
+		}
+
 		itemDataField, err := valueObject.NewMarketplaceCatalogItemDataField(
 			key,
+			label,
+			fieldType,
 			defaultValuePtr,
+			options,
 			isRequired,
 		)
 		if err != nil {
@@ -309,6 +325,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
 ) ([]valueObject.MarketplaceItemCmdStep, error) {
 	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+
+	if catalogItemCmdStepsMap == nil {
+		return itemCmdSteps, nil
+	}
 
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
@@ -334,6 +354,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 	catalogItemUrlsMap interface{},
 ) ([]valueObject.Url, error) {
 	itemUrls := []valueObject.Url{}
+
+	if catalogItemUrlsMap == nil {
+		return itemUrls, nil
+	}
 
 	rawItemUrls, assertOk := catalogItemUrlsMap.([]interface{})
 	if !assertOk {
@@ -457,7 +481,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	), nil
 }
 
-func (repo *MarketplaceQueryRepo) GetCatalogItems() (
+func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 	[]entity.MarketplaceCatalogItem, error,
 ) {
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -467,10 +491,6 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 		return catalogItems, errors.New(
 			"GetMarketplaceCatalogItemsFilesError: " + err.Error(),
 		)
-	}
-
-	if len(catalogItemFiles) == 0 {
-		return catalogItems, errors.New("MarketplaceItemsEmpty")
 	}
 
 	for catalogItemFileIndex, catalogItemFile := range catalogItemFiles {
@@ -511,12 +531,12 @@ func (repo *MarketplaceQueryRepo) GetCatalogItems() (
 	return catalogItems, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetCatalogItemById(
+func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	catalogId valueObject.MarketplaceCatalogItemId,
 ) (entity.MarketplaceCatalogItem, error) {
 	var catalogItem entity.MarketplaceCatalogItem
 
-	catalogItems, err := repo.GetCatalogItems()
+	catalogItems, err := repo.ReadCatalogItems()
 	if err != nil {
 		return catalogItem, err
 	}
@@ -532,53 +552,54 @@ func (repo *MarketplaceQueryRepo) GetCatalogItemById(
 	return catalogItem, errors.New("CatalogItemNotFound")
 }
 
-func (repo *MarketplaceQueryRepo) GetInstalledItems() (
-	[]entity.MarketplaceInstalledItem, error,
+func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
+	entities []entity.MarketplaceInstalledItem, err error,
 ) {
-	installedItemEntities := []entity.MarketplaceInstalledItem{}
-
-	installedItemModels := []dbModel.MarketplaceInstalledItem{}
-	err := repo.persistentDbSvc.Handler.Model(&dbModel.MarketplaceInstalledItem{}).
-		Find(&installedItemModels).Error
+	models := []dbModel.MarketplaceInstalledItem{}
+	err = repo.persistentDbSvc.Handler.
+		Model(models).
+		Preload("Mappings").
+		Find(&models).Error
 	if err != nil {
-		return installedItemEntities, errors.New(
-			"DatabaseQueryMarketplaceInstalledItemsError",
-		)
+		return entities, errors.New("ReadDatabaseEntriesError")
 	}
 
-	for _, installedItemModel := range installedItemModels {
-		installedItemEntity, err := installedItemModel.ToEntity()
+	for _, installedItemModel := range models {
+		entity, err := installedItemModel.ToEntity()
 		if err != nil {
 			log.Printf("MarketplaceInstalledItemModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		installedItemEntities = append(
-			installedItemEntities,
-			installedItemEntity,
+		entities = append(
+			entities,
+			entity,
 		)
 	}
 
-	return installedItemEntities, nil
+	return entities, nil
 }
 
-func (repo *MarketplaceQueryRepo) GetInstalledItemById(
+func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 	installedId valueObject.MarketplaceInstalledItemId,
-) (entity.MarketplaceInstalledItem, error) {
-	var installedItem entity.MarketplaceInstalledItem
+) (entity entity.MarketplaceInstalledItem, err error) {
+	query := dbModel.Mapping{
+		ID: uint(installedId.Get()),
+	}
 
-	installedItems, err := repo.GetInstalledItems()
+	var model dbModel.MarketplaceInstalledItem
+	err = repo.persistentDbSvc.Handler.
+		Model(query).
+		Preload("Mappings").
+		Find(&model).Error
 	if err != nil {
-		return installedItem, err
+		return entity, errors.New("ReadDatabaseEntryError")
 	}
 
-	for _, installedItem := range installedItems {
-		if installedItem.Id.Get() != installedId.Get() {
-			continue
-		}
-
-		return installedItem, nil
+	entity, err = model.ToEntity()
+	if err != nil {
+		return entity, errors.New("ModelToEntityError")
 	}
 
-	return installedItem, errors.New("InstalledItemNotFound")
+	return entity, nil
 }

@@ -94,7 +94,7 @@ func (router Router) o11yRoutes() {
 	}
 
 	rootCmd.AddCommand(o11yCmd)
-	o11yCmd.AddCommand(cliController.GetO11yOverviewController(router.transientDbSvc))
+	o11yCmd.AddCommand(cliController.ReadO11yOverviewController(router.transientDbSvc))
 }
 
 func (router Router) runtimeRoutes() {
@@ -135,12 +135,16 @@ func (router Router) servicesRoutes() {
 	}
 
 	rootCmd.AddCommand(servicesCmd)
-	servicesCmd.AddCommand(cliController.GetServicesController())
-	servicesCmd.AddCommand(cliController.GetInstallableServicesController())
-	servicesCmd.AddCommand(cliController.CreateInstallableServiceController())
-	servicesCmd.AddCommand(cliController.CreateCustomServiceController())
-	servicesCmd.AddCommand(cliController.UpdateServiceController())
-	servicesCmd.AddCommand(cliController.DeleteServiceController())
+
+	servicesController := cliController.NewServicesController(
+		router.persistentDbSvc,
+	)
+	servicesCmd.AddCommand(servicesController.Read())
+	servicesCmd.AddCommand(servicesController.ReadInstallables())
+	servicesCmd.AddCommand(servicesController.CreateInstallable())
+	servicesCmd.AddCommand(servicesController.CreateCustom())
+	servicesCmd.AddCommand(servicesController.Update())
+	servicesCmd.AddCommand(servicesController.Delete())
 }
 
 func (router Router) sslRoutes() {
@@ -150,10 +154,14 @@ func (router Router) sslRoutes() {
 	}
 
 	rootCmd.AddCommand(sslCmd)
-	sslCmd.AddCommand(cliController.GetSslPairsController())
-	sslCmd.AddCommand(cliController.CreateSslPairController())
-	sslCmd.AddCommand(cliController.DeleteSslPairVhostsController())
-	sslCmd.AddCommand(cliController.DeleteSslPairController())
+
+	sslController := cliController.NewSslController(
+		router.persistentDbSvc,
+	)
+	sslCmd.AddCommand(sslController.Read())
+	sslCmd.AddCommand(sslController.Create())
+	sslCmd.AddCommand(sslController.DeleteVhosts())
+	sslCmd.AddCommand(sslController.Delete())
 }
 
 func (router Router) virtualHostRoutes() {
@@ -163,9 +171,13 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	rootCmd.AddCommand(vhostCmd)
-	vhostCmd.AddCommand(cliController.GetVirtualHostsController())
-	vhostCmd.AddCommand(cliController.CreateVirtualHostController())
-	vhostCmd.AddCommand(cliController.DeleteVirtualHostController())
+
+	vhostController := cliController.NewVirtualHostController(
+		router.persistentDbSvc,
+	)
+	vhostCmd.AddCommand(vhostController.Get())
+	vhostCmd.AddCommand(vhostController.Create())
+	vhostCmd.AddCommand(vhostController.Delete())
 
 	var mappingCmd = &cobra.Command{
 		Use:   "mapping",
@@ -173,9 +185,9 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	vhostCmd.AddCommand(mappingCmd)
-	mappingCmd.AddCommand(cliController.GetVirtualHostsWithMappingsController())
-	mappingCmd.AddCommand(cliController.CreateVirtualHostMappingController())
-	mappingCmd.AddCommand(cliController.DeleteVirtualHostMappingController())
+	mappingCmd.AddCommand(vhostController.GetWithMappings())
+	mappingCmd.AddCommand(vhostController.CreateMapping())
+	mappingCmd.AddCommand(vhostController.DeleteMapping())
 }
 
 func (router Router) RegisterRoutes() {

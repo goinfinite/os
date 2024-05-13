@@ -8,13 +8,13 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetMarketplaceCatalog(
+func ReadMarketplaceCatalog(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 ) ([]entity.MarketplaceCatalogItem, error) {
-	catalogItems, err := marketplaceQueryRepo.GetCatalogItems()
+	catalogItems, err := marketplaceQueryRepo.ReadCatalogItems()
 	if err != nil {
-		log.Printf("GetMarketplaceCatalogItemsError: %s", err.Error())
-		return nil, errors.New("GetMarketplaceCatalogItemsInfraError")
+		log.Printf("ReadMarketplaceCatalogItemsError: %s", err.Error())
+		return nil, errors.New("ReadMarketplaceCatalogItemsInfraError")
 	}
 
 	return catalogItems, nil

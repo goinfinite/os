@@ -19,7 +19,7 @@ func hasRequiredDataFields(
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldsKeysStr = append(
 			receivedDataFieldsKeysStr,
-			receivedDataField.Key.String(),
+			receivedDataField.Name.String(),
 		)
 	}
 
@@ -29,7 +29,7 @@ func hasRequiredDataFields(
 			continue
 		}
 
-		requiredDataFieldStr := catalogDataField.Key.String()
+		requiredDataFieldStr := catalogDataField.Name.String()
 		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
 			hasRequiredDataFields = false
 			break
@@ -53,7 +53,7 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("VhostNotFound")
 	}
 
-	catalogItem, err := marketplaceQueryRepo.GetCatalogItemById(
+	catalogItem, err := marketplaceQueryRepo.ReadCatalogItemById(
 		installDto.Id,
 	)
 	if err != nil {

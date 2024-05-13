@@ -3,10 +3,10 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 type ServiceName string
