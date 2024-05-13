@@ -57,7 +57,10 @@ func (controller *SslController) Create() *cobra.Command {
 				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
 			}
 
-			certificateContentStr, err := infraHelper.GetFileContent(certificateFilePathStr)
+			certificateFilePath := valueObject.NewUnixFilePathPanic(certificateFilePathStr)
+			certificateContentStr, err := infraHelper.GetFileContent(
+				certificateFilePath.String(),
+			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
 			}
