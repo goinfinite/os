@@ -90,7 +90,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
+// @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"Only name is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(c echo.Context) error {
@@ -174,7 +174,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
+// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and command is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
@@ -253,7 +253,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateServiceDto	body dto.UpdateService	true	"UpdateServiceDetails"
+// @Param        updateServiceDto	body dto.UpdateService	true	"Only name is required.<br />Solo services can only change status.<br />status may be 'running', 'stopped' or 'uninstalled'."
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
@@ -347,7 +347,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        svcName path string true "ServiceName"
+// @Param        svcName path string true "Service name that will be deleted."
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {

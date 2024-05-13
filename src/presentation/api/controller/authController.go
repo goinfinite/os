@@ -18,7 +18,7 @@ import (
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        loginDto 	  body    dto.Login  true  "Login"
+// @Param        loginDto 	  body    dto.Login  true  "All props are required."
 // @Success      200 {object} entity.AccessToken
 // @Failure      401 {object} string
 // @Router       /auth/login/ [post]

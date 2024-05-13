@@ -37,7 +37,7 @@ func GetCronsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createCronDto 	  body    dto.CreateCron  true  "NewCron (comment is optional)."
+// @Param        createCronDto 	  body    dto.CreateCron  true  "comment is optional."
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /cron/ [post]
 func CreateCronController(c echo.Context) error {
@@ -81,7 +81,7 @@ func CreateCronController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateCronDto 	  body dto.UpdateCron  true  "UpdateCron (only id is required)."
+// @Param        updateCronDto 	  body dto.UpdateCron  true  "Only id is required."
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /cron/ [put]
 func UpdateCronController(c echo.Context) error {
@@ -140,7 +140,7 @@ func UpdateCronController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        cronId 	  path   string  true  "CronId"
+// @Param        cronId 	  path   string  true  "Cron ID that will be deleted."
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /cron/{cronId}/ [delete]
 func DeleteCronController(c echo.Context) error {

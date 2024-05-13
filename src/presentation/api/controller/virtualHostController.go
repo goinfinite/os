@@ -53,7 +53,7 @@ func (controller *VirtualHostController) Get(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "NewVirtualHost (only hostname is required)."
+// @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "Only hostname is required.<br />type may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
@@ -106,7 +106,7 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "Hostname"
+// @Param        hostname path string true "Hostname that will be deleted."
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /vhosts/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {
@@ -162,7 +162,7 @@ func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.<br />targetType may be 'service', 'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty."
+// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.<br />targetValue must have the same value as the targetType requires."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
@@ -236,7 +236,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        mappingId path uint true "MappingId"
+// @Param        mappingId path uint true "Mappind ID that will be deleted."
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
