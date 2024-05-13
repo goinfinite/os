@@ -106,7 +106,7 @@ func DeleteAccountController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateAccountDto 	  body dto.UpdateAccount  true  "UpdateAccount"
+// @Param        updateAccountDto 	  body dto.UpdateAccount  true  "UpdateAccount (only id is required)."
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /account/ [put]
 func UpdateAccountController(c echo.Context) error {
