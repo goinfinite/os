@@ -11,7 +11,7 @@ import (
 func DeleteService(
 	queryRepo repository.ServicesQueryRepo,
 	cmdRepo repository.ServicesCmdRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
 	serviceEntity, err := queryRepo.GetByName(svcName)
@@ -24,7 +24,7 @@ func DeleteService(
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 
-	err = vhostCmdRepo.DeleteAutoMapping(svcName)
+	err = mappingCmdRepo.DeleteAuto(svcName)
 	if err != nil {
 		log.Printf("DeleteAutoMappingError: %s", err.Error())
 		return errors.New("DeleteAutoMappingsInfraError")

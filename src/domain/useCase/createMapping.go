@@ -3,7 +3,6 @@ package useCase
 import (
 	"errors"
 	"log"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -11,55 +10,75 @@ import (
 )
 
 func CreateMapping(
-	queryRepo repository.VirtualHostQueryRepo,
-	cmdRepo repository.VirtualHostCmdRepo,
+	mappingQueryRepo repository.MappingQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
 	createMapping dto.CreateMapping,
 ) error {
-	vhostWithMappings, err := queryRepo.GetWithMappings()
+	vhost, err := vhostQueryRepo.GetByHostname(createMapping.Hostname)
 	if err != nil {
-		log.Printf("GetVirtualHostsError: %s", err.Error())
-		return errors.New("GetVirtualHostsInfraError")
+		return errors.New("VhostNotFound")
 	}
 
-	vhostIndex := -1
-	for vhostWithMappingIndex, vhostWithMapping := range vhostWithMappings {
-		if vhostWithMapping.Hostname != createMapping.Hostname {
-			continue
-		}
-
-		for _, mapping := range vhostWithMapping.Mappings {
-			if mapping.MatchPattern != createMapping.MatchPattern {
-				continue
-			}
-
-			if mapping.Path != createMapping.Path {
-				continue
-			}
-
-			return errors.New("MappingAlreadyExists")
-		}
-
-		vhostIndex = vhostWithMappingIndex
-	}
-
-	if vhostIndex == -1 {
-		return errors.New("VirtualHostNotFound")
-	}
-
-	if vhostWithMappings[vhostIndex].Type.String() == "alias" {
+	if vhost.Type.String() == "alias" {
 		return errors.New("AliasCannotHaveMappings")
 	}
 
-	isServiceTarget := createMapping.TargetType.String() == "service"
-	if isServiceTarget {
-		if createMapping.TargetServiceName == nil {
-			return errors.New("TargetServiceNameRequired")
-		}
+	hasTargetValue := createMapping.TargetValue != nil
+	hasTargetHttpResponseCode := createMapping.TargetHttpResponseCode != nil
+	if !hasTargetValue && !hasTargetHttpResponseCode {
+		return errors.New("MappingMustHaveValueOrHttpResponseCode")
+	}
 
-		service, err := svcsQueryRepo.GetByName(*createMapping.TargetServiceName)
+	targetTypeStr := createMapping.TargetType.String()
+
+	isResponseCodeMapping := targetTypeStr == "response-code"
+	isTargetValueRequired := !isResponseCodeMapping
+	if isTargetValueRequired && !hasTargetValue {
+		return errors.New("MappingMustHaveValue")
+	}
+
+	if isResponseCodeMapping && !hasTargetHttpResponseCode {
+		targetValuetr := createMapping.TargetValue.String()
+		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValuetr)
 		if err != nil {
 			return err
+		}
+
+		createMapping.TargetHttpResponseCode = &httpRespondeCode
+		createMapping.TargetValue = nil
+	}
+
+	mappings, err := mappingQueryRepo.ReadByHostname(createMapping.Hostname)
+	if err != nil {
+		log.Printf("ReadMappingsError: %s", err.Error())
+		return errors.New("ReadMappingsInfraError")
+	}
+
+	for _, mapping := range mappings {
+		if mapping.MatchPattern != createMapping.MatchPattern {
+			continue
+		}
+
+		if mapping.Path != createMapping.Path {
+			continue
+		}
+
+		return errors.New("MappingAlreadyExists")
+	}
+
+	if targetTypeStr == "service" {
+		targetValueStr := createMapping.TargetValue.String()
+		svcName, err := valueObject.NewServiceName(targetValueStr)
+		if err != nil {
+			return errors.New(err.Error() + ": " + targetValueStr)
+		}
+
+		service, err := svcsQueryRepo.GetByName(svcName)
+		if err != nil {
+			log.Printf("GetServiceByNameError: %s", err.Error())
+			return errors.New("GetServiceByNameInfraError")
 		}
 
 		if len(service.PortBindings) == 0 {
@@ -75,45 +94,17 @@ func CreateMapping(
 		}
 	}
 
-	isUrlTarget := createMapping.TargetType.String() == "url"
-	if isUrlTarget && createMapping.TargetUrl == nil {
-		return errors.New("TargetUrlRequired")
+	if targetTypeStr == "url" && !hasTargetHttpResponseCode {
+		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(301)
+		createMapping.TargetHttpResponseCode = &targetHttpResponseCode
 	}
 
-	defaultUrlResponseCode, _ := valueObject.NewHttpResponseCode(301)
-	if isUrlTarget && createMapping.TargetHttpResponseCode == nil {
-		createMapping.TargetHttpResponseCode = &defaultUrlResponseCode
+	if targetTypeStr == "inline-html" && !hasTargetHttpResponseCode {
+		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+		createMapping.TargetHttpResponseCode = &targetHttpResponseCode
 	}
 
-	isTargetHttpResponseCodeMissing := createMapping.TargetHttpResponseCode == nil
-
-	isResponseCodeTarget := createMapping.TargetType.String() == "response-code"
-	if isResponseCodeTarget && isTargetHttpResponseCodeMissing {
-		return errors.New("TargetHttpResponseCodeRequired")
-	}
-
-	isInlineHtmlTarget := createMapping.TargetType.String() == "inline-html"
-	if isInlineHtmlTarget {
-		if createMapping.TargetInlineHtmlContent == nil {
-			return errors.New("TargetInlineHtmlContentRequired")
-		}
-
-		if isTargetHttpResponseCodeMissing {
-			defaultHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
-			createMapping.TargetHttpResponseCode = &defaultHttpResponseCode
-		}
-	}
-
-	pathStr := createMapping.Path.String()
-	pathStartsWithSlash := strings.HasPrefix(pathStr, "/")
-	if !pathStartsWithSlash {
-		createMapping.Path, err = valueObject.NewMappingPath("/" + pathStr)
-		if err != nil {
-			return errors.New("AutoCorrectMappingPathError")
-		}
-	}
-
-	err = cmdRepo.CreateMapping(createMapping)
+	_, err = mappingCmdRepo.Create(createMapping)
 	if err != nil {
 		log.Printf("CreateMappingError: %s", err.Error())
 		return errors.New("CreateMappingInfraError")

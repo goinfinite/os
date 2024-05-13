@@ -11,8 +11,9 @@ import (
 func CreateInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
+	mappingQueryRepo repository.MappingQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
 	_, err := servicesQueryRepo.GetByName(createDto.Name)
@@ -53,24 +54,26 @@ func CreateInstallableService(
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
-	vhostsWithMappings, err := vhostQueryRepo.GetWithMappings()
+	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
-		log.Printf("GetVhostsWithMappingError: %s", err.Error())
-		return errors.New("GetVhostsWithMappingsInfraError")
-	}
-
-	if len(vhostsWithMappings) == 0 {
 		return errors.New("VhostsNotFound")
 	}
 
-	primaryVhostWithMapping := vhostsWithMappings[0]
-	shouldCreateFirstMapping := len(primaryVhostWithMapping.Mappings) == 0 && createDto.AutoCreateMapping
+	primaryVhost := vhosts[0]
+	primaryVhostMappings, err := mappingQueryRepo.ReadByHostname(
+		primaryVhost.Hostname,
+	)
+	if err != nil {
+		log.Printf("ReadPrimaryVhostMappingsError: %s", err.Error())
+		return errors.New("ReadPrimaryVhostMappingsInfraError")
+	}
+	shouldCreateFirstMapping := len(primaryVhostMappings) == 0 && createDto.AutoCreateMapping
 	if !shouldCreateFirstMapping {
 		return nil
 	}
 
 	serviceMapping, err := serviceMappingFactory(
-		primaryVhostWithMapping.Hostname,
+		primaryVhost.Hostname,
 		createDto.Name,
 	)
 	if err != nil {
@@ -78,7 +81,7 @@ func CreateInstallableService(
 		return errors.New("CreateServiceMappingError")
 	}
 
-	err = vhostCmdRepo.CreateMapping(serviceMapping)
+	_, err = mappingCmdRepo.Create(serviceMapping)
 	if err != nil {
 		log.Printf("CreateServiceMappingError: %s", err.Error())
 		return errors.New("CreateServiceMappingInfraError")

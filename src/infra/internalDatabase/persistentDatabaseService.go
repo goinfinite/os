@@ -5,11 +5,10 @@ import (
 	"reflect"
 
 	"github.com/glebarez/sqlite"
+	"github.com/speedianet/os/src/infra/infraData"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
-
-const DatabaseFilePath = "/speedia/sos.db"
 
 type PersistentDatabaseService struct {
 	Handler *gorm.DB
@@ -17,7 +16,7 @@ type PersistentDatabaseService struct {
 
 func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
-		sqlite.Open(DatabaseFilePath),
+		sqlite.Open(infraData.GlobalConfigs.DatabaseFilePath),
 		&gorm.Config{},
 	)
 	if err != nil {
@@ -85,6 +84,7 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) 
 func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 	err := dbSvc.Handler.AutoMigrate(
 		&dbModel.MarketplaceInstalledItem{},
+		&dbModel.Mapping{},
 	)
 	if err != nil {
 		return errors.New("DatabaseMigrationError")

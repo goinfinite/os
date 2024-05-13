@@ -8,8 +8,7 @@ import (
 
 func InterfaceToString(input interface{}) (string, error) {
 	var output string
-	var err error
-	var defaultErr error = errors.New("InvalidInput")
+
 	switch v := input.(type) {
 	case string:
 		output = v
@@ -26,11 +25,7 @@ func InterfaceToString(input interface{}) (string, error) {
 		boolValue := reflect.ValueOf(v).Bool()
 		output = strconv.FormatBool(boolValue)
 	default:
-		err = defaultErr
-	}
-
-	if err != nil {
-		return "", defaultErr
+		return "", errors.New("CannotConvertToString")
 	}
 
 	return output, nil

@@ -8,7 +8,7 @@
             "path": "/",
             "matchPattern": "begins-with",
             "targetType": "service",
-            "targetServiceName": "php"
+            "targetValue": "php"
         }
     ],
     "dataFields": [

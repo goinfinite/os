@@ -3,6 +3,7 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
@@ -10,6 +11,11 @@ const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
 type MappingPath string
 
 func NewMappingPath(value string) (MappingPath, error) {
+	hasLeadingSlash := strings.HasPrefix(value, "/")
+	if !hasLeadingSlash {
+		value = "/" + value
+	}
+
 	mappingPath := MappingPath(value)
 	if !mappingPath.isValid() {
 		return "", errors.New("InvalidMappingPath")

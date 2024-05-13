@@ -6,6 +6,6 @@ import (
 )
 
 type SslQueryRepo interface {
-	GetSslPairs() ([]entity.SslPair, error)
-	GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error)
+	Read() ([]entity.SslPair, error)
+	ReadById(sslId valueObject.SslId) (entity.SslPair, error)
 }

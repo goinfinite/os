@@ -9,23 +9,26 @@ import (
 )
 
 func DeleteMapping(
-	queryRepo repository.VirtualHostQueryRepo,
-	cmdRepo repository.VirtualHostCmdRepo,
-	vhostHostname valueObject.Fqdn,
+	queryRepo repository.MappingQueryRepo,
+	cmdRepo repository.MappingCmdRepo,
 	mappingId valueObject.MappingId,
 ) error {
-	mappingEntity, err := queryRepo.GetMappingById(vhostHostname, mappingId)
+	mapping, err := queryRepo.ReadById(mappingId)
 	if err != nil {
 		return errors.New("MappingNotFound")
 	}
 
-	err = cmdRepo.DeleteMapping(mappingEntity)
+	err = cmdRepo.Delete(mappingId)
 	if err != nil {
 		log.Printf("DeleteMappingError: %v", err)
 		return errors.New("DeleteMappingInfraError")
 	}
 
-	log.Printf("Mapping '%v' deleted.", vhostHostname)
+	log.Printf(
+		"Mapping '%s' from '%s' deleted.",
+		mapping.Path.String(),
+		mapping.Hostname.String(),
+	)
 
 	return nil
 }
