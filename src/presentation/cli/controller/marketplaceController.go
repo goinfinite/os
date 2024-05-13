@@ -25,7 +25,7 @@ func NewMarketplaceController(
 	}
 }
 
-func (controller MarketplaceController) GetCatalog() *cobra.Command {
+func (controller *MarketplaceController) GetCatalog() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-catalog",
 		Short: "GetCatalogItems",
@@ -34,7 +34,7 @@ func (controller MarketplaceController) GetCatalog() *cobra.Command {
 				controller.persistentDbSvc,
 			)
 
-			catalogItems, err := useCase.GetMarketplaceCatalog(marketplaceQueryRepo)
+			catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -66,7 +66,7 @@ func parseDataFields(
 	return dataFields
 }
 
-func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
+func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	var catalogIdInt int
 	var hostnameStr string
 	var urlPath string
@@ -131,7 +131,7 @@ func (controller MarketplaceController) InstallCatalogItem() *cobra.Command {
 	return cmd
 }
 
-func (controller MarketplaceController) DeleteInstalledItem() *cobra.Command {
+func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var installedIdInt int
 	var shouldUninstallServices bool
 	var shouldRemoveFiles bool

@@ -89,14 +89,14 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	)
 
 	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
-	marketplaceInstalledsGroup.GET("/", marketplaceController.GetInstalledItems)
+	marketplaceInstalledsGroup.GET("/", marketplaceController.ReadInstalledItems)
 	marketplaceInstalledsGroup.DELETE(
 		"/:installedId/",
 		marketplaceController.DeleteInstalledItem,
 	)
 
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
-	marketplaceCatalogGroup.GET("/", marketplaceController.GetCatalog)
+	marketplaceCatalogGroup.GET("/", marketplaceController.ReadCatalog)
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
 }
 
@@ -104,7 +104,7 @@ func (router Router) o11yRoutes(baseRoute *echo.Group) {
 	o11yGroup := baseRoute.Group("/o11y")
 
 	o11yController := apiController.NewO11yController(router.transientDbSvc)
-	o11yGroup.GET("/overview/", o11yController.GetO11yOverview)
+	o11yGroup.GET("/overview/", o11yController.ReadOverview)
 }
 
 func (router Router) runtimeRoutes(baseRoute *echo.Group) {
@@ -115,34 +115,47 @@ func (router Router) runtimeRoutes(baseRoute *echo.Group) {
 
 func (router Router) servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup := baseRoute.Group("/services")
-	servicesGroup.GET("/", apiController.GetServicesController)
-	servicesGroup.GET("/installables/", apiController.GetInstallableServicesController)
-	servicesGroup.POST("/installables/", apiController.CreateInstallableServiceController)
-	servicesGroup.POST("/custom/", apiController.CreateCustomServiceController)
-	servicesGroup.PUT("/", apiController.UpdateServiceController)
-	servicesGroup.DELETE("/:svcName/", apiController.DeleteServiceController)
+	servicesController := apiController.NewServicesController(
+		router.persistentDbSvc,
+	)
+
+	servicesGroup.GET("/", servicesController.Read)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
+	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
+	servicesGroup.POST("/custom/", servicesController.CreateCustom)
+	servicesGroup.PUT("/", servicesController.Update)
+	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
 }
 
 func (router Router) sslRoutes(baseRoute *echo.Group) {
 	sslGroup := baseRoute.Group("/ssl")
-	sslGroup.GET("/", apiController.GetSslPairsController)
-	sslGroup.POST("/", apiController.CreateSslPairController)
-	sslGroup.DELETE("/:sslPairId/", apiController.DeleteSslPairController)
-	sslGroup.PUT("/vhost/", apiController.DeleteSslPairVhostsController)
-	go apiController.SslCertificateWatchdogController()
+	sslController := apiController.NewSslController(
+		router.persistentDbSvc,
+	)
+
+	sslGroup.GET("/", sslController.Read)
+	sslGroup.POST("/", sslController.Create)
+	sslGroup.DELETE("/:sslPairId/", sslController.Delete)
+	sslGroup.PUT("/vhost/", sslController.DeleteVhosts)
+	go sslController.SslCertificateWatchdog()
 }
 
 func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	vhostsGroup := baseRoute.Group("/vhosts")
-	vhostsGroup.GET("/", apiController.GetVirtualHostsController)
-	vhostsGroup.POST("/", apiController.CreateVirtualHostController)
-	vhostsGroup.DELETE("/:hostname/", apiController.DeleteVirtualHostController)
+	vhostController := apiController.NewVirtualHostController(
+		router.persistentDbSvc,
+	)
 
-	vhostsGroup.GET("/mapping/", apiController.GetVirtualHostsWithMappingsController)
-	vhostsGroup.POST("/mapping/", apiController.CreateVirtualHostMappingController)
-	vhostsGroup.DELETE(
-		"/mapping/:hostname/:mappingId/",
-		apiController.DeleteVirtualHostMappingController,
+	vhostsGroup.GET("/", vhostController.Get)
+	vhostsGroup.POST("/", vhostController.Create)
+	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
+
+	mappingsGroup := vhostsGroup.Group("/mapping")
+	mappingsGroup.GET("/", vhostController.GetWithMappings)
+	mappingsGroup.POST("/", vhostController.CreateMapping)
+	mappingsGroup.DELETE(
+		"/:mappingId/",
+		vhostController.DeleteMapping,
 	)
 }
 

@@ -7,13 +7,27 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
-// GetServices	 godoc
-// @Summary      GetServices
+type ServicesController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewServicesController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *ServicesController {
+	return &ServicesController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+// ReadServices	 godoc
+// @Summary      ReadServices
 // @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
@@ -21,7 +35,7 @@ import (
 // @Produce      json
 // @Success      200 {array} dto.ServiceWithMetrics
 // @Router       /services/ [get]
-func GetServicesController(c echo.Context) error {
+func (controller *ServicesController) Read(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
@@ -31,8 +45,8 @@ func GetServicesController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, servicesList)
 }
 
-// GetServices	 godoc
-// @Summary      GetInstallableServices
+// ReadInstallableServices	 godoc
+// @Summary      ReadInstallableServices
 // @Description  List installable services.
 // @Tags         services
 // @Security     Bearer
@@ -40,7 +54,7 @@ func GetServicesController(c echo.Context) error {
 // @Produce      json
 // @Success      200 {array} entity.InstallableService
 // @Router       /services/installables/ [get]
-func GetInstallableServicesController(c echo.Context) error {
+func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 	if err != nil {
@@ -79,7 +93,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /services/installables/ [post]
-func CreateInstallableServiceController(c echo.Context) error {
+func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -133,14 +147,16 @@ func CreateInstallableServiceController(c echo.Context) error {
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		mappingQueryRepo,
+		mappingCmdRepo,
 		vhostQueryRepo,
-		vhostCmdRepo,
 		createInstallableServiceDto,
 	)
 
@@ -161,7 +177,7 @@ func CreateInstallableServiceController(c echo.Context) error {
 // @Param        createCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /services/custom/ [post]
-func CreateCustomServiceController(c echo.Context) error {
+func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	requiredParams := []string{"name", "type", "command"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -210,14 +226,16 @@ func CreateCustomServiceController(c echo.Context) error {
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 	err := useCase.CreateCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
+		mappingQueryRepo,
+		mappingCmdRepo,
 		vhostQueryRepo,
-		vhostCmdRepo,
 		createCustomServiceDto,
 	)
 
@@ -238,7 +256,7 @@ func CreateCustomServiceController(c echo.Context) error {
 // @Param        updateServiceDto	body dto.UpdateService	true	"UpdateServiceDetails"
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /services/ [put]
-func UpdateServiceController(c echo.Context) error {
+func (controller *ServicesController) Update(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
@@ -305,14 +323,14 @@ func UpdateServiceController(c echo.Context) error {
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.UpdateService(
 		servicesQueryRepo,
 		servicesCmdRepo,
-		vhostQueryRepo,
-		vhostCmdRepo,
+		mappingQueryRepo,
+		mappingCmdRepo,
 		updateSvcDto,
 	)
 	if err != nil {
@@ -332,17 +350,17 @@ func UpdateServiceController(c echo.Context) error {
 // @Param        svcName path string true "ServiceName"
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /services/{svcName}/ [delete]
-func DeleteServiceController(c echo.Context) error {
+func (controller *ServicesController) Delete(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteService(
 		servicesQueryRepo,
 		servicesCmdRepo,
-		vhostCmdRepo,
+		mappingCmdRepo,
 		svcName,
 	)
 	if err != nil {

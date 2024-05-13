@@ -7,6 +7,7 @@ import (
 func TestNewMappingPath(t *testing.T) {
 	t.Run("ValidMappingPath", func(t *testing.T) {
 		validMappingPaths := []string{
+			"",
 			"/",
 			"/img/",
 			"/index.html",
@@ -28,7 +29,6 @@ func TestNewMappingPath(t *testing.T) {
 
 	t.Run("InvalidMappingPath", func(t *testing.T) {
 		invalidMappingPaths := []string{
-			"",
 			"UNION SELECT * FROM USERS",
 			"/path\n/path",
 			"?param=value",

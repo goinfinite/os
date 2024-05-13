@@ -96,13 +96,9 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetInlineHtmlContent:
-        type: string
-      targetServiceName:
-        type: string
       targetType:
         type: string
-      targetUrl:
+      targetValue:
         type: string
     type: object
   dto.CreateSslPair:
@@ -355,13 +351,9 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetInlineHtmlContent:
-        type: string
-      targetServiceName:
-        type: string
       targetType:
         type: string
-      targetUrl:
+      targetValue:
         type: string
     type: object
   entity.MarketplaceCatalogItem:
@@ -384,11 +376,11 @@ definitions:
         type: array
       name:
         type: string
-      screenshotUrls:
+      requiredServiceNames:
         items:
           type: string
         type: array
-      services:
+      screenshotUrls:
         items:
           type: string
         type: array
@@ -423,6 +415,8 @@ definitions:
         type: string
       updatedAt:
         type: integer
+      urlPath:
+        type: string
     type: object
   entity.O11yOverview:
     properties:
@@ -615,13 +609,9 @@ definitions:
         type: string
       targetHttpResponseCode:
         type: integer
-      targetInlineHtmlContent:
-        type: string
-      targetServiceName:
-        type: string
       targetType:
         type: string
-      targetUrl:
+      targetValue:
         type: string
     type: object
   valueObject.PortBinding:
@@ -1234,7 +1224,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetMarketplaceCatalog
+      summary: ReadCatalog
       tags:
       - marketplace
     post:
@@ -1255,7 +1245,7 @@ paths:
           description: MarketplaceCatalogItemInstalled
           schema:
             type: object
-      summary: InstallMarketplaceCatalogItem
+      summary: InstallCatalogItem
       tags:
       - marketplace
   /marketplace/installed/:
@@ -1274,7 +1264,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetMarketplaceInstalledItems
+      summary: ReadInstalledItems
       tags:
       - marketplace
   /marketplace/installed/{installedId}/:
@@ -1305,7 +1295,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteMarketplaceInstalledItem
+      summary: DeleteInstalledItem
       tags:
       - marketplace
   /o11y/overview/:
@@ -1392,7 +1382,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetServices
+      summary: ReadServices
       tags:
       - services
     put:
@@ -1481,7 +1471,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetInstallableServices
+      summary: ReadInstallableServices
       tags:
       - services
     post:
@@ -1523,7 +1513,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetSslPair
+      summary: ReadSslPairs
       tags:
       - ssl
     post:
@@ -1546,7 +1536,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewSslPair
+      summary: CreateSslPair
       tags:
       - ssl
   /ssl/{sslPairId}/:
@@ -1635,7 +1625,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewVirtualHost
+      summary: CreateVirtualHost
       tags:
       - vhosts
   /vhosts/{hostname}/:
@@ -1703,20 +1693,15 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateMapping
+      summary: CreateVirtualHostMapping
       tags:
       - vhosts
-  /vhosts/mapping/{hostname}/{mappingId}/:
+  /vhosts/mapping/{mappingId}/:
     delete:
       consumes:
       - application/json
       description: Delete a vhost mapping.
       parameters:
-      - description: Hostname
-        in: path
-        name: hostname
-        required: true
-        type: string
       - description: MappingId
         in: path
         name: mappingId
@@ -1731,7 +1716,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: DeleteMapping
+      summary: DeleteVirtualHostMapping
       tags:
       - vhosts
 securityDefinitions:

@@ -120,7 +120,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	), nil
 }
 
-func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
+func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
 	crtFilePathsStr, err := infraHelper.RunCmd(
@@ -152,7 +152,7 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 
 		sslPair, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			log.Printf("FailedToGetSslPair (%s): %s", crtFilePath, err.Error())
+			log.Printf("FailedToReadSslPair (%s): %s", crtFilePath, err.Error())
 			continue
 		}
 
@@ -180,8 +180,8 @@ func (repo SslQueryRepo) GetSslPairs() ([]entity.SslPair, error) {
 	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) GetSslPairById(sslId valueObject.SslId) (entity.SslPair, error) {
-	sslPairs, err := repo.GetSslPairs()
+func (repo SslQueryRepo) ReadById(sslId valueObject.SslId) (entity.SslPair, error) {
+	sslPairs, err := repo.Read()
 	if err != nil {
 		return entity.SslPair{}, err
 	}

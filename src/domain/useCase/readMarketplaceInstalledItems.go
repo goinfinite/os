@@ -8,13 +8,13 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetMarketplaceInstalledItems(
+func ReadMarketplaceInstalledItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 ) ([]entity.MarketplaceInstalledItem, error) {
-	installedItems, err := marketplaceQueryRepo.GetInstalledItems()
+	installedItems, err := marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
-		log.Printf("GetMarketplaceInstalledItemsError: %s", err.Error())
-		return nil, errors.New("GetMarketplaceInstalledItemsInfraError")
+		log.Printf("ReadMarketplaceInstalledItemsError: %s", err.Error())
+		return nil, errors.New("ReadMarketplaceInstalledItemsInfraError")
 	}
 
 	return installedItems, nil

@@ -8,6 +8,6 @@ mappings:
   - path: /
     matchPattern: begins-with
     targetType: service
-    targetServiceName: php
+    targetValue: php
 estimatedSizeBytes: 2000000000
 avatarUrl: https://speedia.net/assets/os/marketplace/php-mysql/php-mysql-avatar.jpg
