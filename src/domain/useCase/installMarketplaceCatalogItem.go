@@ -12,35 +12,35 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-func checkRequiredDataFields(
+func inspectReceivedDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
-	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
-) []valueObject.MarketplaceCatalogItemDataField {
-	missingRequiredDataFields := []valueObject.MarketplaceCatalogItemDataField{}
-
-	receivedDataFieldsKeysStr := []string{}
+	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
+) error {
+	receivedDataFieldsStrList := []string{}
 	for _, receivedDataField := range receivedDataFields {
-		receivedDataFieldsKeysStr = append(
-			receivedDataFieldsKeysStr,
+		receivedDataFieldsStrList = append(
+			receivedDataFieldsStrList,
 			receivedDataField.Name.String(),
 		)
 	}
 
-	for _, catalogDataField := range catalogDataFields {
-		if !catalogDataField.IsRequired {
-			continue
-		}
-
-		requiredDataFieldStr := catalogDataField.Name.String()
-		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
+	missingRequiredDataFields := []string{}
+	for _, requiredDataField := range requiredDataFields {
+		requiredDataFieldNameStr := requiredDataField.Name.String()
+		if !slices.Contains(receivedDataFieldsStrList, requiredDataFieldNameStr) {
 			missingRequiredDataFields = append(
 				missingRequiredDataFields,
-				catalogDataField,
+				requiredDataFieldNameStr,
 			)
 		}
 	}
 
-	return missingRequiredDataFields
+	if len(missingRequiredDataFields) > 0 {
+		missingRequiredDataFieldsStr := strings.Join(missingRequiredDataFields, ",")
+		return errors.New("MissingRequiredDataFields: " + missingRequiredDataFieldsStr)
+	}
+
+	return nil
 }
 
 func InstallMarketplaceCatalogItem(
@@ -62,23 +62,12 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	missingRequiredDataFields := checkRequiredDataFields(
+	err = inspectReceivedDataFields(
 		installDto.DataFields,
 		catalogItem.DataFields,
 	)
-
-	hasRequiredDataFields := len(missingRequiredDataFields) == 0
-	if !hasRequiredDataFields {
-		missingDataFieldsStrList := []string{}
-		for _, missingDataField := range missingRequiredDataFields {
-			missingDataFieldsStrList = append(
-				missingDataFieldsStrList,
-				missingDataField.Name.String(),
-			)
-		}
-		missingDataFieldsStr := strings.Join(missingDataFieldsStrList, ", ")
-
-		return errors.New("MissingRequiredDataField: " + missingDataFieldsStr)
+	if err != nil {
+		return err
 	}
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
