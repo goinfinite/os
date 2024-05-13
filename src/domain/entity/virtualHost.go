@@ -8,6 +8,7 @@ type VirtualHost struct {
 	Type           valueObject.VirtualHostType `json:"type"`
 	RootDirectory  valueObject.UnixFilePath    `json:"rootDirectory"`
 	ParentHostname *valueObject.Fqdn           `json:"parentHostname"`
+	Mappings       []Mapping                   `json:"mappings"`
 }
 
 func NewVirtualHost(
@@ -16,6 +17,7 @@ func NewVirtualHost(
 	vhostType valueObject.VirtualHostType,
 	rootDirectory valueObject.UnixFilePath,
 	parentHostname *valueObject.Fqdn,
+	mappings []Mapping,
 ) VirtualHost {
 	return VirtualHost{
 		Id:             id,
@@ -23,5 +25,6 @@ func NewVirtualHost(
 		Type:           vhostType,
 		RootDirectory:  rootDirectory,
 		ParentHostname: parentHostname,
+		Mappings:       mappings,
 	}
 }
