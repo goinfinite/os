@@ -73,7 +73,7 @@ const docTemplate = `{
                 "summary": "UpdateAccount",
                 "parameters": [
                     {
-                        "description": "UpdateAccount",
+                        "description": "Only id is required.",
                         "name": "updateAccountDto",
                         "in": "body",
                         "required": true,
@@ -110,7 +110,7 @@ const docTemplate = `{
                 "summary": "CreateNewAccount",
                 "parameters": [
                     {
-                        "description": "NewAccount",
+                        "description": "All props are required.",
                         "name": "createAccountDto",
                         "in": "body",
                         "required": true,
@@ -150,7 +150,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "AccountId",
+                        "description": "Account ID that will be deleted.",
                         "name": "accountId",
                         "in": "path",
                         "required": true
@@ -181,7 +181,7 @@ const docTemplate = `{
                 "summary": "GenerateJwtWithCredentials",
                 "parameters": [
                     {
-                        "description": "Login",
+                        "description": "All props are required.",
                         "name": "loginDto",
                         "in": "body",
                         "required": true,
@@ -255,7 +255,7 @@ const docTemplate = `{
                 "summary": "UpdateCron",
                 "parameters": [
                     {
-                        "description": "UpdateCron",
+                        "description": "Only id is required.",
                         "name": "updateCronDto",
                         "in": "body",
                         "required": true,
@@ -292,7 +292,7 @@ const docTemplate = `{
                 "summary": "CreateNewCron",
                 "parameters": [
                     {
-                        "description": "NewCron",
+                        "description": "comment is optional.",
                         "name": "createCronDto",
                         "in": "body",
                         "required": true,
@@ -332,7 +332,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "CronId",
+                        "description": "Cron ID that will be deleted.",
                         "name": "cronId",
                         "in": "path",
                         "required": true
@@ -369,7 +369,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "DatabaseType",
+                        "description": "DatabaseType (like mysql, postgres)",
                         "name": "dbType",
                         "in": "path",
                         "required": true
@@ -407,13 +407,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "DatabaseType",
+                        "description": "DatabaseType (like mysql, postgres)",
                         "name": "dbType",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "CreateDatabase",
+                        "description": "All props are required.",
                         "name": "createDatabaseDto",
                         "in": "body",
                         "required": true,
@@ -453,7 +453,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "DatabaseType",
+                        "description": "DatabaseType (like mysql, postgres)",
                         "name": "dbType",
                         "in": "path",
                         "required": true
@@ -497,7 +497,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "DatabaseType",
+                        "description": "DatabaseType (like mysql, postgres)",
                         "name": "dbType",
                         "in": "path",
                         "required": true
@@ -510,7 +510,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "CreateDatabaseUser",
+                        "description": "privileges is optional. When not provided, privileges will be 'ALL'.",
                         "name": "createDatabaseUserDto",
                         "in": "body",
                         "required": true,
@@ -550,7 +550,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "DatabaseType",
+                        "description": "DatabaseType (like mysql, postgres)",
                         "name": "dbType",
                         "in": "path",
                         "required": true
@@ -564,7 +564,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "DatabaseUsername",
+                        "description": "Database username that will be deleted.",
                         "name": "dbUser",
                         "in": "path",
                         "required": true
@@ -681,7 +681,7 @@ const docTemplate = `{
                 "summary": "CreateNewFile",
                 "parameters": [
                     {
-                        "description": "NewFile",
+                        "description": "permissions is optional. When not provided, permissions will be '644' for files and '755' for directories.",
                         "name": "createFileDto",
                         "in": "body",
                         "required": true,
@@ -720,7 +720,7 @@ const docTemplate = `{
                 "summary": "CompressFiles",
                 "parameters": [
                     {
-                        "description": "CompressFiles",
+                        "description": "All props are required.",
                         "name": "compressFilesDto",
                         "in": "body",
                         "required": true,
@@ -765,7 +765,7 @@ const docTemplate = `{
                 "summary": "CopyFile",
                 "parameters": [
                     {
-                        "description": "NewFileCopy",
+                        "description": "All props are required.",
                         "name": "copyFileDto",
                         "in": "body",
                         "required": true,
@@ -804,7 +804,7 @@ const docTemplate = `{
                 "summary": "DeleteFiles",
                 "parameters": [
                     {
-                        "description": "SourcePath",
+                        "description": "File paths that will be deleted",
                         "name": "sourcePaths",
                         "in": "body",
                         "required": true,
@@ -846,7 +846,7 @@ const docTemplate = `{
                 "summary": "ExtractFiles",
                 "parameters": [
                     {
-                        "description": "ExtractFiles",
+                        "description": "All props are required.",
                         "name": "extractFilesDto",
                         "in": "body",
                         "required": true,
@@ -959,7 +959,7 @@ const docTemplate = `{
                 "summary": "InstallCatalogItem",
                 "parameters": [
                     {
-                        "description": "InstallMarketplaceCatalogItem (directory is optional)",
+                        "description": "directory is optional. When not provided, directory will be hostname root directory.",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
@@ -1030,20 +1030,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "MarketplaceInstalledItemId",
+                        "description": "Marketplace installed item ID that will be deleted.",
                         "name": "installedId",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "description": "ShouldUninstallServices",
+                        "description": "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'.",
                         "name": "shouldUninstallServices",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "ShouldRemoveFiles",
+                        "description": "Should remove all files that were created with the marketplace item installation? Default is 'true'.",
                         "name": "shouldRemoveFiles",
                         "in": "query"
                     }
@@ -1148,7 +1148,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "UpdatePhpConfigs",
+                        "description": "modules and settings are optional.",
                         "name": "updatePhpConfigsDto",
                         "in": "body",
                         "required": true,
@@ -1216,7 +1216,7 @@ const docTemplate = `{
                 "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "UpdateServiceDetails",
+                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped' or 'uninstalled'.",
                         "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
@@ -1255,7 +1255,7 @@ const docTemplate = `{
                 "summary": "CreateCustomService",
                 "parameters": [
                     {
-                        "description": "CreateCustomService",
+                        "description": "name, type and command is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
                         "name": "createCustomServiceDto",
                         "in": "body",
                         "required": true,
@@ -1323,7 +1323,7 @@ const docTemplate = `{
                 "summary": "CreateInstallableService",
                 "parameters": [
                     {
-                        "description": "CreateInstallableService",
+                        "description": "Only name is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
                         "name": "createInstallableServiceDto",
                         "in": "body",
                         "required": true,
@@ -1363,7 +1363,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ServiceName",
+                        "description": "Service name that will be deleted.",
                         "name": "svcName",
                         "in": "path",
                         "required": true
@@ -1428,7 +1428,7 @@ const docTemplate = `{
                 "summary": "CreateSslPair",
                 "parameters": [
                     {
-                        "description": "NewSslPair",
+                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be in Base64.",
                         "name": "createSslPairDto",
                         "in": "body",
                         "required": true,
@@ -1467,7 +1467,7 @@ const docTemplate = `{
                 "summary": "DeleteSslPairVhosts",
                 "parameters": [
                     {
-                        "description": "SslPairVhostsDeleted",
+                        "description": "All props are required.",
                         "name": "deleteSslPairVhostsDto",
                         "in": "body",
                         "required": true,
@@ -1507,7 +1507,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "SslPairId",
+                        "description": "SSL Pair ID that will be deleted.",
                         "name": "sslPairId",
                         "in": "path",
                         "required": true
@@ -1572,7 +1572,7 @@ const docTemplate = `{
                 "summary": "CreateVirtualHost",
                 "parameters": [
                     {
-                        "description": "NewVirtualHost (only hostname is required).",
+                        "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required.",
                         "name": "createVirtualHostDto",
                         "in": "body",
                         "required": true,
@@ -1640,7 +1640,7 @@ const docTemplate = `{
                 "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
-                        "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
+                        "description": "hostname, path and targetType are required.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.\u003cbr /\u003etargetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.\u003cbr /\u003etargetValue must have the same value as the targetType requires.",
                         "name": "createMappingDto",
                         "in": "body",
                         "required": true,
@@ -1680,7 +1680,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "MappingId",
+                        "description": "Mappind ID that will be deleted.",
                         "name": "mappingId",
                         "in": "path",
                         "required": true
@@ -1717,7 +1717,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Hostname",
+                        "description": "Hostname that will be deleted.",
                         "name": "hostname",
                         "in": "path",
                         "required": true
