@@ -15,7 +15,8 @@ type Mapping struct {
 	TargetType                 string `gorm:"not null"`
 	TargetValue                *string
 	TargetHttpResponseCode     *string
-	MarketplaceInstalledItemId uint
+	VirtualHostId              *uint
+	MarketplaceInstalledItemId *uint
 	CreatedAt                  time.Time `gorm:"not null"`
 	UpdatedAt                  time.Time `gorm:"not null"`
 }
