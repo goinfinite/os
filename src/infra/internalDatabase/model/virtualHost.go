@@ -5,6 +5,8 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 )
 
 type VirtualHost struct {
@@ -16,6 +18,18 @@ type VirtualHost struct {
 	Mappings       []Mapping
 	CreatedAt      time.Time `gorm:"not null"`
 	UpdatedAt      time.Time `gorm:"not null"`
+}
+
+func (model VirtualHost) InitialEntries() []interface{} {
+	primaryVhost, _ := infraHelper.GetPrimaryVirtualHost()
+	primaryEntry := VirtualHost{
+		ID:            1,
+		Hostname:      primaryVhost.String(),
+		Type:          "primary",
+		RootDirectory: infraData.GlobalConfigs.PrimaryPublicDir,
+	}
+
+	return []interface{}{primaryEntry}
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
@@ -67,4 +81,28 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr,
 		mappings,
 	), nil
+}
+
+func (VirtualHost) ToModel(entity entity.VirtualHost) (VirtualHost, error) {
+	var parentHostnamePtr *string
+	if entity.ParentHostname != nil {
+		parentHostnameStr := entity.ParentHostname.String()
+		parentHostnamePtr = &parentHostnameStr
+	}
+
+	mappings := []Mapping{}
+	for _, mapping := range entity.Mappings {
+		mappingEntity := Mapping{}.ToModel(mapping)
+		mappingEntity.ID = entity.Id.Get()
+		mappings = append(mappings, mappingEntity)
+	}
+
+	return VirtualHost{
+		ID:             entity.Id.Get(),
+		Hostname:       entity.Hostname.String(),
+		Type:           entity.Type.String(),
+		RootDirectory:  entity.RootDirectory.String(),
+		ParentHostname: parentHostnamePtr,
+		Mappings:       mappings,
+	}, nil
 }
