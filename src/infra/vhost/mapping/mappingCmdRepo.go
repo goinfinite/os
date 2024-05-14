@@ -34,6 +34,7 @@ func NewMappingCmdRepo(
 
 func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	createDto dto.CreateMapping,
+	vhostId valueObject.VirtualHostId,
 ) dbModel.Mapping {
 	var targetValuePtr *string
 	if createDto.TargetValue != nil {
@@ -55,6 +56,7 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 		createDto.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
+		vhostId.Get(),
 	)
 }
 
@@ -375,7 +377,13 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	mappingModel := repo.parseCreateDtoToModel(createDto)
+	vhostQueryRepo := vhostInfra.NewVhostQueryRepo(repo.persistentDbSvc)
+	vhost, err := vhostQueryRepo.GetByHostname(createDto.Hostname)
+	if err != nil {
+		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())
+	}
+
+	mappingModel := repo.parseCreateDtoToModel(createDto, vhost.Id)
 	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
 	if createResult.Error != nil {
 		return mappingId, createResult.Error
