@@ -553,10 +553,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
-	entities []entity.MarketplaceInstalledItem, err error,
+	[]entity.MarketplaceInstalledItem, error,
 ) {
+	entities := []entity.MarketplaceInstalledItem{}
+
 	models := []dbModel.MarketplaceInstalledItem{}
-	err = repo.persistentDbSvc.Handler.
+	err := repo.persistentDbSvc.Handler.
 		Model(models).
 		Preload("Mappings").
 		Find(&models).Error
