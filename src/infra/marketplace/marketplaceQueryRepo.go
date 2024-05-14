@@ -559,7 +559,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 
 	models := []dbModel.MarketplaceInstalledItem{}
 	err := repo.persistentDbSvc.Handler.
-		Model(models).
+		Model(&dbModel.MarketplaceInstalledItem{}).
 		Preload("Mappings").
 		Find(&models).Error
 	if err != nil {
@@ -585,13 +585,10 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 	installedId valueObject.MarketplaceInstalledItemId,
 ) (entity entity.MarketplaceInstalledItem, err error) {
-	query := dbModel.Mapping{
-		ID: uint(installedId.Get()),
-	}
-
 	var model dbModel.MarketplaceInstalledItem
 	err = repo.persistentDbSvc.Handler.
-		Model(query).
+		Model(&dbModel.MarketplaceInstalledItem{}).
+		Where("ID = ?", installedId.Get()).
 		Preload("Mappings").
 		Find(&model).Error
 	if err != nil {

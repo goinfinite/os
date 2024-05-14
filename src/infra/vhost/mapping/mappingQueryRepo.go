@@ -27,13 +27,10 @@ func NewMappingQueryRepo(
 func (repo *MappingQueryRepo) ReadById(
 	id valueObject.MappingId,
 ) (entity entity.Mapping, err error) {
-	query := dbModel.Mapping{
-		ID: uint(id.Get()),
-	}
-
 	model := dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
-		Model(&query).
+		Model(&dbModel.Mapping{}).
+		Where("ID = ?", id.Get()).
 		First(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
@@ -50,13 +47,10 @@ func (repo *MappingQueryRepo) ReadById(
 func (repo *MappingQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
 ) (entities []entity.Mapping, err error) {
-	query := dbModel.Mapping{
-		Hostname: hostname.String(),
-	}
-
 	models := []dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
-		Model(query).
+		Model(&dbModel.Mapping{}).
+		Where("Hostname = ?", hostname.String()).
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")
@@ -78,15 +72,10 @@ func (repo *MappingQueryRepo) ReadByHostname(
 func (repo *MappingQueryRepo) ReadByServiceName(
 	serviceName valueObject.ServiceName,
 ) (entities []entity.Mapping, err error) {
-	svcNameStr := serviceName.String()
-	query := dbModel.Mapping{
-		TargetType:  "service",
-		TargetValue: &svcNameStr,
-	}
-
 	models := []dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
-		Model(query).
+		Model(&dbModel.Mapping{}).
+		Where("TargetType = service AND TargetValue = ?", serviceName.String()).
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")
@@ -118,6 +107,7 @@ func (repo *MappingQueryRepo) ReadWithMappings() (
 
 	for _, vhost := range vhosts {
 		mappings, err := repo.ReadByHostname(vhost.Hostname)
+		log.Printf("%s: %+v", vhost.Hostname.String(), mappings)
 		if err != nil {
 			log.Printf("[%s] ReadMappingsError: %s", vhost.Hostname, err.Error())
 			continue
