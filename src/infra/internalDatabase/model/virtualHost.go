@@ -40,7 +40,7 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 	}
 
 	var parentHostnamePtr *valueObject.Fqdn
-	if model.ParentHostname == nil {
+	if model.ParentHostname != nil {
 		parentHostname, err := valueObject.NewFqdn(*model.ParentHostname)
 		if err != nil {
 			return vhost, err
