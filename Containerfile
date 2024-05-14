@@ -26,10 +26,10 @@ COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /speedia/supervisord.conf
 
-COPY /bin/sos /speedia/sos
+COPY /bin/os /speedia/os
 
-RUN chmod +x /speedia/sos \
-    && ln -s /speedia/sos /usr/bin/sos
+RUN chmod +x /speedia/os \
+    && ln -s /speedia/os /usr/bin/os
 
 EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 5432/tcp 6379/tcp 1618/tcp
 
