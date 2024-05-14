@@ -107,7 +107,6 @@ func (repo *MappingQueryRepo) ReadWithMappings() (
 
 	for _, vhost := range vhosts {
 		mappings, err := repo.ReadByHostname(vhost.Hostname)
-		log.Printf("%s: %+v", vhost.Hostname.String(), mappings)
 		if err != nil {
 			log.Printf("[%s] ReadMappingsError: %s", vhost.Hostname, err.Error())
 			continue
