@@ -1,6 +1,8 @@
 package dbModel
 
 import (
+	"time"
+
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
@@ -12,6 +14,8 @@ type VirtualHost struct {
 	RootDirectory  string `gorm:"not null"`
 	ParentHostname *string
 	Mappings       []Mapping
+	CreatedAt      time.Time `gorm:"not null"`
+	UpdatedAt      time.Time `gorm:"not null"`
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
