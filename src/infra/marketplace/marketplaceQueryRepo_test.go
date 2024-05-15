@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func TestVirtualHostQueryRepo(t *testing.T) {
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
 	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
 	testHelpers.LoadEnvVars()
 
