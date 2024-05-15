@@ -68,7 +68,7 @@
                 "parameters": [
                     {
                         "description": "UpdateAccount",
-                        "name": "updateAccountDto",
+                        "name": "updateDto",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -2032,6 +2032,9 @@
                 },
                 "shouldUpdateApiKey": {
                     "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },

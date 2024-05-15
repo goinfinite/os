@@ -14,7 +14,7 @@ type AccQueryRepo struct {
 }
 
 func accDetailsFactory(userInfo *user.User) (entity.Account, error) {
-	accountId, err := valueObject.NewAccountIdFromString(userInfo.Uid)
+	accountId, err := valueObject.NewAccountId(userInfo.Uid)
 	if err != nil {
 		return entity.Account{}, errors.New("AccountIdParseError")
 	}

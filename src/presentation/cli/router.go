@@ -26,7 +26,7 @@ func NewRouter(
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print software version",
+	Short: "ShowSoftwareVersion",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Speedia OS v0.0.1")
 	},
@@ -43,6 +43,17 @@ func (router Router) accountRoutes() {
 	accountCmd.AddCommand(cliController.CreateAccountController())
 	accountCmd.AddCommand(cliController.DeleteAccountController())
 	accountCmd.AddCommand(cliController.UpdateAccountController())
+}
+
+func (router Router) authenticationRoutes() {
+	var authCmd = &cobra.Command{
+		Use:   "auth",
+		Short: "Authentication&Authorization",
+	}
+
+	rootCmd.AddCommand(authCmd)
+	authenticationController := cliController.AuthenticationController{}
+	authCmd.AddCommand(authenticationController.Login())
 }
 
 func (router Router) cronRoutes() {
@@ -119,7 +130,7 @@ func (router Router) runtimeRoutes() {
 func (router Router) serveRoutes() {
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
-		Short: "Start the SOS server (default to port 1618)",
+		Short: "Start Speedia OS HTTPS server (port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
 			api.ApiInit(router.transientDbSvc, router.persistentDbSvc)
 		},
@@ -194,6 +205,7 @@ func (router Router) RegisterRoutes() {
 	rootCmd.AddCommand(versionCmd)
 
 	router.accountRoutes()
+	router.authenticationRoutes()
 	router.cronRoutes()
 	router.databaseRoutes()
 	router.marketplaceRoutes()

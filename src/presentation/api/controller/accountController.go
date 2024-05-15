@@ -71,34 +71,6 @@ func CreateAccountController(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "AccountCreated")
 }
 
-// DeleteAccount godoc
-// @Summary      DeleteAccount
-// @Description  Delete an account.
-// @Tags         account
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        accountId 	  path   string  true  "AccountId"
-// @Success      200 {object} object{} "AccountDeleted"
-// @Router       /account/{accountId}/ [delete]
-func DeleteAccountController(c echo.Context) error {
-	accountId := valueObject.NewAccountIdFromStringPanic(c.Param("accountId"))
-
-	accQueryRepo := accountInfra.AccQueryRepo{}
-	accCmdRepo := accountInfra.AccCmdRepo{}
-
-	err := useCase.DeleteAccount(
-		accQueryRepo,
-		accCmdRepo,
-		accountId,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "AccountDeleted")
-}
-
 // UpdateAccount godoc
 // @Summary      UpdateAccount
 // @Description  Update an account (Only id is required).
@@ -106,21 +78,22 @@ func DeleteAccountController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateAccountDto 	  body dto.UpdateAccount  true  "UpdateAccount"
+// @Param        updateDto 	  body dto.UpdateAccount  true  "UpdateAccount"
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /account/ [put]
 func UpdateAccountController(c echo.Context) error {
-	requiredParams := []string{"id"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	var accountIdPtr *valueObject.AccountId
+	if requestBody["id"] != nil {
+		accountId := valueObject.NewAccountIdPanic(requestBody["id"])
+		accountIdPtr = &accountId
+	}
 
-	var accountId valueObject.AccountId
-	switch id := requestBody["id"].(type) {
-	case string:
-		accountId = valueObject.NewAccountIdFromStringPanic(id)
-	case float64:
-		accountId = valueObject.NewAccountIdFromFloatPanic(id)
+	var usernamePtr *valueObject.Username
+	if requestBody["username"] != nil {
+		username := valueObject.NewUsernamePanic(requestBody["username"].(string))
+		usernamePtr = &username
 	}
 
 	var passPtr *valueObject.Password
@@ -135,8 +108,9 @@ func UpdateAccountController(c echo.Context) error {
 		shouldUpdateApiKeyPtr = &shouldUpdateApiKey
 	}
 
-	updateAccountDto := dto.NewUpdateAccount(
-		accountId,
+	updateDto := dto.NewUpdateAccount(
+		accountIdPtr,
+		usernamePtr,
 		passPtr,
 		shouldUpdateApiKeyPtr,
 	)
@@ -144,19 +118,24 @@ func UpdateAccountController(c echo.Context) error {
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
 
-	if updateAccountDto.Password != nil {
-		useCase.UpdateAccountPassword(
+	if updateDto.Password != nil {
+		err := useCase.UpdateAccountPassword(
 			accQueryRepo,
 			accCmdRepo,
-			updateAccountDto,
+			updateDto,
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusInternalServerError, err.Error(),
+			)
+		}
 	}
 
-	if updateAccountDto.ShouldUpdateApiKey != nil && *updateAccountDto.ShouldUpdateApiKey {
+	if updateDto.ShouldUpdateApiKey != nil && *updateDto.ShouldUpdateApiKey {
 		newKey, err := useCase.UpdateAccountApiKey(
 			accQueryRepo,
 			accCmdRepo,
-			updateAccountDto,
+			updateDto,
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -166,4 +145,32 @@ func UpdateAccountController(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "AccountUpdated")
+}
+
+// DeleteAccount godoc
+// @Summary      DeleteAccount
+// @Description  Delete an account.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        accountId 	  path   string  true  "AccountId"
+// @Success      200 {object} object{} "AccountDeleted"
+// @Router       /account/{accountId}/ [delete]
+func DeleteAccountController(c echo.Context) error {
+	accountId := valueObject.NewAccountIdPanic(c.Param("accountId"))
+
+	accQueryRepo := accountInfra.AccQueryRepo{}
+	accCmdRepo := accountInfra.AccCmdRepo{}
+
+	err := useCase.DeleteAccount(
+		accQueryRepo,
+		accCmdRepo,
+		accountId,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, "AccountDeleted")
 }

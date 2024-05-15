@@ -3,8 +3,8 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-bin = "bin/sos"
-cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sos ./sos.go"
+bin = "bin/os"
+cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/os ./os.go"
 delay = 1000
 exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
 follow_symlink = false

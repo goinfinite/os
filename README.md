@@ -33,7 +33,7 @@ If you add a new env var that is required to run the apis, please add it to the 
 When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system. For instance, if you want to set the `ENV1` variable, you can do it in the `.env` file or in the command line:
 
 ```
-ENV1=XXX /speedia/sos
+ENV1=XXX /speedia/os
 ```
 
 ### Unit Testing

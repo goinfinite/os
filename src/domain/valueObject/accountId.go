@@ -3,48 +3,33 @@ package valueObject
 import (
 	"errors"
 	"strconv"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type AccountId int64
+type AccountId uint64
 
-func NewAccountIdFromString(value string) (AccountId, error) {
-	accId, err := strconv.ParseInt(value, 10, 64)
+func NewAccountId(value interface{}) (AccountId, error) {
+	accId, err := voHelper.InterfaceToUint(value)
 	if err != nil {
 		return 0, errors.New("InvalidAccountId")
 	}
+
 	return AccountId(accId), nil
 }
 
-func NewAccountIdFromStringPanic(value string) AccountId {
-	accId, err := NewAccountIdFromString(value)
+func NewAccountIdPanic(value interface{}) AccountId {
+	accId, err := NewAccountId(value)
 	if err != nil {
 		panic(err)
 	}
 	return accId
 }
 
-func NewAccountIdFromFloat(value float64) (AccountId, error) {
-	accId, err := strconv.ParseInt(
-		strconv.FormatFloat(value, 'f', -1, 64), 10, 64,
-	)
-	if err != nil {
-		return 0, errors.New("InvalidAccountId")
-	}
-	return AccountId(accId), nil
+func (id AccountId) Get() uint64 {
+	return uint64(id)
 }
 
-func NewAccountIdFromFloatPanic(value float64) AccountId {
-	accId, err := NewAccountIdFromFloat(value)
-	if err != nil {
-		panic(err)
-	}
-	return AccountId(accId)
-}
-
-func (uid AccountId) Get() int64 {
-	return int64(uid)
-}
-
-func (uid AccountId) String() string {
-	return strconv.FormatInt(int64(uid), 10)
+func (id AccountId) String() string {
+	return strconv.FormatUint(uint64(id), 10)
 }

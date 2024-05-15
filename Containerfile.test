@@ -29,6 +29,6 @@ COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 COPY /container/supervisord.conf /speedia/supervisord.conf
 
 RUN go mod download \
-    && go build -o sos
+    && go build -o os
 
 ENTRYPOINT ["go", "test", "-v", "./..."]
