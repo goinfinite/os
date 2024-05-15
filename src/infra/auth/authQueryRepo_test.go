@@ -1,6 +1,7 @@
 package authInfra
 
 import (
+	"encoding/base64"
 	"os"
 	"testing"
 	"time"
@@ -13,13 +14,27 @@ import (
 func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
+	authQueryRepo := AuthQueryRepo{}
+	authCmdRepo := AuthCmdRepo{}
+
+	token, err := authCmdRepo.GenerateSessionToken(
+		valueObject.AccountId(1000),
+		valueObject.UnixTime(
+			time.Now().Add(3*time.Hour).Unix(),
+		),
+		valueObject.NewIpAddressPanic("127.0.0.1"),
+	)
+	if err != nil {
+		t.Errorf("UnexpectedError: %s", err.Error())
+	}
+
 	t.Run("ValidLoginCredentials", func(t *testing.T) {
 		login := dto.NewLogin(
 			valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME")),
 			valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS")),
 			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
-		authQueryRepo := AuthQueryRepo{}
+
 		isValid := authQueryRepo.IsLoginValid(login)
 		if !isValid {
 			t.Error("Expected valid login credentials, but got invalid")
@@ -32,7 +47,7 @@ func TestAuthQueryRepo(t *testing.T) {
 			valueObject.NewPasswordPanic("wrongPassword"),
 			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
-		authQueryRepo := AuthQueryRepo{}
+
 		isValid := authQueryRepo.IsLoginValid(login)
 		if isValid {
 			t.Error("Expected invalid login credentials, but got valid")
@@ -40,20 +55,6 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ValidSessionAccessToken", func(t *testing.T) {
-		authCmdRepo := AuthCmdRepo{}
-
-		token, err := authCmdRepo.GenerateSessionToken(
-			valueObject.AccountId(1000),
-			valueObject.UnixTime(
-				time.Now().Add(3*time.Hour).Unix(),
-			),
-			valueObject.NewIpAddressPanic("127.0.0.1"),
-		)
-		if err != nil {
-			t.Errorf("UnexpectedError: %s", err.Error())
-		}
-
-		authQueryRepo := AuthQueryRepo{}
 		_, err = authQueryRepo.GetAccessTokenDetails(token.TokenStr)
 		if err != nil {
 			t.Error(err)
@@ -61,7 +62,6 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("InvalidSessionAccessToken", func(t *testing.T) {
-		authQueryRepo := AuthQueryRepo{}
 		invalidToken := valueObject.NewAccessTokenStrPanic(
 			"invalidTokenInvalidTokenInvalidTokenInvalidTokenInvalidToken",
 		)
@@ -71,5 +71,25 @@ func TestAuthQueryRepo(t *testing.T) {
 		}
 	})
 
-	// TODO: Test ApiKey
+	t.Run("DecryptValidApiKey", func(t *testing.T) {
+		tokenBytes := []byte(token.TokenStr.String())
+		apiKeyStr := base64.StdEncoding.EncodeToString(tokenBytes)
+		apiKey := valueObject.NewAccessTokenStrPanic(apiKeyStr)
+
+		_, err := authQueryRepo.decryptApiKey(apiKey)
+		if err != nil {
+			t.Errorf(
+				"Unexpected '%s' error for '%s'",
+				err.Error(),
+				apiKeyStr,
+			)
+		}
+	})
+
+	t.Run("DecryptInvalidApiKey", func(t *testing.T) {
+		_, err := authQueryRepo.decryptApiKey(token.TokenStr)
+		if err == nil {
+			t.Errorf("Expecting error for '%s'", token.TokenStr.String())
+		}
+	})
 }

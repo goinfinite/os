@@ -3,7 +3,7 @@ package useCase
 import (
 	"errors"
 	"log"
-	"slices"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -11,34 +11,41 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
-func hasRequiredDataFields(
+func requiredDataFieldsInspector(
+	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
-	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
-) bool {
-	receivedDataFieldsKeysStr := []string{}
-	for _, receivedDataField := range receivedDataFields {
-		receivedDataFieldsKeysStr = append(
-			receivedDataFieldsKeysStr,
-			receivedDataField.Name.String(),
-		)
+) error {
+	requiredDataFieldNames := []string{}
+	for _, dataField := range requiredDataFields {
+		dataFieldNameStr := dataField.Name.String()
+		requiredDataFieldNames = append(requiredDataFieldNames, dataFieldNameStr)
 	}
 
-	hasRequiredDataFields := true
-	for _, catalogDataField := range catalogDataFields {
-		if !catalogDataField.IsRequired {
+	if len(requiredDataFieldNames) == 0 {
+		return nil
+	}
+
+	receivedDataFieldNames := map[string]interface{}{}
+	for _, dataField := range receivedDataFields {
+		dataFieldNameStr := dataField.Name.String()
+		receivedDataFieldNames[dataFieldNameStr] = nil
+	}
+
+	missingDataFieldNames := []string{}
+	for _, requiredDataFieldName := range requiredDataFieldNames {
+		if _, isPresent := receivedDataFieldNames[requiredDataFieldName]; isPresent {
 			continue
 		}
-
-		requiredDataFieldStr := catalogDataField.Name.String()
-		if !slices.Contains(receivedDataFieldsKeysStr, requiredDataFieldStr) {
-			hasRequiredDataFields = false
-			break
-		}
-
-		continue
+		missingDataFieldNames = append(missingDataFieldNames, requiredDataFieldName)
 	}
 
-	return hasRequiredDataFields
+	if len(missingDataFieldNames) == 0 {
+		return nil
+	}
+
+	return errors.New(
+		"MissingRequiredDataFields: " + strings.Join(missingDataFieldNames, ","),
+	)
 }
 
 func InstallMarketplaceCatalogItem(
@@ -60,12 +67,12 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	hasRequiredDataFields := hasRequiredDataFields(
-		installDto.DataFields,
+	err = requiredDataFieldsInspector(
 		catalogItem.DataFields,
+		installDto.DataFields,
 	)
-	if !hasRequiredDataFields {
-		return errors.New("MissingRequiredDataFieldKeys")
+	if err != nil {
+		return err
 	}
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
