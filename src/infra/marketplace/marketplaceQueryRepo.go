@@ -31,20 +31,22 @@ func NewMarketplaceQueryRepo(
 
 func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 	catalogItemFilePath valueObject.UnixFilePath,
-) (map[string]interface{}, error) {
-	var catalogItemMap map[string]interface{}
-
-	catalogItemFile, err := assets.Open(catalogItemFilePath.String())
+) (catalogItemMap map[string]interface{}, err error) {
+	itemFileHandler, err := assets.Open(catalogItemFilePath.String())
 	if err != nil {
 		return catalogItemMap, err
 	}
-	defer catalogItemFile.Close()
+	defer itemFileHandler.Close()
 
-	catalogItemFileExt, _ := catalogItemFilePath.GetFileExtension()
-	isYamlFile := catalogItemFileExt == "yml" || catalogItemFileExt == "yaml"
+	itemFileExt, err := catalogItemFilePath.GetFileExtension()
+	if err != nil {
+		return catalogItemMap, err
+	}
+
+	isYamlFile := itemFileExt == "yml" || itemFileExt == "yaml"
 	if isYamlFile {
-		catalogItemYamlDecoder := yaml.NewDecoder(catalogItemFile)
-		err = catalogItemYamlDecoder.Decode(&catalogItemMap)
+		itemYamlDecoder := yaml.NewDecoder(itemFileHandler)
+		err = itemYamlDecoder.Decode(&catalogItemMap)
 		if err != nil {
 			return catalogItemMap, err
 		}
@@ -52,8 +54,8 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 		return catalogItemMap, nil
 	}
 
-	catalogItemJsonDecoder := json.NewDecoder(catalogItemFile)
-	err = catalogItemJsonDecoder.Decode(&catalogItemMap)
+	itemJsonDecoder := json.NewDecoder(itemFileHandler)
+	err = itemJsonDecoder.Decode(&catalogItemMap)
 	if err != nil {
 		return catalogItemMap, err
 	}
@@ -63,9 +65,7 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemServiceNames(
 	catalogItemSvcNamesMap interface{},
-) ([]valueObject.ServiceName, error) {
-	itemSvcNames := []valueObject.ServiceName{}
-
+) (itemSvcNames []valueObject.ServiceName, err error) {
 	rawItemSvcNames, assertOk := catalogItemSvcNamesMap.([]interface{})
 	if !assertOk {
 		return itemSvcNames, errors.New("InvalidMarketplaceCatalogItemServiceNames")
@@ -86,9 +86,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemServiceNames(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 	catalogItemMappingsMap interface{},
-) ([]valueObject.MarketplaceItemMapping, error) {
-	itemMappings := []valueObject.MarketplaceItemMapping{}
-
+) (itemMappings []valueObject.MarketplaceItemMapping, err error) {
 	if catalogItemMappingsMap == nil {
 		return itemMappings, nil
 	}
@@ -195,9 +193,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 	catalogItemDataFieldsMap interface{},
-) ([]valueObject.MarketplaceCatalogItemDataField, error) {
-	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
-
+) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
 	if catalogItemDataFieldsMap == nil {
 		return itemDataFields, nil
 	}
@@ -323,9 +319,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
-) ([]valueObject.MarketplaceItemCmdStep, error) {
-	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
-
+) (itemCmdSteps []valueObject.MarketplaceItemCmdStep, err error) {
 	if catalogItemCmdStepsMap == nil {
 		return itemCmdSteps, nil
 	}
@@ -352,9 +346,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 	catalogItemUrlsMap interface{},
-) ([]valueObject.Url, error) {
-	itemUrls := []valueObject.Url{}
-
+) (itemUrls []valueObject.Url, err error) {
 	if catalogItemUrlsMap == nil {
 		return itemUrls, nil
 	}
@@ -378,153 +370,124 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
+	itemIndex int,
 	catalogItemFilePath valueObject.UnixFilePath,
-) (entity.MarketplaceCatalogItem, error) {
-	var catalogItem entity.MarketplaceCatalogItem
+) (catalogItem entity.MarketplaceCatalogItem, err error) {
+	itemId, _ := valueObject.NewMarketplaceCatalogItemId(itemIndex + 1)
 
-	catalogItemMap, err := repo.getCatalogItemMapFromFilePath(catalogItemFilePath)
+	itemMap, err := repo.getCatalogItemMapFromFilePath(catalogItemFilePath)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawCatalogItemName, assertOk := catalogItemMap["name"].(string)
+	rawItemName, assertOk := itemMap["name"].(string)
 	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemName")
+		return catalogItem, errors.New("InvalidMarketplaceItemName")
 	}
-	catalogItemName, err := valueObject.NewMarketplaceItemName(rawCatalogItemName)
+	itemName, err := valueObject.NewMarketplaceItemName(rawItemName)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawCatalogItemType, assertOk := catalogItemMap["type"].(string)
+	rawItemType, assertOk := itemMap["type"].(string)
 	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemType")
+		return catalogItem, errors.New("InvalidMarketplaceItemType")
 	}
-	catalogItemType, err := valueObject.NewMarketplaceItemType(rawCatalogItemType)
+	itemType, err := valueObject.NewMarketplaceItemType(rawItemType)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawCatalogItemDescription, assertOk := catalogItemMap["description"].(string)
+	rawItemDescription, assertOk := itemMap["description"].(string)
 	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemDescription")
+		return catalogItem, errors.New("InvalidMarketplaceItemDescription")
 	}
-	catalogItemDescription, err := valueObject.NewMarketplaceItemDescription(rawCatalogItemDescription)
+	itemDescription, err := valueObject.NewMarketplaceItemDescription(rawItemDescription)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogItemSvcNames, err := repo.parseCatalogItemServiceNames(
-		catalogItemMap["serviceNames"],
-	)
+	itemSvcNames, err := repo.parseCatalogItemServiceNames(itemMap["serviceNames"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogItemMappings, err := repo.parseCatalogItemMappings(
-		catalogItemMap["mappings"],
-	)
+	itemMappings, err := repo.parseCatalogItemMappings(itemMap["mappings"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogItemDataFields, err := repo.parseCatalogItemDataFields(
-		catalogItemMap["dataFields"],
-	)
+	itemDataFields, err := repo.parseCatalogItemDataFields(itemMap["dataFields"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogItemCmdSteps, err := repo.parseCatalogItemCmdSteps(
-		catalogItemMap["cmdSteps"],
-	)
+	itemCmdSteps, err := repo.parseCatalogItemCmdSteps(itemMap["cmdSteps"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogEstimatedSizeBytes, err := valueObject.NewByte(
-		catalogItemMap["estimatedSizeBytes"],
-	)
+	estimatedSizeBytes, err := valueObject.NewByte(itemMap["estimatedSizeBytes"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawCatalogItemAvatarUrl, assertOk := catalogItemMap["avatarUrl"].(string)
+	rawItemAvatarUrl, assertOk := itemMap["avatarUrl"].(string)
 	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceCatalogItemAvatarUrl")
+		return catalogItem, errors.New("InvalidMarketplaceItemAvatarUrl")
 	}
-	catalogItemAvatarUrl, err := valueObject.NewUrl(rawCatalogItemAvatarUrl)
+	itemAvatarUrl, err := valueObject.NewUrl(rawItemAvatarUrl)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	catalogItemScreenshotUrls, err := repo.parseCatalogItemScreenshotUrls(
-		catalogItemMap["screenshotUrls"],
-	)
+	itemScreenshotUrls, err := repo.parseCatalogItemScreenshotUrls(itemMap["screenshotUrls"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	var placeholderCatalogItemId valueObject.MarketplaceCatalogItemId
 	return entity.NewMarketplaceCatalogItem(
-		placeholderCatalogItemId,
-		catalogItemName,
-		catalogItemType,
-		catalogItemDescription,
-		catalogItemSvcNames,
-		catalogItemMappings,
-		catalogItemDataFields,
-		catalogItemCmdSteps,
-		catalogEstimatedSizeBytes,
-		catalogItemAvatarUrl,
-		catalogItemScreenshotUrls,
+		itemId,
+		itemName,
+		itemType,
+		itemDescription,
+		itemSvcNames,
+		itemMappings,
+		itemDataFields,
+		itemCmdSteps,
+		estimatedSizeBytes,
+		itemAvatarUrl,
+		itemScreenshotUrls,
 	), nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
-	[]entity.MarketplaceCatalogItem, error,
+	catalogItems []entity.MarketplaceCatalogItem, err error,
 ) {
-	catalogItems := []entity.MarketplaceCatalogItem{}
-
-	catalogItemFiles, err := fs.ReadDir(assets, "assets")
+	itemsFiles, err := fs.ReadDir(assets, "assets")
 	if err != nil {
 		return catalogItems, errors.New(
 			"GetMarketplaceCatalogItemsFilesError: " + err.Error(),
 		)
 	}
 
-	for catalogItemFileIndex, catalogItemFile := range catalogItemFiles {
-		catalogItemFileName := catalogItemFile.Name()
+	for itemIndex, itemFileEntry := range itemsFiles {
+		itemFileName := itemFileEntry.Name()
 
-		catalogItemFilePathStr := "assets/" + catalogItemFileName
-		catalogItemFilePath, err := valueObject.NewUnixFilePath(
-			catalogItemFilePathStr,
-		)
+		itemFilePathStr := "assets/" + itemFileName
+		itemFilePath, err := valueObject.NewUnixFilePath(itemFilePathStr)
 		if err != nil {
-			log.Printf(
-				"%s (%s): %s", err.Error(),
-				catalogItemFileName,
-				catalogItemFilePathStr,
-			)
+			log.Printf("%s (%s): %s", err.Error(), itemFileName, itemFilePathStr)
 			continue
 		}
 
-		catalogItem, err := repo.catalogItemFactory(
-			catalogItemFilePath,
-		)
+		catalogItem, err := repo.catalogItemFactory(itemIndex, itemFilePath)
 		if err != nil {
 			log.Printf(
-				"GetMarketplaceCatalogItemError (%s): %s",
-				catalogItemFileName,
-				err.Error(),
+				"GetMarketplaceCatalogItemError (%s): %s", itemFileName, err.Error(),
 			)
 			continue
 		}
-
-		catalogItemIdInt := catalogItemFileIndex + 1
-		catalogItemId, _ := valueObject.NewMarketplaceCatalogItemId(catalogItemIdInt)
-		catalogItem.Id = catalogItemId
-
 		catalogItems = append(catalogItems, catalogItem)
 	}
 
@@ -533,9 +496,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	catalogId valueObject.MarketplaceCatalogItemId,
-) (entity.MarketplaceCatalogItem, error) {
-	var catalogItem entity.MarketplaceCatalogItem
-
+) (catalogItem entity.MarketplaceCatalogItem, err error) {
 	catalogItems, err := repo.ReadCatalogItems()
 	if err != nil {
 		return catalogItem, err
