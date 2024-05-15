@@ -47,6 +47,13 @@ podman run --rm -it sos-unit-test:latest
 
 Make sure you have the `.env` file in the root of the git directory before running the tests.
 
+Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/speedia/` directory before running the tests:
+
+```
+sudo mkdir /speedia
+sudo chown $(whoami):$(whoami) /speedia
+```
+
 ### Dev Utils
 
 The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
