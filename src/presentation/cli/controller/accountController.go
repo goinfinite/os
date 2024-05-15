@@ -68,38 +68,9 @@ func CreateAccountController() *cobra.Command {
 	return cmd
 }
 
-func DeleteAccountController() *cobra.Command {
-	var accountIdStr string
-
-	cmd := &cobra.Command{
-		Use:   "delete",
-		Short: "DeleteAccount",
-		Run: func(cmd *cobra.Command, args []string) {
-			accountId := valueObject.NewAccountIdFromStringPanic(accountIdStr)
-
-			accQueryRepo := accountInfra.AccQueryRepo{}
-			accCmdRepo := accountInfra.AccCmdRepo{}
-
-			err := useCase.DeleteAccount(
-				accQueryRepo,
-				accCmdRepo,
-				accountId,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, "AccountDeleted")
-		},
-	}
-
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "u", "", "AccountId")
-	cmd.MarkFlagRequired("account-id")
-	return cmd
-}
-
 func UpdateAccountController() *cobra.Command {
 	var accountIdStr string
+	var usernameStr string
 	var passwordStr string
 	shouldUpdateApiKeyBool := false
 
@@ -107,7 +78,17 @@ func UpdateAccountController() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateAccount (pass or apiKey)",
 		Run: func(cmd *cobra.Command, args []string) {
-			accountId := valueObject.NewAccountIdFromStringPanic(accountIdStr)
+			var accountIdPtr *valueObject.AccountId
+			if accountIdStr != "" {
+				accountId := valueObject.NewAccountIdPanic(accountIdStr)
+				accountIdPtr = &accountId
+			}
+
+			var usernamePtr *valueObject.Username
+			if usernameStr != "" {
+				username := valueObject.NewUsernamePanic(usernameStr)
+				usernamePtr = &username
+			}
 
 			var passPtr *valueObject.Password
 			if passwordStr != "" {
@@ -121,7 +102,8 @@ func UpdateAccountController() *cobra.Command {
 			}
 
 			updateAccountDto := dto.NewUpdateAccount(
-				accountId,
+				accountIdPtr,
+				usernamePtr,
 				passPtr,
 				shouldUpdateApiKeyPtr,
 			)
@@ -152,15 +134,41 @@ func UpdateAccountController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "u", "", "AccountId")
-	cmd.MarkFlagRequired("account-id")
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.Flags().BoolVarP(
-		&shouldUpdateApiKeyBool,
-		"update-api-key",
-		"k",
-		false,
-		"ShouldUpdateApiKey",
+		&shouldUpdateApiKeyBool, "update-api-key", "k", false, "ShouldUpdateApiKey",
 	)
+	return cmd
+}
+
+func DeleteAccountController() *cobra.Command {
+	var accountIdStr string
+
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "DeleteAccount",
+		Run: func(cmd *cobra.Command, args []string) {
+			accountId := valueObject.NewAccountIdPanic(accountIdStr)
+
+			accQueryRepo := accountInfra.AccQueryRepo{}
+			accCmdRepo := accountInfra.AccCmdRepo{}
+
+			err := useCase.DeleteAccount(
+				accQueryRepo,
+				accCmdRepo,
+				accountId,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, "AccountDeleted")
+		},
+	}
+
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.MarkFlagRequired("account-id")
 	return cmd
 }
