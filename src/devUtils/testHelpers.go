@@ -6,7 +6,6 @@ import (
 	"runtime"
 
 	"github.com/joho/godotenv"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func GenerateString(desiredSize int) string {
@@ -25,12 +24,4 @@ func LoadEnvVars() {
 	if loadEnvErr != nil {
 		panic("LoadingEnvFileError: " + loadEnvErr.Error())
 	}
-}
-
-func GetPersistentDbSvc() *internalDbInfra.PersistentDatabaseService {
-	persistentDbSvc, err := internalDbInfra.NewPersistentDatabaseService()
-	if err != nil {
-		panic("GetPersistentDbSvcError: " + err.Error())
-	}
-	return persistentDbSvc
 }
