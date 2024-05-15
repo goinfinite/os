@@ -45,6 +45,17 @@ func (router Router) accountRoutes() {
 	accountCmd.AddCommand(cliController.UpdateAccountController())
 }
 
+func (router Router) authenticationRoutes() {
+	var authCmd = &cobra.Command{
+		Use:   "auth",
+		Short: "Authentication&Authorization",
+	}
+
+	rootCmd.AddCommand(authCmd)
+	authenticationController := cliController.AuthenticationController{}
+	authCmd.AddCommand(authenticationController.Login())
+}
+
 func (router Router) cronRoutes() {
 	var cronCmd = &cobra.Command{
 		Use:   "cron",
@@ -194,6 +205,7 @@ func (router Router) RegisterRoutes() {
 	rootCmd.AddCommand(versionCmd)
 
 	router.accountRoutes()
+	router.authenticationRoutes()
 	router.cronRoutes()
 	router.databaseRoutes()
 	router.marketplaceRoutes()
