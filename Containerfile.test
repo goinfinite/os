@@ -10,13 +10,13 @@ RUN install_packages ca-certificates wget curl tar procps debian-archive-keyring
     && mkdir -p /app/logs/nginx /app/conf/pki /app/html \
     && chown -R nobody:nogroup /app
 
-RUN wget -qO go.tar.gz "https://go.dev/dl/go1.21.4.linux-amd64.tar.gz" \
+RUN wget -qO go.tar.gz "https://go.dev/dl/go1.22.3.linux-amd64.tar.gz" \
     && tar -C /usr/local -xzf go.tar.gz
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 RUN curl -skL "https://mise.run" | sh \
-    && ln -s /root/.local/share/mise/bin/mise /usr/bin/mise \
+    && mv /root/.local/bin/mise /usr/bin/mise \
     && chmod +x /usr/bin/mise \
     && echo 'eval "$(/usr/bin/mise activate bash)"' >> /etc/profile
 
