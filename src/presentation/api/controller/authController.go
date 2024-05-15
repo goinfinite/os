@@ -28,23 +28,23 @@ func AuthLoginController(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
+	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
+
 	loginDto := dto.NewLogin(
 		valueObject.NewUsernamePanic(requestBody["username"].(string)),
 		valueObject.NewPasswordPanic(requestBody["password"].(string)),
+		ipAddress,
 	)
 
 	authQueryRepo := authInfra.AuthQueryRepo{}
 	authCmdRepo := authInfra.AuthCmdRepo{}
 	accQueryRepo := accountInfra.AccQueryRepo{}
 
-	ipAddress := valueObject.NewIpAddressPanic(c.RealIP())
-
 	accessToken, err := useCase.GetSessionToken(
 		authQueryRepo,
 		authCmdRepo,
 		accQueryRepo,
 		loginDto,
-		ipAddress,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusUnauthorized, err.Error())

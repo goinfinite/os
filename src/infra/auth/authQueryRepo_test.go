@@ -17,6 +17,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		login := dto.NewLogin(
 			valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME")),
 			valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS")),
+			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
 		authQueryRepo := AuthQueryRepo{}
 		isValid := authQueryRepo.IsLoginValid(login)
@@ -29,6 +30,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		login := dto.NewLogin(
 			valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME")),
 			valueObject.NewPasswordPanic("wrongPassword"),
+			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
 		authQueryRepo := AuthQueryRepo{}
 		isValid := authQueryRepo.IsLoginValid(login)
