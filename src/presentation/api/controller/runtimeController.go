@@ -10,11 +10,24 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
+
+type RuntimeController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewRuntimeController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *RuntimeController {
+	return &RuntimeController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 // GetPhpConfigs godoc
 // @Summary      GetPhpConfigs
@@ -26,7 +39,7 @@ import (
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /runtime/php/{hostname}/ [get]
-func GetPhpConfigsController(c echo.Context) error {
+func (controller *RuntimeController) ReadConfigs(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
 
@@ -133,7 +146,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"UpdatePhpConfigs"
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /runtime/php/{hostname}/ [put]
-func UpdatePhpConfigsController(c echo.Context) error {
+func (controller *RuntimeController) UpdateConfigs(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
 
@@ -165,7 +178,7 @@ func UpdatePhpConfigsController(c echo.Context) error {
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 	err = useCase.UpdatePhpConfigs(
 		runtimeQueryRepo,

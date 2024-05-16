@@ -109,8 +109,12 @@ func (router Router) o11yRoutes(baseRoute *echo.Group) {
 
 func (router Router) runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup := baseRoute.Group("/runtime")
-	runtimeGroup.GET("/php/:hostname/", apiController.GetPhpConfigsController)
-	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
+	runtimeController := apiController.NewRuntimeController(
+		router.persistentDbSvc,
+	)
+
+	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadConfigs)
+	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdateConfigs)
 }
 
 func (router Router) servicesRoutes(baseRoute *echo.Group) {

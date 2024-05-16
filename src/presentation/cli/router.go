@@ -103,17 +103,20 @@ func (router Router) runtimeRoutes() {
 		Short: "RuntimeManagement",
 	}
 
+	rootCmd.AddCommand(runtimeCmd)
+
 	var phpCmd = &cobra.Command{
 		Use:   "php",
 		Short: "PhpManagement",
 	}
 
-	rootCmd.AddCommand(runtimeCmd)
 	runtimeCmd.AddCommand(phpCmd)
-	phpCmd.AddCommand(cliController.GetPhpConfigsController())
-	phpCmd.AddCommand(cliController.UpdatePhpConfigController())
-	phpCmd.AddCommand(cliController.UpdatePhpSettingController())
-	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
+
+	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
+	phpCmd.AddCommand(runtimeController.ReadConfigs())
+	phpCmd.AddCommand(runtimeController.UpdateConfig())
+	phpCmd.AddCommand(runtimeController.UpdateSetting())
+	phpCmd.AddCommand(runtimeController.UpdateModule())
 }
 
 func (router Router) serveRoutes() {
