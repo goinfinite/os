@@ -15,6 +15,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
@@ -37,28 +38,39 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) createRequiredServices(
-	catalogRequiredSvcNames []valueObject.ServiceName,
+	vhostHostname valueObject.Fqdn,
+	serviceNames []valueObject.ServiceName,
 ) error {
-	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
-	svcCmdRepo := servicesInfra.ServicesCmdRepo{}
-	for _, requiredSvcName := range catalogRequiredSvcNames {
-		_, err := svcQueryRepo.GetByName(requiredSvcName)
+	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
+	serviceCmdRepo := servicesInfra.ServicesCmdRepo{}
+
+	shouldCreatePhpVirtualHost := false
+	for _, serviceName := range serviceNames {
+		if serviceName.String() == "php-webserver" {
+			shouldCreatePhpVirtualHost = true
+		}
+
+		_, err := serviceQueryRepo.GetByName(serviceName)
 		if err == nil {
 			continue
 		}
 
-		requiredSvcAutoCreateMapping := false
-		requiredService := dto.NewCreateInstallableService(
-			requiredSvcName,
-			nil,
-			nil,
-			nil,
-			requiredSvcAutoCreateMapping,
+		autoCreateMapping := false
+		createServiceDto := dto.NewCreateInstallableService(
+			serviceName, nil, nil, nil, autoCreateMapping,
 		)
 
-		err = svcCmdRepo.CreateInstallable(requiredService)
+		err = serviceCmdRepo.CreateInstallable(createServiceDto)
 		if err != nil {
 			return errors.New("InstallRequiredServiceError: " + err.Error())
+		}
+	}
+
+	if shouldCreatePhpVirtualHost {
+		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+		err := runtimeCmdRepo.CreatePhpVirtualHost(vhostHostname)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -70,60 +82,33 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
-) []valueObject.MarketplaceInstallableItemDataField {
-	systemDataFields := []valueObject.MarketplaceInstallableItemDataField{}
+) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
+	dataMap := map[string]string{
+		"installDirectory": installDir.String(),
+		"installUrlPath":   installUrlPath.String(),
+		"installHostname":  installHostname.String(),
+		"installUuid":      installUuid,
+	}
 
-	installDirDataFieldKey, _ := valueObject.NewDataFieldName("installDirectory")
-	installDirDataFieldValue, _ := valueObject.NewDataFieldValue(installDir.String())
-	installDirDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installDirDataFieldKey,
-		installDirDataFieldValue,
-	)
+	for key, value := range dataMap {
+		dataFieldKey, _ := valueObject.NewDataFieldName(key)
+		dataFieldValue, _ := valueObject.NewDataFieldValue(value)
+		dataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+			dataFieldKey, dataFieldValue,
+		)
+		systemDataFields = append(systemDataFields, dataField)
+	}
 
-	installUrlPathDataFieldKey, _ := valueObject.NewDataFieldName("installUrlPath")
-	installUrlPathDataFieldValue, _ := valueObject.NewDataFieldValue(installUrlPath.String())
-	installUrlPathDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installUrlPathDataFieldKey,
-		installUrlPathDataFieldValue,
-	)
-
-	installHostnameDataFieldKey, _ := valueObject.NewDataFieldName("installHostname")
-	installHostnameDataFieldValue, _ := valueObject.NewDataFieldValue(
-		installHostname.String(),
-	)
-	installHostnameDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installHostnameDataFieldKey,
-		installHostnameDataFieldValue,
-	)
-
-	installUuidDataFieldKey, _ := valueObject.NewDataFieldName("installUuid")
-	installUuidDataFieldValue, _ := valueObject.NewDataFieldValue(installUuid)
-	installUuidDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-		installUuidDataFieldKey,
-		installUuidDataFieldValue,
-	)
-
-	return append(
-		systemDataFields,
-		installDirDataField,
-		installUrlPathDataField,
-		installHostnameDataField,
-		installUuidDataField,
-	)
+	return systemDataFields
 }
 
-func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
+func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
-) ([]valueObject.MarketplaceInstallableItemDataField, error) {
-	missingCatalogOptionalDataFields := []valueObject.MarketplaceInstallableItemDataField{}
-
-	receivedDataFieldsKeys := []string{}
+) (missingDataFields []valueObject.MarketplaceInstallableItemDataField, err error) {
+	receivedDataFieldsNames := map[string]interface{}{}
 	for _, receivedDataField := range receivedDataFields {
-		receivedDataFieldsKeys = append(
-			receivedDataFieldsKeys,
-			receivedDataField.Name.String(),
-		)
+		receivedDataFieldsNames[receivedDataField.Name.String()] = nil
 	}
 
 	for _, catalogDataField := range catalogDataFields {
@@ -131,34 +116,26 @@ func (repo *MarketplaceCmdRepo) interpolateMissingDataFields(
 			continue
 		}
 
-		catalogDataFieldKeyStr := catalogDataField.Name.String()
-		catalogDataFieldAlreadyFilled := slices.Contains(
-			receivedDataFieldsKeys,
-			catalogDataFieldKeyStr,
-		)
-		if catalogDataFieldAlreadyFilled {
+		catalogDataFieldNameStr := catalogDataField.Name.String()
+		_, alreadyFilled := receivedDataFieldsNames[catalogDataFieldNameStr]
+		if alreadyFilled {
 			continue
 		}
 
-		catalogDataFieldAsInstallable, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		missingDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
 			catalogDataField.Name,
 			*catalogDataField.DefaultValue,
 		)
-		missingCatalogOptionalDataFields = append(
-			missingCatalogOptionalDataFields,
-			catalogDataFieldAsInstallable,
-		)
+		missingDataFields = append(missingDataFields, missingDataField)
 	}
 
-	return missingCatalogOptionalDataFields, nil
+	return missingDataFields, nil
 }
 
 func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 	cmdSteps []valueObject.MarketplaceItemCmdStep,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
-) ([]valueObject.MarketplaceItemCmdStep, error) {
-	cmdStepsWithDataFields := []valueObject.MarketplaceItemCmdStep{}
-
+) (cmdStepsWithDataFields []valueObject.MarketplaceItemCmdStep, err error) {
 	dataFieldsMap := map[string]string{}
 	for _, dataField := range dataFields {
 		dataFieldKeyStr := dataField.Name.String()
@@ -167,17 +144,14 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		cmdStepDataFieldKeys, _ := infraHelper.GetAllRegexGroupMatches(
-			cmdStepStr,
-			`%(.*?)%`,
+		cmdStepDataFieldPlaceholders, _ := infraHelper.GetAllRegexGroupMatches(
+			cmdStepStr, `%(.*?)%`,
 		)
 
-		for _, cmdStepDataFieldKey := range cmdStepDataFieldKeys {
-			dataFieldValue := dataFieldsMap[cmdStepDataFieldKey]
+		for _, cmdStepDataPlaceholder := range cmdStepDataFieldPlaceholders {
+			dataFieldValue := dataFieldsMap[cmdStepDataPlaceholder]
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
-				cmdStepStr,
-				"%"+cmdStepDataFieldKey+"%",
-				dataFieldValue,
+				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", dataFieldValue,
 			)
 			cmdStepStr = cmdStepWithDataFieldStr
 		}
@@ -191,32 +165,17 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
 	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
-	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
-	missingCatalogOptionalDataFields, err := repo.interpolateMissingDataFields(
-		receivedDataFields,
-		catalogDataFields,
-	)
-	if err != nil {
-		return err
-	}
-	receivedDataFields = slices.Concat(
-		receivedDataFields,
-		missingCatalogOptionalDataFields,
-	)
-
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
-		catalogCmdSteps,
-		receivedDataFields,
+		catalogCmdSteps, receivedDataFields,
 	)
 	if err != nil {
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
 	for stepIndex, cmdStep := range preparedCmdSteps {
-		cmdStepStr := cmdStep.String()
-		_, err = infraHelper.RunCmdWithSubShell(cmdStepStr)
+		_, err = infraHelper.RunCmdWithSubShell(cmdStep.String())
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
 			return errors.New(
@@ -351,20 +310,18 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(
-		installDto.Id,
-	)
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(installDto.Id)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	err = repo.createRequiredServices(catalogItem.RequiredServiceNames)
+	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
 	if err != nil {
 		return err
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	err = repo.createRequiredServices(installDto.Hostname, catalogItem.RequiredServiceNames)
 	if err != nil {
 		return err
 	}
@@ -381,32 +338,32 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 
 	systemDataFields := repo.parseSystemDataFields(
-		installDir,
-		installUrlPath,
-		installDto.Hostname,
-		installUuidWithoutHyphens,
+		installDir, installUrlPath, installDto.Hostname, installUuidWithoutHyphens,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
-	err = repo.runCmdSteps(
-		catalogItem.CmdSteps,
-		catalogItem.DataFields,
-		receivedDataFields,
+	optionalFieldsWithDefaultValues, err := repo.interpolateMissingOptionalDataFields(
+		receivedDataFields, catalogItem.DataFields,
 	)
+	if err != nil {
+		return err
+	}
+	receivedDataFields = slices.Concat(receivedDataFields, optionalFieldsWithDefaultValues)
+
+	err = repo.runCmdSteps(catalogItem.CmdSteps, receivedDataFields)
 	if err != nil {
 		return err
 	}
 
 	err = repo.updateFilesPrivileges(installDir)
 	if err != nil {
-		return errors.New("UpdateFilesPrivileges: " + err.Error())
+		return errors.New("UpdateFilesPrivilegesError: " + err.Error())
 	}
 
 	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
 	if !isRootDirectory {
 		catalogItem.Mappings = repo.updateMappingsBase(
-			catalogItem.Mappings,
-			installUrlPath,
+			catalogItem.Mappings, installUrlPath,
 		)
 	}
 
