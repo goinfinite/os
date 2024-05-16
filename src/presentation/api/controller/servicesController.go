@@ -146,7 +146,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -225,7 +225,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
@@ -322,7 +322,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
@@ -354,7 +354,7 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteService(

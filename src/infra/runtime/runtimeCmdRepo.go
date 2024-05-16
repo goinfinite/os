@@ -22,7 +22,8 @@ func NewRuntimeCmdRepo() *RuntimeCmdRepo {
 
 func (repo *RuntimeCmdRepo) restartPhp() error {
 	phpSvcName, _ := valueObject.NewServiceName("php-webserver")
-	err := servicesInfra.ServicesCmdRepo{}.Restart(phpSvcName)
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	err := servicesCmdRepo.Restart(phpSvcName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed: " + err.Error())
 	}
