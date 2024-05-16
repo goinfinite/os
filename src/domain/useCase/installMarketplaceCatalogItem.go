@@ -8,7 +8,6 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 func hasRequiredDataFields(
@@ -44,8 +43,8 @@ func hasRequiredDataFields(
 func InstallMarketplaceCatalogItem(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
-	vhostQueryRepo vhostInfra.VirtualHostQueryRepo,
-	vhostCmdRepo vhostInfra.VirtualHostCmdRepo,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
 	_, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
