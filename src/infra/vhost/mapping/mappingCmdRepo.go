@@ -311,7 +311,7 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 		return err
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
 		mappingHostname,
 	)
@@ -377,7 +377,7 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	vhostQueryRepo := vhostInfra.NewVhostQueryRepo(repo.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	vhost, err := vhostQueryRepo.GetByHostname(createDto.Hostname)
 	if err != nil {
 		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())

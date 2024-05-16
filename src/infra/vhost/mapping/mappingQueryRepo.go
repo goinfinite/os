@@ -99,7 +99,7 @@ func (repo *MappingQueryRepo) ReadWithMappings() (
 ) {
 	vhostsWithMappings := []dto.VirtualHostWithMappings{}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		return vhostsWithMappings, err
