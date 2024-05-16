@@ -4,12 +4,10 @@ import (
 	"errors"
 	"log"
 
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 type MappingQueryRepo struct {
@@ -92,34 +90,4 @@ func (repo *MappingQueryRepo) ReadByServiceName(
 	}
 
 	return entities, nil
-}
-
-func (repo *MappingQueryRepo) ReadWithMappings() (
-	[]dto.VirtualHostWithMappings, error,
-) {
-	vhostsWithMappings := []dto.VirtualHostWithMappings{}
-
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhosts, err := vhostQueryRepo.Get()
-	if err != nil {
-		return vhostsWithMappings, err
-	}
-
-	for _, vhost := range vhosts {
-		mappings, err := repo.ReadByHostname(vhost.Hostname)
-		if err != nil {
-			log.Printf("[%s] ReadMappingsError: %s", vhost.Hostname, err.Error())
-			continue
-		}
-
-		vhostsWithMappings = append(
-			vhostsWithMappings,
-			dto.NewVirtualHostWithMappings(
-				vhost,
-				mappings,
-			),
-		)
-	}
-
-	return vhostsWithMappings, nil
 }
