@@ -106,8 +106,8 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlPathPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(

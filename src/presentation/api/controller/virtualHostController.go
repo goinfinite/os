@@ -37,7 +37,7 @@ func NewVirtualHostController(
 // @Success      200 {array} entity.VirtualHost
 // @Router       /vhosts/ [get]
 func (controller *VirtualHostController) Get(c echo.Context) error {
-	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -84,8 +84,8 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 		parentHostnamePtr,
 	)
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.CreateVirtualHost(
 		vhostQueryRepo,
@@ -112,8 +112,8 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 func (controller *VirtualHostController) Delete(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
-	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostsCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+	vhostsCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
@@ -212,7 +212,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 	err := useCase.CreateMapping(

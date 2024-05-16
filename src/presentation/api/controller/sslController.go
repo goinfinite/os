@@ -106,7 +106,7 @@ func (controller *SslController) Create(c echo.Context) error {
 	)
 
 	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 	err := useCase.CreateSslPair(
 		sslCmdRepo,
@@ -157,8 +157,8 @@ func (controller *SslController) SslCertificateWatchdog() {
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	for range timer.C {
 		sslCertificateWatchdog := useCase.NewSslCertificateWatchdog(

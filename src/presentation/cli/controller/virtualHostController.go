@@ -30,7 +30,7 @@ func (controller *VirtualHostController) Get() *cobra.Command {
 		Use:   "list",
 		Short: "GetVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 			vhostsList, err := useCase.GetVirtualHosts(vhostQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -72,8 +72,8 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 				parentHostnamePtr,
 			)
 
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.CreateVirtualHost(
 				vhostQueryRepo,
@@ -108,8 +108,8 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 			primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 			if err != nil {
@@ -207,7 +207,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 			svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
 
 			err := useCase.CreateMapping(

@@ -78,7 +78,7 @@ func (controller *SslController) Create() *cobra.Command {
 			)
 
 			sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.CreateSslPair(
 				sslCmdRepo,
