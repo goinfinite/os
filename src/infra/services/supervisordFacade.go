@@ -19,15 +19,12 @@ const supervisordCmd string = "/usr/bin/supervisord"
 const supervisordConf string = "/speedia/supervisord.conf"
 
 func (facade SupervisordFacade) toggleAutoStart(
-	name valueObject.ServiceName,
-	isAutoStart bool,
+	name valueObject.ServiceName, shouldAutoStart bool,
 ) error {
-	autoStartStr := strconv.FormatBool(isAutoStart)
+	autoStartStr := strconv.FormatBool(shouldAutoStart)
 
 	_, err := infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"-e",
+		"sed", "-i", "-e",
 		"/\\[program:"+name.String()+"\\]/,"+
 			"/^\\[/{s/autostart=.*/autostart="+autoStartStr+"/"+
 			";s/autorestart=.*/autorestart="+autoStartStr+"/}",
@@ -41,12 +38,7 @@ func (facade SupervisordFacade) toggleAutoStart(
 }
 
 func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd(
-		supervisordCmd,
-		"ctl",
-		"start",
-		name.String(),
-	)
+	_, err := infraHelper.RunCmd(supervisordCmd, "ctl", "start", name.String())
 	if err != nil {
 		return errors.New("StartServiceError: " + err.Error())
 	}
@@ -60,12 +52,7 @@ func (facade SupervisordFacade) Start(name valueObject.ServiceName) error {
 }
 
 func (facade SupervisordFacade) stopServiceByName(svcName string) error {
-	_, err := infraHelper.RunCmd(
-		supervisordCmd,
-		"ctl",
-		"stop",
-		svcName,
-	)
+	_, err := infraHelper.RunCmd(supervisordCmd, "ctl", "stop", svcName)
 	if err != nil {
 		return errors.New("StopServiceError: " + err.Error())
 	}
@@ -74,9 +61,7 @@ func (facade SupervisordFacade) stopServiceByName(svcName string) error {
 }
 
 func (facade SupervisordFacade) stopNginx() error {
-	_, err := infraHelper.RunCmdWithSubShell(
-		"nginx -t",
-	)
+	_, err := infraHelper.RunCmdWithSubShell("nginx -t")
 	if err != nil {
 		return errors.New("NginxTestFailed: " + err.Error())
 	}
@@ -86,35 +71,19 @@ func (facade SupervisordFacade) stopNginx() error {
 		return err
 	}
 
-	_, _ = infraHelper.RunCmd(
-		"pkill",
-		"nginx",
-	)
-
+	_, _ = infraHelper.RunCmd("pkill", "nginx")
 	return nil
 }
 
-func (facade SupervisordFacade) stopPhp() error {
+func (facade SupervisordFacade) stopPhpWebServer() error {
 	err := facade.stopServiceByName("php-webserver")
 	if err != nil {
 		return err
 	}
 
-	_, _ = infraHelper.RunCmd(
-		"/usr/local/lsws/bin/lswsctrl",
-		"stop",
-	)
-
-	_, _ = infraHelper.RunCmd(
-		"pkill",
-		"lsphp",
-	)
-
-	_, _ = infraHelper.RunCmd(
-		"pkill",
-		"sleep",
-	)
-
+	_, _ = infraHelper.RunCmd("/usr/local/lsws/bin/lswsctrl", "stop")
+	_, _ = infraHelper.RunCmd("pkill", "lsphp")
+	_, _ = infraHelper.RunCmd("pkill", "sleep")
 	return nil
 }
 
@@ -124,12 +93,7 @@ func (facade SupervisordFacade) stopMariaDb() error {
 		return err
 	}
 
-	_, _ = infraHelper.RunCmd(
-		"mysqladmin",
-		"--defaults-file=/root/.my.cnf",
-		"shutdown",
-	)
-
+	_, _ = infraHelper.RunCmd("mysqladmin", "--defaults-file=/root/.my.cnf", "shutdown")
 	return nil
 }
 
@@ -141,7 +105,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 			return err
 		}
 	case "php", "php-webserver":
-		err := facade.stopPhp()
+		err := facade.stopPhpWebServer()
 		if err != nil {
 			return err
 		}
@@ -152,12 +116,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		}
 	}
 
-	err := facade.toggleAutoStart(name, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return facade.toggleAutoStart(name, false)
 }
 
 func (facade SupervisordFacade) Restart(name valueObject.ServiceName) error {
@@ -177,11 +136,7 @@ func (facade SupervisordFacade) Restart(name valueObject.ServiceName) error {
 }
 
 func (facade SupervisordFacade) Reload() error {
-	_, err := infraHelper.RunCmd(
-		supervisordCmd,
-		"ctl",
-		"reload",
-	)
+	_, err := infraHelper.RunCmd(supervisordCmd, "ctl", "reload")
 	if err != nil {
 		return errors.New("ReloadSupervisorError: " + err.Error())
 	}
@@ -206,12 +161,7 @@ func (facade SupervisordFacade) CreateConf(
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"nobody:nogroup",
-		"/app/logs/"+svcNameStr,
-	)
+	_, err = infraHelper.RunCmd("chown", "-R", "nobody:nogroup", "/app/logs/"+svcNameStr)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}
