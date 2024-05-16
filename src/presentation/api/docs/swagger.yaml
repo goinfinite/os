@@ -256,21 +256,6 @@ definitions:
           type: string
         type: array
     type: object
-  dto.VirtualHostWithMappings:
-    properties:
-      hostname:
-        type: string
-      mappings:
-        items:
-          $ref: '#/definitions/entity.Mapping'
-        type: array
-      parentHostname:
-        type: string
-      rootDirectory:
-        type: string
-      type:
-        type: string
-    type: object
   entity.AccessToken:
     properties:
       expiresIn:
@@ -341,8 +326,6 @@ definitions:
     type: object
   entity.Mapping:
     properties:
-      hostname:
-        type: string
       id:
         type: integer
       matchPattern:
@@ -540,6 +523,12 @@ definitions:
     properties:
       hostname:
         type: string
+      id:
+        type: integer
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
       parentHostname:
         type: string
       rootDirectory:
@@ -1652,24 +1641,6 @@ paths:
       tags:
       - vhosts
   /vhosts/mapping/:
-    get:
-      consumes:
-      - application/json
-      description: List virtual hosts with mappings.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dto.VirtualHostWithMappings'
-            type: array
-      security:
-      - Bearer: []
-      summary: GetVirtualHostsWithMappings
-      tags:
-      - vhosts
     post:
       consumes:
       - application/json
