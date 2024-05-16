@@ -2,120 +2,183 @@ package vhostInfra
 
 import (
 	"errors"
+	"strings"
+	"text/template"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	infraData "github.com/speedianet/os/src/infra/infraData"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
 
 type VirtualHostCmdRepo struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	queryRepo       *VirtualHostQueryRepo
 }
 
-func (repo VirtualHostCmdRepo) getAliasConfigFile(
-	parentHostname valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	vhostFileStr := "/app/conf/nginx/" + parentHostname.String() + ".conf"
+func NewVirtualHostCmdRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *VirtualHostCmdRepo {
+	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
-	isParentPrimaryVhost := infraHelper.IsPrimaryVirtualHost(
-		parentHostname,
-	)
-	if isParentPrimaryVhost {
-		vhostFileStr = "/app/conf/nginx/primary.conf"
+	return &VirtualHostCmdRepo{
+		persistentDbSvc: persistentDbSvc,
+		queryRepo:       vhostQueryRepo,
 	}
-
-	return valueObject.NewUnixFilePath(vhostFileStr)
 }
 
-func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) error {
-	vhostFile, err := repo.getAliasConfigFile(*createDto.ParentHostname)
-	if err != nil {
-		return errors.New("GetAliasConfigFileFailed")
-	}
-	vhostFileStr := vhostFile.String()
+func (repo *VirtualHostCmdRepo) webServerFileFactory(
+	hostname valueObject.Fqdn,
+	aliases []valueObject.Fqdn,
+	publicDir valueObject.UnixFilePath,
+	mappingFilePath valueObject.UnixFilePath,
+) (string, error) {
+	hostnameStr := hostname.String()
 
-	hostnameStr := createDto.Hostname.String()
-
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		`/server_name/ s/;$/ `+hostnameStr+` www.`+hostnameStr+`;/`,
-		vhostFileStr,
-	)
-	if err != nil {
-		return errors.New("CreateAliasFailed")
+	valuesToInterpolate := map[string]interface{}{
+		"Hostname":        hostname,
+		"Aliases":         aliases,
+		"PublicDirectory": publicDir,
+		"CertPath":        infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".crt",
+		"KeyPath":         infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".key",
+		"MappingFilePath": mappingFilePath,
 	}
 
-	// TODO: Regenerate cert for primary domain to include new alias
-
-	return infraHelper.ReloadWebServer()
-}
-
-func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
-	hostnameStr := createDto.Hostname.String()
-
-	if createDto.Type.String() == "alias" {
-		return repo.createAlias(createDto)
-	}
-
-	publicDir := infraData.GlobalConfigs.PrimaryPublicDir + "/" + hostnameStr
-	certPath := infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".crt"
-	keyPath := infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".key"
-	mappingFilePath := "/app/conf/nginx/mapping/" + hostnameStr + ".conf"
-
-	nginxConf := `server {
+	webServerConfigTemplate := `server {
     listen 80;
     listen 443 ssl;
-    server_name ` + hostnameStr + ` www.` + hostnameStr + `;
+    server_name {{ .Hostname }} www.{{ .Hostname }}{{ range .Aliases }} {{ .String }} www.{{ .String }}{{ end }};
 
-    root ` + publicDir + `;
+    root {{ .PublicDirectory }};
 
-    ssl_certificate ` + certPath + `;
-    ssl_certificate_key ` + keyPath + `;
+    ssl_certificate {{ .CertPath }};
+    ssl_certificate_key {{ .KeyPath }};
 
-    access_log /app/logs/nginx/` + hostnameStr + `_access.log combined buffer=512k flush=1m;
-    error_log /app/logs/nginx/` + hostnameStr + `_error.log warn;
+    access_log /app/logs/nginx/{{ .Hostname }}_access.log combined buffer=512k flush=1m;
+    error_log /app/logs/nginx/{{ .Hostname }}_error.log warn;
 
     include /etc/nginx/std.conf;
-    include ` + mappingFilePath + `;
+    include {{ .MappingFilePath }};
+}`
+
+	webServerConfigTemplatePtr, err := template.
+		New("webServerConfigFile").
+		Parse(webServerConfigTemplate)
+	if err != nil {
+		return "", errors.New("TemplateParsingError: " + err.Error())
+	}
+
+	var webServerConfigFileContent strings.Builder
+	err = webServerConfigTemplatePtr.Execute(
+		&webServerConfigFileContent,
+		valuesToInterpolate,
+	)
+	if err != nil {
+		return "", errors.New("TemplateExecutionError: " + err.Error())
+	}
+
+	return webServerConfigFileContent.String(), nil
 }
-`
-	err := infraHelper.UpdateFile(
-		"/app/conf/nginx/"+hostnameStr+".conf",
-		nginxConf,
+
+func (repo *VirtualHostCmdRepo) createWebServerFile(
+	publicDir valueObject.UnixFilePath,
+	hostname valueObject.Fqdn,
+) error {
+	aliases, err := repo.queryRepo.GetAliasesByHostname(hostname)
+	if err != nil {
+		return errors.New("GetAliasesByHostnameError: " + err.Error())
+	}
+
+	aliasesHostnames := []valueObject.Fqdn{}
+	for _, alias := range aliases {
+		aliasesHostnames = append(aliasesHostnames, alias.Hostname)
+	}
+
+	mappingFilePath, err := repo.queryRepo.GetVirtualHostMappingsFilePath(hostname)
+	if err != nil {
+		return errors.New(err.Error() + ": " + hostname.String())
+	}
+	err = infraHelper.UpdateFile(mappingFilePath.String(), "", false)
+	if err != nil {
+		return errors.New("CreateMappingFileFailed")
+	}
+
+	webServerConfigFileContent, err := repo.webServerFileFactory(
+		hostname,
+		aliasesHostnames,
+		publicDir,
+		mappingFilePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	webServerFilePath, err := repo.queryRepo.GetVirtualHostWebServerFilePath(hostname)
+	if err != nil {
+		return errors.New(err.Error() + ": " + webServerFilePath.String())
+	}
+	err = infraHelper.UpdateFile(
+		webServerFilePath.String(),
+		webServerConfigFileContent,
 		true,
 	)
 	if err != nil {
 		return errors.New("CreateNginxConfFileFailed")
 	}
 
-	err = infraHelper.UpdateFile(
-		mappingFilePath,
-		"",
-		true,
+	return infraHelper.ReloadWebServer()
+}
+
+func (repo *VirtualHostCmdRepo) persistVirtualHost(
+	createDto dto.CreateVirtualHost,
+	publicDir valueObject.UnixFilePath,
+) error {
+	var parentHostnamePtr *string
+	if createDto.ParentHostname != nil {
+		parentHostnameStr := createDto.ParentHostname.String()
+		parentHostnamePtr = &parentHostnameStr
+	}
+
+	model := dbModel.VirtualHost{
+		Hostname:       createDto.Hostname.String(),
+		Type:           createDto.Type.String(),
+		RootDirectory:  publicDir.String(),
+		ParentHostname: parentHostnamePtr,
+	}
+	return repo.persistentDbSvc.Handler.Create(&model).Error
+}
+
+func (repo *VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) error {
+	parentVhost, err := repo.queryRepo.GetByHostname(*createDto.ParentHostname)
+	if err != nil {
+		return errors.New("GetParentVhostError: " + err.Error())
+	}
+
+	err = repo.persistVirtualHost(createDto, parentVhost.RootDirectory)
+	if err != nil {
+		return err
+	}
+
+	return repo.createWebServerFile(
+		parentVhost.RootDirectory,
+		parentVhost.Hostname,
 	)
-	if err != nil {
-		return errors.New("CreateMappingFileFailed")
-	}
+}
 
-	err = infraHelper.MakeDir(publicDir)
-	if err != nil {
-		return errors.New("MakePublicHtmlDirFailed")
-	}
-
-	err = infraHelper.CreateSelfSignedSsl(infraData.GlobalConfigs.PkiConfDir, hostnameStr)
-	if err != nil {
-		return errors.New("GenerateSelfSignedCertFailed")
-	}
-
+func (repo *VirtualHostCmdRepo) updateDirsOwnership(
+	publicDir valueObject.UnixFilePath,
+) error {
 	directories := []string{
-		publicDir,
+		publicDir.String(),
 		"/app/conf/nginx",
 		infraData.GlobalConfigs.PkiConfDir,
 	}
+
 	for _, directory := range directories {
-		_, err = infraHelper.RunCmd(
+		_, err := infraHelper.RunCmd(
 			"chown",
 			"-R",
 			"nobody:nogroup",
@@ -126,49 +189,67 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
-	return infraHelper.ReloadWebServer()
+	return nil
 }
 
-func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
-	vhostFile, err := repo.getAliasConfigFile(*vhost.ParentHostname)
-	if err != nil {
-		return errors.New("GetAliasConfigFileFailed")
+func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
+	if createDto.Type.String() == "alias" {
+		return repo.createAlias(createDto)
 	}
-	vhostFileStr := vhostFile.String()
 
-	hostnameStr := vhost.Hostname.String()
+	hostnameStr := createDto.Hostname.String()
 
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		`/server_name/ s/ `+hostnameStr+` www.`+hostnameStr+`//`,
-		vhostFileStr,
+	publicDirStr := infraData.GlobalConfigs.PrimaryPublicDir + "/" + hostnameStr
+	publicDir, err := valueObject.NewUnixFilePath(publicDirStr)
+	if err != nil {
+		return errors.New(err.Error() + ": " + publicDirStr)
+	}
+
+	err = infraHelper.MakeDir(publicDirStr)
+	if err != nil {
+		return errors.New("MakePublicHtmlDirFailed")
+	}
+
+	err = infraHelper.CreateSelfSignedSsl(
+		infraData.GlobalConfigs.PkiConfDir,
+		hostnameStr,
 	)
 	if err != nil {
-		return errors.New("DeleteAliasFailed")
+		return errors.New("GenerateSelfSignedCertFailed")
 	}
 
-	return infraHelper.ReloadWebServer()
+	err = repo.updateDirsOwnership(publicDir)
+	if err != nil {
+		return err
+	}
+
+	err = repo.createWebServerFile(publicDir, createDto.Hostname)
+	if err != nil {
+		return err
+	}
+
+	return repo.persistVirtualHost(createDto, publicDir)
 }
 
-func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
-	hostnameStr := vhost.Hostname.String()
+func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
+	err := repo.persistentDbSvc.Handler.Delete(
+		dbModel.VirtualHost{},
+		vhost.Id.Get(),
+	).Error
+	if err != nil {
+		return err
+	}
+
 	if vhost.Type.String() == "alias" {
-		return repo.deleteAlias(vhost)
+		parentVhost, err := repo.queryRepo.GetByHostname(*vhost.ParentHostname)
+		if err != nil {
+			return errors.New("GetParentVhost: " + err.Error())
+		}
+		vhost = parentVhost
 	}
 
-	_, err := infraHelper.RunCmd(
-		"rm",
-		"-rf",
-		infraData.GlobalConfigs.PrimaryPublicDir+"/"+hostnameStr,
-		"/app/conf/nginx/"+hostnameStr+".conf",
-		"/app/conf/pki/"+hostnameStr+".crt",
-		"/app/conf/pki/"+hostnameStr+".key",
-		"/app/conf/nginx/mapping/"+hostnameStr+".conf",
+	return repo.createWebServerFile(
+		vhost.RootDirectory,
+		vhost.Hostname,
 	)
-	if err != nil {
-		return errors.New("DeleteVirtualHostFailed")
-	}
-
-	return infraHelper.ReloadWebServer()
 }
