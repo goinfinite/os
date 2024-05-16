@@ -25,16 +25,17 @@ func CreateMapping(
 		return errors.New("AliasCannotHaveMappings")
 	}
 
+	targetTypeStr := createMapping.TargetType.String()
+
+	isStaticFilesMapping := targetTypeStr == "static-files"
 	hasTargetValue := createMapping.TargetValue != nil
 	hasTargetHttpResponseCode := createMapping.TargetHttpResponseCode != nil
-	if !hasTargetValue && !hasTargetHttpResponseCode {
+	if !hasTargetValue && !hasTargetHttpResponseCode && !isStaticFilesMapping {
 		return errors.New("MappingMustHaveValueOrHttpResponseCode")
 	}
 
-	targetTypeStr := createMapping.TargetType.String()
-
 	isResponseCodeMapping := targetTypeStr == "response-code"
-	isTargetValueRequired := !isResponseCodeMapping
+	isTargetValueRequired := !isStaticFilesMapping && !isResponseCodeMapping
 	if isTargetValueRequired && !hasTargetValue {
 		return errors.New("MappingMustHaveValue")
 	}
