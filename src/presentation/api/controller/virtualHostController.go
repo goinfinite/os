@@ -112,8 +112,8 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 func (controller *VirtualHostController) Delete(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
-	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostsCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
@@ -121,8 +121,8 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 	}
 
 	err = useCase.DeleteVirtualHost(
-		vhostsQueryRepo,
-		vhostsCmdRepo,
+		vhostQueryRepo,
+		vhostCmdRepo,
 		primaryVhost,
 		hostname,
 	)
@@ -131,28 +131,6 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "VirtualHostDeleted")
-}
-
-// GetVirtualHostsWithMappings	 godoc
-// @Summary      GetVirtualHostsWithMappings
-// @Description  List virtual hosts with mappings.
-// @Tags         vhosts
-// @Security     Bearer
-// @Accept       json
-// @Produce      json
-// @Success      200 {array} dto.VirtualHostWithMappings
-// @Router       /vhosts/mapping/ [get]
-func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-
-	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-		mappingQueryRepo,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsWithMappings)
 }
 
 // CreateVirtualHostMapping godoc

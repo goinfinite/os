@@ -135,29 +135,6 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 	return cmd
 }
 
-func (controller *VirtualHostController) GetWithMappings() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetVirtualHostsWithMappings",
-		Run: func(cmd *cobra.Command, args []string) {
-			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
-				controller.persistentDbSvc,
-			)
-
-			vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-				mappingQueryRepo,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, vhostsWithMappings)
-		},
-	}
-
-	return cmd
-}
-
 func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	var hostnameStr string
 	var pathStr string

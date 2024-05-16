@@ -188,7 +188,6 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	vhostCmd.AddCommand(mappingCmd)
-	mappingCmd.AddCommand(vhostController.GetWithMappings())
 	mappingCmd.AddCommand(vhostController.CreateMapping())
 	mappingCmd.AddCommand(vhostController.DeleteMapping())
 }
