@@ -27,7 +27,7 @@ func GetCronsController() *cobra.Command {
 	return cmd
 }
 
-func CreateCronControler() *cobra.Command {
+func CreateCronController() *cobra.Command {
 	var scheduleStr string
 	var commandStr string
 	var commentStr string
