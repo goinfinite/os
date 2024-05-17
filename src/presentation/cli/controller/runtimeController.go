@@ -55,7 +55,7 @@ func GetPhpConfigsController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	return cmd
 }
 
@@ -142,7 +142,7 @@ func UpdatePhpConfigController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
 	cmd.Flags().StringSliceVarP(
@@ -209,7 +209,7 @@ func UpdatePhpSettingController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
 	cmd.Flags().StringVarP(&settingNameStr, "name", "n", "", "PhpSettingName")
@@ -271,7 +271,7 @@ func UpdatePhpModuleController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
 	cmd.Flags().StringVarP(&moduleNameStr, "name", "n", "", "PhpModuleName")
