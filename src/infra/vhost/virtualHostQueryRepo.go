@@ -100,14 +100,14 @@ func (repo *VirtualHostQueryRepo) GetAliasesByHostname(
 	return aliasesEntities, nil
 }
 
-func (repo *VirtualHostQueryRepo) getVirtualHostFileName(
+func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 	vhostName valueObject.Fqdn,
-) (valueObject.UnixFileName, error) {
-	var vhostFileName valueObject.UnixFileName
+) (valueObject.UnixFilePath, error) {
+	var vhostFilePath valueObject.UnixFilePath
 
 	vhost, err := repo.GetByHostname(vhostName)
 	if err != nil {
-		return vhostFileName, errors.New("VirtualHostNotFound")
+		return vhostFilePath, errors.New("VirtualHostNotFound")
 	}
 
 	if vhost.Type.String() == "alias" {
@@ -119,35 +119,7 @@ func (repo *VirtualHostQueryRepo) getVirtualHostFileName(
 		vhostFileNameStr = "primary.conf"
 	}
 
-	return valueObject.NewUnixFileName(vhostFileNameStr)
-}
-
-func (repo *VirtualHostQueryRepo) GetVirtualHostWebServerFilePath(
-	vhostName valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostFilePath valueObject.UnixFilePath
-
-	vhostFileName, err := repo.getVirtualHostFileName(vhostName)
-	if err != nil {
-		return vhostFilePath, err
-	}
-
 	return valueObject.NewUnixFilePath(
-		infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileName.String(),
-	)
-}
-
-func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
-	vhostName valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostFilePath valueObject.UnixFilePath
-
-	vhostFileName, err := repo.getVirtualHostFileName(vhostName)
-	if err != nil {
-		return vhostFilePath, err
-	}
-
-	return valueObject.NewUnixFilePath(
-		infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileName.String(),
+		infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr,
 	)
 }

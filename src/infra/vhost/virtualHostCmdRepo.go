@@ -2,6 +2,7 @@ package vhostInfra
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"text/template"
 
@@ -97,9 +98,15 @@ func (repo *VirtualHostCmdRepo) createWebServerFile(
 		aliasesHostnames = append(aliasesHostnames, alias.Hostname)
 	}
 
-	mappingFilePath, err := repo.queryRepo.GetVirtualHostMappingsFilePath(hostname)
+	hostnameStr := hostname.String()
+	if infraHelper.IsPrimaryVirtualHost(hostname) {
+		hostnameStr = "primary"
+	}
+
+	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + hostnameStr + ".conf"
+	mappingFilePath, err := valueObject.NewUnixFilePath(mappingFilePathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + hostname.String())
+		return errors.New(err.Error() + ": " + mappingFilePathStr)
 	}
 	err = infraHelper.UpdateFile(mappingFilePath.String(), "", false)
 	if err != nil {
@@ -116,9 +123,10 @@ func (repo *VirtualHostCmdRepo) createWebServerFile(
 		return err
 	}
 
-	webServerFilePath, err := repo.queryRepo.GetVirtualHostWebServerFilePath(hostname)
+	webServerFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	webServerFilePath, err := valueObject.NewUnixFilePath(webServerFilePathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + webServerFilePath.String())
+		return errors.New(err.Error() + ": " + webServerFilePathStr)
 	}
 	err = infraHelper.UpdateFile(
 		webServerFilePath.String(),
@@ -223,19 +231,45 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return err
 	}
 
-	err = repo.createWebServerFile(publicDir, createDto.Hostname)
+	err = repo.persistVirtualHost(createDto, publicDir)
 	if err != nil {
 		return err
 	}
 
-	return repo.persistVirtualHost(createDto, publicDir)
+	return repo.createWebServerFile(publicDir, createDto.Hostname)
+}
+
+func (repo *VirtualHostCmdRepo) deleteWebServerFile(
+	hostname valueObject.Fqdn,
+) error {
+	hostnameStr := hostname.String()
+	if infraHelper.IsPrimaryVirtualHost(hostname) {
+		hostnameStr = "primary"
+	}
+
+	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + hostnameStr + ".conf"
+	err := os.Remove(mappingFilePathStr)
+	if err != nil {
+		return err
+	}
+
+	webServerFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	err = os.Remove(webServerFilePathStr)
+	if err != nil {
+		return err
+	}
+
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
-	err := repo.persistentDbSvc.Handler.Delete(
-		dbModel.VirtualHost{},
-		vhost.Id.Get(),
-	).Error
+	err := repo.persistentDbSvc.Handler.
+		Where(
+			"Id = ? OR ParentHostname = ?",
+			vhost.Id.Get(),
+			vhost.Hostname.String(),
+		).
+		Delete(dbModel.VirtualHost{}).Error
 	if err != nil {
 		return err
 	}
@@ -246,10 +280,17 @@ func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 			return errors.New("GetParentVhost: " + err.Error())
 		}
 		vhost = parentVhost
+
+		return repo.createWebServerFile(
+			vhost.RootDirectory,
+			vhost.Hostname,
+		)
 	}
 
-	return repo.createWebServerFile(
-		vhost.RootDirectory,
-		vhost.Hostname,
-	)
+	err = repo.deleteWebServerFile(vhost.Hostname)
+	if err != nil {
+		return errors.New("DeleteWebServerFileError: " + err.Error())
+	}
+
+	return nil
 }
