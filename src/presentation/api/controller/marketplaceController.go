@@ -11,6 +11,7 @@ import (
 	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type MarketplaceController struct {
@@ -165,7 +166,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 
 	shouldUninstallServices := true
 	if c.QueryParam("shouldUninstallServices") != "" {
-		shouldUninstallServices, err = apiHelper.ParseBoolParam(
+		shouldUninstallServices, err = sharedHelper.ParseBoolParam(
 			c.QueryParam("shouldUninstallServices"),
 		)
 		if err != nil {
@@ -175,7 +176,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 
 	shouldRemoveFiles := true
 	if c.QueryParam("shouldRemoveFiles") != "" {
-		shouldRemoveFiles, err = apiHelper.ParseBoolParam(
+		shouldRemoveFiles, err = sharedHelper.ParseBoolParam(
 			c.QueryParam("shouldRemoveFiles"),
 		)
 		if err != nil {

@@ -12,6 +12,7 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type ServicesController struct {
@@ -127,7 +128,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBoolParam(
+		autoCreateMapping, err = sharedHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
@@ -205,7 +206,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBoolParam(
+		autoCreateMapping, err = sharedHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
