@@ -24,16 +24,16 @@ import (
 type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	marketplaceQueryRepo *MarketplaceQueryRepo
+	mappingCmdRepo       *mappingInfra.MappingCmdRepo
 }
 
 func NewMarketplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MarketplaceCmdRepo {
-	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
-
 	return &MarketplaceCmdRepo{
 		persistentDbSvc:      persistentDbSvc,
-		marketplaceQueryRepo: marketplaceQueryRepo,
+		marketplaceQueryRepo: NewMarketplaceQueryRepo(persistentDbSvc),
+		mappingCmdRepo:       mappingInfra.NewMappingCmdRepo(persistentDbSvc),
 	}
 }
 
@@ -123,8 +123,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 		}
 
 		missingDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
-			catalogDataField.Name,
-			*catalogDataField.DefaultValue,
+			catalogDataField.Name, *catalogDataField.DefaultValue,
 		)
 		missingDataFields = append(missingDataFields, missingDataField)
 	}
@@ -220,9 +219,7 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 		}
 
 		catalogMappingWithNewPath := catalogMapping
-		newMappingBase, err := valueObject.NewMappingPath(
-			urlPath.String(),
-		)
+		newMappingBase, err := valueObject.NewMappingPath(urlPath.String())
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), urlPath.String())
 			continue
@@ -238,33 +235,57 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
-) (createdMappings []entity.Mapping, err error) {
-	for _, catalogMapping := range catalogMappings {
-		createCatalogItemMapping := dto.NewCreateMapping(
-			hostname,
-			catalogMapping.Path,
-			catalogMapping.MatchPattern,
-			catalogMapping.TargetType,
-			catalogMapping.TargetValue,
-			catalogMapping.TargetHttpResponseCode,
+) (mappingIds []valueObject.MappingId, err error) {
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
+	currentMappings, err := mappingQueryRepo.ReadByHostname(hostname)
+	if err != nil {
+		return mappingIds, err
+	}
+
+	currentMappingsContentHashMap := map[string]entity.Mapping{}
+	for _, currentMapping := range currentMappings {
+		contentHash := infraHelper.GenStrongShortHash(
+			currentMapping.Hostname.String() +
+				currentMapping.Path.String() +
+				currentMapping.MatchPattern.String() +
+				currentMapping.TargetType.String(),
 		)
 
-		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
-		mappingId, err := mappingCmdRepo.Create(createCatalogItemMapping)
-		if err != nil {
-			log.Printf("CreateMarketplaceItemMappingError: %s", err.Error())
+		currentMappingsContentHashMap[contentHash] = currentMapping
+	}
+
+	for _, mapping := range catalogMappings {
+		contentHash := infraHelper.GenStrongShortHash(
+			hostname.String() +
+				mapping.Path.String() +
+				mapping.MatchPattern.String() +
+				mapping.TargetType.String(),
+		)
+		currentMapping, alreadyExists := currentMappingsContentHashMap[contentHash]
+		if alreadyExists {
+			mappingIds = append(mappingIds, currentMapping.Id)
 			continue
 		}
 
-		createdMapping := entity.NewMapping(
-			mappingId, hostname, catalogMapping.Path, catalogMapping.MatchPattern,
-			catalogMapping.TargetType, catalogMapping.TargetValue,
-			catalogMapping.TargetHttpResponseCode,
+		createDto := dto.NewCreateMapping(
+			hostname,
+			mapping.Path,
+			mapping.MatchPattern,
+			mapping.TargetType,
+			mapping.TargetValue,
+			mapping.TargetHttpResponseCode,
 		)
-		createdMappings = append(createdMappings, createdMapping)
+
+		mappingId, err := repo.mappingCmdRepo.Create(createDto)
+		if err != nil {
+			log.Printf("CreateItemMappingError: %s", err.Error())
+			continue
+		}
+
+		mappingIds = append(mappingIds, mappingId)
 	}
 
-	return createdMappings, nil
+	return mappingIds, nil
 }
 
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
@@ -273,7 +294,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	urlPath valueObject.UrlPath,
 	installDir valueObject.UnixFilePath,
 	installUuid string,
-	createdMappings []entity.Mapping,
+	mappingsId []valueObject.MappingId,
 ) error {
 	requiredSvcNamesListStr := []string{}
 	for _, svcName := range catalogItem.RequiredServiceNames {
@@ -282,8 +303,8 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
 
 	mappingModels := []dbModel.Mapping{}
-	for _, createdMapping := range createdMappings {
-		mappingModel := dbModel.Mapping{}.ToModel(createdMapping)
+	for _, mappingId := range mappingsId {
+		mappingModel := dbModel.Mapping{ID: uint(mappingId.Get())}
 		mappingModels = append(mappingModels, mappingModel)
 	}
 
@@ -299,12 +320,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		AvatarUrl:            catalogItem.AvatarUrl.String(),
 	}
 
-	err := repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
 }
 
 func (repo *MarketplaceCmdRepo) InstallItem(
@@ -367,9 +383,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		)
 	}
 
-	createdMappings, err := repo.createMappings(
-		installDto.Hostname, catalogItem.Mappings,
-	)
+	mappingIds, err := repo.createMappings(installDto.Hostname, catalogItem.Mappings)
 	if err != nil {
 		return err
 	}
@@ -380,7 +394,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath,
 		installDir,
 		installUuidWithoutHyphens,
-		createdMappings,
+		mappingIds,
 	)
 }
 
@@ -446,14 +460,11 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 	for _, installedItemMapping := range installedItem.Mappings {
-		err = mappingCmdRepo.Delete(installedItemMapping.Id)
+		err = repo.mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
 			log.Printf(
-				"DeleteInstalledItemMappingError (%s): %s",
-				installedItemMapping.Path,
-				err.Error(),
+				"DeleteMappingError (%s): %s", installedItemMapping.Path, err.Error(),
 			)
 			continue
 		}
