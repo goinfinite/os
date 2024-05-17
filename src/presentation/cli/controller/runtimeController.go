@@ -212,7 +212,7 @@ func UpdatePhpSettingController() *cobra.Command {
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
-	cmd.Flags().StringVarP(&settingNameStr, "name", "n", "", "PhpSettingName")
+	cmd.Flags().StringVarP(&settingNameStr, "name", "N", "", "PhpSettingName")
 	cmd.Flags().StringVarP(&settingValueStr, "value", "V", "", "PhpSettingValue")
 	return cmd
 }
@@ -274,7 +274,7 @@ func UpdatePhpModuleController() *cobra.Command {
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
-	cmd.Flags().StringVarP(&moduleNameStr, "name", "n", "", "PhpModuleName")
-	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "s", true, "PhpModuleStatus")
+	cmd.Flags().StringVarP(&moduleNameStr, "name", "N", "", "PhpModuleName")
+	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "V", true, "PhpModuleStatus")
 	return cmd
 }
