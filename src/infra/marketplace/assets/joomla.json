@@ -25,7 +25,7 @@
     "os db create -n joomlaDb_%installUuid% -t mysql",
     "echo $(openssl rand -hex 8) > %installDirectory%/joomlaDbCredentials",
     "os db create-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid% -p $(cat %installDirectory%/joomlaDbCredentials) -r all",
-    "os runtime php update -v 82 -H %installHostname%",
+    "os runtime php update -n %installHostname% -v 8.2",
     "php /app/joomla/installation/joomla.php install --site-name=baseWebsite --admin-user=joomlaUser_%installUuid% --admin-username=joomlaUser_%installUuid% --admin-password=$(cat %installDirectory%/joomlaDbCredentials) --admin-email=%adminMailAddress% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=$(cat %installDirectory%/joomlaDbCredentials) --db-name=joomlaDb_%installUuid% --db-prefix=joomla_ --db-encryption=0 --public-folder=%installDirectory%",
     "rm -rf %installDirectory%/joomlaDbCredentials && rm -rf %installDirectory% && ln -s /app/joomla %installDirectory%"
   ],
