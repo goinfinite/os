@@ -264,8 +264,9 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 		return errors.New("CopyPhpConfTemplateError: " + err.Error())
 	}
 
+	hostnameStr := hostname.String()
 	_, err = infraHelper.RunCmd(
-		"sed", "-i", "-e", "s/speedia.net/"+hostname.String()+"/g", phpConfFilePathStr,
+		"sed", "-ie", "s/speedia.net/"+hostnameStr+"/g", phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
@@ -273,7 +274,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 
 	phpVhostHttpdConf := `
 virtualhost ` + hostname.String() + ` {
-  vhRoot                  /app/
+  vhRoot                  /app/html/` + hostnameStr + `/
   configFile              ` + phpConfFilePathStr + `
   allowSymbolLink         1
   enableScript            1
@@ -281,13 +282,22 @@ virtualhost ` + hostname.String() + ` {
   setUIDMode              0
 }
 `
-	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
-		phpHttpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
+		httpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
-		return errors.New("UpdateHttpdConfFileError: " + err.Error())
+		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
+	}
+
+	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
+	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
+	_, err = infraHelper.RunCmd(
+		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine, httpdConfFilePath,
+	)
+	if err != nil {
+		return errors.New("UpdateListenerMapLineError: " + err.Error())
 	}
 
 	return nil
