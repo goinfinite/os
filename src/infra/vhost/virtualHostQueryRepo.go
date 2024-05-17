@@ -24,7 +24,7 @@ func NewVirtualHostQueryRepo(
 	}
 }
 
-func (repo *VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
+func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
 	entities := []entity.VirtualHost{}
 
 	models := []dbModel.VirtualHost{}
@@ -49,7 +49,7 @@ func (repo *VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
 	return entities, nil
 }
 
-func (repo *VirtualHostQueryRepo) GetByHostname(
+func (repo *VirtualHostQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
 ) (entity.VirtualHost, error) {
 	var entity entity.VirtualHost
@@ -72,7 +72,7 @@ func (repo *VirtualHostQueryRepo) GetByHostname(
 	return entity, nil
 }
 
-func (repo *VirtualHostQueryRepo) GetAliasesByHostname(
+func (repo *VirtualHostQueryRepo) ReadAliasesByHostname(
 	hostname valueObject.Fqdn,
 ) ([]entity.VirtualHost, error) {
 	aliasesEntities := []entity.VirtualHost{}
@@ -105,7 +105,7 @@ func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 ) (valueObject.UnixFilePath, error) {
 	var vhostFilePath valueObject.UnixFilePath
 
-	vhost, err := repo.GetByHostname(vhostName)
+	vhost, err := repo.ReadByHostname(vhostName)
 	if err != nil {
 		return vhostFilePath, errors.New("VirtualHostNotFound")
 	}

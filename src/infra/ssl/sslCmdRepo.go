@@ -346,7 +346,7 @@ func (repo *SslCmdRepo) DeleteSslPairVhosts(
 ) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	for _, vhost := range deleteDto.VirtualHosts {
-		_, err := vhostQueryRepo.GetByHostname(vhost)
+		_, err := vhostQueryRepo.ReadByHostname(vhost)
 		if err != nil {
 			continue
 		}

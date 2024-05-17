@@ -364,7 +364,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	vhost, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
 	if err != nil {
 		return err
 	}

@@ -41,7 +41,7 @@ func UpdatePhpConfigs(
 		return errors.New("PhpVersionNotInstalled")
 	}
 
-	_, err := vhostQueryRepo.GetByHostname(
+	_, err := vhostQueryRepo.ReadByHostname(
 		updatePhpConfigsDto.Hostname,
 	)
 	if err != nil {

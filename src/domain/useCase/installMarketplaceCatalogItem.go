@@ -47,7 +47,7 @@ func InstallMarketplaceCatalogItem(
 	vhostCmdRepo repository.VirtualHostCmdRepo,
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	_, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	_, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
 	if err != nil {
 		return errors.New("VhostNotFound")
 	}

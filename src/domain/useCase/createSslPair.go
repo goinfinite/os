@@ -15,10 +15,10 @@ func CreateSslPair(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	createSslPair dto.CreateSslPair,
 ) error {
-	existingVhosts, err := vhostQueryRepo.Get()
+	existingVhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		log.Printf("FailedToGetVhosts: %s", err.Error())
-		return errors.New("FailedToGetVhostsInfraError")
+		log.Printf("ReadVhostsError: %s", err.Error())
+		return errors.New("ReadVhostsInfraError")
 	}
 
 	if len(existingVhosts) == 0 {

@@ -88,7 +88,7 @@ func (repo *VirtualHostCmdRepo) createWebServerFile(
 	publicDir valueObject.UnixFilePath,
 	hostname valueObject.Fqdn,
 ) error {
-	aliases, err := repo.queryRepo.GetAliasesByHostname(hostname)
+	aliases, err := repo.queryRepo.ReadAliasesByHostname(hostname)
 	if err != nil {
 		return errors.New("GetAliasesByHostnameError: " + err.Error())
 	}
@@ -160,7 +160,7 @@ func (repo *VirtualHostCmdRepo) persistVirtualHost(
 }
 
 func (repo *VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) error {
-	parentVhost, err := repo.queryRepo.GetByHostname(*createDto.ParentHostname)
+	parentVhost, err := repo.queryRepo.ReadByHostname(*createDto.ParentHostname)
 	if err != nil {
 		return errors.New("GetParentVhostError: " + err.Error())
 	}
@@ -275,7 +275,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 	}
 
 	if vhost.Type.String() == "alias" {
-		parentVhost, err := repo.queryRepo.GetByHostname(*vhost.ParentHostname)
+		parentVhost, err := repo.queryRepo.ReadByHostname(*vhost.ParentHostname)
 		if err != nil {
 			return errors.New("GetParentVhost: " + err.Error())
 		}

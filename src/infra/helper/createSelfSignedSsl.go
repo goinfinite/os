@@ -8,6 +8,7 @@ func CreateSelfSignedSsl(dirPath string, virtualHost string) error {
 	vhostCertKeyFilePath := dirPath + "/" + virtualHost + ".key"
 	vhostCertFilePath := dirPath + "/" + virtualHost + ".crt"
 
+	// TODO: how to generate a self signed with aliases
 	_, err := RunCmd(
 		"openssl",
 		"req",

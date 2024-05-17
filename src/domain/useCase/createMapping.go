@@ -16,7 +16,7 @@ func CreateMapping(
 	svcsQueryRepo repository.ServicesQueryRepo,
 	createMapping dto.CreateMapping,
 ) error {
-	vhost, err := vhostQueryRepo.GetByHostname(createMapping.Hostname)
+	vhost, err := vhostQueryRepo.ReadByHostname(createMapping.Hostname)
 	if err != nil {
 		return errors.New("VhostNotFound")
 	}

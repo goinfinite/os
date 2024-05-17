@@ -11,10 +11,10 @@ import (
 func GetVirtualHosts(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 ) ([]entity.VirtualHost, error) {
-	vhosts, err := vhostQueryRepo.Get()
+	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		log.Printf("GetVirtualHostsError: %s", err.Error())
-		return vhosts, errors.New("GetVirtualHostsInfraError")
+		log.Printf("ReadVirtualHostsError: %s", err.Error())
+		return vhosts, errors.New("ReadVirtualHostsInfraError")
 	}
 
 	return vhosts, nil

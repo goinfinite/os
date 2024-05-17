@@ -378,7 +378,7 @@ func (repo *MappingCmdRepo) Create(
 	}
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhost, err := vhostQueryRepo.GetByHostname(createDto.Hostname)
+	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
 	if err != nil {
 		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())
 	}
