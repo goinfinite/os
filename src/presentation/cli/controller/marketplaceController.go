@@ -45,6 +45,26 @@ func (controller *MarketplaceController) GetCatalog() *cobra.Command {
 	return cmd
 }
 
+func (controller *MarketplaceController) GetInstalled() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-installed",
+		Short: "GetInstalledItems",
+		Run: func(cmd *cobra.Command, args []string) {
+			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+				controller.persistentDbSvc,
+			)
+
+			installedItems, err := useCase.ReadMarketplaceInstalledItems(marketplaceQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, installedItems)
+		},
+	}
+	return cmd
+}
+
 func parseDataFields(
 	dataFieldsStr []string,
 ) []valueObject.MarketplaceInstallableItemDataField {
@@ -115,7 +135,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(
-		&catalogIdInt, "catalogId", "i", 0, "Catalog item ID",
+		&catalogIdInt, "catalogId", "i", 0, "CatalogItemId",
 	)
 	cmd.MarkFlagRequired("catalogId")
 	cmd.Flags().StringVarP(
@@ -137,7 +157,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var shouldRemoveFiles bool
 
 	cmd := &cobra.Command{
-		Use:   "uninstall",
+		Use:   "delete",
 		Short: "DeleteInstalledItem",
 		Run: func(cmd *cobra.Command, args []string) {
 			installedId := valueObject.NewMarketplaceInstalledItemIdPanic(installedIdInt)
@@ -162,21 +182,15 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "Installed item ID")
+	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "InstalledItemId")
 	cmd.MarkFlagRequired("installedId")
 	cmd.Flags().BoolVarP(
-		&shouldUninstallServices,
-		"shouldUninstallServices",
-		"s",
-		true,
-		"Should uninstall installed item services",
+		&shouldUninstallServices, "shouldUninstallServices", "s", true,
+		"ShouldUninstallInstalledItemServices",
 	)
 	cmd.Flags().BoolVarP(
-		&shouldRemoveFiles,
-		"shouldRemoveFiles",
-		"f",
-		true,
-		"Should remove installed item files",
+		&shouldRemoveFiles, "shouldRemoveFiles", "f", true,
+		"ShouldRemoveInstalledItemFiles",
 	)
 	return cmd
 }
