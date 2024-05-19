@@ -25,30 +25,10 @@ func NewMarketplaceController(
 	}
 }
 
-func (controller *MarketplaceController) GetCatalog() *cobra.Command {
+func (controller *MarketplaceController) ReadInstalled() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-catalog",
-		Short: "GetCatalogItems",
-		Run: func(cmd *cobra.Command, args []string) {
-			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-				controller.persistentDbSvc,
-			)
-
-			catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, catalogItems)
-		},
-	}
-	return cmd
-}
-
-func (controller *MarketplaceController) GetInstalled() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list-installed",
-		Short: "GetInstalledItems",
+		Use:   "list",
+		Short: "ReadInstalledItems",
 		Run: func(cmd *cobra.Command, args []string) {
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
 				controller.persistentDbSvc,
@@ -192,5 +172,25 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		&shouldRemoveFiles, "shouldRemoveFiles", "f", true,
 		"ShouldRemoveInstalledItemFiles",
 	)
+	return cmd
+}
+
+func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-catalog",
+		Short: "ReadCatalogItems",
+		Run: func(cmd *cobra.Command, args []string) {
+			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+				controller.persistentDbSvc,
+			)
+
+			catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, catalogItems)
+		},
+	}
 	return cmd
 }

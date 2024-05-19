@@ -94,10 +94,11 @@ func (router Router) marketplaceRoutes() {
 	marketplaceController := cliController.NewMarketplaceController(
 		router.persistentDbSvc,
 	)
-	marketplaceCmd.AddCommand(marketplaceController.GetCatalog())
-	marketplaceCmd.AddCommand(marketplaceController.GetInstalled())
+
+	marketplaceCmd.AddCommand(marketplaceController.ReadInstalled())
 	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
 	marketplaceCmd.AddCommand(marketplaceController.DeleteInstalledItem())
+	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
 }
 
 func (router Router) o11yRoutes() {
