@@ -6,11 +6,14 @@ import (
 	"errors"
 	"io/fs"
 	"log"
+	"slices"
+	"sort"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
@@ -370,14 +373,17 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
-	itemIndex int,
 	catalogItemFilePath valueObject.UnixFilePath,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	itemId, _ := valueObject.NewMarketplaceCatalogItemId(itemIndex + 1)
-
 	itemMap, err := repo.getCatalogItemMapFromFilePath(catalogItemFilePath)
 	if err != nil {
 		return catalogItem, err
+	}
+
+	itemId, _ := valueObject.NewMarketplaceItemId(0)
+	rawItemId, exists := itemMap["id"]
+	if exists {
+		itemId, _ = valueObject.NewMarketplaceItemId(rawItemId)
 	}
 
 	rawItemName, assertOk := itemMap["name"].(string)
@@ -471,7 +477,8 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 		)
 	}
 
-	for itemIndex, itemFileEntry := range itemsFiles {
+	catalogItemsIdsMap := map[uint]interface{}{}
+	for _, itemFileEntry := range itemsFiles {
 		itemFileName := itemFileEntry.Name()
 
 		itemFilePathStr := "assets/" + itemFileName
@@ -481,21 +488,57 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 			continue
 		}
 
-		catalogItem, err := repo.catalogItemFactory(itemIndex, itemFilePath)
+		catalogItem, err := repo.catalogItemFactory(itemFilePath)
 		if err != nil {
 			log.Printf(
-				"GetMarketplaceCatalogItemError (%s): %s", itemFileName, err.Error(),
+				"ReadMarketplaceCatalogItemError (%s): %s", itemFileName, err.Error(),
 			)
 			continue
 		}
+
+		_, idAlreadyUsed := catalogItemsIdsMap[catalogItem.Id.Get()]
+		if idAlreadyUsed {
+			catalogItem.Id, _ = valueObject.NewMarketplaceItemId(0)
+		}
+
+		if catalogItem.Id.Get() != 0 {
+			catalogItemsIdsMap[catalogItem.Id.Get()] = nil
+		}
+
 		catalogItems = append(catalogItems, catalogItem)
 	}
+
+	catalogItemsIds := maps.Keys(catalogItemsIdsMap)
+	slices.Sort(catalogItemsIds)
+
+	for itemIndex, catalogItem := range catalogItems {
+		if catalogItem.Id.Get() != 0 {
+			continue
+		}
+
+		lastIdUsed := catalogItemsIds[len(catalogItemsIds)-1]
+		nextAvailableId, err := valueObject.NewMarketplaceItemId(lastIdUsed + 1)
+		if err != nil {
+			log.Printf(
+				"GenerateNewMarketplaceItemIdError (%s): %s",
+				catalogItem.Name.String(), err.Error(),
+			)
+			continue
+		}
+
+		catalogItems[itemIndex].Id = nextAvailableId
+		catalogItemsIds = append(catalogItemsIds, nextAvailableId.Get())
+	}
+
+	sort.SliceStable(catalogItems, func(i, j int) bool {
+		return catalogItems[i].Id.Get() < catalogItems[j].Id.Get()
+	})
 
 	return catalogItems, nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
-	catalogId valueObject.MarketplaceCatalogItemId,
+	catalogId valueObject.MarketplaceItemId,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
 	catalogItems, err := repo.ReadCatalogItems()
 	if err != nil {
@@ -542,7 +585,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
-	installedId valueObject.MarketplaceInstalledItemId,
+	installedId valueObject.MarketplaceItemId,
 ) (entity entity.MarketplaceInstalledItem, err error) {
 	query := dbModel.Mapping{
 		ID: uint(installedId.Get()),
