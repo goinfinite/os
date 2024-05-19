@@ -25,8 +25,7 @@ dataFields:
     isRequired: true
 cmdSteps:
   - curl -skL -o /app/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
-  - unzip -o -d /app /app/opencart.zip && rm /app/opencart.zip
-  - mkdir -p %installDirectory% && mv /app/opencart-*/upload/* %installDirectory% && rm -rf /app/opencart*
+  - unzip -o -d /app /app/opencart.zip && mv /app/opencart-*/upload/* %installDirectory% && rm -rf /app/opencart*
   - mv %installDirectory%/config-dist.php %installDirectory%/config.php
   - mv %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
   - os runtime php update -n %installHostname% -v 8.2
@@ -34,7 +33,7 @@ cmdSteps:
   - echo $(openssl rand -hex 8) > %installDirectory%/ocDbCredentials
   - os db create-user -n ocDb_%installUuid% -t mysql -u adminUsername_%installUuid% -p $(cat %installDirectory%/ocDbCredentials) -r all
   - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server https://%installHostname%%installUrlPath% --db_driver mysqli --db_hostname localhost --db_username adminUsername_%installUuid% --db_password $(cat %installDirectory%/ocDbCredentials) --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
-  - rm -rf %installDirectory%/ocDbCredentials
+  - rm -f %installDirectory%/ocDbCredentials
 estimatedSizeBytes: 1000000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
