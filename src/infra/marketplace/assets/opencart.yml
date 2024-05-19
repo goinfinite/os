@@ -24,10 +24,10 @@ dataFields:
     type: email
     isRequired: true
 cmdSteps:
-  - curl -skL -o /app/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
-  - unzip -o -d /app /app/opencart.zip && mv /app/opencart-*/upload/* %installDirectory% && rm -rf /app/opencart*
-  - mv %installDirectory%/config-dist.php %installDirectory%/config.php
-  - mv %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
+  - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
+  - unzip -o -d %installTempDir% %installTempDir%/opencart.zip && mv %installTempDir%/opencart-*/upload/* %installDirectory%"
+  - cp %installDirectory%/config-dist.php %installDirectory%/config.php
+  - cp %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
   - os runtime php update -n %installHostname% -v 8.2
   - os db create -n ocDb_%installUuid% -t mysql
   - echo $(openssl rand -hex 8) > %installDirectory%/ocDbCredentials

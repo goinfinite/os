@@ -78,12 +78,14 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
+	installTempDir valueObject.UnixFilePath,
 	installDir valueObject.UnixFilePath,
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	dataMap := map[string]string{
+		"installTempDir":   installTempDir.String(),
 		"installDirectory": installDir.String(),
 		"installUrlPath":   installUrlPath.String(),
 		"installHostname":  installHostname.String(),
@@ -342,6 +344,12 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
+	installTempDir, err := valueObject.NewUnixFilePath("/app/marketplace-tmp/")
+	if err != nil {
+		return errors.New("DefineTmpDirectoryError: " + err.Error())
+	}
+	installTempDirStr := installTempDir.String()
+
 	installUrlPath, _ := valueObject.NewUrlPath("/")
 	if installDto.UrlPath != nil {
 		installUrlPath = *installDto.UrlPath
@@ -352,12 +360,14 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
 	}
+	installDirStr = installDir.String()
 
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 
 	systemDataFields := repo.parseSystemDataFields(
-		installDir, installUrlPath, installDto.Hostname, installUuidWithoutHyphens,
+		installTempDir, installDir, installUrlPath,
+		installDto.Hostname, installUuidWithoutHyphens,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -374,9 +384,19 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateInstallDirectoryError: " + err.Error())
 	}
 
+	err = infraHelper.MakeDir(installTempDirStr)
+	if err != nil {
+		return errors.New("CreateTmpDirectoryError: " + err.Error())
+	}
+
 	err = repo.runCmdSteps(catalogItem.CmdSteps, receivedDataFields)
 	if err != nil {
 		return err
+	}
+
+	_, err = infraHelper.RunCmd("rf", "-rf", installTempDirStr)
+	if err != nil {
+		return errors.New("RemoveTmpDirectoryError: " + err.Error())
 	}
 
 	err = repo.updateFilesPrivileges(installDir)
