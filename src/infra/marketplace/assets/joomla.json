@@ -34,7 +34,7 @@
   ],
   "cmdSteps": [
     "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
-    "unzip %installTempDir%/joomla.zip -d %installDirectory%",
+    "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
     "os db create -n joomlaDb_%installUuid% -t mysql",
     "os db create-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid% -p %installRandomPassword% -r all",
     "os runtime php update -n %installHostname% -v 8.2",

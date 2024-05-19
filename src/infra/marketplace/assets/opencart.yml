@@ -25,7 +25,7 @@ dataFields:
     isRequired: true
 cmdSteps:
   - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
-  - unzip -o -d %installTempDir% %installTempDir%/opencart.zip
+  - unzip -o %installTempDir%/opencart.zip -d %installTempDir%
   - mv %installTempDir%/opencart-*/upload/* %installDirectory%
   - cp %installDirectory%/config-dist.php %installDirectory%/config.php
   - cp %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
