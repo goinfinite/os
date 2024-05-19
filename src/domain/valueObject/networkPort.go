@@ -10,7 +10,7 @@ import (
 type NetworkPort uint64
 
 func NewNetworkPort(value interface{}) (NetworkPort, error) {
-	np, err := voHelper.InterfaceToUint(value)
+	np, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
 		return 0, errors.New("InvalidNetworkPort")
 	}

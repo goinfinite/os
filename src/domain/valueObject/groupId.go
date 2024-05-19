@@ -10,7 +10,7 @@ import (
 type GroupId int64
 
 func NewGroupId(value interface{}) (GroupId, error) {
-	groupIdInt, err := voHelper.InterfaceToUint(value)
+	groupIdInt, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
 		return 0, errors.New("InvalidGroupId")
 	}
