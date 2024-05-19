@@ -11,16 +11,38 @@
       "targetValue": "php"
     }
   ],
+  "dataFields": [
+    {
+      "name": "adminUsername",
+      "label": "Admin Username",
+      "type": "text",
+      "isRequired": true
+    },
+    {
+      "name": "adminPassword",
+      "label": "Admin Password",
+      "type": "password",
+      "isRequired": true
+    },
+    {
+      "name": "adminMailAddress",
+      "label": "Admin Email",
+      "type": "email",
+      "isRequired": true
+    }
+  ],
   "cmdSteps": [
     "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
     "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
     "rm -rf /app/composer-setup.php",
     "os runtime php update -n %installHostname% -v 8.2 -m sqlite3:true -m pdo_sqlite:true",
-    "mkdir -p /app/drupal-%installHostname%/",
-    "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%/ -q -n --no-dev",
-    "rmdir %installDirectory% && ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
     "os db create -n drupalDb_%installUuid% -t mysql",
     "os db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p %installRandomPassword% -r all",
+    "mkdir -p /app/drupal-%installHostname%/",
+    "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%/ -q -n --no-dev",
+    "cd /app/drupal-%installHostname%/; composer require drush/drush",
+    "cd /app/drupal-%installHostname%/; vendor/bin/drush site:install standard --db-url=mysql://drupalUser_%installUuid%:%installRandomPassword%@localhost/drupalDb_%installUuid% --account-name=%adminUsername% --account-pass=%adminPassword% --account-mail=%adminMailAddress% -y",
+    "rmdir %installDirectory% && ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%/"
   ],
   "estimatedSizeBytes": 100000000,
