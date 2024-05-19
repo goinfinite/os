@@ -402,7 +402,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("rf", "-rf", installTempDirStr)
+	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirStr)
 	if err != nil {
 		return errors.New("RemoveTmpDirectoryError: " + err.Error())
 	}
