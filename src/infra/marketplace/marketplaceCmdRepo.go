@@ -83,13 +83,15 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
+	installRandomPassword valueObject.Password,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	dataMap := map[string]string{
-		"installTempDir":   installTempDir.String(),
-		"installDirectory": installDir.String(),
-		"installUrlPath":   installUrlPath.String(),
-		"installHostname":  installHostname.String(),
-		"installUuid":      installUuid,
+		"installTempDir":        installTempDir.String(),
+		"installDirectory":      installDir.String(),
+		"installUrlPath":        installUrlPath.String(),
+		"installHostname":       installHostname.String(),
+		"installUuid":           installUuid,
+		"installRandomPassword": installRandomPassword.String(),
 	}
 
 	for key, value := range dataMap {
@@ -365,9 +367,15 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 
+	rawRandomPassword := infraHelper.GenPass(16)
+	installRandomPassword, err := valueObject.NewPassword(rawRandomPassword)
+	if err != nil {
+		return errors.New("DefineRandomPasswordError: " + err.Error())
+	}
+
 	systemDataFields := repo.parseSystemDataFields(
-		installTempDir, installDir, installUrlPath,
-		installDto.Hostname, installUuidWithoutHyphens,
+		installTempDir, installDir, installUrlPath, installDto.Hostname,
+		installUuidWithoutHyphens, installRandomPassword,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 

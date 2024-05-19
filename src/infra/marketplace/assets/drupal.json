@@ -20,12 +20,10 @@
     "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%/ -q -n --no-dev",
     "rmdir %installDirectory% && ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
     "os db create -n drupalDb_%installUuid% -t mysql",
-    "mkdir -p /app/tmp/ && echo $(openssl rand -hex 8) > /app/tmp/%installUuid%DbCredentials",
-    "os db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p $(cat /app/tmp/%installUuid%DbCredentials) -r all",
-    "rm -rf /app/tmp/%installUuid%DbCredentials",
+    "os db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p %installRandomPassword% -r all",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%/"
   ],
-  "estimatedSizeBytes": 450000000,
+  "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
   "screenshotUrls": [
     "https://speedia.net/assets/os/marketplace/drupal/drupal-1.jpg",
