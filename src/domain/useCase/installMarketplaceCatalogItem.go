@@ -12,11 +12,15 @@ import (
 )
 
 func requiredDataFieldsInspector(
-	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
+	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
 	requiredDataFieldNames := []string{}
-	for _, dataField := range requiredDataFields {
+	for _, dataField := range catalogDataFields {
+		if !dataField.IsRequired {
+			continue
+		}
+
 		dataFieldNameStr := dataField.Name.String()
 		requiredDataFieldNames = append(requiredDataFieldNames, dataFieldNameStr)
 	}
@@ -67,10 +71,7 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	err = requiredDataFieldsInspector(
-		catalogItem.DataFields,
-		installDto.DataFields,
-	)
+	err = requiredDataFieldsInspector(catalogItem.DataFields, installDto.DataFields)
 	if err != nil {
 		return err
 	}
