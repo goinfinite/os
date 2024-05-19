@@ -1275,7 +1275,7 @@ paths:
       - application/json
       description: Delete/Uninstall a marketplace installed item.
       parameters:
-      - description: MarketplaceInstalledItemId
+      - description: MarketplaceItemId
         in: path
         name: installedId
         required: true

@@ -1031,7 +1031,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "MarketplaceInstalledItemId",
+                        "description": "MarketplaceItemId",
                         "name": "installedId",
                         "in": "path",
                         "required": true
