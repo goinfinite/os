@@ -32,5 +32,5 @@ func (vo MarketplaceItemId) Get() uint {
 }
 
 func (vo MarketplaceItemId) String() string {
-	return strconv.FormatUint(uint(vo), 10)
+	return strconv.FormatUint(uint64(vo), 10)
 }
