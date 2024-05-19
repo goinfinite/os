@@ -96,7 +96,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(catalogIdInt)
+			catalogId := valueObject.NewMarketplaceItemIdPanic(catalogIdInt)
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
 
 			var urlPathPtr *valueObject.UrlPath
@@ -160,7 +160,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteInstalledItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			installedId := valueObject.NewMarketplaceInstalledItemIdPanic(installedIdInt)
+			installedId := valueObject.NewMarketplaceItemIdPanic(installedIdInt)
 
 			deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
 				installedId, shouldUninstallServices, shouldRemoveFiles,

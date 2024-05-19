@@ -5,7 +5,7 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	Id                   valueObject.MarketplaceInstalledItemId   `json:"id"`
+	Id                   valueObject.MarketplaceItemId            `json:"id"`
 	Name                 valueObject.MarketplaceItemName          `json:"name"`
 	Hostname             valueObject.Fqdn                         `json:"hostname"`
 	Type                 valueObject.MarketplaceItemType          `json:"type"`
@@ -20,7 +20,7 @@ type MarketplaceInstalledItem struct {
 }
 
 func NewMarketplaceInstalledItem(
-	id valueObject.MarketplaceInstalledItemId,
+	id valueObject.MarketplaceItemId,
 	itemName valueObject.MarketplaceItemName,
 	hostname valueObject.Fqdn,
 	itemType valueObject.MarketplaceItemType,

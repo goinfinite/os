@@ -92,7 +92,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
+	catalogId := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
 
 	var urlPathPtr *valueObject.UrlPath
@@ -152,13 +152,13 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        installedId path uint true "MarketplaceInstalledItemId"
+// @Param        installedId path uint true "MarketplaceItemId"
 // @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
 // @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
+	installedId := valueObject.NewMarketplaceItemIdPanic(
 		c.Param("installedId"),
 	)
 

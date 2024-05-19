@@ -3,13 +3,13 @@ package dto
 import "github.com/speedianet/os/src/domain/valueObject"
 
 type DeleteMarketplaceInstalledItem struct {
-	InstalledId             valueObject.MarketplaceInstalledItemId
+	InstalledId             valueObject.MarketplaceItemId
 	ShouldUninstallServices bool
 	ShouldRemoveFiles       bool
 }
 
 func NewDeleteMarketplaceInstalledItem(
-	installedId valueObject.MarketplaceInstalledItemId,
+	installedId valueObject.MarketplaceItemId,
 	shouldUninstallServices bool,
 	shouldRemoveFiles bool,
 ) DeleteMarketplaceInstalledItem {
