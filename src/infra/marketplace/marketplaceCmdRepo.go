@@ -348,7 +348,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	installDirStr := vhost.RootDirectory.String() + installUrlPath.GetWithoutLeadingSlash()
-	installDir, _ := valueObject.NewUnixFilePath(installDirStr)
+	installDir, err := valueObject.NewUnixFilePath(installDirStr)
+	if err != nil {
+		return errors.New("DefineInstallDirectoryError: " + err.Error())
+	}
 
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
@@ -365,6 +368,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 	receivedDataFields = slices.Concat(receivedDataFields, optionalFieldsWithDefaultValues)
+
+	err = infraHelper.MakeDir(installDirStr)
+	if err != nil {
+		return errors.New("CreateInstallDirectoryError: " + err.Error())
+	}
 
 	err = repo.runCmdSteps(catalogItem.CmdSteps, receivedDataFields)
 	if err != nil {
