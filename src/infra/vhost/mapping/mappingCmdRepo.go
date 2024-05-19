@@ -366,7 +366,7 @@ func (repo *MappingCmdRepo) Create(
 	createDto dto.CreateMapping,
 ) (mappingId valueObject.MappingId, err error) {
 	isServiceMapping := createDto.TargetType.String() == "service"
-	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php"
+	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php-webserver"
 	if isPhpServiceMapping {
 		runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 		err := runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)

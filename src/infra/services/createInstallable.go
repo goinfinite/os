@@ -762,7 +762,7 @@ func CreateInstallable(
 	}
 
 	switch svcNameStr {
-	case "php":
+	case "php-webserver", "php":
 		return addPhp()
 	case "node":
 		return addNode(createDto)

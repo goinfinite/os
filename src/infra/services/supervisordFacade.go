@@ -104,7 +104,7 @@ func (facade SupervisordFacade) Stop(name valueObject.ServiceName) error {
 		if err != nil {
 			return err
 		}
-	case "php", "php-webserver":
+	case "php-webserver", "php":
 		err := facade.stopPhpWebServer()
 		if err != nil {
 			return err
