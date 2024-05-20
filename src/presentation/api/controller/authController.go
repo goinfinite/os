@@ -21,7 +21,7 @@ import (
 // @Param        loginDto 	  body    dto.Login  true  "Login"
 // @Success      200 {object} entity.AccessToken
 // @Failure      401 {object} string
-// @Router       /auth/login/ [post]
+// @Router       /v1/auth/login/ [post]
 func AuthLoginController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
 	requestBody, _ := apiHelper.GetRequestBody(c)

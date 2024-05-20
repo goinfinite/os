@@ -663,7 +663,7 @@ info:
   title: OsApi
   version: 0.0.1
 paths:
-  /account/:
+  /v1/account/:
     get:
       consumes:
       - application/json
@@ -728,7 +728,7 @@ paths:
       summary: UpdateAccount
       tags:
       - account
-  /account/{accountId}/:
+  /v1/account/{accountId}/:
     delete:
       consumes:
       - application/json
@@ -751,7 +751,7 @@ paths:
       summary: DeleteAccount
       tags:
       - account
-  /auth/login/:
+  /v1/auth/login/:
     post:
       consumes:
       - application/json
@@ -777,7 +777,7 @@ paths:
       summary: GenerateJwtWithCredentials
       tags:
       - auth
-  /cron/:
+  /v1/cron/:
     get:
       consumes:
       - application/json
@@ -842,7 +842,7 @@ paths:
       summary: UpdateCron
       tags:
       - cron
-  /cron/{cronId}/:
+  /v1/cron/{cronId}/:
     delete:
       consumes:
       - application/json
@@ -865,7 +865,7 @@ paths:
       summary: DeleteCron
       tags:
       - cron
-  /database/{dbType}/:
+  /v1/database/{dbType}/:
     get:
       consumes:
       - application/json
@@ -918,7 +918,7 @@ paths:
       summary: CreateDatabase
       tags:
       - database
-  /database/{dbType}/{dbName}/:
+  /v1/database/{dbType}/{dbName}/:
     delete:
       consumes:
       - application/json
@@ -946,7 +946,7 @@ paths:
       summary: DeleteDatabase
       tags:
       - database
-  /database/{dbType}/{dbName}/user/:
+  /v1/database/{dbType}/{dbName}/user/:
     post:
       consumes:
       - application/json
@@ -980,7 +980,7 @@ paths:
       summary: CreateDatabaseUser
       tags:
       - database
-  /database/{dbType}/{dbName}/user/{dbUser}/:
+  /v1/database/{dbType}/{dbName}/user/{dbUser}/:
     delete:
       consumes:
       - application/json
@@ -1013,7 +1013,7 @@ paths:
       summary: DeleteDatabaseUser
       tags:
       - database
-  /files/:
+  /v1/files/:
     get:
       consumes:
       - application/json
@@ -1089,7 +1089,7 @@ paths:
       summary: UpdateFile
       tags:
       - files
-  /files/compress/:
+  /v1/files/compress/:
     post:
       consumes:
       - application/json
@@ -1117,7 +1117,7 @@ paths:
       summary: CompressFiles
       tags:
       - files
-  /files/copy/:
+  /v1/files/copy/:
     post:
       consumes:
       - application/json
@@ -1141,7 +1141,7 @@ paths:
       summary: CopyFile
       tags:
       - files
-  /files/delete/:
+  /v1/files/delete/:
     put:
       consumes:
       - application/json
@@ -1167,7 +1167,7 @@ paths:
       summary: DeleteFiles
       tags:
       - files
-  /files/extract/:
+  /v1/files/extract/:
     put:
       consumes:
       - application/json
@@ -1191,7 +1191,7 @@ paths:
       summary: ExtractFiles
       tags:
       - files
-  /files/upload/:
+  /v1/files/upload/:
     post:
       consumes:
       - multipart/form-data
@@ -1223,7 +1223,7 @@ paths:
       summary: UploadFiles
       tags:
       - files
-  /marketplace/catalog/:
+  /v1/marketplace/catalog/:
     get:
       consumes:
       - application/json
@@ -1263,7 +1263,7 @@ paths:
       summary: InstallCatalogItem
       tags:
       - marketplace
-  /marketplace/installed/:
+  /v1/marketplace/installed/:
     get:
       consumes:
       - application/json
@@ -1282,7 +1282,7 @@ paths:
       summary: ReadInstalledItems
       tags:
       - marketplace
-  /marketplace/installed/{installedId}/:
+  /v1/marketplace/installed/{installedId}/:
     delete:
       consumes:
       - application/json
@@ -1313,7 +1313,7 @@ paths:
       summary: DeleteInstalledItem
       tags:
       - marketplace
-  /o11y/overview/:
+  /v1/o11y/overview/:
     get:
       consumes:
       - application/json
@@ -1330,7 +1330,7 @@ paths:
       summary: O11yOverview
       tags:
       - o11y
-  /runtime/php/{hostname}/:
+  /v1/runtime/php/{hostname}/:
     get:
       consumes:
       - application/json
@@ -1381,7 +1381,7 @@ paths:
       summary: UpdatePhpConfigs
       tags:
       - runtime
-  /services/:
+  /v1/services/:
     get:
       consumes:
       - application/json
@@ -1423,7 +1423,7 @@ paths:
       summary: UpdateService
       tags:
       - services
-  /services/{svcName}/:
+  /v1/services/{svcName}/:
     delete:
       consumes:
       - application/json
@@ -1446,7 +1446,7 @@ paths:
       summary: DeleteService
       tags:
       - services
-  /services/custom/:
+  /v1/services/custom/:
     post:
       consumes:
       - application/json
@@ -1470,7 +1470,7 @@ paths:
       summary: CreateCustomService
       tags:
       - services
-  /services/installables/:
+  /v1/services/installables/:
     get:
       consumes:
       - application/json
@@ -1512,7 +1512,7 @@ paths:
       summary: CreateInstallableService
       tags:
       - services
-  /ssl/:
+  /v1/ssl/:
     get:
       consumes:
       - application/json
@@ -1554,7 +1554,7 @@ paths:
       summary: CreateSslPair
       tags:
       - ssl
-  /ssl/{sslPairId}/:
+  /v1/ssl/{sslPairId}/:
     delete:
       consumes:
       - application/json
@@ -1577,7 +1577,7 @@ paths:
       summary: DeleteSslPair
       tags:
       - ssl
-  /ssl/vhost/:
+  /v1/ssl/vhost/:
     put:
       consumes:
       - application/json
@@ -1601,7 +1601,7 @@ paths:
       summary: DeleteSslPairVhosts
       tags:
       - ssl
-  /vhosts/:
+  /v1/vhosts/:
     get:
       consumes:
       - application/json
@@ -1643,7 +1643,7 @@ paths:
       summary: CreateVirtualHost
       tags:
       - vhosts
-  /vhosts/{hostname}/:
+  /v1/vhosts/{hostname}/:
     delete:
       consumes:
       - application/json
@@ -1666,7 +1666,7 @@ paths:
       summary: DeleteVirtualHost
       tags:
       - vhosts
-  /vhosts/mapping/:
+  /v1/vhosts/mapping/:
     get:
       consumes:
       - application/json
@@ -1711,7 +1711,7 @@ paths:
       summary: CreateVirtualHostMapping
       tags:
       - vhosts
-  /vhosts/mapping/{mappingId}/:
+  /v1/vhosts/mapping/{mappingId}/:
     delete:
       consumes:
       - application/json

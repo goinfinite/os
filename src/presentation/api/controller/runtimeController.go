@@ -25,7 +25,7 @@ import (
 // @Security     Bearer
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Success      200 {object} entity.PhpConfigs
-// @Router       /runtime/php/{hostname}/ [get]
+// @Router       /v1/runtime/php/{hostname}/ [get]
 func GetPhpConfigsController(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
@@ -132,7 +132,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"UpdatePhpConfigs"
 // @Success      200 {object} object{} "PhpConfigsUpdated"
-// @Router       /runtime/php/{hostname}/ [put]
+// @Router       /v1/runtime/php/{hostname}/ [put]
 func UpdatePhpConfigsController(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
