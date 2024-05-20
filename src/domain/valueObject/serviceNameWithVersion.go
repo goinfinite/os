@@ -47,12 +47,12 @@ func NewServiceNameWithVersionFromString(value string) (
 }
 
 func (vo ServiceNameWithVersion) String() string {
+	if vo.Version == nil {
+		return vo.Name.String()
+	}
 	return vo.Name.String() + ":" + vo.Version.String()
 }
 
 func (vo ServiceNameWithVersion) MarshalJSON() ([]byte, error) {
-	if vo.Version == nil {
-		return json.Marshal(vo.Name.String())
-	}
 	return json.Marshal(vo.String())
 }
