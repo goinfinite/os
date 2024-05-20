@@ -1,13 +1,14 @@
 package valueObject
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 )
 
 type ServiceNameWithVersion struct {
-	Name    ServiceName
-	Version *ServiceVersion
+	Name    ServiceName     `json:"name"`
+	Version *ServiceVersion `json:"version"`
 }
 
 func NewServiceNameWithVersion(name ServiceName, version *ServiceVersion) ServiceNameWithVersion {
@@ -47,4 +48,11 @@ func NewServiceNameWithVersionFromString(value string) (
 
 func (vo ServiceNameWithVersion) String() string {
 	return vo.Name.String() + ":" + vo.Version.String()
+}
+
+func (vo ServiceNameWithVersion) MarshalJSON() ([]byte, error) {
+	if vo.Version == nil {
+		return json.Marshal(vo.Name.String())
+	}
+	return json.Marshal(vo.String())
 }
