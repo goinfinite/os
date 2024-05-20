@@ -2,9 +2,9 @@ id: 2
 name: OpenCart
 type: app
 description: OpenCart is free open source e-commerce platform for online merchants. OpenCart provides a professional and reliable foundation from which to build a successful online store.
-serviceNames:
-  - php
-  - mysql
+services:
+  - php:8.2
+  - mariadb
 mappings:
   - path: /
     matchPattern: begins-with
