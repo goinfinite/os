@@ -10,18 +10,18 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID                   uint   `gorm:"primarykey"`
-	Name                 string `gorm:"not null"`
-	Hostname             string `gorm:"not null"`
-	Type                 string `gorm:"not null"`
-	UrlPath              string `gorm:"not null"`
-	InstallDirectory     string `gorm:"not null"`
-	InstallUuid          string `gorm:"not null"`
-	RequiredServiceNames string
-	Mappings             []Mapping
-	AvatarUrl            string    `gorm:"not null"`
-	CreatedAt            time.Time `gorm:"not null"`
-	UpdatedAt            time.Time `gorm:"not null"`
+	ID               uint   `gorm:"primarykey"`
+	Name             string `gorm:"not null"`
+	Hostname         string `gorm:"not null"`
+	Type             string `gorm:"not null"`
+	UrlPath          string `gorm:"not null"`
+	InstallDirectory string `gorm:"not null"`
+	InstallUuid      string `gorm:"not null"`
+	Services         string
+	Mappings         []Mapping
+	AvatarUrl        string    `gorm:"not null"`
+	CreatedAt        time.Time `gorm:"not null"`
+	UpdatedAt        time.Time `gorm:"not null"`
 }
 
 func (MarketplaceInstalledItem) TableName() string {
@@ -33,7 +33,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 ) {
 	var marketplaceInstalledItem entity.MarketplaceInstalledItem
 
-	id, err := valueObject.NewMarketplaceInstalledItemId(model.ID)
+	id, err := valueObject.NewMarketplaceItemId(model.ID)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -70,15 +70,17 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	requiredSvcsNameList := []valueObject.ServiceName{}
-	if len(model.RequiredServiceNames) > 0 {
-		rawSvcsNameList := strings.Split(model.RequiredServiceNames, ",")
-		for _, rawSvcName := range rawSvcsNameList {
-			svcName, err := valueObject.NewServiceName(rawSvcName)
+	serviceNamesWithVersion := []valueObject.ServiceNameWithVersion{}
+	if len(model.Services) > 0 {
+		rawServicesList := strings.Split(model.Services, ",")
+		for _, rawService := range rawServicesList {
+			serviceNameWithVersion, err := valueObject.NewServiceNameWithVersionFromString(
+				rawService,
+			)
 			if err != nil {
-				log.Printf("%s: %s", err.Error(), rawSvcName)
+				log.Printf("%s: %s", err.Error(), rawService)
 			}
-			requiredSvcsNameList = append(requiredSvcsNameList, svcName)
+			serviceNamesWithVersion = append(serviceNamesWithVersion, serviceNameWithVersion)
 		}
 	}
 
@@ -112,7 +114,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		urlPath,
 		installDirectory,
 		installUuid,
-		requiredSvcsNameList,
+		serviceNamesWithVersion,
 		mappings,
 		avatarUrl,
 		createdAt,

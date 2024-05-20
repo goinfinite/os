@@ -30,7 +30,7 @@ func NewO11yController(
 // @Produce      json
 // @Security     Bearer
 // @Success      200 {object} entity.O11yOverview
-// @Router       /o11y/overview/ [get]
+// @Router       /v1/o11y/overview/ [get]
 func (controller *O11yController) ReadOverview(c echo.Context) error {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(controller.transientDbSvc)
 	o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)

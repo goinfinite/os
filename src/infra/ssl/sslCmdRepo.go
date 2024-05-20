@@ -210,7 +210,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	if !isDomainMappedToServer {
-		return errors.New("DomainIsNotMappedToServer")
+		return errors.New("DomainNotResolvingToServer")
 	}
 
 	firstVhostStr := firstVhost.String()

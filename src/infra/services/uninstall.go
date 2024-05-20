@@ -34,7 +34,7 @@ func Uninstall(name valueObject.ServiceName) error {
 	}
 
 	switch name.String() {
-	case "php":
+	case "php", "php-webserver":
 		packages := append(OlsPackages, "lsphp*")
 		return purgePkgs(packages)
 	case "mariadb":

@@ -35,7 +35,7 @@ func NewSslController(
 // @Produce      json
 // @Security     Bearer
 // @Success      200 {array} entity.SslPair
-// @Router       /ssl/ [get]
+// @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(c echo.Context) error {
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
@@ -79,7 +79,7 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Security     Bearer
 // @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be in Base64."
 // @Success      201 {object} object{} "SslPairCreated"
-// @Router       /ssl/ [post]
+// @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
 	requiredParams := []string{"virtualHosts", "certificate", "key"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -129,7 +129,7 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Security     Bearer
 // @Param        sslPairId 	  path   string  true  "SSL Pair ID that will be deleted."
 // @Success      200 {object} object{} "SslPairDeleted"
-// @Router       /ssl/{sslPairId}/ [delete]
+// @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
@@ -180,7 +180,7 @@ func (controller *SslController) SslCertificateWatchdog() {
 // @Security     Bearer
 // @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "All props are required."
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
-// @Router       /ssl/vhost/ [put]
+// @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
 	requestBody, _ := apiHelper.GetRequestBody(c)

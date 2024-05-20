@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/": {
+        "/v1/account/": {
             "get": {
                 "security": [
                     {
@@ -60,7 +60,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Update an account (Only id is required).",
+                "description": "Update an account.",
                 "consumes": [
                     "application/json"
                 ],
@@ -74,7 +74,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Only id is required.",
-                        "name": "updateAccountDto",
+                        "name": "updateDto",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -129,7 +129,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/account/{accountId}/": {
+        "/v1/account/{accountId}/": {
             "delete": {
                 "security": [
                     {
@@ -166,7 +166,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login/": {
+        "/v1/auth/login/": {
             "post": {
                 "description": "Generate JWT with credentials",
                 "consumes": [
@@ -206,7 +206,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/cron/": {
+        "/v1/cron/": {
             "get": {
                 "security": [
                     {
@@ -311,7 +311,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/cron/{cronId}/": {
+        "/v1/cron/{cronId}/": {
             "delete": {
                 "security": [
                     {
@@ -348,7 +348,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/database/{dbType}/": {
+        "/v1/database/{dbType}/": {
             "get": {
                 "security": [
                     {
@@ -432,7 +432,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/database/{dbType}/{dbName}/": {
+        "/v1/database/{dbType}/{dbName}/": {
             "delete": {
                 "security": [
                     {
@@ -476,7 +476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/database/{dbType}/{dbName}/user/": {
+        "/v1/database/{dbType}/{dbName}/user/": {
             "post": {
                 "security": [
                     {
@@ -529,7 +529,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/database/{dbType}/{dbName}/user/{dbUser}/": {
+        "/v1/database/{dbType}/{dbName}/user/{dbUser}/": {
             "delete": {
                 "security": [
                     {
@@ -580,7 +580,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/": {
+        "/v1/files/": {
             "get": {
                 "security": [
                     {
@@ -700,7 +700,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/compress/": {
+        "/v1/files/compress/": {
             "post": {
                 "security": [
                     {
@@ -745,7 +745,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/copy/": {
+        "/v1/files/copy/": {
             "post": {
                 "security": [
                     {
@@ -784,7 +784,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/delete/": {
+        "/v1/files/delete/": {
             "put": {
                 "security": [
                     {
@@ -826,7 +826,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/extract/": {
+        "/v1/files/extract/": {
             "put": {
                 "security": [
                     {
@@ -865,7 +865,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/upload/": {
+        "/v1/files/upload/": {
             "post": {
                 "security": [
                     {
@@ -915,7 +915,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/catalog/": {
+        "/v1/marketplace/catalog/": {
             "get": {
                 "security": [
                     {
@@ -978,7 +978,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/installed/": {
+        "/v1/marketplace/installed/": {
             "get": {
                 "security": [
                     {
@@ -1009,7 +1009,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/marketplace/installed/{installedId}/": {
+        "/v1/marketplace/installed/{installedId}/": {
             "delete": {
                 "security": [
                     {
@@ -1058,7 +1058,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/o11y/overview/": {
+        "/v1/o11y/overview/": {
             "get": {
                 "security": [
                     {
@@ -1086,7 +1086,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/runtime/php/{hostname}/": {
+        "/v1/runtime/php/{hostname}/": {
             "get": {
                 "security": [
                     {
@@ -1167,7 +1167,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/services/": {
+        "/v1/services/": {
             "get": {
                 "security": [
                     {
@@ -1235,7 +1235,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/services/custom/": {
+        "/v1/services/custom/": {
             "post": {
                 "security": [
                     {
@@ -1274,7 +1274,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/services/installables/": {
+        "/v1/services/installables/": {
             "get": {
                 "security": [
                     {
@@ -1342,7 +1342,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/services/{svcName}/": {
+        "/v1/services/{svcName}/": {
             "delete": {
                 "security": [
                     {
@@ -1379,7 +1379,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ssl/": {
+        "/v1/ssl/": {
             "get": {
                 "security": [
                     {
@@ -1447,7 +1447,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ssl/vhost/": {
+        "/v1/ssl/vhost/": {
             "put": {
                 "security": [
                     {
@@ -1486,7 +1486,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ssl/{sslPairId}/": {
+        "/v1/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
                     {
@@ -1523,7 +1523,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/": {
+        "/v1/vhosts/": {
             "get": {
                 "security": [
                     {
@@ -1591,7 +1591,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/mapping/": {
+        "/v1/vhosts/mapping/": {
             "get": {
                 "security": [
                     {
@@ -1659,7 +1659,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/mapping/{mappingId}/": {
+        "/v1/vhosts/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1696,7 +1696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vhosts/{hostname}/": {
+        "/v1/vhosts/{hostname}/": {
             "delete": {
                 "security": [
                     {
@@ -1976,6 +1976,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "slug": {
+                    "type": "string"
+                },
                 "urlPath": {
                     "type": "string"
                 }
@@ -2038,6 +2041,9 @@ const docTemplate = `{
                 },
                 "shouldUpdateApiKey": {
                     "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -2314,13 +2320,19 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "requiredServiceNames": {
+                "screenshotUrls": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "screenshotUrls": {
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
+                    }
+                },
+                "slugs": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2361,10 +2373,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "requiredServiceNames": {
+                "services": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
                     }
                 },
                 "type": {
@@ -2708,6 +2720,17 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "valueObject.ServiceNameWithVersion": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2724,9 +2747,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.1",
 	Host:             "localhost:1618",
-	BasePath:         "/v1",
+	BasePath:         "/_/api",
 	Schemes:          []string{},
-	Title:            "SosApi",
+	Title:            "OsApi",
 	Description:      "Speedia OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

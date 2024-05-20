@@ -2,6 +2,7 @@ package cliController
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -54,45 +55,62 @@ func GetPhpConfigsController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	return cmd
 }
 
 func UpdatePhpConfigController() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
-	var moduleNameStr string
-	moduleStatusBool := true
-	var settingNameStr string
-	var settingValueStr string
+	var modulesSlice []string
+	var settingsSlice []string
 
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "UpdatePhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic("php")
+			svcName := valueObject.NewServiceNamePanic("php-webserver")
 			sharedHelper.StopIfServiceUnavailable(svcName.String())
+
+			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
-
 			phpModules := []entity.PhpModule{}
-			if moduleNameStr != "" {
-				moduleName := valueObject.NewPhpModuleNamePanic(moduleNameStr)
+			for _, rawModule := range modulesSlice {
+				moduleParts := strings.Split(rawModule, ":")
+				modulePartsLength := len(moduleParts)
+				if modulePartsLength == 0 {
+					continue
+				}
+
+				moduleName := valueObject.NewPhpModuleNamePanic(moduleParts[0])
+				moduleStatus := true
+				if modulePartsLength > 1 {
+					moduleStatus, err = sharedHelper.ParseBoolParam(moduleParts[1])
+					if err != nil {
+						moduleStatus = false
+					}
+				}
+
 				phpModules = append(
 					phpModules,
-					entity.NewPhpModule(moduleName, moduleStatusBool),
+					entity.NewPhpModule(moduleName, moduleStatus),
 				)
 			}
 
 			phpSettings := []entity.PhpSetting{}
-			if settingNameStr != "" {
-				settingName := valueObject.NewPhpSettingNamePanic(settingNameStr)
-				settingValue := valueObject.NewPhpSettingValuePanic(settingValueStr)
+			for _, rawSetting := range settingsSlice {
+				settingParts := strings.Split(rawSetting, ":")
+				if len(settingParts) != 2 {
+					continue
+				}
+
+				settingName := valueObject.NewPhpSettingNamePanic(settingParts[0])
+				settingValue := valueObject.NewPhpSettingValuePanic(settingParts[1])
 				phpSettings = append(
 					phpSettings,
 					entity.NewPhpSetting(settingName, settingValue, nil),
@@ -107,7 +125,7 @@ func UpdatePhpConfigController() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.UpdatePhpConfigs(
@@ -124,13 +142,15 @@ func UpdatePhpConfigController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
-	cmd.Flags().StringVarP(&moduleNameStr, "module", "m", "", "PhpModuleName")
-	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "s", true, "PhpModuleStatus")
-	cmd.Flags().StringVarP(&settingNameStr, "setting", "S", "", "PhpSettingName")
-	cmd.Flags().StringVarP(&settingValueStr, "value", "V", "", "PhpSettingValue")
+	cmd.Flags().StringSliceVarP(
+		&modulesSlice, "module", "m", []string{}, "(phpModuleName:phpModuleStatus)",
+	)
+	cmd.Flags().StringSliceVarP(
+		&settingsSlice, "setting", "s", []string{}, "(phpSettingName:phpSettingValue)",
+	)
 	return cmd
 }
 
@@ -172,7 +192,7 @@ func UpdatePhpSettingController() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.UpdatePhpConfigs(
@@ -189,10 +209,10 @@ func UpdatePhpSettingController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
-	cmd.Flags().StringVarP(&settingNameStr, "name", "n", "", "PhpSettingName")
+	cmd.Flags().StringVarP(&settingNameStr, "name", "N", "", "PhpSettingName")
 	cmd.Flags().StringVarP(&settingValueStr, "value", "V", "", "PhpSettingValue")
 	return cmd
 }
@@ -234,7 +254,7 @@ func UpdatePhpModuleController() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
 			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 			err = useCase.UpdatePhpConfigs(
@@ -251,10 +271,10 @@ func UpdatePhpModuleController() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostnameStr, "hostname", "H", "", "Hostname")
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
 	cmd.MarkFlagRequired("version")
-	cmd.Flags().StringVarP(&moduleNameStr, "name", "n", "", "PhpModuleName")
-	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "s", true, "PhpModuleStatus")
+	cmd.Flags().StringVarP(&moduleNameStr, "name", "N", "", "PhpModuleName")
+	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "V", true, "PhpModuleStatus")
 	return cmd
 }

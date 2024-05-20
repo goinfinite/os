@@ -1,34 +1,59 @@
 {
-    "name": "Drupal",
-    "type": "app",
-    "description": "Drupal is an open source platform for building amazing digital experiences. It's made by a dedicated community. Anyone can use it, and it will always be free.",
-    "serviceNames": ["php", "mysql"],
-    "mappings": [
-        {
-            "path": "/",
-            "matchPattern": "begins-with",
-            "targetType": "service",
-            "targetValue": "php"
-        }
-    ],
-    "cmdSteps": [
-        "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
-        "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
-        "rm -rf /app/composer-setup.php",
-        "sos runtime php update-module -n sqlite3 -v 8.2 -H %installHostname% && sos runtime php update-module -n pdo_sqlite -v 8.2 -H %installHostname%",
-        "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal -q -n --no-dev",
-        "mkdir -p %installDirectory% && ln -s /app/drupal/web %installDirectory%",
-        "sos db create -n drupalDb_%installUuid% -t mysql",
-        "echo $(openssl rand -hex 8) > /app/drupal/drupalDbCredentials",
-        "sos db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p $(cat /app/drupal/drupalDbCredentials) -r all",
-        "rm -rf /app/drupal/drupalDbCredentials"
-    ],
-    "estimatedSizeBytes": 450000000,
-    "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
-    "screenshotUrls": [
-        "https://speedia.net/assets/os/marketplace/drupal/drupal-1.jpg",
-        "https://speedia.net/assets/os/marketplace/drupal/drupal-2.jpg",
-        "https://speedia.net/assets/os/marketplace/drupal/drupal-3.jpg",
-        "https://speedia.net/assets/os/marketplace/drupal/drupal-4.jpg"
-    ]
+  "slugs": ["drupal"],
+  "name": "Drupal",
+  "type": "app",
+  "description": "Drupal is an open source platform for building amazing digital experiences. It's made by a dedicated community. Anyone can use it, and it will always be free.",
+  "services": ["php:8.2", "mariadb:10.6"],
+  "mappings": [
+    {
+      "path": "/",
+      "matchPattern": "begins-with",
+      "targetType": "service",
+      "targetValue": "php"
+    }
+  ],
+  "dataFields": [
+    {
+      "name": "adminUsername",
+      "label": "Admin Username",
+      "type": "text",
+      "isRequired": true
+    },
+    {
+      "name": "adminPassword",
+      "label": "Admin Password",
+      "type": "password",
+      "isRequired": true
+    },
+    {
+      "name": "adminMailAddress",
+      "label": "Admin Email",
+      "type": "email",
+      "isRequired": true
+    }
+  ],
+  "cmdSteps": [
+    "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
+    "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
+    "rm -rf /app/composer-setup.php",
+    "os runtime php update -n %installHostname% -v 8.2 -m sqlite3:true -m pdo_sqlite:true",
+    "os db create -n drupalDb_%installUuid% -t mysql",
+    "os db create-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid% -p %installRandomPassword% -r all",
+    "mkdir -p /app/drupal-%installHostname%/",
+    "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%/ -q -n --no-dev",
+    "cd /app/drupal-%installHostname%/; composer require drush/drush",
+    "cd /app/drupal-%installHostname%/; vendor/bin/drush site:install standard --db-url=mysql://drupalUser_%installUuid%:%installRandomPassword%@localhost/drupalDb_%installUuid% --account-name=%adminUsername% --account-pass=%adminPassword% --account-mail=%adminMailAddress% -y",
+    "mv -f %installDirectory% %installDirectory%-backup",
+    "ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
+    "chown -h nobody:nogroup %installDirectory%",
+    "chown -R nobody:nogroup -L /app/drupal-%installHostname%/"
+  ],
+  "estimatedSizeBytes": 100000000,
+  "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
+  "screenshotUrls": [
+    "https://speedia.net/assets/os/marketplace/drupal/drupal-1.jpg",
+    "https://speedia.net/assets/os/marketplace/drupal/drupal-2.jpg",
+    "https://speedia.net/assets/os/marketplace/drupal/drupal-3.jpg",
+    "https://speedia.net/assets/os/marketplace/drupal/drupal-4.jpg"
+  ]
 }

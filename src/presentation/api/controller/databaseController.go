@@ -21,7 +21,7 @@ import (
 // @Produce      json
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Success      200 {array} entity.Database
-// @Router       /database/{dbType}/ [get]
+// @Router       /v1/database/{dbType}/ [get]
 func GetDatabasesController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	sharedHelper.StopIfServiceUnavailable(dbType.String())
@@ -46,7 +46,7 @@ func GetDatabasesController(c echo.Context) error {
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        createDatabaseDto body dto.CreateDatabase true "All props are required."
 // @Success      201 {object} object{} "DatabaseCreated"
-// @Router       /database/{dbType}/ [post]
+// @Router       /v1/database/{dbType}/ [post]
 func CreateDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	sharedHelper.StopIfServiceUnavailable(dbType.String())
@@ -83,7 +83,7 @@ func CreateDatabaseController(c echo.Context) error {
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
-// @Router       /database/{dbType}/{dbName}/ [delete]
+// @Router       /v1/database/{dbType}/{dbName}/ [delete]
 func DeleteDatabaseController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	sharedHelper.StopIfServiceUnavailable(dbType.String())
@@ -116,7 +116,7 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Param        dbName path string true "DatabaseName"
 // @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "privileges is optional. When not provided, privileges will be 'ALL'."
 // @Success      201 {object} object{} "DatabaseUserCreated"
-// @Router       /database/{dbType}/{dbName}/user/ [post]
+// @Router       /v1/database/{dbType}/{dbName}/user/ [post]
 func CreateDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	sharedHelper.StopIfServiceUnavailable(dbType.String())
@@ -171,7 +171,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Param        dbName path string true "DatabaseName"
 // @Param        dbUser path string true "Database username that will be deleted."
 // @Success      200 {object} object{} "DatabaseUserDeleted"
-// @Router       /database/{dbType}/{dbName}/user/{dbUser}/ [delete]
+// @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func DeleteDatabaseUserController(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
 	sharedHelper.StopIfServiceUnavailable(dbType.String())

@@ -22,10 +22,8 @@ type AuthQueryRepo struct {
 }
 
 func (repo AuthQueryRepo) IsLoginValid(login dto.Login) bool {
-	storedPassHash, err := infraHelper.RunCmd(
-		"bash",
-		"-c",
-		"getent shadow "+login.Username.String()+" | awk -F: '{print $2}'",
+	storedPassHash, err := infraHelper.RunCmdWithSubShell(
+		"getent shadow " + login.Username.String() + " | awk -F: '{print $2}'",
 	)
 	if err != nil {
 		return false
@@ -72,13 +70,7 @@ func (repo AuthQueryRepo) getTokenDetailsFromSession(
 		return dto.AccessTokenDetails{}, errors.New("OriginalIpUnreadable")
 	}
 
-	var accountId valueObject.AccountId
-	switch id := sessionTokenClaims["accountId"].(type) {
-	case string:
-		accountId, err = valueObject.NewAccountIdFromString(id)
-	case float64:
-		accountId, err = valueObject.NewAccountIdFromFloat(id)
-	}
+	accountId, err := valueObject.NewAccountId(sessionTokenClaims["accountId"])
 	if err != nil {
 		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
 	}
@@ -169,7 +161,7 @@ func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 		return dto.AccessTokenDetails{}, errors.New("ApiKeyFormatError")
 	}
 
-	accountId, err := valueObject.NewAccountIdFromString(keyParts[0])
+	accountId, err := valueObject.NewAccountId(keyParts[0])
 	if err != nil {
 		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
 	}

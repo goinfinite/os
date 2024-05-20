@@ -35,7 +35,7 @@ func NewVirtualHostController(
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} entity.VirtualHost
-// @Router       /vhosts/ [get]
+// @Router       /v1/vhosts/ [get]
 func (controller *VirtualHostController) Get(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
@@ -55,7 +55,7 @@ func (controller *VirtualHostController) Get(c echo.Context) error {
 // @Security     Bearer
 // @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "Only hostname is required.<br />type may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required."
 // @Success      201 {object} object{} "VirtualHostCreated"
-// @Router       /vhosts/ [post]
+// @Router       /v1/vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -108,7 +108,7 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Security     Bearer
 // @Param        hostname path string true "Hostname that will be deleted."
 // @Success      200 {object} object{} "VirtualHostDeleted"
-// @Router       /vhosts/{hostname}/ [delete]
+// @Router       /v1/vhosts/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
@@ -141,7 +141,7 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} dto.VirtualHostWithMappings
-// @Router       /vhosts/mapping/ [get]
+// @Router       /v1/vhosts/mapping/ [get]
 func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 
@@ -164,7 +164,7 @@ func (controller *VirtualHostController) GetWithMappings(c echo.Context) error {
 // @Security     Bearer
 // @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.<br />targetValue must have the same value as the targetType requires."
 // @Success      201 {object} object{} "MappingCreated"
-// @Router       /vhosts/mapping/ [post]
+// @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -238,7 +238,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Security     Bearer
 // @Param        mappingId path uint true "Mappind ID that will be deleted."
 // @Success      200 {object} object{} "MappingDeleted"
-// @Router       /vhosts/mapping/{mappingId}/ [delete]
+// @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
 

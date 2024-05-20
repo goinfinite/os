@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -14,11 +13,17 @@ import (
 )
 
 type RuntimeCmdRepo struct {
+	runtimeQueryRepo RuntimeQueryRepo
 }
 
-func (repo RuntimeCmdRepo) restartPhp() error {
-	phpSvcName, _ := valueObject.NewServiceName("php")
-	err := servicesInfra.ServicesCmdRepo{}.Restart(phpSvcName)
+func NewRuntimeCmdRepo() *RuntimeCmdRepo {
+	return &RuntimeCmdRepo{runtimeQueryRepo: RuntimeQueryRepo{}}
+}
+
+func (repo *RuntimeCmdRepo) restartPhp() error {
+	phpSvcName, _ := valueObject.NewServiceName("php-webserver")
+	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	err := servicesCmdRepo.Restart(phpSvcName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed: " + err.Error())
 	}
@@ -26,13 +31,11 @@ func (repo RuntimeCmdRepo) restartPhp() error {
 	return nil
 }
 
-func (repo RuntimeCmdRepo) UpdatePhpVersion(
+func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
-	queryRepo := RuntimeQueryRepo{}
-
-	phpVersion, err := queryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
@@ -41,17 +44,14 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	vhostPhpConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
 
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
-	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/lsapi:lsphp[0-9][0-9]/"+newLsapiLine+"/g",
-		vhostPhpConfFilePath.String(),
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine + "/g' " + phpConfFilePath.String(),
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
@@ -60,12 +60,11 @@ func (repo RuntimeCmdRepo) UpdatePhpVersion(
 	return repo.restartPhp()
 }
 
-func (repo RuntimeCmdRepo) UpdatePhpSettings(
+func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 	hostname valueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	queryRepo := RuntimeQueryRepo{}
-	vhostPhpConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -78,13 +77,10 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 		}
 
 		_, err := infraHelper.RunCmd(
-			"sed",
-			"-i",
-			"s/"+name+" .*/"+name+" "+value+"/g",
-			vhostPhpConfFilePath.String(),
+			"sed", "-i", "s/"+name+" .*/"+name+" "+value+"/g", phpConfFilePath.String(),
 		)
 		if err != nil {
-			log.Printf("UpdatePhpSettingFailed: %s", err.Error())
+			log.Printf("(%s) UpdatePhpSettingFailed: %s", name, err.Error())
 			continue
 		}
 	}
@@ -92,7 +88,7 @@ func (repo RuntimeCmdRepo) UpdatePhpSettings(
 	return repo.restartPhp()
 }
 
-func (repo RuntimeCmdRepo) EnablePhpModule(
+func (repo *RuntimeCmdRepo) EnablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
@@ -101,85 +97,62 @@ func (repo RuntimeCmdRepo) EnablePhpModule(
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 
+	moduleNameStr := module.Name.String()
 	disabledInitFile, err := infraHelper.GetFilePathWithMatch(
-		modsDisabledDir,
-		module.Name.String()+".ini",
+		modsDisabledDir, moduleNameStr+".ini",
 	)
 	if err == nil {
 		enabledIniFile := strings.Replace(
-			disabledInitFile,
-			modsDisabledDir,
-			modsAvailableDir,
-			1,
+			disabledInitFile, modsDisabledDir, modsAvailableDir, 1,
 		)
 
-		os.Rename(
-			disabledInitFile,
-			enabledIniFile,
-		)
-
+		os.Rename(disabledInitFile, enabledIniFile)
 		return nil
 	}
 
 	lsphpPkgPrefix := "lsphp" + phpVersion.GetWithoutDots() + "-"
-	err = infraHelper.InstallPkgs([]string{
-		lsphpPkgPrefix + module.Name.String(),
-	})
+	err = infraHelper.InstallPkgs([]string{lsphpPkgPrefix + moduleNameStr})
 	if err == nil {
 		return nil
 	}
 
-	err = infraHelper.InstallPkgs([]string{
-		lsphpPkgPrefix + "pear",
-	})
+	err = infraHelper.InstallPkgs([]string{lsphpPkgPrefix + "pear"})
 	if err != nil {
 		return errors.New("InstallPhpPearModuleFailed: " + err.Error())
 	}
 
-	os.Symlink("/bin/sed", "/usr/bin/sed")
+	_ = os.Symlink("/bin/sed", "/usr/bin/sed")
 
-	switch module.Name.String() {
+	dependenciesToInstall := []string{}
+	// cSpell:disable
+	switch moduleNameStr {
 	case "mcrypt":
-		err = infraHelper.InstallPkgs([]string{
-			"libmcrypt-dev", "libmcrypt4",
-		})
-		if err != nil {
-			return errors.New("InstallLibmcryptFailed: " + err.Error())
-		}
+		dependenciesToInstall = []string{"libmcrypt-dev", "libmcrypt4"}
 	case "ssh2":
-		err = infraHelper.InstallPkgs([]string{
-			"libssh2-1-dev", "libssh2-1",
-		})
-		if err != nil {
-			return errors.New("InstallLibssh2Failed: " + err.Error())
-		}
+		dependenciesToInstall = []string{"libssh2-1-dev", "libssh2-1"}
 	case "yaml":
-		err = infraHelper.InstallPkgs([]string{
-			"libyaml-dev",
-		})
-		if err != nil {
-			return errors.New("InstallLibyamlFailed: " + err.Error())
-		}
+		dependenciesToInstall = []string{"libyaml-dev"}
 	case "xdebug", "parallel", "swoole", "sqlsrv":
 		if phpVersion == "7.4" {
 			return errors.New("PhpVersionUnsupportedByModule: " + phpVersion.String())
 		}
 	}
+	// cSpell:enable
+	err = infraHelper.InstallPkgs(dependenciesToInstall)
+	if err != nil {
+		return errors.New("InstallModuleFailed: " + err.Error())
+	}
 
-	_, err = infraHelper.RunCmd(
-		"bash",
-		"-c",
-		"echo | "+lsphpDir+"/bin/pecl install "+module.Name.String(),
+	_, err = infraHelper.RunCmdWithSubShell(
+		"echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
 	)
 	if err != nil {
 		return errors.New("InstallPeclModuleFailed: " + err.Error())
 	}
 
-	err = infraHelper.UpdateFile(
-		modsAvailableDir+"/"+module.Name.String()+".ini",
-		"extension="+module.Name.String()+".so",
-		true,
-	)
+	moduleConfigFilePath := modsAvailableDir + "/" + moduleNameStr + ".ini"
+	moduleConfigFileContent := "extension=" + moduleNameStr + ".so"
+	err = infraHelper.UpdateFile(moduleConfigFilePath, moduleConfigFileContent, true)
 	if err != nil {
 		return errors.New("CreatePhpModuleIniFileFailed: " + err.Error())
 	}
@@ -187,7 +160,7 @@ func (repo RuntimeCmdRepo) EnablePhpModule(
 	return nil
 }
 
-func (repo RuntimeCmdRepo) DisablePhpModule(
+func (repo *RuntimeCmdRepo) DisablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
@@ -204,17 +177,11 @@ func (repo RuntimeCmdRepo) DisablePhpModule(
 		return errors.New("PhpModuleIniFileNotFound: " + err.Error())
 	}
 	disabledIniFile := strings.Replace(
-		enabledIniFile,
-		modsAvailableDir,
-		modsDisabledDir,
-		1,
+		enabledIniFile, modsAvailableDir, modsDisabledDir, 1,
 	)
 
 	os.Mkdir(modsDisabledDir, 0755)
-	err = os.Rename(
-		enabledIniFile,
-		disabledIniFile,
-	)
+	err = os.Rename(enabledIniFile, disabledIniFile)
 	if err != nil {
 		return errors.New("DisablePhpModuleFailed: " + err.Error())
 	}
@@ -222,40 +189,47 @@ func (repo RuntimeCmdRepo) DisablePhpModule(
 	return nil
 }
 
-func (repo RuntimeCmdRepo) UpdatePhpModules(
+func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	hostname valueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
-	queryRepo := RuntimeQueryRepo{}
-
-	phpVersion, err := queryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
 
-	allModules, err := queryRepo.GetPhpModules(phpVersion.Value)
+	allModules, err := repo.runtimeQueryRepo.GetPhpModules(phpVersion.Value)
 	if err != nil {
 		return err
 	}
 
-	var activeModules []string
+	activeModuleNames := map[string]interface{}{}
 	for _, module := range allModules {
-		if module.Status {
-			activeModules = append(activeModules, module.Name.String())
-		}
-	}
-
-	for _, module := range modules {
-		isModuleEnabled := slices.Contains(activeModules, module.Name.String())
-		if isModuleEnabled && module.Status {
+		if !module.Status {
 			continue
 		}
 
-		if module.Status {
+		activeModuleNames[module.Name.String()] = nil
+	}
+
+	for _, module := range modules {
+		shouldEnable := module.Status
+		_, isModuleCurrentlyEnabled := activeModuleNames[module.Name.String()]
+
+		if shouldEnable {
+			if isModuleCurrentlyEnabled {
+				continue
+			}
+
 			err := repo.EnablePhpModule(phpVersion.Value, module)
 			if err != nil {
 				continue
 			}
+
+			continue
+		}
+
+		if !isModuleCurrentlyEnabled {
 			continue
 		}
 
@@ -268,11 +242,10 @@ func (repo RuntimeCmdRepo) UpdatePhpModules(
 	return repo.restartPhp()
 }
 
-func (repo RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
+func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
 	vhostExists := true
 
-	queryRepo := RuntimeQueryRepo{}
-	vhostPhpConfFilePath, err := queryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		if err.Error() != "VirtualHostNotFound" {
 			return err
@@ -284,21 +257,16 @@ func (repo RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error
 		return nil
 	}
 
+	phpConfFilePathStr := phpConfFilePath.String()
 	templatePhpVhostConfFilePath := "/app/conf/php/template"
-	err = infraHelper.CopyFile(
-		templatePhpVhostConfFilePath,
-		vhostPhpConfFilePath.String(),
-	)
+	err = infraHelper.CopyFile(templatePhpVhostConfFilePath, phpConfFilePathStr)
 	if err != nil {
-		return errors.New("CreatePhpVirtualHostConfFileError: " + err.Error())
+		return errors.New("CopyPhpConfTemplateError: " + err.Error())
 	}
 
+	hostnameStr := hostname.String()
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"-e",
-		"s/speedia.net/"+hostname.String()+"/g",
-		vhostPhpConfFilePath.String(),
+		"sed", "-ie", "s/speedia.net/"+hostnameStr+"/g", phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
@@ -306,23 +274,30 @@ func (repo RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error
 
 	phpVhostHttpdConf := `
 virtualhost ` + hostname.String() + ` {
-  vhRoot                  /app/
-  configFile              ` + vhostPhpConfFilePath.String() + `
+  vhRoot                  /app/html/` + hostnameStr + `/
+  configFile              ` + phpConfFilePathStr + `
   allowSymbolLink         1
   enableScript            1
   restrained              0
   setUIDMode              0
 }
 `
-	phpHttpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
+	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
-		phpHttpdConfFilePath,
-		phpVhostHttpdConf,
-		shouldOverwrite,
+		httpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
-		return errors.New("CreatePhpVirtualHostError: " + err.Error())
+		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
+	}
+
+	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
+	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
+	_, err = infraHelper.RunCmd(
+		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine, httpdConfFilePath,
+	)
+	if err != nil {
+		return errors.New("UpdateListenerMapLineError: " + err.Error())
 	}
 
 	return nil

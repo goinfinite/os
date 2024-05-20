@@ -1,9 +1,13 @@
+id: 2
+slugs:
+ - opencart
+ - oc
 name: OpenCart
 type: app
 description: OpenCart is free open source e-commerce platform for online merchants. OpenCart provides a professional and reliable foundation from which to build a successful online store.
-serviceNames:
-  - php
-  - mysql
+services:
+  - php:8.2
+  - mariadb
 mappings:
   - path: /
     matchPattern: begins-with
@@ -23,18 +27,16 @@ dataFields:
     type: email
     isRequired: true
 cmdSteps:
-  - curl -skL -o /app/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
-  - unzip -o -d /app /app/opencart.zip && rm /app/opencart.zip
-  - mkdir -p %installDirectory% && mv /app/opencart-*/upload/* %installDirectory% && rm -rf /app/opencart*
-  - mv %installDirectory%/config-dist.php %installDirectory%/config.php
-  - mv %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
-  - sos runtime php update -v 82 -H %installHostname%
-  - sos db create -n ocDb_%installUuid% -t mysql
-  - echo $(openssl rand -hex 8) > %installDirectory%/ocDbCredentials
-  - sos db create-user -n ocDb_%installUuid% -t mysql -u adminUsername_%installUuid% -p $(cat %installDirectory%/ocDbCredentials) -r all
-  - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server https://%installHostname%%installUrlPath% --db_driver mysqli --db_hostname localhost --db_username adminUsername_%installUuid% --db_password $(cat %installDirectory%/ocDbCredentials) --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
-  - rm -rf %installDirectory%/ocDbCredentials
-estimatedSizeBytes: 1000000000
+  - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
+  - unzip -o %installTempDir%/opencart.zip -d %installTempDir%
+  - mv %installTempDir%/opencart-*/upload/* %installDirectory%
+  - cp %installDirectory%/config-dist.php %installDirectory%/config.php
+  - cp %installDirectory%/admin/config-dist.php %installDirectory%/admin/config.php
+  - os runtime php update -n %installHostname% -v 8.2
+  - os db create -n ocDb_%installUuid% -t mysql
+  - os db create-user -n ocDb_%installUuid% -t mysql -u adminUsername_%installUuid% -p %installRandomPassword% -r all
+  - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server https://%installHostname%%installUrlPath% --db_driver mysqli --db_hostname localhost --db_username adminUsername_%installUuid% --db_password %installRandomPassword% --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
+estimatedSizeBytes: 100000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
   - "https://speedia.net/assets/os/marketplace/opencart/oc-1.jpg"

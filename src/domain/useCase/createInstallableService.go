@@ -54,6 +54,18 @@ func CreateInstallableService(
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
+	serviceEntity, err := servicesQueryRepo.GetByName(createDto.Name)
+	if err != nil {
+		log.Printf("GetServiceByNameError: %s", err.Error())
+		return errors.New("GetServiceByNameInfraError")
+	}
+
+	isRuntimeSvc := serviceEntity.Type.String() == "runtime"
+	isApplicationSvc := serviceEntity.Type.String() == "application"
+	if !isRuntimeSvc && !isApplicationSvc {
+		return nil
+	}
+
 	vhosts, err := vhostQueryRepo.Get()
 	if err != nil {
 		return errors.New("VhostsNotFound")

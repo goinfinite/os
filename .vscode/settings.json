@@ -18,6 +18,7 @@
     "godoc",
     "godotenv",
     "gopsutil",
+    "gorm",
     "grpcs",
     "gsub",
     "installables",
@@ -51,12 +52,14 @@
     "podman",
     "postgre",
     "ppid",
+    "primarykey",
     "privs",
     "Procs",
     "publicsuffix",
     "responsetype",
     "serviceid",
     "shirou",
+    "Skippable",
     "speedia",
     "speedianet",
     "sqlite",
@@ -70,6 +73,8 @@
     "uuid",
     "vhconf",
     "vhost",
-    "vhosts"
+    "vhosts",
+    "virtualhost",
+    "webserver"
   ]
 }

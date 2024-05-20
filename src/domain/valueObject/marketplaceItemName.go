@@ -11,7 +11,7 @@ type MarketplaceItemName string
 const marketplaceItemNameRegexExpression = `^\p{L}[\p{L}\'\ \-]{3,30}$`
 
 func NewMarketplaceItemName(value string) (MarketplaceItemName, error) {
-	value = strings.ToLower(value)
+	value = strings.TrimSpace(value)
 
 	min := MarketplaceItemName(value)
 	if !min.isValid() {

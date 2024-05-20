@@ -9,7 +9,7 @@ import (
 type Byte int64
 
 func NewByte(value interface{}) (Byte, error) {
-	byteUint, err := voHelper.InterfaceToUint(value)
+	byteUint, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
 		return 0, errors.New("InvalidByte")
 	}

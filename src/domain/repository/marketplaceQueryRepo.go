@@ -8,10 +8,13 @@ import (
 type MarketplaceQueryRepo interface {
 	ReadCatalogItems() ([]entity.MarketplaceCatalogItem, error)
 	ReadCatalogItemById(
-		catalogId valueObject.MarketplaceCatalogItemId,
+		catalogId valueObject.MarketplaceItemId,
+	) (entity.MarketplaceCatalogItem, error)
+	ReadCatalogItemBySlug(
+		slug valueObject.MarketplaceItemSlug,
 	) (entity.MarketplaceCatalogItem, error)
 	ReadInstalledItems() ([]entity.MarketplaceInstalledItem, error)
 	ReadInstalledItemById(
-		installedId valueObject.MarketplaceInstalledItemId,
+		installedId valueObject.MarketplaceItemId,
 	) (entity.MarketplaceInstalledItem, error)
 }
