@@ -10,11 +10,11 @@ import (
 )
 
 type VirtualHost struct {
-	ID             uint    `gorm:"column:Id;primarykey"`
-	Hostname       string  `gorm:"column:Hostname;not null"`
-	Type           string  `gorm:"column:Type;not null"`
-	RootDirectory  string  `gorm:"column:RootDirectory;not null"`
-	ParentHostname *string `gorm:"column:ParentHostname"`
+	ID             uint   `gorm:"primarykey"`
+	Hostname       string `gorm:"not null"`
+	Type           string `gorm:"not null"`
+	RootDirectory  string `gorm:"not null"`
+	ParentHostname *string
 	Mappings       []Mapping
 	CreatedAt      time.Time `gorm:"column:CreatedAt;not null"`
 	UpdatedAt      time.Time `gorm:"column:UpdatedAt;not null"`
