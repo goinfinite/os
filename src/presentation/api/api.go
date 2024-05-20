@@ -6,12 +6,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	apiInit "github.com/speedianet/os/src/presentation/api/init"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 )
 
-// @title			SosApi
+// @title			OsApi
 // @version			0.0.1
 // @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
@@ -29,20 +28,18 @@ import (
 // @description					Type "Bearer" + JWT token or API key.
 
 // @host		localhost:1618
-// @BasePath	/v1
+// @BasePath	/_/api
 func ApiInit(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	e *echo.Echo,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) {
 	sharedMiddleware.CheckEnvs()
-	apiInit.WebServerSetup(transientDbSvc)
 
-	e := echo.New()
-
-	basePath := "/v1"
+	basePath := "/_/api"
 	baseRoute := e.Group(basePath)
 
-	e.Pre(apiMiddleware.TrailingSlash(basePath))
+	e.Pre(apiMiddleware.AddTrailingSlash(basePath))
 
 	requestTimeout := 180 * time.Second
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
@@ -50,11 +47,9 @@ func ApiInit(
 	}))
 
 	e.Use(apiMiddleware.PanicHandler)
-	e.Use(apiMiddleware.SetDefaultHeaders)
+	e.Use(apiMiddleware.SetDefaultHeaders(basePath))
 	e.Use(apiMiddleware.Auth(basePath))
 
-	router := NewRouter(transientDbSvc, persistentDbSvc)
-	router.RegisterRoutes(baseRoute)
-
-	e.Start(":1618")
+	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc)
+	router.RegisterRoutes()
 }
