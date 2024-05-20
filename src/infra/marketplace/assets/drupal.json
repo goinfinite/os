@@ -43,7 +43,9 @@
     "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%/ -q -n --no-dev",
     "cd /app/drupal-%installHostname%/; composer require drush/drush",
     "cd /app/drupal-%installHostname%/; vendor/bin/drush site:install standard --db-url=mysql://drupalUser_%installUuid%:%installRandomPassword%@localhost/drupalDb_%installUuid% --account-name=%adminUsername% --account-pass=%adminPassword% --account-mail=%adminMailAddress% -y",
-    "rmdir %installDirectory% && ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
+    "mv -f %installDirectory% %installDirectory%-backup",
+    "ln -s /app/drupal-%installHostname%/web/ %installDirectory%",
+    "chown -h nobody:nogroup %installDirectory%",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%/"
   ],
   "estimatedSizeBytes": 100000000,
