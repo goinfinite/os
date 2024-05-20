@@ -34,7 +34,7 @@ func NewMarketplaceController(
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} entity.MarketplaceCatalogItem
-// @Router       /marketplace/catalog/ [get]
+// @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 
@@ -63,11 +63,19 @@ func parseDataFieldsFromBody(
 	for _, dataFieldsInterface := range dataFieldsInterfaceSlice {
 		dataFieldMap, assertOk := dataFieldsInterface.(map[string]interface{})
 		if !assertOk {
-			panic("InvalidDataField")
+			panic("InvalidDataFieldStructure")
+		}
+
+		nameStr, assertOk := dataFieldMap["name"].(string)
+		if !assertOk {
+			nameStr, assertOk = dataFieldMap["key"].(string)
+			if !assertOk {
+				panic("InvalidDataField")
+			}
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldNamePanic(dataFieldMap["name"].(string)),
+			valueObject.NewDataFieldNamePanic(nameStr),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 		)
 
@@ -85,7 +93,7 @@ func parseDataFieldsFromBody(
 // @Produce      json
 // @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (directory is optional)"
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
-// @Router       /marketplace/catalog/ [post]
+// @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
 	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -144,7 +152,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} entity.MarketplaceInstalledItem
-// @Router       /marketplace/installed/ [get]
+// @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 
@@ -167,7 +175,7 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
 // @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
-// @Router       /marketplace/installed/{installedId}/ [delete]
+// @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
 	installedId := valueObject.NewMarketplaceItemIdPanic(
 		c.Param("installedId"),

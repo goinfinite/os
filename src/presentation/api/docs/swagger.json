@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "Speedia OS API",
-        "title": "SosApi",
+        "title": "OsApi",
         "termsOfService": "https://speedia.net/tos/",
         "contact": {
             "name": "Speedia Engineering",
@@ -16,9 +16,9 @@
         "version": "0.0.1"
     },
     "host": "localhost:1618",
-    "basePath": "/v1",
+    "basePath": "/_/api",
     "paths": {
-        "/account/": {
+        "/v1/account/": {
             "get": {
                 "security": [
                     {
@@ -123,7 +123,7 @@
                 }
             }
         },
-        "/account/{accountId}/": {
+        "/v1/account/{accountId}/": {
             "delete": {
                 "security": [
                     {
@@ -160,7 +160,7 @@
                 }
             }
         },
-        "/auth/login/": {
+        "/v1/auth/login/": {
             "post": {
                 "description": "Generate JWT with credentials",
                 "consumes": [
@@ -200,7 +200,7 @@
                 }
             }
         },
-        "/cron/": {
+        "/v1/cron/": {
             "get": {
                 "security": [
                     {
@@ -305,7 +305,7 @@
                 }
             }
         },
-        "/cron/{cronId}/": {
+        "/v1/cron/{cronId}/": {
             "delete": {
                 "security": [
                     {
@@ -342,7 +342,7 @@
                 }
             }
         },
-        "/database/{dbType}/": {
+        "/v1/database/{dbType}/": {
             "get": {
                 "security": [
                     {
@@ -426,7 +426,7 @@
                 }
             }
         },
-        "/database/{dbType}/{dbName}/": {
+        "/v1/database/{dbType}/{dbName}/": {
             "delete": {
                 "security": [
                     {
@@ -470,7 +470,7 @@
                 }
             }
         },
-        "/database/{dbType}/{dbName}/user/": {
+        "/v1/database/{dbType}/{dbName}/user/": {
             "post": {
                 "security": [
                     {
@@ -523,7 +523,7 @@
                 }
             }
         },
-        "/database/{dbType}/{dbName}/user/{dbUser}/": {
+        "/v1/database/{dbType}/{dbName}/user/{dbUser}/": {
             "delete": {
                 "security": [
                     {
@@ -574,7 +574,7 @@
                 }
             }
         },
-        "/files/": {
+        "/v1/files/": {
             "get": {
                 "security": [
                     {
@@ -694,7 +694,7 @@
                 }
             }
         },
-        "/files/compress/": {
+        "/v1/files/compress/": {
             "post": {
                 "security": [
                     {
@@ -739,7 +739,7 @@
                 }
             }
         },
-        "/files/copy/": {
+        "/v1/files/copy/": {
             "post": {
                 "security": [
                     {
@@ -778,7 +778,7 @@
                 }
             }
         },
-        "/files/delete/": {
+        "/v1/files/delete/": {
             "put": {
                 "security": [
                     {
@@ -820,7 +820,7 @@
                 }
             }
         },
-        "/files/extract/": {
+        "/v1/files/extract/": {
             "put": {
                 "security": [
                     {
@@ -859,7 +859,7 @@
                 }
             }
         },
-        "/files/upload/": {
+        "/v1/files/upload/": {
             "post": {
                 "security": [
                     {
@@ -909,7 +909,7 @@
                 }
             }
         },
-        "/marketplace/catalog/": {
+        "/v1/marketplace/catalog/": {
             "get": {
                 "security": [
                     {
@@ -972,7 +972,7 @@
                 }
             }
         },
-        "/marketplace/installed/": {
+        "/v1/marketplace/installed/": {
             "get": {
                 "security": [
                     {
@@ -1003,7 +1003,7 @@
                 }
             }
         },
-        "/marketplace/installed/{installedId}/": {
+        "/v1/marketplace/installed/{installedId}/": {
             "delete": {
                 "security": [
                     {
@@ -1052,7 +1052,7 @@
                 }
             }
         },
-        "/o11y/overview/": {
+        "/v1/o11y/overview/": {
             "get": {
                 "security": [
                     {
@@ -1080,7 +1080,7 @@
                 }
             }
         },
-        "/runtime/php/{hostname}/": {
+        "/v1/runtime/php/{hostname}/": {
             "get": {
                 "security": [
                     {
@@ -1161,7 +1161,7 @@
                 }
             }
         },
-        "/services/": {
+        "/v1/services/": {
             "get": {
                 "security": [
                     {
@@ -1229,7 +1229,7 @@
                 }
             }
         },
-        "/services/custom/": {
+        "/v1/services/custom/": {
             "post": {
                 "security": [
                     {
@@ -1268,7 +1268,7 @@
                 }
             }
         },
-        "/services/installables/": {
+        "/v1/services/installables/": {
             "get": {
                 "security": [
                     {
@@ -1336,7 +1336,7 @@
                 }
             }
         },
-        "/services/{svcName}/": {
+        "/v1/services/{svcName}/": {
             "delete": {
                 "security": [
                     {
@@ -1373,7 +1373,7 @@
                 }
             }
         },
-        "/ssl/": {
+        "/v1/ssl/": {
             "get": {
                 "security": [
                     {
@@ -1441,7 +1441,7 @@
                 }
             }
         },
-        "/ssl/vhost/": {
+        "/v1/ssl/vhost/": {
             "put": {
                 "security": [
                     {
@@ -1480,7 +1480,7 @@
                 }
             }
         },
-        "/ssl/{sslPairId}/": {
+        "/v1/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
                     {
@@ -1517,7 +1517,7 @@
                 }
             }
         },
-        "/vhosts/": {
+        "/v1/vhosts/": {
             "get": {
                 "security": [
                     {
@@ -1585,7 +1585,7 @@
                 }
             }
         },
-        "/vhosts/mapping/": {
+        "/v1/vhosts/mapping/": {
             "get": {
                 "security": [
                     {
@@ -1653,7 +1653,7 @@
                 }
             }
         },
-        "/vhosts/mapping/{mappingId}/": {
+        "/v1/vhosts/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -1690,7 +1690,7 @@
                 }
             }
         },
-        "/vhosts/{hostname}/": {
+        "/v1/vhosts/{hostname}/": {
             "delete": {
                 "security": [
                     {

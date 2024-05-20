@@ -3,21 +3,20 @@ package apiMiddleware
 import (
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	authInfra "github.com/speedianet/os/src/infra/auth"
 )
 
 func getAccountIdFromAccessToken(
-	accessToken valueObject.AccessTokenStr,
+	authQueryRepo repository.AuthQueryRepo,
+	accessTokenValue valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
-	authQueryRepo := authInfra.AuthQueryRepo{}
-
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
 	var trustedIps []valueObject.IpAddress
 	for _, trustedIp := range trustedIpsRaw {
@@ -30,7 +29,7 @@ func getAccountIdFromAccessToken(
 
 	accessTokenDetails, err := useCase.GetAccessTokenDetails(
 		authQueryRepo,
-		accessToken,
+		accessTokenValue,
 		trustedIps,
 		ipAddress,
 	)
@@ -41,35 +40,52 @@ func getAccountIdFromAccessToken(
 	return accessTokenDetails.AccountId, nil
 }
 
-func Auth(basePath string) echo.MiddlewareFunc {
-	urlSkipRegex := regexp.MustCompile(
-		"^" + basePath + "/" + "(swagger|auth|health)",
-	)
+func authError(message string) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
+		"status": http.StatusUnauthorized,
+		"body":   message,
+	})
+}
 
+func Auth(apiBasePath string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if urlSkipRegex.MatchString(c.Request().URL.Path) {
+			shouldSkip := IsSkippableApiCall(c.Request(), apiBasePath)
+			if shouldSkip {
 				return next(c)
 			}
 
-			token := c.Request().Header.Get("Authorization")
-			if token == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
-					"status": http.StatusUnauthorized,
-					"body":   "MissingAuthToken",
-				})
+			rawAccessToken := ""
+			accessTokenCookie, err := c.Cookie("os-auth-token")
+			if err == nil {
+				rawAccessToken = accessTokenCookie.Value
 			}
 
-			tokenWithoutPrefix := token[7:]
+			if rawAccessToken == "" {
+				rawAccessToken = c.Request().Header.Get("Authorization")
+				if rawAccessToken == "" {
+					return authError("MissingAccessToken")
+				}
+				tokenWithoutPrefix := rawAccessToken[7:]
+				rawAccessToken = tokenWithoutPrefix
+			}
+
+			accessTokenValue, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			if err != nil {
+				return authError("InvalidAccessToken")
+			}
+
+			userIpAddress, err := valueObject.NewIpAddress(c.RealIP())
+			if err != nil {
+				return authError("InvalidIpAddress")
+			}
+
+			authQueryRepo := authInfra.AuthQueryRepo{}
 			accountId, err := getAccountIdFromAccessToken(
-				valueObject.AccessTokenStr(tokenWithoutPrefix),
-				valueObject.NewIpAddressPanic(c.RealIP()),
+				authQueryRepo, accessTokenValue, userIpAddress,
 			)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
-					"status": http.StatusUnauthorized,
-					"body":   "InvalidAuthToken",
-				})
+				return authError("InvalidAccessToken")
 			}
 
 			c.Set("accountId", accountId.String())

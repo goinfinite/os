@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/alessio/shellescape"
 	"github.com/google/uuid"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -150,8 +151,10 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 		for _, cmdStepDataPlaceholder := range cmdStepDataFieldPlaceholders {
 			dataFieldValue := dataFieldsMap[cmdStepDataPlaceholder]
+			escapedDataFieldValue := shellescape.Quote(dataFieldValue)
+
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
-				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", dataFieldValue,
+				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", escapedDataFieldValue,
 			)
 			cmdStepStr = cmdStepWithDataFieldStr
 		}

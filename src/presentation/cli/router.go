@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	api "github.com/speedianet/os/src/presentation/api"
+	"github.com/speedianet/os/src/presentation"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
@@ -135,7 +135,7 @@ func (router Router) serveRoutes() {
 		Use:   "serve",
 		Short: "Start Speedia OS HTTPS server (port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
-			api.ApiInit(router.transientDbSvc, router.persistentDbSvc)
+			presentation.HttpServerInit(router.persistentDbSvc, router.transientDbSvc)
 		},
 	}
 

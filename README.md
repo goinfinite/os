@@ -4,19 +4,41 @@ This project is under active development and is not ready for production use.
 
 # Speedia OS
 
-Speedia OS is a streamlined container image equipped with a REST API, CLI, and user-friendly dashboard, purpose-built to simplify the deployment of your applications within a container environment.
+Speedia OS is a container operating system designed to simplify the deployment and management of applications in a containerized environment. It offers a REST API, CLI, and a user-friendly dashboard for seamless container management.
 
 ## Running
 
-To run Speedia OS as a container, you can use the image available at DockerHub with the following command:
+To run Speedia OS as a container, you can pull the image from DockerHub and use the following command:
 
 ```
-podman run --name sos --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it docker.io/speedianet/os:latest
+docker run --rm --name speedia-os \
+  --env 'PRIMARY_VHOST=speedia.cloud' \
+  -p 8080:80 -p 8443:443 -p 1618:1618 \
+  -it docker.io/speedianet/os:latest
 ```
 
-Feel free to rename the container, vhost and change the host port as you wish. Speedia OS should work with Docker, Docker Swarm, Rancher, Kubernetes, Portainer or any other tool that supports OCI-compliant containers.
+In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic.
 
-You can publish port 80 and 443 to the host when running Speedia OS in a virtual machine or bare metal server so that you don't need to use a reverse proxy, as long as your intention is to run a single application in that server.
+You can customize the container name, vhost, and host ports as needed. The --rm flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
+
+After deploying the container, access the shell to create a new account with the following command:
+
+```
+docker exec -it speedia-os /bin/bash
+os account create -u admin -p admin
+```
+
+Once the account is created, you can access the dashboard at `https://localhost:1618/_/` and log in with the credentials you just set up. Note that you may encounter an SSL warning due to the self-signed certificate, which you can ignore or replace with your own certificate later.
+
+Through the dashboard, you can deploy applications using the Marketplace feature with just a few clicks. You can also use the CLI for deployments, such as:
+
+```
+os mktplace install -s wp -n myblog.com
+```
+
+The API Swagger documentation is available at `https://localhost:1618/_/api/swagger/`.
+
+Speedia OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
 
 ## Development
 
