@@ -63,11 +63,19 @@ func parseDataFieldsFromBody(
 	for _, dataFieldsInterface := range dataFieldsInterfaceSlice {
 		dataFieldMap, assertOk := dataFieldsInterface.(map[string]interface{})
 		if !assertOk {
-			panic("InvalidDataField")
+			panic("InvalidDataFieldStructure")
+		}
+
+		nameStr, assertOk := dataFieldMap["name"].(string)
+		if !assertOk {
+			nameStr, assertOk = dataFieldMap["key"].(string)
+			if !assertOk {
+				panic("InvalidDataField")
+			}
 		}
 
 		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
-			valueObject.NewDataFieldNamePanic(dataFieldMap["name"].(string)),
+			valueObject.NewDataFieldNamePanic(nameStr),
 			valueObject.NewDataFieldValuePanic(dataFieldMap["value"].(string)),
 		)
 
