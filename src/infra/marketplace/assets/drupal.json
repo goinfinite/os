@@ -1,4 +1,5 @@
 {
+  "slugs": ["drupal"],
   "name": "Drupal",
   "type": "app",
   "description": "Drupal is an open source platform for building amazing digital experiences. It's made by a dedicated community. Anyone can use it, and it will always be free.",
