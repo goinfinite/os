@@ -67,8 +67,9 @@ func parseDataFields(
 }
 
 func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
-	var catalogIdInt int
 	var hostnameStr string
+	var catalogIdInt int
+	var slugStr string
 	var urlPath string
 	var dataFieldsStr []string
 
@@ -76,8 +77,19 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			catalogId := valueObject.NewMarketplaceItemIdPanic(catalogIdInt)
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
+
+			var catalogIdPtr *valueObject.MarketplaceItemId
+			if catalogIdInt != 0 {
+				catalogId := valueObject.NewMarketplaceItemIdPanic(catalogIdInt)
+				catalogIdPtr = &catalogId
+			}
+
+			var slugPtr *valueObject.MarketplaceItemSlug
+			if slugStr != "" {
+				slug := valueObject.NewMarketplaceItemSlugPanic(slugStr)
+				slugPtr = &slug
+			}
 
 			var urlPathPtr *valueObject.UrlPath
 			if urlPath != "" {
@@ -94,7 +106,8 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			dto := dto.NewInstallMarketplaceCatalogItem(
-				catalogId,
+				catalogIdPtr,
+				slugPtr,
 				hostname,
 				urlPathPtr,
 				dataFields,
@@ -114,19 +127,13 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(
-		&catalogIdInt, "catalogId", "i", 0, "CatalogItemId",
-	)
-	cmd.MarkFlagRequired("catalogId")
-	cmd.Flags().StringVarP(
-		&hostnameStr, "hostname", "n", "", "Hostname on which it will be installed",
-	)
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostName")
 	cmd.MarkFlagRequired("hostname")
-	cmd.Flags().StringVarP(
-		&urlPath, "urlPath", "d", "", "Directory that stores installed files",
-	)
+	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogItemId")
+	cmd.Flags().StringVarP(&slugStr, "slug", "s", "", "CatalogItemSlug")
+	cmd.Flags().StringVarP(&urlPath, "urlPath", "d", "", "UrlPath")
 	cmd.Flags().StringSliceVarP(
-		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",
+		&dataFieldsStr, "dataFields", "f", []string{}, "InstallationDataFields (key:value)",
 	)
 	return cmd
 }

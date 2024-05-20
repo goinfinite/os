@@ -87,13 +87,24 @@ func parseDataFieldsFromBody(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requiredParams := []string{"id", "hostname"}
+	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	catalogId := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
+
+	var idPtr *valueObject.MarketplaceItemId
+	if requestBody["id"] != nil {
+		id := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
+		idPtr = &id
+	}
+
+	var slugPtr *valueObject.MarketplaceItemSlug
+	if requestBody["slug"] != nil {
+		slug := valueObject.NewMarketplaceItemSlugPanic(requestBody["slug"])
+		slugPtr = &slug
+	}
 
 	var urlPathPtr *valueObject.UrlPath
 	if requestBody["directory"] != nil {
@@ -110,7 +121,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlPathPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(idPtr, slugPtr, hostname, urlPathPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
