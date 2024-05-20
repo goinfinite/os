@@ -2748,9 +2748,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.1",
 	Host:             "localhost:1618",
-	BasePath:         "/v1",
+	BasePath:         "/_/api",
 	Schemes:          []string{},
-	Title:            "SosApi",
+	Title:            "OsApi",
 	Description:      "Speedia OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

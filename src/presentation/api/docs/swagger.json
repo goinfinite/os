@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "Speedia OS API",
-        "title": "SosApi",
+        "title": "OsApi",
         "termsOfService": "https://speedia.net/tos/",
         "contact": {
             "name": "Speedia Engineering",
@@ -16,7 +16,7 @@
         "version": "0.0.1"
     },
     "host": "localhost:1618",
-    "basePath": "/v1",
+    "basePath": "/_/api",
     "paths": {
         "/account/": {
             "get": {
