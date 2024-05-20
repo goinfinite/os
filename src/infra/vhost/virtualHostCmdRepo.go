@@ -53,6 +53,11 @@ func (repo VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) erro
 }
 
 func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
+	err := infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		return err
+	}
+
 	hostnameStr := createDto.Hostname.String()
 
 	if createDto.Type.String() == "alias" {
@@ -81,7 +86,7 @@ func (repo VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
     include ` + mappingFilePath + `;
 }
 `
-	err := infraHelper.UpdateFile(
+	err = infraHelper.UpdateFile(
 		"/app/conf/nginx/"+hostnameStr+".conf",
 		nginxConf,
 		true,
@@ -152,12 +157,17 @@ func (repo VirtualHostCmdRepo) deleteAlias(vhost entity.VirtualHost) error {
 }
 
 func (repo VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
+	err := infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		return err
+	}
+
 	hostnameStr := vhost.Hostname.String()
 	if vhost.Type.String() == "alias" {
 		return repo.deleteAlias(vhost)
 	}
 
-	_, err := infraHelper.RunCmd(
+	_, err = infraHelper.RunCmd(
 		"rm",
 		"-rf",
 		infraData.GlobalConfigs.PrimaryPublicDir+"/"+hostnameStr,
