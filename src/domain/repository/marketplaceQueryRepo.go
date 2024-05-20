@@ -10,6 +10,9 @@ type MarketplaceQueryRepo interface {
 	ReadCatalogItemById(
 		catalogId valueObject.MarketplaceItemId,
 	) (entity.MarketplaceCatalogItem, error)
+	ReadCatalogItemBySlug(
+		slug valueObject.MarketplaceItemSlug,
+	) (entity.MarketplaceCatalogItem, error)
 	ReadInstalledItems() ([]entity.MarketplaceInstalledItem, error)
 	ReadInstalledItemById(
 		installedId valueObject.MarketplaceItemId,

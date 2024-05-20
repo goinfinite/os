@@ -394,6 +394,21 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemId, _ = valueObject.NewMarketplaceItemId(rawItemId)
 	}
 
+	itemSlugs := []valueObject.MarketplaceItemSlug{}
+	if itemMap["slugs"] != nil {
+		rawItemSlugs, assertOk := itemMap["slugs"].([]interface{})
+		if !assertOk {
+			return catalogItem, errors.New("InvalidMarketplaceItemSlugs")
+		}
+		for _, rawItemSlug := range rawItemSlugs {
+			itemSlug, err := valueObject.NewMarketplaceItemSlug(rawItemSlug)
+			if err != nil {
+				return catalogItem, err
+			}
+			itemSlugs = append(itemSlugs, itemSlug)
+		}
+	}
+
 	rawItemName, assertOk := itemMap["name"].(string)
 	if !assertOk {
 		return catalogItem, errors.New("InvalidMarketplaceItemName")
@@ -480,6 +495,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	return entity.NewMarketplaceCatalogItem(
 		itemId,
+		itemSlugs,
 		itemName,
 		itemType,
 		itemDescription,
@@ -582,6 +598,27 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	return catalogItem, errors.New("CatalogItemNotFound")
 }
 
+func (repo *MarketplaceQueryRepo) ReadCatalogItemBySlug(
+	slug valueObject.MarketplaceItemSlug,
+) (catalogItem entity.MarketplaceCatalogItem, err error) {
+	catalogItems, err := repo.ReadCatalogItems()
+	if err != nil {
+		return catalogItem, err
+	}
+
+	for _, catalogItem := range catalogItems {
+		for _, catalogItemSlug := range catalogItem.Slugs {
+			if catalogItemSlug.String() != slug.String() {
+				continue
+			}
+
+			return catalogItem, nil
+		}
+	}
+
+	return catalogItem, errors.New("CatalogItemNotFound")
+}
+
 func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 	entities []entity.MarketplaceInstalledItem, err error,
 ) {
@@ -613,14 +650,10 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 	installedId valueObject.MarketplaceItemId,
 ) (entity entity.MarketplaceInstalledItem, err error) {
-	query := dbModel.Mapping{
-		ID: uint(installedId.Get()),
-	}
-
 	var model dbModel.MarketplaceInstalledItem
 	err = repo.persistentDbSvc.Handler.
-		Model(query).
 		Preload("Mappings").
+		Where("id = ?", installedId.Get()).
 		Find(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
