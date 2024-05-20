@@ -12,6 +12,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 func getFilePathSliceFromBody(
@@ -215,7 +216,7 @@ func CopyFileController(c echo.Context) error {
 	shouldOverwrite := false
 	if requestBody["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = apiHelper.ParseBoolParam(
+		shouldOverwrite, err = sharedHelper.ParseBoolParam(
 			requestBody["shouldOverwrite"],
 		)
 		if err != nil {
@@ -263,7 +264,7 @@ func DeleteFileController(c echo.Context) error {
 	hardDelete := false
 	if requestBody["hardDelete"] != nil {
 		var err error
-		hardDelete, err = apiHelper.ParseBoolParam(
+		hardDelete, err = sharedHelper.ParseBoolParam(
 			requestBody["hardDelete"],
 		)
 		if err != nil {

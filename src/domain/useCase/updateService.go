@@ -10,14 +10,14 @@ import (
 )
 
 func updateServiceStatus(
-	queryRepo repository.ServicesQueryRepo,
-	cmdRepo repository.ServicesCmdRepo,
+	servicesQueryRepo repository.ServicesQueryRepo,
+	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceEntity entity.Service,
 	updateDto dto.UpdateService,
 ) error {
 	if serviceEntity.Status.String() == updateDto.Status.String() {
-		return errors.New("ServiceStatusAlreadySet")
+		return nil
 	}
 
 	isInstalled := serviceEntity.Status.String() != "uninstalled"
@@ -27,15 +27,12 @@ func updateServiceStatus(
 
 	switch updateDto.Status.String() {
 	case "running":
-		return cmdRepo.Start(updateDto.Name)
+		return servicesCmdRepo.Start(updateDto.Name)
 	case "stopped":
-		return cmdRepo.Stop(updateDto.Name)
+		return servicesCmdRepo.Stop(updateDto.Name)
 	case "uninstalled":
 		return DeleteService(
-			queryRepo,
-			cmdRepo,
-			mappingCmdRepo,
-			updateDto.Name,
+			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, updateDto.Name,
 		)
 	default:
 		return errors.New("UnknownServiceStatus")
@@ -43,13 +40,13 @@ func updateServiceStatus(
 }
 
 func UpdateService(
-	queryRepo repository.ServicesQueryRepo,
-	cmdRepo repository.ServicesCmdRepo,
+	servicesQueryRepo repository.ServicesQueryRepo,
+	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	serviceEntity, err := queryRepo.GetByName(updateDto.Name)
+	serviceEntity, err := servicesQueryRepo.GetByName(updateDto.Name)
 	if err != nil {
 		return err
 	}
@@ -62,8 +59,8 @@ func UpdateService(
 
 	if shouldUpdateStatus {
 		err = updateServiceStatus(
-			queryRepo,
-			cmdRepo,
+			servicesQueryRepo,
+			servicesCmdRepo,
 			mappingCmdRepo,
 			serviceEntity,
 			updateDto,
@@ -74,7 +71,18 @@ func UpdateService(
 		}
 	}
 
-	err = cmdRepo.Update(updateDto)
+	shouldUpdateType := updateDto.Type != nil
+	shouldUpdateCommand := updateDto.Command != nil
+	shouldUpdateVersion := updateDto.Version != nil
+	shouldUpdateStartupFile := updateDto.StartupFile != nil
+	portBindingsChanged := len(updateDto.PortBindings) != 0
+	nothingElseChanged := !shouldUpdateType && !shouldUpdateCommand &&
+		!shouldUpdateVersion && !shouldUpdateStartupFile && !portBindingsChanged
+	if nothingElseChanged {
+		return nil
+	}
+
+	err = servicesCmdRepo.Update(updateDto)
 	if err != nil {
 		log.Printf("UpdateServiceError: %s", err.Error())
 		return errors.New("UpdateServiceInfraError")

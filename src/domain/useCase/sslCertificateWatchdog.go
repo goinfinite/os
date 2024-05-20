@@ -32,7 +32,7 @@ func NewSslCertificateWatchdog(
 func (uc SslCertificateWatchdog) Execute() {
 	sslPairs, err := uc.sslQueryRepo.Read()
 	if err != nil {
-		log.Printf("FailedToReadSslPairs: %s", err.Error())
+		log.Printf("ReadSslPairsError: %s", err.Error())
 		return
 	}
 
@@ -44,7 +44,7 @@ func (uc SslCertificateWatchdog) Execute() {
 		err = uc.sslCmdRepo.ReplaceWithValidSsl(sslPair)
 		if err != nil {
 			firstVhost := sslPair.VirtualHosts[0]
-			log.Printf("FailedToReplaceWithValidSsl (%s): %s", firstVhost.String(), err.Error())
+			log.Printf("ReplaceWithValidSslError (%s): %s", firstVhost.String(), err.Error())
 		}
 	}
 }

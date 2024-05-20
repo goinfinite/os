@@ -10,7 +10,7 @@ import (
 type UnixUid int64
 
 func NewUnixUid(value interface{}) (UnixUid, error) {
-	unixUidInt, err := voHelper.InterfaceToUint(value)
+	unixUidInt, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
 		return 0, errors.New("InvalidUnixUid")
 	}

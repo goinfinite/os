@@ -1,4 +1,4 @@
-package apiHelper
+package sharedHelper
 
 import (
 	"errors"

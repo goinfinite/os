@@ -6,17 +6,22 @@ import (
 	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 )
 
 func requiredDataFieldsInspector(
-	requiredDataFields []valueObject.MarketplaceCatalogItemDataField,
+	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
 	requiredDataFieldNames := []string{}
-	for _, dataField := range requiredDataFields {
+	for _, dataField := range catalogDataFields {
+		if !dataField.IsRequired {
+			continue
+		}
+
 		dataFieldNameStr := dataField.Name.String()
 		requiredDataFieldNames = append(requiredDataFieldNames, dataFieldNameStr)
 	}
@@ -48,6 +53,22 @@ func requiredDataFieldsInspector(
 	)
 }
 
+func MarketplaceCatalogItemLookup(
+	marketplaceQueryRepo repository.MarketplaceQueryRepo,
+	itemId *valueObject.MarketplaceItemId,
+	itemSlug *valueObject.MarketplaceItemSlug,
+) (itemEntity entity.MarketplaceCatalogItem, err error) {
+	if itemId == nil && itemSlug == nil {
+		return itemEntity, errors.New("ItemIdOrSlugRequired")
+	}
+
+	if itemId != nil {
+		return marketplaceQueryRepo.ReadCatalogItemById(*itemId)
+	}
+
+	return marketplaceQueryRepo.ReadCatalogItemBySlug(*itemSlug)
+}
+
 func InstallMarketplaceCatalogItem(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
@@ -60,17 +81,15 @@ func InstallMarketplaceCatalogItem(
 		return errors.New("VhostNotFound")
 	}
 
-	catalogItem, err := marketplaceQueryRepo.ReadCatalogItemById(
-		installDto.Id,
+	catalogItem, err := MarketplaceCatalogItemLookup(
+		marketplaceQueryRepo, installDto.Id, installDto.Slug,
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
+	installDto.Id = &catalogItem.Id
 
-	err = requiredDataFieldsInspector(
-		catalogItem.DataFields,
-		installDto.DataFields,
-	)
+	err = requiredDataFieldsInspector(catalogItem.DataFields, installDto.DataFields)
 	if err != nil {
 		return err
 	}

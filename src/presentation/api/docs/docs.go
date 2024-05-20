@@ -1031,7 +1031,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "MarketplaceInstalledItemId",
+                        "description": "MarketplaceItemId",
                         "name": "installedId",
                         "in": "path",
                         "required": true
@@ -1977,6 +1977,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "slug": {
+                    "type": "string"
+                },
                 "urlPath": {
                     "type": "string"
                 }
@@ -2318,13 +2321,19 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "requiredServiceNames": {
+                "screenshotUrls": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "screenshotUrls": {
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
+                    }
+                },
+                "slugs": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2365,10 +2374,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "requiredServiceNames": {
+                "services": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
                     }
                 },
                 "type": {
@@ -2710,6 +2719,17 @@ const docTemplate = `{
                 },
                 "uptimeSecs": {
                     "type": "integer"
+                }
+            }
+        },
+        "valueObject.ServiceNameWithVersion": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         }

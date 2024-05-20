@@ -11,6 +11,7 @@ import (
 	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type MarketplaceController struct {
@@ -86,13 +87,24 @@ func parseDataFieldsFromBody(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requiredParams := []string{"id", "hostname"}
+	requiredParams := []string{"hostname"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(requestBody["id"])
 	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
+
+	var idPtr *valueObject.MarketplaceItemId
+	if requestBody["id"] != nil {
+		id := valueObject.NewMarketplaceItemIdPanic(requestBody["id"])
+		idPtr = &id
+	}
+
+	var slugPtr *valueObject.MarketplaceItemSlug
+	if requestBody["slug"] != nil {
+		slug := valueObject.NewMarketplaceItemSlugPanic(requestBody["slug"])
+		slugPtr = &slug
+	}
 
 	var urlPathPtr *valueObject.UrlPath
 	if requestBody["directory"] != nil {
@@ -109,7 +121,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 	vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(catalogId, hostname, urlPathPtr, dataFields)
+	dto := dto.NewInstallMarketplaceCatalogItem(idPtr, slugPtr, hostname, urlPathPtr, dataFields)
 	err := useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo,
 		marketplaceCmdRepo,
@@ -151,13 +163,13 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        installedId path uint true "MarketplaceInstalledItemId"
+// @Param        installedId path uint true "MarketplaceItemId"
 // @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
 // @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	installedId := valueObject.NewMarketplaceInstalledItemIdPanic(
+	installedId := valueObject.NewMarketplaceItemIdPanic(
 		c.Param("installedId"),
 	)
 
@@ -165,7 +177,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 
 	shouldUninstallServices := true
 	if c.QueryParam("shouldUninstallServices") != "" {
-		shouldUninstallServices, err = apiHelper.ParseBoolParam(
+		shouldUninstallServices, err = sharedHelper.ParseBoolParam(
 			c.QueryParam("shouldUninstallServices"),
 		)
 		if err != nil {
@@ -175,7 +187,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 
 	shouldRemoveFiles := true
 	if c.QueryParam("shouldRemoveFiles") != "" {
-		shouldRemoveFiles, err = apiHelper.ParseBoolParam(
+		shouldRemoveFiles, err = sharedHelper.ParseBoolParam(
 			c.QueryParam("shouldRemoveFiles"),
 		)
 		if err != nil {

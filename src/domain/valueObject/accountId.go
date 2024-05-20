@@ -10,7 +10,7 @@ import (
 type AccountId uint64
 
 func NewAccountId(value interface{}) (AccountId, error) {
-	accId, err := voHelper.InterfaceToUint(value)
+	accId, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
 		return 0, errors.New("InvalidAccountId")
 	}

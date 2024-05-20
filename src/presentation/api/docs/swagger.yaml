@@ -156,6 +156,8 @@ definitions:
         type: string
       id:
         type: integer
+      slug:
+        type: string
       urlPath:
         type: string
     type: object
@@ -378,11 +380,15 @@ definitions:
         type: array
       name:
         type: string
-      requiredServiceNames:
+      screenshotUrls:
         items:
           type: string
         type: array
-      screenshotUrls:
+      services:
+        items:
+          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
+        type: array
+      slugs:
         items:
           type: string
         type: array
@@ -409,9 +415,9 @@ definitions:
         type: array
       name:
         type: string
-      requiredServiceNames:
+      services:
         items:
-          type: string
+          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
         type: array
       type:
         type: string
@@ -635,6 +641,13 @@ definitions:
         type: array
       uptimeSecs:
         type: integer
+    type: object
+  valueObject.ServiceNameWithVersion:
+    properties:
+      name:
+        type: string
+      version:
+        type: string
     type: object
 host: localhost:1618
 info:
@@ -1275,7 +1288,7 @@ paths:
       - application/json
       description: Delete/Uninstall a marketplace installed item.
       parameters:
-      - description: MarketplaceInstalledItemId
+      - description: MarketplaceItemId
         in: path
         name: installedId
         required: true

@@ -13,6 +13,7 @@ import (
 func TestRuntimeCmdRepo(t *testing.T) {
 	t.Skip("SkipRuntimeCmdRepoTest")
 	testHelpers.LoadEnvVars()
+	runtimeCmdRepo := NewRuntimeCmdRepo()
 
 	err := servicesInfra.CreateInstallableSimplified("php")
 	if err != nil {
@@ -26,7 +27,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		err = RuntimeCmdRepo{}.UpdatePhpVersion(
+		err = runtimeCmdRepo.UpdatePhpVersion(
 			valueObject.NewFqdnPanic(primaryVhost.String()),
 			valueObject.NewPhpVersionPanic("8.1"),
 		)
@@ -41,7 +42,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		err = RuntimeCmdRepo{}.UpdatePhpSettings(
+		err = runtimeCmdRepo.UpdatePhpSettings(
 			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpSetting{
 				entity.NewPhpSetting(
@@ -62,7 +63,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		err = RuntimeCmdRepo{}.UpdatePhpModules(
+		err = runtimeCmdRepo.UpdatePhpModules(
 			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(
@@ -75,7 +76,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			t.Errorf("Expected nil, got %v", err)
 		}
 
-		err = RuntimeCmdRepo{}.UpdatePhpModules(
+		err = runtimeCmdRepo.UpdatePhpModules(
 			valueObject.NewFqdnPanic(primaryVhost.String()),
 			[]entity.PhpModule{
 				entity.NewPhpModule(

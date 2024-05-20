@@ -1,8 +1,10 @@
 {
+  "id": 1,
+  "slugs": ["wp", "wordpress"],
   "name": "WordPress",
   "type": "app",
-  "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
-  "serviceNames": ["php", "mysql"],
+  "description": "WordPress is a web content management system. It was originally created as a tool to publish blogs but has evolved to support publishing other web content, including more traditional websites, mailing lists and Internet forum, media galleries, membership sites, learning management systems and online stores.",
+  "services": ["php:8.2", "mariadb"],
   "mappings": [
     {
       "path": "/",
@@ -42,15 +44,14 @@
     "curl -skL -o /app/wp-cli.phar https://speedia.net/assets/os/marketplace/wordpress/wp-cli.phar",
     "chmod +x /app/wp-cli.phar",
     "mv /app/wp-cli.phar /usr/local/bin/wp",
+    "os runtime php update -n %installHostname% -v 8.2",
     "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
     "os db create -n wpDb_%installUuid% -t mysql",
-    "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
-    "os db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
-    "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
-    "rm -rf %installDirectory%/wpDbCredentials",
+    "os db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p %installRandomPassword% -r all",
+    "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=%installRandomPassword% --allow-root",
     "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
   ],
-  "estimatedSizeBytes": 1000000000,
+  "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
   "screenshotUrls": [
     "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",

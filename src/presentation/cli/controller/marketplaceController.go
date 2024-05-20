@@ -25,21 +25,21 @@ func NewMarketplaceController(
 	}
 }
 
-func (controller *MarketplaceController) GetCatalog() *cobra.Command {
+func (controller *MarketplaceController) ReadInstalled() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-catalog",
-		Short: "GetCatalogItems",
+		Use:   "list",
+		Short: "ReadInstalledItems",
 		Run: func(cmd *cobra.Command, args []string) {
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
 				controller.persistentDbSvc,
 			)
 
-			catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
+			installedItems, err := useCase.ReadMarketplaceInstalledItems(marketplaceQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			cliHelper.ResponseWrapper(true, catalogItems)
+			cliHelper.ResponseWrapper(true, installedItems)
 		},
 	}
 	return cmd
@@ -67,8 +67,9 @@ func parseDataFields(
 }
 
 func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
-	var catalogIdInt int
 	var hostnameStr string
+	var catalogIdInt int
+	var slugStr string
 	var urlPath string
 	var dataFieldsStr []string
 
@@ -76,8 +77,19 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			catalogId := valueObject.NewMarketplaceCatalogItemIdPanic(catalogIdInt)
 			hostname := valueObject.NewFqdnPanic(hostnameStr)
+
+			var catalogIdPtr *valueObject.MarketplaceItemId
+			if catalogIdInt != 0 {
+				catalogId := valueObject.NewMarketplaceItemIdPanic(catalogIdInt)
+				catalogIdPtr = &catalogId
+			}
+
+			var slugPtr *valueObject.MarketplaceItemSlug
+			if slugStr != "" {
+				slug := valueObject.NewMarketplaceItemSlugPanic(slugStr)
+				slugPtr = &slug
+			}
 
 			var urlPathPtr *valueObject.UrlPath
 			if urlPath != "" {
@@ -94,7 +106,8 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
 
 			dto := dto.NewInstallMarketplaceCatalogItem(
-				catalogId,
+				catalogIdPtr,
+				slugPtr,
 				hostname,
 				urlPathPtr,
 				dataFields,
@@ -114,19 +127,13 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(
-		&catalogIdInt, "catalogId", "i", 0, "Catalog item ID",
-	)
-	cmd.MarkFlagRequired("catalogId")
-	cmd.Flags().StringVarP(
-		&hostnameStr, "hostname", "n", "", "Hostname on which it will be installed",
-	)
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostName")
 	cmd.MarkFlagRequired("hostname")
-	cmd.Flags().StringVarP(
-		&urlPath, "urlPath", "d", "", "Directory that stores installed files",
-	)
+	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogItemId")
+	cmd.Flags().StringVarP(&slugStr, "slug", "s", "", "CatalogItemSlug")
+	cmd.Flags().StringVarP(&urlPath, "urlPath", "d", "", "UrlPath")
 	cmd.Flags().StringSliceVarP(
-		&dataFieldsStr, "dataFields", "f", []string{}, "Installation data fields (key:value)",
+		&dataFieldsStr, "dataFields", "f", []string{}, "InstallationDataFields (key:value)",
 	)
 	return cmd
 }
@@ -137,10 +144,10 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var shouldRemoveFiles bool
 
 	cmd := &cobra.Command{
-		Use:   "uninstall",
+		Use:   "delete",
 		Short: "DeleteInstalledItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			installedId := valueObject.NewMarketplaceInstalledItemIdPanic(installedIdInt)
+			installedId := valueObject.NewMarketplaceItemIdPanic(installedIdInt)
 
 			deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
 				installedId, shouldUninstallServices, shouldRemoveFiles,
@@ -162,21 +169,35 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "Installed item ID")
+	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "InstalledItemId")
 	cmd.MarkFlagRequired("installedId")
 	cmd.Flags().BoolVarP(
-		&shouldUninstallServices,
-		"shouldUninstallServices",
-		"s",
-		true,
-		"Should uninstall installed item services",
+		&shouldUninstallServices, "shouldUninstallServices", "s", true,
+		"ShouldUninstallInstalledItemServices",
 	)
 	cmd.Flags().BoolVarP(
-		&shouldRemoveFiles,
-		"shouldRemoveFiles",
-		"f",
-		true,
-		"Should remove installed item files",
+		&shouldRemoveFiles, "shouldRemoveFiles", "f", true,
+		"ShouldRemoveInstalledItemFiles",
 	)
+	return cmd
+}
+
+func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-catalog",
+		Short: "ReadCatalogItems",
+		Run: func(cmd *cobra.Command, args []string) {
+			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+				controller.persistentDbSvc,
+			)
+
+			catalogItems, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, catalogItems)
+		},
+	}
 	return cmd
 }

@@ -164,7 +164,7 @@ func UpdatePhpConfigsController(c echo.Context) error {
 	)
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
 	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
 
 	err = useCase.UpdatePhpConfigs(

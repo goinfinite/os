@@ -64,7 +64,7 @@ func (router Router) cronRoutes() {
 
 	rootCmd.AddCommand(cronCmd)
 	cronCmd.AddCommand(cliController.GetCronsController())
-	cronCmd.AddCommand(cliController.CreateCronControler())
+	cronCmd.AddCommand(cliController.CreateCronController())
 	cronCmd.AddCommand(cliController.UpdateCronController())
 	cronCmd.AddCommand(cliController.DeleteCronController())
 }
@@ -94,8 +94,11 @@ func (router Router) marketplaceRoutes() {
 	marketplaceController := cliController.NewMarketplaceController(
 		router.persistentDbSvc,
 	)
-	marketplaceCmd.AddCommand(marketplaceController.GetCatalog())
+
+	marketplaceCmd.AddCommand(marketplaceController.ReadInstalled())
 	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
+	marketplaceCmd.AddCommand(marketplaceController.DeleteInstalledItem())
+	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
 }
 
 func (router Router) o11yRoutes() {

@@ -17,9 +17,7 @@ type RuntimeQueryRepo struct {
 
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
-) (valueObject.UnixFilePath, error) {
-	var vhostPhpConfFilePath valueObject.UnixFilePath
-
+) (vhostPhpConfFilePath valueObject.UnixFilePath, err error) {
 	primaryVhostPhpConfFilePathStr := "/app/conf/php/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
 
@@ -44,18 +42,17 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	return vhostPhpConfFilePath, nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error) {
+func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() (
+	phpVersions []valueObject.PhpVersion, err error,
+) {
 	olsConfigFile := "/usr/local/lsws/conf/httpd_config.conf"
 	output, err := infraHelper.RunCmd(
-		"awk",
-		"/extprocessor lsphp/{print $2}",
-		olsConfigFile,
+		"awk", "/extprocessor lsphp/{print $2}", olsConfigFile,
 	)
 	if err != nil {
-		return nil, errors.New("FailedToGetPhpVersions: " + err.Error())
+		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())
 	}
 
-	phpVersions := []valueObject.PhpVersion{}
 	for _, version := range strings.Split(output, "\n") {
 		if version == "" {
 			continue
@@ -75,9 +72,7 @@ func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() ([]valueObject.PhpVersion
 
 func (repo RuntimeQueryRepo) GetPhpVersion(
 	hostname valueObject.Fqdn,
-) (entity.PhpVersion, error) {
-	var phpVersion entity.PhpVersion
-
+) (phpVersion entity.PhpVersion, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpVersion, err
@@ -89,38 +84,34 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 		vhostPhpConfFilePath.String(),
 	)
 	if err != nil {
-		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("GetCurrentPhpVersionFromFileFailed: " + err.Error())
 	}
 
 	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
 	if err != nil {
-		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("PhpVersionUnknown: " + err.Error())
 	}
 
 	phpVersions, err := repo.GetPhpVersionsInstalled()
 	if err != nil {
-		return phpVersion, errors.New("FailedToGetPhpVersion: " + err.Error())
+		return phpVersion, errors.New("GetPhpVersionsInstalledFailed: " + err.Error())
 	}
 
 	phpVersion = entity.NewPhpVersion(currentPhpVersion, phpVersions)
 	return phpVersion, nil
 }
 
-func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
-	var timezones []string
-
+func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
 	timezonesRaw, err := infraHelper.RunCmd(
-		"php",
-		"-r",
-		"echo json_encode(DateTimeZone::listIdentifiers());",
+		"php", "-r", "echo json_encode(DateTimeZone::listIdentifiers());",
 	)
 	if err != nil {
-		return timezones, errors.New("FailedToGetPhpTimezones: " + err.Error())
+		return timezones, errors.New("GetPhpTimezonesFailed: " + err.Error())
 	}
 
 	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
 	if err != nil {
-		return timezones, errors.New("FailedToGetPhpTimezones: " + err.Error())
+		return timezones, errors.New("ParsePhpTimezonesFailed: " + err.Error())
 	}
 
 	return timezones, nil
@@ -128,9 +119,7 @@ func (repo RuntimeQueryRepo) getPhpTimezones() ([]string, error) {
 
 func (repo RuntimeQueryRepo) phpSettingFactory(
 	setting string,
-) (entity.PhpSetting, error) {
-	var phpSetting entity.PhpSetting
-
+) (phpSetting entity.PhpSetting, err error) {
 	if setting == "" {
 		return phpSetting, errors.New("InvalidPhpSetting")
 	}
@@ -197,10 +186,8 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 
 	if len(valuesToInject) > 0 {
 		for _, valueToInject := range valuesToInject {
-			settingOptions = append(
-				settingOptions,
-				valueObject.NewPhpSettingOptionPanic(valueToInject),
-			)
+			settingOption, _ := valueObject.NewPhpSettingOption(valueToInject)
+			settingOptions = append(settingOptions, settingOption)
 		}
 	}
 
@@ -209,22 +196,19 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 
 func (repo RuntimeQueryRepo) GetPhpSettings(
 	hostname valueObject.Fqdn,
-) ([]entity.PhpSetting, error) {
-	phpSettings := []entity.PhpSetting{}
-
+) (phpSettings []entity.PhpSetting, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpSettings, err
 	}
 
 	output, err := infraHelper.RunCmd(
-		"sed",
-		"-n",
+		"sed", "-n",
 		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
 		vhostPhpConfFilePath.String(),
 	)
 	if err != nil || output == "" {
-		return phpSettings, errors.New("FailedToGetPhpSettings: " + err.Error())
+		return phpSettings, errors.New("GetPhpSettingsFailed: " + err.Error())
 	}
 
 	for _, setting := range strings.Split(output, "\n") {
@@ -241,12 +225,9 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 
 func (repo RuntimeQueryRepo) GetPhpModules(
 	version valueObject.PhpVersion,
-) ([]entity.PhpModule, error) {
-	phpModules := []entity.PhpModule{}
-
+) (phpModules []entity.PhpModule, err error) {
 	activeModuleList, err := infraHelper.RunCmd(
-		"/usr/local/lsws/lsphp"+version.GetWithoutDots()+"/bin/php",
-		"-m",
+		"/usr/local/lsws/lsphp"+version.GetWithoutDots()+"/bin/php", "-m",
 	)
 	if err != nil {
 		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
@@ -281,8 +262,7 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 		}
 
 		phpModules = append(
-			phpModules,
-			entity.NewPhpModule(phpModule, isModuleInstalled),
+			phpModules, entity.NewPhpModule(phpModule, isModuleInstalled),
 		)
 	}
 
@@ -291,9 +271,7 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 
 func (repo RuntimeQueryRepo) GetPhpConfigs(
 	hostname valueObject.Fqdn,
-) (entity.PhpConfigs, error) {
-	var phpConfigs entity.PhpConfigs
-
+) (phpConfigs entity.PhpConfigs, err error) {
 	phpVersion, err := repo.GetPhpVersion(hostname)
 	if err != nil {
 		return phpConfigs, err
