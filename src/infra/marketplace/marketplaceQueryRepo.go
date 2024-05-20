@@ -66,25 +66,33 @@ func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
 	return catalogItemMap, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemServiceNames(
-	catalogItemSvcNamesMap interface{},
-) (itemSvcNames []valueObject.ServiceName, err error) {
-	rawItemSvcNames, assertOk := catalogItemSvcNamesMap.([]interface{})
+func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
+	catalogItemServices interface{},
+) (serviceNamesWithVersions []valueObject.ServiceNameWithVersion, err error) {
+	rawServices, assertOk := catalogItemServices.([]interface{})
 	if !assertOk {
-		return itemSvcNames, errors.New("InvalidMarketplaceCatalogItemServiceNames")
+		return serviceNamesWithVersions, errors.New("InvalidCatalogItemServices")
 	}
 
-	for _, rawItemSvcName := range rawItemSvcNames {
-		itemSvcName, err := valueObject.NewServiceName(rawItemSvcName.(string))
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawItemSvcName)
+	for _, rawService := range rawServices {
+		rawServiceNameWithVersion, assertOk := rawService.(string)
+		if !assertOk {
+			log.Printf("InvalidCatalogItemService: %s", rawService)
 			continue
 		}
 
-		itemSvcNames = append(itemSvcNames, itemSvcName)
+		serviceNameWithVersion, err := valueObject.NewServiceNameWithVersionFromString(
+			rawServiceNameWithVersion,
+		)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawServiceNameWithVersion)
+			continue
+		}
+
+		serviceNamesWithVersions = append(serviceNamesWithVersions, serviceNameWithVersion)
 	}
 
-	return itemSvcNames, nil
+	return serviceNamesWithVersions, nil
 }
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
@@ -413,29 +421,44 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	itemSvcNames, err := repo.parseCatalogItemServiceNames(itemMap["serviceNames"])
-	if err != nil {
-		return catalogItem, err
+	itemServices := []valueObject.ServiceNameWithVersion{}
+	if itemMap["services"] != nil {
+		itemServices, err = repo.parseCatalogItemServices(itemMap["services"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
-	itemMappings, err := repo.parseCatalogItemMappings(itemMap["mappings"])
-	if err != nil {
-		return catalogItem, err
+	itemMappings := []valueObject.MarketplaceItemMapping{}
+	if itemMap["mappings"] != nil {
+		itemMappings, err = repo.parseCatalogItemMappings(itemMap["mappings"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
-	itemDataFields, err := repo.parseCatalogItemDataFields(itemMap["dataFields"])
-	if err != nil {
-		return catalogItem, err
+	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
+	if itemMap["dataFields"] != nil {
+		itemDataFields, err = repo.parseCatalogItemDataFields(itemMap["dataFields"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
-	itemCmdSteps, err := repo.parseCatalogItemCmdSteps(itemMap["cmdSteps"])
-	if err != nil {
-		return catalogItem, err
+	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+	if itemMap["cmdSteps"] != nil {
+		itemCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["cmdSteps"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
-	estimatedSizeBytes, err := valueObject.NewByte(itemMap["estimatedSizeBytes"])
-	if err != nil {
-		return catalogItem, err
+	estimatedSizeBytes := valueObject.Byte(1000000000)
+	if itemMap["estimatedSizeBytes"] == nil {
+		estimatedSizeBytes, err = valueObject.NewByte(itemMap["estimatedSizeBytes"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
 	rawItemAvatarUrl, assertOk := itemMap["avatarUrl"].(string)
@@ -447,9 +470,12 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
-	itemScreenshotUrls, err := repo.parseCatalogItemScreenshotUrls(itemMap["screenshotUrls"])
-	if err != nil {
-		return catalogItem, err
+	itemScreenshotUrls := []valueObject.Url{}
+	if itemMap["screenshotUrls"] != nil {
+		itemScreenshotUrls, err = repo.parseCatalogItemScreenshotUrls(itemMap["screenshotUrls"])
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
 	return entity.NewMarketplaceCatalogItem(
@@ -457,7 +483,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemName,
 		itemType,
 		itemDescription,
-		itemSvcNames,
+		itemServices,
 		itemMappings,
 		itemDataFields,
 		itemCmdSteps,

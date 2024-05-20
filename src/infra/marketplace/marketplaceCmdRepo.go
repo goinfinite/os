@@ -37,27 +37,27 @@ func NewMarketplaceCmdRepo(
 	}
 }
 
-func (repo *MarketplaceCmdRepo) createRequiredServices(
+func (repo *MarketplaceCmdRepo) installServices(
 	vhostHostname valueObject.Fqdn,
-	serviceNames []valueObject.ServiceName,
+	services []valueObject.ServiceNameWithVersion,
 ) error {
 	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
 	serviceCmdRepo := servicesInfra.ServicesCmdRepo{}
 
 	shouldCreatePhpVirtualHost := false
-	for _, serviceName := range serviceNames {
-		if serviceName.String() == "php-webserver" {
+	for _, serviceWithVersion := range services {
+		if serviceWithVersion.Name.String() == "php-webserver" {
 			shouldCreatePhpVirtualHost = true
 		}
 
-		_, err := serviceQueryRepo.GetByName(serviceName)
+		_, err := serviceQueryRepo.GetByName(serviceWithVersion.Name)
 		if err == nil {
 			continue
 		}
 
 		autoCreateMapping := false
 		createServiceDto := dto.NewCreateInstallableService(
-			serviceName, nil, nil, nil, autoCreateMapping,
+			serviceWithVersion.Name, serviceWithVersion.Version, nil, nil, autoCreateMapping,
 		)
 
 		err = serviceCmdRepo.CreateInstallable(createServiceDto)
@@ -68,10 +68,7 @@ func (repo *MarketplaceCmdRepo) createRequiredServices(
 
 	if shouldCreatePhpVirtualHost {
 		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-		err := runtimeCmdRepo.CreatePhpVirtualHost(vhostHostname)
-		if err != nil {
-			return err
-		}
+		return runtimeCmdRepo.CreatePhpVirtualHost(vhostHostname)
 	}
 
 	return nil
@@ -300,11 +297,11 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	installUuid string,
 	mappingsId []valueObject.MappingId,
 ) error {
-	requiredSvcNamesListStr := []string{}
-	for _, svcName := range catalogItem.RequiredServiceNames {
-		requiredSvcNamesListStr = append(requiredSvcNamesListStr, svcName.String())
+	servicesList := []string{}
+	for _, service := range catalogItem.Services {
+		servicesList = append(servicesList, service.String())
 	}
-	requiredSvcNamesStr := strings.Join(requiredSvcNamesListStr, ",")
+	servicesListStr := strings.Join(servicesList, ",")
 
 	mappingModels := []dbModel.Mapping{}
 	for _, mappingId := range mappingsId {
@@ -313,15 +310,15 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	}
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
-		Name:                 catalogItem.Name.String(),
-		Hostname:             hostname.String(),
-		Type:                 catalogItem.Type.String(),
-		UrlPath:              urlPath.String(),
-		InstallDirectory:     installDir.String(),
-		InstallUuid:          installUuid,
-		RequiredServiceNames: requiredSvcNamesStr,
-		Mappings:             mappingModels,
-		AvatarUrl:            catalogItem.AvatarUrl.String(),
+		Name:             catalogItem.Name.String(),
+		Hostname:         hostname.String(),
+		Type:             catalogItem.Type.String(),
+		UrlPath:          urlPath.String(),
+		InstallDirectory: installDir.String(),
+		InstallUuid:      installUuid,
+		Services:         servicesListStr,
+		Mappings:         mappingModels,
+		AvatarUrl:        catalogItem.AvatarUrl.String(),
 	}
 
 	return repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
@@ -341,7 +338,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.createRequiredServices(installDto.Hostname, catalogItem.RequiredServiceNames)
+	err = repo.installServices(installDto.Hostname, catalogItem.Services)
 	if err != nil {
 		return err
 	}
@@ -434,44 +431,35 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
-func (repo *MarketplaceCmdRepo) getServiceNamesInUse() (
-	[]valueObject.ServiceName, error,
-) {
-	servicesInUse := []valueObject.ServiceName{}
+func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
+	servicesToUninstall []valueObject.ServiceNameWithVersion,
+) error {
+	serviceNamesToUninstallMap := map[string]interface{}{}
+	for _, serviceNameWithVersion := range servicesToUninstall {
+		serviceNamesToUninstallMap[serviceNameWithVersion.Name.String()] = nil
+	}
 
 	installedItems, err := repo.marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
-		return servicesInUse, err
+		return errors.New("ReadInstalledItemsError: " + err.Error())
 	}
 
+	serviceNamesInUseMap := map[string]interface{}{}
 	for _, installedItem := range installedItems {
-		servicesInUse = slices.Concat(
-			servicesInUse,
-			installedItem.RequiredServiceNames,
-		)
-	}
-
-	return servicesInUse, nil
-}
-
-func (repo *MarketplaceCmdRepo) uninstallServices(
-	installedServiceNames []valueObject.ServiceName,
-) error {
-	serviceNamesInUse, err := repo.getServiceNamesInUse()
-	if err != nil {
-		return err
+		for _, serviceNameWithVersion := range installedItem.Services {
+			serviceNamesInUseMap[serviceNameWithVersion.Name.String()] = nil
+		}
 	}
 
 	unusedServiceNames := []valueObject.ServiceName{}
-	for _, installedServiceName := range installedServiceNames {
-		isInstalledServiceInUse := slices.Contains(
-			serviceNamesInUse, installedServiceName,
-		)
-		if isInstalledServiceInUse {
+	for serviceNameStr := range serviceNamesToUninstallMap {
+		_, isServiceInUse := serviceNamesInUseMap[serviceNameStr]
+		if isServiceInUse {
 			continue
 		}
 
-		unusedServiceNames = append(unusedServiceNames, installedServiceName)
+		serviceName, _ := valueObject.NewServiceName(serviceNameStr)
+		unusedServiceNames = append(unusedServiceNames, serviceName)
 	}
 
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
@@ -515,7 +503,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	if deleteDto.ShouldUninstallServices {
-		err = repo.uninstallServices(installedItem.RequiredServiceNames)
+		err = repo.uninstallUnusedServices(installedItem.Services)
 		if err != nil {
 			return err
 		}
