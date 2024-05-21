@@ -57,7 +57,7 @@ func (repo *VirtualHostQueryRepo) ReadByHostname(
 	model := dbModel.VirtualHost{}
 	err := repo.persistentDbSvc.Handler.
 		Model(&dbModel.VirtualHost{}).
-		Where("Hostname = ?", hostname.String()).
+		Where("hostname = ?", hostname.String()).
 		Preload("Mappings").
 		First(&model).Error
 	if err != nil {
@@ -80,7 +80,7 @@ func (repo *VirtualHostQueryRepo) ReadAliasesByHostname(
 	aliasesModels := []dbModel.VirtualHost{}
 	err := repo.persistentDbSvc.Handler.
 		Model(&aliasesModels).
-		Where("ParentHostname = ?", hostname.String()).
+		Where("parent_hostname = ?", hostname.String()).
 		Preload("Mappings").
 		Find(&aliasesModels).Error
 	if err != nil {
