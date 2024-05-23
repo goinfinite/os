@@ -46,6 +46,7 @@
     "mv -f %installDirectory% %installDirectory%-backup",
     "ln -s /app/drupal-%installHostname%-%installUuid%/web/ %installDirectory%",
     "chown -h nobody:nogroup %installDirectory%",
+    "chown -R nobody:nogroup -L %installDirectory%-backup",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
   ],
   "estimatedSizeBytes": 100000000,
