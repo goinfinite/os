@@ -261,36 +261,41 @@ func (repo FilesCmdRepo) Extract(extractUnixFiles dto.ExtractUnixFiles) error {
 }
 
 func (repo FilesCmdRepo) Move(
-	unixSrcFilePath valueObject.UnixFilePath,
-	unixDestinationDir valueObject.UnixFilePath,
+	sourcePath valueObject.UnixFilePath,
+	destinationPath valueObject.UnixFilePath,
 	shouldOverwrite bool,
 ) error {
-	fileToMoveExists := infraHelper.FileExists(unixSrcFilePath.String())
-	if !fileToMoveExists {
-		return errors.New("FileToMoveNotFound")
+	sourcePathStr := sourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
+		return errors.New("SourceToMoveOrRenameNotFound")
 	}
 
-	fileDestinationAbsolutePathStr := unixDestinationDir.String() + "/" + unixSrcFilePath.GetFileName().String()
-	fileDestinationAbsolutePath, err := valueObject.NewUnixFilePath(fileDestinationAbsolutePathStr)
+	destinationPathStr := destinationPath.String()
+	if !infraHelper.FileExists(destinationPathStr) {
+		return os.Rename(sourcePathStr, destinationPathStr)
+	}
+
+	destinationInfo, err := os.Stat(destinationPathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + fileDestinationAbsolutePathStr)
+		return errors.New("DestinationPathStatError: " + err.Error())
 	}
 
-	if infraHelper.FileExists(fileDestinationAbsolutePathStr) {
-		if !shouldOverwrite {
-			return errors.New("DestinationPathAlreadyExists")
+	if destinationInfo.IsDir() {
+		if !strings.HasSuffix(destinationPathStr, "/") {
+			destinationPathStr += "/"
 		}
+		sourcePathFileNameStr := sourcePath.GetFileName().String()
+		destinationPathStr += sourcePathFileNameStr
+	}
 
-		err := repo.Delete(fileDestinationAbsolutePath)
+	if infraHelper.FileExists(destinationPathStr) && shouldOverwrite {
+		err = repo.Delete(destinationPath)
 		if err != nil {
-			return errors.New("FailedToReplaceTrashFile: " + err.Error())
+			return errors.New("MoveFileToTrashError: " + err.Error())
 		}
 	}
 
-	return os.Rename(
-		unixSrcFilePath.String(),
-		fileDestinationAbsolutePathStr,
-	)
+	return os.Rename(sourcePathStr, destinationPathStr)
 }
 
 func (repo FilesCmdRepo) UpdateContent(
