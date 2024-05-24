@@ -153,21 +153,14 @@ func (repo FilesQueryRepo) Get(
 		return unixFileList, errors.New("GetSourcePathInfoError")
 	}
 
-	filesToFactory := []valueObject.UnixFilePath{
-		unixFilePath,
-	}
+	filesToFactory := []valueObject.UnixFilePath{unixFilePath}
 
 	if sourcePathInfo.IsDir() {
 		filesToFactoryWithoutSourcePath := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutSourcePath
 
 		rawDirectoryFiles, err := infraHelper.RunCmd(
-			"find",
-			sourcePathStr,
-			"-maxdepth",
-			"1",
-			"-printf",
-			"%p\n",
+			"find", "-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n",
 		)
 		if err != nil {
 			return unixFileList, errors.New("ReadDirectoryError: " + err.Error())
