@@ -11,8 +11,8 @@ Speedia OS is a container operating system designed to simplify the deployment a
 To run Speedia OS as a container, you can pull the image from DockerHub and use the following command:
 
 ```
-docker run --rm --name speedia-os \
-  --env 'PRIMARY_VHOST=speedia.cloud' \
+docker run --rm --name myapp-container \
+  --env 'PRIMARY_VHOST=myapp.net' \
   -p 8080:80 -p 8443:443 -p 1618:1618 \
   -it docker.io/speedianet/os:latest
 ```
@@ -24,7 +24,7 @@ You can customize the container name, vhost, and host ports as needed. The --rm 
 After deploying the container, access the shell to create a new account with the following command:
 
 ```
-docker exec -it speedia-os /bin/bash
+docker exec -it myapp-container /bin/bash
 os account create -u admin -p admin
 ```
 
@@ -33,7 +33,10 @@ Once the account is created, you can access the dashboard at `https://localhost:
 Through the dashboard, you can deploy applications using the Marketplace feature with just a few clicks. You can also use the CLI for deployments, such as:
 
 ```
-os mktplace install -s wp -n myblog.com
+os mktplace install -s wp -n myapp.net \
+  -f 'adminUsername:admin' \
+  -f 'adminPassword:abc123' \
+  -f 'adminMailAddress:user@example.com'
 ```
 
 The API Swagger documentation is available at `https://localhost:1618/_/api/swagger/`.
