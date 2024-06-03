@@ -28,7 +28,7 @@ func createDummyUser() error {
 }
 
 func deleteDummyUser() error {
-	accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+	accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
 
 	accCmdRepo := AccCmdRepo{}
 	err := accCmdRepo.Delete(accountId)
@@ -85,7 +85,7 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
 		newPassword := valueObject.NewPasswordPanic("newPassword")
 
 		accCmdRepo := AccCmdRepo{}
@@ -100,7 +100,7 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("UpdateApiKeyValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
 
 		accCmdRepo := AccCmdRepo{}
 		_, err := accCmdRepo.UpdateApiKey(accountId)

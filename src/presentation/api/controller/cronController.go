@@ -19,7 +19,7 @@ import (
 // @Produce      json
 // @Security     Bearer
 // @Success      200 {array} entity.Cron
-// @Router       /cron/ [get]
+// @Router       /v1/cron/ [get]
 func GetCronsController(c echo.Context) error {
 	cronQueryRepo := cronInfra.CronQueryRepo{}
 	cronsList, err := useCase.GetCrons(cronQueryRepo)
@@ -39,7 +39,7 @@ func GetCronsController(c echo.Context) error {
 // @Security     Bearer
 // @Param        createCronDto 	  body    dto.CreateCron  true  "NewCron"
 // @Success      201 {object} object{} "CronCreated"
-// @Router       /cron/ [post]
+// @Router       /v1/cron/ [post]
 func CreateCronController(c echo.Context) error {
 	requiredParams := []string{"schedule", "command"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -48,8 +48,15 @@ func CreateCronController(c echo.Context) error {
 
 	var cronCommentPtr *valueObject.CronComment
 	if requestBody["comment"] != nil {
-		cronComment := valueObject.NewCronCommentPanic(requestBody["comment"].(string))
-		cronCommentPtr = &cronComment
+		rawComment, assertOk := requestBody["comment"].(string)
+		if !assertOk {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "InvalidComment")
+		}
+
+		if len(rawComment) > 0 {
+			cronComment := valueObject.NewCronCommentPanic(rawComment)
+			cronCommentPtr = &cronComment
+		}
 	}
 
 	createCronDto := dto.NewCreateCron(
@@ -83,7 +90,7 @@ func CreateCronController(c echo.Context) error {
 // @Security     Bearer
 // @Param        updateCronDto 	  body dto.UpdateCron  true  "UpdateCron"
 // @Success      200 {object} object{} "CronUpdated message"
-// @Router       /cron/ [put]
+// @Router       /v1/cron/ [put]
 func UpdateCronController(c echo.Context) error {
 	requiredParams := []string{"id"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -142,7 +149,7 @@ func UpdateCronController(c echo.Context) error {
 // @Security     Bearer
 // @Param        cronId 	  path   string  true  "CronId"
 // @Success      200 {object} object{} "CronDeleted"
-// @Router       /cron/{cronId}/ [delete]
+// @Router       /v1/cron/{cronId}/ [delete]
 func DeleteCronController(c echo.Context) error {
 	cronId := valueObject.NewCronIdPanic(c.Param("cronId"))
 

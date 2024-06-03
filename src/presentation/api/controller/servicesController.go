@@ -12,6 +12,7 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type ServicesController struct {
@@ -34,7 +35,7 @@ func NewServicesController(
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} dto.ServiceWithMetrics
-// @Router       /services/ [get]
+// @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
@@ -53,7 +54,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Success      200 {array} entity.InstallableService
-// @Router       /services/installables/ [get]
+// @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
@@ -92,7 +93,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Security     Bearer
 // @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"CreateInstallableService"
 // @Success      201 {object} object{} "InstallableServiceCreated"
-// @Router       /services/installables/ [post]
+// @Router       /v1/services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -127,7 +128,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBoolParam(
+		autoCreateMapping, err = sharedHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
@@ -146,7 +147,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -176,7 +177,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Security     Bearer
 // @Param        createCustomServiceDto	body dto.CreateCustomService	true	"CreateCustomService"
 // @Success      201 {object} object{} "CustomServiceCreated"
-// @Router       /services/custom/ [post]
+// @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	requiredParams := []string{"name", "type", "command"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -205,7 +206,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = apiHelper.ParseBoolParam(
+		autoCreateMapping, err = sharedHelper.ParseBoolParam(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
@@ -225,7 +226,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -255,7 +256,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Security     Bearer
 // @Param        updateServiceDto	body dto.UpdateService	true	"UpdateServiceDetails"
 // @Success      200 {object} object{} "ServiceUpdated"
-// @Router       /services/ [put]
+// @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
 	requiredParams := []string{"name"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -322,7 +323,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	)
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
@@ -349,12 +350,12 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Security     Bearer
 // @Param        svcName path string true "ServiceName"
 // @Success      200 {object} object{} "ServiceDeleted"
-// @Router       /services/{svcName}/ [delete]
+// @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
 
 	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteService(

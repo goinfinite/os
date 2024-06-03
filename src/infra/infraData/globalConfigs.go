@@ -17,5 +17,5 @@ var GlobalConfigs = globalConfigs{
 	VirtualHostsConfDir:              "/app/conf/nginx",
 	MappingsConfDir:                  "/app/conf/nginx/mapping",
 	PublicIpTransientKey:             "PublicIp",
-	DatabaseFilePath:                 "/speedia/sos.db",
+	DatabaseFilePath:                 "/speedia/os.db",
 }

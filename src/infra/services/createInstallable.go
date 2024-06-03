@@ -19,7 +19,7 @@ import (
 var supportedServicesVersion = map[string]string{
 	"mariadb":    `^(10\.([6-9]|10|11)|11\.[0-9]{1,2})$`,
 	"postgresql": `^(1[2-6])$`,
-	"node":       `^(1[2-9]|20)$`,
+	"node":       `^(1[2-9]|2[0-2]])$`,
 	"redis":      `^6\.(0|2)|^7\.0$`,
 }
 
@@ -762,7 +762,7 @@ func CreateInstallable(
 	}
 
 	switch svcNameStr {
-	case "php":
+	case "php-webserver", "php":
 		return addPhp()
 	case "node":
 		return addNode(createDto)

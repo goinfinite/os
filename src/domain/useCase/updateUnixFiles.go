@@ -76,13 +76,6 @@ func (uc UpdateUnixFiles) moveFile(
 		return errors.New("MoveFileInfraError")
 	}
 
-	log.Printf(
-		"File '%s' moved from %s to '%s'.",
-		sourcePath.GetFileName().String(),
-		sourcePath.GetFileDir().String(),
-		destinationPath.GetFileDir().String(),
-	)
-
 	return nil
 }
 
@@ -114,10 +107,7 @@ func (uc UpdateUnixFiles) Execute(
 
 	for _, sourcePath := range updateUnixFiles.SourcePaths {
 		if updateUnixFiles.Permissions != nil {
-			err := uc.updateFilePermissions(
-				sourcePath,
-				*updateUnixFiles.Permissions,
-			)
+			err := uc.updateFilePermissions(sourcePath, *updateUnixFiles.Permissions)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
@@ -133,10 +123,7 @@ func (uc UpdateUnixFiles) Execute(
 		}
 
 		if updateUnixFiles.DestinationPath != nil {
-			err := uc.moveFile(
-				sourcePath,
-				*updateUnixFiles.DestinationPath,
-			)
+			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
@@ -152,10 +139,7 @@ func (uc UpdateUnixFiles) Execute(
 		}
 
 		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateFileContent(
-				sourcePath,
-				*updateUnixFiles.EncodedContent,
-			)
+			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {

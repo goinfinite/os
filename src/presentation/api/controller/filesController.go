@@ -12,6 +12,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 func getFilePathSliceFromBody(
@@ -51,7 +52,7 @@ func getFilePathSliceFromBody(
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
 // @Success      200 {array} entity.UnixFile
-// @Router       /files/ [get]
+// @Router       /v1/files/ [get]
 func GetFilesController(c echo.Context) error {
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 	filesList, err := useCase.GetFiles(
@@ -78,7 +79,7 @@ func GetFilesController(c echo.Context) error {
 // @Security     Bearer
 // @Param        createFileDto 	  body    dto.CreateUnixFile  true  "NewFile"
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
-// @Router       /files/ [post]
+// @Router       /v1/files/ [post]
 func CreateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -139,7 +140,7 @@ func CreateFileController(c echo.Context) error {
 // @Param        updateUnixFilesDto 	  body dto.UpdateUnixFiles  true  "Only sourcePaths are required."
 // @Success      200 {object} object{} "FileUpdated"
 // @Success      207 {object} object{} "FilesArePartialUpdated"
-// @Router       /files/ [put]
+// @Router       /v1/files/ [put]
 func UpdateFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -202,7 +203,7 @@ func UpdateFileController(c echo.Context) error {
 // @Security     Bearer
 // @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
 // @Success      201 {object} object{} "FileCopied"
-// @Router       /files/copy/ [post]
+// @Router       /v1/files/copy/ [post]
 func CopyFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -215,7 +216,7 @@ func CopyFileController(c echo.Context) error {
 	shouldOverwrite := false
 	if requestBody["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = apiHelper.ParseBoolParam(
+		shouldOverwrite, err = sharedHelper.ParseBoolParam(
 			requestBody["shouldOverwrite"],
 		)
 		if err != nil {
@@ -251,7 +252,7 @@ func CopyFileController(c echo.Context) error {
 // @Security     Bearer
 // @Param        sourcePaths	body	[]string	true	"SourcePath"
 // @Success      200 {object} object{} "FilesDeleted"
-// @Router       /files/delete/ [put]
+// @Router       /v1/files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -263,7 +264,7 @@ func DeleteFileController(c echo.Context) error {
 	hardDelete := false
 	if requestBody["hardDelete"] != nil {
 		var err error
-		hardDelete, err = apiHelper.ParseBoolParam(
+		hardDelete, err = sharedHelper.ParseBoolParam(
 			requestBody["hardDelete"],
 		)
 		if err != nil {
@@ -304,7 +305,7 @@ func DeleteFileController(c echo.Context) error {
 // @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
 // @Success      200 {object} object{} "FilesCompressed"
 // @Success      207 {object} object{} "FilesArePartialCompressed"
-// @Router       /files/compress/ [post]
+// @Router       /v1/files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -358,7 +359,7 @@ func CompressFilesController(c echo.Context) error {
 // @Security     Bearer
 // @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "ExtractFiles"
 // @Success      200 {object} object{} "FilesExtracted"
-// @Router       /files/extract/ [put]
+// @Router       /v1/files/extract/ [put]
 func ExtractFilesController(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -396,7 +397,7 @@ func ExtractFilesController(c echo.Context) error {
 // @Param        file	formData	file	true	"FileToUpload"
 // @Success      200 {object} object{} "FilesUploaded"
 // @Success      207 {object} object{} "FilesPartialUploaded"
-// @Router       /files/upload/ [post]
+// @Router       /v1/files/upload/ [post]
 func UploadFilesController(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
 	requestBody, _ := apiHelper.GetRequestBody(c)

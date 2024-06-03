@@ -28,7 +28,7 @@ func (repo *MappingQueryRepo) ReadById(
 	model := dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
-		Where("ID = ?", id.Get()).
+		Where("id = ?", id.Get()).
 		First(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
@@ -48,7 +48,7 @@ func (repo *MappingQueryRepo) ReadByHostname(
 	models := []dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
-		Where("Hostname = ?", hostname.String()).
+		Where("hostname = ?", hostname.String()).
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")
@@ -73,7 +73,7 @@ func (repo *MappingQueryRepo) ReadByServiceName(
 	models := []dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
-		Where("TargetType = service AND TargetValue = ?", serviceName.String()).
+		Where("target_type = 'service' AND target_value = ?", serviceName.String()).
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")

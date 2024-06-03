@@ -12,48 +12,51 @@ import (
 )
 
 type Router struct {
+	baseRoute       *echo.Group
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
 func NewRouter(
+	baseRoute *echo.Group,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *Router {
 	return &Router{
+		baseRoute:       baseRoute,
 		transientDbSvc:  transientDbSvc,
 		persistentDbSvc: persistentDbSvc,
 	}
 }
 
-func (router Router) swaggerRoute(baseRoute *echo.Group) {
-	swaggerGroup := baseRoute.Group("/swagger")
+func (router Router) swaggerRoute() {
+	swaggerGroup := router.baseRoute.Group("/swagger")
 	swaggerGroup.GET("/*", echoSwagger.WrapHandler)
 }
 
-func (router Router) authRoutes(baseRoute *echo.Group) {
-	authGroup := baseRoute.Group("/auth")
+func (router Router) authRoutes() {
+	authGroup := router.baseRoute.Group("/v1/auth")
 	authGroup.POST("/login/", apiController.AuthLoginController)
 }
 
-func (router Router) accountRoutes(baseRoute *echo.Group) {
-	accountGroup := baseRoute.Group("/account")
+func (router Router) accountRoutes() {
+	accountGroup := router.baseRoute.Group("/v1/account")
 	accountGroup.GET("/", apiController.GetAccountsController)
 	accountGroup.POST("/", apiController.CreateAccountController)
 	accountGroup.PUT("/", apiController.UpdateAccountController)
 	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
 }
 
-func (router Router) cronRoutes(baseRoute *echo.Group) {
-	cronGroup := baseRoute.Group("/cron")
+func (router Router) cronRoutes() {
+	cronGroup := router.baseRoute.Group("/v1/cron")
 	cronGroup.GET("/", apiController.GetCronsController)
 	cronGroup.POST("/", apiController.CreateCronController)
 	cronGroup.PUT("/", apiController.UpdateCronController)
 	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
 }
 
-func (router Router) databaseRoutes(baseRoute *echo.Group) {
-	databaseGroup := baseRoute.Group("/database")
+func (router Router) databaseRoutes() {
+	databaseGroup := router.baseRoute.Group("/v1/database")
 	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
 	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
 	databaseGroup.DELETE(
@@ -70,8 +73,8 @@ func (router Router) databaseRoutes(baseRoute *echo.Group) {
 	)
 }
 
-func (router Router) filesRoutes(baseRoute *echo.Group) {
-	filesGroup := baseRoute.Group("/files")
+func (router Router) filesRoutes() {
+	filesGroup := router.baseRoute.Group("/v1/files")
 	filesGroup.GET("/", apiController.GetFilesController)
 	filesGroup.POST("/", apiController.CreateFileController)
 	filesGroup.PUT("/", apiController.UpdateFileController)
@@ -82,15 +85,15 @@ func (router Router) filesRoutes(baseRoute *echo.Group) {
 	filesGroup.POST("/upload/", apiController.UploadFilesController)
 }
 
-func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
-	marketplaceGroup := baseRoute.Group("/marketplace")
+func (router Router) marketplaceRoutes() {
+	marketplaceGroup := router.baseRoute.Group("/v1/marketplace")
 	marketplaceController := apiController.NewMarketplaceController(
 		router.persistentDbSvc,
 	)
 
-	marketplaceInstalledsGroup := marketplaceGroup.Group("/installed")
-	marketplaceInstalledsGroup.GET("/", marketplaceController.ReadInstalledItems)
-	marketplaceInstalledsGroup.DELETE(
+	marketplaceInstalledGroup := marketplaceGroup.Group("/installed")
+	marketplaceInstalledGroup.GET("/", marketplaceController.ReadInstalledItems)
+	marketplaceInstalledGroup.DELETE(
 		"/:installedId/",
 		marketplaceController.DeleteInstalledItem,
 	)
@@ -100,15 +103,15 @@ func (router Router) marketplaceRoutes(baseRoute *echo.Group) {
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
 }
 
-func (router Router) o11yRoutes(baseRoute *echo.Group) {
-	o11yGroup := baseRoute.Group("/o11y")
+func (router Router) o11yRoutes() {
+	o11yGroup := router.baseRoute.Group("/v1/o11y")
 
 	o11yController := apiController.NewO11yController(router.transientDbSvc)
 	o11yGroup.GET("/overview/", o11yController.ReadOverview)
 }
 
 func (router Router) runtimeRoutes(baseRoute *echo.Group) {
-	runtimeGroup := baseRoute.Group("/runtime")
+	runtimeGroup := baseRoute.Group("/v1/runtime")
 	runtimeController := apiController.NewRuntimeController(
 		router.persistentDbSvc,
 	)
@@ -117,8 +120,8 @@ func (router Router) runtimeRoutes(baseRoute *echo.Group) {
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdateConfigs)
 }
 
-func (router Router) servicesRoutes(baseRoute *echo.Group) {
-	servicesGroup := baseRoute.Group("/services")
+func (router Router) servicesRoutes() {
+	servicesGroup := router.baseRoute.Group("/v1/services")
 	servicesController := apiController.NewServicesController(
 		router.persistentDbSvc,
 	)
@@ -131,8 +134,8 @@ func (router Router) servicesRoutes(baseRoute *echo.Group) {
 	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
 }
 
-func (router Router) sslRoutes(baseRoute *echo.Group) {
-	sslGroup := baseRoute.Group("/ssl")
+func (router Router) sslRoutes() {
+	sslGroup := router.baseRoute.Group("/v1/ssl")
 	sslController := apiController.NewSslController(
 		router.persistentDbSvc,
 	)
@@ -144,8 +147,8 @@ func (router Router) sslRoutes(baseRoute *echo.Group) {
 	go sslController.SslCertificateWatchdog()
 }
 
-func (router Router) vhostsRoutes(baseRoute *echo.Group) {
-	vhostsGroup := baseRoute.Group("/vhosts")
+func (router Router) vhostsRoutes() {
+	vhostsGroup := router.baseRoute.Group("/v1/vhosts")
 	vhostController := apiController.NewVirtualHostController(
 		router.persistentDbSvc,
 	)
@@ -162,17 +165,17 @@ func (router Router) vhostsRoutes(baseRoute *echo.Group) {
 	)
 }
 
-func (router Router) RegisterRoutes(baseRoute *echo.Group) {
-	router.swaggerRoute(baseRoute)
-	router.authRoutes(baseRoute)
-	router.accountRoutes(baseRoute)
-	router.cronRoutes(baseRoute)
-	router.databaseRoutes(baseRoute)
-	router.filesRoutes(baseRoute)
-	router.marketplaceRoutes(baseRoute)
-	router.o11yRoutes(baseRoute)
-	router.runtimeRoutes(baseRoute)
-	router.servicesRoutes(baseRoute)
-	router.sslRoutes(baseRoute)
-	router.vhostsRoutes(baseRoute)
+func (router Router) RegisterRoutes() {
+	router.swaggerRoute()
+	router.authRoutes()
+	router.accountRoutes()
+	router.cronRoutes()
+	router.databaseRoutes()
+	router.filesRoutes()
+	router.marketplaceRoutes()
+	router.o11yRoutes()
+	router.runtimeRoutes()
+	router.servicesRoutes()
+	router.sslRoutes()
+	router.vhostsRoutes()
 }

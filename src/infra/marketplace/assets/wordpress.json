@@ -1,70 +1,63 @@
 {
-    "name": "WordPress",
-    "type": "app",
-    "description": "Build and grow your website with the best way to WordPress. Lightning-fast hosting, intuitive, flexible editing, and everything you need to grow your site and audience, baked right in.",
-    "serviceNames": ["php", "mysql"],
-    "mappings": [
-        {
-            "path": "/",
-            "matchPattern": "begins-with",
-            "targetType": "service",
-            "targetValue": "php"
-        }
-    ],
-    "dataFields": [
-        {
-            "name": "locale",
-            "label": "WordPress Language",
-            "type": "text",
-            "defaultValue": "en_US",
-            "options": [
-                "en_US",
-                "pt_BR",
-                "pt_PT",
-                "es_ES",
-                "de_DE",
-                "it_IT",
-                "fr_FR"
-            ]
-        },
-        {
-            "name": "adminUsername",
-            "label": "Admin Username",
-            "type": "text",
-            "isRequired": true
-        },
-        {
-            "name": "adminPassword",
-            "label": "Admin Password",
-            "type": "password",
-            "isRequired": true
-        },
-        {
-            "name": "adminMailAddress",
-            "label": "Admin Email",
-            "type": "email",
-            "isRequired": true
-        }
-    ],
-    "cmdSteps": [
-        "curl -skL -o /app/wp-cli.phar https://speedia.net/assets/os/marketplace/wordpress/wp-cli.phar",
-        "chmod +x /app/wp-cli.phar",
-        "mv /app/wp-cli.phar /usr/local/bin/wp",
-        "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
-        "sos db create -n wpDb_%installUuid% -t mysql",
-        "echo $(openssl rand -hex 8) > %installDirectory%/wpDbCredentials",
-        "sos db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p $(cat %installDirectory%/wpDbCredentials) -r all",
-        "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=$(cat %installDirectory%/wpDbCredentials) --allow-root",
-        "rm -rf %installDirectory%/wpDbCredentials",
-        "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
-    ],
-    "estimatedSizeBytes": 1000000000,
-    "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
-    "screenshotUrls": [
-        "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",
-        "https://speedia.net/assets/os/marketplace/wordpress/wp-themes.jpg",
-        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-1.jpg",
-        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-2.jpg",
-        "https://speedia.net/assets/os/marketplace/wordpress/wp-front-3.jpg"
-    ]
+  "id": 1,
+  "slugs": ["wp", "wordpress"],
+  "name": "WordPress",
+  "type": "app",
+  "description": "WordPress is a web content management system. It was originally created as a tool to publish blogs but has evolved to support publishing other web content, including more traditional websites, mailing lists and Internet forum, media galleries, membership sites, learning management systems and online stores.",
+  "services": ["php:8.2", "mariadb"],
+  "mappings": [
+    {
+      "path": "/",
+      "matchPattern": "begins-with",
+      "targetType": "service",
+      "targetValue": "php"
+    }
+  ],
+  "dataFields": [
+    {
+      "name": "locale",
+      "label": "WordPress Language",
+      "type": "text",
+      "defaultValue": "en_US",
+      "options": ["en_US", "pt_BR", "pt_PT", "es_ES", "de_DE", "it_IT", "fr_FR"]
+    },
+    {
+      "name": "adminUsername",
+      "label": "Admin Username",
+      "type": "text",
+      "isRequired": true
+    },
+    {
+      "name": "adminPassword",
+      "label": "Admin Password",
+      "type": "password",
+      "isRequired": true
+    },
+    {
+      "name": "adminMailAddress",
+      "label": "Admin Email",
+      "type": "email",
+      "isRequired": true
+    }
+  ],
+  "cmdSteps": [
+    "curl -skL -o /app/wp-cli.phar https://speedia.net/assets/os/marketplace/wordpress/wp-cli.phar",
+    "chmod +x /app/wp-cli.phar",
+    "mv /app/wp-cli.phar /usr/local/bin/wp",
+    "os runtime php update -n %installHostname% -v 8.2",
+    "wp core download --path=%installDirectory% --locale=%locale% --allow-root",
+    "os db create -n wpDb_%installUuid% -t mysql",
+    "os db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p %installRandomPassword% -r all",
+    "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=%installRandomPassword% --allow-root",
+    "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
+  ],
+  "estimatedSizeBytes": 100000000,
+  "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
+  "screenshotUrls": [
+    "https://speedia.net/assets/os/marketplace/wordpress/wp-dashboard.jpg",
+    "https://speedia.net/assets/os/marketplace/wordpress/wp-themes.jpg",
+    "https://speedia.net/assets/os/marketplace/wordpress/wp-front-1.jpg",
+    "https://speedia.net/assets/os/marketplace/wordpress/wp-front-2.jpg",
+    "https://speedia.net/assets/os/marketplace/wordpress/wp-front-3.jpg"
+  ]
 }

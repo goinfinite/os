@@ -29,7 +29,7 @@ func TestAccQueryRepo(t *testing.T) {
 	})
 
 	t.Run("GetValidAccountById", func(t *testing.T) {
-		accountId := valueObject.NewAccountIdFromStringPanic(os.Getenv("DUMMY_USER_ID"))
+		accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
 
 		_, err := authQueryRepo.GetById(accountId)
 		if err != nil {

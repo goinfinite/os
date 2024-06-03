@@ -454,6 +454,7 @@ func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, er
 		valueObject.NewServiceNaturePanic("multi"),
 		valueObject.NewServiceTypePanic("runtime"),
 		[]valueObject.ServiceVersion{
+			valueObject.NewServiceVersionPanic("22"),
 			valueObject.NewServiceVersionPanic("21"),
 			valueObject.NewServiceVersionPanic("20"),
 			valueObject.NewServiceVersionPanic("19"),

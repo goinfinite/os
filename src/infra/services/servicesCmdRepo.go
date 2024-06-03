@@ -6,9 +6,30 @@ import (
 )
 
 type ServicesCmdRepo struct {
+	supervisordFacade SupervisordFacade
 }
 
-func (repo ServicesCmdRepo) CreateInstallable(
+func NewServicesCmdRepo() *ServicesCmdRepo {
+	return &ServicesCmdRepo{supervisordFacade: SupervisordFacade{}}
+}
+
+func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
+	return repo.supervisordFacade.Start(name)
+}
+
+func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
+	return repo.supervisordFacade.Stop(name)
+}
+
+func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
+	return repo.supervisordFacade.Restart(name)
+}
+
+func (repo *ServicesCmdRepo) Reload() error {
+	return repo.supervisordFacade.Reload()
+}
+
+func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) error {
 	err := CreateInstallable(createDto)
@@ -16,45 +37,19 @@ func (repo ServicesCmdRepo) CreateInstallable(
 		return err
 	}
 
-	err = SupervisordFacade{}.Reload()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.Reload()
 }
 
-func (repo ServicesCmdRepo) CreateCustom(
-	createDto dto.CreateCustomService,
-) error {
+func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
 	err := CreateCustom(createDto)
 	if err != nil {
 		return err
 	}
 
-	err = SupervisordFacade{}.Reload()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.Reload()
 }
 
-func (repo ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	return SupervisordFacade{}.Start(name)
-}
-
-func (repo ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	return SupervisordFacade{}.Stop(name)
-}
-
-func (repo ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	return SupervisordFacade{}.Restart(name)
-}
-
-func (repo ServicesCmdRepo) Update(
-	updateDto dto.UpdateService,
-) error {
+func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	err := repo.Stop(updateDto.Name)
 	if err != nil {
 		return err
@@ -70,17 +65,10 @@ func (repo ServicesCmdRepo) Update(
 		return err
 	}
 
-	err = SupervisordFacade{}.Reload()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.Reload()
 }
 
-func (repo ServicesCmdRepo) Uninstall(
-	name valueObject.ServiceName,
-) error {
+func (repo *ServicesCmdRepo) Uninstall(name valueObject.ServiceName) error {
 	err := repo.Stop(name)
 	if err != nil {
 		return err
@@ -91,10 +79,5 @@ func (repo ServicesCmdRepo) Uninstall(
 		return err
 	}
 
-	err = SupervisordFacade{}.Reload()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.Reload()
 }

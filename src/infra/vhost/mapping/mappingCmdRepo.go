@@ -367,8 +367,13 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 func (repo *MappingCmdRepo) Create(
 	createDto dto.CreateMapping,
 ) (mappingId valueObject.MappingId, err error) {
+	err = infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		return mappingId, err
+	}
+
 	isServiceMapping := createDto.TargetType.String() == "service"
-	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php"
+	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php-webserver"
 	if isPhpServiceMapping {
 		runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
 		err := runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
@@ -402,6 +407,11 @@ func (repo *MappingCmdRepo) Create(
 }
 
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
+	err := infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		return err
+	}
+
 	mapping, err := repo.mappingQueryRepo.ReadById(mappingId)
 	if err != nil {
 		return err
