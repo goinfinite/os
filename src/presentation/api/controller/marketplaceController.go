@@ -116,9 +116,11 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 
 	var urlPathPtr *valueObject.UrlPath
 	if requestBody["directory"] != nil {
-		urlPath := valueObject.NewUrlPathPanic(
-			requestBody["directory"].(string),
-		)
+		urlPath := valueObject.NewUrlPathPanic(requestBody["directory"].(string))
+		urlPathPtr = &urlPath
+	}
+	if requestBody["installDirectory"] != nil {
+		urlPath := valueObject.NewUrlPathPanic(requestBody["installDirectory"].(string))
 		urlPathPtr = &urlPath
 	}
 

@@ -1,18 +1,34 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
 
 type Password string
 
-func NewPassword(value string) (Password, error) {
-	pass := Password(value)
-	if !pass.isValid() {
-		return "", errors.New("InvalidPassword")
+func NewPassword(value interface{}) (password Password, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return "", errors.New("PasswordValueMustBeString")
 	}
-	return pass, nil
+	stringValue = strings.TrimSpace(stringValue)
+
+	valueLength := len(stringValue)
+	if valueLength < 6 {
+		return password, errors.New("PasswordTooShort")
+	}
+
+	if valueLength > 64 {
+		return password, errors.New("PasswordTooLong")
+	}
+
+	return Password(stringValue), nil
 }
 
-func NewPasswordPanic(value string) Password {
+func NewPasswordPanic(value interface{}) Password {
 	pass, err := NewPassword(value)
 	if err != nil {
 		panic(err)
@@ -20,12 +36,6 @@ func NewPasswordPanic(value string) Password {
 	return pass
 }
 
-func (pass Password) isValid() bool {
-	isTooShort := len(string(pass)) < 6
-	isTooLong := len(string(pass)) > 64
-	return !isTooShort && !isTooLong
-}
-
-func (pass Password) String() string {
-	return string(pass)
+func (vo Password) String() string {
+	return string(vo)
 }

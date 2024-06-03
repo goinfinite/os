@@ -48,8 +48,15 @@ func CreateCronController(c echo.Context) error {
 
 	var cronCommentPtr *valueObject.CronComment
 	if requestBody["comment"] != nil {
-		cronComment := valueObject.NewCronCommentPanic(requestBody["comment"].(string))
-		cronCommentPtr = &cronComment
+		rawComment, assertOk := requestBody["comment"].(string)
+		if !assertOk {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "InvalidComment")
+		}
+
+		if len(rawComment) > 0 {
+			cronComment := valueObject.NewCronCommentPanic(rawComment)
+			cronCommentPtr = &cronComment
+		}
 	}
 
 	createCronDto := dto.NewCreateCron(

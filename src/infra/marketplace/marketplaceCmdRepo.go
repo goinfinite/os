@@ -357,7 +357,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath = *installDto.UrlPath
 	}
 
-	installDirStr := vhost.RootDirectory.String() + installUrlPath.GetWithoutLeadingSlash()
+	installDirStr := vhost.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
 	installDir, err := valueObject.NewUnixFilePath(installDirStr)
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())

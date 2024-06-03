@@ -4,28 +4,36 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const urlPathRegex string = `^\/[\w/.-]{0,256}$`
+const urlPathRegex string = `^(\/|\/\w{1,256}[\w\/\.-]{0,256})$`
 
 type UrlPath string
 
-func NewUrlPath(value string) (UrlPath, error) {
-	hasLeadingSlash := strings.HasPrefix(value, "/")
+func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return urlPath, errors.New("UrlPathValueMustBeString")
+	}
+	stringValue = strings.TrimSpace(stringValue)
+
+	hasLeadingSlash := strings.HasPrefix(stringValue, "/")
 	if !hasLeadingSlash {
-		value = "/" + value
+		stringValue = "/" + stringValue
 	}
 
-	compiledRegex := regexp.MustCompile(urlPathRegex)
-	isValid := compiledRegex.MatchString(value)
+	re := regexp.MustCompile(urlPathRegex)
+	isValid := re.MatchString(stringValue)
 	if !isValid {
-		return "", errors.New("InvalidUrlPath")
+		return urlPath, errors.New("InvalidUrlPath")
 	}
 
-	return UrlPath(value), nil
+	return UrlPath(stringValue), nil
 }
 
-func NewUrlPathPanic(value string) UrlPath {
+func NewUrlPathPanic(value interface{}) UrlPath {
 	vo, err := NewUrlPath(value)
 	if err != nil {
 		panic(err)
@@ -38,6 +46,6 @@ func (vo UrlPath) String() string {
 	return string(vo)
 }
 
-func (vo UrlPath) GetWithoutLeadingSlash() string {
-	return string(vo[1:])
+func (vo UrlPath) GetWithoutTrailingSlash() string {
+	return strings.TrimSuffix(vo.String(), "/")
 }

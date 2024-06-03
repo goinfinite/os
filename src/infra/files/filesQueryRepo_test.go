@@ -1,48 +1,61 @@
 package filesInfra
 
 import (
-	"fmt"
 	"os/user"
 	"testing"
 
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 func TestFilesQueryRepo(t *testing.T) {
 	filesQueryRepo := FilesQueryRepo{}
-
 	currentUser, _ := user.Current()
-	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
+	userHomeDir := "/home/" + currentUser.Username
 
-	unixFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/.gitconfig")
-	invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
-	unixDirPath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/Downloads")
-
-	t.Run("Get", func(t *testing.T) {
-		_, err := filesQueryRepo.Get(unixFilePath)
-		if err != nil {
-			t.Errorf("FilesQueryRepo.Get() should not return: %s", err)
-		}
-	})
-
-	t.Run("InvalidGet", func(t *testing.T) {
-		_, err := filesQueryRepo.Get(invalidUnixPath)
-		if err == nil {
-			t.Errorf("FilesQueryRepo.Get() should throw an error")
-		}
-	})
-
-	t.Run("Get (many)", func(t *testing.T) {
+	t.Run("GetFiles", func(t *testing.T) {
+		unixDirPath, _ := valueObject.NewUnixFilePath(userHomeDir)
 		_, err := filesQueryRepo.Get(unixDirPath)
 		if err != nil {
-			t.Errorf("FilesQueryRepo.Get() should not return: %s", err)
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 	})
 
-	t.Run("GetOne", func(t *testing.T) {
-		_, err := filesQueryRepo.GetOne(unixDirPath)
+	t.Run("GetFilesWithInvalidDirectory", func(t *testing.T) {
+		invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
+		_, err := filesQueryRepo.Get(invalidUnixPath)
+		if err == nil {
+			t.Errorf("ExpectedErrorButGotNil")
+		}
+	})
+
+	t.Run("GetFilesFollowingSymlink", func(t *testing.T) {
+		downloadsDirPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/Downloads")
+		tmpSymlinkPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/tmpSymlink")
+
+		err := infraHelper.CreateSymlink(
+			downloadsDirPath.String(), tmpSymlinkPath.String(), false,
+		)
 		if err != nil {
-			t.Errorf("FilesQueryRepo.GetOnly() should not return: %s", err)
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
+		}
+
+		files, err := filesQueryRepo.Get(tmpSymlinkPath)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
+		}
+		if len(files) == 0 {
+			t.Errorf("ExpectedNonEmptyFilesButGotEmpty")
+		}
+
+		_ = infraHelper.RemoveSymlink(tmpSymlinkPath.String())
+	})
+
+	t.Run("GetSingleFile", func(t *testing.T) {
+		unixFilePath, _ := valueObject.NewUnixFilePath(userHomeDir + "/.bashrc")
+		_, err := filesQueryRepo.GetOne(unixFilePath)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 	})
 }
