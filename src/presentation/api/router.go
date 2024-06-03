@@ -110,8 +110,8 @@ func (router Router) o11yRoutes() {
 	o11yGroup.GET("/overview/", o11yController.ReadOverview)
 }
 
-func (router Router) runtimeRoutes(baseRoute *echo.Group) {
-	runtimeGroup := baseRoute.Group("/v1/runtime")
+func (router Router) runtimeRoutes() {
+	runtimeGroup := router.baseRoute.Group("/v1/runtime")
 	runtimeController := apiController.NewRuntimeController(
 		router.persistentDbSvc,
 	)
