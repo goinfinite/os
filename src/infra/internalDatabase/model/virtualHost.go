@@ -83,7 +83,7 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 	), nil
 }
 
-func (VirtualHost) ToModel(entity entity.VirtualHost) (VirtualHost, error) {
+func (VirtualHost) ToModel(entity entity.VirtualHost) VirtualHost {
 	var parentHostnamePtr *string
 	if entity.ParentHostname != nil {
 		parentHostnameStr := entity.ParentHostname.String()
@@ -104,5 +104,5 @@ func (VirtualHost) ToModel(entity entity.VirtualHost) (VirtualHost, error) {
 		RootDirectory:  entity.RootDirectory.String(),
 		ParentHostname: parentHostnamePtr,
 		Mappings:       mappings,
-	}, nil
+	}
 }
