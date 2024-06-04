@@ -3,7 +3,7 @@ package valueObject
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
+	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestInlineHtmlContent(t *testing.T) {
@@ -26,7 +26,7 @@ func TestInlineHtmlContent(t *testing.T) {
 		invalidLength := 3600
 		invalidInlineHtmlContents := []string{
 			"",
-			testHelpers.GenerateString(invalidLength),
+			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, ihc := range invalidInlineHtmlContents {

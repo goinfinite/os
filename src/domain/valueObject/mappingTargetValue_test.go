@@ -3,7 +3,7 @@ package valueObject
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
+	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestNewMappingTargetValue(t *testing.T) {
@@ -163,7 +163,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 		invalidLength := 3600
 		invalidMappingTargetInlineHtmlContentValues := []string{
 			"",
-			testHelpers.GenerateString(invalidLength),
+			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, mtv := range invalidMappingTargetInlineHtmlContentValues {

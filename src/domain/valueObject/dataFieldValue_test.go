@@ -3,7 +3,7 @@ package valueObject
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
+	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestDataFieldValue(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDataFieldValue(t *testing.T) {
 		invalidLength := 2050
 		invalidDataFieldValues := []interface{}{
 			"",
-			testHelpers.GenerateString(invalidLength),
+			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, dfv := range invalidDataFieldValues {

@@ -3,7 +3,7 @@ package valueObject
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
+	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestDataFieldLabel(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDataFieldLabel(t *testing.T) {
 			"./test",
 			"-key",
 			"anotherkey-",
-			testHelpers.GenerateString(invalidLength),
+			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, dfl := range invalidDataFieldLabels {

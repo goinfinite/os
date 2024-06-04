@@ -3,7 +3,7 @@ package valueObject
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
+	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestUrlPath(t *testing.T) {
@@ -38,7 +38,7 @@ func TestUrlPath(t *testing.T) {
 			"/path to download",
 			"index.js=",
 			"/how-to-get-habbo-coins?/2011",
-			testHelpers.GenerateString(invalidLength),
+			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, urlPath := range invalidUrlPath {
