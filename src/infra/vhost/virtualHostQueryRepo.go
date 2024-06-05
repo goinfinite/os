@@ -61,7 +61,12 @@ func (repo *VirtualHostQueryRepo) ReadByHostname(
 		Preload("Mappings").
 		First(&model).Error
 	if err != nil {
-		return entity, errors.New("ReadDatabaseEntryError")
+		errorMessage := "VhostNotFound"
+		if err.Error() != "record not found" {
+			errorMessage = "ReadDatabaseEntryError"
+		}
+
+		return entity, errors.New(errorMessage)
 	}
 
 	entity, err = model.ToEntity()
