@@ -127,7 +127,7 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        sslPairId 	  path   string  true  "SSL Pair ID that will be deleted."
+// @Param        sslPairId 	  path   string  true  "SslPairId to delete."
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(c echo.Context) error {
