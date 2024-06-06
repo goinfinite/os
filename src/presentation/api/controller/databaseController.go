@@ -169,7 +169,7 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Security     Bearer
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        dbName path string true "DatabaseName"
-// @Param        dbUser path string true "Database username that will be deleted."
+// @Param        dbUser path string true "Database username to delete."
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func DeleteDatabaseUserController(c echo.Context) error {
