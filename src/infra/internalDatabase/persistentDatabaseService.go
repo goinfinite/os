@@ -8,7 +8,6 @@ import (
 	"github.com/speedianet/os/src/infra/infraData"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type PersistentDatabaseService struct {
@@ -18,9 +17,7 @@ type PersistentDatabaseService struct {
 func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
 		sqlite.Open(infraData.GlobalConfigs.DatabaseFilePath),
-		&gorm.Config{
-			Logger: logger.Default.LogMode(logger.Silent),
-		},
+		&gorm.Config{},
 	)
 	if err != nil {
 		return nil, errors.New("DatabaseConnectionError")
