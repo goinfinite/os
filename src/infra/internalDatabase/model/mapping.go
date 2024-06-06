@@ -42,11 +42,14 @@ func NewMapping(
 		TargetType:             targetType,
 		TargetValue:            targetValue,
 		TargetHttpResponseCode: targetHttpResponseCode,
-		VirtualHostId:          virtualHostId,
 	}
 
 	if id != 0 {
 		mappingModel.ID = id
+	}
+
+	if virtualHostId != 0 {
+		mappingModel.VirtualHostId = virtualHostId
 	}
 
 	return mappingModel
