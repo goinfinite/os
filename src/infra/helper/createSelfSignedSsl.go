@@ -81,9 +81,9 @@ func CreateSelfSignedSsl(
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	selfSignedConfFilePath := "/tmp/" + virtualHost + "_selfSignedSsl.conf"
+	selfSignedConfTempFilePath := "/tmp/" + virtualHost + "_selfSignedSsl.conf"
 	shouldOverwrite := true
-	err = UpdateFile(selfSignedConfFilePath, selfSignedConfContent, shouldOverwrite)
+	err = UpdateFile(selfSignedConfTempFilePath, selfSignedConfContent, shouldOverwrite)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
@@ -105,13 +105,13 @@ func CreateSelfSignedSsl(
 		"-out",
 		vhostCertFilePath,
 		"-config",
-		selfSignedConfFilePath,
+		selfSignedConfTempFilePath,
 	)
 	if err != nil {
 		return errors.New("CreateSelfSignedSslFailed (" + virtualHost + "): " + err.Error())
 	}
 
-	err = os.Remove(selfSignedConfFilePath)
+	err = os.Remove(selfSignedConfTempFilePath)
 	if err != nil {
 		return errors.New("DeleteSelfSignedConfFileError: " + err.Error())
 	}
