@@ -150,7 +150,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Account ID that will be deleted.",
+                        "description": "AccountId to delete.",
                         "name": "accountId",
                         "in": "path",
                         "required": true
@@ -1030,7 +1030,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Marketplace installed item ID that will be deleted.",
+                        "description": "MarketplaceInstalledItemId to delete.",
                         "name": "installedId",
                         "in": "path",
                         "required": true
@@ -1680,7 +1680,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Mappind ID that will be deleted.",
+                        "description": "MappingId to delete.",
                         "name": "mappingId",
                         "in": "path",
                         "required": true

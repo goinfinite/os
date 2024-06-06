@@ -236,7 +236,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        mappingId path uint true "Mappind ID that will be deleted."
+// @Param        mappingId path uint true "MappingId to delete."
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {

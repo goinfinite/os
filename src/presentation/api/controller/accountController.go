@@ -154,7 +154,7 @@ func UpdateAccountController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        accountId 	  path   string  true  "Account ID that will be deleted."
+// @Param        accountId 	  path   string  true  "AccountId to delete."
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func DeleteAccountController(c echo.Context) error {

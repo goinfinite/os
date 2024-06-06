@@ -173,7 +173,7 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        installedId path uint true "Marketplace installed item ID that will be deleted."
+// @Param        installedId path uint true "MarketplaceInstalledItemId to delete."
 // @Param        shouldUninstallServices query boolean false "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'."
 // @Param        shouldRemoveFiles query boolean false "Should remove all files that were created with the marketplace item installation? Default is 'true'."
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"

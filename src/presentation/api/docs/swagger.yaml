@@ -734,7 +734,7 @@ paths:
       - application/json
       description: Delete an account.
       parameters:
-      - description: Account ID that will be deleted.
+      - description: AccountId to delete.
         in: path
         name: accountId
         required: true
@@ -1290,7 +1290,7 @@ paths:
       - application/json
       description: Delete/Uninstall a marketplace installed item.
       parameters:
-      - description: Marketplace installed item ID that will be deleted.
+      - description: MarketplaceInstalledItemId to delete.
         in: path
         name: installedId
         required: true
@@ -1735,7 +1735,7 @@ paths:
       - application/json
       description: Delete a vhost mapping.
       parameters:
-      - description: Mappind ID that will be deleted.
+      - description: MappingId to delete.
         in: path
         name: mappingId
         required: true
