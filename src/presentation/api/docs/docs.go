@@ -1363,7 +1363,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Service name that will be deleted.",
+                        "description": "ServiceName to delete",
                         "name": "svcName",
                         "in": "path",
                         "required": true
@@ -1717,7 +1717,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Hostname that will be deleted.",
+                        "description": "Hostname to delete",
                         "name": "hostname",
                         "in": "path",
                         "required": true

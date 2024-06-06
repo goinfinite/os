@@ -106,7 +106,7 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        hostname path string true "Hostname that will be deleted."
+// @Param        hostname path string true "Hostname to delete"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /v1/vhosts/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {

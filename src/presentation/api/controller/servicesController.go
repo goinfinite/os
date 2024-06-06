@@ -348,7 +348,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        svcName path string true "Service name that will be deleted."
+// @Param        svcName path string true "ServiceName to delete"
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {

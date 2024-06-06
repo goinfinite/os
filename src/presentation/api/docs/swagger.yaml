@@ -1434,7 +1434,7 @@ paths:
       - application/json
       description: Delete/Uninstall a service.
       parameters:
-      - description: Service name that will be deleted.
+      - description: ServiceName to delete
         in: path
         name: svcName
         required: true
@@ -1663,7 +1663,7 @@ paths:
       - application/json
       description: Delete a vhost.
       parameters:
-      - description: Hostname that will be deleted.
+      - description: Hostname to delete
         in: path
         name: hostname
         required: true
