@@ -250,7 +250,7 @@ func CopyFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        sourcePaths	body	[]string	true	"File paths that will be deleted"
+// @Param        sourcePaths	body	[]string	true	"File paths to deleted."
 // @Success      200 {object} object{} "FilesDeleted"
 // @Router       /v1/files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
