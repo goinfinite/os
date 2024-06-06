@@ -997,7 +997,7 @@ paths:
         name: dbName
         required: true
         type: string
-      - description: Database username to delete.
+      - description: DatabaseUsername to delete.
         in: path
         name: dbUser
         required: true
@@ -1149,7 +1149,7 @@ paths:
       - application/json
       description: Delete one or more directories/files.
       parameters:
-      - description: File paths to deleted.
+      - description: FilePaths to deleted.
         in: body
         name: sourcePaths
         required: true

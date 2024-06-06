@@ -564,7 +564,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Database username to delete.",
+                        "description": "DatabaseUsername to delete.",
                         "name": "dbUser",
                         "in": "path",
                         "required": true
@@ -804,7 +804,7 @@ const docTemplate = `{
                 "summary": "DeleteFiles",
                 "parameters": [
                     {
-                        "description": "File paths to deleted.",
+                        "description": "FilePaths to deleted.",
                         "name": "sourcePaths",
                         "in": "body",
                         "required": true,
