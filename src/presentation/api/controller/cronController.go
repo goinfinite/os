@@ -147,7 +147,7 @@ func UpdateCronController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        cronId 	  path   string  true  "Cron ID that will be deleted."
+// @Param        cronId 	  path   string  true  "CronId to delete."
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func DeleteCronController(c echo.Context) error {
