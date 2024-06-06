@@ -332,7 +332,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Cron ID that will be deleted.",
+                        "description": "CronId to delete.",
                         "name": "cronId",
                         "in": "path",
                         "required": true
@@ -564,7 +564,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Database username that will be deleted.",
+                        "description": "Database username to delete.",
                         "name": "dbUser",
                         "in": "path",
                         "required": true
@@ -804,7 +804,7 @@ const docTemplate = `{
                 "summary": "DeleteFiles",
                 "parameters": [
                     {
-                        "description": "File paths that will be deleted",
+                        "description": "File paths to deleted.",
                         "name": "sourcePaths",
                         "in": "body",
                         "required": true,
@@ -959,7 +959,7 @@ const docTemplate = `{
                 "summary": "InstallCatalogItem",
                 "parameters": [
                     {
-                        "description": "directory is optional. When not provided, directory will be hostname root directory.",
+                        "description": "directory will be the virtual host root directory.",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
@@ -1428,7 +1428,7 @@ const docTemplate = `{
                 "summary": "CreateSslPair",
                 "parameters": [
                     {
-                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be in Base64.",
+                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.",
                         "name": "createSslPairDto",
                         "in": "body",
                         "required": true,
@@ -1507,7 +1507,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "SSL Pair ID that will be deleted.",
+                        "description": "SslPairId to delete.",
                         "name": "sslPairId",
                         "in": "path",
                         "required": true
