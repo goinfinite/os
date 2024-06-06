@@ -56,12 +56,27 @@ func (repo *SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 }
 
 func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
-	err := repo.deleteCurrentSsl(vhost)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	aliases, err := vhostQueryRepo.ReadAliasesByHostname(vhost)
+	if err != nil {
+		return errors.New("GetVhostAliasesError: " + err.Error())
+	}
+
+	aliasesStr := []string{}
+	for _, alias := range aliases {
+		aliasesStr = append(aliasesStr, alias.Hostname.String())
+	}
+
+	err = repo.deleteCurrentSsl(vhost)
 	if err != nil {
 		return err
 	}
 
-	return infraHelper.CreateSelfSignedSsl(infraData.GlobalConfigs.PkiConfDir, vhost.String())
+	return infraHelper.CreateSelfSignedSsl(
+		infraData.GlobalConfigs.PkiConfDir,
+		vhost.String(),
+		aliasesStr,
+	)
 }
 
 func (repo *SslCmdRepo) isDomainMappedToServer(

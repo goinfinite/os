@@ -165,6 +165,25 @@ func (repo *VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) err
 		return errors.New("GetParentVhostError: " + err.Error())
 	}
 
+	aliases, err := repo.queryRepo.ReadAliasesByHostname(parentVhost.Hostname)
+	if err != nil {
+		return errors.New("GetParentVhostAliasesError: " + err.Error())
+	}
+
+	aliasesStr := []string{createDto.Hostname.String()}
+	for _, alias := range aliases {
+		aliasesStr = append(aliasesStr, alias.Hostname.String())
+	}
+
+	err = infraHelper.CreateSelfSignedSsl(
+		infraData.GlobalConfigs.PkiConfDir,
+		parentVhost.Hostname.String(),
+		aliasesStr,
+	)
+	if err != nil {
+		return errors.New("GenerateSelfSignedCertFailed")
+	}
+
 	err = repo.persistVirtualHost(createDto, parentVhost.RootDirectory)
 	if err != nil {
 		return err
@@ -218,9 +237,11 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("MakePublicHtmlDirFailed")
 	}
 
+	aliases := []string{}
 	err = infraHelper.CreateSelfSignedSsl(
 		infraData.GlobalConfigs.PkiConfDir,
 		hostnameStr,
+		aliases,
 	)
 	if err != nil {
 		return errors.New("GenerateSelfSignedCertFailed")
