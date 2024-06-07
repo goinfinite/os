@@ -77,7 +77,7 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "NewSslPair"
+// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded."
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
@@ -127,7 +127,7 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        sslPairId 	  path   string  true  "SslPairId"
+// @Param        sslPairId 	  path   string  true  "SslPairId to delete."
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(c echo.Context) error {
@@ -178,7 +178,7 @@ func (controller *SslController) SslCertificateWatchdog() {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "SslPairVhostsDeleted"
+// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "All props are required."
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {

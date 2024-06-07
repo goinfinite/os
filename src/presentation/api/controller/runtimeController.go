@@ -130,7 +130,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Produce      json
 // @Security     Bearer
 // @Param        hostname 	  path   string  true  "Hostname"
-// @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"UpdatePhpConfigs"
+// @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"modules and settings are optional."
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func UpdatePhpConfigsController(c echo.Context) error {

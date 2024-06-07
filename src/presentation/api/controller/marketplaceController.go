@@ -91,7 +91,7 @@ func parseDataFieldsFromBody(
 // @Tags         marketplace
 // @Accept       json
 // @Produce      json
-// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "InstallMarketplaceCatalogItem (directory is optional)"
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "directory will be the virtual host root directory."
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
@@ -173,9 +173,9 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        installedId path uint true "MarketplaceItemId"
-// @Param        shouldUninstallServices query boolean false "ShouldUninstallServices"
-// @Param        shouldRemoveFiles query boolean false "ShouldRemoveFiles"
+// @Param        installedId path uint true "MarketplaceInstalledItemId to delete."
+// @Param        shouldUninstallServices query boolean false "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'."
+// @Param        shouldRemoveFiles query boolean false "Should remove all files that were created with the marketplace item installation? Default is 'true'."
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {

@@ -38,7 +38,7 @@ func GetAccountsController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createAccountDto 	  body    dto.CreateAccount  true  "NewAccount"
+// @Param        createAccountDto 	  body    dto.CreateAccount  true  "All props are required."
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /v1/account/ [post]
 func CreateAccountController(c echo.Context) error {
@@ -73,12 +73,12 @@ func CreateAccountController(c echo.Context) error {
 
 // UpdateAccount godoc
 // @Summary      UpdateAccount
-// @Description  Update an account (Only id is required).
+// @Description  Update an account.
 // @Tags         account
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateDto 	  body dto.UpdateAccount  true  "UpdateAccount"
+// @Param        updateDto 	  body dto.UpdateAccount  true   "Only id is required."
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /v1/account/ [put]
 func UpdateAccountController(c echo.Context) error {
@@ -154,7 +154,7 @@ func UpdateAccountController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        accountId 	  path   string  true  "AccountId"
+// @Param        accountId 	  path   string  true  "AccountId to delete."
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func DeleteAccountController(c echo.Context) error {
