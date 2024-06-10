@@ -1,0 +1,32 @@
+id: 4
+slugs:
+ - laravel
+name: laravel
+type: framework
+description: Laravel is a web application framework with expressive, elegant syntax. We've already laid the foundation — freeing you to create without sweating the small things.
+services:
+  - php:8.2
+  - mariadb
+mappings:
+  - path: /
+    matchPattern: begins-with
+    targetType: service
+    targetValue: php
+cmdSteps:
+  - curl -skL -o /app/composer-setup.php https://getcomposer.org/installer
+  - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - rm -rf /app/composer-setup.php
+  - os runtime php update -n %installHostname% -v 8.2
+  - os db create -n laravelDb_%installUuid% -t mysql
+  - os db create-user -n laravelDb_%installUuid% -t mysql -u laravelUser_%installUuid% -p %installRandomPassword% -r all
+  - mkdir -p /app/laravel-%installHostname%-%installUuid%/
+  - COMPOSER_ALLOW_SUPERUSER=1 composer create-project laravel/laravel /app/laravel-%installHostname%-%installUuid%/ -q -n --no-dev
+  - mv -f %installDirectory% %installDirectory%-backup
+  - sed -i -e 's/DB_CONNECTION=sqlite/DB_CONNECTION=mariadb/g' -e 's/# DB_HOST/DB_HOST/g' -e 's/# DB_PORT/DB_PORT/g' -e 's/# DB_DATABASE=laravel/DB_DATABASE=laravelDb_%installUuid%/g' -e 's/# DB_USERNAME=root/DB_USERNAME=laravelUser_%installUuid%/g' -e 's/# DB_PASSWORD=/DB_PASSWORD=%installRandomPassword%/g' /app/laravel-%installHostname%-%installUuid%/.env
+  - cd /app/laravel-%installHostname%-%installUuid%/; php artisan migrate
+  - ln -s /app/laravel-%installHostname%-%installUuid%/public/ %installDirectory%
+  - chown -h nobody:nogroup %installDirectory%
+  - chown -R nobody:nogroup -L %installDirectory%-backup
+  - chown -R nobody:nogroup -L /app/laravel-%installHostname%-%installUuid%/
+estimatedSizeBytes: 55000000
+avatarUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Laravel.svg/800px-Laravel.svg.png
