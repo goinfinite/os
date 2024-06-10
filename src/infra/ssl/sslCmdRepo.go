@@ -183,6 +183,16 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		&httpResponseCode,
 	)
 
+	firstVhostStr := firstVhost.String()
+	ips, err := net.LookupHost(firstVhostStr)
+	if err != nil {
+		return errors.New("LookupHostError: " + err.Error())
+	}
+
+	if len(ips) == 0 {
+		return errors.New("VhostDoesNotPointToAnyIp")
+	}
+
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 	mappingId, err := mappingCmdRepo.Create(inlineHtmlMapping)
 	if err != nil {
@@ -213,7 +223,6 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("DomainNotResolvingToServer")
 	}
 
-	firstVhostStr := firstVhost.String()
 	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
 		vhostRootDir += "/" + firstVhostStr
