@@ -9,10 +9,10 @@ import (
 
 func selfSignedConfFileFactory(
 	virtualHostHostname string,
-	aliases []string,
+	aliasesHostname []string,
 ) (string, error) {
 	altNames := []string{virtualHostHostname}
-	altNames = append(altNames, aliases...)
+	altNames = append(altNames, aliasesHostname...)
 
 	valuesToInterpolate := map[string]interface{}{
 		"VirtualHostHostname": virtualHostHostname,
@@ -74,10 +74,10 @@ DNS.{{ $wwwDnsIndex }} = www.{{ $altName }}
 func CreateSelfSignedSsl(
 	dirPath string,
 	virtualHostHostname string,
-	aliases []string,
+	aliasesHostname []string,
 ) error {
 	selfSignedConfContent, err := selfSignedConfFileFactory(
-		virtualHostHostname, aliases,
+		virtualHostHostname, aliasesHostname,
 	)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
