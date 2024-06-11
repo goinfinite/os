@@ -8,15 +8,15 @@ import (
 )
 
 func selfSignedConfFileFactory(
-	virtualHost string,
+	virtualHostHostname string,
 	aliases []string,
 ) (string, error) {
-	altNames := []string{virtualHost}
+	altNames := []string{virtualHostHostname}
 	altNames = append(altNames, aliases...)
 
 	valuesToInterpolate := map[string]interface{}{
-		"VirtualHost": virtualHost,
-		"AltNames":    altNames,
+		"VirtualHostHostname": virtualHostHostname,
+		"AltNames":            altNames,
 	}
 
 	selfSignedConfFileTemplate := `[ req ]
@@ -29,7 +29,7 @@ prompt = no
 C = US
 ST = California
 L = Los Angeles
-CN = {{ .VirtualHost }}
+CN = {{ .VirtualHostHostname }}
 
 [ v3_req ]
 subjectAltName = @alt_names
@@ -73,23 +73,25 @@ DNS.{{ $wwwDnsIndex }} = www.{{ $altName }}
 
 func CreateSelfSignedSsl(
 	dirPath string,
-	virtualHost string,
+	virtualHostHostname string,
 	aliases []string,
 ) error {
-	selfSignedConfContent, err := selfSignedConfFileFactory(virtualHost, aliases)
+	selfSignedConfContent, err := selfSignedConfFileFactory(
+		virtualHostHostname, aliases,
+	)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	selfSignedConfTempFilePath := "/tmp/" + virtualHost + "_selfSignedSsl.conf"
+	selfSignedConfTempFilePath := "/tmp/" + virtualHostHostname + "_selfSignedSsl.conf"
 	shouldOverwrite := true
 	err = UpdateFile(selfSignedConfTempFilePath, selfSignedConfContent, shouldOverwrite)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	vhostCertKeyFilePath := dirPath + "/" + virtualHost + ".key"
-	vhostCertFilePath := dirPath + "/" + virtualHost + ".crt"
+	vhostCertKeyFilePath := dirPath + "/" + virtualHostHostname + ".key"
+	vhostCertFilePath := dirPath + "/" + virtualHostHostname + ".crt"
 
 	_, err = RunCmd(
 		"openssl",
@@ -108,7 +110,9 @@ func CreateSelfSignedSsl(
 		selfSignedConfTempFilePath,
 	)
 	if err != nil {
-		return errors.New("CreateSelfSignedSslFailed (" + virtualHost + "): " + err.Error())
+		return errors.New(
+			"CreateSelfSignedSslFailed (" + virtualHostHostname + "): " + err.Error(),
+		)
 	}
 
 	err = os.Remove(selfSignedConfTempFilePath)
