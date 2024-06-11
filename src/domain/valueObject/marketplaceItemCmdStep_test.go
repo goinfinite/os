@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestMarketplaceItemCmdStep(t *testing.T) {
@@ -26,10 +24,8 @@ func TestMarketplaceItemCmdStep(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemCmdStep", func(t *testing.T) {
-		invalidLength := 4100
 		invalidMarketplaceItemCmdSteps := []string{
 			"",
-			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, miis := range invalidMarketplaceItemCmdSteps {

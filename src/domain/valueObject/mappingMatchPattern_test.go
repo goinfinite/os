@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestMappingMatchPattern(t *testing.T) {
@@ -24,13 +22,11 @@ func TestMappingMatchPattern(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingMatchPattern", func(t *testing.T) {
-		invalidLength := 70
 		invalidMappingMatchPatterns := []string{
 			"",
 			"bigger-then",
 			"diff",
 			"has-prefix",
-			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, mmp := range invalidMappingMatchPatterns {

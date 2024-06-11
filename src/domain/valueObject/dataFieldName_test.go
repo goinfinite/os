@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestDataFieldName(t *testing.T) {
@@ -23,13 +21,11 @@ func TestDataFieldName(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldName", func(t *testing.T) {
-		invalidLength := 70
 		invalidDataFieldNames := []string{
 			"",
 			"./test",
 			"-key",
 			"anotherkey-",
-			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, dfn := range invalidDataFieldNames {

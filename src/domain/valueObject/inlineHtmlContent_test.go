@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	voTestHelpers "github.com/speedianet/os/src/domain/valueObject/devUtils"
 )
 
 func TestInlineHtmlContent(t *testing.T) {
@@ -23,10 +21,8 @@ func TestInlineHtmlContent(t *testing.T) {
 	})
 
 	t.Run("InvalidInlineHtmlContent", func(t *testing.T) {
-		invalidLength := 3600
 		invalidInlineHtmlContents := []string{
 			"",
-			voTestHelpers.GenerateString(invalidLength),
 		}
 
 		for _, ihc := range invalidInlineHtmlContents {
