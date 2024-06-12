@@ -284,11 +284,12 @@ func (repo *VirtualHostCmdRepo) deleteWebServerFile(
 }
 
 func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
+	vhostHostnameStr := vhost.Hostname.String()
 	err := repo.persistentDbSvc.Handler.
 		Where(
-			"Id = ? OR ParentHostname = ?",
-			vhost.Id.Get(),
-			vhost.Hostname.String(),
+			"hostname = ? OR parent_hostname = ?",
+			vhostHostnameStr,
+			vhostHostnameStr,
 		).
 		Delete(dbModel.VirtualHost{}).Error
 	if err != nil {
