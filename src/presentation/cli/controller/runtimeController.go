@@ -43,7 +43,7 @@ func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
 	return hostname, nil
 }
 
-func (controller *RuntimeController) ReadConfigs() *cobra.Command {
+func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	var hostnameStr string
 
 	cmd := &cobra.Command{
@@ -72,7 +72,7 @@ func (controller *RuntimeController) ReadConfigs() *cobra.Command {
 	return cmd
 }
 
-func (controller *RuntimeController) UpdateConfig() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var modulesSlice []string
@@ -167,7 +167,7 @@ func (controller *RuntimeController) UpdateConfig() *cobra.Command {
 	return cmd
 }
 
-func (controller *RuntimeController) UpdateSetting() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var settingNameStr string
@@ -230,7 +230,7 @@ func (controller *RuntimeController) UpdateSetting() *cobra.Command {
 	return cmd
 }
 
-func (controller *RuntimeController) UpdateModule() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var moduleNameStr string

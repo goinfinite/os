@@ -127,10 +127,10 @@ func (router Router) runtimeRoutes() {
 	runtimeCmd.AddCommand(phpCmd)
 
 	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
-	phpCmd.AddCommand(runtimeController.ReadConfigs())
-	phpCmd.AddCommand(runtimeController.UpdateConfig())
-	phpCmd.AddCommand(runtimeController.UpdateSetting())
-	phpCmd.AddCommand(runtimeController.UpdateModule())
+	phpCmd.AddCommand(runtimeController.ReadPhpConfigs())
+	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
+	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())
+	phpCmd.AddCommand(runtimeController.UpdatePhpModule())
 }
 
 func (router Router) serveRoutes() {
