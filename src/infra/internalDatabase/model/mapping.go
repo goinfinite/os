@@ -15,7 +15,7 @@ type Mapping struct {
 	TargetType                 string `gorm:"not null"`
 	TargetValue                *string
 	TargetHttpResponseCode     *string
-	VirtualHostId              uint `gorm:"not null"`
+	VirtualHostHostname        string `gorm:"not null"`
 	MarketplaceInstalledItemId *uint
 	CreatedAt                  time.Time `gorm:"not null"`
 	UpdatedAt                  time.Time `gorm:"not null"`
@@ -33,7 +33,7 @@ func NewMapping(
 	targetType string,
 	targetValue *string,
 	targetHttpResponseCode *string,
-	virtualHostId uint,
+	virtualHostHostname string,
 ) Mapping {
 	mappingModel := Mapping{
 		Hostname:               hostname,
@@ -42,14 +42,11 @@ func NewMapping(
 		TargetType:             targetType,
 		TargetValue:            targetValue,
 		TargetHttpResponseCode: targetHttpResponseCode,
+		VirtualHostHostname:    virtualHostHostname,
 	}
 
 	if id != 0 {
 		mappingModel.ID = id
-	}
-
-	if virtualHostId != 0 {
-		mappingModel.VirtualHostId = virtualHostId
 	}
 
 	return mappingModel
@@ -137,6 +134,6 @@ func (Mapping) ToModel(mappingEntity entity.Mapping) Mapping {
 		mappingEntity.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
-		0,
+		"",
 	)
 }

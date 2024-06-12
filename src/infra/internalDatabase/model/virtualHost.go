@@ -10,8 +10,7 @@ import (
 )
 
 type VirtualHost struct {
-	ID             uint   `gorm:"primarykey"`
-	Hostname       string `gorm:"not null"`
+	Hostname       string `gorm:"primarykey;not null"`
 	Type           string `gorm:"not null"`
 	RootDirectory  string `gorm:"not null"`
 	ParentHostname *string
@@ -23,7 +22,6 @@ type VirtualHost struct {
 func (model VirtualHost) InitialEntries() []interface{} {
 	primaryVhost, _ := infraHelper.GetPrimaryVirtualHost()
 	primaryEntry := VirtualHost{
-		ID:            1,
 		Hostname:      primaryVhost.String(),
 		Type:          "primary",
 		RootDirectory: infraData.GlobalConfigs.PrimaryPublicDir,
@@ -33,11 +31,6 @@ func (model VirtualHost) InitialEntries() []interface{} {
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
-	id, err := valueObject.NewVirtualHostId(model.ID)
-	if err != nil {
-		return vhost, err
-	}
-
 	hostname, err := valueObject.NewFqdn(model.Hostname)
 	if err != nil {
 		return vhost, err
@@ -62,47 +55,35 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr = &parentHostname
 	}
 
-	mappings := []entity.Mapping{}
-	if len(model.Mappings) > 0 {
-		for _, mappingModel := range model.Mappings {
-			mapping, err := mappingModel.ToEntity()
-			if err != nil {
-				return vhost, err
-			}
-			mappings = append(mappings, mapping)
-		}
-	}
-
 	return entity.NewVirtualHost(
-		id,
 		hostname,
 		vhostType,
 		rootDir,
 		parentHostnamePtr,
-		mappings,
 	), nil
 }
 
-func (VirtualHost) ToModel(entity entity.VirtualHost) VirtualHost {
+func (VirtualHost) ToModel(
+	entity entity.VirtualHost,
+	mappings []entity.Mapping,
+) VirtualHost {
 	var parentHostnamePtr *string
 	if entity.ParentHostname != nil {
 		parentHostnameStr := entity.ParentHostname.String()
 		parentHostnamePtr = &parentHostnameStr
 	}
 
-	mappings := []Mapping{}
-	for _, mapping := range entity.Mappings {
-		mappingEntity := Mapping{}.ToModel(mapping)
-		mappingEntity.ID = entity.Id.Get()
-		mappings = append(mappings, mappingEntity)
+	mappingsModel := []Mapping{}
+	for _, mapping := range mappings {
+		mappingModel := Mapping{}.ToModel(mapping)
+		mappingsModel = append(mappingsModel, mappingModel)
 	}
 
 	return VirtualHost{
-		ID:             entity.Id.Get(),
 		Hostname:       entity.Hostname.String(),
 		Type:           entity.Type.String(),
 		RootDirectory:  entity.RootDirectory.String(),
 		ParentHostname: parentHostnamePtr,
-		Mappings:       mappings,
+		Mappings:       mappingsModel,
 	}
 }
