@@ -1,6 +1,7 @@
 package dbModel
 
 import (
+	"errors"
 	"time"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -19,15 +20,19 @@ type VirtualHost struct {
 	UpdatedAt      time.Time `gorm:"column:UpdatedAt;not null"`
 }
 
-func (model VirtualHost) InitialEntries() []interface{} {
-	primaryVhost, _ := infraHelper.GetPrimaryVirtualHost()
+func (model VirtualHost) InitialEntries() ([]interface{}, error) {
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	if err != nil {
+		return []interface{}{}, errors.New("GetPrimaryVirtualHostError: " + err.Error())
+	}
+
 	primaryEntry := VirtualHost{
 		Hostname:      primaryVhost.String(),
 		Type:          "primary",
 		RootDirectory: infraData.GlobalConfigs.PrimaryPublicDir,
 	}
 
-	return []interface{}{primaryEntry}
+	return []interface{}{primaryEntry}, nil
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
