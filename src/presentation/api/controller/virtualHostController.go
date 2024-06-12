@@ -27,8 +27,8 @@ func NewVirtualHostController(
 	}
 }
 
-// GetVirtualHosts	 godoc
-// @Summary      GetVirtualHosts
+// ReadVirtualHosts	 godoc
+// @Summary      ReadVirtualHosts
 // @Description  List virtual hosts.
 // @Tags         vhosts
 // @Security     Bearer
@@ -36,7 +36,7 @@ func NewVirtualHostController(
 // @Produce      json
 // @Success      200 {array} entity.VirtualHost
 // @Router       /v1/vhosts/ [get]
-func (controller *VirtualHostController) Get(c echo.Context) error {
+func (controller *VirtualHostController) Read(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
 	if err != nil {

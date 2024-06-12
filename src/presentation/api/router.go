@@ -153,7 +153,7 @@ func (router Router) vhostsRoutes() {
 		router.persistentDbSvc,
 	)
 
-	vhostsGroup.GET("/", vhostController.Get)
+	vhostsGroup.GET("/", vhostController.Read)
 	vhostsGroup.POST("/", vhostController.Create)
 	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
 
