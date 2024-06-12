@@ -8,6 +8,7 @@ type globalConfigs struct {
 	MappingsConfDir                  string
 	PublicIpTransientKey             string
 	DatabaseFilePath                 string
+	PrimaryVhostFileName             string
 }
 
 var GlobalConfigs = globalConfigs{
@@ -18,4 +19,5 @@ var GlobalConfigs = globalConfigs{
 	MappingsConfDir:                  "/app/conf/nginx/mapping",
 	PublicIpTransientKey:             "PublicIp",
 	DatabaseFilePath:                 "/speedia/os.db",
+	PrimaryVhostFileName:             "primary",
 }

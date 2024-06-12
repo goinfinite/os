@@ -118,7 +118,7 @@ func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = "primary.conf"
+		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
 	return valueObject.NewUnixFilePath(

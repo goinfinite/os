@@ -98,12 +98,12 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		aliasesHostnames = append(aliasesHostnames, alias.Hostname)
 	}
 
-	hostnameStr := hostname.String()
+	vhostFileNameStr := hostname.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(hostname) {
-		hostnameStr = "primary"
+		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
-	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + hostnameStr + ".conf"
+	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr
 	mappingFilePath, err := valueObject.NewUnixFilePath(mappingFilePathStr)
 	if err != nil {
 		return errors.New(err.Error() + ": " + mappingFilePathStr)
@@ -123,7 +123,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return err
 	}
 
-	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
 	webServerUnitFilePath, err := valueObject.NewUnixFilePath(webServerUnitFilePathStr)
 	if err != nil {
 		return errors.New(err.Error() + ": " + webServerUnitFilePathStr)
@@ -263,18 +263,18 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
 	vhostHostname valueObject.Fqdn,
 ) error {
-	unitConfFileName := vhostHostname.String() + ".conf"
+	vhostFileNameStr := vhostHostname.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostHostname) {
-		unitConfFileName = "primary.conf"
+		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
-	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + unitConfFileName
+	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr
 	err := os.Remove(mappingFilePathStr)
 	if err != nil {
 		return err
 	}
 
-	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + unitConfFileName
+	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
 	err = os.Remove(webServerUnitFilePathStr)
 	if err != nil {
 		return err
