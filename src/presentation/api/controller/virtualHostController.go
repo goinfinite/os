@@ -133,6 +133,28 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "VirtualHostDeleted")
 }
 
+// ReadVirtualHostsWithMappings	 godoc
+// @Summary      ReadVirtualHostsWithMappings
+// @Description  List virtual hosts with mappings.
+// @Tags         vhosts
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Success      200 {array} dto.VirtualHostWithMappings
+// @Router       /v1/vhosts/mapping/ [get]
+func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error {
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
+
+	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
+		mappingQueryRepo,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsWithMappings)
+}
+
 // CreateVirtualHostMapping godoc
 // @Summary      CreateVirtualHostMapping
 // @Description  Create a new vhost mapping.

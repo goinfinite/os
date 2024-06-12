@@ -158,6 +158,7 @@ func (router Router) vhostsRoutes() {
 	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
 
 	mappingsGroup := vhostsGroup.Group("/mapping")
+	mappingsGroup.GET("/", vhostController.ReadWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateMapping)
 	mappingsGroup.DELETE(
 		"/:mappingId/",
