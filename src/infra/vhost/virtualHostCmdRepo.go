@@ -261,20 +261,20 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 }
 
 func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
-	hostname valueObject.Fqdn,
+	vhostHostname valueObject.Fqdn,
 ) error {
-	hostnameStr := hostname.String()
-	if infraHelper.IsPrimaryVirtualHost(hostname) {
-		hostnameStr = "primary"
+	unitConfFileName := vhostHostname.String() + ".conf"
+	if infraHelper.IsPrimaryVirtualHost(vhostHostname) {
+		unitConfFileName = "primary.conf"
 	}
 
-	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + hostnameStr + ".conf"
+	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + unitConfFileName
 	err := os.Remove(mappingFilePathStr)
 	if err != nil {
 		return err
 	}
 
-	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + unitConfFileName
 	err = os.Remove(webServerUnitFilePathStr)
 	if err != nil {
 		return err
