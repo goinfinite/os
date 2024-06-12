@@ -31,7 +31,7 @@ func NewVirtualHostCmdRepo(
 	}
 }
 
-func (repo *VirtualHostCmdRepo) webServerFileFactory(
+func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	hostname valueObject.Fqdn,
 	aliases []valueObject.Fqdn,
 	publicDir valueObject.UnixFilePath,
@@ -66,27 +66,27 @@ func (repo *VirtualHostCmdRepo) webServerFileFactory(
 }`
 
 	webServerConfigTemplatePtr, err := template.
-		New("webServerConfigFile").
+		New("webServerConfigUnitFile").
 		Parse(webServerConfigTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
-	var webServerConfigFileContent strings.Builder
+	var webServerConfigUnitFileContent strings.Builder
 	err = webServerConfigTemplatePtr.Execute(
-		&webServerConfigFileContent,
+		&webServerConfigUnitFileContent,
 		valuesToInterpolate,
 	)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	return webServerConfigFileContent.String(), nil
+	return webServerConfigUnitFileContent.String(), nil
 }
 
-func (repo *VirtualHostCmdRepo) createWebServerFile(
-	publicDir valueObject.UnixFilePath,
+func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	hostname valueObject.Fqdn,
+	publicDir valueObject.UnixFilePath,
 ) error {
 	aliases, err := repo.queryRepo.ReadAliasesByParentHostname(hostname)
 	if err != nil {
@@ -113,7 +113,7 @@ func (repo *VirtualHostCmdRepo) createWebServerFile(
 		return errors.New("CreateMappingFileFailed")
 	}
 
-	webServerConfigFileContent, err := repo.webServerFileFactory(
+	webServerConfigUnitFileContent, err := repo.webServerUnitFileFactory(
 		hostname,
 		aliasesHostnames,
 		publicDir,
@@ -123,18 +123,18 @@ func (repo *VirtualHostCmdRepo) createWebServerFile(
 		return err
 	}
 
-	webServerFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
-	webServerFilePath, err := valueObject.NewUnixFilePath(webServerFilePathStr)
+	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	webServerUnitFilePath, err := valueObject.NewUnixFilePath(webServerUnitFilePathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + webServerFilePathStr)
+		return errors.New(err.Error() + ": " + webServerUnitFilePathStr)
 	}
 	err = infraHelper.UpdateFile(
-		webServerFilePath.String(),
-		webServerConfigFileContent,
+		webServerUnitFilePath.String(),
+		webServerConfigUnitFileContent,
 		true,
 	)
 	if err != nil {
-		return errors.New("CreateNginxConfFileFailed")
+		return errors.New("CreateWebServerConfUnitFileFailed")
 	}
 
 	return infraHelper.ReloadWebServer()
@@ -189,9 +189,9 @@ func (repo *VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) err
 		return err
 	}
 
-	return repo.createWebServerFile(
-		parentVhost.RootDirectory,
+	return repo.createWebServerUnitFile(
 		parentVhost.Hostname,
+		parentVhost.RootDirectory,
 	)
 }
 
@@ -257,10 +257,10 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return err
 	}
 
-	return repo.createWebServerFile(publicDir, createDto.Hostname)
+	return repo.createWebServerUnitFile(createDto.Hostname, publicDir)
 }
 
-func (repo *VirtualHostCmdRepo) deleteWebServerFile(
+func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
 	hostname valueObject.Fqdn,
 ) error {
 	hostnameStr := hostname.String()
@@ -274,8 +274,8 @@ func (repo *VirtualHostCmdRepo) deleteWebServerFile(
 		return err
 	}
 
-	webServerFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
-	err = os.Remove(webServerFilePathStr)
+	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + hostnameStr + ".conf"
+	err = os.Remove(webServerUnitFilePathStr)
 	if err != nil {
 		return err
 	}
@@ -303,15 +303,15 @@ func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
 		}
 		vhost = parentVhost
 
-		return repo.createWebServerFile(
-			vhost.RootDirectory,
+		return repo.createWebServerUnitFile(
 			vhost.Hostname,
+			vhost.RootDirectory,
 		)
 	}
 
-	err = repo.deleteWebServerFile(vhost.Hostname)
+	err = repo.deleteWebServerUnitFile(vhost.Hostname)
 	if err != nil {
-		return errors.New("DeleteWebServerFileError: " + err.Error())
+		return errors.New("DeleteWebServerUnitFileError: " + err.Error())
 	}
 
 	return nil
