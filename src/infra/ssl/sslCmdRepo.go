@@ -57,7 +57,7 @@ func (repo *SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 
 func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	aliases, err := vhostQueryRepo.ReadAliasesByHostname(vhost)
+	aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(vhost)
 	if err != nil {
 		return errors.New("GetVhostAliasesError: " + err.Error())
 	}

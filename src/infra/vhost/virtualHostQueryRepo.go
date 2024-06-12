@@ -75,7 +75,7 @@ func (repo *VirtualHostQueryRepo) ReadByHostname(
 	return entity, nil
 }
 
-func (repo *VirtualHostQueryRepo) ReadAliasesByHostname(
+func (repo *VirtualHostQueryRepo) ReadAliasesByParentHostname(
 	hostname valueObject.Fqdn,
 ) ([]entity.VirtualHost, error) {
 	aliasesEntities := []entity.VirtualHost{}

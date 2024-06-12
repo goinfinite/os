@@ -37,9 +37,9 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadAliasesByHostname", func(t *testing.T) {
+	t.Run("ReadAliasesByParentHostname", func(t *testing.T) {
 		hostname, _ := infraHelper.GetPrimaryVirtualHost()
-		aliases, err := vhostQueryRepo.ReadAliasesByHostname(hostname)
+		aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(hostname)
 		if err != nil && err.Error() != "VhostNotFound" {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
