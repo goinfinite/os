@@ -7,7 +7,7 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type MappingId uint64
+type MappingId uint
 
 func NewMappingId(value interface{}) (MappingId, error) {
 	mId, err := voHelper.InterfaceToUint64(value)
@@ -26,8 +26,8 @@ func NewMappingIdPanic(value interface{}) MappingId {
 	return mId
 }
 
-func (mId MappingId) Get() uint64 {
-	return uint64(mId)
+func (mId MappingId) Get() uint {
+	return uint(mId)
 }
 
 func (mId MappingId) String() string {
