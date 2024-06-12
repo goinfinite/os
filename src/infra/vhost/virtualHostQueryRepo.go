@@ -30,7 +30,6 @@ func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
 	models := []dbModel.VirtualHost{}
 	err := repo.persistentDbSvc.Handler.
 		Model(&models).
-		Preload("Mappings").
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")
@@ -58,7 +57,6 @@ func (repo *VirtualHostQueryRepo) ReadByHostname(
 	err := repo.persistentDbSvc.Handler.
 		Model(&dbModel.VirtualHost{}).
 		Where("hostname = ?", hostname.String()).
-		Preload("Mappings").
 		First(&model).Error
 	if err != nil {
 		errorMessage := "VhostNotFound"
@@ -86,7 +84,6 @@ func (repo *VirtualHostQueryRepo) ReadAliasesByHostname(
 	err := repo.persistentDbSvc.Handler.
 		Model(&aliasesModels).
 		Where("parent_hostname = ?", hostname.String()).
-		Preload("Mappings").
 		Find(&aliasesModels).Error
 	if err != nil {
 		return aliasesEntities, errors.New("ReadDatabaseEntriesError")
