@@ -46,9 +46,11 @@ func (repo *MappingQueryRepo) ReadById(
 
 func (repo *MappingQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
-) (entities []entity.Mapping, err error) {
+) ([]entity.Mapping, error) {
+	entities := []entity.Mapping{}
+
 	models := []dbModel.Mapping{}
-	err = repo.persistentDbSvc.Handler.
+	err := repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
 		Where("hostname = ?", hostname.String()).
 		Find(&models).Error
