@@ -42,8 +42,10 @@ func (dbSvc *PersistentDatabaseService) isTableEmpty(model interface{}) (bool, e
 	return count == 0, nil
 }
 
-func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) error {
-	for _, seedModel := range seedModels {
+func (dbSvc *PersistentDatabaseService) seedDatabase(
+	seedModels map[string]interface{},
+) error {
+	for modelName, seedModel := range seedModels {
 		isTableEmpty, err := dbSvc.isTableEmpty(seedModel)
 		if err != nil {
 			return err
@@ -62,8 +64,17 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) 
 		seedModelInitialEntriesMethodResults := seedModelInitialEntriesMethod.Call(
 			[]reflect.Value{},
 		)
-		initialEntries := seedModelInitialEntriesMethodResults[0].Interface()
 
+		if !seedModelInitialEntriesMethodResults[1].IsNil() {
+			err = seedModelInitialEntriesMethodResults[1].Interface().(error)
+			if err != nil {
+				return errors.New(
+					"SeedModelInitialEntriesError (" + modelName + "): " + err.Error(),
+				)
+			}
+		}
+
+		initialEntries := seedModelInitialEntriesMethodResults[0].Interface()
 		for _, entry := range initialEntries.([]interface{}) {
 			entryInnerStructure := reflect.ValueOf(entry)
 
@@ -88,16 +99,16 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.MarketplaceInstalledItem{},
 	)
 	if err != nil {
-		return errors.New("DatabaseMigrationError")
+		return errors.New("DatabaseMigrationError: " + err.Error())
 	}
 
-	modelsWithInitialEntries := []interface{}{
-		&dbModel.VirtualHost{},
+	modelsWithInitialEntries := map[string]interface{}{
+		"VirtualHost": &dbModel.VirtualHost{},
 	}
 
-	err = dbSvc.seedDatabase(modelsWithInitialEntries...)
+	err = dbSvc.seedDatabase(modelsWithInitialEntries)
 	if err != nil {
-		return errors.New("CreateDefaultDatabaseEntriesError")
+		return errors.New("CreateDefaultDatabaseEntriesError: " + err.Error())
 	}
 
 	return nil
