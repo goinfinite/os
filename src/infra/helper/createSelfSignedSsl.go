@@ -9,11 +9,11 @@ import (
 )
 
 func altNamesConfFactory(
-	virtualHostHostname string,
+	vhostName string,
 	aliasesHostname []string,
 ) []string {
-	virtualHostHostnameWithWww := "www." + virtualHostHostname
-	altNames := []string{virtualHostHostname, virtualHostHostnameWithWww}
+	vhostNameWithWww := "www." + vhostName
+	altNames := []string{vhostName, vhostNameWithWww}
 	for _, aliasHostname := range aliasesHostname {
 		aliasHostnameWithWww := "www." + aliasHostname
 		altNames = append(altNames, aliasHostname, aliasHostnameWithWww)
@@ -31,13 +31,13 @@ func altNamesConfFactory(
 }
 
 func selfSignedConfFileFactory(
-	virtualHostHostname string,
+	vhostName string,
 	aliasesHostname []string,
 ) (string, error) {
-	altNamesConf := altNamesConfFactory(virtualHostHostname, aliasesHostname)
+	altNamesConf := altNamesConfFactory(vhostName, aliasesHostname)
 	valuesToInterpolate := map[string]interface{}{
-		"VirtualHostHostname": virtualHostHostname,
-		"AltNamesConf":        altNamesConf,
+		"VhostName":    vhostName,
+		"AltNamesConf": altNamesConf,
 	}
 
 	selfSignedConfFileTemplate := `[ req ]
@@ -50,7 +50,7 @@ prompt = no
 C = US
 ST = California
 L = Los Angeles
-CN = {{ .VirtualHostHostname }}
+CN = {{ .VhostName }}
 
 [ v3_req ]
 subjectAltName = @alt_names
@@ -82,25 +82,25 @@ subjectAltName = @alt_names
 
 func CreateSelfSignedSsl(
 	dirPath string,
-	virtualHostHostname string,
+	vhostName string,
 	aliasesHostname []string,
 ) error {
 	selfSignedConfContent, err := selfSignedConfFileFactory(
-		virtualHostHostname, aliasesHostname,
+		vhostName, aliasesHostname,
 	)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	selfSignedConfTempFilePath := "/tmp/" + virtualHostHostname + "_selfSignedSsl.conf"
+	selfSignedConfTempFilePath := "/tmp/" + vhostName + "_selfSignedSsl.conf"
 	shouldOverwrite := true
 	err = UpdateFile(selfSignedConfTempFilePath, selfSignedConfContent, shouldOverwrite)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	vhostCertKeyFilePath := dirPath + "/" + virtualHostHostname + ".key"
-	vhostCertFilePath := dirPath + "/" + virtualHostHostname + ".crt"
+	vhostCertKeyFilePath := dirPath + "/" + vhostName + ".key"
+	vhostCertFilePath := dirPath + "/" + vhostName + ".crt"
 
 	_, err = RunCmd(
 		"openssl",
@@ -120,7 +120,7 @@ func CreateSelfSignedSsl(
 	)
 	if err != nil {
 		return errors.New(
-			"CreateSelfSignedSslFailed (" + virtualHostHostname + "): " + err.Error(),
+			"CreateSelfSignedSslFailed (" + vhostName + "): " + err.Error(),
 		)
 	}
 
