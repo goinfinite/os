@@ -55,27 +55,27 @@ func (repo *SslCmdRepo) deleteCurrentSsl(vhost valueObject.Fqdn) error {
 	return nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhost valueObject.Fqdn) error {
+func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostName valueObject.Fqdn) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(vhost)
+	aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(vhostName)
 	if err != nil {
 		return errors.New("GetVhostAliasesError: " + err.Error())
 	}
 
-	aliasesStr := []string{}
+	aliasesHostname := []string{}
 	for _, alias := range aliases {
-		aliasesStr = append(aliasesStr, alias.Hostname.String())
+		aliasesHostname = append(aliasesHostname, alias.Hostname.String())
 	}
 
-	err = repo.deleteCurrentSsl(vhost)
+	err = repo.deleteCurrentSsl(vhostName)
 	if err != nil {
 		return err
 	}
 
 	return infraHelper.CreateSelfSignedSsl(
 		infraData.GlobalConfigs.PkiConfDir,
-		vhost.String(),
-		aliasesStr,
+		vhostName.String(),
+		aliasesHostname,
 	)
 }
 
@@ -345,10 +345,10 @@ func (repo *SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	for _, vhost := range sslPairToDelete.VirtualHosts {
-		err = repo.ReplaceWithSelfSigned(vhost)
+	for _, vhostName := range sslPairToDelete.VirtualHosts {
+		err = repo.ReplaceWithSelfSigned(vhostName)
 		if err != nil {
-			log.Printf("%s (%s)", err.Error(), vhost.String())
+			log.Printf("%s (%s)", err.Error(), vhostName.String())
 			continue
 		}
 	}
@@ -360,17 +360,17 @@ func (repo *SslCmdRepo) DeleteSslPairVhosts(
 	deleteDto dto.DeleteSslPairVhosts,
 ) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	for _, vhost := range deleteDto.VirtualHosts {
-		_, err := vhostQueryRepo.ReadByHostname(vhost)
+	for _, vhostName := range deleteDto.VirtualHosts {
+		_, err := vhostQueryRepo.ReadByHostname(vhostName)
 		if err != nil {
 			continue
 		}
 
-		err = repo.ReplaceWithSelfSigned(vhost)
+		err = repo.ReplaceWithSelfSigned(vhostName)
 		if err != nil {
 			log.Printf(
 				"DeleteSslPairVhostsError (%s): %s",
-				vhost.String(),
+				vhostName.String(),
 				err.Error(),
 			)
 		}
