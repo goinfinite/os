@@ -59,7 +59,7 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 			}
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
+			phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}

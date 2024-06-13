@@ -116,8 +116,8 @@ func (router Router) runtimeRoutes() {
 		router.persistentDbSvc,
 	)
 
-	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadConfigs)
-	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdateConfigs)
+	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
+	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
 }
 
 func (router Router) servicesRoutes() {

@@ -35,7 +35,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
-	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
@@ -193,12 +193,12 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	hostname valueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
-	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
 
-	allModules, err := repo.runtimeQueryRepo.GetPhpModules(phpVersion.Value)
+	allModules, err := repo.runtimeQueryRepo.ReadPhpModules(phpVersion.Value)
 	if err != nil {
 		return err
 	}

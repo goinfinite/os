@@ -29,8 +29,8 @@ func NewRuntimeController(
 	}
 }
 
-// GetPhpConfigs godoc
-// @Summary      GetPhpConfigs
+// ReadPhpConfigs godoc
+// @Summary      ReadPhpConfigs
 // @Description  Get php version, modules and settings for a hostname.
 // @Tags         runtime
 // @Accept       json
@@ -39,14 +39,14 @@ func NewRuntimeController(
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
-func (controller *RuntimeController) ReadConfigs(c echo.Context) error {
+func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
 
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
+	phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -146,7 +146,7 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"UpdatePhpConfigs"
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
-func (controller *RuntimeController) UpdateConfigs(c echo.Context) error {
+func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic("php")
 	sharedHelper.StopIfServiceUnavailable(svcName.String())
 

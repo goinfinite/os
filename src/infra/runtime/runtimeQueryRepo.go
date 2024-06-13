@@ -42,7 +42,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	return vhostPhpConfFilePath, nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() (
+func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
 	olsConfigFile := "/usr/local/lsws/conf/httpd_config.conf"
@@ -70,7 +70,7 @@ func (repo RuntimeQueryRepo) GetPhpVersionsInstalled() (
 	return phpVersions, nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpVersion(
+func (repo RuntimeQueryRepo) ReadPhpVersion(
 	hostname valueObject.Fqdn,
 ) (phpVersion entity.PhpVersion, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
@@ -92,7 +92,7 @@ func (repo RuntimeQueryRepo) GetPhpVersion(
 		return phpVersion, errors.New("PhpVersionUnknown: " + err.Error())
 	}
 
-	phpVersions, err := repo.GetPhpVersionsInstalled()
+	phpVersions, err := repo.ReadPhpVersionsInstalled()
 	if err != nil {
 		return phpVersion, errors.New("GetPhpVersionsInstalledFailed: " + err.Error())
 	}
@@ -194,7 +194,7 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 	return entity.NewPhpSetting(settingName, settingValue, settingOptions), nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpSettings(
+func (repo RuntimeQueryRepo) ReadPhpSettings(
 	hostname valueObject.Fqdn,
 ) (phpSettings []entity.PhpSetting, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
@@ -223,7 +223,7 @@ func (repo RuntimeQueryRepo) GetPhpSettings(
 	return phpSettings, nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpModules(
+func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
 	activeModuleList, err := infraHelper.RunCmd(
@@ -269,20 +269,20 @@ func (repo RuntimeQueryRepo) GetPhpModules(
 	return phpModules, nil
 }
 
-func (repo RuntimeQueryRepo) GetPhpConfigs(
+func (repo RuntimeQueryRepo) ReadPhpConfigs(
 	hostname valueObject.Fqdn,
 ) (phpConfigs entity.PhpConfigs, err error) {
-	phpVersion, err := repo.GetPhpVersion(hostname)
+	phpVersion, err := repo.ReadPhpVersion(hostname)
 	if err != nil {
 		return phpConfigs, err
 	}
 
-	phpSettings, err := repo.GetPhpSettings(hostname)
+	phpSettings, err := repo.ReadPhpSettings(hostname)
 	if err != nil {
 		return phpConfigs, err
 	}
 
-	phpModules, err := repo.GetPhpModules(phpVersion.Value)
+	phpModules, err := repo.ReadPhpModules(phpVersion.Value)
 	if err != nil {
 		return phpConfigs, err
 	}

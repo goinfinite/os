@@ -6,6 +6,6 @@ import (
 )
 
 type RuntimeQueryRepo interface {
-	GetPhpVersionsInstalled() ([]valueObject.PhpVersion, error)
-	GetPhpConfigs(hostname valueObject.Fqdn) (entity.PhpConfigs, error)
+	ReadPhpVersionsInstalled() ([]valueObject.PhpVersion, error)
+	ReadPhpConfigs(hostname valueObject.Fqdn) (entity.PhpConfigs, error)
 }
