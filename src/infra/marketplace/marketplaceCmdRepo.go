@@ -194,8 +194,11 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 	installDir valueObject.UnixFilePath,
 ) error {
 	installDirStr := installDir.String()
-	_, err := infraHelper.RunCmdWithSubShell(
-		"chown -R nobody:nogroup -L " + installDirStr,
+
+	chownRecursively := true
+	chownSymlinksToo := true
+	err := infraHelper.UpdateOwnerToNobody(
+		installDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownError (" + installDirStr + "): " + err.Error())

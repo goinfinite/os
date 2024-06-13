@@ -205,11 +205,12 @@ func (repo *VirtualHostCmdRepo) updateDirsOwnership(
 	}
 
 	for _, directory := range directories {
-		_, err := infraHelper.RunCmd(
-			"chown",
-			"-R",
-			"nobody:nogroup",
+		chownRecursively := true
+		chownSymlinksToo := false
+		err := infraHelper.UpdateOwnerToNobody(
 			directory,
+			chownRecursively,
+			chownSymlinksToo,
 		)
 		if err != nil {
 			return errors.New("ChownNecessaryDirectoriesFailed")

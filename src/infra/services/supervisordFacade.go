@@ -161,7 +161,11 @@ func (facade SupervisordFacade) CreateConf(
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd("chown", "-R", "nobody:nogroup", "/app/logs/"+svcNameStr)
+	chownRecursively := true
+	chownSymlinksToo := false
+	err = infraHelper.UpdateOwnerToNobody(
+		"/app/logs/"+svcNameStr, chownRecursively, chownSymlinksToo,
+	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
 	}

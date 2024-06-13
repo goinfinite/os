@@ -229,11 +229,10 @@ func addPhp() error {
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"nobody:nogroup",
-		"/app/logs/php-webserver",
+	chownRecursively := true
+	chownSymlinksToo := false
+	err = infraHelper.UpdateOwnerToNobody(
+		"/app/logs/php-webserver", chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
@@ -309,10 +308,12 @@ func addNode(createDto dto.CreateInstallableService) error {
 			return errors.New("CopyAssetsError: " + err.Error())
 		}
 
-		_, err = infraHelper.RunCmd(
-			"chown",
-			"nobody:nogroup",
+		chownRecursively := false
+		chownSymlinksToo := false
+		err = infraHelper.UpdateOwnerToNobody(
 			startupFile.String(),
+			chownRecursively,
+			chownSymlinksToo,
 		)
 		if err != nil {
 			return errors.New("ChownDummyIndexError: " + err.Error())
