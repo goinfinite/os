@@ -2,7 +2,6 @@ package infraHelper
 
 import (
 	"errors"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -92,7 +91,6 @@ func CreateSelfSignedSsl(
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
-	log.Print(selfSignedConfContent)
 
 	selfSignedConfTempFilePath := "/tmp/" + virtualHostHostname + "_selfSignedSsl.conf"
 	shouldOverwrite := true
