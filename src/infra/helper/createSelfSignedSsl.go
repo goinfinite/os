@@ -2,18 +2,40 @@ package infraHelper
 
 import (
 	"errors"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 )
+
+func altNamesFactory(
+	virtualHostHostname string,
+	aliasesHostname []string,
+) []string {
+	virtualHostHostnameWithWww := "www." + virtualHostHostname
+	altNamesValues := []string{virtualHostHostname, virtualHostHostnameWithWww}
+	for _, aliasHostname := range aliasesHostname {
+		aliasHostnameWithWww := "www." + aliasHostname
+		altNamesValues = append(altNamesValues, aliasHostname, aliasHostnameWithWww)
+	}
+
+	altNamesList := []string{}
+	for altNameIndex, altName := range altNamesValues {
+		dnsIndex := strconv.Itoa(altNameIndex)
+		dnsAltNameConf := "DNS." + dnsIndex + " = " + altName
+
+		altNamesList = append(altNamesList, dnsAltNameConf)
+	}
+
+	return altNamesList
+}
 
 func selfSignedConfFileFactory(
 	virtualHostHostname string,
 	aliasesHostname []string,
 ) (string, error) {
-	altNames := []string{virtualHostHostname}
-	altNames = append(altNames, aliasesHostname...)
-
+	altNames := altNamesFactory(virtualHostHostname, aliasesHostname)
 	valuesToInterpolate := map[string]interface{}{
 		"VirtualHostHostname": virtualHostHostname,
 		"AltNames":            altNames,
@@ -35,26 +57,14 @@ CN = {{ .VirtualHostHostname }}
 subjectAltName = @alt_names
 
 [ alt_names ]
-{{- $lastDnsIndex := 0 }}
 {{- range $altName := .AltNames }}
-{{- $dnsIndex := increaseIndex $lastDnsIndex }}
-DNS.{{ $dnsIndex }} = {{ $altName }}
-{{- $wwwDnsIndex := increaseIndex $dnsIndex }}
-DNS.{{ $wwwDnsIndex }} = www.{{ $altName }}
-{{- $lastDnsIndex = $wwwDnsIndex }}
+{{ $altName }}
 {{- end }}
 `
 
-	selfSignedConfFileTemplatePtr := template.New("selfSignedConfFile")
-	selfSignedConfFileTemplatePtr = selfSignedConfFileTemplatePtr.Funcs(
-		template.FuncMap{
-			"increaseIndex": func(currentIndex int) int {
-				return currentIndex + 1
-			},
-		},
-	)
-
-	selfSignedConfFileTemplatePtr, err := selfSignedConfFileTemplatePtr.Parse(selfSignedConfFileTemplate)
+	selfSignedConfFileTemplatePtr, err := template.
+		New("selfSignedConfFile").
+		Parse(selfSignedConfFileTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
@@ -82,6 +92,7 @@ func CreateSelfSignedSsl(
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
+	log.Print(selfSignedConfContent)
 
 	selfSignedConfTempFilePath := "/tmp/" + virtualHostHostname + "_selfSignedSsl.conf"
 	shouldOverwrite := true
