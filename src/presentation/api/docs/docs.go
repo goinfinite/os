@@ -1103,7 +1103,7 @@ const docTemplate = `{
                 "tags": [
                     "runtime"
                 ],
-                "summary": "GetPhpConfigs",
+                "summary": "ReadPhpConfigs",
                 "parameters": [
                     {
                         "type": "string",
@@ -1540,7 +1540,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetVirtualHosts",
+                "summary": "ReadVirtualHosts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1592,6 +1592,35 @@ const docTemplate = `{
             }
         },
         "/v1/vhosts/mapping/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List virtual hosts with mappings.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "ReadVirtualHostsWithMappings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.VirtualHostWithMappings"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2107,6 +2136,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.VirtualHostWithMappings": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Mapping"
+                    }
+                },
+                "parentHostname": {
+                    "type": "string"
+                },
+                "rootDirectory": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.AccessToken": {
             "type": "object",
             "properties": {
@@ -2521,15 +2573,6 @@ const docTemplate = `{
             "properties": {
                 "hostname": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mappings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.Mapping"
-                    }
                 },
                 "parentHostname": {
                     "type": "string"

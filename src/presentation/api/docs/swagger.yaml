@@ -260,6 +260,21 @@ definitions:
           type: string
         type: array
     type: object
+  dto.VirtualHostWithMappings:
+    properties:
+      hostname:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
+      parentHostname:
+        type: string
+      rootDirectory:
+        type: string
+      type:
+        type: string
+    type: object
   entity.AccessToken:
     properties:
       expiresIn:
@@ -531,12 +546,6 @@ definitions:
     properties:
       hostname:
         type: string
-      id:
-        type: integer
-      mappings:
-        items:
-          $ref: '#/definitions/entity.Mapping'
-        type: array
       parentHostname:
         type: string
       rootDirectory:
@@ -1339,7 +1348,7 @@ paths:
             $ref: '#/definitions/entity.PhpConfigs'
       security:
       - Bearer: []
-      summary: GetPhpConfigs
+      summary: ReadPhpConfigs
       tags:
       - runtime
     put:
@@ -1606,7 +1615,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetVirtualHosts
+      summary: ReadVirtualHosts
       tags:
       - vhosts
     post:
@@ -1656,6 +1665,24 @@ paths:
       tags:
       - vhosts
   /v1/vhosts/mapping/:
+    get:
+      consumes:
+      - application/json
+      description: List virtual hosts with mappings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.VirtualHostWithMappings'
+            type: array
+      security:
+      - Bearer: []
+      summary: ReadVirtualHostsWithMappings
+      tags:
+      - vhosts
     post:
       consumes:
       - application/json
