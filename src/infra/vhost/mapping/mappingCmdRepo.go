@@ -34,7 +34,7 @@ func NewMappingCmdRepo(
 
 func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	createDto dto.CreateMapping,
-	vhostHostname valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
 ) dbModel.Mapping {
 	var targetValuePtr *string
 	if createDto.TargetValue != nil {
@@ -56,7 +56,7 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 		createDto.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
-		vhostHostname.String(),
+		vhostName.String(),
 	)
 }
 
