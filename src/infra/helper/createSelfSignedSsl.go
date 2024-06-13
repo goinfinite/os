@@ -9,36 +9,36 @@ import (
 	"text/template"
 )
 
-func altNamesFactory(
+func altNamesConfFactory(
 	virtualHostHostname string,
 	aliasesHostname []string,
 ) []string {
 	virtualHostHostnameWithWww := "www." + virtualHostHostname
-	altNamesValues := []string{virtualHostHostname, virtualHostHostnameWithWww}
+	altNames := []string{virtualHostHostname, virtualHostHostnameWithWww}
 	for _, aliasHostname := range aliasesHostname {
 		aliasHostnameWithWww := "www." + aliasHostname
-		altNamesValues = append(altNamesValues, aliasHostname, aliasHostnameWithWww)
+		altNames = append(altNames, aliasHostname, aliasHostnameWithWww)
 	}
 
-	altNamesList := []string{}
-	for altNameIndex, altName := range altNamesValues {
+	altNamesConfList := []string{}
+	for altNameIndex, altName := range altNames {
 		dnsIndex := strconv.Itoa(altNameIndex)
-		dnsAltNameConf := "DNS." + dnsIndex + " = " + altName
+		altNameConf := "DNS." + dnsIndex + " = " + altName
 
-		altNamesList = append(altNamesList, dnsAltNameConf)
+		altNamesConfList = append(altNamesConfList, altNameConf)
 	}
 
-	return altNamesList
+	return altNamesConfList
 }
 
 func selfSignedConfFileFactory(
 	virtualHostHostname string,
 	aliasesHostname []string,
 ) (string, error) {
-	altNames := altNamesFactory(virtualHostHostname, aliasesHostname)
+	altNamesConf := altNamesConfFactory(virtualHostHostname, aliasesHostname)
 	valuesToInterpolate := map[string]interface{}{
 		"VirtualHostHostname": virtualHostHostname,
-		"AltNames":            altNames,
+		"AltNamesConf":        altNamesConf,
 	}
 
 	selfSignedConfFileTemplate := `[ req ]
@@ -57,8 +57,8 @@ CN = {{ .VirtualHostHostname }}
 subjectAltName = @alt_names
 
 [ alt_names ]
-{{- range $altName := .AltNames }}
-{{ $altName }}
+{{- range $altNameConf := .AltNamesConf }}
+{{ $altNameConf }}
 {{- end }}
 `
 
