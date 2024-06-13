@@ -32,63 +32,68 @@ func NewVirtualHostCmdRepo(
 }
 
 func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
-	hostname valueObject.Fqdn,
-	aliases []valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
+	aliasesHostnames []valueObject.Fqdn,
 	publicDir valueObject.UnixFilePath,
 	mappingFilePath valueObject.UnixFilePath,
 ) (string, error) {
-	hostnameStr := hostname.String()
+	vhostNameStr := vhostName.String()
 
-	valuesToInterpolate := map[string]interface{}{
-		"Hostname":        hostname,
-		"Aliases":         aliases,
-		"PublicDirectory": publicDir,
-		"CertPath":        infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".crt",
-		"KeyPath":         infraData.GlobalConfigs.PkiConfDir + "/" + hostnameStr + ".key",
-		"MappingFilePath": mappingFilePath,
+	aliasesHostnamesStr := []string{}
+	for _, aliasHostname := range aliasesHostnames {
+		aliasesHostnamesStr = append(aliasesHostnamesStr, aliasHostname.String())
 	}
 
-	webServerConfigTemplate := `server {
+	valuesToInterpolate := map[string]interface{}{
+		"VhostName":        vhostNameStr,
+		"AliasesHostnames": aliasesHostnamesStr,
+		"PublicDirectory":  publicDir,
+		"CertPath":         infraData.GlobalConfigs.PkiConfDir + "/" + vhostNameStr + ".crt",
+		"KeyPath":          infraData.GlobalConfigs.PkiConfDir + "/" + vhostNameStr + ".key",
+		"MappingFilePath":  mappingFilePath,
+	}
+
+	webServerConfTemplate := `server {
     listen 80;
     listen 443 ssl;
-    server_name {{ .Hostname }} www.{{ .Hostname }}{{ range .Aliases }} {{ .String }} www.{{ .String }}{{ end }};
+    server_name {{ .VhostName }} www.{{ .VhostName }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
 
     root {{ .PublicDirectory }};
 
     ssl_certificate {{ .CertPath }};
     ssl_certificate_key {{ .KeyPath }};
 
-    access_log /app/logs/nginx/{{ .Hostname }}_access.log combined buffer=512k flush=1m;
-    error_log /app/logs/nginx/{{ .Hostname }}_error.log warn;
+    access_log /app/logs/nginx/{{ .VhostName }}_access.log combined buffer=512k flush=1m;
+    error_log /app/logs/nginx/{{ .VhostName }}_error.log warn;
 
     include /etc/nginx/std.conf;
     include {{ .MappingFilePath }};
 }`
 
-	webServerConfigTemplatePtr, err := template.
-		New("webServerConfigUnitFile").
-		Parse(webServerConfigTemplate)
+	webServerUnitConfTemplatePtr, err := template.
+		New("webServerConfUnitFile").
+		Parse(webServerConfTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
-	var webServerConfigUnitFileContent strings.Builder
-	err = webServerConfigTemplatePtr.Execute(
-		&webServerConfigUnitFileContent,
+	var webServerConfUnitFileContent strings.Builder
+	err = webServerUnitConfTemplatePtr.Execute(
+		&webServerConfUnitFileContent,
 		valuesToInterpolate,
 	)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	return webServerConfigUnitFileContent.String(), nil
+	return webServerConfUnitFileContent.String(), nil
 }
 
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
-	hostname valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
 	publicDir valueObject.UnixFilePath,
 ) error {
-	aliases, err := repo.queryRepo.ReadAliasesByParentHostname(hostname)
+	aliases, err := repo.queryRepo.ReadAliasesByParentHostname(vhostName)
 	if err != nil {
 		return errors.New("GetAliasesByHostnameError: " + err.Error())
 	}
@@ -98,8 +103,8 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		aliasesHostnames = append(aliasesHostnames, alias.Hostname)
 	}
 
-	vhostFileNameStr := hostname.String() + ".conf"
-	if infraHelper.IsPrimaryVirtualHost(hostname) {
+	vhostFileNameStr := vhostName.String() + ".conf"
+	if infraHelper.IsPrimaryVirtualHost(vhostName) {
 		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
@@ -114,7 +119,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	}
 
 	webServerConfigUnitFileContent, err := repo.webServerUnitFileFactory(
-		hostname,
+		vhostName,
 		aliasesHostnames,
 		publicDir,
 		mappingFilePath,
