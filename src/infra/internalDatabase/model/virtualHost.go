@@ -16,8 +16,8 @@ type VirtualHost struct {
 	RootDirectory  string `gorm:"not null"`
 	ParentHostname *string
 	Mappings       []Mapping
-	CreatedAt      time.Time `gorm:"column:CreatedAt;not null"`
-	UpdatedAt      time.Time `gorm:"column:UpdatedAt;not null"`
+	CreatedAt      time.Time `gorm:"not null"`
+	UpdatedAt      time.Time `gorm:"not null"`
 }
 
 func (model VirtualHost) InitialEntries() ([]interface{}, error) {
