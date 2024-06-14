@@ -20,10 +20,10 @@ type VirtualHost struct {
 	UpdatedAt      time.Time `gorm:"not null"`
 }
 
-func (model VirtualHost) InitialEntries() ([]interface{}, error) {
+func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return []interface{}{}, errors.New("GetPrimaryVirtualHostError: " + err.Error())
+		return entries, errors.New("GetPrimaryVirtualHostError: " + err.Error())
 	}
 
 	primaryEntry := VirtualHost{
