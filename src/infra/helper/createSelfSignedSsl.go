@@ -12,11 +12,9 @@ func altNamesConfFactory(
 	vhostName string,
 	aliasesHostname []string,
 ) []string {
-	vhostNameWithWww := "www." + vhostName
-	altNames := []string{vhostName, vhostNameWithWww}
+	altNames := []string{vhostName, "www." + vhostName}
 	for _, aliasHostname := range aliasesHostname {
-		aliasHostnameWithWww := "www." + aliasHostname
-		altNames = append(altNames, aliasHostname, aliasHostnameWithWww)
+		altNames = append(altNames, aliasHostname, "www."+aliasHostname)
 	}
 
 	altNamesConfList := []string{}
