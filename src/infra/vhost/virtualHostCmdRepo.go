@@ -212,7 +212,7 @@ func (repo *VirtualHostCmdRepo) updateDirsOwnership(
 	for _, directory := range directories {
 		chownRecursively := true
 		chownSymlinksToo := false
-		err := infraHelper.UpdateOwnerToNobody(
+		err := infraHelper.UpdatePermissionsForWebServerUse(
 			directory,
 			chownRecursively,
 			chownSymlinksToo,

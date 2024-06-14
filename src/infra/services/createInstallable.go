@@ -231,7 +231,7 @@ func addPhp() error {
 
 	chownRecursively := true
 	chownSymlinksToo := false
-	err = infraHelper.UpdateOwnerToNobody(
+	err = infraHelper.UpdatePermissionsForWebServerUse(
 		"/app/logs/php-webserver", chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
@@ -310,7 +310,7 @@ func addNode(createDto dto.CreateInstallableService) error {
 
 		chownRecursively := false
 		chownSymlinksToo := false
-		err = infraHelper.UpdateOwnerToNobody(
+		err = infraHelper.UpdatePermissionsForWebServerUse(
 			startupFile.String(),
 			chownRecursively,
 			chownSymlinksToo,

@@ -197,7 +197,7 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 
 	chownRecursively := true
 	chownSymlinksToo := true
-	err := infraHelper.UpdateOwnerToNobody(
+	err := infraHelper.UpdatePermissionsForWebServerUse(
 		installDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {

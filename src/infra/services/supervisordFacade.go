@@ -163,7 +163,7 @@ func (facade SupervisordFacade) CreateConf(
 
 	chownRecursively := true
 	chownSymlinksToo := false
-	err = infraHelper.UpdateOwnerToNobody(
+	err = infraHelper.UpdatePermissionsForWebServerUse(
 		"/app/logs/"+svcNameStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
