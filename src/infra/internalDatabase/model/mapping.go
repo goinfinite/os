@@ -33,7 +33,7 @@ func NewMapping(
 	targetType string,
 	targetValue *string,
 	targetHttpResponseCode *string,
-	virtualHostHostname string,
+	vhostName string,
 ) Mapping {
 	mappingModel := Mapping{
 		Hostname:               hostname,
@@ -42,7 +42,7 @@ func NewMapping(
 		TargetType:             targetType,
 		TargetValue:            targetValue,
 		TargetHttpResponseCode: targetHttpResponseCode,
-		VirtualHostHostname:    virtualHostHostname,
+		VirtualHostHostname:    vhostName,
 	}
 
 	if id != 0 {
