@@ -38,7 +38,7 @@ func selfSignedConfFileFactory(
 		"AltNamesConf": altNamesConf,
 	}
 
-	selfSignedConfFileTemplate := `[ req ]
+	confFileTemplate := `[ req ]
 default_bits = 2048
 distinguished_name = req_distinguished_name
 x509_extensions = v3_req
@@ -59,23 +59,23 @@ subjectAltName = @alt_names
 {{- end }}
 `
 
-	selfSignedConfFileTemplatePtr, err := template.
+	confFileTemplatePtr, err := template.
 		New("selfSignedConfFile").
-		Parse(selfSignedConfFileTemplate)
+		Parse(confFileTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
-	var selfSignedConfFileContent strings.Builder
-	err = selfSignedConfFileTemplatePtr.Execute(
-		&selfSignedConfFileContent,
+	var confFileContent strings.Builder
+	err = confFileTemplatePtr.Execute(
+		&confFileContent,
 		valuesToInterpolate,
 	)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	return selfSignedConfFileContent.String(), nil
+	return confFileContent.String(), nil
 }
 
 func CreateSelfSignedSsl(
@@ -83,16 +83,14 @@ func CreateSelfSignedSsl(
 	vhostName string,
 	aliasesHostname []string,
 ) error {
-	selfSignedConfContent, err := selfSignedConfFileFactory(
-		vhostName, aliasesHostname,
-	)
+	confContent, err := selfSignedConfFileFactory(vhostName, aliasesHostname)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
 
-	selfSignedConfTempFilePath := "/tmp/" + vhostName + "_selfSignedSsl.conf"
+	confTempFilePath := "/tmp/" + vhostName + "_selfSignedSsl.conf"
 	shouldOverwrite := true
-	err = UpdateFile(selfSignedConfTempFilePath, selfSignedConfContent, shouldOverwrite)
+	err = UpdateFile(confTempFilePath, confContent, shouldOverwrite)
 	if err != nil {
 		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
 	}
@@ -114,7 +112,7 @@ func CreateSelfSignedSsl(
 		"-out",
 		vhostCertFilePath,
 		"-config",
-		selfSignedConfTempFilePath,
+		confTempFilePath,
 	)
 	if err != nil {
 		return errors.New(
@@ -122,7 +120,7 @@ func CreateSelfSignedSsl(
 		)
 	}
 
-	err = os.Remove(selfSignedConfTempFilePath)
+	err = os.Remove(confTempFilePath)
 	if err != nil {
 		return errors.New("DeleteSelfSignedConfFileError: " + err.Error())
 	}
