@@ -162,7 +162,7 @@ func addPhp() error {
 
 	err = copyAssets(
 		"php/httpd_config.conf",
-		"/usr/local/lsws/conf/httpd_config.conf",
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -177,7 +177,7 @@ func addPhp() error {
 		"sed",
 		"-i",
 		"s/speedia.net/"+primaryVhost.String()+"/g",
-		"/usr/local/lsws/conf/httpd_config.conf",
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())

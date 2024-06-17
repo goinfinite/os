@@ -9,6 +9,7 @@ type globalConfigs struct {
 	PublicIpTransientKey             string
 	DatabaseFilePath                 string
 	PrimaryVhostFileName             string
+	OlsHttpdConfFilePath             string
 }
 
 var GlobalConfigs = globalConfigs{
@@ -20,4 +21,5 @@ var GlobalConfigs = globalConfigs{
 	PublicIpTransientKey:             "PublicIp",
 	DatabaseFilePath:                 "/speedia/os.db",
 	PrimaryVhostFileName:             "primary",
+	OlsHttpdConfFilePath:             "/usr/local/lsws/conf/httpd_config.conf",
 }

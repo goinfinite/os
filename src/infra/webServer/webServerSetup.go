@@ -39,13 +39,12 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 	}
 
 	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
-	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	_, err := infraHelper.RunCmd(
 		"sed",
 		"-i",
 		"-e",
 		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+desiredChildProcessesStr+";/g",
-		httpdConfFilePath,
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateMaxChildProcessesFailed")

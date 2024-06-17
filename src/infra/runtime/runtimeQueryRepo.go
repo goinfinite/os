@@ -10,6 +10,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 )
 
 type RuntimeQueryRepo struct {
@@ -45,9 +46,9 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
-	olsConfigFile := "/usr/local/lsws/conf/httpd_config.conf"
 	output, err := infraHelper.RunCmd(
-		"awk", "/extprocessor lsphp/{print $2}", olsConfigFile,
+		"awk", "/extprocessor lsphp/{print $2}",
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())

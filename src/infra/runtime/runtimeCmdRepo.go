@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -282,10 +283,9 @@ virtualhost ` + hostname.String() + ` {
   setUIDMode              0
 }
 `
-	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
-		httpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
+		infraData.GlobalConfigs.OlsHttpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
 		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
@@ -294,7 +294,8 @@ virtualhost ` + hostname.String() + ` {
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
 	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine, httpdConfFilePath,
+		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine,
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())
