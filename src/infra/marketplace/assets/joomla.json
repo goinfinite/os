@@ -42,6 +42,9 @@
     "cd %installDirectory%; php %installDirectory%/installation/joomla.php install --site-name=baseWebsite --admin-user=%adminUsername% --admin-username=%adminUsername% --admin-password=%adminPassword% --admin-email=%adminMailAddress% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=%installRandomPassword% --db-name=joomlaDb_%installUuid% --db-prefix=joomla_ --db-encryption=0 -n",
     "cp %installDirectory%/htaccess.txt %installDirectory%/.htaccess"
   ],
+  "uninstallSteps": [
+    "echo \"Uninstall Joomla\" > /speedia/uninstallJoomla.txt"
+  ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
   "screenshotUrls": [

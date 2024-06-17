@@ -49,6 +49,9 @@
     "chown -R nobody:nogroup -L %installDirectory%-backup",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
   ],
+  "uninstallSteps": [
+    "echo \"Uninstall Drupal\" > /speedia/uninstallDrupal.txt"
+  ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
   "screenshotUrls": [

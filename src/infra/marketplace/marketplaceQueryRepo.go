@@ -468,6 +468,14 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
+	itemUninstallSteps := []valueObject.MarketplaceItemCmdStep{}
+	if itemMap["uninstallSteps"] != nil {
+		itemUninstallSteps, err = repo.parseCatalogItemCmdSteps(itemMap["uninstallSteps"])
+		if err != nil {
+			return catalogItem, err
+		}
+	}
+
 	estimatedSizeBytes := valueObject.Byte(1000000000)
 	if itemMap["estimatedSizeBytes"] == nil {
 		estimatedSizeBytes, err = valueObject.NewByte(itemMap["estimatedSizeBytes"])
@@ -503,6 +511,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemMappings,
 		itemDataFields,
 		itemInstallSteps,
+		itemUninstallSteps,
 		estimatedSizeBytes,
 		itemAvatarUrl,
 		itemScreenshotUrls,

@@ -51,6 +51,9 @@
     "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=%installRandomPassword% --allow-root",
     "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
   ],
+  "uninstallSteps": [
+    "echo \"Uninstall Wordpress\" > /speedia/uninstallWordpress.txt"
+  ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
   "screenshotUrls": [
