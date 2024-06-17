@@ -99,8 +99,8 @@ func CreateSelfSignedSsl(
 	vhostCertFilePath := dirPath + "/" + vhostName + ".crt"
 
 	_, err = RunCmdWithSubShell(
-		"openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout" +
-			vhostCertKeyFilePath + "-out" + vhostCertFilePath + "-config" + confTempFilePath,
+		"openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout " +
+			vhostCertKeyFilePath + " -out " + vhostCertFilePath + " -config " + confTempFilePath,
 	)
 	if err != nil {
 		return errors.New(
