@@ -61,12 +61,13 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(
 		seedModelInitialEntriesMethod := seedModelFieldsAndMethods.MethodByName(
 			"InitialEntries",
 		)
-		seedModelInitialEntriesMethodResults := seedModelInitialEntriesMethod.Call(
+		initialEntriesMethodResults := seedModelInitialEntriesMethod.Call(
 			[]reflect.Value{},
 		)
 
-		if !seedModelInitialEntriesMethodResults[1].IsNil() {
-			err = seedModelInitialEntriesMethodResults[1].Interface().(error)
+		initialEntriesMethodErr := initialEntriesMethodResults[1]
+		if !initialEntriesMethodErr.IsNil() {
+			err = initialEntriesMethodErr.Interface().(error)
 			if err != nil {
 				return errors.New(
 					"SeedModelInitialEntriesError (" + modelName + "): " + err.Error(),
@@ -74,7 +75,7 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(
 			}
 		}
 
-		initialEntries := seedModelInitialEntriesMethodResults[0].Interface()
+		initialEntries := initialEntriesMethodResults[0].Interface()
 		for _, entry := range initialEntries.([]interface{}) {
 			entryInnerStructure := reflect.ValueOf(entry)
 
