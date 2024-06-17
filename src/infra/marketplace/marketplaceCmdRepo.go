@@ -39,7 +39,7 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) installServices(
-	vhostHostname valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
 ) error {
 	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
@@ -69,7 +69,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 
 	if shouldCreatePhpVirtualHost {
 		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-		return runtimeCmdRepo.CreatePhpVirtualHost(vhostHostname)
+		return runtimeCmdRepo.CreatePhpVirtualHost(vhostName)
 	}
 
 	return nil
@@ -194,8 +194,11 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 	installDir valueObject.UnixFilePath,
 ) error {
 	installDirStr := installDir.String()
-	_, err := infraHelper.RunCmdWithSubShell(
-		"chown -R nobody:nogroup -L " + installDirStr,
+
+	chownRecursively := true
+	chownSymlinksToo := true
+	err := infraHelper.UpdatePermissionsForWebServerUse(
+		installDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownError (" + installDirStr + "): " + err.Error())
@@ -335,8 +338,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhost, err := vhostQueryRepo.GetByHostname(installDto.Hostname)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	vhost, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
 	if err != nil {
 		return err
 	}

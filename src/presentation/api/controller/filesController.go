@@ -77,7 +77,7 @@ func GetFilesController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createFileDto 	  body    dto.CreateUnixFile  true  "NewFile"
+// @Param        createFileDto 	  body    dto.CreateUnixFile  true  "permissions is optional. When not provided, permissions will be '644' for files and '755' for directories."
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /v1/files/ [post]
 func CreateFileController(c echo.Context) error {
@@ -201,7 +201,7 @@ func UpdateFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "NewFileCopy"
+// @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "All props are required."
 // @Success      201 {object} object{} "FileCopied"
 // @Router       /v1/files/copy/ [post]
 func CopyFileController(c echo.Context) error {
@@ -250,7 +250,7 @@ func CopyFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        sourcePaths	body	[]string	true	"SourcePath"
+// @Param        sourcePaths	body	[]string	true	"FilePaths to deleted."
 // @Success      200 {object} object{} "FilesDeleted"
 // @Router       /v1/files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
@@ -302,7 +302,7 @@ func DeleteFileController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "CompressFiles"
+// @Param        compressFilesDto 	  body    dto.CompressUnixFiles  true  "All props are required."
 // @Success      200 {object} object{} "FilesCompressed"
 // @Success      207 {object} object{} "FilesArePartialCompressed"
 // @Router       /v1/files/compress/ [post]
@@ -357,7 +357,7 @@ func CompressFilesController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "ExtractFiles"
+// @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "All props are required."
 // @Success      200 {object} object{} "FilesExtracted"
 // @Router       /v1/files/extract/ [put]
 func ExtractFilesController(c echo.Context) error {

@@ -61,7 +61,7 @@ func CreateMapping(
 	svcsQueryRepo repository.ServicesQueryRepo,
 	createDto dto.CreateMapping,
 ) error {
-	vhost, err := vhostQueryRepo.GetByHostname(createDto.Hostname)
+	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
 	if err != nil {
 		return errors.New("VirtualHostNotFound")
 	}

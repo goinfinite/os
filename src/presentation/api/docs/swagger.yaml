@@ -345,8 +345,6 @@ definitions:
     type: object
   entity.Mapping:
     properties:
-      hostname:
-        type: string
       id:
         type: integer
       matchPattern:
@@ -661,7 +659,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: OsApi
-  version: 0.0.1
+  version: 0.0.2
 paths:
   /v1/account/:
     get:
@@ -687,7 +685,7 @@ paths:
       - application/json
       description: Create a new account.
       parameters:
-      - description: NewAccount
+      - description: All props are required.
         in: body
         name: createAccountDto
         required: true
@@ -708,9 +706,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an account (Only id is required).
+      description: Update an account.
       parameters:
-      - description: UpdateAccount
+      - description: Only id is required.
         in: body
         name: updateDto
         required: true
@@ -734,7 +732,7 @@ paths:
       - application/json
       description: Delete an account.
       parameters:
-      - description: AccountId
+      - description: AccountId to delete.
         in: path
         name: accountId
         required: true
@@ -757,7 +755,7 @@ paths:
       - application/json
       description: Generate JWT with credentials
       parameters:
-      - description: Login
+      - description: All props are required.
         in: body
         name: loginDto
         required: true
@@ -801,7 +799,7 @@ paths:
       - application/json
       description: Create a new cron.
       parameters:
-      - description: NewCron
+      - description: comment is optional.
         in: body
         name: createCronDto
         required: true
@@ -824,7 +822,7 @@ paths:
       - application/json
       description: Update a cron.
       parameters:
-      - description: UpdateCron
+      - description: Only id is required.
         in: body
         name: updateCronDto
         required: true
@@ -848,7 +846,7 @@ paths:
       - application/json
       description: Delete a cron.
       parameters:
-      - description: CronId
+      - description: CronId to delete.
         in: path
         name: cronId
         required: true
@@ -871,7 +869,7 @@ paths:
       - application/json
       description: List databases names, users and sizes.
       parameters:
-      - description: DatabaseType
+      - description: DatabaseType (like mysql, postgres)
         in: path
         name: dbType
         required: true
@@ -895,12 +893,12 @@ paths:
       - application/json
       description: Create a new database.
       parameters:
-      - description: DatabaseType
+      - description: DatabaseType (like mysql, postgres)
         in: path
         name: dbType
         required: true
         type: string
-      - description: CreateDatabase
+      - description: All props are required.
         in: body
         name: createDatabaseDto
         required: true
@@ -924,7 +922,7 @@ paths:
       - application/json
       description: Delete a database.
       parameters:
-      - description: DatabaseType
+      - description: DatabaseType (like mysql, postgres)
         in: path
         name: dbType
         required: true
@@ -952,7 +950,7 @@ paths:
       - application/json
       description: Create a new database user.
       parameters:
-      - description: DatabaseType
+      - description: DatabaseType (like mysql, postgres)
         in: path
         name: dbType
         required: true
@@ -962,7 +960,8 @@ paths:
         name: dbName
         required: true
         type: string
-      - description: CreateDatabaseUser
+      - description: privileges is optional. When not provided, privileges will be
+          'ALL'.
         in: body
         name: createDatabaseUserDto
         required: true
@@ -986,7 +985,7 @@ paths:
       - application/json
       description: Delete a database user.
       parameters:
-      - description: DatabaseType
+      - description: DatabaseType (like mysql, postgres)
         in: path
         name: dbType
         required: true
@@ -996,7 +995,7 @@ paths:
         name: dbName
         required: true
         type: string
-      - description: DatabaseUsername
+      - description: DatabaseUsername to delete.
         in: path
         name: dbUser
         required: true
@@ -1043,7 +1042,8 @@ paths:
       - application/json
       description: Create a new dir/file.
       parameters:
-      - description: NewFile
+      - description: permissions is optional. When not provided, permissions will
+          be '644' for files and '755' for directories.
         in: body
         name: createFileDto
         required: true
@@ -1095,7 +1095,7 @@ paths:
       - application/json
       description: Compress directories and files.
       parameters:
-      - description: CompressFiles
+      - description: All props are required.
         in: body
         name: compressFilesDto
         required: true
@@ -1123,7 +1123,7 @@ paths:
       - application/json
       description: Copy a dir/file.
       parameters:
-      - description: NewFileCopy
+      - description: All props are required.
         in: body
         name: copyFileDto
         required: true
@@ -1147,7 +1147,7 @@ paths:
       - application/json
       description: Delete one or more directories/files.
       parameters:
-      - description: SourcePath
+      - description: FilePaths to deleted.
         in: body
         name: sourcePaths
         required: true
@@ -1173,7 +1173,7 @@ paths:
       - application/json
       description: Extract directories and files.
       parameters:
-      - description: ExtractFiles
+      - description: All props are required.
         in: body
         name: extractFilesDto
         required: true
@@ -1247,7 +1247,7 @@ paths:
       - application/json
       description: Install a marketplace catalog item.
       parameters:
-      - description: InstallMarketplaceCatalogItem (directory is optional)
+      - description: directory will be the virtual host root directory.
         in: body
         name: InstallMarketplaceCatalogItem
         required: true
@@ -1288,16 +1288,18 @@ paths:
       - application/json
       description: Delete/Uninstall a marketplace installed item.
       parameters:
-      - description: MarketplaceItemId
+      - description: MarketplaceInstalledItemId to delete.
         in: path
         name: installedId
         required: true
         type: integer
-      - description: ShouldUninstallServices
+      - description: Should uninstall all services that were installed with the marketplace
+          item installation? Default is 'true'.
         in: query
         name: shouldUninstallServices
         type: boolean
-      - description: ShouldRemoveFiles
+      - description: Should remove all files that were created with the marketplace
+          item installation? Default is 'true'.
         in: query
         name: shouldRemoveFiles
         type: boolean
@@ -1350,7 +1352,7 @@ paths:
             $ref: '#/definitions/entity.PhpConfigs'
       security:
       - Bearer: []
-      summary: GetPhpConfigs
+      summary: ReadPhpConfigs
       tags:
       - runtime
     put:
@@ -1363,7 +1365,7 @@ paths:
         name: hostname
         required: true
         type: string
-      - description: UpdatePhpConfigs
+      - description: modules and settings are optional.
         in: body
         name: updatePhpConfigsDto
         required: true
@@ -1405,7 +1407,8 @@ paths:
       - application/json
       description: Update service details.
       parameters:
-      - description: UpdateServiceDetails
+      - description: Only name is required.<br />Solo services can only change status.<br
+          />status may be 'running', 'stopped' or 'uninstalled'.
         in: body
         name: updateServiceDto
         required: true
@@ -1429,7 +1432,7 @@ paths:
       - application/json
       description: Delete/Uninstall a service.
       parameters:
-      - description: ServiceName
+      - description: ServiceName to delete
         in: path
         name: svcName
         required: true
@@ -1452,7 +1455,10 @@ paths:
       - application/json
       description: Install a new custom service.
       parameters:
-      - description: CreateCustomService
+      - description: name, type and command is required.<br />If version is not provided,
+          it will be 'lts'.<br />If portBindings is not provided, it wil be default
+          service port bindings.<br />If autoCreateMapping is not provided, it will
+          be 'true'.
         in: body
         name: createCustomServiceDto
         required: true
@@ -1494,7 +1500,9 @@ paths:
       - application/json
       description: Install a new installable service.
       parameters:
-      - description: CreateInstallableService
+      - description: Only name is required.<br />If version is not provided, it will
+          be 'lts'.<br />If portBindings is not provided, it wil be default service
+          port bindings.<br />If autoCreateMapping is not provided, it will be 'true'.
         in: body
         name: createInstallableServiceDto
         required: true
@@ -1536,7 +1544,9 @@ paths:
       - application/json
       description: Create a new ssl pair.
       parameters:
-      - description: NewSslPair
+      - description: All props are required.<br />virtualHosts may be string or []string.
+          Alias is not allowed.<br />certificate is a string field, i.e. ignore the
+          structure shown.<br />certificate and key must be base64 encoded.
         in: body
         name: createSslPairDto
         required: true
@@ -1560,7 +1570,7 @@ paths:
       - application/json
       description: Delete a ssl pair.
       parameters:
-      - description: SslPairId
+      - description: SslPairId to delete.
         in: path
         name: sslPairId
         required: true
@@ -1583,7 +1593,7 @@ paths:
       - application/json
       description: Delete vhosts from a ssl pair.
       parameters:
-      - description: SslPairVhostsDeleted
+      - description: All props are required.
         in: body
         name: deleteSslPairVhostsDto
         required: true
@@ -1617,7 +1627,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetVirtualHosts
+      summary: ReadVirtualHosts
       tags:
       - vhosts
     post:
@@ -1625,7 +1635,9 @@ paths:
       - application/json
       description: Create a new vhost.
       parameters:
-      - description: NewVirtualHost (only hostname is required).
+      - description: Only hostname is required.<br />type may be 'top-level', 'subdomain',
+          'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
+          is 'alias', parentHostname it will be required.
         in: body
         name: createVirtualHostDto
         required: true
@@ -1649,7 +1661,7 @@ paths:
       - application/json
       description: Delete a vhost.
       parameters:
-      - description: Hostname
+      - description: Hostname to delete
         in: path
         name: hostname
         required: true
@@ -1682,7 +1694,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetVirtualHostsWithMappings
+      summary: ReadVirtualHostsWithMappings
       tags:
       - vhosts
     post:
@@ -1690,10 +1702,14 @@ paths:
       - application/json
       description: Create a new vhost mapping.
       parameters:
-      - description: hostname, path and targetType are required. If targetType is
-          'url', targetUrl is required and so on.<br />targetType may be 'service',
-          'url' or 'response-code'.<br />matchPattern may be 'begins-with', 'contains',
-          'equals', 'ends-with' or empty.
+      - description: hostname, path and targetType are required.<br />matchPattern
+          may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided,
+          it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code',
+          'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode
+          may be provided. If is not provided, targetHttpResponseCode will be '200'.
+          If targetType is 'response-code', targetHttpResponseCode may be provided.
+          If is not provided, targetValue will be required.<br />targetValue must
+          have the same value as the targetType requires.
         in: body
         name: createMappingDto
         required: true
@@ -1717,7 +1733,7 @@ paths:
       - application/json
       description: Delete a vhost mapping.
       parameters:
-      - description: MappingId
+      - description: MappingId to delete.
         in: path
         name: mappingId
         required: true

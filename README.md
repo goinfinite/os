@@ -2,13 +2,15 @@
 This project is under active development and is not ready for production use.
 ```
 
-# Speedia OS
+# [Speedia OS](https://speedia.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/speedianet/projects/1) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.speedia.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/speedianet/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/speedianet/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/speedianet/os/blob/main/LICENSE.md)
 
-Speedia OS is a container operating system designed to simplify the deployment and management of applications in a containerized environment. It offers a REST API, CLI, and a user-friendly dashboard for seamless container management.
+Speedia OS is a container operating system designed so you never have to write a Dockerfile again. It comes with a user-friendly dashboard, REST API and CLI for seamless container management.
+
+A read-only demo of the dashboard is available at [https://os.demo.speedia.net:1618/\_/](https://os.demo.speedia.net:1618/_/). The default credentials are `demo` and `abc123`.
 
 ## Running
 
-To run Speedia OS as a container, you can pull the image from DockerHub and use the following command:
+To run Speedia OS, you can pull the image from DockerHub and use the following command:
 
 ```
 docker run --rm --name myapp-container \
@@ -44,6 +46,8 @@ The API Swagger documentation is available at `https://localhost:1618/_/api/swag
 Speedia OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
 
 ## Development
+
+The public roadmap for Speedia OS is available [here](https://github.com/orgs/speedianet/projects/1). You may create issues or pull requests to contribute to the project.
 
 In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
 

@@ -1,2738 +1,2459 @@
 {
-    "swagger": "2.0",
-    "info": {
-        "description": "Speedia OS API",
-        "title": "OsApi",
-        "termsOfService": "https://speedia.net/tos/",
-        "contact": {
-            "name": "Speedia Engineering",
-            "url": "https://speedia.net/",
-            "email": "eng+swagger@speedia.net"
-        },
-        "license": {
-            "name": "Eclipse Public License v2.0",
-            "url": "https://www.eclipse.org/legal/epl-2.0/"
-        },
-        "version": "0.0.1"
+  "swagger": "2.0",
+  "info": {
+    "description": "Speedia OS API",
+    "title": "OsApi",
+    "termsOfService": "https://speedia.net/tos/",
+    "contact": {
+      "name": "Speedia Engineering",
+      "url": "https://speedia.net/",
+      "email": "eng+swagger@speedia.net"
     },
-    "host": "localhost:1618",
-    "basePath": "/_/api",
-    "paths": {
-        "/v1/account/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List accounts.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "GetAccounts",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Account"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update an account (Only id is required).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "UpdateAccount",
-                "parameters": [
-                    {
-                        "description": "UpdateAccount",
-                        "name": "updateDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateAccount"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "AccountUpdated message or NewKeyString",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new account.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "CreateNewAccount",
-                "parameters": [
-                    {
-                        "description": "NewAccount",
-                        "name": "createAccountDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateAccount"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "AccountCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
+    "license": {
+      "name": "Eclipse Public License v2.0",
+      "url": "https://www.eclipse.org/legal/epl-2.0/"
+    },
+    "version": "0.0.2"
+  },
+  "host": "localhost:1618",
+  "basePath": "/_/api",
+  "paths": {
+    "/v1/account/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List accounts.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["account"],
+        "summary": "GetAccounts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.Account"
+              }
             }
-        },
-        "/v1/account/{accountId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete an account.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "DeleteAccount",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "AccountId",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "AccountDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/auth/login/": {
-            "post": {
-                "description": "Generate JWT with credentials",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "GenerateJwtWithCredentials",
-                "parameters": [
-                    {
-                        "description": "Login",
-                        "name": "loginDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.Login"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entity.AccessToken"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/cron/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List crons.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "cron"
-                ],
-                "summary": "GetCrons",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Cron"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update a cron.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "cron"
-                ],
-                "summary": "UpdateCron",
-                "parameters": [
-                    {
-                        "description": "UpdateCron",
-                        "name": "updateCronDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateCron"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "CronUpdated message",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new cron.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "cron"
-                ],
-                "summary": "CreateNewCron",
-                "parameters": [
-                    {
-                        "description": "NewCron",
-                        "name": "createCronDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateCron"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "CronCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/cron/{cronId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a cron.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "cron"
-                ],
-                "summary": "DeleteCron",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "CronId",
-                        "name": "cronId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "CronDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/database/{dbType}/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List databases names, users and sizes.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database"
-                ],
-                "summary": "GetDatabases",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DatabaseType",
-                        "name": "dbType",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Database"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new database.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database"
-                ],
-                "summary": "CreateDatabase",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DatabaseType",
-                        "name": "dbType",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "CreateDatabase",
-                        "name": "createDatabaseDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateDatabase"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "DatabaseCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/database/{dbType}/{dbName}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a database.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database"
-                ],
-                "summary": "DeleteDatabase",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DatabaseType",
-                        "name": "dbType",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "DatabaseName",
-                        "name": "dbName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "DatabaseDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/database/{dbType}/{dbName}/user/": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new database user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database"
-                ],
-                "summary": "CreateDatabaseUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DatabaseType",
-                        "name": "dbType",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "DatabaseName",
-                        "name": "dbName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "CreateDatabaseUser",
-                        "name": "createDatabaseUserDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateDatabaseUser"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "DatabaseUserCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/database/{dbType}/{dbName}/user/{dbUser}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a database user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database"
-                ],
-                "summary": "DeleteDatabaseUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DatabaseType",
-                        "name": "dbType",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "DatabaseName",
-                        "name": "dbName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "DatabaseUsername",
-                        "name": "dbUser",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "DatabaseUserDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List dir/files.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "GetFiles",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "SourcePath",
-                        "name": "sourcePath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.UnixFile"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Move a dir/file, update name and/or permissions (Only sourcePath is required).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "UpdateFile",
-                "parameters": [
-                    {
-                        "description": "Only sourcePaths are required.",
-                        "name": "updateUnixFilesDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateUnixFiles"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FileUpdated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "207": {
-                        "description": "FilesArePartialUpdated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new dir/file.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "CreateNewFile",
-                "parameters": [
-                    {
-                        "description": "NewFile",
-                        "name": "createFileDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateUnixFile"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "FileCreated/DirectoryCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/compress/": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Compress directories and files.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "CompressFiles",
-                "parameters": [
-                    {
-                        "description": "CompressFiles",
-                        "name": "compressFilesDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CompressUnixFiles"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FilesCompressed",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "207": {
-                        "description": "FilesArePartialCompressed",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/copy/": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Copy a dir/file.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "CopyFile",
-                "parameters": [
-                    {
-                        "description": "NewFileCopy",
-                        "name": "copyFileDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CopyUnixFile"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "FileCopied",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/delete/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete one or more directories/files.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "DeleteFiles",
-                "parameters": [
-                    {
-                        "description": "SourcePath",
-                        "name": "sourcePaths",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FilesDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/extract/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Extract directories and files.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "ExtractFiles",
-                "parameters": [
-                    {
-                        "description": "ExtractFiles",
-                        "name": "extractFilesDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ExtractUnixFiles"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FilesExtracted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/files/upload/": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Upload files.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "UploadFiles",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "DestinationPath",
-                        "name": "destinationPath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "FileToUpload",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "FilesUploaded",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "207": {
-                        "description": "FilesPartialUploaded",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/marketplace/catalog/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List marketplace catalog services names, types, steps and more.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marketplace"
-                ],
-                "summary": "ReadCatalog",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.MarketplaceCatalogItem"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Install a marketplace catalog item.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marketplace"
-                ],
-                "summary": "InstallCatalogItem",
-                "parameters": [
-                    {
-                        "description": "InstallMarketplaceCatalogItem (directory is optional)",
-                        "name": "InstallMarketplaceCatalogItem",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.InstallMarketplaceCatalogItem"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "MarketplaceCatalogItemInstalled",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/marketplace/installed/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List marketplace installed items.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marketplace"
-                ],
-                "summary": "ReadInstalledItems",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.MarketplaceInstalledItem"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/marketplace/installed/{installedId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete/Uninstall a marketplace installed item.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marketplace"
-                ],
-                "summary": "DeleteInstalledItem",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MarketplaceItemId",
-                        "name": "installedId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "ShouldUninstallServices",
-                        "name": "shouldUninstallServices",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "ShouldRemoveFiles",
-                        "name": "shouldRemoveFiles",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "MarketplaceInstalledItemDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/o11y/overview/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Show system information and resource usage.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "o11y"
-                ],
-                "summary": "O11yOverview",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entity.O11yOverview"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/runtime/php/{hostname}/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Get php version, modules and settings for a hostname.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "runtime"
-                ],
-                "summary": "GetPhpConfigs",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entity.PhpConfigs"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update php version, modules and settings for a hostname.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "runtime"
-                ],
-                "summary": "UpdatePhpConfigs",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "UpdatePhpConfigs",
-                        "name": "updatePhpConfigsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdatePhpConfigs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PhpConfigsUpdated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/services/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List installed services and their status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "ReadServices",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ServiceWithMetrics"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update service details.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "UpdateService",
-                "parameters": [
-                    {
-                        "description": "UpdateServiceDetails",
-                        "name": "updateServiceDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateService"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ServiceUpdated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/services/custom/": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Install a new custom service.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "CreateCustomService",
-                "parameters": [
-                    {
-                        "description": "CreateCustomService",
-                        "name": "createCustomServiceDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateCustomService"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "CustomServiceCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/services/installables/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List installable services.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "ReadInstallableServices",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.InstallableService"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Install a new installable service.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "CreateInstallableService",
-                "parameters": [
-                    {
-                        "description": "CreateInstallableService",
-                        "name": "createInstallableServiceDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateInstallableService"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "InstallableServiceCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/services/{svcName}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete/Uninstall a service.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "services"
-                ],
-                "summary": "DeleteService",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ServiceName",
-                        "name": "svcName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ServiceDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/ssl/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List ssl pairs.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "ReadSslPairs",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.SslPair"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "CreateSslPair",
-                "parameters": [
-                    {
-                        "description": "NewSslPair",
-                        "name": "createSslPairDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateSslPair"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "SslPairCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/ssl/vhost/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete vhosts from a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSslPairVhosts",
-                "parameters": [
-                    {
-                        "description": "SslPairVhostsDeleted",
-                        "name": "deleteSslPairVhostsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairVhostsRemoved",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/ssl/{sslPairId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSslPair",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "SslPairId",
-                        "name": "sslPairId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/vhosts/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List virtual hosts.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "GetVirtualHosts",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.VirtualHost"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new vhost.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "CreateVirtualHost",
-                "parameters": [
-                    {
-                        "description": "NewVirtualHost (only hostname is required).",
-                        "name": "createVirtualHostDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateVirtualHost"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "VirtualHostCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/vhosts/mapping/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List virtual hosts with mappings.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "GetVirtualHostsWithMappings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.VirtualHostWithMappings"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new vhost mapping.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "CreateVirtualHostMapping",
-                "parameters": [
-                    {
-                        "description": "hostname, path and targetType are required. If targetType is 'url', targetUrl is required and so on.\u003cbr /\u003etargetType may be 'service', 'url' or 'response-code'.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals', 'ends-with' or empty.",
-                        "name": "createMappingDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateMapping"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "MappingCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/vhosts/mapping/{mappingId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a vhost mapping.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "DeleteVirtualHostMapping",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MappingId",
-                        "name": "mappingId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "MappingDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/vhosts/{hostname}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a vhost.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "DeleteVirtualHost",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostname",
-                        "name": "hostname",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "VirtualHostDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
+          }
         }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Update an account.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["account"],
+        "summary": "UpdateAccount",
+        "parameters": [
+          {
+            "description": "Only id is required.",
+            "name": "updateDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateAccount"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AccountUpdated message or NewKeyString",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new account.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["account"],
+        "summary": "CreateNewAccount",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "createAccountDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateAccount"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "AccountCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
     },
-    "definitions": {
-        "dto.CompressUnixFiles": {
-            "type": "object",
-            "properties": {
-                "compressionType": {
-                    "type": "string"
-                },
-                "destinationPath": {
-                    "type": "string"
-                },
-                "sourcePaths": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "dto.CopyUnixFile": {
-            "type": "object",
-            "properties": {
-                "destinationPath": {
-                    "type": "string"
-                },
-                "shouldOverwrite": {
-                    "type": "boolean"
-                },
-                "sourcePath": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateAccount": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateCron": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "schedule": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateCustomService": {
-            "type": "object",
-            "properties": {
-                "autoCreateMapping": {
-                    "type": "boolean"
-                },
-                "command": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateDatabase": {
-            "type": "object",
-            "properties": {
-                "dbName": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateDatabaseUser": {
-            "type": "object",
-            "properties": {
-                "dbName": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "privileges": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateInstallableService": {
-            "type": "object",
-            "properties": {
-                "autoCreateMapping": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "startupFile": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateMapping": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateSslPair": {
-            "type": "object",
-            "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.SslCertificate"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "virtualHosts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "dto.CreateUnixFile": {
-            "type": "object",
-            "properties": {
-                "filePath": {
-                    "type": "string"
-                },
-                "mimeType": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateVirtualHost": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "parentHostname": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DeleteSslPairVhosts": {
-            "type": "object",
-            "properties": {
-                "sslPairId": {
-                    "type": "string"
-                },
-                "virtualHosts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "dto.ExtractUnixFiles": {
-            "type": "object",
-            "properties": {
-                "destinationPath": {
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.InstallMarketplaceCatalogItem": {
-            "type": "object",
-            "properties": {
-                "dataFields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.MarketplaceInstallableItemDataField"
-                    }
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "slug": {
-                    "type": "string"
-                },
-                "urlPath": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.Login": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ServiceWithMetrics": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "metrics": {
-                    "$ref": "#/definitions/valueObject.ServiceMetrics"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "nature": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "startupFile": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateAccount": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "shouldUpdateApiKey": {
-                    "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateCron": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "schedule": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdatePhpConfigs": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "modules": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.PhpModule"
-                    }
-                },
-                "settings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.PhpSetting"
-                    }
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateService": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "portBindings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.PortBinding"
-                    }
-                },
-                "startupFile": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateUnixFiles": {
-            "type": "object",
-            "properties": {
-                "destinationPath": {
-                    "type": "string"
-                },
-                "encodedContent": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
-                },
-                "sourcePaths": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "dto.VirtualHostWithMappings": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "mappings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.Mapping"
-                    }
-                },
-                "parentHostname": {
-                    "type": "string"
-                },
-                "rootDirectory": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.AccessToken": {
-            "type": "object",
-            "properties": {
-                "expiresIn": {
-                    "type": "integer"
-                },
-                "tokenStr": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/valueObject.AccessTokenType"
-                }
-            }
-        },
-        "entity.Account": {
-            "type": "object",
-            "properties": {
-                "groupId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.Cron": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "schedule": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.Database": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.DatabaseUser"
-                    }
-                }
-            }
-        },
-        "entity.DatabaseUser": {
-            "type": "object",
-            "properties": {
-                "dbName": {
-                    "type": "string"
-                },
-                "dbType": {
-                    "type": "string"
-                },
-                "privileges": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.InstallableService": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "nature": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "entity.Mapping": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.MarketplaceCatalogItem": {
-            "type": "object",
-            "properties": {
-                "avatarUrl": {
-                    "type": "string"
-                },
-                "dataFields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.MarketplaceCatalogItemDataField"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "estimatedSizeBytes": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mappings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.MarketplaceItemMapping"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "screenshotUrls": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "services": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
-                    }
-                },
-                "slugs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.MarketplaceInstalledItem": {
-            "type": "object",
-            "properties": {
-                "avatarUrl": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "integer"
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "installDirectory": {
-                    "type": "string"
-                },
-                "installUuid": {
-                    "type": "string"
-                },
-                "mappings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.Mapping"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "services": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "integer"
-                },
-                "urlPath": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.O11yOverview": {
-            "type": "object",
-            "properties": {
-                "currentUsage": {
-                    "$ref": "#/definitions/valueObject.CurrentResourceUsage"
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "publicIp": {
-                    "type": "string"
-                },
-                "specs": {
-                    "$ref": "#/definitions/valueObject.HardwareSpecs"
-                },
-                "uptimeSecs": {
-                    "type": "integer"
-                }
-            }
-        },
-        "entity.PhpConfigs": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "modules": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.PhpModule"
-                    }
-                },
-                "settings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.PhpSetting"
-                    }
-                },
-                "version": {
-                    "$ref": "#/definitions/entity.PhpVersion"
-                }
-            }
-        },
-        "entity.PhpModule": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "entity.PhpSetting": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "options": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.PhpVersion": {
-            "type": "object",
-            "properties": {
-                "options": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.SslCertificate": {
-            "type": "object",
-            "properties": {
-                "altNames": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "certificateAuthority": {
-                    "type": "string"
-                },
-                "certificateContent": {
-                    "type": "string"
-                },
-                "commonName": {
-                    "type": "string"
-                },
-                "expiresAt": {
-                    "type": "integer"
-                },
-                "issuedAt": {
-                    "type": "integer"
-                },
-                "sslId": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.SslPair": {
-            "type": "object",
-            "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.SslCertificate"
-                },
-                "chainCertificates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entity.SslCertificate"
-                    }
-                },
-                "key": {
-                    "type": "string"
-                },
-                "sslPairId": {
-                    "type": "string"
-                },
-                "virtualHosts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "entity.UnixFile": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "extension": {
-                    "type": "string"
-                },
-                "gid": {
-                    "type": "integer"
-                },
-                "group": {
-                    "type": "string"
-                },
-                "mimeType": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "uid": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "integer"
-                }
-            }
-        },
-        "entity.VirtualHost": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "parentHostname": {
-                    "type": "string"
-                },
-                "rootDirectory": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.AccessTokenType": {
+    "/v1/account/{accountId}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete an account.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["account"],
+        "summary": "DeleteAccount",
+        "parameters": [
+          {
             "type": "string",
-            "enum": [
-                "sessionToken",
-                "accountApiKey"
-            ],
-            "x-enum-varnames": [
-                "sessionToken",
-                "accountApiKey"
-            ]
-        },
-        "valueObject.CurrentResourceUsage": {
-            "type": "object",
-            "properties": {
-                "cpuUsagePercent": {
-                    "type": "number"
-                },
-                "memUsagePercent": {
-                    "type": "number"
-                },
-                "storageUsage": {
-                    "type": "number"
-                }
+            "description": "AccountId to delete.",
+            "name": "accountId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AccountDeleted",
+            "schema": {
+              "type": "object"
             }
-        },
-        "valueObject.HardwareSpecs": {
-            "type": "object",
-            "properties": {
-                "cpuCores": {
-                    "type": "integer"
-                },
-                "cpuFrequency": {
-                    "type": "number"
-                },
-                "cpuModel": {
-                    "type": "string"
-                },
-                "memoryTotal": {
-                    "type": "integer"
-                },
-                "storageTotal": {
-                    "type": "integer"
-                }
-            }
-        },
-        "valueObject.MarketplaceCatalogItemDataField": {
-            "type": "object",
-            "properties": {
-                "defaultValue": {
-                    "type": "string"
-                },
-                "isRequired": {
-                    "type": "boolean"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "options": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.MarketplaceInstallableItemDataField": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.MarketplaceItemMapping": {
-            "type": "object",
-            "properties": {
-                "matchPattern": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "targetHttpResponseCode": {
-                    "type": "integer"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "targetValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.PortBinding": {
-            "type": "object",
-            "properties": {
-                "port": {
-                    "type": "integer"
-                },
-                "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.ServiceMetrics": {
-            "type": "object",
-            "properties": {
-                "cpuUsagePercent": {
-                    "type": "number"
-                },
-                "memUsagePercent": {
-                    "type": "number"
-                },
-                "pids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "uptimeSecs": {
-                    "type": "integer"
-                }
-            }
-        },
-        "valueObject.ServiceNameWithVersion": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
+          }
         }
+      }
     },
-    "securityDefinitions": {
-        "Bearer": {
-            "description": "Type \"Bearer\" + JWT token or API key.",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
+    "/v1/auth/login/": {
+      "post": {
+        "description": "Generate JWT with credentials",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["auth"],
+        "summary": "GenerateJwtWithCredentials",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "loginDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.Login"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/entity.AccessToken"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "string"
+            }
+          }
         }
+      }
+    },
+    "/v1/cron/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List crons.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["cron"],
+        "summary": "GetCrons",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.Cron"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Update a cron.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["cron"],
+        "summary": "UpdateCron",
+        "parameters": [
+          {
+            "description": "Only id is required.",
+            "name": "updateCronDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateCron"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CronUpdated message",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new cron.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["cron"],
+        "summary": "CreateNewCron",
+        "parameters": [
+          {
+            "description": "comment is optional.",
+            "name": "createCronDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateCron"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "CronCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/cron/{cronId}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a cron.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["cron"],
+        "summary": "DeleteCron",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "CronId to delete.",
+            "name": "cronId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CronDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/database/{dbType}/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List databases names, users and sizes.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["database"],
+        "summary": "GetDatabases",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DatabaseType (like mysql, postgres)",
+            "name": "dbType",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.Database"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new database.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["database"],
+        "summary": "CreateDatabase",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DatabaseType (like mysql, postgres)",
+            "name": "dbType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "All props are required.",
+            "name": "createDatabaseDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateDatabase"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "DatabaseCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/database/{dbType}/{dbName}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a database.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["database"],
+        "summary": "DeleteDatabase",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DatabaseType (like mysql, postgres)",
+            "name": "dbType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "DatabaseName",
+            "name": "dbName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DatabaseDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/database/{dbType}/{dbName}/user/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new database user.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["database"],
+        "summary": "CreateDatabaseUser",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DatabaseType (like mysql, postgres)",
+            "name": "dbType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "DatabaseName",
+            "name": "dbName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "privileges is optional. When not provided, privileges will be 'ALL'.",
+            "name": "createDatabaseUserDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateDatabaseUser"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "DatabaseUserCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/database/{dbType}/{dbName}/user/{dbUser}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a database user.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["database"],
+        "summary": "DeleteDatabaseUser",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DatabaseType (like mysql, postgres)",
+            "name": "dbType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "DatabaseName",
+            "name": "dbName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "DatabaseUsername to delete.",
+            "name": "dbUser",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DatabaseUserDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List dir/files.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "GetFiles",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "SourcePath",
+            "name": "sourcePath",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.UnixFile"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Move a dir/file, update name and/or permissions (Only sourcePath is required).",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "UpdateFile",
+        "parameters": [
+          {
+            "description": "Only sourcePaths are required.",
+            "name": "updateUnixFilesDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateUnixFiles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FileUpdated",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "207": {
+            "description": "FilesArePartialUpdated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new dir/file.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "CreateNewFile",
+        "parameters": [
+          {
+            "description": "permissions is optional. When not provided, permissions will be '644' for files and '755' for directories.",
+            "name": "createFileDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateUnixFile"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "FileCreated/DirectoryCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/compress/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Compress directories and files.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "CompressFiles",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "compressFilesDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CompressUnixFiles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FilesCompressed",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "207": {
+            "description": "FilesArePartialCompressed",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/copy/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Copy a dir/file.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "CopyFile",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "copyFileDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CopyUnixFile"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "FileCopied",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/delete/": {
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete one or more directories/files.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "DeleteFiles",
+        "parameters": [
+          {
+            "description": "FilePaths to deleted.",
+            "name": "sourcePaths",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FilesDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/extract/": {
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Extract directories and files.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "ExtractFiles",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "extractFilesDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.ExtractUnixFiles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FilesExtracted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/upload/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Upload files.",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["files"],
+        "summary": "UploadFiles",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "DestinationPath",
+            "name": "destinationPath",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "file",
+            "description": "FileToUpload",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FilesUploaded",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "207": {
+            "description": "FilesPartialUploaded",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/marketplace/catalog/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List marketplace catalog services names, types, steps and more.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["marketplace"],
+        "summary": "ReadCatalog",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.MarketplaceCatalogItem"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Install a marketplace catalog item.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["marketplace"],
+        "summary": "InstallCatalogItem",
+        "parameters": [
+          {
+            "description": "directory will be the virtual host root directory.",
+            "name": "InstallMarketplaceCatalogItem",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.InstallMarketplaceCatalogItem"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "MarketplaceCatalogItemInstalled",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/marketplace/installed/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List marketplace installed items.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["marketplace"],
+        "summary": "ReadInstalledItems",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.MarketplaceInstalledItem"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/marketplace/installed/{installedId}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete/Uninstall a marketplace installed item.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["marketplace"],
+        "summary": "DeleteInstalledItem",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "MarketplaceInstalledItemId to delete.",
+            "name": "installedId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'.",
+            "name": "shouldUninstallServices",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "Should remove all files that were created with the marketplace item installation? Default is 'true'.",
+            "name": "shouldRemoveFiles",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MarketplaceInstalledItemDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/o11y/overview/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Show system information and resource usage.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["o11y"],
+        "summary": "O11yOverview",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/entity.O11yOverview"
+            }
+          }
+        }
+      }
+    },
+    "/v1/runtime/php/{hostname}/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get php version, modules and settings for a hostname.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["runtime"],
+        "summary": "ReadPhpConfigs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Hostname",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/entity.PhpConfigs"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Update php version, modules and settings for a hostname.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["runtime"],
+        "summary": "UpdatePhpConfigs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Hostname",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "modules and settings are optional.",
+            "name": "updatePhpConfigsDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdatePhpConfigs"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PhpConfigsUpdated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/services/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List installed services and their status.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "ReadServices",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.ServiceWithMetrics"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Update service details.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "UpdateService",
+        "parameters": [
+          {
+            "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped' or 'uninstalled'.",
+            "name": "updateServiceDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateService"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ServiceUpdated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/services/custom/": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Install a new custom service.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "CreateCustomService",
+        "parameters": [
+          {
+            "description": "name, type and command is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
+            "name": "createCustomServiceDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateCustomService"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "CustomServiceCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/services/installables/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List installable services.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "ReadInstallableServices",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.InstallableService"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Install a new installable service.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "CreateInstallableService",
+        "parameters": [
+          {
+            "description": "Only name is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
+            "name": "createInstallableServiceDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateInstallableService"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "InstallableServiceCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/services/{svcName}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete/Uninstall a service.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["services"],
+        "summary": "DeleteService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ServiceName to delete",
+            "name": "svcName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ServiceDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ssl/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List ssl pairs.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["ssl"],
+        "summary": "ReadSslPairs",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.SslPair"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new ssl pair.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["ssl"],
+        "summary": "CreateSslPair",
+        "parameters": [
+          {
+            "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.",
+            "name": "createSslPairDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateSslPair"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "SslPairCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ssl/vhost/": {
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete vhosts from a ssl pair.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["ssl"],
+        "summary": "DeleteSslPairVhosts",
+        "parameters": [
+          {
+            "description": "All props are required.",
+            "name": "deleteSslPairVhostsDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.DeleteSslPairVhosts"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SslPairVhostsRemoved",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ssl/{sslPairId}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a ssl pair.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["ssl"],
+        "summary": "DeleteSslPair",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "SslPairId to delete.",
+            "name": "sslPairId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SslPairDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/vhosts/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List virtual hosts.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "ReadVirtualHosts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/entity.VirtualHost"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new vhost.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "CreateVirtualHost",
+        "parameters": [
+          {
+            "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required.",
+            "name": "createVirtualHostDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateVirtualHost"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "VirtualHostCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/vhosts/mapping/": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "List virtual hosts with mappings.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "ReadVirtualHostsWithMappings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.VirtualHostWithMappings"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new vhost mapping.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "CreateVirtualHostMapping",
+        "parameters": [
+          {
+            "description": "hostname, path and targetType are required.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.\u003cbr /\u003etargetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.\u003cbr /\u003etargetValue must have the same value as the targetType requires.",
+            "name": "createMappingDto",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateMapping"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "MappingCreated",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/vhosts/mapping/{mappingId}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a vhost mapping.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "DeleteVirtualHostMapping",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "MappingId to delete.",
+            "name": "mappingId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MappingDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/vhosts/{hostname}/": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete a vhost.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["vhosts"],
+        "summary": "DeleteVirtualHost",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Hostname to delete",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VirtualHostDeleted",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
     }
+  },
+  "definitions": {
+    "dto.CompressUnixFiles": {
+      "type": "object",
+      "properties": {
+        "compressionType": {
+          "type": "string"
+        },
+        "destinationPath": {
+          "type": "string"
+        },
+        "sourcePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.CopyUnixFile": {
+      "type": "object",
+      "properties": {
+        "destinationPath": {
+          "type": "string"
+        },
+        "shouldOverwrite": {
+          "type": "boolean"
+        },
+        "sourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateAccount": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateCron": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateCustomService": {
+      "type": "object",
+      "properties": {
+        "autoCreateMapping": {
+          "type": "boolean"
+        },
+        "command": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "portBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.PortBinding"
+          }
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateDatabase": {
+      "type": "object",
+      "properties": {
+        "dbName": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateDatabaseUser": {
+      "type": "object",
+      "properties": {
+        "dbName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateInstallableService": {
+      "type": "object",
+      "properties": {
+        "autoCreateMapping": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "portBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.PortBinding"
+          }
+        },
+        "startupFile": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateMapping": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "matchPattern": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "targetHttpResponseCode": {
+          "type": "integer"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "targetValue": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateSslPair": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "$ref": "#/definitions/entity.SslCertificate"
+        },
+        "key": {
+          "type": "string"
+        },
+        "virtualHosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.CreateUnixFile": {
+      "type": "object",
+      "properties": {
+        "filePath": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateVirtualHost": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "parentHostname": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.DeleteSslPairVhosts": {
+      "type": "object",
+      "properties": {
+        "sslPairId": {
+          "type": "string"
+        },
+        "virtualHosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.ExtractUnixFiles": {
+      "type": "object",
+      "properties": {
+        "destinationPath": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.InstallMarketplaceCatalogItem": {
+      "type": "object",
+      "properties": {
+        "dataFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.MarketplaceInstallableItemDataField"
+          }
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "urlPath": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.Login": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.ServiceWithMetrics": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/definitions/valueObject.ServiceMetrics"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nature": {
+          "type": "string"
+        },
+        "portBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.PortBinding"
+          }
+        },
+        "startupFile": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "password": {
+          "type": "string"
+        },
+        "shouldUpdateApiKey": {
+          "type": "boolean"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateCron": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "schedule": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdatePhpConfigs": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.PhpModule"
+          }
+        },
+        "settings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.PhpSetting"
+          }
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateService": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "portBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.PortBinding"
+          }
+        },
+        "startupFile": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateUnixFiles": {
+      "type": "object",
+      "properties": {
+        "destinationPath": {
+          "type": "string"
+        },
+        "encodedContent": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "string"
+        },
+        "sourcePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.VirtualHostWithMappings": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.Mapping"
+          }
+        },
+        "parentHostname": {
+          "type": "string"
+        },
+        "rootDirectory": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.AccessToken": {
+      "type": "object",
+      "properties": {
+        "expiresIn": {
+          "type": "integer"
+        },
+        "tokenStr": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/valueObject.AccessTokenType"
+        }
+      }
+    },
+    "entity.Account": {
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.Cron": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "schedule": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.Database": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.DatabaseUser"
+          }
+        }
+      }
+    },
+    "entity.DatabaseUser": {
+      "type": "object",
+      "properties": {
+        "dbName": {
+          "type": "string"
+        },
+        "dbType": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.InstallableService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nature": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entity.Mapping": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "matchPattern": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "targetHttpResponseCode": {
+          "type": "integer"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "targetValue": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.MarketplaceCatalogItem": {
+      "type": "object",
+      "properties": {
+        "avatarUrl": {
+          "type": "string"
+        },
+        "dataFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.MarketplaceCatalogItemDataField"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "estimatedSizeBytes": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.MarketplaceItemMapping"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "screenshotUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
+          }
+        },
+        "slugs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.MarketplaceInstalledItem": {
+      "type": "object",
+      "properties": {
+        "avatarUrl": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "integer"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "installDirectory": {
+          "type": "string"
+        },
+        "installUuid": {
+          "type": "string"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.Mapping"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
+          }
+        },
+        "type": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
+        },
+        "urlPath": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.O11yOverview": {
+      "type": "object",
+      "properties": {
+        "currentUsage": {
+          "$ref": "#/definitions/valueObject.CurrentResourceUsage"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "publicIp": {
+          "type": "string"
+        },
+        "specs": {
+          "$ref": "#/definitions/valueObject.HardwareSpecs"
+        },
+        "uptimeSecs": {
+          "type": "integer"
+        }
+      }
+    },
+    "entity.PhpConfigs": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.PhpModule"
+          }
+        },
+        "settings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.PhpSetting"
+          }
+        },
+        "version": {
+          "$ref": "#/definitions/entity.PhpVersion"
+        }
+      }
+    },
+    "entity.PhpModule": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "boolean"
+        }
+      }
+    },
+    "entity.PhpSetting": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.PhpVersion": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.SslCertificate": {
+      "type": "object",
+      "properties": {
+        "altNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "certificateAuthority": {
+          "type": "string"
+        },
+        "certificateContent": {
+          "type": "string"
+        },
+        "commonName": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "integer"
+        },
+        "issuedAt": {
+          "type": "integer"
+        },
+        "sslId": {
+          "type": "string"
+        }
+      }
+    },
+    "entity.SslPair": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "$ref": "#/definitions/entity.SslCertificate"
+        },
+        "chainCertificates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entity.SslCertificate"
+          }
+        },
+        "key": {
+          "type": "string"
+        },
+        "sslPairId": {
+          "type": "string"
+        },
+        "virtualHosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entity.UnixFile": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "extension": {
+          "type": "string"
+        },
+        "gid": {
+          "type": "integer"
+        },
+        "group": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "uid": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "integer"
+        }
+      }
+    },
+    "entity.VirtualHost": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "parentHostname": {
+          "type": "string"
+        },
+        "rootDirectory": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "valueObject.AccessTokenType": {
+      "type": "string",
+      "enum": ["sessionToken", "accountApiKey"],
+      "x-enum-varnames": ["sessionToken", "accountApiKey"]
+    },
+    "valueObject.CurrentResourceUsage": {
+      "type": "object",
+      "properties": {
+        "cpuUsagePercent": {
+          "type": "number"
+        },
+        "memUsagePercent": {
+          "type": "number"
+        },
+        "storageUsage": {
+          "type": "number"
+        }
+      }
+    },
+    "valueObject.HardwareSpecs": {
+      "type": "object",
+      "properties": {
+        "cpuCores": {
+          "type": "integer"
+        },
+        "cpuFrequency": {
+          "type": "number"
+        },
+        "cpuModel": {
+          "type": "string"
+        },
+        "memoryTotal": {
+          "type": "integer"
+        },
+        "storageTotal": {
+          "type": "integer"
+        }
+      }
+    },
+    "valueObject.MarketplaceCatalogItemDataField": {
+      "type": "object",
+      "properties": {
+        "defaultValue": {
+          "type": "string"
+        },
+        "isRequired": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "valueObject.MarketplaceInstallableItemDataField": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "valueObject.MarketplaceItemMapping": {
+      "type": "object",
+      "properties": {
+        "matchPattern": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "targetHttpResponseCode": {
+          "type": "integer"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "targetValue": {
+          "type": "string"
+        }
+      }
+    },
+    "valueObject.PortBinding": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "protocol": {
+          "type": "string"
+        }
+      }
+    },
+    "valueObject.ServiceMetrics": {
+      "type": "object",
+      "properties": {
+        "cpuUsagePercent": {
+          "type": "number"
+        },
+        "memUsagePercent": {
+          "type": "number"
+        },
+        "pids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "uptimeSecs": {
+          "type": "integer"
+        }
+      }
+    },
+    "valueObject.ServiceNameWithVersion": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "description": "Type \"Bearer\" + JWT token or API key.",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
 }

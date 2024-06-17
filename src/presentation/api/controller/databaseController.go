@@ -19,7 +19,7 @@ import (
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Param        dbType path string true "DatabaseType"
+// @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Success      200 {array} entity.Database
 // @Router       /v1/database/{dbType}/ [get]
 func GetDatabasesController(c echo.Context) error {
@@ -43,8 +43,8 @@ func GetDatabasesController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path string true "DatabaseType"
-// @Param        createDatabaseDto body dto.CreateDatabase true "CreateDatabase"
+// @Param        dbType path string true "DatabaseType (like mysql, postgres)"
+// @Param        createDatabaseDto body dto.CreateDatabase true "All props are required."
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
 func CreateDatabaseController(c echo.Context) error {
@@ -80,7 +80,7 @@ func CreateDatabaseController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path string true "DatabaseType"
+// @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
@@ -112,9 +112,9 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path string true "DatabaseType"
+// @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        dbName path string true "DatabaseName"
-// @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "CreateDatabaseUser"
+// @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "privileges is optional. When not provided, privileges will be 'ALL'."
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
 func CreateDatabaseUserController(c echo.Context) error {
@@ -167,9 +167,9 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        dbType path string true "DatabaseType"
+// @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Param        dbName path string true "DatabaseName"
-// @Param        dbUser path string true "DatabaseUsername"
+// @Param        dbUser path string true "DatabaseUsername to delete."
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func DeleteDatabaseUserController(c echo.Context) error {

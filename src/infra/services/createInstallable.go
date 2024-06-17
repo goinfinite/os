@@ -162,7 +162,7 @@ func addPhp() error {
 
 	err = copyAssets(
 		"php/httpd_config.conf",
-		"/usr/local/lsws/conf/httpd_config.conf",
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -177,7 +177,7 @@ func addPhp() error {
 		"sed",
 		"-i",
 		"s/speedia.net/"+primaryVhost.String()+"/g",
-		"/usr/local/lsws/conf/httpd_config.conf",
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
@@ -229,11 +229,10 @@ func addPhp() error {
 		return errors.New("CreateLogDirError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"nobody:nogroup",
-		"/app/logs/php-webserver",
+	chownRecursively := true
+	chownSymlinksToo := false
+	err = infraHelper.UpdatePermissionsForWebServerUse(
+		"/app/logs/php-webserver", chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownLogDirError: " + err.Error())
@@ -309,10 +308,12 @@ func addNode(createDto dto.CreateInstallableService) error {
 			return errors.New("CopyAssetsError: " + err.Error())
 		}
 
-		_, err = infraHelper.RunCmd(
-			"chown",
-			"nobody:nogroup",
+		chownRecursively := false
+		chownSymlinksToo := false
+		err = infraHelper.UpdatePermissionsForWebServerUse(
 			startupFile.String(),
+			chownRecursively,
+			chownSymlinksToo,
 		)
 		if err != nil {
 			return errors.New("ChownDummyIndexError: " + err.Error())

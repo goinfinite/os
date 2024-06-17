@@ -34,6 +34,7 @@ func NewMappingCmdRepo(
 
 func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	createDto dto.CreateMapping,
+	vhostName valueObject.Fqdn,
 ) dbModel.Mapping {
 	var targetValuePtr *string
 	if createDto.TargetValue != nil {
@@ -55,6 +56,7 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 		createDto.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
+		vhostName.String(),
 	)
 }
 
@@ -309,7 +311,7 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 		return err
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
 		mappingHostname,
 	)
@@ -380,7 +382,13 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	mappingModel := repo.parseCreateDtoToModel(createDto)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
+	if err != nil {
+		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())
+	}
+
+	mappingModel := repo.parseCreateDtoToModel(createDto, vhost.Hostname)
 	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
 	if createResult.Error != nil {
 		return mappingId, createResult.Error

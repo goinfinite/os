@@ -102,8 +102,8 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
 			marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-			vhostCmdRepo := vhostInfra.VirtualHostCmdRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
+			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 			dto := dto.NewInstallMarketplaceCatalogItem(
 				catalogIdPtr,
