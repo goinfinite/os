@@ -28,7 +28,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "ShowSoftwareVersion",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Speedia OS v0.0.1")
+		fmt.Println("Speedia OS v0.0.2")
 	},
 }
 
