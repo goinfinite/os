@@ -59,7 +59,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostName valueObject.Fqdn) error 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(vhostName)
 	if err != nil {
-		return errors.New("GetVhostAliasesError: " + err.Error())
+		return errors.New("ReadVhostAliasesError: " + err.Error())
 	}
 
 	aliasesHostname := []string{}
