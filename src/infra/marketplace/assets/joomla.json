@@ -33,7 +33,7 @@
       "isRequired": true
     }
   ],
-  "cmdSteps": [
+  "installSteps": [
     "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
     "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
     "os db create -n joomlaDb_%installUuid% -t mysql",

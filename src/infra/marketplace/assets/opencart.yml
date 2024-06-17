@@ -26,7 +26,7 @@ dataFields:
     label: Admin Email
     type: email
     isRequired: true
-cmdSteps:
+installSteps:
   - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
   - unzip -o %installTempDir%/opencart.zip -d %installTempDir%
   - mv %installTempDir%/opencart-*/upload/* %installDirectory%

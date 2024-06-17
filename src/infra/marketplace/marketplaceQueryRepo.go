@@ -460,9 +460,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemCmdSteps := []valueObject.MarketplaceItemCmdStep{}
-	if itemMap["cmdSteps"] != nil {
-		itemCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["cmdSteps"])
+	itemInstallSteps := []valueObject.MarketplaceItemCmdStep{}
+	if itemMap["installSteps"] != nil {
+		itemInstallSteps, err = repo.parseCatalogItemCmdSteps(itemMap["installSteps"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -502,7 +502,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemServices,
 		itemMappings,
 		itemDataFields,
-		itemCmdSteps,
+		itemInstallSteps,
 		estimatedSizeBytes,
 		itemAvatarUrl,
 		itemScreenshotUrls,
