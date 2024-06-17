@@ -312,6 +312,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		mappingModels = append(mappingModels, mappingModel)
 	}
 
+	firstCatalogItemSlug := catalogItem.Slugs[0]
 	installedItemModel := dbModel.MarketplaceInstalledItem{
 		Name:             catalogItem.Name.String(),
 		Hostname:         hostname.String(),
@@ -322,6 +323,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Services:         servicesListStr,
 		Mappings:         mappingModels,
 		AvatarUrl:        catalogItem.AvatarUrl.String(),
+		CatalogSlug:      firstCatalogItemSlug.String(),
 	}
 
 	return repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
