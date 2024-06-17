@@ -26,7 +26,7 @@ dataFields:
     label: Admin Email
     type: email
     isRequired: true
-installSteps:
+installCmdSteps:
   - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
   - unzip -o %installTempDir%/opencart.zip -d %installTempDir%
   - mv %installTempDir%/opencart-*/upload/* %installDirectory%
@@ -36,7 +36,7 @@ installSteps:
   - os db create -n ocDb_%installUuid% -t mysql
   - os db create-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid% -p %installRandomPassword% -r all
   - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server https://%installHostname%%installUrlPath% --db_driver mysqli --db_hostname localhost --db_username ocUser_%installUuid% --db_password %installRandomPassword% --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
-uninstallSteps:
+uninstallCmdSteps:
   - "echo \"Uninstall OpenCart\" > /speedia/uninstallOpenCart.txt"
 estimatedSizeBytes: 100000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"

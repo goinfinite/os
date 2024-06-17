@@ -399,7 +399,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps(catalogItem.InstallSteps, receivedDataFields)
+	err = repo.runCmdSteps(catalogItem.InstallCmdSteps, receivedDataFields)
 	if err != nil {
 		return err
 	}

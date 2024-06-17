@@ -32,7 +32,7 @@
       "isRequired": true
     }
   ],
-  "installSteps": [
+  "installCmdSteps": [
     "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
     "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
     "rm -rf /app/composer-setup.php",
@@ -49,7 +49,7 @@
     "chown -R nobody:nogroup -L %installDirectory%-backup",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
   ],
-  "uninstallSteps": [
+  "uninstallCmdSteps": [
     "echo \"Uninstall Drupal\" > /speedia/uninstallDrupal.txt"
   ],
   "estimatedSizeBytes": 100000000,

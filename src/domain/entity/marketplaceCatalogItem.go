@@ -13,8 +13,8 @@ type MarketplaceCatalogItem struct {
 	Services           []valueObject.ServiceNameWithVersion          `json:"services"`
 	Mappings           []valueObject.MarketplaceItemMapping          `json:"mappings"`
 	DataFields         []valueObject.MarketplaceCatalogItemDataField `json:"dataFields"`
-	InstallSteps       []valueObject.MarketplaceItemCmdStep          `json:"-"`
-	UninstallSteps     []valueObject.MarketplaceItemCmdStep          `json:"-"`
+	InstallCmdSteps    []valueObject.MarketplaceItemCmdStep          `json:"-"`
+	UninstallCmdSteps  []valueObject.MarketplaceItemCmdStep          `json:"-"`
 	EstimatedSizeBytes valueObject.Byte                              `json:"estimatedSizeBytes"`
 	AvatarUrl          valueObject.Url                               `json:"avatarUrl"`
 	ScreenshotUrls     []valueObject.Url                             `json:"screenshotUrls"`
@@ -29,8 +29,8 @@ func NewMarketplaceCatalogItem(
 	services []valueObject.ServiceNameWithVersion,
 	mappings []valueObject.MarketplaceItemMapping,
 	dataFields []valueObject.MarketplaceCatalogItemDataField,
-	installSteps []valueObject.MarketplaceItemCmdStep,
-	uninstallSteps []valueObject.MarketplaceItemCmdStep,
+	installCmdSteps []valueObject.MarketplaceItemCmdStep,
+	uninstallCmdSteps []valueObject.MarketplaceItemCmdStep,
 	estimatedSizeBytes valueObject.Byte,
 	avatarUrl valueObject.Url,
 	screenshotUrls []valueObject.Url,
@@ -44,8 +44,8 @@ func NewMarketplaceCatalogItem(
 		Services:           services,
 		Mappings:           mappings,
 		DataFields:         dataFields,
-		InstallSteps:       installSteps,
-		UninstallSteps:     uninstallSteps,
+		InstallCmdSteps:    installCmdSteps,
+		UninstallCmdSteps:  uninstallCmdSteps,
 		EstimatedSizeBytes: estimatedSizeBytes,
 		AvatarUrl:          avatarUrl,
 		ScreenshotUrls:     screenshotUrls,
