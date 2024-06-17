@@ -267,10 +267,10 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 }
 
 func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
-	vhostHostname valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
 ) error {
-	vhostFileNameStr := vhostHostname.String() + ".conf"
-	if infraHelper.IsPrimaryVirtualHost(vhostHostname) {
+	vhostFileNameStr := vhostName.String() + ".conf"
+	if infraHelper.IsPrimaryVirtualHost(vhostName) {
 		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
@@ -290,12 +290,12 @@ func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
 }
 
 func (repo *VirtualHostCmdRepo) Delete(vhost entity.VirtualHost) error {
-	vhostHostnameStr := vhost.Hostname.String()
+	vhostNameStr := vhost.Hostname.String()
 	err := repo.persistentDbSvc.Handler.
 		Where(
 			"hostname = ? OR parent_hostname = ?",
-			vhostHostnameStr,
-			vhostHostnameStr,
+			vhostNameStr,
+			vhostNameStr,
 		).
 		Delete(dbModel.VirtualHost{}).Error
 	if err != nil {

@@ -17,11 +17,11 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	vhostCmdRepo := NewVirtualHostCmdRepo(persistentDbSvc)
 	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
-	vhostHostname, _ := infraHelper.GetPrimaryVirtualHost()
+	vhostName, _ := infraHelper.GetPrimaryVirtualHost()
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType := valueObject.NewVirtualHostTypePanic("top-level")
-		createDto := dto.NewCreateVirtualHost(vhostHostname, vhostType, nil)
+		createDto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
 
 		err := vhostCmdRepo.Create(createDto)
 		if err != nil {
@@ -30,7 +30,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		vhost, err := vhostQueryRepo.ReadByHostname(vhostHostname)
+		vhost, err := vhostQueryRepo.ReadByHostname(vhostName)
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}

@@ -39,7 +39,7 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) installServices(
-	vhostHostname valueObject.Fqdn,
+	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
 ) error {
 	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
@@ -69,7 +69,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 
 	if shouldCreatePhpVirtualHost {
 		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-		return runtimeCmdRepo.CreatePhpVirtualHost(vhostHostname)
+		return runtimeCmdRepo.CreatePhpVirtualHost(vhostName)
 	}
 
 	return nil
