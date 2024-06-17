@@ -53,7 +53,7 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 		"MappingFilePath":  mappingFilePath,
 	}
 
-	webServerConfTemplate := `server {
+	unitConfTemplate := `server {
     listen 80;
     listen 443 ssl;
     server_name {{ .VhostName }} www.{{ .VhostName }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
@@ -70,23 +70,23 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
     include {{ .MappingFilePath }};
 }`
 
-	webServerUnitConfTemplatePtr, err := template.
+	unitConfTemplatePtr, err := template.
 		New("webServerConfUnitFile").
-		Parse(webServerConfTemplate)
+		Parse(unitConfTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
-	var webServerConfUnitFileContent strings.Builder
-	err = webServerUnitConfTemplatePtr.Execute(
-		&webServerConfUnitFileContent,
+	var unitConfFileContent strings.Builder
+	err = unitConfTemplatePtr.Execute(
+		&unitConfFileContent,
 		valuesToInterpolate,
 	)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	return webServerConfUnitFileContent.String(), nil
+	return unitConfFileContent.String(), nil
 }
 
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
@@ -118,7 +118,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("CreateMappingFileFailed")
 	}
 
-	webServerConfigUnitFileContent, err := repo.webServerUnitFileFactory(
+	unitConfFileContent, err := repo.webServerUnitFileFactory(
 		vhostName,
 		aliasesHostnames,
 		publicDir,
@@ -128,14 +128,14 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return err
 	}
 
-	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
-	webServerUnitFilePath, err := valueObject.NewUnixFilePath(webServerUnitFilePathStr)
+	unitConfFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
+	unitConfFilePath, err := valueObject.NewUnixFilePath(unitConfFilePathStr)
 	if err != nil {
-		return errors.New(err.Error() + ": " + webServerUnitFilePathStr)
+		return errors.New(err.Error() + ": " + unitConfFilePathStr)
 	}
 	err = infraHelper.UpdateFile(
-		webServerUnitFilePath.String(),
-		webServerConfigUnitFileContent,
+		unitConfFilePath.String(),
+		unitConfFileContent,
 		true,
 	)
 	if err != nil {
