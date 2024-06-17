@@ -66,7 +66,7 @@ func CreateInstallableService(
 		return nil
 	}
 
-	vhosts, err := vhostQueryRepo.Get()
+	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
 		return errors.New("VhostsNotFound")
 	}

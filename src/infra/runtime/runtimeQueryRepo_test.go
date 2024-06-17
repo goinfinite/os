@@ -22,7 +22,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	repo := RuntimeQueryRepo{}
 
 	t.Run("ReturnPhpVersionsList", func(t *testing.T) {
-		phpVersions, err := repo.GetPhpVersionsInstalled()
+		phpVersions, err := repo.ReadPhpVersionsInstalled()
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
@@ -40,7 +40,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 		}
 
 		hostname := valueObject.NewFqdnPanic(primaryVhost.String())
-		phpConfigs, err := repo.GetPhpConfigs(hostname)
+		phpConfigs, err := repo.ReadPhpConfigs(hostname)
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)

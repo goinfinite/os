@@ -117,17 +117,20 @@ func (router Router) runtimeRoutes() {
 		Short: "RuntimeManagement",
 	}
 
+	rootCmd.AddCommand(runtimeCmd)
+
 	var phpCmd = &cobra.Command{
 		Use:   "php",
 		Short: "PhpManagement",
 	}
 
-	rootCmd.AddCommand(runtimeCmd)
 	runtimeCmd.AddCommand(phpCmd)
-	phpCmd.AddCommand(cliController.GetPhpConfigsController())
-	phpCmd.AddCommand(cliController.UpdatePhpConfigController())
-	phpCmd.AddCommand(cliController.UpdatePhpSettingController())
-	phpCmd.AddCommand(cliController.UpdatePhpModuleController())
+
+	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
+	phpCmd.AddCommand(runtimeController.ReadPhpConfigs())
+	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
+	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())
+	phpCmd.AddCommand(runtimeController.UpdatePhpModule())
 }
 
 func (router Router) serveRoutes() {
@@ -189,7 +192,7 @@ func (router Router) virtualHostRoutes() {
 	vhostController := cliController.NewVirtualHostController(
 		router.persistentDbSvc,
 	)
-	vhostCmd.AddCommand(vhostController.Get())
+	vhostCmd.AddCommand(vhostController.Read())
 	vhostCmd.AddCommand(vhostController.Create())
 	vhostCmd.AddCommand(vhostController.Delete())
 
@@ -199,7 +202,7 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	vhostCmd.AddCommand(mappingCmd)
-	mappingCmd.AddCommand(vhostController.GetWithMappings())
+	mappingCmd.AddCommand(vhostController.ReadWithMappings())
 	mappingCmd.AddCommand(vhostController.CreateMapping())
 	mappingCmd.AddCommand(vhostController.DeleteMapping())
 }

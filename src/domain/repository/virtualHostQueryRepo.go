@@ -6,6 +6,6 @@ import (
 )
 
 type VirtualHostQueryRepo interface {
-	Get() ([]entity.VirtualHost, error)
-	GetByHostname(hostname valueObject.Fqdn) (entity.VirtualHost, error)
+	Read() ([]entity.VirtualHost, error)
+	ReadByHostname(hostname valueObject.Fqdn) (entity.VirtualHost, error)
 }

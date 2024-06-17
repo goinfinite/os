@@ -626,7 +626,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 
 	models := []dbModel.MarketplaceInstalledItem{}
 	err := repo.persistentDbSvc.Handler.
-		Model(models).
+		Model(&dbModel.MarketplaceInstalledItem{}).
 		Preload("Mappings").
 		Find(&models).Error
 	if err != nil {
@@ -654,8 +654,9 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 ) (entity entity.MarketplaceInstalledItem, err error) {
 	var model dbModel.MarketplaceInstalledItem
 	err = repo.persistentDbSvc.Handler.
-		Preload("Mappings").
+		Model(&dbModel.MarketplaceInstalledItem{}).
 		Where("id = ?", installedId.Get()).
+		Preload("Mappings").
 		Find(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
