@@ -8,7 +8,7 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetVirtualHosts(
+func ReadVirtualHosts(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 ) ([]entity.VirtualHost, error) {
 	vhosts, err := vhostQueryRepo.Read()

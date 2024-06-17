@@ -25,13 +25,13 @@ func NewVirtualHostController(
 	}
 }
 
-func (controller *VirtualHostController) Get() *cobra.Command {
+func (controller *VirtualHostController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "GetVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-			vhostsList, err := useCase.GetVirtualHosts(vhostQueryRepo)
+			vhostsList, err := useCase.ReadVirtualHosts(vhostQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -132,6 +132,29 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
 	cmd.MarkFlagRequired("hostname")
+	return cmd
+}
+
+func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "GetVirtualHostsWithMappings",
+		Run: func(cmd *cobra.Command, args []string) {
+			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
+				controller.persistentDbSvc,
+			)
+
+			vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
+				mappingQueryRepo,
+			)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			cliHelper.ResponseWrapper(true, vhostsWithMappings)
+		},
+	}
+
 	return cmd
 }
 

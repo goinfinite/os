@@ -38,7 +38,7 @@ func NewVirtualHostController(
 // @Router       /v1/vhosts/ [get]
 func (controller *VirtualHostController) Read(c echo.Context) error {
 	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostsList, err := useCase.GetVirtualHosts(vhostsQueryRepo)
+	vhostsList, err := useCase.ReadVirtualHosts(vhostsQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}

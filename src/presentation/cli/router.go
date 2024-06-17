@@ -192,7 +192,7 @@ func (router Router) virtualHostRoutes() {
 	vhostController := cliController.NewVirtualHostController(
 		router.persistentDbSvc,
 	)
-	vhostCmd.AddCommand(vhostController.Get())
+	vhostCmd.AddCommand(vhostController.Read())
 	vhostCmd.AddCommand(vhostController.Create())
 	vhostCmd.AddCommand(vhostController.Delete())
 
@@ -202,6 +202,7 @@ func (router Router) virtualHostRoutes() {
 	}
 
 	vhostCmd.AddCommand(mappingCmd)
+	mappingCmd.AddCommand(vhostController.ReadWithMappings())
 	mappingCmd.AddCommand(vhostController.CreateMapping())
 	mappingCmd.AddCommand(vhostController.DeleteMapping())
 }
