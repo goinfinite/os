@@ -106,7 +106,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err := useCase.CreateInstallableService(
 				servicesQueryRepo,
@@ -185,7 +185,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err := useCase.CreateCustomService(
 				servicesQueryRepo,

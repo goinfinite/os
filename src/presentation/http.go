@@ -67,7 +67,9 @@ func HttpServerInit(
 		if err != nil {
 			log.Fatalf("MakePkiDirFailed: %v", err)
 		}
-		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os")
+
+		aliases := []string{}
+		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", aliases)
 		if err != nil {
 			log.Fatalf("GenerateSelfSignedCertFailed: %v", err)
 		}

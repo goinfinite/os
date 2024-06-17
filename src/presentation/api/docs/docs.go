@@ -1103,7 +1103,7 @@ const docTemplate = `{
                 "tags": [
                     "runtime"
                 ],
-                "summary": "GetPhpConfigs",
+                "summary": "ReadPhpConfigs",
                 "parameters": [
                     {
                         "type": "string",
@@ -1540,7 +1540,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetVirtualHosts",
+                "summary": "ReadVirtualHosts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1608,7 +1608,7 @@ const docTemplate = `{
                 "tags": [
                     "vhosts"
                 ],
-                "summary": "GetVirtualHostsWithMappings",
+                "summary": "ReadVirtualHostsWithMappings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2267,9 +2267,6 @@ const docTemplate = `{
         "entity.Mapping": {
             "type": "object",
             "properties": {
-                "hostname": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -2745,7 +2742,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.1",
+	Version:          "0.0.2",
 	Host:             "localhost:1618",
 	BasePath:         "/_/api",
 	Schemes:          []string{},

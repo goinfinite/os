@@ -19,7 +19,7 @@ func DeleteVirtualHost(
 		return errors.New("PrimaryVirtualHostCannotBeDeleted")
 	}
 
-	vhost, err := queryRepo.GetByHostname(hostname)
+	vhost, err := queryRepo.ReadByHostname(hostname)
 	if err != nil {
 		return errors.New("VirtualHostNotFound")
 	}

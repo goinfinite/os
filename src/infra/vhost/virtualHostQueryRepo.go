@@ -3,188 +3,124 @@ package vhostInfra
 import (
 	"errors"
 	"log"
-	"os"
-	"regexp"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	infraData "github.com/speedianet/os/src/infra/infraData"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
 
 type VirtualHostQueryRepo struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func (repo VirtualHostQueryRepo) vhostsFactory(
-	filePath valueObject.UnixFilePath,
-) ([]entity.VirtualHost, error) {
-	vhosts := []entity.VirtualHost{}
-
-	fileContent, err := infraHelper.GetFileContent(filePath.String())
-	if err != nil {
-		return vhosts, err
+func NewVirtualHostQueryRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *VirtualHostQueryRepo {
+	return &VirtualHostQueryRepo{
+		persistentDbSvc: persistentDbSvc,
 	}
-
-	serverNamesRegex := regexp.MustCompile(`(?m)^\s*server_name\s+(.+);$`)
-	serverNamesMatches := serverNamesRegex.FindStringSubmatch(fileContent)
-	if len(serverNamesMatches) == 0 {
-		return vhosts, errors.New("GetServerNameFailed")
-	}
-
-	serverNamesParts := strings.Split(serverNamesMatches[1], " ")
-	if len(serverNamesParts) == 0 {
-		return vhosts, errors.New("GetServerNameFailed")
-	}
-
-	firstDomain, err := valueObject.NewFqdn(serverNamesParts[0])
-	if err != nil {
-		log.Printf("InvalidServerName: %s", serverNamesParts[0])
-		return vhosts, nil
-	}
-	isPrimaryVhost := infraHelper.IsPrimaryVirtualHost(firstDomain)
-
-	for _, serverName := range serverNamesParts {
-		serverName, err := valueObject.NewFqdn(serverName)
-		if err != nil {
-			log.Printf("InvalidServerName: %s", serverName.String())
-			continue
-		}
-
-		isWww := strings.HasPrefix(serverName.String(), "www.")
-		if isWww {
-			continue
-		}
-
-		var parentDomainPtr *valueObject.Fqdn
-		vhostType, _ := valueObject.NewVirtualHostType("top-level")
-		isAliases := serverName != firstDomain
-		if isAliases {
-			vhostType, _ = valueObject.NewVirtualHostType("alias")
-			parentDomainPtr = &firstDomain
-		}
-
-		rootDomain, err := infraHelper.GetRootDomain(serverName)
-		if err != nil {
-			log.Printf("%s: %s", err.Error(), serverName.String())
-			continue
-		}
-
-		isSubdomain := rootDomain != serverName
-		if isSubdomain {
-			vhostType, _ = valueObject.NewVirtualHostType("subdomain")
-			parentDomainPtr = &rootDomain
-		}
-
-		if isPrimaryVhost {
-			vhostType, _ = valueObject.NewVirtualHostType("primary")
-		}
-
-		rootDirectorySuffix := "/" + serverName.String()
-		if isPrimaryVhost {
-			rootDirectorySuffix = ""
-		}
-		rootDirectory, err := valueObject.NewUnixFilePath(
-			infraData.GlobalConfigs.PrimaryPublicDir + rootDirectorySuffix,
-		)
-		if err != nil {
-			log.Printf("InvalidRootDirectory: %s", rootDirectorySuffix)
-			continue
-		}
-
-		vhost := entity.NewVirtualHost(
-			serverName,
-			vhostType,
-			rootDirectory,
-			parentDomainPtr,
-		)
-
-		vhosts = append(vhosts, vhost)
-	}
-
-	return vhosts, nil
 }
 
-func (repo VirtualHostQueryRepo) Get() ([]entity.VirtualHost, error) {
-	vhostsList := []entity.VirtualHost{}
+func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
+	entities := []entity.VirtualHost{}
 
-	configsDirHandler, err := os.Open(infraData.GlobalConfigs.VirtualHostsConfDir)
+	models := []dbModel.VirtualHost{}
+	err := repo.persistentDbSvc.Handler.
+		Model(&models).
+		Find(&models).Error
 	if err != nil {
-		return vhostsList, errors.New("FailedToOpenConfDir: " + err.Error())
-	}
-	defer configsDirHandler.Close()
-
-	files, err := configsDirHandler.Readdir(-1)
-	if err != nil {
-		return vhostsList, errors.New("FailedToReadConfDir: " + err.Error())
+		return entities, errors.New("ReadDatabaseEntriesError")
 	}
 
-	for _, file := range files {
-		fileName := file.Name()
-		if !strings.HasSuffix(fileName, ".conf") {
-			continue
-		}
-		filePath, err := valueObject.NewUnixFilePath(
-			infraData.GlobalConfigs.VirtualHostsConfDir + "/" + fileName,
-		)
+	for _, model := range models {
+		entity, err := model.ToEntity()
 		if err != nil {
-			log.Println("InvalidVirtualHostFile: " + fileName)
+			log.Printf("ModelToEntityError: %s", err.Error())
 			continue
 		}
 
-		vhosts, err := repo.vhostsFactory(filePath)
-		if err != nil {
-			log.Println("VirtualHostFileParseError: " + fileName)
-			continue
-		}
-		vhostsList = append(vhostsList, vhosts...)
+		entities = append(entities, entity)
 	}
 
-	return vhostsList, nil
+	return entities, nil
 }
 
-func (repo VirtualHostQueryRepo) GetByHostname(
+func (repo *VirtualHostQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
-) (entity.VirtualHost, error) {
-	var virtualHost entity.VirtualHost
+) (vhostEntity entity.VirtualHost, err error) {
 
-	vhosts, err := repo.Get()
+	model := dbModel.VirtualHost{}
+	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.VirtualHost{}).
+		Where("hostname = ?", hostname.String()).
+		First(&model).Error
 	if err != nil {
-		return virtualHost, err
-	}
-
-	for _, vhost := range vhosts {
-		if vhost.Hostname == hostname {
-			return vhost, nil
+		errorMessage := "VhostNotFound"
+		if err.Error() != "record not found" {
+			errorMessage = "ReadDatabaseEntryError"
 		}
+
+		return vhostEntity, errors.New(errorMessage)
 	}
 
-	return virtualHost, errors.New("VirtualHostNotFound")
+	vhostEntity, err = model.ToEntity()
+	if err != nil {
+		return vhostEntity, errors.New("ModelToEntityError")
+	}
+
+	return vhostEntity, nil
 }
 
-func (repo VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
+func (repo *VirtualHostQueryRepo) ReadAliasesByParentHostname(
+	hostname valueObject.Fqdn,
+) ([]entity.VirtualHost, error) {
+	aliasesEntities := []entity.VirtualHost{}
+
+	aliasesModels := []dbModel.VirtualHost{}
+	err := repo.persistentDbSvc.Handler.
+		Model(&aliasesModels).
+		Where("parent_hostname = ?", hostname.String()).
+		Find(&aliasesModels).Error
+	if err != nil {
+		return aliasesEntities, errors.New("ReadDatabaseEntriesError")
+	}
+
+	for _, aliasModel := range aliasesModels {
+		aliasEntity, err := aliasModel.ToEntity()
+		if err != nil {
+			log.Printf("ModelToEntityError: %s", err.Error())
+			continue
+		}
+
+		aliasesEntities = append(aliasesEntities, aliasEntity)
+	}
+
+	return aliasesEntities, nil
+}
+
+func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 	vhostName valueObject.Fqdn,
 ) (valueObject.UnixFilePath, error) {
-	var mappingFilePath valueObject.UnixFilePath
+	var vhostFilePath valueObject.UnixFilePath
 
-	mappingFileName := vhostName.String() + ".conf"
-
-	vhostEntity, err := repo.GetByHostname(vhostName)
+	vhost, err := repo.ReadByHostname(vhostName)
 	if err != nil {
-		return mappingFilePath, errors.New("VirtualHostNotFound")
+		return vhostFilePath, errors.New("VirtualHostNotFound")
 	}
 
-	isAlias := vhostEntity.Type.String() == "alias"
-	if isAlias {
-		parentHostname := *vhostEntity.ParentHostname
-		mappingFileName = parentHostname.String() + ".conf"
+	if vhost.Type.String() == "alias" {
+		vhostName = *vhost.ParentHostname
 	}
 
+	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		mappingFileName = "primary.conf"
+		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
 	}
 
 	return valueObject.NewUnixFilePath(
-		infraData.GlobalConfigs.MappingsConfDir + "/" + mappingFileName,
+		infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr,
 	)
 }

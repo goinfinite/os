@@ -11,7 +11,7 @@ import (
 )
 
 // @title			OsApi
-// @version			0.0.1
+// @version			0.0.2
 // @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
 
@@ -48,6 +48,7 @@ func ApiInit(
 
 	e.Use(apiMiddleware.PanicHandler)
 	e.Use(apiMiddleware.SetDefaultHeaders(basePath))
+	e.Use(apiMiddleware.ReadOnlyMode(basePath))
 	e.Use(apiMiddleware.Auth(basePath))
 
 	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc)

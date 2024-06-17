@@ -9,14 +9,14 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func GetPhpConfigs(
+func ReadPhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	hostname valueObject.Fqdn,
 ) (entity.PhpConfigs, error) {
-	phpConfigs, err := runtimeQueryRepo.GetPhpConfigs(hostname)
+	phpConfigs, err := runtimeQueryRepo.ReadPhpConfigs(hostname)
 	if err != nil {
-		log.Printf("GetPhpConfigsError: %s", err.Error())
-		return entity.PhpConfigs{}, errors.New("GetPhpConfigsInfraError")
+		log.Printf("ReadPhpConfigsError: %s", err.Error())
+		return entity.PhpConfigs{}, errors.New("ReadPhpConfigsInfraError")
 	}
 
 	return phpConfigs, nil

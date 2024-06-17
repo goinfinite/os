@@ -123,18 +123,9 @@ func (repo SslQueryRepo) sslPairFactory(
 func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	crtFilePathsStr, err := infraHelper.RunCmd(
-		"find",
-		infraData.GlobalConfigs.PkiConfDir,
-		"(",
-		"-type",
-		"f",
-		"-o",
-		"-type",
-		"l",
-		")",
-		"-name",
-		"*.crt",
+	crtFilePathsStr, err := infraHelper.RunCmdWithSubShell(
+		"find " + infraData.GlobalConfigs.PkiConfDir +
+			" (-type f -o -type l ) -name *.crt",
 	)
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
@@ -142,7 +133,7 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 
 	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
 
-	sslPairIdsVhostsMap := map[valueObject.SslId][]valueObject.Fqdn{}
+	sslPairIdsVhostsNamesMap := map[valueObject.SslId][]valueObject.Fqdn{}
 	for _, crtFilePathStr := range crtFilePaths {
 		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
 		if err != nil {
@@ -156,24 +147,24 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 			continue
 		}
 
-		pairMainVhost := sslPair.VirtualHosts[0]
+		pairMainVhostName := sslPair.VirtualHostsHostnames[0]
 
-		_, pairIdAlreadyExists := sslPairIdsVhostsMap[sslPair.Id]
+		_, pairIdAlreadyExists := sslPairIdsVhostsNamesMap[sslPair.Id]
 		if pairIdAlreadyExists {
-			sslPairIdsVhostsMap[sslPair.Id] = append(
-				sslPairIdsVhostsMap[sslPair.Id],
-				pairMainVhost,
+			sslPairIdsVhostsNamesMap[sslPair.Id] = append(
+				sslPairIdsVhostsNamesMap[sslPair.Id],
+				pairMainVhostName,
 			)
 			continue
 		}
 
-		sslPairIdsVhostsMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhost}
+		sslPairIdsVhostsNamesMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhostName}
 		sslPairs = append(sslPairs, sslPair)
 	}
 
 	for sslPairIndex, sslPair := range sslPairs {
-		correctSslPairsVhosts := sslPairIdsVhostsMap[sslPair.Id]
-		sslPair.VirtualHosts = correctSslPairsVhosts
+		correctSslPairsVhostsNames := sslPairIdsVhostsNamesMap[sslPair.Id]
+		sslPair.VirtualHostsHostnames = correctSslPairsVhostsNames
 		sslPairs[sslPairIndex] = sslPair
 	}
 
