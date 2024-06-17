@@ -188,9 +188,9 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		expectedOwnershipHash.String(), targetType,
 	)
 
-	firstVhost := sslPair.VirtualHosts[0]
+	firstVhostName := sslPair.VirtualHostsHostnames[0]
 	inlineHtmlMapping := dto.NewCreateMapping(
-		firstVhost,
+		firstVhostName,
 		path,
 		matchPattern,
 		targetType,
@@ -205,12 +205,12 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	isDomainMappedToServer := repo.isDomainMappedToServer(
-		firstVhost,
+		firstVhostName,
 		expectedOwnershipHash,
 	)
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
-	mappings, err := mappingQueryRepo.ReadByHostname(firstVhost)
+	mappings, err := mappingQueryRepo.ReadByHostname(firstVhostName)
 	if err != nil {
 		return errors.New("ReadVhostMappingsError: " + err.Error())
 	}
@@ -228,19 +228,19 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("DomainNotResolvingToServer")
 	}
 
-	firstVhostStr := firstVhost.String()
+	firstVhostNameStr := firstVhostName.String()
 	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
-	if !infraHelper.IsPrimaryVirtualHost(firstVhost) {
-		vhostRootDir += "/" + firstVhostStr
+	if !infraHelper.IsPrimaryVirtualHost(firstVhostName) {
+		vhostRootDir += "/" + firstVhostNameStr
 	}
 
 	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
-		" --agree-tos --register-unsafely-without-email --cert-name " + firstVhostStr +
-		" -d " + firstVhostStr
+		" --agree-tos --register-unsafely-without-email --cert-name " + firstVhostNameStr +
+		" -d " + firstVhostNameStr
 
-	shouldIncludeWww := repo.shouldIncludeWww(firstVhost)
+	shouldIncludeWww := repo.shouldIncludeWww(firstVhostName)
 	if shouldIncludeWww {
-		certbotCmd += " -d www." + firstVhostStr
+		certbotCmd += " -d www." + firstVhostNameStr
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
@@ -251,8 +251,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	certbotDirPath := "/etc/letsencrypt/live"
 	shouldOverwrite := true
 
-	certbotCrtFilePath := certbotDirPath + "/" + firstVhostStr + "/fullchain.pem"
-	vhostCrtFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".crt"
+	certbotCrtFilePath := certbotDirPath + "/" + firstVhostNameStr + "/fullchain.pem"
+	vhostCrtFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostNameStr + ".crt"
 	err = infraHelper.CreateSymlink(
 		certbotCrtFilePath,
 		vhostCrtFilePath,
@@ -262,8 +262,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("CreateSslCrtSymlinkError: " + err.Error())
 	}
 
-	certbotKeyFilePath := certbotDirPath + "/" + firstVhostStr + "/privkey.pem"
-	vhostKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".key"
+	certbotKeyFilePath := certbotDirPath + "/" + firstVhostNameStr + "/privkey.pem"
+	vhostKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostNameStr + ".key"
 	err = infraHelper.CreateSymlink(
 		certbotKeyFilePath,
 		vhostKeyFilePath,
@@ -277,20 +277,20 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 }
 
 func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
-	if len(createSslPair.VirtualHosts) == 0 {
+	if len(createSslPair.VirtualHostsHostnames) == 0 {
 		return errors.New("EmptyVirtualHosts")
 	}
 
-	firstVhostStr := createSslPair.VirtualHosts[0].String()
-	firstVhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".crt"
-	firstVhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostStr + ".key"
+	firstVhostNameStr := createSslPair.VirtualHostsHostnames[0].String()
+	firstVhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostNameStr + ".crt"
+	firstVhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + firstVhostNameStr + ".key"
 
-	for _, vhost := range createSslPair.VirtualHosts {
-		vhostStr := vhost.String()
+	for _, vhostName := range createSslPair.VirtualHostsHostnames {
+		vhostStr := vhostName.String()
 		vhostCertFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".crt"
 		vhostCertKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + vhostStr + ".key"
 
-		shouldBeSymlink := vhostStr != firstVhostStr
+		shouldBeSymlink := vhostStr != firstVhostNameStr
 		if shouldBeSymlink {
 			shouldOverwrite := true
 			err := infraHelper.CreateSymlink(
@@ -299,7 +299,9 @@ func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 				shouldOverwrite,
 			)
 			if err != nil {
-				log.Printf("CreateSslCertSymlinkError (%s): %s", vhost.String(), err.Error())
+				log.Printf(
+					"CreateSslCertSymlinkError (%s): %s", vhostName.String(), err.Error(),
+				)
 				continue
 			}
 
@@ -309,7 +311,9 @@ func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 				shouldOverwrite,
 			)
 			if err != nil {
-				log.Printf("CreateSslKeySymlinkError (%s): %s", vhost.String(), err.Error())
+				log.Printf(
+					"CreateSslKeySymlinkError (%s): %s", vhostName.String(), err.Error(),
+				)
 				continue
 			}
 
@@ -345,7 +349,7 @@ func (repo *SslCmdRepo) Delete(sslId valueObject.SslId) error {
 		return errors.New("SslNotFound")
 	}
 
-	for _, vhostName := range sslPairToDelete.VirtualHosts {
+	for _, vhostName := range sslPairToDelete.VirtualHostsHostnames {
 		err = repo.ReplaceWithSelfSigned(vhostName)
 		if err != nil {
 			log.Printf("%s (%s)", err.Error(), vhostName.String())
@@ -360,7 +364,7 @@ func (repo *SslCmdRepo) DeleteSslPairVhosts(
 	deleteDto dto.DeleteSslPairVhosts,
 ) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	for _, vhostName := range deleteDto.VirtualHosts {
+	for _, vhostName := range deleteDto.VirtualHostsHostnames {
 		_, err := vhostQueryRepo.ReadByHostname(vhostName)
 		if err != nil {
 			continue

@@ -26,22 +26,24 @@ func CreateSslPair(
 		return errors.New("VhostsNotFound")
 	}
 
-	validSslVirtualHosts := []valueObject.Fqdn{}
+	validSslVirtualHostsHostnames := []valueObject.Fqdn{}
 	for _, vhost := range existingVhosts {
 		if vhost.Type.String() == "alias" {
 			continue
 		}
 
-		if slices.Contains(createSslPair.VirtualHosts, vhost.Hostname) {
-			validSslVirtualHosts = append(validSslVirtualHosts, vhost.Hostname)
+		if slices.Contains(createSslPair.VirtualHostsHostnames, vhost.Hostname) {
+			validSslVirtualHostsHostnames = append(
+				validSslVirtualHostsHostnames, vhost.Hostname,
+			)
 		}
 	}
 
-	if len(validSslVirtualHosts) == 0 {
+	if len(validSslVirtualHostsHostnames) == 0 {
 		return errors.New("VhostDoesNotExists")
 	}
 
-	createSslPair.VirtualHosts = validSslVirtualHosts
+	createSslPair.VirtualHostsHostnames = validSslVirtualHostsHostnames
 
 	err = sslCmdRepo.Create(createSslPair)
 	if err != nil {
