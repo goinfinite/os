@@ -50,11 +50,10 @@ func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
 
 func (repo *VirtualHostQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
-) (entity.VirtualHost, error) {
-	var entity entity.VirtualHost
+) (vhostEntity entity.VirtualHost, err error) {
 
 	model := dbModel.VirtualHost{}
-	err := repo.persistentDbSvc.Handler.
+	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.VirtualHost{}).
 		Where("hostname = ?", hostname.String()).
 		First(&model).Error
@@ -64,15 +63,15 @@ func (repo *VirtualHostQueryRepo) ReadByHostname(
 			errorMessage = "ReadDatabaseEntryError"
 		}
 
-		return entity, errors.New(errorMessage)
+		return vhostEntity, errors.New(errorMessage)
 	}
 
-	entity, err = model.ToEntity()
+	vhostEntity, err = model.ToEntity()
 	if err != nil {
-		return entity, errors.New("ModelToEntityError")
+		return vhostEntity, errors.New("ModelToEntityError")
 	}
 
-	return entity, nil
+	return vhostEntity, nil
 }
 
 func (repo *VirtualHostQueryRepo) ReadAliasesByParentHostname(
