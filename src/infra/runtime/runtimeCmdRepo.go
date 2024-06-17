@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
@@ -35,7 +36,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	hostname valueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
-	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
@@ -193,12 +194,12 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	hostname valueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
-	phpVersion, err := repo.runtimeQueryRepo.GetPhpVersion(hostname)
+	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
 	if err != nil {
 		return err
 	}
 
-	allModules, err := repo.runtimeQueryRepo.GetPhpModules(phpVersion.Value)
+	allModules, err := repo.runtimeQueryRepo.ReadPhpModules(phpVersion.Value)
 	if err != nil {
 		return err
 	}
@@ -282,10 +283,9 @@ virtualhost ` + hostname.String() + ` {
   setUIDMode              0
 }
 `
-	httpdConfFilePath := "/usr/local/lsws/conf/httpd_config.conf"
 	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
-		httpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
+		infraData.GlobalConfigs.OlsHttpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
 		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
@@ -294,7 +294,8 @@ virtualhost ` + hostname.String() + ` {
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
 	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine, httpdConfFilePath,
+		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine,
+		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())

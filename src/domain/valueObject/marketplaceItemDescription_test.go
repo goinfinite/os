@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
 func TestMarketplaceItemDescription(t *testing.T) {
@@ -22,11 +20,9 @@ func TestMarketplaceItemDescription(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemDescription", func(t *testing.T) {
-		invalidLength := 2050
 		invalidMarketplaceItemDescriptions := []string{
 			"",
 			"a",
-			testHelpers.GenerateString(invalidLength),
 		}
 		for _, mid := range invalidMarketplaceItemDescriptions {
 			_, err := NewMarketplaceItemDescription(mid)

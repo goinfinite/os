@@ -112,8 +112,12 @@ func (router Router) o11yRoutes() {
 
 func (router Router) runtimeRoutes() {
 	runtimeGroup := router.baseRoute.Group("/v1/runtime")
-	runtimeGroup.GET("/php/:hostname/", apiController.GetPhpConfigsController)
-	runtimeGroup.PUT("/php/:hostname/", apiController.UpdatePhpConfigsController)
+	runtimeController := apiController.NewRuntimeController(
+		router.persistentDbSvc,
+	)
+
+	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
+	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
 }
 
 func (router Router) servicesRoutes() {
@@ -149,12 +153,12 @@ func (router Router) vhostsRoutes() {
 		router.persistentDbSvc,
 	)
 
-	vhostsGroup.GET("/", vhostController.Get)
+	vhostsGroup.GET("/", vhostController.Read)
 	vhostsGroup.POST("/", vhostController.Create)
 	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
 
 	mappingsGroup := vhostsGroup.Group("/mapping")
-	mappingsGroup.GET("/", vhostController.GetWithMappings)
+	mappingsGroup.GET("/", vhostController.ReadWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateMapping)
 	mappingsGroup.DELETE(
 		"/:mappingId/",

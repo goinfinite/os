@@ -29,6 +29,7 @@ func (repo *MappingQueryRepo) ReadById(
 ) (entity entity.Mapping, err error) {
 	model := dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.Mapping{}).
 		Where("id = ?", id.Get()).
 		First(&model).Error
 	if err != nil {
@@ -45,9 +46,12 @@ func (repo *MappingQueryRepo) ReadById(
 
 func (repo *MappingQueryRepo) ReadByHostname(
 	hostname valueObject.Fqdn,
-) (entities []entity.Mapping, err error) {
+) ([]entity.Mapping, error) {
+	entities := []entity.Mapping{}
+
 	models := []dbModel.Mapping{}
-	err = repo.persistentDbSvc.Handler.
+	err := repo.persistentDbSvc.Handler.
+		Model(&dbModel.Mapping{}).
 		Where("hostname = ?", hostname.String()).
 		Find(&models).Error
 	if err != nil {
@@ -70,15 +74,10 @@ func (repo *MappingQueryRepo) ReadByHostname(
 func (repo *MappingQueryRepo) ReadByServiceName(
 	serviceName valueObject.ServiceName,
 ) (entities []entity.Mapping, err error) {
-	svcNameStr := serviceName.String()
-	query := dbModel.Mapping{
-		TargetType:  "service",
-		TargetValue: &svcNameStr,
-	}
-
 	models := []dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
-		Where(&query).
+		Model(&dbModel.Mapping{}).
+		Where("target_type = 'service' AND target_value = ?", serviceName.String()).
 		Find(&models).Error
 	if err != nil {
 		return entities, errors.New("ReadDatabaseEntriesError")
@@ -100,8 +99,8 @@ func (repo *MappingQueryRepo) ReadByServiceName(
 func (repo *MappingQueryRepo) ReadWithMappings() (
 	vhostsWithMappings []dto.VirtualHostWithMappings, err error,
 ) {
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
-	vhosts, err := vhostQueryRepo.Get()
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
 		return vhostsWithMappings, err
 	}

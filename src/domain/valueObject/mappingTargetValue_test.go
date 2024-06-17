@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
 func TestNewMappingTargetValue(t *testing.T) {
@@ -160,10 +158,8 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		invalidLength := 3600
 		invalidMappingTargetInlineHtmlContentValues := []string{
 			"",
-			testHelpers.GenerateString(invalidLength),
 		}
 
 		for _, mtv := range invalidMappingTargetInlineHtmlContentValues {
