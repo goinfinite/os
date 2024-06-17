@@ -21,13 +21,13 @@ type VirtualHost struct {
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhostName, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
 		return entries, errors.New("GetPrimaryVirtualHostError: " + err.Error())
 	}
 
 	primaryEntry := VirtualHost{
-		Hostname:      primaryVhost.String(),
+		Hostname:      primaryVhostName.String(),
 		Type:          "primary",
 		RootDirectory: infraData.GlobalConfigs.PrimaryPublicDir,
 	}
