@@ -125,7 +125,7 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 
 	crtFilePathsStr, err := infraHelper.RunCmdWithSubShell(
 		"find " + infraData.GlobalConfigs.PkiConfDir +
-			" (-type f -o -type l ) -name *.crt",
+			" ( -type f -o -type l ) -name *.crt",
 	)
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
