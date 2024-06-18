@@ -400,7 +400,20 @@ func (repo *MappingCmdRepo) Create(
 
 	err = repo.recreateMappingFile(createDto.Hostname)
 	if err != nil {
-		log.Printf("NewRecreateMappingFileFunctionError: %s", err.Error())
+		return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
+	}
+
+	err = infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		err = repo.persistentDbSvc.Handler.Delete(&mappingModel).Error
+		if err != nil {
+			return mappingId, err
+		}
+
+		err = repo.recreateMappingFile(createDto.Hostname)
+		if err != nil {
+			return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
+		}
 	}
 
 	return mappingId, infraHelper.ReloadWebServer()
@@ -427,7 +440,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 
 	err = repo.recreateMappingFile(mapping.Hostname)
 	if err != nil {
-		return err
+		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
 	return infraHelper.ReloadWebServer()
