@@ -9,12 +9,25 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
+
+type RuntimeController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewRuntimeController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *RuntimeController {
+	return &RuntimeController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
@@ -30,7 +43,7 @@ func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
 	return hostname, nil
 }
 
-func GetPhpConfigsController() *cobra.Command {
+func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	var hostnameStr string
 
 	cmd := &cobra.Command{
@@ -46,7 +59,7 @@ func GetPhpConfigsController() *cobra.Command {
 			}
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			phpConfigs, err := useCase.GetPhpConfigs(runtimeQueryRepo, hostname)
+			phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -59,7 +72,7 @@ func GetPhpConfigsController() *cobra.Command {
 	return cmd
 }
 
-func UpdatePhpConfigController() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var modulesSlice []string
@@ -126,7 +139,7 @@ func UpdatePhpConfigController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
@@ -154,7 +167,7 @@ func UpdatePhpConfigController() *cobra.Command {
 	return cmd
 }
 
-func UpdatePhpSettingController() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var settingNameStr string
@@ -193,7 +206,7 @@ func UpdatePhpSettingController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,
@@ -217,7 +230,7 @@ func UpdatePhpSettingController() *cobra.Command {
 	return cmd
 }
 
-func UpdatePhpModuleController() *cobra.Command {
+func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 	var hostnameStr string
 	var phpVersionStr string
 	var moduleNameStr string
@@ -255,7 +268,7 @@ func UpdatePhpModuleController() *cobra.Command {
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
-			vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(
 				runtimeQueryRepo,

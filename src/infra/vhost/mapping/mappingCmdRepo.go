@@ -34,6 +34,7 @@ func NewMappingCmdRepo(
 
 func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	createDto dto.CreateMapping,
+	vhostName valueObject.Fqdn,
 ) dbModel.Mapping {
 	var targetValuePtr *string
 	if createDto.TargetValue != nil {
@@ -55,6 +56,7 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 		createDto.TargetType.String(),
 		targetValuePtr,
 		targetHttpResponseCodePtr,
+		vhostName.String(),
 	)
 }
 
@@ -309,7 +311,7 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 		return err
 	}
 
-	vhostQueryRepo := vhostInfra.VirtualHostQueryRepo{}
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
 		mappingHostname,
 	)
@@ -380,7 +382,13 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	mappingModel := repo.parseCreateDtoToModel(createDto)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
+	if err != nil {
+		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())
+	}
+
+	mappingModel := repo.parseCreateDtoToModel(createDto, vhost.Hostname)
 	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
 	if createResult.Error != nil {
 		return mappingId, createResult.Error
@@ -392,7 +400,20 @@ func (repo *MappingCmdRepo) Create(
 
 	err = repo.recreateMappingFile(createDto.Hostname)
 	if err != nil {
-		log.Printf("NewRecreateMappingFileFunctionError: %s", err.Error())
+		return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
+	}
+
+	err = infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		err = repo.persistentDbSvc.Handler.Delete(&mappingModel).Error
+		if err != nil {
+			return mappingId, err
+		}
+
+		err = repo.recreateMappingFile(createDto.Hostname)
+		if err != nil {
+			return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
+		}
 	}
 
 	return mappingId, infraHelper.ReloadWebServer()
@@ -419,7 +440,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 
 	err = repo.recreateMappingFile(mapping.Hostname)
 	if err != nil {
-		return err
+		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
 	return infraHelper.ReloadWebServer()

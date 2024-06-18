@@ -43,8 +43,8 @@ func (uc SslCertificateWatchdog) Execute() {
 
 		err = uc.sslCmdRepo.ReplaceWithValidSsl(sslPair)
 		if err != nil {
-			firstVhost := sslPair.VirtualHosts[0]
-			log.Printf("ReplaceWithValidSslError (%s): %s", firstVhost.String(), err.Error())
+			firstVhostName := sslPair.VirtualHostsHostnames[0]
+			log.Printf("ReplaceWithValidSslError (%s): %s", firstVhostName.String(), err.Error())
 		}
 	}
 }

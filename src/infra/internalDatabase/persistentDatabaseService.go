@@ -42,8 +42,10 @@ func (dbSvc *PersistentDatabaseService) isTableEmpty(model interface{}) (bool, e
 	return count == 0, nil
 }
 
-func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) error {
-	for _, seedModel := range seedModels {
+func (dbSvc *PersistentDatabaseService) seedDatabase(
+	seedModels map[string]interface{},
+) error {
+	for modelName, seedModel := range seedModels {
 		isTableEmpty, err := dbSvc.isTableEmpty(seedModel)
 		if err != nil {
 			return err
@@ -59,11 +61,21 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) 
 		seedModelInitialEntriesMethod := seedModelFieldsAndMethods.MethodByName(
 			"InitialEntries",
 		)
-		seedModelInitialEntriesMethodResults := seedModelInitialEntriesMethod.Call(
+		initialEntriesMethodResults := seedModelInitialEntriesMethod.Call(
 			[]reflect.Value{},
 		)
-		initialEntries := seedModelInitialEntriesMethodResults[0].Interface()
 
+		initialEntriesMethodErr := initialEntriesMethodResults[1]
+		if !initialEntriesMethodErr.IsNil() {
+			err = initialEntriesMethodErr.Interface().(error)
+			if err != nil {
+				return errors.New(
+					"SeedModelInitialEntriesError (" + modelName + "): " + err.Error(),
+				)
+			}
+		}
+
+		initialEntries := initialEntriesMethodResults[0].Interface()
 		for _, entry := range initialEntries.([]interface{}) {
 			entryInnerStructure := reflect.ValueOf(entry)
 
@@ -83,18 +95,21 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(seedModels ...interface{}) 
 
 func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 	err := dbSvc.Handler.AutoMigrate(
-		&dbModel.MarketplaceInstalledItem{},
+		&dbModel.VirtualHost{},
 		&dbModel.Mapping{},
+		&dbModel.MarketplaceInstalledItem{},
 	)
 	if err != nil {
-		return errors.New("DatabaseMigrationError")
+		return errors.New("DatabaseMigrationError: " + err.Error())
 	}
 
-	modelsWithInitialEntries := []interface{}{}
+	modelsWithInitialEntries := map[string]interface{}{
+		"VirtualHost": &dbModel.VirtualHost{},
+	}
 
-	err = dbSvc.seedDatabase(modelsWithInitialEntries...)
+	err = dbSvc.seedDatabase(modelsWithInitialEntries)
 	if err != nil {
-		return errors.New("CreateDefaultDatabaseEntriesError")
+		return errors.New("CreateDefaultDatabaseEntriesError: " + err.Error())
 	}
 
 	return nil

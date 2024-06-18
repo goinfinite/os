@@ -15,7 +15,7 @@ func CreateVirtualHost(
 	vhostCmdRepo repository.VirtualHostCmdRepo,
 	createVirtualHost dto.CreateVirtualHost,
 ) error {
-	_, err := vhostQueryRepo.GetByHostname(createVirtualHost.Hostname)
+	_, err := vhostQueryRepo.ReadByHostname(createVirtualHost.Hostname)
 	if err == nil {
 		return errors.New("VirtualHostAlreadyExists")
 	}

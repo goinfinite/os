@@ -6,56 +6,38 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func TestVirtualHostCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	t.Run("CreateAlias", func(t *testing.T) {
-		parentDomain := valueObject.NewFqdnPanic("speedia.net")
 
-		createDto := dto.NewCreateVirtualHost(
-			valueObject.NewFqdnPanic("speedia.com"),
-			valueObject.NewVirtualHostTypePanic("alias"),
-			&parentDomain,
-		)
+	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
+	vhostCmdRepo := NewVirtualHostCmdRepo(persistentDbSvc)
+	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
-		err := VirtualHostCmdRepo{}.Create(createDto)
+	vhostName, _ := infraHelper.GetPrimaryVirtualHost()
 
+	t.Run("Create", func(t *testing.T) {
+		vhostType := valueObject.NewVirtualHostTypePanic("top-level")
+		createDto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
+
+		err := vhostCmdRepo.Create(createDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
 	})
 
-	t.Run("CreateTopLevel", func(t *testing.T) {
-		createDto := dto.NewCreateVirtualHost(
-			valueObject.NewFqdnPanic("speedia.org"),
-			valueObject.NewVirtualHostTypePanic("top-level"),
-			nil,
-		)
-
-		err := VirtualHostCmdRepo{}.Create(createDto)
-
+	t.Run("Delete", func(t *testing.T) {
+		vhost, err := vhostQueryRepo.ReadByHostname(vhostName)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
-		}
-	})
-
-	t.Run("DeleteTopLevelAndAliases", func(t *testing.T) {
-		hostnames := []valueObject.Fqdn{
-			valueObject.NewFqdnPanic("speedia.com"),
-			valueObject.NewFqdnPanic("speedia.org"),
+			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
 
-		for _, hostname := range hostnames {
-			vhostEntity, err := VirtualHostQueryRepo{}.GetByHostname(hostname)
-			if err != nil {
-				t.Errorf("ExpectedNoErrorButGot: %v", err)
-			}
-
-			err = VirtualHostCmdRepo{}.Delete(vhostEntity)
-			if err != nil {
-				t.Errorf("ExpectedNoErrorButGot: %v", err)
-			}
+		err = vhostCmdRepo.Delete(vhost)
+		if err != nil {
+			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
 	})
 }

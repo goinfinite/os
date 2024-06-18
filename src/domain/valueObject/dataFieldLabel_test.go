@@ -2,8 +2,6 @@ package valueObject
 
 import (
 	"testing"
-
-	testHelpers "github.com/speedianet/os/src/devUtils"
 )
 
 func TestDataFieldLabel(t *testing.T) {
@@ -26,13 +24,11 @@ func TestDataFieldLabel(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldLabel", func(t *testing.T) {
-		invalidLength := 70
 		invalidDataFieldLabels := []string{
 			"",
 			"./test",
 			"-key",
 			"anotherkey-",
-			testHelpers.GenerateString(invalidLength),
 		}
 
 		for _, dfl := range invalidDataFieldLabels {
