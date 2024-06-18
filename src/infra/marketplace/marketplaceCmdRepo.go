@@ -530,5 +530,12 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
+	_, err = repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
+		installedItem.CatalogSlug,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
