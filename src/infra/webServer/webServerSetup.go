@@ -3,6 +3,7 @@ package wsInfra
 import (
 	"errors"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
@@ -125,7 +126,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 	}
 
 	cpuCores := containerResources.HardwareSpecs.CpuCores
-	cpuCoresStr := strconv.FormatUint(cpuCores, 10)
+	cpuCoresStr := strconv.FormatInt(int64(math.Ceil(cpuCores)), 10)
 
 	nginxConfFilePath := "/etc/nginx/nginx.conf"
 	workerCount, err := infraHelper.RunCmd(

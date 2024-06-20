@@ -3,6 +3,7 @@ package useCase
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -34,6 +35,13 @@ func updateServiceStatus(
 		return DeleteService(
 			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, updateDto.Name,
 		)
+	case "restarting":
+		err := servicesCmdRepo.Stop(updateDto.Name)
+		if err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second)
+		return servicesCmdRepo.Start(updateDto.Name)
 	default:
 		return errors.New("UnknownServiceStatus")
 	}

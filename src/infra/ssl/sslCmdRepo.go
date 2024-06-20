@@ -87,7 +87,7 @@ func (repo *SslCmdRepo) isDomainMappedToServer(
 
 	rawVhostIps, err := infraHelper.RunCmd("dig", "+short", vhostStr, "@8.8.8.8")
 	if err != nil || rawVhostIps == "" {
-		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@1.1.1.1")
+		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@185.228.168.9")
 		if err != nil || rawVhostIps == "" {
 			return false
 		}
@@ -113,20 +113,21 @@ func (repo *SslCmdRepo) isDomainMappedToServer(
 		return false
 	}
 
-	ownershipValidateUrl := "https://" + serverIpAddress.String() +
-		infraData.GlobalConfigs.DomainOwnershipValidationUrlPath
+	hashUrlPath := infraData.GlobalConfigs.DomainOwnershipValidationUrlPath
+	hashUrlFull := "https://" + vhostStr + hashUrlPath
+	serverIpStr := serverIpAddress.String()
 
 	ownershipHashFound, err := infraHelper.RunCmd(
-		"curl",
-		"-skL",
-		"--max-time",
-		"10",
-		"--header",
-		"Host: "+vhostStr,
-		ownershipValidateUrl,
+		"curl", "-skLm", "10", "--resolve", vhostStr+":443:"+serverIpStr, hashUrlFull,
 	)
 	if err != nil {
-		return false
+		hashUrlFull = "https://" + serverIpStr + hashUrlPath
+		ownershipHashFound, err = infraHelper.RunCmd(
+			"curl", "-skLm", "10", "-H", "Host: "+vhostStr, hashUrlFull,
+		)
+		if err != nil {
+			return false
+		}
 	}
 
 	return ownershipHashFound == expectedOwnershipHash.String()

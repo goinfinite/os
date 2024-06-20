@@ -49,7 +49,9 @@
     "os db create -n wpDb_%installUuid% -t mysql",
     "os db create-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid% -p %installRandomPassword% -r all",
     "wp config create --path=%installDirectory% --dbname=wpDb_%installUuid% --dbuser=wpUser_%installUuid% --dbpass=%installRandomPassword% --allow-root",
-    "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root"
+    "wp core install --path=%installDirectory% --locale=%locale% --url=%installHostname% --title=%adminTitle% --admin_user=%adminUsername% --admin_password=%adminPassword% --admin_email=%adminMailAddress% --allow-root",
+    "curl -skL -o %installDirectory%/.htaccess https://speedia.net/assets/os/marketplace/wordpress/htaccess.txt",
+    "wp rewrite structure '/%postname%' --path=%installDirectory% --allow-root"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
