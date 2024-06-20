@@ -123,19 +123,12 @@ func installGpgKey(serviceName string, url string) error {
 
 func addPhp() error {
 	repoFilePath := "/speedia/repo.litespeed.sh"
-
-	err := infraHelper.DownloadFile(
-		"https://repo.litespeed.sh",
-		repoFilePath,
-	)
+	err := infraHelper.DownloadFile("https://repo.litespeed.sh", repoFilePath)
 	if err != nil {
 		return errors.New("DownloadRepoFileError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"bash",
-		repoFilePath,
-	)
+	_, err = infraHelper.RunCmd("bash", repoFilePath)
 	if err != nil {
 		return errors.New("RepoAddError: " + err.Error())
 	}
@@ -155,13 +148,10 @@ func addPhp() error {
 		return err
 	}
 
-	os.Symlink(
-		"/usr/local/lsws/lsphp82/bin/php",
-		"/usr/bin/php",
-	)
+	os.Symlink("/usr/local/lsws/lsphp82/bin/php", "/usr/bin/php")
 
 	err = copyAssets(
-		"php/httpd_config.conf",
+		"php-webserver/httpd_config.conf",
 		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
@@ -174,51 +164,44 @@ func addPhp() error {
 	}
 
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+primaryVhost.String()+"/g",
+		"sed", "-i", "s/speedia.net/"+primaryVhost.String()+"/g",
 		infraData.GlobalConfigs.OlsHttpdConfFilePath,
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(configurationDir + "//php")
+	err = infraHelper.MakeDir(configurationDir + "/php-webserver")
 	if err != nil {
 		return errors.New("CreateConfDirError: " + err.Error())
 	}
 
 	err = copyAssets(
-		"php/primary.conf",
-		configurationDir+"//php/template",
+		"php-webserver/primary.conf",
+		configurationDir+"/php-webserver/template",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
 	}
 
 	err = copyAssets(
-		"php/primary.conf",
-		configurationDir+"//php/primary.conf",
+		"php-webserver/primary.conf",
+		configurationDir+"/php-webserver/primary.conf",
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+primaryVhost.String()+"/g",
-		configurationDir+"//php/primary.conf",
+		"sed", "-i", "s/speedia.net/"+primaryVhost.String()+"/g",
+		configurationDir+"/php-webserver/primary.conf",
 	)
 	if err != nil {
 		return errors.New("RenameVHostError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"chown",
-		"-R",
-		"lsadm:nogroup",
-		configurationDir+"//php",
+		"chown", "-R", "lsadm:nogroup", configurationDir+"/php-webserver",
 	)
 	if err != nil {
 		return errors.New("ChownConfDirError: " + err.Error())

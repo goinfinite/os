@@ -96,26 +96,40 @@ func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
 	return strings.TrimSpace(fileContent), nil
 }
 
-func (repo *O11yQueryRepo) getCpuQuota() (int64, error) {
-	cpuQuotaFile := "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"
-	if repo.isCgroupV2() {
-		cpuQuotaFile = "/sys/fs/cgroup/cpu.max"
-	}
-
-	cpuQuotaStr, err := repo.getFileContent(cpuQuotaFile)
+func (repo *O11yQueryRepo) getCpuCores() (float64, error) {
+	cpuQuotaStr, err := repo.getFileContent("/sys/fs/cgroup/cpu/cpu.cfs_quota_us")
 	if err != nil {
 		cpuQuotaStr = "max"
 	}
+
+	cpuPeriodStr, err := repo.getFileContent("/sys/fs/cgroup/cpu/cpu.cfs_period_us")
+	if err != nil {
+		cpuPeriodStr = "100000"
+	}
+
 	if repo.isCgroupV2() {
-		cpuQuotaStr = strings.Split(cpuQuotaStr, " ")[0]
+		cpuQuotaPeriodStr, err := repo.getFileContent("/sys/fs/cgroup/cpu.max")
+		if err != nil {
+			cpuQuotaPeriodStr = "max 100000"
+		}
+		cpuQuotaPeriodParts := strings.Split(cpuQuotaPeriodStr, " ")
+		if len(cpuQuotaPeriodParts) > 1 {
+			cpuQuotaStr = cpuQuotaPeriodParts[0]
+			cpuPeriodStr = cpuQuotaPeriodParts[1]
+		}
 	}
 
-	cpuQuotaInt, err := strconv.ParseInt(cpuQuotaStr, 10, 64)
+	cpuQuotaInt, err := strconv.ParseFloat(cpuQuotaStr, 64)
 	if err != nil || cpuQuotaStr == "max" || cpuQuotaStr == "-1" {
-		cpuQuotaInt = int64(100000 * runtime.NumCPU())
+		cpuQuotaInt = float64(100000 * runtime.NumCPU())
 	}
 
-	return cpuQuotaInt, nil
+	cpuPeriodInt, err := strconv.ParseFloat(cpuPeriodStr, 64)
+	if err != nil {
+		cpuPeriodInt = 100000
+	}
+
+	return cpuQuotaInt / cpuPeriodInt, nil
 }
 
 func (repo *O11yQueryRepo) getMemoryLimit() (valueObject.Byte, error) {
@@ -207,11 +221,10 @@ func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error)
 		return valueObject.HardwareSpecs{}, errors.New("GetCpuFrequencyFailed")
 	}
 
-	cpuQuota, err := repo.getCpuQuota()
+	cpuCores, err := repo.getCpuCores()
 	if err != nil {
 		return valueObject.HardwareSpecs{}, errors.New("GetCpuQuotaFailed")
 	}
-	cpuCores := uint64(cpuQuota / 100000)
 
 	memoryLimit, err := repo.getMemoryLimit()
 	if err != nil {
@@ -273,16 +286,20 @@ func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 		return 0, errors.New("ParseCpuEndUsageFailed")
 	}
 
-	cpuQuotaUs, err := repo.getCpuQuota()
+	cpuCores, err := repo.getCpuCores()
 	if err != nil {
-		return 0, errors.New("GetCpuQuotaFailed")
+		return 0, errors.New("GetCpuCoresFailed")
 	}
+	cpuCoresUs := cpuCores * 1000000
 
 	cpuUsageUs := float64(endCpuUsageInt - startCpuUsageInt)
 	if !repo.isCgroupV2() {
 		cpuUsageUs = cpuUsageUs / 1000
 	}
-	cpuUsagePercent := cpuUsageUs / float64(cpuQuotaUs) * 100
+	cpuUsagePercent := (cpuUsageUs / cpuCoresUs) * 100
+	if cpuUsagePercent > 100 {
+		cpuUsagePercent = 100
+	}
 
 	return cpuUsagePercent, nil
 }
@@ -293,7 +310,7 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 		memUsageFile = "/sys/fs/cgroup/memory.current"
 	}
 
-	memUsage, err := repo.getFileContent(memUsageFile)
+	memUsageStr, err := repo.getFileContent(memUsageFile)
 	if err != nil {
 		memUsageCmd := exec.Command(
 			"awk",
@@ -305,9 +322,9 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 			return 0, errors.New("GetMemUsageFailed")
 		}
 
-		memUsage = strings.TrimSpace(string(cmdOutput))
+		memUsageStr = strings.TrimSpace(string(cmdOutput))
 	}
-	memUsageFloat, err := strconv.ParseFloat(memUsage, 64)
+	memUsageFloat, err := strconv.ParseFloat(memUsageStr, 64)
 	if err != nil {
 		return 0, errors.New("ParseMemUsageFailed")
 	}
@@ -316,7 +333,10 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	if err != nil {
 		return 0, errors.New("GetMemoryLimitFailed")
 	}
-	memUsagePercent := memUsageFloat / float64(memLimit) * 100
+	memUsagePercent := (memUsageFloat / float64(memLimit)) * 100
+	if memUsagePercent > 100 {
+		memUsagePercent = 100
+	}
 
 	return memUsagePercent, nil
 }

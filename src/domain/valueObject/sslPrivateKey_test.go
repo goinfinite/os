@@ -4,8 +4,35 @@ import "testing"
 
 func TestSslPrivateKey(t *testing.T) {
 	t.Run("ValidSslPrivateKey", func(t *testing.T) {
-		validSslPrivateKey := `
------BEGIN RSA PRIVATE KEY-----
+		validKeys := []string{
+			`-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAyL5s/St5se72Z/n4Rbvb2lIT5EP0cE7XHsyevTZPBzgZJNUa
+gLf8PEmcikTtsOzX3S4kHKZjOq9CND33BhMXVRtHeSJWJGB/CnpF6khkTAMvBzfG
+GtyqZ8LkymQPKrg9y5yxEJUDuHl2+PNQeKBXE1MPbcoi67hiyzooe5xrxIn4MLNh
+EUSoXFONHghh+47BS3xB8lSkUARmO1Tg7NO6CmEzZ6WD0+LWygwCtX6vecnuSeh7
+QnXm38alJbKJTDNhVhqsQ4AsB4G2lWbBnuQI9lPV8l79Zzjupu1CLAZV4/MZRR3N
+pslKxSH2+6PQnx+zCJercIKDCXLpXeYY3jmehwIDAQABAoIBAEfSNZ1IqjQaimc9
+/HE6mpicSAihtXlfA8E9tUd+AD1VeU1/vwkxilmpfovLyHzF6B92rC3h69upq5aU
+WuZ9+xmUdnhk7Av8yEcf4xbEyrmVZASBlGu06nTQOloc/X4rx9Qq3gDQR7H/Jy0/
+pFlcCHtd+sWtjdvnLtWGG8jJ+JaqoNNACNV1EYG4IWXwrtcci4F4apdRRE/16+rC
+IWnAcYd9ueX33GHkenAMCAQmSbwp0XF42AC1urM8TvOe2q/tftZZaDSprVFiaeKH
+CZFdAXLuzmbDXqj+CiFd7OUB7ZRrGcAHvHoNCHm9cWi5/dkrbekYJzewaFZqJJ/s
+bIIN2zECgYEA/5V2zaobiLZ5O/NVE+ZwkOZILY8zZr7QQtNI09q9I12QjQYJ5cJ4
+ECcVzXDWGx0CzOlEf0LH24SbeHGa8+g7S6Fnp5HZoEsO3VFwoZTKKJMhu5ybmXKr
+yQfIM5d6/MYOa9Awk0Fbm9cRyAYxRtZKd5BlR4YbtfNiZbIC3IsqUHcCgYEAyRIa
+PkJMC5adfzwMWWa4amF1m93ByznTBLxcYkatJ9/WanSmycft88KrAQ/P4VLwrX2X
+jI12y3V4VIRLkl5cViVIetTcyAC7l6pOxHXVbv5kdWKOYmVAFLMj9lk09sCtxkcE
+P6fSHMG0SPEZARhAwecXIU0WjEotJt+DTijFNnECgYEA+U4bF9xhhUaxFUhzabjz
+fnQSXdZ8hjGExlqAhJ6uteuTj+wfBW5fXSoy+zWgs8vlqmmz9gr3FmrQmHkAdADI
+ripgCLWdOd1dP4csPYD8fP2f/vhxUwnnBW5A3Apb3mt3L7VhXJJ5QJdWce2QbY+k
+DeLc2Bq5tw8UoSw13FknSlsCgYA2DxvnKUPwyanGj4pybt+eGl3YbiKwVPebCll8
+QqxDUDcBoCNHlO0w4GHBg1LMrdPvkRixvUb3JLoZXwhCbgQ9VQDLpXdGfovxFuTe
+hR/BG7w+oyTM55P2/MLqdMl8ngkaifVmd+RRvvKNueSTGsYuW8coOOWbCkZhcS6I
+UQXUwQKBgQCeJ0lSt3fdgE4fPVcd0kggWMD/H6J9W3IKsxqegkKRHv/6BwJ4ogNk
+6pbF0picFayT99XyKWR/Oz5+fxI42ZsYLUjnxPwcsocNByty0blOQuo5hb7lKTLk
+ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
+-----END RSA PRIVATE KEY-----`,
+			`-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEAziJ8BEmVq/cSznb7aYRL5YBJjhMZVxC/jqT2Q/LKWFjX38Er
 LHT3khhdlKyrh/7AgfN+Us1Q7/eHq3PKX7Z0lgk+9LssNnaH67bj9lqJcILlToc5
 UrhZLHe2Q3xUlfyveDoheepcbBiqO7xzuUNl53KpT4FlF3DBO94wMNNqOjeNslHv
@@ -31,16 +58,19 @@ ibOU32oQAyFzwRnNCoMvDwCSLdo4O6AOVPkM/Z2DP4OdpUZliIpYPqSEUe3IVejf
 /tYtUPKhAoGAQBzkCzCunVBtSuVLPT5/9NVVCj1nfxmXdLq1+0bD5q6m2XiW1G7T
 YvdMz2Th5XVtTfNHhLIKpMyrq7sstb6lsQPKNKSpBuyHa8oooWHrkxf7VVBrN7v8
 en/D01Fd9hVhXyGKaOk/nEDxB8fTgQ1dE9JhxUiqHN4Po1ktNG/P8aU=
------END RSA PRIVATE KEY-----`
+-----END RSA PRIVATE KEY-----`,
+		}
 
-		_, err := NewSslPrivateKey(validSslPrivateKey)
-		if err != nil {
-			t.Errorf("Expected no error for dummy SSL private key, got %v", err)
+		for keyIndex, key := range validKeys {
+			_, err := NewSslPrivateKey(key)
+			if err != nil {
+				t.Errorf("(%d) ExpectedNoErrorButGot: %s", keyIndex, err.Error())
+			}
 		}
 	})
 
 	t.Run("InvalidSslPrivateKey", func(t *testing.T) {
-		invalidSslPrivateKeys := []string{
+		invalidKeys := []string{
 			`-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAlRuRnThUjU8/prwYxbty
 WPT9pURI3lbsKMiB6Fn/VHOKE13p4D8xgOCADpdRagdT6n4etr9atzDKUSvpMtR3
@@ -64,10 +94,10 @@ PhE4X6hiE0YmeAZjR0uHl8M/5aW9xCoJ72+12kKpWAa0SFRWLy6FejNYCYpkupVJ
 yecLk/4L1W0l6jQQZnWErXZYe0PNFcmwGXy1Rep83kfBRNKRy5tvocalLlwXLdUk
 AIU+2GKjyT3iMuzZxxFxPFMCAwEAAQ==`,
 		}
-		for sslPrivateKeyIndex, sslPrivateKey := range invalidSslPrivateKeys {
-			_, err := NewSslPrivateKey(sslPrivateKey)
+		for keyIndex, key := range invalidKeys {
+			_, err := NewSslPrivateKey(key)
 			if err == nil {
-				t.Errorf("Expected error for '%v' SSL private key, got nil", sslPrivateKeyIndex)
+				t.Errorf("(%d) ExpectedErrorButGotNil", keyIndex)
 			}
 		}
 	})

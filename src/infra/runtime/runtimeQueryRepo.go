@@ -19,8 +19,8 @@ type RuntimeQueryRepo struct {
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	hostname valueObject.Fqdn,
 ) (vhostPhpConfFilePath valueObject.UnixFilePath, err error) {
-	primaryVhostPhpConfFilePathStr := "/app/conf/php/primary.conf"
-	vhostPhpConfFilePathStr := "/app/conf/php/" + hostname.String() + ".conf"
+	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
+	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
 
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {

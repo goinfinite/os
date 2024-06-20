@@ -259,7 +259,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 	}
 
 	phpConfFilePathStr := phpConfFilePath.String()
-	templatePhpVhostConfFilePath := "/app/conf/php/template"
+	templatePhpVhostConfFilePath := "/app/conf/php-webserver/template"
 	err = infraHelper.CopyFile(templatePhpVhostConfFilePath, phpConfFilePathStr)
 	if err != nil {
 		return errors.New("CopyPhpConfTemplateError: " + err.Error())

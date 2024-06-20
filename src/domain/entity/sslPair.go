@@ -40,11 +40,12 @@ func (sslPair SslPair) IsPubliclyTrusted() bool {
 
 	hoursToSeconds := int64(3600)
 	earlyRenewalThresholdSeconds := EarlyRenewalThresholdHours * hoursToSeconds
-
 	expirationDate := sslPair.Certificate.ExpiresAt.Get()
 	expirationDateUnixTime := time.Unix(expirationDate, 0).UTC().Unix()
-	unixTimeToRenew := expirationDateUnixTime - earlyRenewalThresholdSeconds
-	nowUnixTime := time.Now().Unix()
 
-	return nowUnixTime > unixTimeToRenew
+	unixTimeToRenew := expirationDateUnixTime - earlyRenewalThresholdSeconds
+	unixTimeNow := time.Now().Unix()
+	shouldRenew := unixTimeNow >= unixTimeToRenew
+
+	return !shouldRenew
 }

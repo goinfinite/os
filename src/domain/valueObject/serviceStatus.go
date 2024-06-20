@@ -23,6 +23,10 @@ var ServiceStatusesWithAliases = map[string][]string{
 		"uninstall", "uninstalled", "remove", "removed", "delete", "deleted",
 		"purge", "purged", "clear", "cleared", "clean", "cleaned",
 	},
+	"restarting": {
+		"restart", "restarted", "reload", "reloaded", "refresh", "refreshed",
+		"reboot", "rebooted", "reset", "reseted",
+	},
 }
 
 func NewServiceStatus(value string) (ServiceStatus, error) {
