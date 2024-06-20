@@ -76,20 +76,26 @@ func (repo *MarketplaceCmdRepo) installServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
-	installTempDir valueObject.UnixFilePath,
 	installDir valueObject.UnixFilePath,
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
-	installRandomPassword valueObject.Password,
+	installTempDir *valueObject.UnixFilePath,
+	installRandomPassword *valueObject.Password,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	dataMap := map[string]string{
-		"installTempDir":        installTempDir.String(),
-		"installDirectory":      installDir.String(),
-		"installUrlPath":        installUrlPath.String(),
-		"installHostname":       installHostname.String(),
-		"installUuid":           installUuid,
-		"installRandomPassword": installRandomPassword.String(),
+		"installDirectory": installDir.String(),
+		"installUrlPath":   installUrlPath.String(),
+		"installHostname":  installHostname.String(),
+		"installUuid":      installUuid,
+	}
+
+	if installTempDir != nil {
+		dataMap["installTempDir"] = installTempDir.String()
+	}
+
+	if installRandomPassword != nil {
+		dataMap["installRandomPassword"] = installRandomPassword.String()
 	}
 
 	for key, value := range dataMap {
@@ -379,8 +385,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installTempDir, installDir, installUrlPath, installDto.Hostname,
-		installUuidWithoutHyphens, installRandomPassword,
+		installDir, installUrlPath, installDto.Hostname,
+		installUuidWithoutHyphens, &installTempDir, &installRandomPassword,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -530,9 +536,18 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
-	_, err = repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
 		installedItem.CatalogSlug,
 	)
+	if err != nil {
+		return err
+	}
+
+	systemDataFields := repo.parseSystemDataFields(
+		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
+		installedItem.InstallUuid.String(), nil, nil,
+	)
+	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
 	if err != nil {
 		return err
 	}
