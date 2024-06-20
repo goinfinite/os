@@ -23,7 +23,7 @@ func UpdatePermissionsForWebServerUse(
 	params = append(params, filePath)
 
 	paramsStr := strings.Join(params, " ")
-	_, err := RunCmdWithSubShell("chown " + flagsStr + paramsStr)
+	_, err := RunCmdWithSubShell("chown " + flagsStr + " " + paramsStr)
 	if err != nil {
 		return err
 	}

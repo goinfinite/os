@@ -21,6 +21,7 @@
     "gorm",
     "grpcs",
     "gsub",
+    "Hostnames",
     "installables",
     "Installables",
     "ioncube",

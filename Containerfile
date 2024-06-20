@@ -2,7 +2,8 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 
 WORKDIR /speedia
 
-RUN install_packages ca-certificates wget curl tar procps debian-archive-keyring lsb-release gnupg2 haveged rsync zip unzip bind9-dnsutils build-essential git certbot \
+RUN apt-get update && apt-get upgrade -y \
+    && install_packages ca-certificates wget curl tar procps debian-archive-keyring lsb-release gnupg2 haveged rsync zip unzip bind9-dnsutils build-essential git certbot \
     && curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor > "/usr/share/keyrings/nginx-archive-keyring.gpg" \ 
     && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
     && install_packages nginx cron \
