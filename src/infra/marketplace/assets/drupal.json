@@ -50,7 +50,7 @@
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
   ],
   "uninstallCmdSteps": [
-    "echo \"Uninstall Drupal\" > /speedia/uninstallDrupal.txt"
+    "echo \"Uninstall Drupal\nInstallDirectory: '%installDirectory%'\nInstallUrlPath: '%installUrlPath%'\nInstallHostname: '%installHostname%'\nInstallUuid: '%installUuid%'\nInstallTempDir: '%installTempDir%'\nInstallRandomPassword: '%installRandomPassword%'\" > /speedia/uninstallDrupal.txt"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",
