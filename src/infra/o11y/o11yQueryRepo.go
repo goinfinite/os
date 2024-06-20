@@ -297,6 +297,9 @@ func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 		cpuUsageUs = cpuUsageUs / 1000
 	}
 	cpuUsagePercent := (cpuUsageUs / cpuCoresUs) * 100
+	if cpuUsagePercent > 100 {
+		cpuUsagePercent = 100
+	}
 
 	return cpuUsagePercent, nil
 }
@@ -307,7 +310,7 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 		memUsageFile = "/sys/fs/cgroup/memory.current"
 	}
 
-	memUsage, err := repo.getFileContent(memUsageFile)
+	memUsageStr, err := repo.getFileContent(memUsageFile)
 	if err != nil {
 		memUsageCmd := exec.Command(
 			"awk",
@@ -319,9 +322,9 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 			return 0, errors.New("GetMemUsageFailed")
 		}
 
-		memUsage = strings.TrimSpace(string(cmdOutput))
+		memUsageStr = strings.TrimSpace(string(cmdOutput))
 	}
-	memUsageFloat, err := strconv.ParseFloat(memUsage, 64)
+	memUsageFloat, err := strconv.ParseFloat(memUsageStr, 64)
 	if err != nil {
 		return 0, errors.New("ParseMemUsageFailed")
 	}
@@ -330,7 +333,10 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	if err != nil {
 		return 0, errors.New("GetMemoryLimitFailed")
 	}
-	memUsagePercent := memUsageFloat / float64(memLimit) * 100
+	memUsagePercent := (memUsageFloat / float64(memLimit)) * 100
+	if memUsagePercent > 100 {
+		memUsagePercent = 100
+	}
 
 	return memUsagePercent, nil
 }
