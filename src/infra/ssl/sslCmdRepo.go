@@ -174,22 +174,31 @@ func (repo *SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
 }
 
 func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
-	path, _ := valueObject.NewMappingPath(infraData.GlobalConfigs.DomainOwnershipValidationUrlPath)
-	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
-	targetType, _ := valueObject.NewMappingTargetType("inline-html")
-	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
-
 	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
 		sslPair.Certificate.CertificateContent,
 	)
 	if err != nil {
 		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
+
+	firstVhostName := sslPair.VirtualHostsHostnames[0]
+	isDomainMappedToServer := repo.isDomainMappedToServer(
+		firstVhostName,
+		expectedOwnershipHash,
+	)
+
+	if !isDomainMappedToServer {
+		return errors.New("DomainNotResolvingToServer")
+	}
+
+	path, _ := valueObject.NewMappingPath(infraData.GlobalConfigs.DomainOwnershipValidationUrlPath)
+	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
+	targetType, _ := valueObject.NewMappingTargetType("inline-html")
+	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
 	targetValue, _ := valueObject.NewMappingTargetValue(
 		expectedOwnershipHash.String(), targetType,
 	)
 
-	firstVhostName := sslPair.VirtualHostsHostnames[0]
 	inlineHtmlMapping := dto.NewCreateMapping(
 		firstVhostName,
 		path,
@@ -199,26 +208,11 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		&httpResponseCode,
 	)
 
-	firstVhostNameStr := firstVhostName.String()
-	ips, err := net.LookupHost(firstVhostNameStr)
-	if err != nil {
-		return errors.New("LookupHostError: " + err.Error())
-	}
-
-	if len(ips) == 0 {
-		return errors.New("VhostDoesNotPointToAnyIp")
-	}
-
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 	mappingId, err := mappingCmdRepo.Create(inlineHtmlMapping)
 	if err != nil {
 		return errors.New("CreateOwnershipValidationMappingError: " + err.Error())
 	}
-
-	isDomainMappedToServer := repo.isDomainMappedToServer(
-		firstVhostName,
-		expectedOwnershipHash,
-	)
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	mappings, err := mappingQueryRepo.ReadByHostname(firstVhostName)
@@ -235,10 +229,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		return errors.New("DeleteOwnershipValidationMappingError: " + err.Error())
 	}
 
-	if !isDomainMappedToServer {
-		return errors.New("DomainNotResolvingToServer")
-	}
-
+	firstVhostNameStr := firstVhostName.String()
 	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(firstVhostName) {
 		vhostRootDir += "/" + firstVhostNameStr
