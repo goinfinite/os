@@ -29,4 +29,4 @@ cmdSteps:
   - chown -R nobody:nogroup -L %installDirectory%-backup
   - chown -R nobody:nogroup -L /app/laravel-%installHostname%-%installUuid%/
 estimatedSizeBytes: 55000000
-avatarUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Laravel.svg/800px-Laravel.svg.png
+avatarUrl: https://speedia.net/assets/os/marketplace/laravel/laravel-avatar.jpg
