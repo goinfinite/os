@@ -218,7 +218,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		)
 	}
 
-	vhostsNamesStr := []string{}
+	pairVhostsNamesStr := []string{}
 	for _, pairVhostName := range sslPair.VirtualHostsHostnames {
 		domainValidationMappingId, err := repo.createDomainValidationMapping(
 			pairVhostName,
@@ -253,11 +253,11 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 			return errors.New("DomainNotResolvingToServer")
 		}
 
-		vhostsNamesStr = append(vhostsNamesStr, pairVhostName.String())
+		pairVhostsNamesStr = append(pairVhostsNamesStr, pairVhostName.String())
 
 		shouldIncludeWww := repo.shouldIncludeWww(pairVhostName)
 		if shouldIncludeWww {
-			vhostsNamesStr = append(vhostsNamesStr, "www."+pairVhostName.String())
+			pairVhostsNamesStr = append(pairVhostsNamesStr, "www."+pairVhostName.String())
 		}
 	}
 
@@ -271,8 +271,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
 		" --agree-tos --register-unsafely-without-email --cert-name " + firstVhostNameStr
 
-	for _, vhostNameStr := range vhostsNamesStr {
-		certbotCmd += " -d " + vhostNameStr
+	for _, pairVhostNameStr := range pairVhostsNamesStr {
+		certbotCmd += " -d " + pairVhostNameStr
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
