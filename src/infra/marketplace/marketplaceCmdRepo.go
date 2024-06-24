@@ -516,6 +516,22 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
+		installedItem.CatalogSlug,
+	)
+	if err != nil {
+		return err
+	}
+
+	systemDataFields := repo.parseSystemDataFields(
+		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
+		installedItem.InstallUuid.String(), nil, nil,
+	)
+	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
+	if err != nil {
+		return err
+	}
+
 	if deleteDto.ShouldUninstallServices {
 		err = repo.uninstallUnusedServices(installedItem.Services)
 		if err != nil {
@@ -534,22 +550,6 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		if err != nil {
 			return errors.New("CreateEmptyInstallDirectoryError: " + err.Error())
 		}
-	}
-
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.CatalogSlug,
-	)
-	if err != nil {
-		return err
-	}
-
-	systemDataFields := repo.parseSystemDataFields(
-		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
-		installedItem.InstallUuid.String(), nil, nil,
-	)
-	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
-	if err != nil {
-		return err
 	}
 
 	return nil
