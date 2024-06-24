@@ -35,12 +35,18 @@
   ],
   "installCmdSteps": [
     "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
-    "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
+    "mkdir -p /app/joomla-%installHostname%-%installUuid%/",
+    "unzip -o %installTempDir%/joomla.zip -d /app/joomla-%installHostname%-%installUuid%/",
     "os db create -n joomlaDb_%installUuid% -t mysql",
     "os db create-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid% -p %installRandomPassword% -r all",
     "os runtime php update -n %installHostname% -v 8.2",
-    "cd %installDirectory%; php %installDirectory%/installation/joomla.php install --site-name=baseWebsite --admin-user=%adminUsername% --admin-username=%adminUsername% --admin-password=%adminPassword% --admin-email=%adminMailAddress% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=%installRandomPassword% --db-name=joomlaDb_%installUuid% --db-prefix=joomla_ --db-encryption=0 -n",
-    "cp %installDirectory%/htaccess.txt %installDirectory%/.htaccess"
+    "cd /app/joomla-%installHostname%-%installUuid%/; php /app/joomla-%installHostname%-%installUuid%/installation/joomla.php install --site-name=baseWebsite --admin-user=%adminUsername% --admin-username=%adminUsername% --admin-password=%adminPassword% --admin-email=%adminMailAddress% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=%installRandomPassword% --db-name=joomlaDb_%installUuid% --db-prefix=joomla_ --db-encryption=0 -n",
+    "cp /app/joomla-%installHostname%-%installUuid%/htaccess.txt /app/joomla-%installHostname%-%installUuid%/.htaccess",
+    "mv -f %installDirectory% %installDirectory%-backup",
+    "ln -s /app/joomla-%installHostname%-%installUuid%/ %installDirectory%",
+    "chown -h nobody:nogroup %installDirectory%",
+    "chown -R nobody:nogroup -L %installDirectory%-backup",
+    "chown -R nobody:nogroup -L /app/joomla-%installHostname%-%installUuid%/"
   ],
   "uninstallCmdSteps": [
     "echo \"Uninstall Joomla\" > /speedia/uninstallJoomla.txt"
