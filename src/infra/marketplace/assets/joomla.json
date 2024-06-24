@@ -49,7 +49,11 @@
     "chown -R nobody:nogroup -L /app/joomla-%installHostname%-%installUuid%/"
   ],
   "uninstallCmdSteps": [
-    "echo \"Uninstall Joomla\" > /speedia/uninstallJoomla.txt"
+    "os db delete-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid%",
+    "os db delete -n joomlaDb_%installUuid% -t mysql",
+    "rm -rf %installDirectory%-backup",
+    "mv -f /app/joomla-%installHostname%-%installUuid% /app/joomla-%installHostname%-%installUuid%-backup",
+    "chown -R nobody:nogroup -L /app/joomla-%installHostname%-%installUuid%-backup"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
