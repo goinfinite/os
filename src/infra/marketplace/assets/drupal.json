@@ -43,10 +43,11 @@
     "COMPOSER_ALLOW_SUPERUSER=1 composer create-project drupal/recommended-project /app/drupal-%installHostname%-%installUuid%/ -q -n --no-dev",
     "cd /app/drupal-%installHostname%-%installUuid%/; composer require drush/drush",
     "cd /app/drupal-%installHostname%-%installUuid%/; vendor/bin/drush site:install standard --db-url=mysql://drupalUser_%installUuid%:%installRandomPassword%@localhost/drupalDb_%installUuid% --account-name=%adminUsername% --account-pass=%adminPassword% --account-mail=%adminMailAddress% -y",
-    "mv -f %installDirectory% %installDirectory%-backup",
+    "find %installDirectory% -mindepth 1 -maxdepth 1 -exec mv -t %installTempDir% {} +",
+    "rm -rf %installDirectory%",
     "ln -s /app/drupal-%installHostname%-%installUuid%/web/ %installDirectory%",
+    "find %installTempDir% -mindepth 1 -maxdepth 1 -exec mv -t %installDirectory% {} +",
     "chown -h nobody:nogroup %installDirectory%",
-    "chown -R nobody:nogroup -L %installDirectory%-backup",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
   ],
   "uninstallCmdSteps": [
