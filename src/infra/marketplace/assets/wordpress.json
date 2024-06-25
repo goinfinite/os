@@ -54,7 +54,10 @@
     "wp rewrite structure '/%postname%' --path=%installDirectory% --allow-root"
   ],
   "uninstallCmdSteps": [
-    "echo \"Uninstall Wordpress\" > /speedia/uninstallWordpress.txt"
+    "os db delete-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid%",
+    "os db delete -n wpDb_%installUuid% -t mysql",
+    "mkdir -p /app/.trash/wp-%installHostname%-%installUuid%",
+    "find %installDirectory% \\( -name \".htaccess\" -o -name \"index.php\" -o -name \"license.txt\" -o -name \"readme.html\" -o -name \"wp-*\" -o -name \"xmlrpc.php\" \\) -maxdepth 1 -exec mv -t /app/.trash/wp-%installHostname%-%installUuid% {} +"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
