@@ -44,7 +44,9 @@
   ],
   "uninstallCmdSteps": [
     "os db delete-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid%",
-    "os db delete -n joomlaDb_%installUuid% -t mysql"
+    "os db delete -n joomlaDb_%installUuid% -t mysql",
+    "mkdir -p /app/.trash/joomla-%installHostname%-%installUuid%",
+    "find %installDirectory% \\( -name \".htaccess\" -o -name \"LICENSE.txt\" -o -name \"README.txt\" -o -name \"administrator\" -o -name \"api\" -o -name \"cache\" -o -name \"cli\" -o -name \"components\" -o -name \"configuration.php\" -o -name \"htaccess.txt\" -o -name \"images\" -o -name \"includes\" -o -name \"index.php\" -o -name \"language\" -o -name \"layouts\" -o -name \"libraries\" -o -name \"media\" -o -name \"modules\" -o -name \"plugins\" -o -name \"robots.txt\" -o -name \"templates\" -o -name \"tmp\" -o -name \"web.config.txt\" \\) -maxdepth 1 -exec mv -t /app/.trash/joomla-%installHostname%-%installUuid% {} +"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
