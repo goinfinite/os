@@ -3,7 +3,6 @@ package marketplaceInfra
 import (
 	"errors"
 	"log"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -536,19 +535,6 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		err = repo.uninstallUnusedServices(installedItem.Services)
 		if err != nil {
 			return err
-		}
-	}
-
-	if deleteDto.ShouldRemoveFiles {
-		installDirStr := installedItem.InstallDirectory.String()
-		err = os.RemoveAll(installDirStr)
-		if err != nil {
-			return errors.New("DeleteInstalledItemFilesError: " + err.Error())
-		}
-
-		err = infraHelper.MakeDir(installDirStr)
-		if err != nil {
-			return errors.New("CreateEmptyInstallDirectoryError: " + err.Error())
 		}
 	}
 
