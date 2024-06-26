@@ -39,8 +39,6 @@ installCmdSteps:
 uninstallCmdSteps:
   - os db delete-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid%
   - os db delete -n ocDb_%installUuid% -t mysql
-  - mkdir -p /app/.trash/oc-%installHostname%-%installUuid%
-  - find %installDirectory% \( -name "admin" -o -name "catalog" -o -name "config-dist.php" -o -name "config.php" -o -name "cron.php" -o -name "error.html" -o -name "extension" -o -name "image" -o -name "index.php" -o -name "install" -o -name "php.ini" -o -name "robots.txt" -o -name "system" \) -maxdepth 1 -exec mv -t /app/.trash/oc-%installHostname%-%installUuid% {} +
 filesToDelete:
   - admin
   - catalog
