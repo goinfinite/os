@@ -37,7 +37,10 @@ installCmdSteps:
   - os db create-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid% -p %installRandomPassword% -r all
   - php %installDirectory%/install/cli_install.php install --username %adminUsername% --password %adminPassword% --email %adminMailAddress% --http_server https://%installHostname%%installUrlPath% --db_driver mysqli --db_hostname localhost --db_username ocUser_%installUuid% --db_password %installRandomPassword% --db_database ocDb_%installUuid% --db_port 3306 --db_prefix oc_
 uninstallCmdSteps:
-  - "echo \"Uninstall OpenCart\" > /speedia/uninstallOpenCart.txt"
+  - os db delete-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid%
+  - os db delete -n ocDb_%installUuid% -t mysql
+  - mkdir -p /app/.trash/oc-%installHostname%-%installUuid%
+  - find %installDirectory% \( -name "admin" -o -name "catalog" -o -name "config-dist.php" -o -name "config.php" -o -name "cron.php" -o -name "error.html" -o -name "extension" -o -name "image" -o -name "index.php" -o -name "install" -o -name "php.ini" -o -name "robots.txt" -o -name "system" \) -maxdepth 1 -exec mv -t /app/.trash/oc-%installHostname%-%installUuid% {} +
 estimatedSizeBytes: 100000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
