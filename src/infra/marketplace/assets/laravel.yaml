@@ -37,6 +37,6 @@ uninstallCmdSteps:
   - rm -rf /app/laravel-%installHostname%-%installUuid%
   - rm -rf %installDirectory%
   - mkdir -p %installDirectory%
-  - find /app/.trash/laravel-%installHostname%-%installUuid% ! \\( -name \".editorconfig\" -o -name \".gitattributes\" -o -name \"composer.json\" -o -name \"composer.lock\" -o -name \"vendor\" -o -name \"web\" \\) -maxdepth 1 -exec mv -t %installDirectory% {} +
+  - find /app/.trash/laravel-%installHostname%-%installUuid% ! \( -name ".editorconfig" -o -name ".gitattributes" -o -name "composer.json" -o -name "composer.lock" -o -name "vendor" -o -name "web" \) -maxdepth 1 -exec mv -t %installDirectory% {} +
 estimatedSizeBytes: 55000000
 avatarUrl: https://speedia.net/assets/os/marketplace/laravel/laravel-avatar.jpg
