@@ -12,7 +12,7 @@ mappings:
     matchPattern: begins-with
     targetType: service
     targetValue: php
-cmdSteps:
+installCmdSteps:
   - curl -skL -o /app/composer-setup.php https://getcomposer.org/installer
   - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - rm -rf /app/composer-setup.php
