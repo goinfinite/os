@@ -444,6 +444,43 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
+func (repo *MarketplaceCmdRepo) parseUninstallCmdSteps(
+	filesToDelete []valueObject.UnixFileName,
+	installedSlug valueObject.MarketplaceItemSlug,
+) ([]valueObject.MarketplaceItemCmdStep, error) {
+	uninstallCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+
+	trashDirName := installedSlug.String() + "-%installHostname%-%installUuid%"
+
+	createTrashDirToMoveFilesStep, err := valueObject.NewMarketplaceItemCmdStep(
+		"mkdir -p " + trashDirName,
+	)
+	if err != nil {
+		return uninstallCmdSteps, err
+	}
+
+	firstFileToDelete := filesToDelete[0]
+	filesToDeleteAsParams := "-name \"" + firstFileToDelete.String() + "\""
+
+	filesToDeleteWithoutFirstOne := filesToDelete[1:]
+	for _, fileToDelete := range filesToDeleteWithoutFirstOne {
+		filesToDeleteAsParams += " -o -name \"" + fileToDelete.String() + "\""
+	}
+
+	moveFilesToTrashCmdStepStr := "find %installDirectory% \\( " +
+		filesToDeleteAsParams + " \\) -maxdepth 1 -exec mv -t" + trashDirName + " {} +"
+	moveFilesToTrashCmdStep, err := valueObject.NewMarketplaceItemCmdStep(moveFilesToTrashCmdStepStr)
+	if err != nil {
+		return uninstallCmdSteps, err
+	}
+
+	uninstallCmdSteps = append(
+		uninstallCmdSteps, createTrashDirToMoveFilesStep, moveFilesToTrashCmdStep,
+	)
+
+	return uninstallCmdSteps, nil
+}
+
 func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	servicesToUninstall []valueObject.ServiceNameWithVersion,
 ) error {
@@ -521,6 +558,20 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	if err != nil {
 		return err
 	}
+
+	if len(catalogItem.FilesToDelete) > 0 {
+		uninstallCmdSteps, err := repo.parseUninstallCmdSteps(
+			catalogItem.FilesToDelete, installedItem.CatalogSlug,
+		)
+		if err != nil {
+			return err
+		}
+
+		catalogItem.UninstallCmdSteps = slices.Concat(
+			catalogItem.UninstallCmdSteps, uninstallCmdSteps,
+		)
+	}
+	log.Printf("UninstallCmdSteps: %+v", catalogItem.UninstallCmdSteps)
 
 	systemDataFields := repo.parseSystemDataFields(
 		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
