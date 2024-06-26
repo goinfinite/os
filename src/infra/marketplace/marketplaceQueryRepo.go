@@ -355,6 +355,33 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	return itemCmdSteps, nil
 }
 
+func (repo *MarketplaceQueryRepo) parseCatalogItemFilesToDelete(
+	catalogItemFilesToDelete interface{},
+) (itemFilesToDelete []valueObject.UnixFileName, err error) {
+	if catalogItemFilesToDelete == nil {
+		return itemFilesToDelete, nil
+	}
+
+	rawItemFilesToDelete, assertOk := catalogItemFilesToDelete.([]interface{})
+	if !assertOk {
+		return itemFilesToDelete, errors.New("InvalidMarketplaceCatalogItemFilesToDelete")
+	}
+
+	for _, rawItemFileToDelete := range rawItemFilesToDelete {
+		itemFileToDelete, err := valueObject.NewUnixFileName(
+			rawItemFileToDelete.(string),
+		)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawItemFileToDelete)
+			continue
+		}
+
+		itemFilesToDelete = append(itemFilesToDelete, itemFileToDelete)
+	}
+
+	return itemFilesToDelete, nil
+}
+
 func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 	catalogItemUrlsMap interface{},
 ) (itemUrls []valueObject.Url, err error) {
@@ -476,6 +503,14 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
+	itemFilesToDelete := []valueObject.UnixFileName{}
+	if itemMap["filesToDelete"] != nil {
+		itemFilesToDelete, err = repo.parseCatalogItemFilesToDelete(itemMap["filesToDelete"])
+		if err != nil {
+			return catalogItem, err
+		}
+	}
+
 	estimatedSizeBytes := valueObject.Byte(1000000000)
 	if itemMap["estimatedSizeBytes"] == nil {
 		estimatedSizeBytes, err = valueObject.NewByte(itemMap["estimatedSizeBytes"])
@@ -512,6 +547,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemDataFields,
 		itemInstallCmdSteps,
 		itemUninstallCmdSteps,
+		itemFilesToDelete,
 		estimatedSizeBytes,
 		itemAvatarUrl,
 		itemScreenshotUrls,

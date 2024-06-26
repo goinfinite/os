@@ -59,6 +59,14 @@
     "mkdir -p /app/.trash/wp-%installHostname%-%installUuid%",
     "find %installDirectory% \\( -name \".htaccess\" -o -name \"index.php\" -o -name \"license.txt\" -o -name \"readme.html\" -o -name \"wp-*\" -o -name \"xmlrpc.php\" \\) -maxdepth 1 -exec mv -t /app/.trash/wp-%installHostname%-%installUuid% {} +"
   ],
+  "filesToDelete": [
+    ".htaccess",
+    "index.php",
+    "license.txt",
+    "readme.html",
+    "wp-*",
+    "xmlrpc.php"
+  ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/wordpress/wp-avatar.jpg",
   "screenshotUrls": [
