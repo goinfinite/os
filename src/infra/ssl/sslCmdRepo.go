@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -114,58 +113,31 @@ func (repo *SslCmdRepo) createDomainValidationMapping(
 	return mappingId, nil
 }
 
-func (repo *SslCmdRepo) isDomainMappedToServer(
-	vhost valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-) bool {
-	vhostStr := vhost.String()
+func (repo *SslCmdRepo) filterDomainsMappedToSomewhere(
+	vhostNames []valueObject.Fqdn,
+) []valueObject.Fqdn {
+	domainsMappedToSomewhere := []valueObject.Fqdn{}
+	for _, vhostName := range vhostNames {
+		vhostNameStr := vhostName.String()
 
-	rawVhostIps, err := infraHelper.RunCmd("dig", "+short", vhostStr, "@8.8.8.8")
-	if err != nil || rawVhostIps == "" {
-		rawVhostIps, err = infraHelper.RunCmd("dig", "+short", vhostStr, "@185.228.168.9")
-		if err != nil || rawVhostIps == "" {
-			return false
-		}
-	}
-
-	rawVhostIpsParts := strings.Split(rawVhostIps, "\n")
-	if len(rawVhostIpsParts) == 0 {
-		return false
-	}
-
-	var serverIpAddress *valueObject.IpAddress
-	for _, rawVhostIp := range rawVhostIpsParts {
-		ipAddress, err := valueObject.NewIpAddress(rawVhostIp)
-		if err != nil {
-			continue
-		}
-
-		serverIpAddress = &ipAddress
-		break
-	}
-
-	if serverIpAddress == nil {
-		return false
-	}
-
-	hashUrlPath := infraData.GlobalConfigs.DomainOwnershipValidationUrlPath
-	hashUrlFull := "https://" + vhostStr + hashUrlPath
-	serverIpStr := serverIpAddress.String()
-
-	ownershipHashFound, err := infraHelper.RunCmd(
-		"curl", "-skLm", "10", "--resolve", vhostStr+":443:"+serverIpStr, hashUrlFull,
-	)
-	if err != nil {
-		hashUrlFull = "https://" + serverIpStr + hashUrlPath
-		ownershipHashFound, err = infraHelper.RunCmd(
-			"curl", "-skLm", "10", "-H", "Host: "+vhostStr, hashUrlFull,
+		googleDnsServerIp := "8.8.8.8"
+		rawVhostIps, err := infraHelper.RunCmdWithSubShell(
+			"dig +short " + vhostNameStr + " @ " + googleDnsServerIp,
 		)
-		if err != nil {
-			return false
+		if err != nil || rawVhostIps == "" {
+			cleanbrowsingSecurityFilterDnsServerIp := "185.228.168.9"
+			rawVhostIps, err := infraHelper.RunCmdWithSubShell(
+				"dig +short " + vhostNameStr + " @ " + cleanbrowsingSecurityFilterDnsServerIp,
+			)
+			if err != nil || rawVhostIps == "" {
+				continue
+			}
 		}
+
+		domainsMappedToSomewhere = append(domainsMappedToSomewhere, vhostName)
 	}
 
-	return ownershipHashFound == expectedOwnershipHash.String()
+	return domainsMappedToSomewhere
 }
 
 func (repo *SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
@@ -208,7 +180,92 @@ func (repo *SslCmdRepo) shouldIncludeWww(vhost valueObject.Fqdn) bool {
 	return false
 }
 
+func (repo *SslCmdRepo) filterDomainsMappedToServer(
+	vhostNames []valueObject.Fqdn,
+	expectedOwnershipHash valueObject.Hash,
+) []valueObject.Fqdn {
+	domainsMappedToServer := []valueObject.Fqdn{}
+
+	for _, vhostName := range vhostNames {
+		vhostNameStr := vhostName.String()
+		vhostNameIps, err := net.LookupIP(vhostNameStr)
+		if err != nil || len(vhostNameIps) == 0 {
+			continue
+		}
+
+		var serverIpAddress *valueObject.IpAddress
+		for _, vhostNameIp := range vhostNameIps {
+			ipAddress, err := valueObject.NewIpAddress(vhostNameIp.String())
+			if err != nil {
+				continue
+			}
+
+			serverIpAddress = &ipAddress
+			break
+		}
+
+		if serverIpAddress == nil {
+			continue
+		}
+
+		domainValidationMappingId, err := repo.createDomainValidationMapping(
+			vhostName,
+			expectedOwnershipHash,
+		)
+		if err != nil {
+			continue
+		}
+
+		hashUrlPath := infraData.GlobalConfigs.DomainOwnershipValidationUrlPath
+		hashUrlFull := "https://" + vhostNameStr + hashUrlPath
+		serverIpStr := serverIpAddress.String()
+
+		ownershipHashFound, err := infraHelper.RunCmd(
+			"curl", "-skLm", "10", "--resolve", vhostNameStr+":443:"+serverIpStr, hashUrlFull,
+		)
+		if err != nil {
+			hashUrlFull = "https://" + serverIpStr + hashUrlPath
+			ownershipHashFound, err = infraHelper.RunCmd(
+				"curl", "-skLm", "10", "-H", "Host: "+vhostNameStr, hashUrlFull,
+			)
+			if err != nil {
+				continue
+			}
+		}
+
+		if ownershipHashFound != expectedOwnershipHash.String() {
+			continue
+		}
+
+		domainsMappedToServer = append(domainsMappedToServer, vhostName)
+
+		if repo.shouldIncludeWww(vhostName) {
+			vhostNameWithWww, err := valueObject.NewFqdn("www." + vhostNameStr)
+			if err != nil {
+				continue
+			}
+
+			domainsMappedToServer = append(domainsMappedToServer, vhostNameWithWww)
+		}
+
+		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
+		err = mappingCmdRepo.Delete(domainValidationMappingId)
+		if err != nil {
+			log.Printf("DeleteOwnershipValidationMappingError: %s", err.Error())
+		}
+	}
+
+	return domainsMappedToServer
+}
+
 func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
+	validPairVhostNames := repo.filterDomainsMappedToSomewhere(
+		sslPair.VirtualHostsHostnames,
+	)
+	if len(validPairVhostNames) == 0 {
+		return errors.New("NoDomainsMappedToSomewhere")
+	}
+
 	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
 		sslPair.Certificate.CertificateContent,
 	)
@@ -217,51 +274,11 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 			"CreateOwnershipValidationHashError: " + err.Error(),
 		)
 	}
+	pairVhostNamesMappedToServer := repo.filterDomainsMappedToServer(
+		validPairVhostNames, expectedOwnershipHash,
+	)
 
-	pairVhostsNamesStr := []string{}
-	for _, pairVhostName := range sslPair.VirtualHostsHostnames {
-		domainValidationMappingId, err := repo.createDomainValidationMapping(
-			pairVhostName,
-			expectedOwnershipHash,
-		)
-		if err != nil {
-			return err
-		}
-
-		isDomainMappedToServer := repo.isDomainMappedToServer(
-			pairVhostName,
-			expectedOwnershipHash,
-		)
-
-		mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
-		mappings, err := mappingQueryRepo.ReadByHostname(pairVhostName)
-		if err != nil {
-			return errors.New("ReadVhostMappingsError: " + err.Error())
-		}
-
-		if len(mappings) == 0 {
-			return errors.New("VhostMappingsNotFound")
-		}
-
-		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
-		err = mappingCmdRepo.Delete(domainValidationMappingId)
-		if err != nil {
-			return errors.New("DeleteOwnershipValidationMappingError: " + err.Error())
-		}
-
-		if !isDomainMappedToServer {
-			return errors.New("DomainNotResolvingToServer")
-		}
-
-		pairVhostsNamesStr = append(pairVhostsNamesStr, pairVhostName.String())
-
-		shouldIncludeWww := repo.shouldIncludeWww(pairVhostName)
-		if shouldIncludeWww {
-			pairVhostsNamesStr = append(pairVhostsNamesStr, "www."+pairVhostName.String())
-		}
-	}
-
-	firstVhostName := sslPair.VirtualHostsHostnames[0]
+	firstVhostName := pairVhostNamesMappedToServer[0]
 	firstVhostNameStr := firstVhostName.String()
 	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(firstVhostName) {
@@ -271,8 +288,8 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
 		" --agree-tos --register-unsafely-without-email --cert-name " + firstVhostNameStr
 
-	for _, pairVhostNameStr := range pairVhostsNamesStr {
-		certbotCmd += " -d " + pairVhostNameStr
+	for _, pairVhostName := range pairVhostNamesMappedToServer {
+		certbotCmd += " -d " + pairVhostName.String()
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(certbotCmd)
