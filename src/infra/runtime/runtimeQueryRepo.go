@@ -5,9 +5,11 @@ import (
 	"errors"
 	"log"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"github.com/speedianet/os/src/infra/infraData"
@@ -294,4 +296,16 @@ func (repo RuntimeQueryRepo) ReadPhpConfigs(
 		phpSettings,
 		phpModules,
 	), nil
+}
+
+func (repo RuntimeQueryRepo) IsHtaccessModified() bool {
+	minutesSinceLastModification := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
+	minutesSinceLastModificationStr := strconv.Itoa(minutesSinceLastModification)
+
+	htaccessFilesRecentlyModified, err := infraHelper.RunCmdWithSubShell(
+		"find " + infraData.GlobalConfigs.PrimaryPublicDir +
+			" -maxdepth 7 -name .htaccess -mmin " +
+			minutesSinceLastModificationStr,
+	)
+	return err != nil || len(htaccessFilesRecentlyModified) == 0
 }
