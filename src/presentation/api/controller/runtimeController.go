@@ -195,9 +195,9 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 }
 
 func (controller *RuntimeController) PhpWebServerHtaccessWatchdog() {
-	validationIntervalSeconds := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
+	validationIntervalMinutes := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
 
-	taskInterval := time.Duration(validationIntervalSeconds) * time.Second
+	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
