@@ -277,6 +277,9 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	pairVhostNamesMappedToServer := repo.filterDomainsMappedToServer(
 		validPairVhostNames, expectedOwnershipHash,
 	)
+	if len(pairVhostNamesMappedToServer) == 0 {
+		return errors.New("NoDomainsMappedToServer")
+	}
 
 	firstVhostName := pairVhostNamesMappedToServer[0]
 	firstVhostNameStr := firstVhostName.String()
