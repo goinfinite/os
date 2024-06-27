@@ -13,6 +13,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
@@ -201,12 +202,13 @@ func (controller *RuntimeController) PhpWebServerHtaccessWatchdog() {
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
+	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
 
 	for range timer.C {
 		phpWebServerHtaccessWatchdog := useCase.NewPhpWebServerHtaccessWatchdog(
-			runtimeQueryRepo, runtimeCmdRepo,
+			servicesQueryRepo, runtimeQueryRepo, runtimeCmdRepo,
 		)
 		phpWebServerHtaccessWatchdog.Execute()
 	}
