@@ -118,6 +118,7 @@ func (router Router) runtimeRoutes() {
 
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
+	go runtimeController.PhpWebServerHtaccessWatchdog()
 }
 
 func (router Router) servicesRoutes() {

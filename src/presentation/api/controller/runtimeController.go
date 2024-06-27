@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -191,4 +192,17 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "PhpConfigsUpdated")
+}
+
+func (controller *RuntimeController) PhpWebServerHtaccessWatchdog() {
+	validationIntervalSeconds := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
+
+	taskInterval := time.Duration(validationIntervalSeconds) * time.Second
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	for range timer.C {
+		phpWebServerHtaccessWatchdog := useCase.NewPhpWebServerHtaccessWatchdog()
+		phpWebServerHtaccessWatchdog.Execute()
+	}
 }
