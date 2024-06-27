@@ -298,7 +298,7 @@ func (repo RuntimeQueryRepo) ReadPhpConfigs(
 	), nil
 }
 
-func (repo RuntimeQueryRepo) IsHtaccessModified() bool {
+func (repo RuntimeQueryRepo) IsHtaccessModifiedRecently() bool {
 	minutesSinceLastModification := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
 	minutesSinceLastModificationStr := strconv.Itoa(minutesSinceLastModification)
 

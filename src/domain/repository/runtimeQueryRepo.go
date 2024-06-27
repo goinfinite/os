@@ -8,5 +8,5 @@ import (
 type RuntimeQueryRepo interface {
 	ReadPhpVersionsInstalled() ([]valueObject.PhpVersion, error)
 	ReadPhpConfigs(hostname valueObject.Fqdn) (entity.PhpConfigs, error)
-	IsHtaccessModified() bool
+	IsHtaccessModifiedRecently() bool
 }
