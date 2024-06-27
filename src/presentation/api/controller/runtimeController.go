@@ -201,8 +201,13 @@ func (controller *RuntimeController) PhpWebServerHtaccessWatchdog() {
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
+	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+
 	for range timer.C {
-		phpWebServerHtaccessWatchdog := useCase.NewPhpWebServerHtaccessWatchdog()
+		phpWebServerHtaccessWatchdog := useCase.NewPhpWebServerHtaccessWatchdog(
+			runtimeQueryRepo, runtimeCmdRepo,
+		)
 		phpWebServerHtaccessWatchdog.Execute()
 	}
 }
