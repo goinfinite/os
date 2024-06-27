@@ -1,6 +1,6 @@
 package useCase
 
-const PhpWebServerHtaccessValidationsPerHour int = 24
+const PhpWebServerHtaccessValidationsPerHour int = 30
 
 type PhpWebServerHtaccessWatchdog struct {
 }
