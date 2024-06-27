@@ -307,5 +307,5 @@ func (repo RuntimeQueryRepo) IsHtaccessModifiedRecently() bool {
 			" -maxdepth 7 -name .htaccess -mmin " +
 			minutesSinceLastModificationStr,
 	)
-	return err != nil || len(htaccessFilesRecentlyModified) == 0
+	return err == nil && len(htaccessFilesRecentlyModified) != 0
 }
