@@ -362,7 +362,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFilesToRemove(
 		return itemUninstallFilesToRemove, nil
 	}
 
-	rawItemFilesToDelete, assertOk := catalogItemUninstallFilesToRemove.([]string)
+	rawItemFilesToDelete, assertOk := catalogItemUninstallFilesToRemove.([]interface{})
 	if !assertOk {
 		return itemUninstallFilesToRemove, errors.New(
 			"InvalidMarketplaceCatalogItemFilesToDelete",
@@ -370,7 +370,9 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFilesToRemove(
 	}
 
 	for _, rawItemFileToDelete := range rawItemFilesToDelete {
-		itemUninstallFileToRemove, err := valueObject.NewUnixFileName(rawItemFileToDelete)
+		itemUninstallFileToRemove, err := valueObject.NewUnixFileName(
+			rawItemFileToDelete.(string),
+		)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), rawItemFileToDelete)
 			continue
