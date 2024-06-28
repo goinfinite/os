@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -437,8 +438,13 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return err
 	}
 
-	trashDirName := installedItem.AppSlug.String() +
-		"-" + installedItem.Hostname.String() + "-" + installedItem.InstallUuid.String()
+	trashDirName := fmt.Sprintf(
+		"%s/%s-%s-%s",
+		useCase.TrashDirPath,
+		installedItem.AppSlug.String(),
+		installedItem.Hostname.String(),
+		installedItem.InstallUuid.String(),
+	)
 	err = infraHelper.MakeDir(trashDirName)
 	if err != nil {
 		return errors.New("CreateTrashDirError: " + err.Error())
