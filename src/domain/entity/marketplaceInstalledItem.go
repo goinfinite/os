@@ -15,7 +15,7 @@ type MarketplaceInstalledItem struct {
 	Services         []valueObject.ServiceNameWithVersion     `json:"services"`
 	Mappings         []Mapping                                `json:"mappings"`
 	AvatarUrl        valueObject.Url                          `json:"avatarUrl"`
-	CatalogSlug      valueObject.MarketplaceItemSlug          `json:"-"`
+	AppSlug          valueObject.MarketplaceItemSlug          `json:"-"`
 	CreatedAt        valueObject.UnixTime                     `json:"createdAt"`
 	UpdatedAt        valueObject.UnixTime                     `json:"updatedAt"`
 }
@@ -31,7 +31,7 @@ func NewMarketplaceInstalledItem(
 	services []valueObject.ServiceNameWithVersion,
 	mappings []Mapping,
 	avatarUrl valueObject.Url,
-	catalogSlug valueObject.MarketplaceItemSlug,
+	appSlug valueObject.MarketplaceItemSlug,
 	createdAt valueObject.UnixTime,
 	updatedAt valueObject.UnixTime,
 ) MarketplaceInstalledItem {
@@ -46,7 +46,7 @@ func NewMarketplaceInstalledItem(
 		Services:         services,
 		Mappings:         mappings,
 		AvatarUrl:        avatarUrl,
-		CatalogSlug:      catalogSlug,
+		AppSlug:          appSlug,
 		CreatedAt:        createdAt,
 		UpdatedAt:        createdAt,
 	}

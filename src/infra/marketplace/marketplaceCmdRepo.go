@@ -553,7 +553,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.CatalogSlug,
+		installedItem.AppSlug,
 	)
 	if err != nil {
 		return err
@@ -561,7 +561,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 
 	if len(catalogItem.FilesToDelete) > 0 {
 		uninstallCmdSteps, err := repo.parseUninstallCmdSteps(
-			catalogItem.FilesToDelete, installedItem.CatalogSlug,
+			catalogItem.FilesToDelete, installedItem.AppSlug,
 		)
 		if err != nil {
 			return err
