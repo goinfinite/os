@@ -456,17 +456,17 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 	}
 
 	firstFileToRemove := catalogItem.UninstallFilesToRemove[0]
-	filesToRemoveAsCmdParams := "-name \"" + firstFileToRemove.String() + "\""
+	removeFilesCmdParams := "-name \"" + firstFileToRemove.String() + "\""
 
 	filesToRemoveWithoutFirstOne := catalogItem.UninstallFilesToRemove[1:]
 	for _, fileToRemove := range filesToRemoveWithoutFirstOne {
-		filesToRemoveAsCmdParams += " -o -name \"" + fileToRemove.String() + "\""
+		removeFilesCmdParams += " -o -name \"" + fileToRemove.String() + "\""
 	}
 
 	removeFilesCmd := fmt.Sprintf(
 		"find %s \\( %s \\) -maxdepth 1 -exec mv -t %s {} +",
 		installedItem.InstallDirectory.String(),
-		filesToRemoveAsCmdParams,
+		removeFilesCmdParams,
 		trashDirName,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(removeFilesCmd)
