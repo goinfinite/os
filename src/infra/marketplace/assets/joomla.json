@@ -46,7 +46,7 @@
     "os db delete-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid%",
     "os db delete -n joomlaDb_%installUuid% -t mysql"
   ],
-  "filesToDelete": [
+  "uninstallFilesToRemove": [
     ".htaccess",
     "LICENSE.txt",
     "README.txt",

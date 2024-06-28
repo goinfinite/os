@@ -355,31 +355,33 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	return itemCmdSteps, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemFilesToDelete(
-	catalogItemFilesToDelete interface{},
-) (itemFilesToDelete []valueObject.UnixFileName, err error) {
-	if catalogItemFilesToDelete == nil {
-		return itemFilesToDelete, nil
+func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFilesToRemove(
+	catalogItemUninstallFilesToRemove interface{},
+) (itemUninstallFilesToRemove []valueObject.UnixFileName, err error) {
+	if catalogItemUninstallFilesToRemove == nil {
+		return itemUninstallFilesToRemove, nil
 	}
 
-	rawItemFilesToDelete, assertOk := catalogItemFilesToDelete.([]interface{})
+	rawItemFilesToDelete, assertOk := catalogItemUninstallFilesToRemove.([]string)
 	if !assertOk {
-		return itemFilesToDelete, errors.New("InvalidMarketplaceCatalogItemFilesToDelete")
+		return itemUninstallFilesToRemove, errors.New(
+			"InvalidMarketplaceCatalogItemFilesToDelete",
+		)
 	}
 
 	for _, rawItemFileToDelete := range rawItemFilesToDelete {
-		itemFileToDelete, err := valueObject.NewUnixFileName(
-			rawItemFileToDelete.(string),
-		)
+		itemUninstallFileToRemove, err := valueObject.NewUnixFileName(rawItemFileToDelete)
 		if err != nil {
 			log.Printf("%s: %s", err.Error(), rawItemFileToDelete)
 			continue
 		}
 
-		itemFilesToDelete = append(itemFilesToDelete, itemFileToDelete)
+		itemUninstallFilesToRemove = append(
+			itemUninstallFilesToRemove, itemUninstallFileToRemove,
+		)
 	}
 
-	return itemFilesToDelete, nil
+	return itemUninstallFilesToRemove, nil
 }
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
@@ -503,9 +505,11 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemFilesToDelete := []valueObject.UnixFileName{}
-	if itemMap["filesToDelete"] != nil {
-		itemFilesToDelete, err = repo.parseCatalogItemFilesToDelete(itemMap["filesToDelete"])
+	itemUninstallFilesToRemove := []valueObject.UnixFileName{}
+	if itemMap["uninstallFilesToRemove"] != nil {
+		itemUninstallFilesToRemove, err = repo.parseCatalogItemUninstallFilesToRemove(
+			itemMap["uninstallFilesToRemove"],
+		)
 		if err != nil {
 			return catalogItem, err
 		}
@@ -547,7 +551,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		itemDataFields,
 		itemInstallCmdSteps,
 		itemUninstallCmdSteps,
-		itemFilesToDelete,
+		itemUninstallFilesToRemove,
 		estimatedSizeBytes,
 		itemAvatarUrl,
 		itemScreenshotUrls,

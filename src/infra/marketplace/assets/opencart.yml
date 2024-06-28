@@ -39,7 +39,7 @@ installCmdSteps:
 uninstallCmdSteps:
   - os db delete-user -n ocDb_%installUuid% -t mysql -u ocUser_%installUuid%
   - os db delete -n ocDb_%installUuid% -t mysql
-filesToDelete:
+uninstallFilesToRemove:
   - admin
   - catalog
   - config-dist.php
