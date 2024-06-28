@@ -506,9 +506,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	}
 
 	itemUninstallFilesToRemove := []valueObject.UnixFileName{}
-	if itemMap["uninstallFilesToRemove"] != nil {
+	if itemMap["filesToRemove"] != nil {
 		itemUninstallFilesToRemove, err = repo.parseCatalogItemUninstallFilesToRemove(
-			itemMap["uninstallFilesToRemove"],
+			itemMap["filesToRemove"],
 		)
 		if err != nil {
 			return catalogItem, err
