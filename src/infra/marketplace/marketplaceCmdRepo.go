@@ -571,7 +571,6 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 			catalogItem.UninstallCmdSteps, uninstallCmdSteps,
 		)
 	}
-	log.Printf("UninstallCmdSteps: %+v", catalogItem.UninstallCmdSteps)
 
 	systemDataFields := repo.parseSystemDataFields(
 		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
