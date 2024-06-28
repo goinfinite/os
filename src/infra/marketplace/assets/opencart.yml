@@ -42,17 +42,17 @@ uninstallCmdSteps:
 uninstallFilesToRemove:
   - admin
   - catalog
+  - extension
+  - image
+  - install
+  - system
   - config-dist.php
   - config.php
   - cron.php
   - error.html
-  - extension
-  - image
   - index.php
-  - install
   - php.ini
   - robots.txt
-  - system
 estimatedSizeBytes: 100000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:

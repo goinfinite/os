@@ -58,11 +58,11 @@
     "os db delete -n wpDb_%installUuid% -t mysql"
   ],
   "uninstallFilesToRemove": [
+    "wp-*",
     ".htaccess",
     "index.php",
     "license.txt",
     "readme.html",
-    "wp-*",
     "xmlrpc.php"
   ],
   "estimatedSizeBytes": 100000000,
