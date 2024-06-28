@@ -22,6 +22,8 @@ import (
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 )
 
+const installTempDirPath = "/app/marketplace-tmp/"
+
 type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	marketplaceQueryRepo *MarketplaceQueryRepo
@@ -80,22 +82,14 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid string,
-	installTempDir *valueObject.UnixFilePath,
-	installRandomPassword *valueObject.Password,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	dataMap := map[string]string{
-		"installDirectory": installDir.String(),
-		"installUrlPath":   installUrlPath.String(),
-		"installHostname":  installHostname.String(),
-		"installUuid":      installUuid,
-	}
-
-	if installTempDir != nil {
-		dataMap["installTempDir"] = installTempDir.String()
-	}
-
-	if installRandomPassword != nil {
-		dataMap["installRandomPassword"] = installRandomPassword.String()
+		"installDirectory":      installDir.String(),
+		"installUrlPath":        installUrlPath.String(),
+		"installHostname":       installHostname.String(),
+		"installUuid":           installUuid,
+		"installTempDir":        installTempDirPath,
+		"installRandomPassword": infraHelper.GenPass(16),
 	}
 
 	for key, value := range dataMap {
@@ -357,12 +351,6 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	installTempDir, err := valueObject.NewUnixFilePath("/app/marketplace-tmp/")
-	if err != nil {
-		return errors.New("DefineTmpDirectoryError: " + err.Error())
-	}
-	installTempDirStr := installTempDir.String()
-
 	installUrlPath, _ := valueObject.NewUrlPath("/")
 	if installDto.UrlPath != nil {
 		installUrlPath = *installDto.UrlPath
@@ -378,15 +366,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	installUuid := uuid.New().String()[:16]
 	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
 
-	rawRandomPassword := infraHelper.GenPass(16)
-	installRandomPassword, err := valueObject.NewPassword(rawRandomPassword)
-	if err != nil {
-		return errors.New("DefineRandomPasswordError: " + err.Error())
-	}
-
 	systemDataFields := repo.parseSystemDataFields(
 		installDir, installUrlPath, installDto.Hostname,
-		installUuidWithoutHyphens, &installTempDir, &installRandomPassword,
+		installUuidWithoutHyphens,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -403,7 +385,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateInstallDirectoryError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(installTempDirStr)
+	err = infraHelper.MakeDir(installTempDirPath)
 	if err != nil {
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
@@ -413,7 +395,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirStr)
+	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirPath)
 	if err != nil {
 		return errors.New("RemoveTmpDirectoryError: " + err.Error())
 	}
@@ -572,7 +554,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 
 	systemDataFields := repo.parseSystemDataFields(
 		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
-		installedItem.InstallUuid.String(), nil, nil,
+		installedItem.InstallUuid.String(),
 	)
 	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
 	if err != nil {
