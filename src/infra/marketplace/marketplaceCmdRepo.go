@@ -2,6 +2,7 @@ package marketplaceInfra
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"slices"
 	"strconv"
@@ -444,41 +445,54 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
-func (repo *MarketplaceCmdRepo) parseUninstallCmdSteps(
-	filesToDelete []valueObject.UnixFileName,
-	installedSlug valueObject.MarketplaceItemSlug,
-) ([]valueObject.MarketplaceItemCmdStep, error) {
-	uninstallCmdSteps := []valueObject.MarketplaceItemCmdStep{}
-
-	trashDirName := installedSlug.String() + "-%installHostname%-%installUuid%"
-
-	createTrashDirToMoveFilesStep, err := valueObject.NewMarketplaceItemCmdStep(
-		"mkdir -p " + trashDirName,
+func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
+	installedId valueObject.MarketplaceItemId,
+) error {
+	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
+		installedId,
 	)
 	if err != nil {
-		return uninstallCmdSteps, err
+		return err
 	}
 
-	firstFileToDelete := filesToDelete[0]
-	filesToDeleteAsParams := "-name \"" + firstFileToDelete.String() + "\""
-
-	filesToDeleteWithoutFirstOne := filesToDelete[1:]
-	for _, fileToDelete := range filesToDeleteWithoutFirstOne {
-		filesToDeleteAsParams += " -o -name \"" + fileToDelete.String() + "\""
-	}
-
-	moveFilesToTrashCmdStepStr := "find %installDirectory% \\( " +
-		filesToDeleteAsParams + " \\) -maxdepth 1 -exec mv -t" + trashDirName + " {} +"
-	moveFilesToTrashCmdStep, err := valueObject.NewMarketplaceItemCmdStep(moveFilesToTrashCmdStepStr)
+	trashDirName := installedItem.AppSlug.String() +
+		"-" + installedItem.Hostname.String() + "-" + installedItem.InstallUuid.String()
+	err = infraHelper.MakeDir(trashDirName)
 	if err != nil {
-		return uninstallCmdSteps, err
+		return errors.New("CreateTrashDirError: " + err.Error())
 	}
 
-	uninstallCmdSteps = append(
-		uninstallCmdSteps, createTrashDirToMoveFilesStep, moveFilesToTrashCmdStep,
+	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
+		installedItem.AppSlug,
 	)
+	if err != nil {
+		return err
+	}
 
-	return uninstallCmdSteps, nil
+	if len(catalogItem.UninstallFilesToRemove) == 0 {
+		return nil
+	}
+
+	firstFileToRemove := catalogItem.UninstallFilesToRemove[0]
+	filesToRemoveAsCmdParams := "-name \"" + firstFileToRemove.String() + "\""
+
+	filesToRemoveWithoutFirstOne := catalogItem.UninstallFilesToRemove[1:]
+	for _, fileToRemove := range filesToRemoveWithoutFirstOne {
+		filesToRemoveAsCmdParams += " -o -name \"" + fileToRemove.String() + "\""
+	}
+
+	removeFilesCmd := fmt.Sprintf(
+		"find %s \\( %s \\) -maxdepth 1 -exec mv -t %s {} +",
+		installedItem.InstallDirectory.String(),
+		filesToRemoveAsCmdParams,
+		trashDirName,
+	)
+	_, err = infraHelper.RunCmdWithSubShell(removeFilesCmd)
+	if err != nil {
+		return errors.New("RemoveFilesDuringUninstallError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
@@ -544,14 +558,6 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
-	installedItemModel := dbModel.MarketplaceInstalledItem{
-		ID: uint(deleteDto.InstalledId.Get()),
-	}
-	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
-	if err != nil {
-		return err
-	}
-
 	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
 		installedItem.AppSlug,
 	)
@@ -559,17 +565,9 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	if len(catalogItem.UninstallFilesToRemove) > 0 {
-		uninstallCmdSteps, err := repo.parseUninstallCmdSteps(
-			catalogItem.UninstallFilesToRemove, installedItem.AppSlug,
-		)
-		if err != nil {
-			return err
-		}
-
-		catalogItem.UninstallCmdSteps = slices.Concat(
-			catalogItem.UninstallCmdSteps, uninstallCmdSteps,
-		)
+	err = repo.uninstallFilesRemoval(deleteDto.InstalledId)
+	if err != nil {
+		return err
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
@@ -577,6 +575,14 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		installedItem.InstallUuid.String(), nil, nil,
 	)
 	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
+	if err != nil {
+		return err
+	}
+
+	installedItemModel := dbModel.MarketplaceInstalledItem{
+		ID: uint(deleteDto.InstalledId.Get()),
+	}
+	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
 	if err != nil {
 		return err
 	}
