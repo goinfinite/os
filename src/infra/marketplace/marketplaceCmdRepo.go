@@ -440,8 +440,8 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		return errors.New("CreatePublicDirectoryBackupError: " + err.Error())
 	}
 
-	fileNameFilterParams := "-name \"" + catalogItem.UninstallFilesToRemove[0].String() + "\""
-	for _, fileToIgnore := range catalogItem.UninstallFilesToRemove[1:] {
+	fileNameFilterParams := "-name \"" + catalogItem.UninstallFileNames[0].String() + "\""
+	for _, fileToIgnore := range catalogItem.UninstallFileNames[1:] {
 		fileNameFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
 	}
 
@@ -523,7 +523,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return err
 	}
 
-	if len(catalogItem.UninstallFilesToRemove) == 0 {
+	if len(catalogItem.UninstallFileNames) == 0 {
 		return nil
 	}
 
@@ -543,8 +543,8 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return repo.uninstallSymlinkFilesRemoval(installedItem, catalogItem, trashDirPath)
 	}
 
-	fileNameFilterParams := "-name \"" + catalogItem.UninstallFilesToRemove[0].String() + "\""
-	for _, fileToRemove := range catalogItem.UninstallFilesToRemove[1:] {
+	fileNameFilterParams := "-name \"" + catalogItem.UninstallFileNames[0].String() + "\""
+	for _, fileToRemove := range catalogItem.UninstallFileNames[1:] {
 		fileNameFilterParams += " -o -name \"" + fileToRemove.String() + "\""
 	}
 
