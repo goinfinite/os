@@ -122,12 +122,12 @@ func (repo *SslCmdRepo) filterDomainsMappedToSomewhere(
 
 		googleDnsServerIp := "8.8.8.8"
 		rawVhostIps, err := infraHelper.RunCmdWithSubShell(
-			"dig +short " + vhostNameStr + " @ " + googleDnsServerIp,
+			"dig +short " + vhostNameStr + " @" + googleDnsServerIp,
 		)
 		if err != nil || rawVhostIps == "" {
 			cleanbrowsingSecurityFilterDnsServerIp := "185.228.168.9"
 			rawVhostIps, err := infraHelper.RunCmdWithSubShell(
-				"dig +short " + vhostNameStr + " @ " + cleanbrowsingSecurityFilterDnsServerIp,
+				"dig +short " + vhostNameStr + " @" + cleanbrowsingSecurityFilterDnsServerIp,
 			)
 			if err != nil || rawVhostIps == "" {
 				continue
