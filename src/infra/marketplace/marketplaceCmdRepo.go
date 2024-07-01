@@ -507,22 +507,9 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 }
 
 func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
-	installedId valueObject.MarketplaceItemId,
+	installedItem entity.MarketplaceInstalledItem,
+	catalogItem entity.MarketplaceCatalogItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
-		installedId,
-	)
-	if err != nil {
-		return err
-	}
-
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.Slug,
-	)
-	if err != nil {
-		return err
-	}
-
 	if len(catalogItem.UninstallFileNames) == 0 {
 		return nil
 	}
@@ -534,7 +521,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
-	err = infraHelper.MakeDir(trashDirPath)
+	err := infraHelper.MakeDir(trashDirPath)
 	if err != nil {
 		return errors.New("CreateTrashDirectoryError: " + err.Error())
 	}
@@ -632,7 +619,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	err = repo.uninstallFilesRemoval(deleteDto.InstalledId)
+	err = repo.uninstallFilesRemoval(installedItem, catalogItem)
 	if err != nil {
 		return err
 	}
