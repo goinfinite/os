@@ -54,7 +54,7 @@
     "os db delete-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid%",
     "os db delete -n drupalDb_%installUuid% -t mysql"
   ],
-  "filesToRemove": [
+  "uninstallFileNames": [
     "core",
     "modules",
     "profiles",

@@ -57,7 +57,7 @@
     "os db delete-user -n wpDb_%installUuid% -t mysql -u wpUser_%installUuid%",
     "os db delete -n wpDb_%installUuid% -t mysql"
   ],
-  "filesToRemove": [
+  "uninstallFileNames": [
     "wp-*",
     ".htaccess",
     "index.php",

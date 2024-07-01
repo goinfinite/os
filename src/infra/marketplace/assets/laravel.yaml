@@ -32,7 +32,7 @@ installCmdSteps:
 uninstallCmdSteps:
   - os db delete-user -n laravelDb_%installUuid% -t mysql -u laravelUser_%installUuid%
   - os db delete -n laravelDb_%installUuid% -t mysql
-filesToRemove:
+uninstallFileNames:
   - .htaccess
   - favicon.ico
   - index.php
