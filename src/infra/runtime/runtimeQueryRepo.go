@@ -3,9 +3,9 @@ package runtimeInfra
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
@@ -300,12 +300,14 @@ func (repo RuntimeQueryRepo) ReadPhpConfigs(
 
 func (repo RuntimeQueryRepo) IsHtaccessModifiedRecently() bool {
 	minutesSinceLastModification := 60 / useCase.PhpWebServerHtaccessValidationsPerHour
-	minutesSinceLastModificationStr := strconv.Itoa(minutesSinceLastModification)
 
+	findHtaccessRecentlyModifiedCmd := fmt.Sprintf(
+		"find %s -maxdepth 7 -name .htaccess -mmin %d",
+		infraData.GlobalConfigs.PrimaryPublicDir,
+		minutesSinceLastModification,
+	)
 	htaccessFilesRecentlyModified, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraData.GlobalConfigs.PrimaryPublicDir +
-			" -maxdepth 7 -name .htaccess -mmin " +
-			minutesSinceLastModificationStr,
+		findHtaccessRecentlyModifiedCmd,
 	)
 	return err == nil && len(htaccessFilesRecentlyModified) != 0
 }
