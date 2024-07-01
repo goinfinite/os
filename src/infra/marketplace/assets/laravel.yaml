@@ -32,11 +32,10 @@ installCmdSteps:
 uninstallCmdSteps:
   - os db delete-user -n laravelDb_%installUuid% -t mysql -u laravelUser_%installUuid%
   - os db delete -n laravelDb_%installUuid% -t mysql
-  - mkdir -p /app/.trash/laravel-%installHostname%-%installUuid%
-  - find %installDirectory% -mindepth 1 -maxdepth 1 -exec mv -t /app/.trash/laravel-%installHostname%-%installUuid% {} +
-  - rm -rf /app/laravel-%installHostname%-%installUuid%
-  - rm -rf %installDirectory%
-  - mkdir -p %installDirectory%
-  - find /app/.trash/laravel-%installHostname%-%installUuid% ! \( -name ".editorconfig" -o -name ".gitattributes" -o -name "composer.json" -o -name "composer.lock" -o -name "vendor" -o -name "web" \) -maxdepth 1 -exec mv -t %installDirectory% {} +
+filesToRemove:
+  - .htaccess
+  - favicon.ico
+  - index.php
+  - robots.txt
 estimatedSizeBytes: 55000000
 avatarUrl: https://speedia.net/assets/os/marketplace/laravel/laravel-avatar.jpg
