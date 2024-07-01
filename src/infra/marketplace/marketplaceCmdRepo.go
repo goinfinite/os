@@ -328,7 +328,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Services:         servicesListStr,
 		Mappings:         mappingModels,
 		AvatarUrl:        catalogItem.AvatarUrl.String(),
-		CatalogSlug:      firstCatalogItemSlug.String(),
+		Slug:             firstCatalogItemSlug.String(),
 	}
 
 	return repo.persistentDbSvc.Handler.Create(&installedItemModel).Error
@@ -458,7 +458,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 
 	srcInstallDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
-		installedItem.AppSlug.String(),
+		installedItem.Slug.String(),
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
@@ -517,7 +517,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.AppSlug,
+		installedItem.Slug,
 	)
 	if err != nil {
 		return err
@@ -530,7 +530,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 	trashDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
 		useCase.TrashDirPath,
-		installedItem.AppSlug.String(),
+		installedItem.Slug.String(),
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
@@ -626,7 +626,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.AppSlug,
+		installedItem.Slug,
 	)
 	if err != nil {
 		return err
