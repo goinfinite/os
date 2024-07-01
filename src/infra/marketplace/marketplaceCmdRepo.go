@@ -15,6 +15,7 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
@@ -428,6 +429,83 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
+func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
+	installedItem entity.MarketplaceInstalledItem,
+	catalogItem entity.MarketplaceCatalogItem,
+	trashDirPath string,
+) error {
+	publicDirBackupPath := "/app/html-backup"
+	err := infraHelper.MakeDir(publicDirBackupPath)
+	if err != nil {
+		return errors.New("CreatePublicDirectoryBackupError: " + err.Error())
+	}
+
+	fileNameFilterParams := "-name \"" + catalogItem.UninstallFilesToRemove[0].String() + "\""
+	for _, fileToIgnore := range catalogItem.UninstallFilesToRemove[1:] {
+		fileNameFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
+	}
+
+	moveFilesToKeepCmd := fmt.Sprintf(
+		"find %s/ -mindepth 1 -maxdepth 1 -not \\( %s \\) -exec mv -t %s {} +",
+		installedItem.InstallDirectory.String(),
+		fileNameFilterParams,
+		publicDirBackupPath,
+	)
+	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
+	if err != nil {
+		return errors.New("MoveFilesToKeepToBackupDirectoryError: " + err.Error())
+	}
+
+	srcInstallDirPath := fmt.Sprintf(
+		"/app/%s-%s-%s",
+		installedItem.AppSlug.String(),
+		installedItem.Hostname.String(),
+		installedItem.InstallUuid.String(),
+	)
+	_, err = infraHelper.RunCmdWithSubShell(
+		"mv " + srcInstallDirPath + "/* " + trashDirPath,
+	)
+	if err != nil {
+		return errors.New("MoveFilesToRemoveToTrashError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"rm -rf " + srcInstallDirPath,
+	)
+	if err != nil {
+		return errors.New("RemoveSourceInstallDirectoryError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"rm -rf " + infraData.GlobalConfigs.PrimaryPublicDir,
+	)
+	if err != nil {
+		return errors.New("RemovePublicDirectoryError: " + err.Error())
+	}
+
+	err = infraHelper.MakeDir(infraData.GlobalConfigs.PrimaryPublicDir)
+	if err != nil {
+		return errors.New("RecreatePublicDirectoryError: " + err.Error())
+	}
+
+	moveFilesToKeepCmd = fmt.Sprintf(
+		"find %s/ -mindepth 1 -maxdepth 1 -exec mv -t %s {} +",
+		publicDirBackupPath,
+		infraData.GlobalConfigs.PrimaryPublicDir,
+	)
+	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
+	if err != nil {
+		return errors.New("RestoreFilesToKeepError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + publicDirBackupPath)
+	if err != nil {
+		return errors.New("RemovePublicDirectoryBackupError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 	installedId valueObject.MarketplaceItemId,
 ) error {
@@ -436,18 +514,6 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 	)
 	if err != nil {
 		return err
-	}
-
-	trashDirName := fmt.Sprintf(
-		"%s/%s-%s-%s",
-		useCase.TrashDirPath,
-		installedItem.AppSlug.String(),
-		installedItem.Hostname.String(),
-		installedItem.InstallUuid.String(),
-	)
-	err = infraHelper.MakeDir(trashDirName)
-	if err != nil {
-		return errors.New("CreateTrashDirError: " + err.Error())
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
@@ -461,11 +527,24 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return nil
 	}
 
-	firstFileToRemove := catalogItem.UninstallFilesToRemove[0]
-	fileNameFilterParams := "-name \"" + firstFileToRemove.String() + "\""
+	trashDirPath := fmt.Sprintf(
+		"%s/%s-%s-%s",
+		useCase.TrashDirPath,
+		installedItem.AppSlug.String(),
+		installedItem.Hostname.String(),
+		installedItem.InstallUuid.String(),
+	)
+	err = infraHelper.MakeDir(trashDirPath)
+	if err != nil {
+		return errors.New("CreateTrashDirectoryError: " + err.Error())
+	}
 
-	filesToRemoveWithoutFirstOne := catalogItem.UninstallFilesToRemove[1:]
-	for _, fileToRemove := range filesToRemoveWithoutFirstOne {
+	if infraHelper.IsSymlink(installedItem.InstallDirectory.String()) {
+		return repo.uninstallSymlinkFilesRemoval(installedItem, catalogItem, trashDirPath)
+	}
+
+	fileNameFilterParams := "-name \"" + catalogItem.UninstallFilesToRemove[0].String() + "\""
+	for _, fileToRemove := range catalogItem.UninstallFilesToRemove[1:] {
 		fileNameFilterParams += " -o -name \"" + fileToRemove.String() + "\""
 	}
 
@@ -473,7 +552,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		"find %s \\( %s \\) -maxdepth 1 -exec mv -t %s {} +",
 		installedItem.InstallDirectory.String(),
 		fileNameFilterParams,
-		trashDirName,
+		trashDirPath,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(removeFilesCmd)
 	if err != nil {
