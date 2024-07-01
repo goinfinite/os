@@ -98,10 +98,6 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
 func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 	catalogItemMappingsMap interface{},
 ) (itemMappings []valueObject.MarketplaceItemMapping, err error) {
-	if catalogItemMappingsMap == nil {
-		return itemMappings, nil
-	}
-
 	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
 	if !assertOk {
 		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
@@ -205,10 +201,6 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 	catalogItemDataFieldsMap interface{},
 ) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
-	if catalogItemDataFieldsMap == nil {
-		return itemDataFields, nil
-	}
-
 	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
 	if !assertOk {
 		return itemDataFields, errors.New("InvalidMarketplaceCatalogItemDataFields")
@@ -331,10 +323,6 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
 ) (itemCmdSteps []valueObject.MarketplaceItemCmdStep, err error) {
-	if catalogItemCmdStepsMap == nil {
-		return itemCmdSteps, nil
-	}
-
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
 		return itemCmdSteps, errors.New("InvalidMarketplaceCatalogItemCmdSteps")
@@ -358,10 +346,6 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFileNames(
 	catalogItemUninstallFileNames interface{},
 ) (itemUninstallFileNames []valueObject.UnixFileName, err error) {
-	if catalogItemUninstallFileNames == nil {
-		return itemUninstallFileNames, nil
-	}
-
 	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]interface{})
 	if !assertOk {
 		return itemUninstallFileNames, errors.New(
