@@ -428,27 +428,55 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
+func (repo *MarketplaceCmdRepo) generateFindWithMoveCmd(
+	srcDirPath valueObject.UnixFilePath,
+	destinationDirPath valueObject.UnixFilePath,
+	filesToFilter []valueObject.UnixFileName,
+	shouldIgnoreFiles bool,
+) string {
+	params := ""
+	if len(filesToFilter) > 0 {
+		fileNameFilterParams := "-name \"" + filesToFilter[0].String() + "\""
+		for _, fileToIgnore := range filesToFilter[1:] {
+			fileNameFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
+		}
+		params = "\\( " + fileNameFilterParams + " \\)"
+	}
+
+	flags := []string{"-maxdepth 1"}
+	if shouldIgnoreFiles {
+		flags = append(flags, "-mindepth 1", "-not")
+	}
+	flagsStr := strings.Join(flags, " ")
+
+	return fmt.Sprintf(
+		"find %s/ %s %s -exec mv -t %s {} +",
+		srcDirPath.String(),
+		flagsStr,
+		params,
+		destinationDirPath.String(),
+	)
+}
+
 func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 	installedItem entity.MarketplaceInstalledItem,
 	catalogItem entity.MarketplaceCatalogItem,
-	removalDestinationPath string,
+	removalDestinationPath valueObject.UnixFilePath,
 ) error {
-	publicDirBackupPath := "/app/html-backup"
-	err := infraHelper.MakeDir(publicDirBackupPath)
+	publicDirBackupPath, err := valueObject.NewUnixFilePath("/app/html-backup")
+	if err != nil {
+		return err
+	}
+
+	err = infraHelper.MakeDir(publicDirBackupPath.String())
 	if err != nil {
 		return errors.New("CreatePublicDirectoryBackupError: " + err.Error())
 	}
 
-	fileNameFilterParams := "-name \"" + catalogItem.UninstallFileNames[0].String() + "\""
-	for _, fileToIgnore := range catalogItem.UninstallFileNames[1:] {
-		fileNameFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
-	}
-
-	moveFilesToKeepCmd := fmt.Sprintf(
-		"find %s/ -mindepth 1 -maxdepth 1 -not \\( %s \\) -exec mv -t %s {} +",
-		installedItem.InstallDirectory.String(),
-		fileNameFilterParams,
-		publicDirBackupPath,
+	shouldIgnoreFiles := true
+	moveFilesToKeepCmd := repo.generateFindWithMoveCmd(
+		installedItem.InstallDirectory, publicDirBackupPath,
+		catalogItem.UninstallFileNames, shouldIgnoreFiles,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
 	if err != nil {
@@ -462,7 +490,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		installedItem.InstallUuid.String(),
 	)
 	_, err = infraHelper.RunCmdWithSubShell(
-		"mv " + srcInstallDirPath + "/* " + removalDestinationPath,
+		"mv " + srcInstallDirPath + "/* " + removalDestinationPath.String(),
 	)
 	if err != nil {
 		return errors.New("MoveFilesToRemoveToTrashError: " + err.Error())
@@ -487,17 +515,17 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		return errors.New("RecreatePublicDirectoryError: " + err.Error())
 	}
 
-	moveFilesToKeepCmd = fmt.Sprintf(
-		"find %s/ -mindepth 1 -maxdepth 1 -exec mv -t %s {} +",
-		publicDirBackupPath,
-		installedItem.InstallDirectory.String(),
+	shouldIgnoreFiles = false
+	moveFilesToKeepCmd = repo.generateFindWithMoveCmd(
+		publicDirBackupPath, installedItem.InstallDirectory,
+		nil, shouldIgnoreFiles,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
 	if err != nil {
 		return errors.New("RestoreFilesToKeepError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + publicDirBackupPath)
+	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + publicDirBackupPath.String())
 	if err != nil {
 		return errors.New("RemovePublicDirectoryBackupError: " + err.Error())
 	}
@@ -513,35 +541,33 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return nil
 	}
 
-	removalDestinationPath := fmt.Sprintf(
+	removalDestinationPathStr := fmt.Sprintf(
 		"%s/%s-%s-%s",
 		useCase.TrashDirPath,
 		installedItem.Slug.String(),
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
-	err := infraHelper.MakeDir(removalDestinationPath)
+	removalDestinationPath, err := valueObject.NewUnixFilePath(removalDestinationPathStr)
+	if err != nil {
+		return err
+	}
+
+	err = infraHelper.MakeDir(removalDestinationPathStr)
 	if err != nil {
 		return errors.New("CreateTrashDirectoryError: " + err.Error())
 	}
 
-	log.Printf("InstallDirectory: %s", installedItem.InstallDirectory.String())
 	if infraHelper.IsSymlink(installedItem.InstallDirectory.String()) {
 		return repo.uninstallSymlinkFilesRemoval(
 			installedItem, catalogItem, removalDestinationPath,
 		)
 	}
 
-	fileNameFilterParams := "-name \"" + catalogItem.UninstallFileNames[0].String() + "\""
-	for _, fileToRemove := range catalogItem.UninstallFileNames[1:] {
-		fileNameFilterParams += " -o -name \"" + fileToRemove.String() + "\""
-	}
-
-	removeFilesCmd := fmt.Sprintf(
-		"find %s \\( %s \\) -maxdepth 1 -exec mv -t %s {} +",
-		installedItem.InstallDirectory.String(),
-		fileNameFilterParams,
-		removalDestinationPath,
+	shouldIgnoreFiles := false
+	removeFilesCmd := repo.generateFindWithMoveCmd(
+		installedItem.InstallDirectory, removalDestinationPath,
+		catalogItem.UninstallFileNames, shouldIgnoreFiles,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(removeFilesCmd)
 	if err != nil {
