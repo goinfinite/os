@@ -428,34 +428,36 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	)
 }
 
-func (repo *MarketplaceCmdRepo) generateFindWithMoveCmd(
-	srcDirPath valueObject.UnixFilePath,
-	destinationDirPath valueObject.UnixFilePath,
-	filesToFilter []valueObject.UnixFileName,
-	shouldIgnoreFiles bool,
-) string {
+func (repo *MarketplaceCmdRepo) moveSelectedFiles(
+	sourceDir valueObject.UnixFilePath,
+	targetDir valueObject.UnixFilePath,
+	fileNames []valueObject.UnixFileName,
+	shouldKeepInstead bool,
+) error {
 	params := ""
-	if len(filesToFilter) > 0 {
-		fileNameFilterParams := "-name \"" + filesToFilter[0].String() + "\""
-		for _, fileToIgnore := range filesToFilter[1:] {
+	if len(fileNames) > 0 {
+		fileNameFilterParams := "-name \"" + fileNames[0].String() + "\""
+		for _, fileToIgnore := range fileNames[1:] {
 			fileNameFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
 		}
 		params = "\\( " + fileNameFilterParams + " \\)"
 	}
 
 	flags := []string{"-maxdepth 1"}
-	if shouldIgnoreFiles {
+	if shouldKeepInstead {
 		flags = append(flags, "-mindepth 1", "-not")
 	}
 	flagsStr := strings.Join(flags, " ")
 
-	return fmt.Sprintf(
+	findAndMoveCmd := fmt.Sprintf(
 		"find %s/ %s %s -exec mv -t %s {} +",
-		srcDirPath.String(),
+		sourceDir.String(),
 		flagsStr,
 		params,
-		destinationDirPath.String(),
+		targetDir.String(),
 	)
+	_, err := infraHelper.RunCmdWithSubShell(findAndMoveCmd)
+	return err
 }
 
 func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
@@ -473,12 +475,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		return errors.New("CreatePublicDirectoryBackupError: " + err.Error())
 	}
 
-	shouldIgnoreFiles := true
-	moveFilesToKeepCmd := repo.generateFindWithMoveCmd(
+	shouldKeepInstead := true
+	err = repo.moveSelectedFiles(
 		installedItem.InstallDirectory, publicDirBackupPath,
-		catalogItem.UninstallFileNames, shouldIgnoreFiles,
+		catalogItem.UninstallFileNames, shouldKeepInstead,
 	)
-	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
 	if err != nil {
 		return errors.New("MoveFilesToKeepToBackupDirectoryError: " + err.Error())
 	}
@@ -515,12 +516,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		return errors.New("RecreatePublicDirectoryError: " + err.Error())
 	}
 
-	shouldIgnoreFiles = false
-	moveFilesToKeepCmd = repo.generateFindWithMoveCmd(
+	shouldKeepInstead = false
+	err = repo.moveSelectedFiles(
 		publicDirBackupPath, installedItem.InstallDirectory,
-		nil, shouldIgnoreFiles,
+		nil, shouldKeepInstead,
 	)
-	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
 	if err != nil {
 		return errors.New("RestoreFilesToKeepError: " + err.Error())
 	}
@@ -564,12 +564,11 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		)
 	}
 
-	shouldIgnoreFiles := false
-	removeFilesCmd := repo.generateFindWithMoveCmd(
+	shouldKeepInstead := false
+	err = repo.moveSelectedFiles(
 		installedItem.InstallDirectory, removalDestinationPath,
-		catalogItem.UninstallFileNames, shouldIgnoreFiles,
+		catalogItem.UninstallFileNames, shouldKeepInstead,
 	)
-	_, err = infraHelper.RunCmdWithSubShell(removeFilesCmd)
 	if err != nil {
 		return errors.New("RemoveFilesDuringUninstallError: " + err.Error())
 	}
