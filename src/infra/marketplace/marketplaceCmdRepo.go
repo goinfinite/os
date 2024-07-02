@@ -15,7 +15,6 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
@@ -477,13 +476,13 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + infraData.GlobalConfigs.PrimaryPublicDir,
+		"rm -rf " + installedItem.InstallDirectory.String(),
 	)
 	if err != nil {
 		return errors.New("RemovePublicDirectoryError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(infraData.GlobalConfigs.PrimaryPublicDir)
+	err = infraHelper.MakeDir(installedItem.InstallDirectory.String())
 	if err != nil {
 		return errors.New("RecreatePublicDirectoryError: " + err.Error())
 	}
@@ -491,7 +490,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 	moveFilesToKeepCmd = fmt.Sprintf(
 		"find %s/ -mindepth 1 -maxdepth 1 -exec mv -t %s {} +",
 		publicDirBackupPath,
-		infraData.GlobalConfigs.PrimaryPublicDir,
+		installedItem.InstallDirectory.String(),
 	)
 	_, err = infraHelper.RunCmdWithSubShell(moveFilesToKeepCmd)
 	if err != nil {
@@ -526,6 +525,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return errors.New("CreateTrashDirectoryError: " + err.Error())
 	}
 
+	log.Printf("InstallDirectory: %s", installedItem.InstallDirectory.String())
 	if infraHelper.IsSymlink(installedItem.InstallDirectory.String()) {
 		return repo.uninstallSymlinkFilesRemoval(installedItem, catalogItem, trashDirPath)
 	}
