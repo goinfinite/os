@@ -111,6 +111,7 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 			}
 
 			functionalHostnames = append(functionalHostnames, vhostName)
+			break
 		}
 	}
 
@@ -200,10 +201,10 @@ func (repo *SslCmdRepo) issueValidSsl(
 	mainHostname valueObject.Fqdn,
 	functionalHostnames []valueObject.Fqdn,
 ) error {
-	mainPairHostnameStr := mainHostname.String()
+	mainHostnameStr := mainHostname.String()
 	vhostRootDir := infraData.GlobalConfigs.PrimaryPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(mainHostname) {
-		vhostRootDir += "/" + mainPairHostnameStr
+		vhostRootDir += "/" + mainHostnameStr
 	}
 
 	if !infraHelper.FileExists(vhostRootDir) {
@@ -211,7 +212,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 	}
 
 	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
-		" --agree-tos --register-unsafely-without-email --cert-name " + mainPairHostnameStr
+		" --agree-tos --register-unsafely-without-email --cert-name " + mainHostnameStr
 	for _, functionalHostname := range functionalHostnames {
 		certbotCmd += " -d " + functionalHostname.String()
 	}
@@ -224,15 +225,15 @@ func (repo *SslCmdRepo) issueValidSsl(
 	certbotDirPath := "/etc/letsencrypt/live"
 	shouldOverwrite := true
 
-	certbotCrtFilePath := certbotDirPath + "/" + mainPairHostnameStr + "/fullchain.pem"
-	vhostCrtFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + mainPairHostnameStr + ".crt"
+	certbotCrtFilePath := certbotDirPath + "/" + mainHostnameStr + "/fullchain.pem"
+	vhostCrtFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + mainHostnameStr + ".crt"
 	err = infraHelper.CreateSymlink(certbotCrtFilePath, vhostCrtFilePath, shouldOverwrite)
 	if err != nil {
 		return errors.New("CreateSslCertSymlinkError: " + err.Error())
 	}
 
-	certbotKeyFilePath := certbotDirPath + "/" + mainPairHostnameStr + "/privkey.pem"
-	vhostKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + mainPairHostnameStr + ".key"
+	certbotKeyFilePath := certbotDirPath + "/" + mainHostnameStr + "/privkey.pem"
+	vhostKeyFilePath := infraData.GlobalConfigs.PkiConfDir + "/" + mainHostnameStr + ".key"
 	err = infraHelper.CreateSymlink(certbotKeyFilePath, vhostKeyFilePath, shouldOverwrite)
 	if err != nil {
 		return errors.New("CreateSslKeySymlinkError: " + err.Error())
