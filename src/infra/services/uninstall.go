@@ -1,9 +1,11 @@
 package servicesInfra
 
 import (
+	"errors"
 	"os"
 
 	"github.com/speedianet/os/src/domain/valueObject"
+	cronInfra "github.com/speedianet/os/src/infra/cron"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
@@ -17,7 +19,34 @@ func purgePkgs(packages []string) error {
 	return nil
 }
 
-func removeMariaDb() error {
+func uninstallPhpWebserver() error {
+	cronQueryRepo := cronInfra.CronQueryRepo{}
+	crons, err := cronQueryRepo.Get()
+	if err != nil {
+		return errors.New("ReadCronsError")
+	}
+
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	if err != nil {
+		return errors.New("CreateCronCmdRepoError: " + err.Error())
+	}
+
+	for _, cron := range crons {
+		if cron.Comment.String() != PhpWebserverAutoReloadCronComment {
+			continue
+		}
+
+		err = cronCmdRepo.Delete(cron.Id)
+		if err != nil {
+			return errors.New("DeleteAutoReloadCronError")
+		}
+	}
+
+	packages := append(OlsPackages, "lsphp*")
+	return purgePkgs(packages)
+}
+
+func uninstallMariaDb() error {
 	pathsToRemove := []string{
 		"/etc/mysql",
 		"/var/lib/mysql",
@@ -36,7 +65,7 @@ func removeMariaDb() error {
 	return purgePkgs(MariaDbPackages)
 }
 
-func removeRedis() error {
+func uninstallRedis() error {
 	pathsToRemove := []string{
 		"/etc/redis",
 		"/var/lib/redis",
@@ -54,7 +83,7 @@ func removeRedis() error {
 	return purgePkgs(RedisPackages)
 }
 
-func removePostgres() error {
+func uninstallPostgreSql() error {
 	pathsToRemove := []string{
 		"/etc/postgresql",
 		"/var/lib/postgresql",
@@ -81,15 +110,14 @@ func Uninstall(name valueObject.ServiceName) error {
 	}
 
 	switch name.String() {
-	case "php", "php-webserver":
-		packages := append(OlsPackages, "lsphp*")
-		return purgePkgs(packages)
+	case "php-webserver", "php":
+		return uninstallPhpWebserver()
 	case "mariadb":
-		return removeMariaDb()
+		return uninstallMariaDb()
 	case "redis":
-		return removeRedis()
-	case "postgresql":
-		return removePostgres()
+		return uninstallRedis()
+	case "postgresql", "postgres":
+		return uninstallPostgreSql()
 	default:
 		return nil
 	}

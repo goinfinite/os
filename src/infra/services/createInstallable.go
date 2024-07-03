@@ -12,6 +12,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	cronInfra "github.com/speedianet/os/src/infra/cron"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	"github.com/speedianet/os/src/infra/infraData"
 )
@@ -26,6 +27,8 @@ var supportedServicesVersion = map[string]string{
 var OlsPackages = []string{
 	"openlitespeed",
 }
+
+const PhpWebserverAutoReloadCronComment string = "AutoReloadPhpWebServerAfterHtaccessChange"
 
 var PhpPackages = []string{
 	"lsphp74",
@@ -122,7 +125,7 @@ func installGpgKey(serviceName string, url string) error {
 	return nil
 }
 
-func addPhp() error {
+func installPhpWebserver() error {
 	repoFilePath := "/speedia/repo.litespeed.sh"
 	err := infraHelper.DownloadFile("https://repo.litespeed.sh", repoFilePath)
 	if err != nil {
@@ -247,6 +250,27 @@ func addPhp() error {
 	)
 	if err != nil {
 		return errors.New("CreateSupervisorConfError: " + err.Error())
+	}
+
+	// @see https://openlitespeed.org/kb/reload-openlitespeed-automatically-with-directadmin/
+	findFreshHtaccessCmd := "find " + infraData.GlobalConfigs.PrimaryPublicDir +
+		" -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +"
+	autoReloadWebserverCmd := "if ! " + findFreshHtaccessCmd + "; then " +
+		"/speedia/os services update -n php-webserver -s restart; fi"
+
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	if err != nil {
+		return errors.New("CreateCronCmdRepoError: " + err.Error())
+	}
+
+	cronCmd, _ := valueObject.NewUnixCommand(autoReloadWebserverCmd)
+	cronSchedule, _ := valueObject.NewCronSchedule("*/2 * * * *")
+	cronComment, _ := valueObject.NewCronComment(PhpWebserverAutoReloadCronComment)
+	createCronDto := dto.NewCreateCron(cronSchedule, cronCmd, &cronComment)
+
+	err = cronCmdRepo.Create(createCronDto)
+	if err != nil {
+		return errors.New("CreateAutoReloadCronError: " + err.Error())
 	}
 
 	return nil
@@ -458,7 +482,7 @@ func addMariaDb(createDto dto.CreateInstallableService) error {
 	return nil
 }
 
-func addPostgresqlDb(createDto dto.CreateInstallableService) error {
+func installPostgreSql(createDto dto.CreateInstallableService) error {
 	versionStr := "16"
 	if createDto.Version != nil {
 		versionStr = createDto.Version.String()
@@ -748,13 +772,13 @@ func CreateInstallable(
 
 	switch svcNameStr {
 	case "php-webserver", "php":
-		return addPhp()
+		return installPhpWebserver()
 	case "node":
 		return addNode(createDto)
 	case "mariadb":
 		return addMariaDb(createDto)
 	case "postgresql":
-		return addPostgresqlDb(createDto)
+		return installPostgreSql(createDto)
 	case "redis":
 		return addRedis(createDto)
 	default:
