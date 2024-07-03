@@ -21,7 +21,7 @@ func NewRuntimeCmdRepo() *RuntimeCmdRepo {
 	return &RuntimeCmdRepo{runtimeQueryRepo: RuntimeQueryRepo{}}
 }
 
-func (repo *RuntimeCmdRepo) restartPhp() error {
+func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
 	phpSvcName, _ := valueObject.NewServiceName("php-webserver")
 	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
 	err := servicesCmdRepo.Restart(phpSvcName)
@@ -58,7 +58,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
 
-	return repo.restartPhp()
+	return repo.restartPhpWebserver()
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpSettings(
@@ -86,7 +86,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 		}
 	}
 
-	return repo.restartPhp()
+	return repo.restartPhpWebserver()
 }
 
 func (repo *RuntimeCmdRepo) EnablePhpModule(
@@ -240,7 +240,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 		}
 	}
 
-	return repo.restartPhp()
+	return repo.restartPhpWebserver()
 }
 
 func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
