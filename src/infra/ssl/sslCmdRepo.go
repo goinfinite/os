@@ -78,7 +78,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostName valueObject.Fqdn) error 
 	)
 }
 
-func (repo *SslCmdRepo) createDomainValidationMapping(
+func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	targetVhostName valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
 ) (mappingId valueObject.MappingId, err error) {
@@ -208,7 +208,7 @@ func (repo *SslCmdRepo) filterDomainsMappedToServer(
 			continue
 		}
 
-		domainValidationMappingId, err := repo.createDomainValidationMapping(
+		ownershipValidationMappingId, err := repo.createOwnershipValidationMapping(
 			vhostName,
 			expectedOwnershipHash,
 		)
@@ -249,7 +249,7 @@ func (repo *SslCmdRepo) filterDomainsMappedToServer(
 		}
 
 		mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
-		err = mappingCmdRepo.Delete(domainValidationMappingId)
+		err = mappingCmdRepo.Delete(ownershipValidationMappingId)
 		if err != nil {
 			log.Printf("DeleteOwnershipValidationMappingError: %s", err.Error())
 		}
