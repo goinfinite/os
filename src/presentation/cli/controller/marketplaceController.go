@@ -141,7 +141,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var installedIdInt int
 	var shouldUninstallServices bool
-	var shouldRemoveFiles bool
 
 	cmd := &cobra.Command{
 		Use:   "delete",
@@ -150,7 +149,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 			installedId := valueObject.NewMarketplaceItemIdPanic(installedIdInt)
 
 			deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
-				installedId, shouldUninstallServices, shouldRemoveFiles,
+				installedId, shouldUninstallServices,
 			)
 
 			marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
@@ -174,10 +173,6 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	cmd.Flags().BoolVarP(
 		&shouldUninstallServices, "shouldUninstallServices", "s", true,
 		"ShouldUninstallInstalledItemServices",
-	)
-	cmd.Flags().BoolVarP(
-		&shouldRemoveFiles, "shouldRemoveFiles", "f", true,
-		"ShouldRemoveInstalledItemFiles",
 	)
 	return cmd
 }

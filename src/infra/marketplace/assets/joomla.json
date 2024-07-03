@@ -33,7 +33,7 @@
       "isRequired": true
     }
   ],
-  "cmdSteps": [
+  "installCmdSteps": [
     "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
     "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
     "os db create -n joomlaDb_%installUuid% -t mysql",
@@ -41,6 +41,35 @@
     "os runtime php update -n %installHostname% -v 8.2",
     "cd %installDirectory%; php %installDirectory%/installation/joomla.php install --site-name=baseWebsite --admin-user=%adminUsername% --admin-username=%adminUsername% --admin-password=%adminPassword% --admin-email=%adminMailAddress% --db-type=mysqli --db-host=localhost --db-user=joomlaUser_%installUuid% --db-pass=%installRandomPassword% --db-name=joomlaDb_%installUuid% --db-prefix=joomla_ --db-encryption=0 -n",
     "cp %installDirectory%/htaccess.txt %installDirectory%/.htaccess"
+  ],
+  "uninstallCmdSteps": [
+    "os db delete-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid%",
+    "os db delete -n joomlaDb_%installUuid% -t mysql"
+  ],
+  "uninstallFileNames": [
+    "administrator",
+    "api",
+    "cache",
+    "cli",
+    "components",
+    "images",
+    "includes",
+    "language",
+    "layouts",
+    "libraries",
+    "media",
+    "modules",
+    "plugins",
+    "templates",
+    "tmp",
+    "web.config.txt",
+    ".htaccess",
+    "configuration.php",
+    "htaccess.txt",
+    "index.php",
+    "LICENSE.txt",
+    "README.txt",
+    "robots.txt"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",

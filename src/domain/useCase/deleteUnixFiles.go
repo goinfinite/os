@@ -9,7 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-const trashDirPath string = "/app/.trash"
+const TrashDirPath string = "/app/.trash"
 
 type DeleteUnixFiles struct {
 	filesQueryRepo repository.FilesQueryRepo
@@ -27,7 +27,7 @@ func NewDeleteUnixFiles(
 }
 
 func (uc DeleteUnixFiles) emptyTrash() error {
-	trashPath, _ := valueObject.NewUnixFilePath(trashDirPath)
+	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
 	err := uc.filesCmdRepo.Delete(trashPath)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (uc DeleteUnixFiles) emptyTrash() error {
 }
 
 func (uc DeleteUnixFiles) CreateTrash() error {
-	trashPath, _ := valueObject.NewUnixFilePath(trashDirPath)
+	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
 
 	_, err := uc.filesQueryRepo.GetOne(trashPath)
 	if err == nil {
@@ -59,7 +59,7 @@ func (uc DeleteUnixFiles) Execute(
 	deleteUnixFiles dto.DeleteUnixFiles,
 ) error {
 	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
-		shouldCleanTrash := fileToDelete.String() == trashDirPath
+		shouldCleanTrash := fileToDelete.String() == TrashDirPath
 		if shouldCleanTrash {
 			err := uc.emptyTrash()
 			if err != nil {
@@ -115,7 +115,7 @@ func (uc DeleteUnixFiles) Execute(
 	}
 
 	for _, fileToMoveToTrash := range deleteUnixFiles.SourcePaths {
-		trashPathWithFileNameStr := trashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
+		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 
 		shouldOverwrite := true
