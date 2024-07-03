@@ -25,9 +25,7 @@ type O11yQueryRepo struct {
 func NewO11yQueryRepo(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yQueryRepo {
-	return &O11yQueryRepo{
-		transientDbSvc: transientDbSvc,
-	}
+	return &O11yQueryRepo{transientDbSvc: transientDbSvc}
 }
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
@@ -39,9 +37,10 @@ func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 	return uint64(sysinfo.Uptime), nil
 }
 
-func (repo *O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
-	var ipAddress valueObject.IpAddress
-
+func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
+	ipAddress valueObject.IpAddress,
+	err error,
+) {
 	cachedIpAddressStr, err := repo.transientDbSvc.Get(
 		infraData.GlobalConfigs.PublicIpTransientKey,
 	)
@@ -49,37 +48,20 @@ func (repo *O11yQueryRepo) getPublicIpAddress() (valueObject.IpAddress, error) {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
-	rawIpEntry, err := infraHelper.RunCmd(
-		"dig", "+short", "TXT", "o-o.myaddr.l.google.com", "@ns1.google.com",
-	)
+	serverPublicIpAddress, err := infraHelper.ReadServerPublicIpAddress()
 	if err != nil {
-		rawIpEntry, err = infraHelper.RunCmd(
-			"dig", "+short", "TXT", "CH", "whoami.cloudflare", "@1.1.1.1",
-		)
-		if err != nil {
-			return ipAddress, errors.New("GetPublicIpFailed: " + err.Error())
-		}
-	}
-
-	rawIpEntry = strings.Trim(rawIpEntry, `"`)
-	if rawIpEntry == "" {
-		return ipAddress, errors.New("GetPublicIpFailed: NoIpEntry")
-	}
-
-	ipAddress, err = valueObject.NewIpAddress(rawIpEntry)
-	if err != nil {
-		return ipAddress, err
+		return ipAddress, errors.New("ReadServerPublicIpAddressError: " + err.Error())
 	}
 
 	err = repo.transientDbSvc.Set(
 		infraData.GlobalConfigs.PublicIpTransientKey,
-		ipAddress.String(),
+		serverPublicIpAddress.String(),
 	)
 	if err != nil {
 		return ipAddress, errors.New("PersistPublicIpFailed: " + err.Error())
 	}
 
-	return ipAddress, nil
+	return serverPublicIpAddress, nil
 }
 
 func (repo *O11yQueryRepo) isCgroupV2() bool {
@@ -390,9 +372,9 @@ func (repo *O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
 		uptime = 0
 	}
 
-	publicIpAddress, err := repo.getPublicIpAddress()
+	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
-		log.Printf("GetPublicIpAddressError: %s", err.Error())
+		log.Printf("ReadServerPublicIpAddressError: %s", err.Error())
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 
