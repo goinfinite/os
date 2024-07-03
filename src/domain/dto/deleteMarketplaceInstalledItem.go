@@ -11,11 +11,9 @@ type DeleteMarketplaceInstalledItem struct {
 func NewDeleteMarketplaceInstalledItem(
 	installedId valueObject.MarketplaceItemId,
 	shouldUninstallServices bool,
-	shouldRemoveFiles bool,
 ) DeleteMarketplaceInstalledItem {
 	return DeleteMarketplaceInstalledItem{
 		InstalledId:             installedId,
 		ShouldUninstallServices: shouldUninstallServices,
-		ShouldRemoveFiles:       shouldRemoveFiles,
 	}
 }

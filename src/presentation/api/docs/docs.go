@@ -1040,12 +1040,6 @@ const docTemplate = `{
                         "description": "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'.",
                         "name": "shouldUninstallServices",
                         "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Should remove all files that were created with the marketplace item installation? Default is 'true'.",
-                        "name": "shouldRemoveFiles",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1900,7 +1894,7 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "virtualHosts": {
+                "virtualHostsHostnames": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1942,7 +1936,7 @@ const docTemplate = `{
                 "sslPairId": {
                     "type": "string"
                 },
-                "virtualHosts": {
+                "virtualHostsHostnames": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2519,7 +2513,7 @@ const docTemplate = `{
                 "sslPairId": {
                     "type": "string"
                 },
-                "virtualHosts": {
+                "virtualHostsHostnames": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2614,7 +2608,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "cpuCores": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "cpuFrequency": {
                     "type": "number"

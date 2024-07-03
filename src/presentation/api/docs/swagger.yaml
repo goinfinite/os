@@ -107,7 +107,7 @@ definitions:
         $ref: '#/definitions/entity.SslCertificate'
       key:
         type: string
-      virtualHosts:
+      virtualHostsHostnames:
         items:
           type: string
         type: array
@@ -134,7 +134,7 @@ definitions:
     properties:
       sslPairId:
         type: string
-      virtualHosts:
+      virtualHostsHostnames:
         items:
           type: string
         type: array
@@ -510,7 +510,7 @@ definitions:
         type: string
       sslPairId:
         type: string
-      virtualHosts:
+      virtualHostsHostnames:
         items:
           type: string
         type: array
@@ -573,7 +573,7 @@ definitions:
   valueObject.HardwareSpecs:
     properties:
       cpuCores:
-        type: integer
+        type: number
       cpuFrequency:
         type: number
       cpuModel:
@@ -1297,11 +1297,6 @@ paths:
           item installation? Default is 'true'.
         in: query
         name: shouldUninstallServices
-        type: boolean
-      - description: Should remove all files that were created with the marketplace
-          item installation? Default is 'true'.
-        in: query
-        name: shouldRemoveFiles
         type: boolean
       produces:
       - application/json

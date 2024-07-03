@@ -32,7 +32,7 @@
       "isRequired": true
     }
   ],
-  "cmdSteps": [
+  "installCmdSteps": [
     "curl -skL -o /app/composer-setup.php https://getcomposer.org/installer",
     "php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer",
     "rm -rf /app/composer-setup.php",
@@ -49,6 +49,30 @@
     "find %installTempDir% -mindepth 1 -maxdepth 1 -exec mv -t %installDirectory% {} +",
     "chown -h nobody:nogroup %installDirectory%",
     "chown -R nobody:nogroup -L /app/drupal-%installHostname%-%installUuid%/"
+  ],
+  "uninstallCmdSteps": [
+    "os db delete-user -n drupalDb_%installUuid% -t mysql -u drupalUser_%installUuid%",
+    "os db delete -n drupalDb_%installUuid% -t mysql"
+  ],
+  "uninstallFileNames": [
+    "core",
+    "modules",
+    "profiles",
+    "sites",
+    "themes",
+    ".csslintrc",
+    ".eslintignore",
+    ".eslintrc.json",
+    ".ht.router.php",
+    ".htaccess",
+    "INSTALL.txt",
+    "README.md",
+    "autoload.php",
+    "example.gitignore",
+    "index.php",
+    "robots.txt",
+    "update.php",
+    "web.config"
   ],
   "estimatedSizeBytes": 100000000,
   "avatarUrl": "https://speedia.net/assets/os/marketplace/drupal/drupal-avatar.jpg",

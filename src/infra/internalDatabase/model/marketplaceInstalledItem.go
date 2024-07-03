@@ -20,6 +20,7 @@ type MarketplaceInstalledItem struct {
 	Services         string
 	Mappings         []Mapping
 	AvatarUrl        string    `gorm:"not null"`
+	Slug             string    `gorm:"not null"`
 	CreatedAt        time.Time `gorm:"not null"`
 	UpdatedAt        time.Time `gorm:"not null"`
 }
@@ -100,6 +101,11 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
+	slug, err := valueObject.NewMarketplaceItemSlug(model.Slug)
+	if err != nil {
+		return marketplaceInstalledItem, err
+	}
+
 	rawCreatedAtUnix := model.CreatedAt.UTC().Unix()
 	createdAt := valueObject.UnixTime(rawCreatedAtUnix)
 
@@ -117,6 +123,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		serviceNamesWithVersion,
 		mappings,
 		avatarUrl,
+		slug,
 		createdAt,
 		updatedAt,
 	), nil
