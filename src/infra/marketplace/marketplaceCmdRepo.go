@@ -529,7 +529,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 		nil, shouldKeepInstead,
 	)
 	if err != nil {
-		return errors.New("MoveNonUninstallFilesBackToInstallDirError: " + err.Error())
+		return errors.New("RestoreNonUninstallFilesError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + installDirBackupPathStr)
