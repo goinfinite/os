@@ -175,7 +175,6 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Security     Bearer
 // @Param        installedId path uint true "MarketplaceInstalledItemId to delete."
 // @Param        shouldUninstallServices query boolean false "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'."
-// @Param        shouldRemoveFiles query boolean false "Should remove all files that were created with the marketplace item installation? Default is 'true'."
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
@@ -195,18 +194,8 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 		}
 	}
 
-	shouldRemoveFiles := true
-	if c.QueryParam("shouldRemoveFiles") != "" {
-		shouldRemoveFiles, err = sharedHelper.ParseBoolParam(
-			c.QueryParam("shouldRemoveFiles"),
-		)
-		if err != nil {
-			shouldRemoveFiles = false
-		}
-	}
-
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
-		installedId, shouldUninstallServices, shouldRemoveFiles,
+		installedId, shouldUninstallServices,
 	)
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(controller.persistentDbSvc)
