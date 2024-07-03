@@ -192,25 +192,25 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 }
 
 func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
-	installDir valueObject.UnixFilePath,
+	targetDir valueObject.UnixFilePath,
 ) error {
-	installDirStr := installDir.String()
+	targetDirStr := targetDir.String()
 
 	chownRecursively := true
 	chownSymlinksToo := true
 	err := infraHelper.UpdatePermissionsForWebServerUse(
-		installDirStr, chownRecursively, chownSymlinksToo,
+		targetDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
-		return errors.New("ChownError (" + installDirStr + "): " + err.Error())
+		return errors.New("ChownError (" + targetDirStr + "): " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		`find ` + installDirStr + ` -type d -exec chmod 755 {} \; && find ` +
-			installDirStr + ` -type f -exec chmod 644 {} \;`,
+		`find ` + targetDirStr + ` -type d -exec chmod 755 {} \; && find ` +
+			targetDirStr + ` -type f -exec chmod 644 {} \;`,
 	)
 	if err != nil {
-		return errors.New("ChmodError (" + installDirStr + "): " + err.Error())
+		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}
 
 	return nil
@@ -500,6 +500,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("SoftDeleteItemFilesError: " + err.Error())
 	}
 
+	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
+	if err != nil {
+		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
+	}
+
 	_, err = infraHelper.RunCmdWithSubShell(
 		"rm -rf " + installedItemRealRootDirPath,
 	)
@@ -574,7 +579,12 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 		catalogItem.UninstallFileNames, keepOnlySelectedInstead,
 	)
 	if err != nil {
-		return errors.New("DeleteItemFilesError: " + err.Error())
+		return errors.New("SoftDeleteItemFilesError: " + err.Error())
+	}
+
+	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
+	if err != nil {
+		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
 	return nil
