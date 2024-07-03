@@ -166,17 +166,9 @@ func (controller *SslController) SslCertificateWatchdog() {
 	sslCmdRepo := sslInfra.NewSslCmdRepo(
 		controller.persistentDbSvc, controller.transientDbSvc,
 	)
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
 	for range timer.C {
-		sslCertificateWatchdog := useCase.NewSslCertificateWatchdog(
-			sslQueryRepo,
-			sslCmdRepo,
-			vhostQueryRepo,
-			vhostCmdRepo,
-		)
-		sslCertificateWatchdog.Execute()
+		useCase.SslCertificateWatchdog(sslQueryRepo, sslCmdRepo)
 	}
 }
 
