@@ -15,13 +15,16 @@ import (
 
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
 }
 
 func NewSslController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *SslController {
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
+		transientDbSvc:  transientDbSvc,
 	}
 }
 
@@ -62,13 +65,13 @@ func (controller *SslController) Create() *cobra.Command {
 				certificateFilePath.String(),
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "FailedToOpenSslCertificateFile")
+				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
 			sslCertificateContent := valueObject.NewSslCertificateContentPanic(certificateContentStr)
 
 			privateKeyContentStr, err := infraHelper.GetFileContent(keyFilePathStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "FailedToOpenPrivateKeyFile")
+				cliHelper.ResponseWrapper(false, "OpenPrivateKeyFileError")
 			}
 
 			sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
@@ -80,7 +83,9 @@ func (controller *SslController) Create() *cobra.Command {
 				sslPrivateKey,
 			)
 
-			sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+			sslCmdRepo := sslInfra.NewSslCmdRepo(
+				controller.persistentDbSvc, controller.transientDbSvc,
+			)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.CreateSslPair(
@@ -115,7 +120,9 @@ func (controller *SslController) Delete() *cobra.Command {
 			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
 
 			cronQueryRepo := sslInfra.SslQueryRepo{}
-			cronCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+			cronCmdRepo := sslInfra.NewSslCmdRepo(
+				controller.persistentDbSvc, controller.transientDbSvc,
+			)
 
 			err := useCase.DeleteSslPair(
 				cronQueryRepo,
@@ -153,7 +160,9 @@ func (controller *SslController) DeleteVhosts() *cobra.Command {
 			dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
 
 			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+			sslCmdRepo := sslInfra.NewSslCmdRepo(
+				controller.persistentDbSvc, controller.transientDbSvc,
+			)
 
 			err := useCase.DeleteSslPairVhosts(
 				sslQueryRepo,
