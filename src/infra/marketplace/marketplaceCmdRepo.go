@@ -487,14 +487,20 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("TemporarilyMoveUnfamiliarFilesError: " + err.Error())
 	}
 
-	installedItemRealRootDirPath := fmt.Sprintf(
+	rawInstalledItemRealRootDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
 		installedItem.Slug.String(),
 		itemHostnameStr,
 		installedItem.InstallUuid.String(),
 	)
+	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(rawInstalledItemRealRootDirPath)
+	if err != nil {
+		return err
+	}
+	installedItemRealRootDirPathStr := installedItemRealRootDirPath.String()
+
 	_, err = infraHelper.RunCmdWithSubShell(
-		"mv " + installedItemRealRootDirPath + "/* " + softDeleteDestDirPath.String(),
+		"mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String(),
 	)
 	if err != nil {
 		return errors.New("SoftDeleteItemFilesError: " + err.Error())
@@ -506,7 +512,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + installedItemRealRootDirPath,
+		"rm -rf " + installedItemRealRootDirPathStr,
 	)
 	if err != nil {
 		return errors.New("DeleteItemRealRootPathError: " + err.Error())
@@ -550,19 +556,19 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 		return nil
 	}
 
-	softDeleteDestDirPathStr := fmt.Sprintf(
+	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
 		useCase.TrashDirPath,
 		installedItem.Slug.String(),
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
-	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(softDeleteDestDirPathStr)
+	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
 	if err != nil {
 		return err
 	}
 
-	err = infraHelper.MakeDir(softDeleteDestDirPathStr)
+	err = infraHelper.MakeDir(softDeleteDestDirPath.String())
 	if err != nil {
 		return errors.New("CreateSoftDeleteDirError: " + err.Error())
 	}
