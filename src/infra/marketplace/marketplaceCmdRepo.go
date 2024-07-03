@@ -465,69 +465,76 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
 	catalogItem entity.MarketplaceCatalogItem,
 	removalDestinationPath valueObject.UnixFilePath,
 ) error {
-	publicDirBackupPath, err := valueObject.NewUnixFilePath("/app/html-backup")
+	installedHostnameStr := installedItem.Hostname.String()
+	installDirBackupPath, err := valueObject.NewUnixFilePath(
+		"/app/" + installedHostnameStr + "-backup",
+	)
 	if err != nil {
 		return err
 	}
 
-	err = infraHelper.MakeDir(publicDirBackupPath.String())
+	installDirBackupPathStr := installDirBackupPath.String()
+	err = infraHelper.MakeDir(installDirBackupPathStr)
 	if err != nil {
-		return errors.New("CreatePublicDirectoryBackupError: " + err.Error())
+		return errors.New("CreateInstallDirBackupError: " + err.Error())
 	}
 
 	shouldKeepInstead := true
 	err = repo.moveSelectedFiles(
-		installedItem.InstallDirectory, publicDirBackupPath,
+		installedItem.InstallDirectory, installDirBackupPath,
 		catalogItem.UninstallFileNames, shouldKeepInstead,
 	)
 	if err != nil {
-		return errors.New("MoveFilesToKeepToBackupDirectoryError: " + err.Error())
+		return errors.New("MoveNonUninstallFilesToBackupDirError: " + err.Error())
 	}
 
+	installedSlugStr := installedItem.Slug.String()
+	installUuidStr := installedItem.InstallUuid.String()
 	srcInstallDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
-		installedItem.Slug.String(),
-		installedItem.Hostname.String(),
-		installedItem.InstallUuid.String(),
+		installedSlugStr,
+		installedHostnameStr,
+		installUuidStr,
 	)
 	_, err = infraHelper.RunCmdWithSubShell(
 		"mv " + srcInstallDirPath + "/* " + removalDestinationPath.String(),
 	)
 	if err != nil {
-		return errors.New("MoveFilesToRemoveToTrashError: " + err.Error())
+		return errors.New("MoveUninstallFilesToTrashError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
 		"rm -rf " + srcInstallDirPath,
 	)
 	if err != nil {
-		return errors.New("RemoveSourceInstallDirectoryError: " + err.Error())
+		return errors.New("RemoveSourceInstallDirError: " + err.Error())
 	}
 
+	installDirStr := installedItem.InstallDirectory.String()
 	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + installedItem.InstallDirectory.String(),
+		"rm -rf " + installDirStr,
 	)
 	if err != nil {
-		return errors.New("RemovePublicDirectoryError: " + err.Error())
+		return errors.New("RemoveSymlinkInstallDirError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(installedItem.InstallDirectory.String())
+	err = infraHelper.MakeDir(installDirStr)
 	if err != nil {
-		return errors.New("RecreatePublicDirectoryError: " + err.Error())
+		return errors.New("RecreateInstallDirError: " + err.Error())
 	}
 
 	shouldKeepInstead = false
 	err = repo.moveSelectedFiles(
-		publicDirBackupPath, installedItem.InstallDirectory,
+		installDirBackupPath, installedItem.InstallDirectory,
 		nil, shouldKeepInstead,
 	)
 	if err != nil {
-		return errors.New("RestoreFilesToKeepError: " + err.Error())
+		return errors.New("MoveNonUninstallFilesBackToInstallDirError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + publicDirBackupPath.String())
+	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + installDirBackupPathStr)
 	if err != nil {
-		return errors.New("RemovePublicDirectoryBackupError: " + err.Error())
+		return errors.New("RemoveInstallDirBackupError: " + err.Error())
 	}
 
 	return nil
