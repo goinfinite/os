@@ -253,7 +253,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		sslPair.VirtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
-		return errors.New("NoDnsFunctionalHostnames")
+		return errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
 	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
@@ -268,7 +268,7 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
-		return errors.New("NoHttpFunctionalHostnames")
+		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
 	return repo.issueValidSsl(
