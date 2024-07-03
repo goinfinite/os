@@ -56,6 +56,7 @@ var PhpPackages = []string{
 
 var MariaDbPackages = []string{
 	"mariadb-server",
+	"mariadb-client",
 }
 
 var RedisPackages = []string{
