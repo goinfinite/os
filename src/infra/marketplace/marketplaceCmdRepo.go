@@ -449,14 +449,14 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	}
 	flagsStr := strings.Join(flags, " ")
 
-	findAndMoveCmd := fmt.Sprintf(
+	moveCmd := fmt.Sprintf(
 		"find %s/ %s %s -exec mv -t %s {} +",
 		sourceDir.String(),
 		flagsStr,
 		params,
 		targetDir.String(),
 	)
-	_, err := infraHelper.RunCmdWithSubShell(findAndMoveCmd)
+	_, err := infraHelper.RunCmdWithSubShell(moveCmd)
 	return err
 }
 
