@@ -13,7 +13,7 @@ import (
 type CronQueryRepo struct {
 }
 
-func (repo *CronQueryRepo) cronFactory(
+func (repo CronQueryRepo) cronFactory(
 	cronIndex int,
 	cronLine string,
 ) (entity.Cron, error) {
@@ -61,7 +61,7 @@ func (repo *CronQueryRepo) cronFactory(
 	return entity.NewCron(id, schedule, cmd, cronCommentPtr), nil
 }
 
-func (repo *CronQueryRepo) Get() ([]entity.Cron, error) {
+func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
 	cronOut, err := infraHelper.RunCmd("crontab", "-l")
@@ -96,7 +96,7 @@ func (repo *CronQueryRepo) Get() ([]entity.Cron, error) {
 	return crons, nil
 }
 
-func (repo *CronQueryRepo) GetById(
+func (repo CronQueryRepo) GetById(
 	cronId valueObject.CronId,
 ) (cronEntity entity.Cron, err error) {
 	crons, err := repo.Get()
