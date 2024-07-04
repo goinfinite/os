@@ -20,26 +20,16 @@ func purgePkgs(packages []string) error {
 }
 
 func uninstallPhpWebserver() error {
-	cronQueryRepo := cronInfra.CronQueryRepo{}
-	crons, err := cronQueryRepo.Get()
-	if err != nil {
-		return errors.New("ReadCronsError")
-	}
-
 	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return errors.New("CreateCronCmdRepoError: " + err.Error())
 	}
 
-	for _, cron := range crons {
-		if cron.Comment.String() != PhpWebserverAutoReloadCronComment {
-			continue
-		}
+	cronComment, _ := valueObject.NewCronComment(PhpWebserverAutoReloadCronComment)
 
-		err = cronCmdRepo.Delete(cron.Id)
-		if err != nil {
-			return errors.New("DeleteAutoReloadCronError")
-		}
+	err = cronCmdRepo.DeleteByComment(cronComment)
+	if err != nil {
+		return errors.New("DeleteAutoReloadCronError: " + err.Error())
 	}
 
 	packages := append(OlsPackages, "lsphp*")
