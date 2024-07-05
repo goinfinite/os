@@ -35,6 +35,11 @@ func genSecret() (string, error) {
 }
 
 func CheckEnvs() {
+	primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
+	if err != nil {
+		log.Fatalf("PrimaryHostnameUnidentifiable")
+	}
+
 	envFilePath := "/speedia/.env"
 
 	envFile, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
@@ -54,6 +59,12 @@ func CheckEnvs() {
 			continue
 		}
 
+		if key == "PRIMARY_VHOST" {
+			value = primaryHostname.String()
+			os.Setenv(key, value)
+			continue
+		}
+
 		if !slices.Contains(envVarsToGenerateIfEmpty, key) {
 			log.Fatalf("MissingEnvVar: %s", key)
 		}
@@ -69,10 +80,5 @@ func CheckEnvs() {
 		}
 
 		os.Setenv(key, value)
-	}
-
-	_, err = infraHelper.GetPrimaryVirtualHost()
-	if err != nil {
-		log.Fatalf("PrimaryVirtualHostNotFound")
 	}
 }

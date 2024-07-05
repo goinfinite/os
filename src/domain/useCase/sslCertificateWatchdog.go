@@ -8,29 +8,11 @@ import (
 
 const SslValidationsPerHour int = 4
 
-type SslCertificateWatchdog struct {
-	sslQueryRepo   repository.SslQueryRepo
-	sslCmdRepo     repository.SslCmdRepo
-	vhostQueryRepo repository.VirtualHostQueryRepo
-	vhostCmdRepo   repository.VirtualHostCmdRepo
-}
-
-func NewSslCertificateWatchdog(
+func SslCertificateWatchdog(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
-) SslCertificateWatchdog {
-	return SslCertificateWatchdog{
-		sslQueryRepo:   sslQueryRepo,
-		sslCmdRepo:     sslCmdRepo,
-		vhostQueryRepo: vhostQueryRepo,
-		vhostCmdRepo:   vhostCmdRepo,
-	}
-}
-
-func (uc SslCertificateWatchdog) Execute() {
-	sslPairs, err := uc.sslQueryRepo.Read()
+) {
+	sslPairs, err := sslQueryRepo.Read()
 	if err != nil {
 		log.Printf("ReadSslPairsError: %s", err.Error())
 		return
@@ -41,10 +23,12 @@ func (uc SslCertificateWatchdog) Execute() {
 			continue
 		}
 
-		err = uc.sslCmdRepo.ReplaceWithValidSsl(sslPair)
+		err = sslCmdRepo.ReplaceWithValidSsl(sslPair)
 		if err != nil {
-			firstVhostName := sslPair.VirtualHostsHostnames[0]
-			log.Printf("ReplaceWithValidSslError (%s): %s", firstVhostName.String(), err.Error())
+			mainSslPairHostname := sslPair.VirtualHostsHostnames[0]
+			log.Printf(
+				"ReplaceWithValidSslError (%s): %s", mainSslPairHostname.String(), err.Error(),
+			)
 		}
 	}
 }

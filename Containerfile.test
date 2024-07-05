@@ -7,7 +7,6 @@ RUN apt-get update && apt-get upgrade -y \
     && curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor > "/usr/share/keyrings/nginx-archive-keyring.gpg" \ 
     && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
     && install_packages nginx cron \
-    && touch /var/spool/cron/crontabs/root \
     && mkdir -p /app/logs/nginx /app/conf/pki /app/html \
     && chown -R nobody:nogroup /app
 

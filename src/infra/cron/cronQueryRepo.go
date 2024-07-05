@@ -62,17 +62,21 @@ func (repo CronQueryRepo) cronFactory(
 }
 
 func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
+	crons := []entity.Cron{}
+
 	cronOut, err := infraHelper.RunCmd("crontab", "-l")
 	if err != nil {
-		return []entity.Cron{}, errors.New("CrontabReadError")
+		if strings.Contains(err.Error(), "no crontab") {
+			return crons, nil
+		}
+		return crons, errors.New("CrontabReadError: " + err.Error())
 	}
 
 	cronLines := strings.Split(cronOut, "\n")
 	if len(cronLines) == 0 {
-		return []entity.Cron{}, nil
+		return crons, nil
 	}
 
-	crons := []entity.Cron{}
 	for cronIndex, cronLine := range cronLines {
 		if cronLine == "" {
 			continue
@@ -92,23 +96,26 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 	return crons, nil
 }
 
-func (repo CronQueryRepo) GetById(cronId valueObject.CronId) (entity.Cron, error) {
-	cronjobs, err := repo.Get()
+func (repo CronQueryRepo) GetById(
+	cronId valueObject.CronId,
+) (cronEntity entity.Cron, err error) {
+	crons, err := repo.Get()
 	if err != nil {
-		return entity.Cron{}, err
+		return cronEntity, err
 	}
 
-	if len(cronjobs) < 1 {
-		return entity.Cron{}, errors.New("CronNotFound")
+	if len(crons) == 0 {
+		return cronEntity, errors.New("CronNotFound")
 	}
 
-	for _, cronjob := range cronjobs {
-		if cronjob.Id.String() != cronId.String() {
+	cronIdStr := cronId.String()
+	for _, cron := range crons {
+		if cron.Id.String() != cronIdStr {
 			continue
 		}
 
-		return cronjob, nil
+		return cron, nil
 	}
 
-	return entity.Cron{}, errors.New("CronNotFound")
+	return cronEntity, errors.New("CronNotFound")
 }

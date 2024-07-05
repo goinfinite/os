@@ -82,13 +82,13 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installDir valueObject.UnixFilePath,
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
-	installUuid string,
+	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	dataMap := map[string]string{
 		"installDirectory":      installDir.String(),
 		"installUrlPath":        installUrlPath.String(),
 		"installHostname":       installHostname.String(),
-		"installUuid":           installUuid,
+		"installUuid":           installUuid.String(),
 		"installTempDir":        installTempDirPath,
 		"installRandomPassword": infraHelper.GenPass(16),
 	}
@@ -192,25 +192,25 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 }
 
 func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
-	installDir valueObject.UnixFilePath,
+	targetDir valueObject.UnixFilePath,
 ) error {
-	installDirStr := installDir.String()
+	targetDirStr := targetDir.String()
 
 	chownRecursively := true
 	chownSymlinksToo := true
 	err := infraHelper.UpdatePermissionsForWebServerUse(
-		installDirStr, chownRecursively, chownSymlinksToo,
+		targetDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
-		return errors.New("ChownError (" + installDirStr + "): " + err.Error())
+		return errors.New("ChownError (" + targetDirStr + "): " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		`find ` + installDirStr + ` -type d -exec chmod 755 {} \; && find ` +
-			installDirStr + ` -type f -exec chmod 644 {} \;`,
+		`find ` + targetDirStr + ` -type d -exec chmod 755 {} \; && find ` +
+			targetDirStr + ` -type f -exec chmod 644 {} \;`,
 	)
 	if err != nil {
-		return errors.New("ChmodError (" + installDirStr + "): " + err.Error())
+		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}
 
 	return nil
@@ -301,7 +301,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	hostname valueObject.Fqdn,
 	urlPath valueObject.UrlPath,
 	installDir valueObject.UnixFilePath,
-	installUuid string,
+	installUuid valueObject.MarketplaceInstalledItemUuid,
 	mappingsId []valueObject.MappingId,
 ) error {
 	servicesList := []string{}
@@ -323,7 +323,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Type:             catalogItem.Type.String(),
 		UrlPath:          urlPath.String(),
 		InstallDirectory: installDir.String(),
-		InstallUuid:      installUuid,
+		InstallUuid:      installUuid.String(),
 		Services:         servicesListStr,
 		Mappings:         mappingModels,
 		AvatarUrl:        catalogItem.AvatarUrl.String(),
@@ -364,12 +364,15 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	installDirStr = installDir.String()
 
-	installUuid := uuid.New().String()[:16]
-	installUuidWithoutHyphens := strings.Replace(installUuid, "-", "", -1)
+	rawInstallUuid := uuid.New().String()[:16]
+	rawInstallUuidNoHyphens := strings.Replace(rawInstallUuid, "-", "", -1)
+	installUuid, err := valueObject.NewMarketplaceInstalledItemUuid(rawInstallUuidNoHyphens)
+	if err != nil {
+		return err
+	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installDir, installUrlPath, installDto.Hostname,
-		installUuidWithoutHyphens,
+		installDir, installUrlPath, installDto.Hostname, installUuid,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -398,7 +401,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 
 	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirPath)
 	if err != nil {
-		return errors.New("RemoveTmpDirectoryError: " + err.Error())
+		return errors.New("DeleteTmpDirectoryError: " + err.Error())
 	}
 
 	err = repo.updateFilesPrivileges(installDir)
@@ -423,7 +426,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installDto.Hostname,
 		installUrlPath,
 		installDir,
-		installUuidWithoutHyphens,
+		installUuid,
 		mappingIds,
 	)
 }
@@ -432,7 +435,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	sourceDir valueObject.UnixFilePath,
 	targetDir valueObject.UnixFilePath,
 	fileNames []valueObject.UnixFileName,
-	shouldKeepInstead bool,
+	keepOnlySelectedInstead bool,
 ) error {
 	fileNamesFilterParams := "-name \"" + fileNames[0].String() + "\""
 	for _, fileToIgnore := range fileNames[1:] {
@@ -440,7 +443,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	}
 
 	findCmdFlags := []string{"-mindepth 1", "-maxdepth 1"}
-	if shouldKeepInstead {
+	if keepOnlySelectedInstead {
 		findCmdFlags = append(findCmdFlags, "-not")
 	}
 	findCmdFlagsStr := strings.Join(findCmdFlags, " ")
@@ -456,84 +459,96 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	return err
 }
 
-func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesRemoval(
+func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	installedItem entity.MarketplaceInstalledItem,
 	catalogItem entity.MarketplaceCatalogItem,
-	removalDestinationPath valueObject.UnixFilePath,
+	softDeleteDestDirPath valueObject.UnixFilePath,
 ) error {
 	itemHostnameStr := installedItem.Hostname.String()
-	itemRootDirBackup, err := valueObject.NewUnixFilePath(
-		"/app/" + itemHostnameStr + "-backup",
+	unfamiliarFilesBackupDir, err := valueObject.NewUnixFilePath(
+		"/app/" + itemHostnameStr + "-unfamiliar-files-backup",
 	)
 	if err != nil {
 		return err
 	}
 
-	itemRootDirBackupStr := itemRootDirBackup.String()
-	err = infraHelper.MakeDir(itemRootDirBackupStr)
+	unfamiliarFilesBackupDirStr := unfamiliarFilesBackupDir.String()
+	err = infraHelper.MakeDir(unfamiliarFilesBackupDirStr)
 	if err != nil {
-		return errors.New("CreateRootDirBackupError: " + err.Error())
+		return errors.New("CreateUnfamiliarFilesBackupDirError: " + err.Error())
 	}
 
-	shouldKeepInstead := true
+	keepOnlySelectedInstead := true
 	err = repo.moveSelectedFiles(
-		installedItem.InstallDirectory, itemRootDirBackup,
-		catalogItem.UninstallFileNames, shouldKeepInstead,
+		installedItem.InstallDirectory, unfamiliarFilesBackupDir,
+		catalogItem.UninstallFileNames, keepOnlySelectedInstead,
 	)
 	if err != nil {
-		return errors.New("MoveKeptFilesDuringUninstallError: " + err.Error())
+		return errors.New("TemporarilyMoveUnfamiliarFilesError: " + err.Error())
 	}
 
-	itemSrcRootDirPath := fmt.Sprintf(
+	rawInstalledItemRealRootDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
 		installedItem.Slug.String(),
 		itemHostnameStr,
 		installedItem.InstallUuid.String(),
 	)
-	_, err = infraHelper.RunCmdWithSubShell(
-		"mv " + itemSrcRootDirPath + "/* " + removalDestinationPath.String(),
-	)
+	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(rawInstalledItemRealRootDirPath)
 	if err != nil {
-		return errors.New("MoveUninstallFilesToTrashError: " + err.Error())
+		return err
 	}
+	installedItemRealRootDirPathStr := installedItemRealRootDirPath.String()
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + itemSrcRootDirPath,
+		"mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String(),
 	)
 	if err != nil {
-		return errors.New("DeleteItemSourceRootDirError: " + err.Error())
+		return errors.New("SoftDeleteItemFilesError: " + err.Error())
 	}
 
-	itemRootDirStr := installedItem.InstallDirectory.String()
-	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + itemRootDirStr,
-	)
+	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
 	if err != nil {
-		return errors.New("DeleteItemSymlinkRootDirError: " + err.Error())
-	}
-
-	err = infraHelper.MakeDir(itemRootDirStr)
-	if err != nil {
-		return errors.New("RecreateItemRootDirError: " + err.Error())
+		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"find " + itemRootDirBackupStr + "/ -mindepth 1 -maxdepth 1 -exec mv -t " +
-			itemRootDirStr + " {} +",
+		"rm -rf " + installedItemRealRootDirPathStr,
 	)
 	if err != nil {
-		return errors.New("RestoreKeptFilesDuringUninstallError: " + err.Error())
+		return errors.New("DeleteItemRealRootPathError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + itemRootDirBackupStr)
+	itemAliasesRootDirStr := installedItem.InstallDirectory.String()
+	_, err = infraHelper.RunCmdWithSubShell(
+		"rm -rf " + itemAliasesRootDirStr,
+	)
 	if err != nil {
-		return errors.New("DeleteRootDirBackupError: " + err.Error())
+		return errors.New("DeleteItemAliasesRootDirError: " + err.Error())
+	}
+
+	err = infraHelper.MakeDir(itemAliasesRootDirStr)
+	if err != nil {
+		return errors.New("RecreateItemAliasesRootDirAsRealDirError: " + err.Error())
+	}
+
+	keepOnlySelectedInstead = true
+	err = repo.moveSelectedFiles(
+		unfamiliarFilesBackupDir, installedItem.InstallDirectory,
+		catalogItem.UninstallFileNames, keepOnlySelectedInstead,
+	)
+	if err != nil {
+		return errors.New("RestoreUnfamiliarFilesError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + unfamiliarFilesBackupDirStr)
+	if err != nil {
+		return errors.New("DeleteUnfamiliarFilesBackupDirError: " + err.Error())
 	}
 
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
+func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 	installedItem entity.MarketplaceInstalledItem,
 	catalogItem entity.MarketplaceCatalogItem,
 ) error {
@@ -541,36 +556,41 @@ func (repo *MarketplaceCmdRepo) uninstallFilesRemoval(
 		return nil
 	}
 
-	removalDestinationPathStr := fmt.Sprintf(
+	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
 		useCase.TrashDirPath,
 		installedItem.Slug.String(),
 		installedItem.Hostname.String(),
 		installedItem.InstallUuid.String(),
 	)
-	removalDestinationPath, err := valueObject.NewUnixFilePath(removalDestinationPathStr)
+	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
 	if err != nil {
 		return err
 	}
 
-	err = infraHelper.MakeDir(removalDestinationPathStr)
+	err = infraHelper.MakeDir(softDeleteDestDirPath.String())
 	if err != nil {
-		return errors.New("CreateTrashDirectoryError: " + err.Error())
+		return errors.New("CreateSoftDeleteDirError: " + err.Error())
 	}
 
 	if infraHelper.IsSymlink(installedItem.InstallDirectory.String()) {
-		return repo.uninstallSymlinkFilesRemoval(
-			installedItem, catalogItem, removalDestinationPath,
+		return repo.uninstallSymlinkFilesDelete(
+			installedItem, catalogItem, softDeleteDestDirPath,
 		)
 	}
 
-	shouldKeepInstead := false
+	keepOnlySelectedInstead := false
 	err = repo.moveSelectedFiles(
-		installedItem.InstallDirectory, removalDestinationPath,
-		catalogItem.UninstallFileNames, shouldKeepInstead,
+		installedItem.InstallDirectory, softDeleteDestDirPath,
+		catalogItem.UninstallFileNames, keepOnlySelectedInstead,
 	)
 	if err != nil {
-		return errors.New("RemoveFilesDuringUninstallError: " + err.Error())
+		return errors.New("SoftDeleteItemFilesError: " + err.Error())
+	}
+
+	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
+	if err != nil {
+		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
 	return nil
@@ -646,14 +666,14 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	err = repo.uninstallFilesRemoval(installedItem, catalogItem)
+	err = repo.uninstallFilesDelete(installedItem, catalogItem)
 	if err != nil {
 		return err
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installedItem.InstallDirectory, installedItem.UrlPath, installedItem.Hostname,
-		installedItem.InstallUuid.String(),
+		installedItem.InstallDirectory, installedItem.UrlPath,
+		installedItem.Hostname, installedItem.InstallUuid,
 	)
 	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
 	if err != nil {

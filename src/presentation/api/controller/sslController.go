@@ -17,13 +17,16 @@ import (
 
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
 }
 
 func NewSslController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *SslController {
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
+		transientDbSvc:  transientDbSvc,
 	}
 }
 
@@ -105,7 +108,9 @@ func (controller *SslController) Create(c echo.Context) error {
 		sslPrivateKey,
 	)
 
-	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+	sslCmdRepo := sslInfra.NewSslCmdRepo(
+		controller.persistentDbSvc, controller.transientDbSvc,
+	)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 	err := useCase.CreateSslPair(
@@ -134,7 +139,9 @@ func (controller *SslController) Delete(c echo.Context) error {
 	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+	sslCmdRepo := sslInfra.NewSslCmdRepo(
+		controller.persistentDbSvc, controller.transientDbSvc,
+	)
 
 	err := useCase.DeleteSslPair(
 		sslQueryRepo,
@@ -156,18 +163,12 @@ func (controller *SslController) SslCertificateWatchdog() {
 	defer timer.Stop()
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
+	sslCmdRepo := sslInfra.NewSslCmdRepo(
+		controller.persistentDbSvc, controller.transientDbSvc,
+	)
 
 	for range timer.C {
-		sslCertificateWatchdog := useCase.NewSslCertificateWatchdog(
-			sslQueryRepo,
-			sslCmdRepo,
-			vhostQueryRepo,
-			vhostCmdRepo,
-		)
-		sslCertificateWatchdog.Execute()
+		useCase.SslCertificateWatchdog(sslQueryRepo, sslCmdRepo)
 	}
 }
 
@@ -193,7 +194,9 @@ func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
 
 	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(controller.persistentDbSvc)
+	sslCmdRepo := sslInfra.NewSslCmdRepo(
+		controller.persistentDbSvc, controller.transientDbSvc,
+	)
 
 	err := useCase.DeleteSslPairVhosts(
 		sslQueryRepo,
