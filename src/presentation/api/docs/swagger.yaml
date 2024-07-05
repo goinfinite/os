@@ -1,4 +1,4 @@
-basePath: /_/api
+basePath: /api
 definitions:
   dto.CompressUnixFiles:
     properties:
@@ -659,7 +659,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: OsApi
-  version: 0.0.2
+  version: 0.0.3
 paths:
   /v1/account/:
     get:
