@@ -6,8 +6,8 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 )
 
 type VirtualHost struct {
@@ -29,7 +29,7 @@ func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 	primaryEntry := VirtualHost{
 		Hostname:      primaryVhostName.String(),
 		Type:          "primary",
-		RootDirectory: infraData.GlobalConfigs.PrimaryPublicDir,
+		RootDirectory: infraEnvs.PrimaryPublicDir,
 	}
 
 	return []interface{}{primaryEntry}, nil

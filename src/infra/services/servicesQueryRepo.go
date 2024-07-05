@@ -15,8 +15,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -39,7 +39,7 @@ func (repo ServicesQueryRepo) GetMultiServiceName(
 
 	switch serviceName.String() {
 	case "node":
-		startupFilePathStr = infraData.GlobalConfigs.PrimaryPublicDir + "/index.js"
+		startupFilePathStr = infraEnvs.PrimaryPublicDir + "/index.js"
 	default:
 		return "", errors.New("UnknownInstallableMultiService")
 	}

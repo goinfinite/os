@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/glebarez/sqlite"
-	"github.com/speedianet/os/src/infra/infraData"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
@@ -16,7 +16,7 @@ type PersistentDatabaseService struct {
 
 func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
-		sqlite.Open(infraData.GlobalConfigs.DatabaseFilePath),
+		sqlite.Open(infraEnvs.PersistentDatabaseFilePath),
 		&gorm.Config{},
 	)
 	if err != nil {

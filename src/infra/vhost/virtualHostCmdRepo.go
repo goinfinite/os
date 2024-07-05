@@ -9,8 +9,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	infraData "github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
@@ -48,8 +48,8 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 		"VhostName":        vhostNameStr,
 		"AliasesHostnames": aliasesHostnamesStr,
 		"PublicDirectory":  publicDir,
-		"CertPath":         infraData.GlobalConfigs.PkiConfDir + "/" + vhostNameStr + ".crt",
-		"KeyPath":          infraData.GlobalConfigs.PkiConfDir + "/" + vhostNameStr + ".key",
+		"CertPath":         infraEnvs.PkiConfDir + "/" + vhostNameStr + ".crt",
+		"KeyPath":          infraEnvs.PkiConfDir + "/" + vhostNameStr + ".key",
 		"MappingFilePath":  mappingFilePath,
 	}
 
@@ -105,10 +105,10 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
+		vhostFileNameStr = infraEnvs.PrimaryVhostFileName
 	}
 
-	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr
+	mappingFilePathStr := infraEnvs.MappingsConfDir + "/" + vhostFileNameStr
 	mappingFilePath, err := valueObject.NewUnixFilePath(mappingFilePathStr)
 	if err != nil {
 		return errors.New(err.Error() + ": " + mappingFilePathStr)
@@ -128,7 +128,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return err
 	}
 
-	unitConfFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
+	unitConfFilePathStr := infraEnvs.VirtualHostsConfDir + "/" + vhostFileNameStr
 	unitConfFilePath, err := valueObject.NewUnixFilePath(unitConfFilePathStr)
 	if err != nil {
 		return errors.New(err.Error() + ": " + unitConfFilePathStr)
@@ -181,7 +181,7 @@ func (repo *VirtualHostCmdRepo) createAlias(createDto dto.CreateVirtualHost) err
 	}
 
 	err = infraHelper.CreateSelfSignedSsl(
-		infraData.GlobalConfigs.PkiConfDir,
+		infraEnvs.PkiConfDir,
 		parentVhost.Hostname.String(),
 		aliasesStr,
 	)
@@ -206,7 +206,7 @@ func (repo *VirtualHostCmdRepo) updateDirsOwnership(
 	directories := []string{
 		publicDir.String(),
 		"/app/conf/nginx",
-		infraData.GlobalConfigs.PkiConfDir,
+		infraEnvs.PkiConfDir,
 	}
 
 	for _, directory := range directories {
@@ -232,7 +232,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 
 	hostnameStr := createDto.Hostname.String()
 
-	publicDirStr := infraData.GlobalConfigs.PrimaryPublicDir + "/" + hostnameStr
+	publicDirStr := infraEnvs.PrimaryPublicDir + "/" + hostnameStr
 	publicDir, err := valueObject.NewUnixFilePath(publicDirStr)
 	if err != nil {
 		return errors.New(err.Error() + ": " + publicDirStr)
@@ -245,7 +245,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 
 	aliases := []string{}
 	err = infraHelper.CreateSelfSignedSsl(
-		infraData.GlobalConfigs.PkiConfDir,
+		infraEnvs.PkiConfDir,
 		hostnameStr,
 		aliases,
 	)
@@ -271,16 +271,16 @@ func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
 ) error {
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
+		vhostFileNameStr = infraEnvs.PrimaryVhostFileName
 	}
 
-	mappingFilePathStr := infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr
+	mappingFilePathStr := infraEnvs.MappingsConfDir + "/" + vhostFileNameStr
 	err := os.Remove(mappingFilePathStr)
 	if err != nil {
 		return err
 	}
 
-	webServerUnitFilePathStr := infraData.GlobalConfigs.VirtualHostsConfDir + "/" + vhostFileNameStr
+	webServerUnitFilePathStr := infraEnvs.VirtualHostsConfDir + "/" + vhostFileNameStr
 	err = os.Remove(webServerUnitFilePathStr)
 	if err != nil {
 		return err

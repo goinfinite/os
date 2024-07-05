@@ -13,8 +13,8 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	cronInfra "github.com/speedianet/os/src/infra/cron"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 )
 
 var supportedServicesVersion = map[string]string{
@@ -156,7 +156,7 @@ func installPhpWebserver() error {
 
 	err = copyAssets(
 		"php-webserver/httpd_config.conf",
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return errors.New("CopyAssetsError: " + err.Error())
@@ -169,7 +169,7 @@ func installPhpWebserver() error {
 
 	_, err = infraHelper.RunCmd(
 		"sed", "-i", "s/speedia.net/"+primaryVhost.String()+"/g",
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return errors.New("RenameHttpdVHostError: " + err.Error())
@@ -253,7 +253,7 @@ func installPhpWebserver() error {
 	}
 
 	// @see https://openlitespeed.org/kb/reload-openlitespeed-automatically-with-directadmin/
-	findFreshHtaccessCmd := "find " + infraData.GlobalConfigs.PrimaryPublicDir +
+	findFreshHtaccessCmd := "find " + infraEnvs.PrimaryPublicDir +
 		" -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +"
 	autoReloadWebserverCmd := "if ! " + findFreshHtaccessCmd + "; then " +
 		"/speedia/os services update -n php-webserver -s restart; fi"
@@ -295,13 +295,13 @@ func addNode(createDto dto.CreateInstallableService) error {
 		return errors.New("InstallNodeError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(infraData.GlobalConfigs.PrimaryPublicDir)
+	err = infraHelper.MakeDir(infraEnvs.PrimaryPublicDir)
 	if err != nil {
 		return errors.New("CreateBaseDirError: " + err.Error())
 	}
 
 	startupFile := valueObject.NewUnixFilePathPanic(
-		infraData.GlobalConfigs.PrimaryPublicDir + "/index.js",
+		infraEnvs.PrimaryPublicDir + "/index.js",
 	)
 	if createDto.StartupFile != nil {
 		startupFile = *createDto.StartupFile

@@ -9,8 +9,8 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 )
 
 type RuntimeQueryRepo struct {
@@ -48,7 +48,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 ) {
 	output, err := infraHelper.RunCmd(
 		"awk", "/extprocessor lsphp/{print $2}",
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())

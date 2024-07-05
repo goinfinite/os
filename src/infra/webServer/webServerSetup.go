@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	infraData "github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -45,7 +45,7 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 		"-i",
 		"-e",
 		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+desiredChildProcessesStr+";/g",
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateMaxChildProcessesFailed")
@@ -100,7 +100,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	aliases := []string{}
 	err = infraHelper.CreateSelfSignedSsl(
-		infraData.GlobalConfigs.PkiConfDir,
+		infraEnvs.PkiConfDir,
 		primaryVhostStr,
 		aliases,
 	)
