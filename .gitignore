@@ -3,3 +3,4 @@ bin/
 logs/
 .env
 TODO.md
+*.db
