@@ -8,8 +8,12 @@ type CreateCustomService struct {
 	Command           valueObject.UnixCommand     `json:"command"`
 	Envs              []valueObject.ServiceEnv    `json:"envs"`
 	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
-	AutoCreateMapping bool                        `json:"autoCreateMapping"`
 	Version           *valueObject.ServiceVersion `json:"version"`
+	AutoStart         *bool                       `json:"autoStart"`
+	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
+	AutoRestart       *bool                       `json:"autoRestart"`
+	MaxStartRetries   *uint                       `json:"maxStartRetries"`
+	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
 }
 
 func NewCreateCustomService(
@@ -18,8 +22,12 @@ func NewCreateCustomService(
 	command valueObject.UnixCommand,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	autoCreateMapping bool,
 	version *valueObject.ServiceVersion,
+	autoStart *bool,
+	timeoutStartSecs *uint,
+	autoRestart *bool,
+	maxStartRetries *uint,
+	autoCreateMapping *bool,
 ) CreateCustomService {
 	return CreateCustomService{
 		Name:              name,
@@ -27,7 +35,11 @@ func NewCreateCustomService(
 		Command:           command,
 		Envs:              envs,
 		PortBindings:      portBindings,
-		AutoCreateMapping: autoCreateMapping,
 		Version:           version,
+		AutoStart:         autoStart,
+		TimeoutStartSecs:  timeoutStartSecs,
+		AutoRestart:       autoRestart,
+		MaxStartRetries:   maxStartRetries,
+		AutoCreateMapping: autoCreateMapping,
 	}
 }
