@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"os"
 	"testing"
-	"time"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -19,9 +19,7 @@ func TestAuthQueryRepo(t *testing.T) {
 
 	token, err := authCmdRepo.GenerateSessionToken(
 		valueObject.AccountId(1000),
-		valueObject.UnixTime(
-			time.Now().Add(3*time.Hour).Unix(),
-		),
+		valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
 		valueObject.NewIpAddressPanic("127.0.0.1"),
 	)
 	if err != nil {

@@ -106,12 +106,6 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	rawCreatedAtUnix := model.CreatedAt.UTC().Unix()
-	createdAt := valueObject.UnixTime(rawCreatedAtUnix)
-
-	rawUpdatedAtUnix := model.UpdatedAt.UTC().Unix()
-	updatedAt := valueObject.UnixTime(rawUpdatedAtUnix)
-
 	return entity.NewMarketplaceInstalledItem(
 		id,
 		itemName,
@@ -124,7 +118,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		mappings,
 		avatarUrl,
 		slug,
-		createdAt,
-		updatedAt,
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

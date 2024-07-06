@@ -109,7 +109,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 		unixFileContentPtr = &unixFileContent
 	}
 
-	unixFileUpdatedAt := valueObject.UnixTime(fileInfo.ModTime().Unix())
+	unixFileUpdatedAt := valueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
 
 	unixFile = entity.NewUnixFile(
 		unixFilePath.GetFileName(),

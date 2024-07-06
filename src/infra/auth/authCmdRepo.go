@@ -28,7 +28,7 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	}
 
 	now := time.Now()
-	tokenExpiration := time.Unix(expiresIn.Get(), 0)
+	tokenExpiration := time.Unix(expiresIn.Read(), 0)
 
 	claims := jwt.MapClaims{
 		"iss":        apiURL,
