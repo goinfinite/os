@@ -4,28 +4,32 @@ import (
 	"errors"
 	"log"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func DeleteCron(
 	cronQueryRepo repository.CronQueryRepo,
 	cronCmdRepo repository.CronCmdRepo,
-	cronId valueObject.CronId,
+	deleteDto dto.DeleteCron,
 ) error {
-	_, err := cronQueryRepo.GetById(cronId)
-	if err != nil {
-		log.Printf("CronNotFound: %s", err)
-		return errors.New("CronNotFound")
+	if deleteDto.Id == nil && deleteDto.Comment == nil {
+		return errors.New("CronIdOrCommentRequired")
 	}
 
-	err = cronCmdRepo.Delete(cronId)
-	if err != nil {
-		log.Printf("DeleteCronError: %s", err)
-		return errors.New("DeleteCronInfraError")
+	if deleteDto.Id != nil {
+		err := cronCmdRepo.Delete(*deleteDto.Id)
+		if err != nil {
+			log.Printf("DeleteCronError: %s", err)
+			return errors.New("DeleteCronInfraError")
+		}
 	}
 
-	log.Printf("CronId '%v' deleted.", cronId)
+	err := cronCmdRepo.DeleteByComment(*deleteDto.Comment)
+	if err != nil {
+		log.Printf("DeleteCronByCommentError: %s", err)
+		return errors.New("DeleteCronByCommentInfraError")
+	}
 
 	return nil
 }

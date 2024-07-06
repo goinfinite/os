@@ -159,10 +159,12 @@ func DeleteCronController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
+	deleteDto := dto.NewDeleteCron(&cronId, nil)
+
 	err = useCase.DeleteCron(
 		cronQueryRepo,
 		cronCmdRepo,
-		cronId,
+		deleteDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

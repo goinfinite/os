@@ -137,12 +137,31 @@ func UpdateCronController() *cobra.Command {
 
 func DeleteCronController() *cobra.Command {
 	var cronIdStr string
+	var cronCommentStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteCron",
 		Run: func(cmd *cobra.Command, args []string) {
-			cronId := valueObject.NewCronIdPanic(cronIdStr)
+			var cronIdPtr *valueObject.CronId
+			if cronIdStr != "" {
+				cronId, err := valueObject.NewCronId(cronIdStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				cronIdPtr = &cronId
+			}
+
+			var cronCommentPtr *valueObject.CronComment
+			if cronCommentStr != "" {
+				cronComment, err := valueObject.NewCronComment(cronCommentStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				cronCommentPtr = &cronComment
+			}
+
+			deleteCronDto := dto.NewDeleteCron(cronIdPtr, cronCommentPtr)
 
 			cronQueryRepo := cronInfra.CronQueryRepo{}
 			cronCmdRepo, err := cronInfra.NewCronCmdRepo()
@@ -150,11 +169,7 @@ func DeleteCronController() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			err = useCase.DeleteCron(
-				cronQueryRepo,
-				cronCmdRepo,
-				cronId,
-			)
+			err = useCase.DeleteCron(cronQueryRepo, cronCmdRepo, deleteCronDto)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -164,6 +179,6 @@ func DeleteCronController() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&cronIdStr, "id", "i", "", "CronId")
-	cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVarP(&cronIdStr, "comment", "d", "", "CronComment")
 	return cmd
 }
