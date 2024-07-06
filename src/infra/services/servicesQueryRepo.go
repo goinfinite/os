@@ -22,7 +22,7 @@ func NewServicesQueryRepo(
 	return &ServicesQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
+func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 	servicesEntities := []entity.InstalledService{}
 
 	servicesModels := []dbModel.InstalledService{}
@@ -45,7 +45,26 @@ func (repo ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 	return servicesEntities, nil
 }
 
-func (repo ServicesQueryRepo) getPpidEntireProcessFamily(
+func (repo *ServicesQueryRepo) ReadByName(
+	name valueObject.ServiceName,
+) (serviceEntity entity.InstalledService, err error) {
+	serviceModel := dbModel.InstalledService{}
+	err = repo.persistentDbSvc.Handler.
+		Where("name = ?", name.String()).
+		First(&serviceModel).Error
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	serviceEntity, err = serviceModel.ToEntity()
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	return serviceEntity, nil
+}
+
+func (repo *ServicesQueryRepo) getPpidEntireProcessFamily(
 	ppid int32,
 ) ([]*process.Process, error) {
 	ppidProcesses := []*process.Process{}
@@ -76,7 +95,7 @@ func (repo ServicesQueryRepo) getPpidEntireProcessFamily(
 	return ppidProcesses, nil
 }
 
-func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
+func (repo *ServicesQueryRepo) getSupervisordServiceMetrics(
 	mainPid int32,
 	uptimeSecs int64,
 ) (valueObject.ServiceMetrics, error) {
@@ -118,17 +137,11 @@ func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
 	return serviceMetrics, nil
 }
 
-func (repo ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error) {
+func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error) {
 	servicesWithMetrics := []dto.InstalledServiceWithMetrics{}
 	return servicesWithMetrics, nil
 }
 
-func (repo ServicesQueryRepo) ReadByName(
-	name valueObject.ServiceName,
-) (serviceEntity entity.InstalledService, err error) {
-	return serviceEntity, err
-}
-
-func (repo ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, error) {
+func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, error) {
 	return []entity.InstallableService{}, nil
 }
