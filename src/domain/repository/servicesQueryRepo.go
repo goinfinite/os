@@ -8,7 +8,7 @@ import (
 
 type ServicesQueryRepo interface {
 	Read() ([]entity.InstalledService, error)
-	ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error)
 	ReadByName(name valueObject.ServiceName) (entity.InstalledService, error)
+	ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error)
 	ReadInstallables() ([]entity.InstallableService, error)
 }
