@@ -13,7 +13,7 @@ func updateServiceStatus(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	serviceEntity entity.Service,
+	serviceEntity entity.InstalledService,
 	updateDto dto.UpdateService,
 ) error {
 	if serviceEntity.Status.String() == updateDto.Status.String() {
@@ -48,7 +48,7 @@ func UpdateService(
 	mappingCmdRepo repository.MappingCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	serviceEntity, err := servicesQueryRepo.GetByName(updateDto.Name)
+	serviceEntity, err := servicesQueryRepo.ReadByName(updateDto.Name)
 	if err != nil {
 		return err
 	}

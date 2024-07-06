@@ -12,5 +12,5 @@ type ServicesCmdRepo interface {
 	Stop(name valueObject.ServiceName) error
 	Restart(name valueObject.ServiceName) error
 	Update(updateDto dto.UpdateService) error
-	Uninstall(name valueObject.ServiceName) error
+	Delete(name valueObject.ServiceName) error
 }

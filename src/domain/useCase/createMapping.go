@@ -101,7 +101,7 @@ func CreateMapping(
 			return errors.New(err.Error() + ": " + targetValueStr)
 		}
 
-		service, err := svcsQueryRepo.GetByName(svcName)
+		service, err := svcsQueryRepo.ReadByName(svcName)
 		if err != nil {
 			log.Printf("GetServiceByNameError: %s", err.Error())
 			return errors.New("GetServiceByNameInfraError")

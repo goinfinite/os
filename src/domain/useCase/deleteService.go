@@ -9,12 +9,12 @@ import (
 )
 
 func DeleteService(
-	queryRepo repository.ServicesQueryRepo,
-	cmdRepo repository.ServicesCmdRepo,
+	servicesQueryRepo repository.ServicesQueryRepo,
+	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
-	serviceEntity, err := queryRepo.GetByName(svcName)
+	serviceEntity, err := servicesQueryRepo.ReadByName(svcName)
 	if err != nil {
 		return errors.New("ServiceNotFound")
 	}
@@ -30,7 +30,7 @@ func DeleteService(
 		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
-	err = cmdRepo.Uninstall(svcName)
+	err = servicesCmdRepo.Delete(svcName)
 	if err != nil {
 		log.Printf("DeleteServiceError: %v", err)
 		return errors.New("DeleteServiceInfraError")
