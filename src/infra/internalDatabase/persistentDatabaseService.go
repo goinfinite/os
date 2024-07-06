@@ -98,13 +98,15 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.VirtualHost{},
 		&dbModel.Mapping{},
 		&dbModel.MarketplaceInstalledItem{},
+		&dbModel.InstalledService{},
 	)
 	if err != nil {
 		return errors.New("DatabaseMigrationError: " + err.Error())
 	}
 
 	modelsWithInitialEntries := map[string]interface{}{
-		"VirtualHost": &dbModel.VirtualHost{},
+		"VirtualHost":      &dbModel.VirtualHost{},
+		"InstalledService": &dbModel.InstalledService{},
 	}
 
 	err = dbSvc.seedDatabase(modelsWithInitialEntries)
