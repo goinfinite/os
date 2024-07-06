@@ -66,6 +66,7 @@
     "speedia",
     "speedianet",
     "sqlite",
+    "supervisorctl",
     "supervisord",
     "svcs",
     "Svcs",
