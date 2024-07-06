@@ -1,6 +1,7 @@
 package servicesInfra
 
 import (
+	"errors"
 	"log"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -35,7 +36,7 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 	for _, serviceModel := range servicesModels {
 		serviceEntity, err := serviceModel.ToEntity()
 		if err != nil {
-			log.Printf("InstalledServiceModelToEntityError: %s", err.Error())
+			log.Printf("[%s] %s", serviceModel.Name, err.Error())
 			continue
 		}
 
@@ -48,12 +49,17 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 func (repo *ServicesQueryRepo) ReadByName(
 	name valueObject.ServiceName,
 ) (serviceEntity entity.InstalledService, err error) {
-	serviceModel := dbModel.InstalledService{}
-	err = repo.persistentDbSvc.Handler.
+	var serviceModel dbModel.InstalledService
+	queryResult := repo.persistentDbSvc.Handler.
 		Where("name = ?", name.String()).
-		First(&serviceModel).Error
-	if err != nil {
+		Limit(1).
+		Find(&serviceModel)
+	if queryResult.Error != nil {
 		return serviceEntity, err
+	}
+
+	if queryResult.RowsAffected == 0 {
+		return serviceEntity, errors.New("ServiceNotFound")
 	}
 
 	serviceEntity, err = serviceModel.ToEntity()
