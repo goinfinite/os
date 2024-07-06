@@ -1,0 +1,47 @@
+name: postgresql
+slugs:
+ - postgresql
+ - postgres
+ - postgre
+nature: solo
+type: database
+description: PostgreSQL, also known as Postgres, is a free and open-source relational database management system emphasizing extensibility and SQL compliance.
+versions:
+ - 16
+ - 15
+ - 14
+ - 13
+ - 12
+portBindings:
+ - 5432/tcp
+command: /usr/lib/postgresql/%version%/bin/postgres -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf
+installCmdSteps:
+ - install -d /usr/share/postgresql-common/pgdg
+ - curl -skL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+ - echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+ - install_packages postgresql-%version%
+ - gpasswd -a postgres ssl-cert
+ - chmod 755 /etc/ssl/private
+ - chown postgres:ssl-cert /etc/ssl/private/ssl-cert-snakeoil.key
+ - chmod 600 /etc/ssl/private/ssl-cert-snakeoil.key
+ - sed -i '1ilocal all all trust' /etc/postgresql/%version%/main/pg_hba.conf
+ - /usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf start
+ - psql -U postgres -c "ALTER USER postgres WITH PASSWORD '%randomPassword%';"
+ - echo "*:*:*:postgres:%randomPassword%" >/root/.pgpass
+ - chmod 400 /root/.pgpass
+ - echo "*:*:*:postgres:%randomPassword%" >/var/lib/postgresql/.pgpass
+ - chown postgres:postgres /var/lib/postgresql/.pgpass
+ - chmod 400 /var/lib/postgresql/.pgpass
+ - sed -i '1s/.*/local all postgres scram-sha-256/' /etc/postgresql/%version%/main/pg_hba.conf
+ - /usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf stop
+uninstallCmdSteps:
+ - apt-get purge -y postgresql*
+uninstallFileNames:
+- /etc/postgresql
+- /var/lib/postgresql
+- /var/log/postgresql
+- /usr/lib/postgresql
+- /etc/apt/sources.list.d/pgdg.list
+- /root/.pgpass
+estimatedSizeBytes: 367001600
+avatarUrl: https://speedia.net/assets/os/services/postgresql/postgresql-avatar.jpg
