@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraEnvs "github.com/speedianet/os/src/infra/envs"
 )
@@ -124,4 +125,104 @@ func NewInstalledService(
 		AutoRestart:      autoRestart,
 		MaxStartRetries:  maxStartRetries,
 	}
+}
+
+func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService, err error) {
+	name, err := valueObject.NewServiceName(model.Name)
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	nature, err := valueObject.NewServiceNature(model.Nature)
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	serviceType, err := valueObject.NewServiceType(model.Type)
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	version, err := valueObject.NewServiceVersion(model.Version)
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	command, err := valueObject.NewUnixCommand(model.Command)
+	if err != nil {
+		return serviceEntity, err
+	}
+
+	status, _ := valueObject.NewServiceStatus("running")
+
+	var envs []valueObject.ServiceEnv
+	if model.Envs != nil {
+		rawEnvsList := strings.Split(*model.Envs, ";")
+		for _, rawEnv := range rawEnvsList {
+			env, err := valueObject.NewServiceEnv(rawEnv)
+			if err != nil {
+				return serviceEntity, err
+			}
+			envs = append(envs, env)
+		}
+	}
+
+	var portBindings []valueObject.PortBinding
+	if model.PortBindings != nil {
+		rawPortBindingsList := strings.Split(*model.PortBindings, ";")
+		for _, rawPortBinding := range rawPortBindingsList {
+			portBinding, err := valueObject.NewPortBindingFromString(rawPortBinding)
+			if err != nil {
+				return serviceEntity, err
+			}
+			portBindings = append(portBindings, portBinding)
+		}
+	}
+
+	var startupFilePtr *valueObject.UnixFilePath
+	if model.StartupFile != nil {
+		startupFile, err := valueObject.NewUnixFilePath(*model.StartupFile)
+		if err != nil {
+			return serviceEntity, err
+		}
+		startupFilePtr = &startupFile
+	}
+
+	var autoStart *bool
+	if model.AutoStart != nil {
+		autoStart = model.AutoStart
+	}
+
+	var timeoutStartSecs *uint
+	if model.TimeoutStartSecs != nil {
+		timeoutStartSecs = model.TimeoutStartSecs
+	}
+
+	var autoRestart *bool
+	if model.AutoRestart != nil {
+		autoRestart = model.AutoRestart
+	}
+
+	var maxStartRetries *uint
+	if model.MaxStartRetries != nil {
+		maxStartRetries = model.MaxStartRetries
+	}
+
+	return entity.NewInstalledService(
+		name,
+		nature,
+		serviceType,
+		version,
+		command,
+		status,
+		envs,
+		portBindings,
+		startupFilePtr,
+		autoStart,
+		timeoutStartSecs,
+		autoRestart,
+		maxStartRetries,
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+	), nil
 }
