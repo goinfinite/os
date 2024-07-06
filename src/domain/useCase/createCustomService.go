@@ -62,6 +62,11 @@ func CreateCustomService(
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
+	if createDto.Version == nil {
+		defaultVersion, _ := valueObject.NewServiceVersion("latest")
+		createDto.Version = &defaultVersion
+	}
+
 	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
 		log.Printf("CreateCustomServiceError: %v", err)
