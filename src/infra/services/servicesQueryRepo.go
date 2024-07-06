@@ -1,10 +1,13 @@
 package servicesInfra
 
 import (
+	"log"
+
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -20,9 +23,26 @@ func NewServicesQueryRepo(
 }
 
 func (repo ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
-	serviceEntities := []entity.InstalledService{}
+	servicesEntities := []entity.InstalledService{}
 
-	return serviceEntities, nil
+	servicesModels := []dbModel.InstalledService{}
+	err := repo.persistentDbSvc.Handler.
+		Find(&servicesModels).Error
+	if err != nil {
+		return servicesEntities, err
+	}
+
+	for _, serviceModel := range servicesModels {
+		serviceEntity, err := serviceModel.ToEntity()
+		if err != nil {
+			log.Printf("InstalledServiceModelToEntityError: %s", err.Error())
+			continue
+		}
+
+		servicesEntities = append(servicesEntities, serviceEntity)
+	}
+
+	return servicesEntities, nil
 }
 
 func (repo ServicesQueryRepo) getPpidEntireProcessFamily(
