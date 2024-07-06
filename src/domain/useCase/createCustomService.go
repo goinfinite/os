@@ -9,44 +9,50 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func serviceMappingFactory(
-	primaryHostname valueObject.Fqdn,
-	svcName valueObject.ServiceName,
-) (dto.CreateMapping, error) {
-	var serviceMapping dto.CreateMapping
-
-	svcMappingPath, err := valueObject.NewMappingPath("/")
+func createFirstMapping(
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingQueryRepo repository.MappingQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
+	serviceName valueObject.ServiceName,
+) error {
+	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		return serviceMapping, err
+		return errors.New("VhostsNotFound")
 	}
 
-	svcMappingMatchPattern, err := valueObject.NewMappingMatchPattern("begins-with")
-	if err != nil {
-		return serviceMapping, err
-	}
-
-	svcMappingTargetType, err := valueObject.NewMappingTargetType("service")
-	if err != nil {
-		return serviceMapping, err
-	}
-
-	svcMappingTargetValue, err := valueObject.NewMappingTargetValue(
-		svcName.String(), svcMappingTargetType,
+	primaryVhost := vhosts[0]
+	primaryVhostMappings, err := mappingQueryRepo.ReadByHostname(
+		primaryVhost.Hostname,
 	)
 	if err != nil {
-		return serviceMapping, err
+		log.Printf("ReadPrimaryVhostMappingsError: %s", err.Error())
+		return errors.New("ReadPrimaryVhostMappingsInfraError")
+	}
+	if len(primaryVhostMappings) != 0 {
+		return nil
 	}
 
-	serviceMapping = dto.NewCreateMapping(
-		primaryHostname,
-		svcMappingPath,
-		svcMappingMatchPattern,
-		svcMappingTargetType,
-		&svcMappingTargetValue,
+	mappingPath, _ := valueObject.NewMappingPath("/")
+	matchPattern, _ := valueObject.NewMappingMatchPattern("begins-with")
+	targetType, _ := valueObject.NewMappingTargetType("service")
+	targetValue, _ := valueObject.NewMappingTargetValue(serviceName.String(), targetType)
+
+	createMappingDto := dto.NewCreateMapping(
+		primaryVhost.Hostname,
+		mappingPath,
+		matchPattern,
+		targetType,
+		&targetValue,
 		nil,
 	)
 
-	return serviceMapping, nil
+	_, err = mappingCmdRepo.Create(createMappingDto)
+	if err != nil {
+		log.Printf("CreateServiceMappingError: %s", err.Error())
+		return errors.New("CreateServiceMappingInfraError")
+	}
+
+	return nil
 }
 
 func CreateCustomService(
@@ -57,7 +63,7 @@ func CreateCustomService(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	createDto dto.CreateCustomService,
 ) error {
-	_, err := servicesQueryRepo.GetByName(createDto.Name)
+	_, err := servicesQueryRepo.ReadByName(createDto.Name)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -73,44 +79,16 @@ func CreateCustomService(
 		return errors.New("CreateCustomServiceInfraError")
 	}
 
-	isRuntimeSvc := createDto.Type.String() == "runtime"
-	isApplicationSvc := createDto.Type.String() == "application"
-	if !isRuntimeSvc && !isApplicationSvc {
+	if createDto.AutoCreateMapping != nil && !*createDto.AutoCreateMapping {
 		return nil
 	}
 
-	vhosts, err := vhostQueryRepo.Read()
-	if err != nil {
-		return errors.New("VhostsNotFound")
-	}
-
-	primaryVhost := vhosts[0]
-	primaryVhostMappings, err := mappingQueryRepo.ReadByHostname(
-		primaryVhost.Hostname,
-	)
-	if err != nil {
-		log.Printf("ReadPrimaryVhostMappingsError: %s", err.Error())
-		return errors.New("ReadPrimaryVhostMappingsInfraError")
-	}
-	shouldCreateFirstMapping := len(primaryVhostMappings) == 0 && createDto.AutoCreateMapping
-	if !shouldCreateFirstMapping {
+	serviceTypeStr := createDto.Type.String()
+	if serviceTypeStr != "runtime" && serviceTypeStr != "application" {
 		return nil
 	}
 
-	serviceMapping, err := serviceMappingFactory(
-		primaryVhost.Hostname,
-		createDto.Name,
+	return createFirstMapping(
+		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, createDto.Name,
 	)
-	if err != nil {
-		log.Printf("CreateServiceMappingError: %s", err.Error())
-		return errors.New("CreateServiceMappingError")
-	}
-
-	_, err = mappingCmdRepo.Create(serviceMapping)
-	if err != nil {
-		log.Printf("CreateServiceMappingError: %s", err.Error())
-		return errors.New("CreateServiceMappingInfraError")
-	}
-
-	return nil
 }
