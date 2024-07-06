@@ -70,8 +70,8 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		return "", errors.New(err.Error() + ": " + svcNameStr)
 	}
 
-	svcQueryRepo := servicesInfra.ServicesQueryRepo{}
-	service, err := svcQueryRepo.GetByName(serviceName)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
+	service, err := servicesQueryRepo.ReadByName(serviceName)
 	if err != nil {
 		return "", errors.New("GetServiceByNameError")
 	}
@@ -375,7 +375,7 @@ func (repo *MappingCmdRepo) Create(
 	isServiceMapping := createDto.TargetType.String() == "service"
 	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php-webserver"
 	if isPhpServiceMapping {
-		runtimeCmdRepo := runtimeInfra.RuntimeCmdRepo{}
+		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(repo.persistentDbSvc)
 		err := runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
 		if err != nil {
 			return mappingId, err

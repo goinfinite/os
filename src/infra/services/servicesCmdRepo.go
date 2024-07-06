@@ -53,13 +53,13 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		createDto.Type.String(),
 		createDto.Version.String(),
 		createDto.Command.String(),
-		true,
-		10,
-		true,
-		3,
-		nil,
 		createDto.Envs,
 		createDto.PortBindings,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
 	)
 
 	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
@@ -74,6 +74,6 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	return repo.Reload()
 }
 
-func (repo *ServicesCmdRepo) Uninstall(name valueObject.ServiceName) error {
+func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	return repo.Reload()
 }

@@ -138,7 +138,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(
@@ -205,7 +205,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(
@@ -267,7 +267,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 			)
 
 			runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+			runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 			err = useCase.UpdatePhpConfigs(

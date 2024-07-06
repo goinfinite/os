@@ -25,13 +25,21 @@ func TestServiceCmdRepo(t *testing.T) {
 			return
 		}
 
+		serviceName, _ := valueObject.NewServiceName("python-ws")
+		serviceType, _ := valueObject.NewServiceType("webserver")
+		unixCommand, _ := valueObject.NewUnixCommand("python3 -m http.server")
+
 		createDto := dto.NewCreateCustomService(
-			valueObject.NewServiceNamePanic("python-ws"),
-			valueObject.NewServiceTypePanic("webserver"),
-			valueObject.NewUnixCommandPanic("python3 -m http.server"),
+			serviceName,
+			serviceType,
+			unixCommand,
 			[]valueObject.ServiceEnv{},
 			[]valueObject.PortBinding{portBinding},
-			true,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
 			nil,
 		)
 

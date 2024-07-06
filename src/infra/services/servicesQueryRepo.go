@@ -1,14 +1,9 @@
 package servicesInfra
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"errors"
-
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 
 	"github.com/shirou/gopsutil/process"
@@ -24,34 +19,9 @@ func NewServicesQueryRepo(
 	return &ServicesQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo *ServicesQueryRepo) GetMultiServiceName(
-	serviceName valueObject.ServiceName,
-	startupFile *valueObject.UnixFilePath,
-) (valueObject.ServiceName, error) {
-	var startupFilePathStr string
+func (repo ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
+	serviceEntities := []entity.InstalledService{}
 
-	switch serviceName.String() {
-	case "node":
-		startupFilePathStr = infraEnvs.PrimaryPublicDir + "/index.js"
-	default:
-		return "", errors.New("UnknownInstallableMultiService")
-	}
-
-	if startupFile != nil {
-		startupFilePathStr = startupFile.String()
-	}
-
-	startupFileBytes := []byte(startupFilePathStr)
-	startupFileHash := md5.Sum(startupFileBytes)
-	startupFileHashStr := hex.EncodeToString(startupFileHash[:])
-	startupFileShortHashStr := startupFileHashStr[:12]
-
-	svcNameWithSuffix := serviceName.String() + "-" + startupFileShortHashStr
-	return valueObject.NewServiceName(svcNameWithSuffix)
-}
-
-func (repo ServicesQueryRepo) Get() ([]entity.Service, error) {
-	serviceEntities := []entity.Service{}
 	return serviceEntities, nil
 }
 
@@ -128,17 +98,17 @@ func (repo ServicesQueryRepo) getSupervisordServiceMetrics(
 	return serviceMetrics, nil
 }
 
-func (repo ServicesQueryRepo) GetWithMetrics() ([]dto.ServiceWithMetrics, error) {
-	servicesWithMetrics := []dto.ServiceWithMetrics{}
+func (repo ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error) {
+	servicesWithMetrics := []dto.InstalledServiceWithMetrics{}
 	return servicesWithMetrics, nil
 }
 
-func (repo ServicesQueryRepo) GetByName(
+func (repo ServicesQueryRepo) ReadByName(
 	name valueObject.ServiceName,
-) (serviceEntity entity.Service, err error) {
+) (serviceEntity entity.InstalledService, err error) {
 	return serviceEntity, err
 }
 
-func (repo ServicesQueryRepo) GetInstallables() ([]entity.InstallableService, error) {
+func (repo ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, error) {
 	return []entity.InstallableService{}, nil
 }

@@ -30,7 +30,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
+			servicesList, err := useCase.ReadServicesWithMetrics(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -48,7 +48,7 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 		Short: "GetInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
+			servicesList, err := useCase.ReadInstallableServices(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -98,9 +98,13 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				svcName,
 				[]valueObject.ServiceEnv{},
 				portBindings,
-				autoCreateMapping,
 				svcVersionPtr,
 				startupFilePtr,
+				nil,
+				nil,
+				nil,
+				nil,
+				&autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -179,8 +183,12 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				svcCommand,
 				[]valueObject.ServiceEnv{},
 				portBindings,
-				autoCreateMapping,
 				svcVersionPtr,
+				nil,
+				nil,
+				nil,
+				nil,
+				&autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)

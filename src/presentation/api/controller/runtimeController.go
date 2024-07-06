@@ -177,7 +177,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	)
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 	err = useCase.UpdatePhpConfigs(

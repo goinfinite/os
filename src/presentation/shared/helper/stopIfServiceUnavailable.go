@@ -13,7 +13,7 @@ func StopIfServiceUnavailable(
 	isServiceRunning := true
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(persistentDbSvc)
-	availableSvc, err := servicesQueryRepo.GetByName(serviceName)
+	availableSvc, err := servicesQueryRepo.ReadByName(serviceName)
 	if err != nil {
 		isServiceRunning = false
 	}

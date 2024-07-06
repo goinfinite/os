@@ -38,7 +38,7 @@ func NewServicesController(
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
+	servicesList, err := useCase.ReadServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -57,7 +57,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
+	servicesList, err := useCase.ReadInstallableServices(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -104,7 +104,10 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	serviceName, err := valueObject.NewServiceName(requestBody["name"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
@@ -143,12 +146,16 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	}
 
 	createInstallableServiceDto := dto.NewCreateInstallableService(
-		svcName,
+		serviceName,
 		[]valueObject.ServiceEnv{},
 		svcPortBindings,
-		autoCreateMapping,
 		svcVersionPtr,
 		svcStartupFilePtr,
+		nil,
+		nil,
+		nil,
+		nil,
+		&autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -157,7 +164,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateInstallableService(
+	err = useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
@@ -189,7 +196,11 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	serviceName, err := valueObject.NewServiceName(requestBody["name"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
+
 	svcType := valueObject.NewServiceTypePanic(requestBody["type"].(string))
 	svcCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
 
@@ -222,13 +233,17 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 
 	createCustomServiceDto := dto.NewCreateCustomService(
-		svcName,
+		serviceName,
 		svcType,
 		svcCommand,
 		[]valueObject.ServiceEnv{},
 		svcPortBindings,
-		autoCreateMapping,
 		svcVersionPtr,
+		nil,
+		nil,
+		nil,
+		nil,
+		&autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -237,7 +252,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateCustomService(
+	err = useCase.CreateCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,

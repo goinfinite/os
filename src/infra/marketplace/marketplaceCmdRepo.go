@@ -45,7 +45,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
 ) error {
-	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
 	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 
 	shouldCreatePhpVirtualHost := false
@@ -54,18 +54,21 @@ func (repo *MarketplaceCmdRepo) installServices(
 			shouldCreatePhpVirtualHost = true
 		}
 
-		_, err := serviceQueryRepo.GetByName(serviceWithVersion.Name)
+		_, err := servicesQueryRepo.ReadByName(serviceWithVersion.Name)
 		if err == nil {
 			continue
 		}
 
-		autoCreateMapping := false
 		createServiceDto := dto.NewCreateInstallableService(
 			serviceWithVersion.Name,
 			[]valueObject.ServiceEnv{},
 			[]valueObject.PortBinding{},
-			autoCreateMapping,
 			serviceWithVersion.Version,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
 			nil,
 		)
 
@@ -76,7 +79,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 	}
 
 	if shouldCreatePhpVirtualHost {
-		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(repo.persistentDbSvc)
 		return runtimeCmdRepo.CreatePhpVirtualHost(vhostName)
 	}
 
@@ -632,9 +635,9 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 		unusedServiceNames = append(unusedServiceNames, serviceName)
 	}
 
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 	for _, unusedService := range unusedServiceNames {
-		err = servicesCmdRepo.Uninstall(unusedService)
+		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
 			log.Printf("UninstallUnusedServiceError: %s", err.Error())
 			continue

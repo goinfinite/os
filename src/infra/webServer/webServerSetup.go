@@ -167,7 +167,8 @@ func (ws *WebServerSetup) OnStartSetup() {
 		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
-	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php-webserver")
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
+	_, err = servicesQueryRepo.ReadByName("php-webserver")
 	if err == nil {
 		err = ws.updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,
