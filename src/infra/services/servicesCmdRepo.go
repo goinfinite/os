@@ -3,45 +3,66 @@ package servicesInfra
 import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
 
 type ServicesCmdRepo struct {
-	supervisordFacade SupervisordFacade
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewServicesCmdRepo() *ServicesCmdRepo {
-	return &ServicesCmdRepo{supervisordFacade: SupervisordFacade{}}
+func NewServicesCmdRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *ServicesCmdRepo {
+	return &ServicesCmdRepo{persistentDbSvc: persistentDbSvc}
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	return repo.supervisordFacade.Start(name)
+	_, err := infraHelper.RunCmd("supervisorctl", "start", name.String())
+	return err
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	return repo.supervisordFacade.Stop(name)
+	_, err := infraHelper.RunCmd("supervisorctl", "stop", name.String())
+	return err
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	return repo.supervisordFacade.Restart(name)
+	_, err := infraHelper.RunCmd("supervisorctl", "restart", name.String())
+	return err
 }
 
 func (repo *ServicesCmdRepo) Reload() error {
-	return repo.supervisordFacade.Reload()
+	_, err := infraHelper.RunCmd("supervisorctl", "reload")
+	return err
 }
 
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) error {
-	err := CreateInstallable(createDto)
-	if err != nil {
-		return err
-	}
-
 	return repo.Reload()
 }
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
-	err := CreateCustom(createDto)
+	customNature, _ := valueObject.NewServiceNature("custom")
+
+	installedServiceModel := dbModel.NewInstalledService(
+		createDto.Name.String(),
+		customNature.String(),
+		createDto.Type.String(),
+		createDto.Version.String(),
+		createDto.Command.String(),
+		true,
+		10,
+		true,
+		3,
+		nil,
+		createDto.Envs,
+		createDto.PortBindings,
+	)
+
+	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
 		return err
 	}
@@ -50,34 +71,9 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	err := repo.Stop(updateDto.Name)
-	if err != nil {
-		return err
-	}
-
-	serviceEntity, err := ServicesQueryRepo{}.GetByName(updateDto.Name)
-	if err != nil {
-		return err
-	}
-
-	err = Update(serviceEntity, updateDto)
-	if err != nil {
-		return err
-	}
-
 	return repo.Reload()
 }
 
 func (repo *ServicesCmdRepo) Uninstall(name valueObject.ServiceName) error {
-	err := repo.Stop(name)
-	if err != nil {
-		return err
-	}
-
-	err = Uninstall(name)
-	if err != nil {
-		return err
-	}
-
 	return repo.Reload()
 }
