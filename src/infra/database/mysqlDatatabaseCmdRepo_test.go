@@ -7,20 +7,13 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	err := servicesInfra.CreateInstallableSimplified("mariadb")
-	if err != nil {
-		t.Errorf("InstallDependenciesFail: %v", err)
-		return
-	}
-
-	_, err = infraHelper.RunCmd("mysqld_safe", "&")
+	_, err := infraHelper.RunCmd("mysqld_safe", "&")
 	if err != nil {
 		t.Error("Error starting command")
 	}
@@ -66,11 +59,4 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 			t.Error("Error removing database")
 		}
 	})
-
-	err = servicesInfra.Uninstall(
-		valueObject.NewServiceNamePanic("mariadb"),
-	)
-	if err != nil {
-		t.Error("Error uninstalling service")
-	}
 }
