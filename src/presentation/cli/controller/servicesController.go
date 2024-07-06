@@ -29,7 +29,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 		Use:   "list",
 		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -47,7 +47,7 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 		Use:   "list-installables",
 		Short: "GetInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -96,14 +96,15 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 			createInstallableServiceDto := dto.NewCreateInstallableService(
 				svcName,
-				svcVersionPtr,
-				startupFilePtr,
+				[]valueObject.ServiceEnv{},
 				portBindings,
 				autoCreateMapping,
+				svcVersionPtr,
+				startupFilePtr,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -176,13 +177,14 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				svcName,
 				svcType,
 				svcCommand,
-				svcVersionPtr,
+				[]valueObject.ServiceEnv{},
 				portBindings,
 				autoCreateMapping,
+				svcVersionPtr,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -287,8 +289,8 @@ func (controller *ServicesController) Update() *cobra.Command {
 				portBindings,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
@@ -329,8 +331,8 @@ func (controller *ServicesController) Delete() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 			err := useCase.DeleteService(

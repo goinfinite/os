@@ -7,19 +7,12 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestRuntimeCmdRepo(t *testing.T) {
 	t.Skip("SkipRuntimeCmdRepoTest")
 	testHelpers.LoadEnvVars()
 	runtimeCmdRepo := NewRuntimeCmdRepo()
-
-	err := servicesInfra.CreateInstallableSimplified("php")
-	if err != nil {
-		t.Errorf("InstallDependenciesFail: %v", err)
-		return
-	}
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
 		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()

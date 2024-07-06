@@ -46,7 +46,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 	services []valueObject.ServiceNameWithVersion,
 ) error {
 	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
-	serviceCmdRepo := servicesInfra.ServicesCmdRepo{}
+	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 
 	shouldCreatePhpVirtualHost := false
 	for _, serviceWithVersion := range services {
@@ -61,7 +61,12 @@ func (repo *MarketplaceCmdRepo) installServices(
 
 		autoCreateMapping := false
 		createServiceDto := dto.NewCreateInstallableService(
-			serviceWithVersion.Name, serviceWithVersion.Version, nil, nil, autoCreateMapping,
+			serviceWithVersion.Name,
+			[]valueObject.ServiceEnv{},
+			[]valueObject.PortBinding{},
+			autoCreateMapping,
+			serviceWithVersion.Version,
+			nil,
 		)
 
 		err = serviceCmdRepo.CreateInstallable(createServiceDto)

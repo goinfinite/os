@@ -57,19 +57,23 @@ func (router Router) cronRoutes() {
 
 func (router Router) databaseRoutes() {
 	databaseGroup := router.baseRoute.Group("/v1/database")
-	databaseGroup.GET("/:dbType/", apiController.GetDatabasesController)
-	databaseGroup.POST("/:dbType/", apiController.CreateDatabaseController)
+	databaseController := apiController.NewDatabaseController(
+		router.persistentDbSvc,
+	)
+
+	databaseGroup.GET("/:dbType/", databaseController.Read)
+	databaseGroup.POST("/:dbType/", databaseController.Create)
 	databaseGroup.DELETE(
 		"/:dbType/:dbName/",
-		apiController.DeleteDatabaseController,
+		databaseController.Delete,
 	)
 	databaseGroup.POST(
 		"/:dbType/:dbName/user/",
-		apiController.CreateDatabaseUserController,
+		databaseController.CreateUser,
 	)
 	databaseGroup.DELETE(
 		"/:dbType/:dbName/user/:dbUser/",
-		apiController.DeleteDatabaseUserController,
+		databaseController.DeleteUser,
 	)
 }
 

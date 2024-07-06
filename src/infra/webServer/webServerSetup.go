@@ -16,14 +16,17 @@ import (
 )
 
 type WebServerSetup struct {
-	transientDbSvc *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
 }
 
 func NewWebServerSetup(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
-		transientDbSvc: transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
+		transientDbSvc:  transientDbSvc,
 	}
 }
 
@@ -110,7 +113,9 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("WebServerConfigured!")
 
-	err = servicesInfra.SupervisordFacade{}.Start("nginx")
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
+	serviceName, _ := valueObject.NewServiceName("nginx")
+	err = servicesCmdRepo.Start(serviceName)
 	if err != nil {
 		log.Fatal("StartNginxFailed")
 	}
@@ -155,7 +160,9 @@ func (ws *WebServerSetup) OnStartSetup() {
 		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
+	serviceName, _ := valueObject.NewServiceName("nginx")
+	err = servicesCmdRepo.Restart(serviceName)
 	if err != nil {
 		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}

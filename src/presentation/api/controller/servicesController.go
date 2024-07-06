@@ -37,7 +37,7 @@ func NewServicesController(
 // @Success      200 {array} dto.ServiceWithMetrics
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -56,7 +56,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Success      200 {array} entity.InstallableService
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
@@ -69,12 +69,16 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	var svcPortBindings []valueObject.PortBinding
 	for _, portBinding := range bindings {
 		portBindingMap := portBinding.(map[string]interface{})
-		svcPort := valueObject.NewNetworkPortPanic(
-			portBindingMap["port"],
-		)
-		svcProtocol := valueObject.NewNetworkProtocolPanic(
+		svcPort, err := valueObject.NewNetworkPort(portBindingMap["port"])
+		if err != nil {
+			panic(err)
+		}
+		svcProtocol, err := valueObject.NewNetworkProtocol(
 			portBindingMap["protocol"].(string),
 		)
+		if err != nil {
+			panic(err)
+		}
 		svcPortBinding := valueObject.NewPortBinding(
 			svcPort,
 			svcProtocol,
@@ -140,14 +144,15 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	createInstallableServiceDto := dto.NewCreateInstallableService(
 		svcName,
-		svcVersionPtr,
-		svcStartupFilePtr,
+		[]valueObject.ServiceEnv{},
 		svcPortBindings,
 		autoCreateMapping,
+		svcVersionPtr,
+		svcStartupFilePtr,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -220,13 +225,14 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		svcName,
 		svcType,
 		svcCommand,
-		svcVersionPtr,
+		[]valueObject.ServiceEnv{},
 		svcPortBindings,
 		autoCreateMapping,
+		svcVersionPtr,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
@@ -322,8 +328,8 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		svcPortBindings,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
@@ -354,8 +360,8 @@ func (controller *ServicesController) Update(c echo.Context) error {
 func (controller *ServicesController) Delete(c echo.Context) error {
 	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
 	err := useCase.DeleteService(

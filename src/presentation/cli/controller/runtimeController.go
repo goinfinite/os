@@ -50,8 +50,8 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 		Use:   "get",
 		Short: "GetPhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic("php")
-			sharedHelper.StopIfServiceUnavailable(svcName.String())
+			serviceName, _ := valueObject.NewServiceName("php-webserver")
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
@@ -82,8 +82,8 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 		Use:   "update",
 		Short: "UpdatePhpConfigs",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic("php-webserver")
-			sharedHelper.StopIfServiceUnavailable(svcName.String())
+			serviceName, _ := valueObject.NewServiceName("php-webserver")
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
 
@@ -177,8 +177,8 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 		Use:   "update-setting",
 		Short: "UpdatePhpSetting",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic("php")
-			sharedHelper.StopIfServiceUnavailable(svcName.String())
+			serviceName, _ := valueObject.NewServiceName("php-webserver")
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
@@ -240,8 +240,8 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 		Use:   "update-module",
 		Short: "UpdatePhpModule",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic("php")
-			sharedHelper.StopIfServiceUnavailable(svcName.String())
+			serviceName, _ := valueObject.NewServiceName("php-webserver")
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {

@@ -213,13 +213,13 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	svcsQueryRepo := servicesInfra.ServicesQueryRepo{}
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 
 	err := useCase.CreateMapping(
 		mappingQueryRepo,
 		mappingCmdRepo,
 		vhostQueryRepo,
-		svcsQueryRepo,
+		servicesQueryRepo,
 		createMappingDto,
 	)
 	if err != nil {
