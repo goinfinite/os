@@ -202,7 +202,10 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 
 	svcType := valueObject.NewServiceTypePanic(requestBody["type"].(string))
-	svcCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
+	svcCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
@@ -296,9 +299,10 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcCommandPtr *valueObject.UnixCommand
 	if requestBody["command"] != nil {
-		svcCommand := valueObject.NewUnixCommandPanic(
-			requestBody["command"].(string),
-		)
+		svcCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		svcCommandPtr = &svcCommand
 	}
 

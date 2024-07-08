@@ -13,7 +13,7 @@ func TestCronCmdRepo(t *testing.T) {
 
 	t.Run("CreateCron", func(t *testing.T) {
 		schedule := valueObject.NewCronSchedulePanic("* * * * *")
-		command := valueObject.NewUnixCommandPanic("echo \"cronTest\" >> crontab_log.txt")
+		command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 		comment := valueObject.NewCronCommentPanic("Test cron job")
 
 		createCron := dto.NewCreateCron(
@@ -40,7 +40,7 @@ func TestCronCmdRepo(t *testing.T) {
 		}
 
 		schedule := valueObject.NewCronSchedulePanic("* * * * 0")
-		command := valueObject.NewUnixCommandPanic("echo \"cronUpdateTest\" >> crontab_logs.txt")
+		command, _ := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
 		comment := valueObject.NewCronCommentPanic("update test")
 
 		updateCron := dto.NewUpdateCron(

@@ -160,7 +160,10 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			svcName := valueObject.NewServiceNamePanic(nameStr)
 			svcType := valueObject.NewServiceTypePanic(typeStr)
-			svcCommand := valueObject.NewUnixCommandPanic(commandStr)
+			svcCommand, err := valueObject.NewUnixCommand(commandStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
@@ -197,7 +200,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateCustomService(
+			err = useCase.CreateCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -262,7 +265,10 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 			var svcCommandPtr *valueObject.UnixCommand
 			if commandStr != "" {
-				svcCommand := valueObject.NewUnixCommandPanic(commandStr)
+				svcCommand, err := valueObject.NewUnixCommand(commandStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				svcCommandPtr = &svcCommand
 			}
 

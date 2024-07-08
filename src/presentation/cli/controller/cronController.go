@@ -42,9 +42,14 @@ func CreateCronController() *cobra.Command {
 				commentPtr = &comment
 			}
 
+			command, err := valueObject.NewUnixCommand(commandStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			createCronDto := dto.NewCreateCron(
 				valueObject.NewCronSchedulePanic(scheduleStr),
-				valueObject.NewUnixCommandPanic(commandStr),
+				command,
 				commentPtr,
 			)
 
@@ -91,7 +96,10 @@ func UpdateCronController() *cobra.Command {
 
 			var commandPtr *valueObject.UnixCommand
 			if commandStr != "" {
-				command := valueObject.NewUnixCommandPanic(commandStr)
+				command, err := valueObject.NewUnixCommand(commandStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				commandPtr = &command
 			}
 
