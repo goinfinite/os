@@ -212,7 +212,11 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
 
-	svcType := valueObject.NewServiceTypePanic(requestBody["type"].(string))
+	svcType, err := valueObject.NewServiceType(requestBody["type"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
+
 	svcCommand, err := valueObject.NewUnixCommand(requestBody["command"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
@@ -306,9 +310,10 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcTypePtr *valueObject.ServiceType
 	if requestBody["type"] != nil {
-		svcType := valueObject.NewServiceTypePanic(
-			requestBody["type"].(string),
-		)
+		svcType, err := valueObject.NewServiceType(requestBody["type"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 		svcTypePtr = &svcType
 	}
 

@@ -169,7 +169,11 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			svcType := valueObject.NewServiceTypePanic(typeStr)
+			svcType, err := valueObject.NewServiceType(typeStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			svcCommand, err := valueObject.NewUnixCommand(commandStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
@@ -269,7 +273,10 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 			var svcTypePtr *valueObject.ServiceType
 			if typeStr != "" {
-				svcType := valueObject.NewServiceTypePanic(typeStr)
+				svcType, err := valueObject.NewServiceType(typeStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				svcTypePtr = &svcType
 			}
 
