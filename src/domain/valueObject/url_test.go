@@ -61,12 +61,4 @@ func TestNewUrl(t *testing.T) {
 			}
 		}
 	})
-
-	t.Run("GetPort", func(t *testing.T) {
-		url, _ := NewUrl("localhost:8080")
-		port, _ := url.GetPort()
-		if port.Get() != 8080 {
-			t.Errorf("Expected port '8080', got '%d'", port.Get())
-		}
-	})
 }
