@@ -1,7 +1,9 @@
 package servicesInfra
 
 import (
+	"embed"
 	"errors"
+	"io/fs"
 	"log"
 	"math"
 	"strconv"
@@ -17,6 +19,9 @@ import (
 
 	"github.com/shirou/gopsutil/process"
 )
+
+//go:embed assets/*
+var assets embed.FS
 
 type ServicesQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
@@ -235,6 +240,244 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 	return servicesWithMetrics, nil
 }
 
+func (repo *ServicesQueryRepo) parseManifestCmdSteps(
+	stepsType string,
+	rawCmdSteps interface{},
+) (cmdSteps []valueObject.UnixCommand, err error) {
+	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
+	if !assertOk {
+		return cmdSteps, errors.New("InvalidCmdSteps")
+	}
+
+	for stepIndex, rawCmd := range cmdStepsMap {
+		command, err := valueObject.NewUnixCommand(rawCmd)
+		if err != nil {
+			log.Printf("(%sCmdSteps) [Index %d] %s", stepsType, stepIndex, err)
+			return cmdSteps, err
+		}
+		cmdSteps = append(cmdSteps, command)
+	}
+
+	return cmdSteps, nil
+}
+
+func (repo *ServicesQueryRepo) installableServiceFactory(
+	serviceFilePath valueObject.UnixFilePath,
+) (installableService entity.InstallableService, err error) {
+	serviceMap, err := infraHelper.EmbedSerializedDataToMap(&assets, serviceFilePath)
+	if err != nil {
+		return installableService, err
+	}
+
+	requiredParams := []string{
+		"name", "nature", "type", "command", "description", "installCmdSteps",
+	}
+	for _, requiredParam := range requiredParams {
+		if serviceMap[requiredParam] != nil {
+			continue
+		}
+
+		return installableService, errors.New("MissingParam: " + requiredParam)
+	}
+
+	serviceName, err := valueObject.NewServiceName(serviceMap["name"])
+	if err != nil {
+		return installableService, err
+	}
+	serviceNameStr := serviceName.String()
+
+	serviceNature, err := valueObject.NewServiceNature(serviceMap["nature"])
+	if err != nil {
+		return installableService, err
+	}
+
+	serviceType, err := valueObject.NewServiceType(serviceMap["type"])
+	if err != nil {
+		return installableService, err
+	}
+
+	serviceCommand, err := valueObject.NewUnixCommand(serviceMap["command"])
+	if err != nil {
+		return installableService, err
+	}
+
+	serviceDescription, err := valueObject.NewServiceDescription(serviceMap["description"])
+	if err != nil {
+		return installableService, err
+	}
+
+	serviceVersions := []valueObject.ServiceVersion{}
+	if serviceMap["versions"] != nil {
+		versionsMap, assertOk := serviceMap["versions"].([]interface{})
+		if !assertOk {
+			return installableService, errors.New("InvalidServiceVersions")
+		}
+		for versionIndex, rawVersion := range versionsMap {
+			version, err := valueObject.NewServiceVersion(rawVersion)
+			if err != nil {
+				log.Printf("(%s) [Index %d] %s", serviceNameStr, versionIndex, err)
+				continue
+			}
+			serviceVersions = append(serviceVersions, version)
+		}
+	}
+
+	portBindings := []valueObject.PortBinding{}
+	if serviceMap["portBindings"] != nil {
+		portBindingsMap, assertOk := serviceMap["portBindings"].([]interface{})
+		if !assertOk {
+			return installableService, errors.New("InvalidPortBindings")
+		}
+		for portIndex, rawPortBinding := range portBindingsMap {
+			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
+			if err != nil {
+				log.Printf("(%s) [Index: %d] %s", serviceNameStr, portIndex, err)
+				continue
+			}
+			portBindings = append(portBindings, portBinding)
+		}
+	}
+
+	installCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["installCmdSteps"] != nil {
+		installCmdSteps, err = repo.parseManifestCmdSteps(
+			"Install", serviceMap["installCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	uninstallCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["uninstallCmdSteps"] != nil {
+		uninstallCmdSteps, err = repo.parseManifestCmdSteps(
+			"Uninstall", serviceMap["uninstallCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	uninstallFileNames := []valueObject.UnixFileName{}
+	if serviceMap["uninstallFileNames"] != nil {
+		filesMap, assertOk := serviceMap["uninstallFileNames"].([]interface{})
+		if !assertOk {
+			return installableService, errors.New("InvalidUninstallFileNames")
+		}
+		for fileIndex, rawFileName := range filesMap {
+			fileName, err := valueObject.NewUnixFileName(rawFileName)
+			if err != nil {
+				log.Printf("(%s) [Index %d] %s", serviceNameStr, fileIndex, err)
+				continue
+			}
+			uninstallFileNames = append(uninstallFileNames, fileName)
+		}
+	}
+
+	preStartCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["preStartCmdSteps"] != nil {
+		preStartCmdSteps, err = repo.parseManifestCmdSteps(
+			"PreStart", serviceMap["preStartCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	postStartCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["postStartCmdSteps"] != nil {
+		postStartCmdSteps, err = repo.parseManifestCmdSteps(
+			"PostStart", serviceMap["postStartCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	preStopCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["preStopCmdSteps"] != nil {
+		preStopCmdSteps, err = repo.parseManifestCmdSteps(
+			"PreStop", serviceMap["preStopCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	postStopCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["postStopCmdSteps"] != nil {
+		postStopCmdSteps, err = repo.parseManifestCmdSteps(
+			"PostStop", serviceMap["postStopCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	var startupFilePtr *valueObject.UnixFilePath
+	if serviceMap["startupFile"] != nil {
+		startupFile, err := valueObject.NewUnixFilePath(serviceMap["startupFile"])
+		if err != nil {
+			return installableService, err
+		}
+		startupFilePtr = &startupFile
+	}
+
+	var estimatedSizeBytesPtr *valueObject.Byte
+	if serviceMap["estimatedSizeBytes"] == nil {
+		estimatedSizeBytes, err := valueObject.NewByte(serviceMap["estimatedSizeBytes"])
+		if err != nil {
+			return installableService, err
+		}
+		estimatedSizeBytesPtr = &estimatedSizeBytes
+	}
+
+	var avatarUrlPtr *valueObject.Url
+	if serviceMap["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(serviceMap["avatarUrl"])
+		if err != nil {
+			return installableService, err
+		}
+		avatarUrlPtr = &avatarUrl
+	}
+
+	return entity.NewInstallableService(
+		serviceName, serviceNature, serviceType, serviceCommand,
+		serviceDescription, serviceVersions, portBindings, installCmdSteps,
+		uninstallCmdSteps, uninstallFileNames, preStartCmdSteps, postStartCmdSteps,
+		preStopCmdSteps, postStopCmdSteps, startupFilePtr, estimatedSizeBytesPtr,
+		avatarUrlPtr,
+	), nil
+}
+
 func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, error) {
-	return []entity.InstallableService{}, nil
+	installableServices := []entity.InstallableService{}
+
+	serviceFiles, err := fs.ReadDir(assets, "assets")
+	if err != nil {
+		return installableServices, errors.New("ReadServiceFilesError: " + err.Error())
+	}
+
+	for _, serviceFile := range serviceFiles {
+		serviceFileName := serviceFile.Name()
+		rawServiceFilePath := "assets/" + serviceFileName
+		serviceFilePath, err := valueObject.NewUnixFilePath(rawServiceFilePath)
+		if err != nil {
+			log.Printf("%s: %s", err.Error(), rawServiceFilePath)
+			continue
+		}
+		serviceFilePathStr := serviceFilePath.String()
+
+		installableService, err := repo.installableServiceFactory(serviceFilePath)
+		if err != nil {
+			log.Printf(
+				"ReadServiceFileError (%s): %s", serviceFilePathStr, err.Error(),
+			)
+			continue
+		}
+
+		installableServices = append(installableServices, installableService)
+	}
+
+	return installableServices, nil
 }
