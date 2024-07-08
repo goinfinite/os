@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/speedianet/os/src/domain/valueObject"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func EmbedSerializedDataToMap(
