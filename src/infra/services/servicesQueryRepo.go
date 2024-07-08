@@ -481,3 +481,23 @@ func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, 
 
 	return installableServices, nil
 }
+
+func (repo *ServicesQueryRepo) ReadInstallableByName(
+	serviceName valueObject.ServiceName,
+) (installableService entity.InstallableService, err error) {
+	installableServices, err := repo.ReadInstallables()
+	if err != nil {
+		return installableService, err
+	}
+
+	serviceNameStr := serviceName.String()
+	for _, installableService := range installableServices {
+		if serviceNameStr != installableService.Name.String() {
+			continue
+		}
+
+		return installableService, nil
+	}
+
+	return installableService, errors.New("InstallableServiceNotFound")
+}
