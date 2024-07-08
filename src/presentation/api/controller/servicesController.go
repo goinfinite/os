@@ -111,10 +111,11 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcStartupFilePtr *valueObject.UnixFilePath
@@ -209,10 +210,11 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcPortBindings []valueObject.PortBinding
@@ -316,10 +318,11 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcStartupFilePtr *valueObject.UnixFilePath

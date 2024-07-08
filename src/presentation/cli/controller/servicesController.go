@@ -75,8 +75,11 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
 			var startupFilePtr *valueObject.UnixFilePath
@@ -167,8 +170,11 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
 			var portBindings []valueObject.PortBinding
@@ -274,8 +280,11 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
 			var svcStartupFilePtr *valueObject.UnixFilePath
