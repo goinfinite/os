@@ -114,7 +114,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	serviceName, err := valueObject.NewServiceName(requestBody["name"].(string))
+	serviceName, err := valueObject.NewServiceName(requestBody["name"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
@@ -299,7 +299,10 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	svcName, err := valueObject.NewServiceName(requestBody["name"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcTypePtr *valueObject.ServiceType
 	if requestBody["type"] != nil {
@@ -365,7 +368,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.UpdateService(
+	err = useCase.UpdateService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
@@ -390,13 +393,16 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {
-	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
+	svcName, err := valueObject.NewServiceName(c.Param("svcName"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.DeleteService(
+	err = useCase.DeleteService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingCmdRepo,

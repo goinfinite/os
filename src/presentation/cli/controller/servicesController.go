@@ -71,7 +71,10 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Use:   "create-installable",
 		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
@@ -116,7 +119,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateInstallableService(
+			err = useCase.CreateInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -161,7 +164,11 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			svcType := valueObject.NewServiceTypePanic(typeStr)
 			svcCommand, err := valueObject.NewUnixCommand(commandStr)
 			if err != nil {
@@ -255,7 +262,10 @@ func (controller *ServicesController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcTypePtr *valueObject.ServiceType
 			if typeStr != "" {
@@ -317,7 +327,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.UpdateService(
+			err = useCase.UpdateService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -352,13 +362,16 @@ func (controller *ServicesController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.DeleteService(
+			err = useCase.DeleteService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingCmdRepo,
