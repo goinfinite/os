@@ -1,16 +1,16 @@
 name: php-webserver
 slugs:
- - php-webserver
- - php-ws
- - php
+  - php-webserver
+  - php-ws
+  - php
 nature: solo
 type: runtime
 description: PHP is a general-purpose scripting language geared towards web development. OpenLiteSpeed (PHP WebServer) is a high-performance, lightweight, open source HTTP (and PHP) server developed and copyrighted by LiteSpeed Technologies.
 versions:
- - latest
+  - latest
 portBindings:
- - 8080/http
- - 8443/https
+  - 8080/http
+  - 8443/https
 command: /usr/local/lsws/bin/litespeed -d
 dataFields:
   - name: primaryHostname
@@ -18,24 +18,24 @@ dataFields:
     type: text
     isRequired: true
 installCmdSteps:
- - curl -skL https://repo.litespeed.sh | bash
- - install_packages openlitespeed
- - for v in "74" "80" "81"; do install_packages lsphp${v} lsphp${v}-common lsphp${v}-curl lsphp${v}-intl lsphp${v}-mysql lsphp${v}-opcache; done
- - ln -s /usr/local/lsws/lsphp82/bin/php /usr/bin/php
- - curl -skL -o /usr/local/lsws/conf/httpd_config.conf https://speedia.net/assets/os/services/php-webserver/httpd_config.conf
- - sed -i "s/speedia.net/%primaryHostname%/g" /usr/local/lsws/conf/httpd_config.conf
- - curl -skL -o /app/conf/php-webserver/template https://speedia.net/assets/os/services/php-webserver/primary.conf
- - cp /app/conf/php-webserver/template /app/conf/php-webserver/primary.conf
- - sed -i "s/speedia.net/%primaryHostname%/g" /app/conf/php-webserver/primary.conf
- - chown -R lsadm:nogroup /app/conf/php-webserver/
- - install -d -o nobody -g nogroup -m 755 /app/logs/php-webserver
- - /speedia/os cron create -s "*/2 * * * *" -d "AutoReloadPhpWebServerAfterHtaccessChange" -c "if ! find /app/html -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +; then /speedia/os services update -n php-webserver -s restart; fi"
+  - curl -skL https://repo.litespeed.sh | bash
+  - install_packages openlitespeed
+  - for v in "74" "80" "81"; do install_packages lsphp${v} lsphp${v}-common lsphp${v}-curl lsphp${v}-intl lsphp${v}-mysql lsphp${v}-opcache; done
+  - ln -s /usr/local/lsws/lsphp82/bin/php /usr/bin/php
+  - curl -skL -o /usr/local/lsws/conf/httpd_config.conf https://speedia.net/assets/os/services/php-webserver/httpd_config.conf
+  - sed -i "s/speedia.net/%primaryHostname%/g" /usr/local/lsws/conf/httpd_config.conf
+  - curl -skL -o /app/conf/php-webserver/template https://speedia.net/assets/os/services/php-webserver/primary.conf
+  - cp /app/conf/php-webserver/template /app/conf/php-webserver/primary.conf
+  - sed -i "s/speedia.net/%primaryHostname%/g" /app/conf/php-webserver/primary.conf
+  - chown -R lsadm:nogroup /app/conf/php-webserver/
+  - install -d -o nobody -g nogroup -m 755 /app/logs/php-webserver
+  - /speedia/os cron create -s "*/2 * * * *" -d "AutoReloadPhpWebServerAfterHtaccessChange" -c "if ! find /app/html -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +; then /speedia/os services update -n php-webserver -s restart; fi"
 uninstallCmdSteps:
- - apt-get purge -y openlitespeed lsphp*
- - /speedia/os cron delete -d "AutoReloadPhpWebServerAfterHtaccessChange"
+  - apt-get purge -y openlitespeed lsphp*
+  - /speedia/os cron delete -d "AutoReloadPhpWebServerAfterHtaccessChange"
 stopCmdSteps:
- - /usr/local/lsws/bin/lswsctrl stop
- - pkill lsphp
- - pkill sleep
+  - /usr/local/lsws/bin/lswsctrl stop
+  - pkill lsphp
+  - pkill sleep
 estimatedSizeBytes: 157286400
 avatarUrl: https://speedia.net/assets/os/services/php-webserver/php-webserver-avatar.jpg

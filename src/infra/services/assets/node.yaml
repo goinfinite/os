@@ -1,33 +1,33 @@
 name: node
 slugs:
- - node
- - nodejs
+  - node
+  - nodejs
 nature: multi
 type: runtime
 description: Node.js runs on the V8 JavaScript engine and lets developers use JavaScript to write command line tools and for server-side scripting.
 versions:
- - lts
- - 22
- - 21
- - 20
- - 19
- - 18
- - 17
- - 16
- - 15
- - 14
- - 13
- - 12
- - 11
- - 10
- - 9
- - 8
- - 7
- - 6
- - 5
- - 4 
+  - lts
+  - 22
+  - 21
+  - 20
+  - 19
+  - 18
+  - 17
+  - 16
+  - 15
+  - 14
+  - 13
+  - 12
+  - 11
+  - 10
+  - 9
+  - 8
+  - 7
+  - 6
+  - 5
+  - 4
 portBindings:
- - 3000/http
+  - 3000/http
 command: mise x node@%version% -- node %startupFile%
 dataFields:
   - name: startupFile
@@ -35,8 +35,8 @@ dataFields:
     type: text
     defaultValue: "/app/html/index.js"
 installCmdSteps:
- - mise install node@%version%
- - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi
- - if [ -s "%startupFile%" ]; then echo "require('http').createServer((req, res) => res.end()).listen(3000)" >%startupFile%; fi
+  - mise install node@%version%
+  - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi
+  - if [ -s "%startupFile%" ]; then echo "require('http').createServer((req, res) => res.end()).listen(3000)" >%startupFile%; fi
 estimatedSizeBytes: 104857600
 avatarUrl: https://speedia.net/assets/os/services/node/node-avatar.jpg

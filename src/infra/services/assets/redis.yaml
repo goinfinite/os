@@ -1,27 +1,27 @@
 name: redis
 slugs:
- - redis
+  - redis
 nature: solo
 type: database
 description: Redis is a source-available, in-memory storage, used as a distributed, in-memory key-value database, cache and message broker, with optional durability.
 versions:
- - 7.2
- - 7.0
- - 6.2
+  - 7.2
+  - 7.0
+  - 6.2
 portBindings:
- - 6379/tcp
+  - 6379/tcp
 command: /usr/bin/redis-server /etc/redis/redis.conf
 installCmdSteps:
- - curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
- - echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" >/etc/apt/sources.list.d/redis.list
- - versionTag=%version%; if [ -n "${versionTag}" ]; then versionTag="=${versionTag}" ; fi; install_packages redis-server${versionTag}
- - sed -i "s/^daemonize yes/daemonize no/g" /etc/redis/redis.conf
+  - curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" >/etc/apt/sources.list.d/redis.list
+  - versionTag=%version%; if [ -n "${versionTag}" ]; then versionTag="=${versionTag}" ; fi; install_packages redis-server${versionTag}
+  - sed -i "s/^daemonize yes/daemonize no/g" /etc/redis/redis.conf
 uninstallCmdSteps:
- - apt-get purge -y redis-server
+  - apt-get purge -y redis-server
 uninstallFileNames:
-- /etc/redis
-- /var/lib/redis
-- /var/log/redis
-- /etc/apt/sources.list.d/redis.list
+  - /etc/redis
+  - /var/lib/redis
+  - /var/log/redis
+  - /etc/apt/sources.list.d/redis.list
 estimatedSizeBytes: 15728640
 avatarUrl: https://speedia.net/assets/os/services/redis/redis-avatar.jpg

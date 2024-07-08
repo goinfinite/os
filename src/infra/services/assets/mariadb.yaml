@@ -1,42 +1,42 @@
 name: mariadb
 slugs:
- - mariadb
- - maria
+  - mariadb
+  - maria
 nature: solo
 type: database
 description: MariaDB is a community-developed, commercially supported fork of the MySQL relational database management system, intended to remain free and open-source software under the GNU General Public License.
 versions:
- - latest
- - 10.11
- - 10.6
+  - latest
+  - 10.11
+  - 10.6
 portBindings:
- - 3306/tcp
+  - 3306/tcp
 command: /usr/bin/mariadbd-safe
 installCmdSteps:
- - curl -skL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=%version%
- - install_packages mariadb-server mariadb-client
- - ln -s /usr/bin/mariadb /usr/bin/mysql
- - ln -s /usr/bin/mariadb-admin /usr/bin/mysqladmin
- - ln -s /usr/bin/mariadbd-safe /usr/bin/mysqld_safe
- - mariadbd-safe --no-watch
- - mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '%randomPassword%';"
- - mariadb -e "DELETE FROM mysql.user WHERE User='';"
- - mariadb -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
- - mariadb -e "DROP DATABASE IF EXISTS test;"
- - mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\_\%';"
- - mariadb -e "FLUSH PRIVILEGES;",
- - echo "[client]\nuser=root\npassword=%randomPassword%\n" >/root/.my.cnf
- - chmod 0400 /root/.my.cnf
- - mariadb-admin --defaults-file=/root/.my.cnf shutdown
+  - curl -skL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=%version%
+  - install_packages mariadb-server mariadb-client
+  - ln -s /usr/bin/mariadb /usr/bin/mysql
+  - ln -s /usr/bin/mariadb-admin /usr/bin/mysqladmin
+  - ln -s /usr/bin/mariadbd-safe /usr/bin/mysqld_safe
+  - mariadbd-safe --no-watch
+  - mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '%randomPassword%';"
+  - mariadb -e "DELETE FROM mysql.user WHERE User='';"
+  - mariadb -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+  - mariadb -e "DROP DATABASE IF EXISTS test;"
+  - mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\_\%';"
+  - mariadb -e "FLUSH PRIVILEGES;",
+  - echo "[client]\nuser=root\npassword=%randomPassword%\n" >/root/.my.cnf
+  - chmod 0400 /root/.my.cnf
+  - mariadb-admin --defaults-file=/root/.my.cnf shutdown
 uninstallCmdSteps:
- - apt-get purge -y mariadb-server mariadb-client
+  - apt-get purge -y mariadb-server mariadb-client
 uninstallFileNames:
-- /etc/mysql
-- /var/lib/mysql
-- /var/log/mysql
-- /etc/apt/sources.list.d/mariadb.list
-- /root/.my.cnf
+  - /etc/mysql
+  - /var/lib/mysql
+  - /var/log/mysql
+  - /etc/apt/sources.list.d/mariadb.list
+  - /root/.my.cnf
 stopCmdSteps:
- - mariadb-admin --defaults-file=/root/.my.cnf shutdown
+  - mariadb-admin --defaults-file=/root/.my.cnf shutdown
 estimatedSizeBytes: 524288000
 avatarUrl: https://speedia.net/assets/os/services/mariadb/mariadb-avatar.jpg
