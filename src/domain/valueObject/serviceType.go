@@ -4,40 +4,33 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type ServiceType string
 
 var ValidServiceTypes = []string{
-	"application",
-	"runtime",
-	"database",
-	"webserver",
-	"mom",
-	"monitoring",
-	"logging",
-	"security",
-	"backup",
-	"system",
-	"other",
+	"application", "runtime", "database", "webserver", "mom", "monitoring",
+	"logging", "security", "backup", "system", "other",
 }
 
-func NewServiceType(value string) (ServiceType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidServiceTypes, value) {
+func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return serviceType, errors.New("ServiceTypeValueMustBeString")
+	}
+
+	stringValue = strings.TrimSpace(stringValue)
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidServiceTypes, stringValue) {
 		return "", errors.New("InvalidServiceType")
 	}
-	return ServiceType(value), nil
+
+	return ServiceType(stringValue), nil
 }
 
-func NewServiceTypePanic(value string) ServiceType {
-	st, err := NewServiceType(value)
-	if err != nil {
-		panic(err)
-	}
-	return st
-}
-
-func (st ServiceType) String() string {
-	return string(st)
+func (vo ServiceType) String() string {
+	return string(vo)
 }
