@@ -252,7 +252,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	for stepIndex, rawCmd := range cmdStepsMap {
 		command, err := valueObject.NewUnixCommand(rawCmd)
 		if err != nil {
-			log.Printf("(%sCmdSteps) [Index %d] %s", stepsType, stepIndex, err)
+			log.Printf("(%sCmdSteps) [index %d] %s", stepsType, stepIndex, err)
 			return cmdSteps, err
 		}
 		cmdSteps = append(cmdSteps, command)
@@ -315,7 +315,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		for versionIndex, rawVersion := range versionsMap {
 			version, err := valueObject.NewServiceVersion(rawVersion)
 			if err != nil {
-				log.Printf("(%s) [Index %d] %s", serviceNameStr, versionIndex, err)
+				log.Printf("(%s) [index %d] %s", serviceNameStr, versionIndex, err)
 				continue
 			}
 			serviceVersions = append(serviceVersions, version)
@@ -331,7 +331,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		for portIndex, rawPortBinding := range portBindingsMap {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
-				log.Printf("(%s) [Index: %d] %s", serviceNameStr, portIndex, err)
+				log.Printf("(%s) [index: %d] %s", serviceNameStr, portIndex, err)
 				continue
 			}
 			portBindings = append(portBindings, portBinding)
@@ -358,19 +358,19 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	uninstallFileNames := []valueObject.UnixFileName{}
-	if serviceMap["uninstallFileNames"] != nil {
-		filesMap, assertOk := serviceMap["uninstallFileNames"].([]interface{})
+	uninstallFilePaths := []valueObject.UnixFilePath{}
+	if serviceMap["uninstallFilePaths"] != nil {
+		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
 		if !assertOk {
-			return installableService, errors.New("InvalidUninstallFileNames")
+			return installableService, errors.New("InvalidUninstallFilePaths")
 		}
 		for fileIndex, rawFileName := range filesMap {
-			fileName, err := valueObject.NewUnixFileName(rawFileName)
+			fileName, err := valueObject.NewUnixFilePath(rawFileName)
 			if err != nil {
-				log.Printf("(%s) [Index %d] %s", serviceNameStr, fileIndex, err)
+				log.Printf("(%s) [index %d] %s", serviceNameStr, fileIndex, err)
 				continue
 			}
-			uninstallFileNames = append(uninstallFileNames, fileName)
+			uninstallFilePaths = append(uninstallFilePaths, fileName)
 		}
 	}
 
@@ -424,7 +424,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	var estimatedSizeBytesPtr *valueObject.Byte
-	if serviceMap["estimatedSizeBytes"] == nil {
+	if serviceMap["estimatedSizeBytes"] != nil {
 		estimatedSizeBytes, err := valueObject.NewByte(serviceMap["estimatedSizeBytes"])
 		if err != nil {
 			return installableService, err
@@ -444,7 +444,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	return entity.NewInstallableService(
 		serviceName, serviceNature, serviceType, startCommand,
 		serviceDescription, serviceVersions, portBindings, installCmdSteps,
-		uninstallCmdSteps, uninstallFileNames, preStartCmdSteps, postStartCmdSteps,
+		uninstallCmdSteps, uninstallFilePaths, preStartCmdSteps, postStartCmdSteps,
 		preStopCmdSteps, postStopCmdSteps, startupFilePtr, estimatedSizeBytesPtr,
 		avatarUrlPtr,
 	), nil

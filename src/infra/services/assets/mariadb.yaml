@@ -30,7 +30,7 @@ installCmdSteps:
   - mariadb-admin --defaults-file=/root/.my.cnf shutdown
 uninstallCmdSteps:
   - apt-get purge -y mariadb-server mariadb-client
-uninstallFileNames:
+uninstallFilePaths:
   - /etc/mysql
   - /var/lib/mysql
   - /var/log/mysql

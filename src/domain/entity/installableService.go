@@ -12,7 +12,7 @@ type InstallableService struct {
 	PortBindings       []valueObject.PortBinding      `json:"portBindings"`
 	InstallCmdSteps    []valueObject.UnixCommand      `json:"-"`
 	UninstallCmdSteps  []valueObject.UnixCommand      `json:"-"`
-	UninstallFileNames []valueObject.UnixFileName     `json:"-"`
+	UninstallFilePaths []valueObject.UnixFilePath     `json:"-"`
 	PreStartCmdSteps   []valueObject.UnixCommand      `json:"-"`
 	PostStartCmdSteps  []valueObject.UnixCommand      `json:"-"`
 	PreStopCmdSteps    []valueObject.UnixCommand      `json:"-"`
@@ -32,7 +32,7 @@ func NewInstallableService(
 	portBindings []valueObject.PortBinding,
 	installCmdSteps []valueObject.UnixCommand,
 	uninstallCmdSteps []valueObject.UnixCommand,
-	uninstallFileNames []valueObject.UnixFileName,
+	uninstallFilePaths []valueObject.UnixFilePath,
 	preStartCmdSteps []valueObject.UnixCommand,
 	postStartCmdSteps []valueObject.UnixCommand,
 	preStopCmdSteps []valueObject.UnixCommand,
@@ -51,7 +51,7 @@ func NewInstallableService(
 		PortBindings:       portBindings,
 		InstallCmdSteps:    installCmdSteps,
 		UninstallCmdSteps:  uninstallCmdSteps,
-		UninstallFileNames: uninstallFileNames,
+		UninstallFilePaths: uninstallFilePaths,
 		PreStartCmdSteps:   preStartCmdSteps,
 		PostStartCmdSteps:  postStartCmdSteps,
 		PreStopCmdSteps:    preStopCmdSteps,

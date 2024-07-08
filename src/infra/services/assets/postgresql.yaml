@@ -36,7 +36,7 @@ installCmdSteps:
   - /usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf stop
 uninstallCmdSteps:
   - apt-get purge -y postgresql*
-uninstallFileNames:
+uninstallFilePaths:
   - /etc/postgresql
   - /var/lib/postgresql
   - /var/log/postgresql
