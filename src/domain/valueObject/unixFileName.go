@@ -4,39 +4,37 @@ import (
 	"errors"
 	"regexp"
 	"slices"
+	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const unixFileNameRegexExpression = `^[^\n\r\t\f\0\?\[\]\<\>\/]{1,256}$`
+const unixFileNameRegexExpression = `^[^\n\r\t\f\0\?\[\]\<\>\/]{1,512}$`
 
 var reservedUnixFileNames = []string{".", "..", "*", "/", "\\"}
 
 type UnixFileName string
 
-func NewUnixFileName(value string) (UnixFileName, error) {
-	unixFileName := UnixFileName(value)
-	if !unixFileName.isValid() {
+func NewUnixFileName(value interface{}) (fileName UnixFileName, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return fileName, errors.New("UnixFileNameValueMustBeString")
+	}
+
+	stringValue = strings.TrimSpace(stringValue)
+
+	unixFileNameRegex := regexp.MustCompile(unixFileNameRegexExpression)
+	if !unixFileNameRegex.MatchString(stringValue) {
 		return "", errors.New("InvalidUnixFileName")
 	}
-	return unixFileName, nil
-}
 
-func NewUnixFileNamePanic(value string) UnixFileName {
-	unixFileName, err := NewUnixFileName(value)
-	if err != nil {
-		panic(err)
+	if slices.Contains(reservedUnixFileNames, stringValue) {
+		return "", errors.New("ReservedUnixFileName")
 	}
-	return unixFileName
+
+	return UnixFileName(stringValue), nil
 }
 
-func (unixFileName UnixFileName) isValid() bool {
-	unixFileNameRegex := regexp.MustCompile(unixFileNameRegexExpression)
-	isValidFormat := unixFileNameRegex.MatchString(string(unixFileName))
-
-	isReservedUnixFileName := slices.Contains(reservedUnixFileNames, string(unixFileName))
-
-	return isValidFormat && !isReservedUnixFileName
-}
-
-func (unixFileName UnixFileName) String() string {
-	return string(unixFileName)
+func (vo UnixFileName) String() string {
+	return string(vo)
 }
