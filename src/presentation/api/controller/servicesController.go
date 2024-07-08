@@ -130,10 +130,11 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	var svcStartupFilePtr *valueObject.UnixFilePath
 	if requestBody["startupFile"] != nil {
-		svcStartupFile := valueObject.NewUnixFilePathPanic(
-			requestBody["startupFile"].(string),
-		)
-		svcStartupFilePtr = &svcStartupFile
+		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcStartupFilePtr = &startupFile
 	}
 
 	var svcPortBindings []valueObject.PortBinding
@@ -345,10 +346,11 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcStartupFilePtr *valueObject.UnixFilePath
 	if requestBody["startupFile"] != nil {
-		svcStartupFile := valueObject.NewUnixFilePathPanic(
-			requestBody["startupFile"].(string),
-		)
-		svcStartupFilePtr = &svcStartupFile
+		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcStartupFilePtr = &startupFile
 	}
 
 	var svcPortBindings []valueObject.PortBinding
