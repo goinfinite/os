@@ -5,7 +5,7 @@ import "github.com/speedianet/os/src/domain/valueObject"
 type CreateCustomService struct {
 	Name              valueObject.ServiceName     `json:"name"`
 	Type              valueObject.ServiceType     `json:"type"`
-	Command           valueObject.UnixCommand     `json:"command"`
+	StartCmd          valueObject.UnixCommand     `json:"startCmd"`
 	Envs              []valueObject.ServiceEnv    `json:"envs"`
 	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
 	Version           *valueObject.ServiceVersion `json:"version"`
@@ -19,7 +19,7 @@ type CreateCustomService struct {
 func NewCreateCustomService(
 	name valueObject.ServiceName,
 	serviceType valueObject.ServiceType,
-	command valueObject.UnixCommand,
+	startCmd valueObject.UnixCommand,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	version *valueObject.ServiceVersion,
@@ -32,7 +32,7 @@ func NewCreateCustomService(
 	return CreateCustomService{
 		Name:              name,
 		Type:              serviceType,
-		Command:           command,
+		StartCmd:          startCmd,
 		Envs:              envs,
 		PortBindings:      portBindings,
 		Version:           version,

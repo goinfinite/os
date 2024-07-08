@@ -28,12 +28,7 @@ versions:
   - 4
 portBindings:
   - 3000/http
-command: mise x node@%version% -- node %startupFile%
-dataFields:
-  - name: startupFile
-    label: Startup File
-    type: text
-    defaultValue: "/app/html/index.js"
+startCmd: mise x node@%version% -- node %startupFile%
 installCmdSteps:
   - mise install node@%version%
   - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi

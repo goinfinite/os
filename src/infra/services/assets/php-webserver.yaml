@@ -11,12 +11,7 @@ versions:
 portBindings:
   - 8080/http
   - 8443/https
-command: /usr/local/lsws/bin/litespeed -d
-dataFields:
-  - name: primaryHostname
-    label: Primary Virtual Host Hostname
-    type: text
-    isRequired: true
+startCmd: /usr/local/lsws/bin/litespeed -d
 installCmdSteps:
   - curl -skL https://repo.litespeed.sh | bash
   - install_packages openlitespeed

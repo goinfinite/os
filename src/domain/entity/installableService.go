@@ -6,7 +6,7 @@ type InstallableService struct {
 	Name               valueObject.ServiceName        `json:"name"`
 	Nature             valueObject.ServiceNature      `json:"nature"`
 	Type               valueObject.ServiceType        `json:"type"`
-	Command            valueObject.UnixCommand        `json:"command"`
+	StartCmd           valueObject.UnixCommand        `json:"startCmd"`
 	Description        valueObject.ServiceDescription `json:"description"`
 	Versions           []valueObject.ServiceVersion   `json:"versions"`
 	PortBindings       []valueObject.PortBinding      `json:"portBindings"`
@@ -26,7 +26,7 @@ func NewInstallableService(
 	name valueObject.ServiceName,
 	nature valueObject.ServiceNature,
 	serviceType valueObject.ServiceType,
-	command valueObject.UnixCommand,
+	startCmd valueObject.UnixCommand,
 	description valueObject.ServiceDescription,
 	versions []valueObject.ServiceVersion,
 	portBindings []valueObject.PortBinding,
@@ -45,7 +45,7 @@ func NewInstallableService(
 		Name:               name,
 		Nature:             nature,
 		Type:               serviceType,
-		Command:            command,
+		StartCmd:           startCmd,
 		Description:        description,
 		Versions:           versions,
 		PortBindings:       portBindings,

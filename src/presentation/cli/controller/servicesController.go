@@ -146,11 +146,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
 	)
 	cmd.Flags().BoolVarP(
-		&autoCreateMapping,
-		"auto-create-mapping",
-		"a",
-		true,
-		"AutoCreateMapping",
+		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
 	)
 	return cmd
 }
@@ -158,7 +154,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var nameStr string
 	var typeStr string
-	var commandStr string
+	var startCmdStr string
 	var versionStr string
 	var portBindingsSlice []string
 	var autoCreateMapping bool
@@ -177,7 +173,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			svcCommand, err := valueObject.NewUnixCommand(commandStr)
+			startCmd, err := valueObject.NewUnixCommand(startCmdStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -203,7 +199,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			createCustomServiceDto := dto.NewCreateCustomService(
 				svcName,
 				svcType,
-				svcCommand,
+				startCmd,
 				[]valueObject.ServiceEnv{},
 				portBindings,
 				svcVersionPtr,
@@ -240,8 +236,8 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)")
 	cmd.MarkFlagRequired("type")
-	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
-	cmd.MarkFlagRequired("command")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
+	cmd.MarkFlagRequired("start-command")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
@@ -259,7 +255,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 func (controller *ServicesController) Update() *cobra.Command {
 	var nameStr string
 	var typeStr string
-	var commandStr string
+	var startCmdStr string
 	var statusStr string
 	var versionStr string
 	var startupFileStr string
@@ -289,13 +285,13 @@ func (controller *ServicesController) Update() *cobra.Command {
 				svcStatusPtr = &svcStatus
 			}
 
-			var svcCommandPtr *valueObject.UnixCommand
-			if commandStr != "" {
-				svcCommand, err := valueObject.NewUnixCommand(commandStr)
+			var startCmdPtr *valueObject.UnixCommand
+			if startCmdStr != "" {
+				startCmd, err := valueObject.NewUnixCommand(startCmdStr)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
-				svcCommandPtr = &svcCommand
+				startCmdPtr = &startCmd
 			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
@@ -328,7 +324,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 			updateSvcDto := dto.NewUpdateService(
 				svcName,
 				svcTypePtr,
-				svcCommandPtr,
+				startCmdPtr,
 				svcStatusPtr,
 				svcVersionPtr,
 				startupFilePtr,
@@ -358,7 +354,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
-	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")

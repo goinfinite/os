@@ -40,14 +40,26 @@ definitions:
     properties:
       autoCreateMapping:
         type: boolean
-      command:
-        type: string
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      startCmd:
+        type: string
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
       version:
@@ -75,6 +87,16 @@ definitions:
     properties:
       autoCreateMapping:
         type: boolean
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
@@ -83,6 +105,8 @@ definitions:
         type: array
       startupFile:
         type: string
+      timeoutStartSecs:
+        type: integer
       version:
         type: string
     type: object
@@ -161,17 +185,20 @@ definitions:
       urlPath:
         type: string
     type: object
-  dto.Login:
+  dto.InstalledServiceWithMetrics:
     properties:
-      password:
-        type: string
-      username:
-        type: string
-    type: object
-  dto.ServiceWithMetrics:
-    properties:
-      command:
-        type: string
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      createdAt:
+        type: integer
+      envs:
+        items:
+          type: string
+        type: array
+      maxStartRetries:
+        type: integer
       metrics:
         $ref: '#/definitions/valueObject.ServiceMetrics'
       name:
@@ -182,13 +209,26 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       status:
         type: string
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
+      updatedAt:
+        type: integer
       version:
+        type: string
+    type: object
+  dto.Login:
+    properties:
+      password:
+        type: string
+      username:
         type: string
     type: object
   dto.UpdateAccount:
@@ -230,14 +270,14 @@ definitions:
     type: object
   dto.UpdateService:
     properties:
-      command:
-        type: string
       name:
         type: string
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       status:
@@ -332,9 +372,23 @@ definitions:
     type: object
   entity.InstallableService:
     properties:
+      avatarUrl:
+        type: string
+      description:
+        type: string
+      estimatedSizeBytes:
+        type: integer
       name:
         type: string
       nature:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      startCmd:
+        type: string
+      startupFile:
         type: string
       type:
         type: string
@@ -1390,7 +1444,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ServiceWithMetrics'
+              $ref: '#/definitions/dto.InstalledServiceWithMetrics'
             type: array
       security:
       - Bearer: []
@@ -1450,7 +1504,7 @@ paths:
       - application/json
       description: Install a new custom service.
       parameters:
-      - description: name, type and command is required.<br />If version is not provided,
+      - description: name, type and startCmd is required.<br />If version is not provided,
           it will be 'lts'.<br />If portBindings is not provided, it wil be default
           service port bindings.<br />If autoCreateMapping is not provided, it will
           be 'true'.

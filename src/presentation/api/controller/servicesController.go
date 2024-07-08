@@ -34,7 +34,7 @@ func NewServicesController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} dto.ServiceWithMetrics
+// @Success      200 {array} dto.InstalledServiceWithMetrics
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -199,11 +199,11 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and command is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
+// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and startCmd is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
-	requiredParams := []string{"name", "type", "command"}
+	requiredParams := []string{"name", "type", "startCmd"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
@@ -218,7 +218,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
 
-	svcCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+	startCmd, err := valueObject.NewUnixCommand(requestBody["startCmd"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
@@ -255,7 +255,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	createCustomServiceDto := dto.NewCreateCustomService(
 		serviceName,
 		svcType,
-		svcCommand,
+		startCmd,
 		[]valueObject.ServiceEnv{},
 		svcPortBindings,
 		svcVersionPtr,
@@ -318,13 +318,13 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		svcTypePtr = &svcType
 	}
 
-	var svcCommandPtr *valueObject.UnixCommand
-	if requestBody["command"] != nil {
-		svcCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+	var startCmdPtr *valueObject.UnixCommand
+	if requestBody["startCmd"] != nil {
+		startCmd, err := valueObject.NewUnixCommand(requestBody["startCmd"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
-		svcCommandPtr = &svcCommand
+		startCmdPtr = &startCmd
 	}
 
 	var svcStatusPtr *valueObject.ServiceStatus
@@ -363,7 +363,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	updateSvcDto := dto.NewUpdateService(
 		svcName,
 		svcTypePtr,
-		svcCommandPtr,
+		startCmdPtr,
 		svcStatusPtr,
 		svcVersionPtr,
 		svcStartupFilePtr,

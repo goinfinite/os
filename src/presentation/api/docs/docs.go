@@ -1186,7 +1186,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ServiceWithMetrics"
+                                "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
                             }
                         }
                     }
@@ -1250,7 +1250,7 @@ const docTemplate = `{
                 "summary": "CreateCustomService",
                 "parameters": [
                     {
-                        "description": "name, type and command is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
+                        "description": "name, type and startCmd is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
                         "name": "createCustomServiceDto",
                         "in": "body",
                         "required": true,
@@ -1792,8 +1792,20 @@ const docTemplate = `{
                 "autoCreateMapping": {
                     "type": "boolean"
                 },
-                "command": {
-                    "type": "string"
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxStartRetries": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -1803,6 +1815,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
                 },
                 "type": {
                     "type": "string"
@@ -1846,6 +1864,21 @@ const docTemplate = `{
                 "autoCreateMapping": {
                     "type": "boolean"
                 },
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -1857,6 +1890,9 @@ const docTemplate = `{
                 },
                 "startupFile": {
                     "type": "string"
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
                 },
                 "version": {
                     "type": "string"
@@ -1979,22 +2015,26 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Login": {
+        "dto.InstalledServiceWithMetrics": {
             "type": "object",
             "properties": {
-                "password": {
-                    "type": "string"
+                "autoRestart": {
+                    "type": "boolean"
                 },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ServiceWithMetrics": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string"
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxStartRetries": {
+                    "type": "integer"
                 },
                 "metrics": {
                     "$ref": "#/definitions/valueObject.ServiceMetrics"
@@ -2011,16 +2051,36 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "startCmd": {
+                    "type": "string"
+                },
                 "startupFile": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
                 },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
+                "updatedAt": {
+                    "type": "integer"
+                },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Login": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -2085,9 +2145,6 @@ const docTemplate = `{
         "dto.UpdateService": {
             "type": "object",
             "properties": {
-                "command": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -2096,6 +2153,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
+                },
+                "startCmd": {
+                    "type": "string"
                 },
                 "startupFile": {
                     "type": "string"
@@ -2242,10 +2302,31 @@ const docTemplate = `{
         "entity.InstallableService": {
             "type": "object",
             "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "estimatedSizeBytes": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
                 "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "startupFile": {
                     "type": "string"
                 },
                 "type": {

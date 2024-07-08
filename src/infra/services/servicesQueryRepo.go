@@ -270,7 +270,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	requiredParams := []string{
-		"name", "nature", "type", "command", "description", "installCmdSteps",
+		"name", "nature", "type", "startCmd", "description", "installCmdSteps",
 	}
 	for _, requiredParam := range requiredParams {
 		if serviceMap[requiredParam] != nil {
@@ -296,7 +296,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		return installableService, err
 	}
 
-	serviceCommand, err := valueObject.NewUnixCommand(serviceMap["command"])
+	startCommand, err := valueObject.NewUnixCommand(serviceMap["startCmd"])
 	if err != nil {
 		return installableService, err
 	}
@@ -442,7 +442,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	return entity.NewInstallableService(
-		serviceName, serviceNature, serviceType, serviceCommand,
+		serviceName, serviceNature, serviceType, startCommand,
 		serviceDescription, serviceVersions, portBindings, installCmdSteps,
 		uninstallCmdSteps, uninstallFileNames, preStartCmdSteps, postStartCmdSteps,
 		preStopCmdSteps, postStopCmdSteps, startupFilePtr, estimatedSizeBytesPtr,

@@ -14,7 +14,7 @@ versions:
   - 12
 portBindings:
   - 5432/tcp
-command: /usr/lib/postgresql/%version%/bin/postgres -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf
+startCmd: /usr/lib/postgresql/%version%/bin/postgres -D /var/lib/postgresql/%version%/main -c config_file=/etc/postgresql/%version%/main/postgresql.conf
 installCmdSteps:
   - install -d /usr/share/postgresql-common/pgdg
   - curl -skL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc

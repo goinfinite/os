@@ -121,8 +121,8 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
-	finalCommand, err := repo.replaceCmdStepsPlaceholders(
-		[]valueObject.UnixCommand{installableService.Command}, stepsPlaceholders,
+	finalStartCmd, err := repo.replaceCmdStepsPlaceholders(
+		[]valueObject.UnixCommand{installableService.StartCmd}, stepsPlaceholders,
 	)
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installableService.Nature.String(),
 		installableService.Type.String(),
 		serviceVersion.String(),
-		finalCommand[0].String(),
+		finalStartCmd[0].String(),
 		createDto.Envs,
 		createDto.PortBindings,
 		nil,
@@ -168,7 +168,7 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		customNature.String(),
 		createDto.Type.String(),
 		createDto.Version.String(),
-		createDto.Command.String(),
+		createDto.StartCmd.String(),
 		createDto.Envs,
 		createDto.PortBindings,
 		nil,

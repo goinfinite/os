@@ -11,7 +11,7 @@ versions:
   - 10.6
 portBindings:
   - 3306/tcp
-command: /usr/bin/mariadbd-safe
+startCmd: /usr/bin/mariadbd-safe
 installCmdSteps:
   - curl -skL https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=%version%
   - install_packages mariadb-server mariadb-client

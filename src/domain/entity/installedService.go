@@ -7,7 +7,7 @@ type InstalledService struct {
 	Nature           valueObject.ServiceNature  `json:"nature"`
 	Type             valueObject.ServiceType    `json:"type"`
 	Version          valueObject.ServiceVersion `json:"version"`
-	Command          valueObject.UnixCommand    `json:"command"`
+	StartCmd         valueObject.UnixCommand    `json:"startCmd"`
 	Status           valueObject.ServiceStatus  `json:"status"`
 	Envs             []valueObject.ServiceEnv   `json:"envs"`
 	PortBindings     []valueObject.PortBinding  `json:"portBindings"`
@@ -25,7 +25,7 @@ func NewInstalledService(
 	nature valueObject.ServiceNature,
 	serviceType valueObject.ServiceType,
 	version valueObject.ServiceVersion,
-	command valueObject.UnixCommand,
+	startCmd valueObject.UnixCommand,
 	status valueObject.ServiceStatus,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
@@ -42,7 +42,7 @@ func NewInstalledService(
 		Nature:           nature,
 		Type:             serviceType,
 		Version:          version,
-		Command:          command,
+		StartCmd:         startCmd,
 		Status:           status,
 		Envs:             envs,
 		PortBindings:     portBindings,

@@ -14,7 +14,7 @@ type InstalledService struct {
 	Nature           string `gorm:"not null"`
 	Type             string `gorm:"not null"`
 	Version          string `gorm:"not null"`
-	Command          string `gorm:"not null"`
+	StartCmd         string `gorm:"not null"`
 	Envs             *string
 	PortBindings     *string
 	StartupFile      *string
@@ -42,7 +42,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Nature:           "solo",
 		Type:             "system",
 		Version:          infraEnvs.SpeediaOsVersion,
-		Command:          "/speedia/os serve",
+		StartCmd:         "/speedia/os serve",
 		Envs:             nil,
 		PortBindings:     &osApiPortBindings,
 		StartupFile:      nil,
@@ -57,7 +57,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Nature:           "solo",
 		Type:             "system",
 		Version:          "3.0",
-		Command:          "/usr/sbin/cron -f",
+		StartCmd:         "/usr/sbin/cron -f",
 		Envs:             nil,
 		PortBindings:     nil,
 		StartupFile:      nil,
@@ -73,7 +73,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Nature:           "solo",
 		Type:             "system",
 		Version:          "1.24.0",
-		Command:          "/usr/sbin/nginx",
+		StartCmd:         "/usr/sbin/nginx",
 		Envs:             nil,
 		PortBindings:     &nginxPortBindings,
 		StartupFile:      nil,
@@ -87,7 +87,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 }
 
 func NewInstalledService(
-	name, nature, serviceType, version, command string,
+	name, nature, serviceType, version, startCmd string,
 	envs []valueObject.ServiceEnv, portBindings []valueObject.PortBinding, startupFile *string,
 	autoStart *bool, timeoutStartSecs *uint, autoRestart *bool, maxStartRetries *uint,
 ) InstalledService {
@@ -116,7 +116,7 @@ func NewInstalledService(
 		Nature:           nature,
 		Type:             serviceType,
 		Version:          version,
-		Command:          command,
+		StartCmd:         startCmd,
 		Envs:             envsPtr,
 		PortBindings:     portBindingsPtr,
 		StartupFile:      startupFile,
@@ -148,7 +148,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		return serviceEntity, err
 	}
 
-	command, err := valueObject.NewUnixCommand(model.Command)
+	startCmd, err := valueObject.NewUnixCommand(model.StartCmd)
 	if err != nil {
 		return serviceEntity, err
 	}
@@ -213,7 +213,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		nature,
 		serviceType,
 		version,
-		command,
+		startCmd,
 		status,
 		envs,
 		portBindings,

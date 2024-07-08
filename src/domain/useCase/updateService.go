@@ -74,7 +74,7 @@ func UpdateService(
 	}
 
 	shouldUpdateType := updateDto.Type != nil
-	shouldUpdateCommand := updateDto.Command != nil
+	shouldUpdateCommand := updateDto.StartCmd != nil
 	shouldUpdateVersion := updateDto.Version != nil
 	shouldUpdateStartupFile := updateDto.StartupFile != nil
 	portBindingsChanged := len(updateDto.PortBindings) != 0
