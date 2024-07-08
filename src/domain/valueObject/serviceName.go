@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	"golang.org/x/exp/maps"
 )
 
@@ -15,62 +16,47 @@ const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
 
 var NativeSvcNamesWithAliases = map[string][]string{
 	"php-webserver": {
-		"php",
-		"php-ws",
-		"lsphp",
-		"php-fpm",
-		"php-cgi",
-		"litespeed",
-		"openlitespeed",
+		"php", "php-ws", "lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed",
 	},
 	"node": {"nodejs"},
 	"mariadb": {
-		"mariadbd",
-		"mariadb-server",
-		"mysql",
-		"mysqld",
-		"percona",
-		"perconadb",
-		"percona-server-mysqld",
+		"mariadbd", "mariadb-server", "mysql", "mysqld", "percona", "perconadb",
 	},
 	"postgresql": {"postgres"},
 	"redis":      {"redis-server"},
 }
 
-func NewServiceName(value string) (ServiceName, error) {
-	svcName := ServiceNameAdapter(value)
+func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return serviceName, errors.New("ServiceNameValueMustBeString")
+	}
+	svcName := ServiceNameAdapter(stringValue)
 
-	svcNameRegex := regexp.MustCompile(ServiceNameRegex)
-	if !svcNameRegex.MatchString(value) {
+	nameRegex := regexp.MustCompile(ServiceNameRegex)
+	if !nameRegex.MatchString(svcName) {
 		return "", errors.New("InvalidServiceName")
 	}
 
 	return ServiceName(svcName), nil
 }
 
-func NewServiceNamePanic(value string) ServiceName {
-	sn, err := NewServiceName(value)
-	if err != nil {
-		panic(err)
-	}
-	return sn
-}
-
 func ServiceNameAdapter(value string) string {
-	svcName := strings.ToLower(value)
+	stringValue := strings.TrimSpace(value)
+	stringValue = strings.ToLower(stringValue)
 
 	nativeSvcNames := maps.Keys(NativeSvcNamesWithAliases)
 	for _, nativeSvcName := range nativeSvcNames {
-		if !slices.Contains(NativeSvcNamesWithAliases[nativeSvcName], svcName) {
+		if !slices.Contains(NativeSvcNamesWithAliases[nativeSvcName], stringValue) {
 			continue
 		}
-		svcName = nativeSvcName
+		stringValue = nativeSvcName
 		break
 	}
 
-	return svcName
+	return stringValue
 }
 
-func (sn ServiceName) String() string {
-	return string(sn)
+func (vo ServiceName) String() string {
+	return string(vo)
 }
