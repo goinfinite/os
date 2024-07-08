@@ -143,9 +143,9 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 }
 
 func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
-	cmdSteps []valueObject.MarketplaceItemCmdStep,
+	cmdSteps []valueObject.UnixCommand,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
-) (cmdStepsWithDataFields []valueObject.MarketplaceItemCmdStep, err error) {
+) (cmdStepsWithDataFields []valueObject.UnixCommand, err error) {
 	dataFieldsMap := map[string]string{}
 	for _, dataField := range dataFields {
 		dataFieldKeyStr := dataField.Name.String()
@@ -168,7 +168,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 			cmdStepStr = cmdStepWithDataFieldStr
 		}
 
-		cmdStepWithDataField, _ := valueObject.NewMarketplaceItemCmdStep(cmdStepStr)
+		cmdStepWithDataField, _ := valueObject.NewUnixCommand(cmdStepStr)
 		cmdStepsWithDataFields = append(cmdStepsWithDataFields, cmdStepWithDataField)
 	}
 
@@ -176,7 +176,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
+	catalogCmdSteps []valueObject.UnixCommand,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(

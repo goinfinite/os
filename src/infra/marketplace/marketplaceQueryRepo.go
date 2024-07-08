@@ -2,7 +2,6 @@ package marketplaceInfra
 
 import (
 	"embed"
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"log"
@@ -11,10 +10,10 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"golang.org/x/exp/maps"
-	"gopkg.in/yaml.v3"
 )
 
 //go:embed assets/*
@@ -30,40 +29,6 @@ func NewMarketplaceQueryRepo(
 	return &MarketplaceQueryRepo{
 		persistentDbSvc: persistentDbSvc,
 	}
-}
-
-func (repo *MarketplaceQueryRepo) getCatalogItemMapFromFilePath(
-	catalogItemFilePath valueObject.UnixFilePath,
-) (catalogItemMap map[string]interface{}, err error) {
-	itemFileHandler, err := assets.Open(catalogItemFilePath.String())
-	if err != nil {
-		return catalogItemMap, err
-	}
-	defer itemFileHandler.Close()
-
-	itemFileExt, err := catalogItemFilePath.GetFileExtension()
-	if err != nil {
-		return catalogItemMap, err
-	}
-
-	isYamlFile := itemFileExt == "yml" || itemFileExt == "yaml"
-	if isYamlFile {
-		itemYamlDecoder := yaml.NewDecoder(itemFileHandler)
-		err = itemYamlDecoder.Decode(&catalogItemMap)
-		if err != nil {
-			return catalogItemMap, err
-		}
-
-		return catalogItemMap, nil
-	}
-
-	itemJsonDecoder := json.NewDecoder(itemFileHandler)
-	err = itemJsonDecoder.Decode(&catalogItemMap)
-	if err != nil {
-		return catalogItemMap, err
-	}
-
-	return catalogItemMap, nil
 }
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
@@ -322,14 +287,14 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 
 func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	catalogItemCmdStepsMap interface{},
-) (itemCmdSteps []valueObject.MarketplaceItemCmdStep, err error) {
+) (itemCmdSteps []valueObject.UnixCommand, err error) {
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
 		return itemCmdSteps, errors.New("InvalidMarketplaceCatalogItemCmdSteps")
 	}
 
 	for _, rawItemCmdStep := range rawItemCmdSteps {
-		itemCmdStep, err := valueObject.NewMarketplaceItemCmdStep(
+		itemCmdStep, err := valueObject.NewUnixCommand(
 			rawItemCmdStep.(string),
 		)
 		if err != nil {
@@ -398,7 +363,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	catalogItemFilePath valueObject.UnixFilePath,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	itemMap, err := repo.getCatalogItemMapFromFilePath(catalogItemFilePath)
+	itemMap, err := infraHelper.EmbedSerializedDataToMap(&assets, catalogItemFilePath)
 	if err != nil {
 		return catalogItem, err
 	}
@@ -475,7 +440,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemInstallCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+	itemInstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
 		itemInstallCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["installCmdSteps"])
 		if err != nil {
@@ -483,7 +448,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemUninstallCmdSteps := []valueObject.MarketplaceItemCmdStep{}
+	itemUninstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["uninstallCmdSteps"] != nil {
 		itemUninstallCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["uninstallCmdSteps"])
 		if err != nil {
