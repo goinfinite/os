@@ -4,32 +4,31 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type ServiceNature string
 
 var ValidServiceNatures = []string{
-	"solo",
-	"multi",
-	"custom",
+	"solo", "multi", "custom",
 }
 
-func NewServiceNature(value string) (ServiceNature, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidServiceNatures, value) {
+func NewServiceNature(value interface{}) (serviceNature ServiceNature, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return serviceNature, errors.New("ServiceNatureValueMustBeString")
+	}
+
+	stringValue = strings.TrimSpace(stringValue)
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidServiceNatures, stringValue) {
 		return "", errors.New("InvalidServiceNature")
 	}
-	return ServiceNature(value), nil
+	return ServiceNature(stringValue), nil
 }
 
-func NewServiceNaturePanic(value string) ServiceNature {
-	sn, err := NewServiceNature(value)
-	if err != nil {
-		panic(err)
-	}
-	return sn
-}
-
-func (sn ServiceNature) String() string {
-	return string(sn)
+func (vo ServiceNature) String() string {
+	return string(vo)
 }
