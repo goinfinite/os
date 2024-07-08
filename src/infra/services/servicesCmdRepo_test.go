@@ -17,11 +17,11 @@ func TestServiceCmdRepo(t *testing.T) {
 	t.Run("CreateCustomService", func(t *testing.T) {
 		t.Skip("SkipCreateCustomServiceTest")
 
-		portBinding, err := valueObject.NewPortBindingFromString(
+		portBinding, err := valueObject.NewPortBinding(
 			"8000/http",
 		)
 		if err != nil {
-			t.Errorf("NewPortBindingFromStringFailed : %v", err)
+			t.Errorf("NewPortBindingFailed : %v", err)
 			return
 		}
 

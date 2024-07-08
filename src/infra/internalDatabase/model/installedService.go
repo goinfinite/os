@@ -171,7 +171,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 	if model.PortBindings != nil {
 		rawPortBindingsList := strings.Split(*model.PortBindings, ";")
 		for _, rawPortBinding := range rawPortBindingsList {
-			portBinding, err := valueObject.NewPortBindingFromString(rawPortBinding)
+			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
 				return serviceEntity, err
 			}

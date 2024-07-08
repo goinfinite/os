@@ -90,7 +90,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
@@ -179,7 +179,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
@@ -295,7 +295,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}

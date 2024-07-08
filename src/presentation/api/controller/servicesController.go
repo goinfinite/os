@@ -68,23 +68,33 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	var svcPortBindings []valueObject.PortBinding
 	for _, portBinding := range bindings {
-		portBindingMap := portBinding.(map[string]interface{})
-		svcPort, err := valueObject.NewNetworkPort(portBindingMap["port"])
+		portBindingMap, assertOk := portBinding.(map[string]interface{})
+		if !assertOk {
+			panic("InvalidPortBinding")
+		}
+
+		port, err := valueObject.NewNetworkPort(portBindingMap["port"])
 		if err != nil {
 			panic(err)
 		}
-		svcProtocol, err := valueObject.NewNetworkProtocol(
-			portBindingMap["protocol"].(string),
-		)
+		portBindingStr := port.String()
+
+		if portBindingMap["protocol"] != nil {
+			protocol, err := valueObject.NewNetworkProtocol(portBindingMap["protocol"])
+			if err != nil {
+				panic(err)
+			}
+
+			portBindingStr += "/" + protocol.String()
+		}
+
+		svcPortBinding, err := valueObject.NewPortBinding(portBindingStr)
 		if err != nil {
 			panic(err)
 		}
-		svcPortBinding := valueObject.NewPortBinding(
-			svcPort,
-			svcProtocol,
-		)
 		svcPortBindings = append(svcPortBindings, svcPortBinding)
 	}
+
 	return svcPortBindings
 }
 
