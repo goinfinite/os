@@ -12,7 +12,7 @@ type UnixCommand string
 func NewUnixCommand(value interface{}) (UnixCommand, error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("MarketplaceItemSlugValueMustBeString")
+		return "", errors.New("UnixCommandValueMustBeString")
 	}
 
 	stringValue = strings.TrimSpace(stringValue)
