@@ -328,7 +328,12 @@ func (controller *ServicesController) Update() *cobra.Command {
 				svcStatusPtr,
 				svcVersionPtr,
 				startupFilePtr,
+				[]valueObject.ServiceEnv{},
 				portBindings,
+				nil,
+				nil,
+				nil,
+				nil,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)

@@ -367,7 +367,12 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		svcStatusPtr,
 		svcVersionPtr,
 		svcStartupFilePtr,
+		[]valueObject.ServiceEnv{},
 		svcPortBindings,
+		nil,
+		nil,
+		nil,
+		nil,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
