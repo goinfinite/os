@@ -72,7 +72,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 			nil,
 		)
 
-		err = serviceCmdRepo.CreateInstallable(createServiceDto)
+		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
 		if err != nil {
 			return errors.New("InstallRequiredServiceError: " + err.Error())
 		}
