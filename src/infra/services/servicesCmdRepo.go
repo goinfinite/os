@@ -84,6 +84,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return err
 	}
 
+	if installableService.Nature.String() == "multi" && createDto.StartupFile == nil {
+		return errors.New("MultiNatureServicesRequiresStartupFile")
+	}
+
 	serviceVersion := installableService.Versions[0]
 	if createDto.Version != nil {
 		serviceVersion = *createDto.Version
@@ -102,6 +106,15 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	if createDto.StartupFile != nil {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
+	}
+
+	serviceNameStr := createDto.Name.String()
+	defaultDirectories := []string{"conf", "logs"}
+	for _, defaultDir := range defaultDirectories {
+		err = infraHelper.MakeDir("/app/" + defaultDir + "/" + serviceNameStr)
+		if err != nil {
+			return errors.New("CreateDefaultDirsError: " + err.Error())
+		}
 	}
 
 	finalInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
