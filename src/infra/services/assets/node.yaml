@@ -32,6 +32,6 @@ startCmd: mise x node@%version% -- node %startupFile%
 installCmdSteps:
   - mise install node@%version%
   - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi
-  - if [ -s "%startupFile%" ]; then echo "require('http').createServer((req, res) => res.end()).listen(3000)" >%startupFile%; fi
+  - if [ ! -s "%startupFile%" ]; then echo "require('http').createServer((req, res) => res.end()).listen(3000)" >%startupFile%; fi
 estimatedSizeBytes: 104857600
 avatarUrl: https://speedia.net/assets/os/services/node/node-avatar.jpg
