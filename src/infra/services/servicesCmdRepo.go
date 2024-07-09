@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alessio/shellescape"
 	"github.com/speedianet/os/src/domain/dto"
@@ -14,13 +15,17 @@ import (
 )
 
 type ServicesCmdRepo struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
+	servicesQueryRepo *ServicesQueryRepo
 }
 
 func NewServicesCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *ServicesCmdRepo {
-	return &ServicesCmdRepo{persistentDbSvc: persistentDbSvc}
+	return &ServicesCmdRepo{
+		persistentDbSvc:   persistentDbSvc,
+		servicesQueryRepo: NewServicesQueryRepo(persistentDbSvc),
+	}
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
@@ -34,8 +39,14 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd("supervisorctl", "restart", name.String())
-	return err
+	err := repo.Stop(name)
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(1 * time.Second)
+
+	return repo.Start(name)
 }
 
 func (repo *ServicesCmdRepo) Reload() error {
@@ -78,8 +89,7 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) (installedServiceName valueObject.ServiceName, err error) {
-	servicesQueryRepo := NewServicesQueryRepo(repo.persistentDbSvc)
-	installableService, err := servicesQueryRepo.ReadInstallableByName(createDto.Name)
+	installableService, err := repo.servicesQueryRepo.ReadInstallableByName(createDto.Name)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -211,6 +221,87 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
+	serviceEntity, err := repo.servicesQueryRepo.ReadByName(updateDto.Name)
+	if err != nil {
+		return err
+	}
+
+	if updateDto.Status != nil {
+		desiredStatusStr := updateDto.Status.String()
+		isSameStatus := serviceEntity.Status.String() == desiredStatusStr
+		if isSameStatus {
+			return nil
+		}
+
+		switch desiredStatusStr {
+		case "running":
+			return repo.Start(updateDto.Name)
+		case "stopped":
+			return repo.Stop(updateDto.Name)
+		case "restarting":
+			return repo.Restart(updateDto.Name)
+		default:
+			return errors.New("InvalidStatus: " + desiredStatusStr)
+		}
+	}
+
+	updateMap := map[string]interface{}{}
+	if updateDto.Type != nil {
+		updateMap["type"] = updateDto.Type.String()
+	}
+
+	if updateDto.StartCmd != nil {
+		updateMap["startCmd"] = updateDto.StartCmd.String()
+	}
+
+	if updateDto.Version != nil {
+		updateMap["version"] = updateDto.Version.String()
+	}
+
+	if updateDto.StartupFile != nil {
+		startupFileStr := updateDto.StartupFile.String()
+		updateMap["startupFile"] = &startupFileStr
+	}
+
+	if updateDto.Envs != nil {
+		envsStr := ""
+		for _, env := range updateDto.Envs {
+			envsStr += env.String() + ";"
+		}
+		envsStr = strings.TrimSuffix(envsStr, ";")
+		updateMap["envs"] = &envsStr
+	}
+
+	if updateDto.PortBindings != nil {
+		portBindingsStr := ""
+		for _, portBinding := range updateDto.PortBindings {
+			portBindingsStr += portBinding.String() + ";"
+		}
+		portBindingsStr = strings.TrimSuffix(portBindingsStr, ";")
+		updateMap["portBindings"] = &portBindingsStr
+	}
+
+	if updateDto.AutoStart != nil {
+		updateMap["autoStart"] = updateDto.AutoStart
+	}
+
+	if updateDto.TimeoutStartSecs != nil {
+		updateMap["timeoutStartSecs"] = updateDto.TimeoutStartSecs
+	}
+
+	if updateDto.AutoRestart != nil {
+		updateMap["autoRestart"] = updateDto.AutoRestart
+	}
+
+	if updateDto.MaxStartRetries != nil {
+		updateMap["maxStartRetries"] = updateDto.MaxStartRetries
+	}
+
+	err = repo.persistentDbSvc.Handler.Model(&serviceEntity).Updates(updateMap).Error
+	if err != nil {
+		return err
+	}
+
 	return repo.Reload()
 }
 
