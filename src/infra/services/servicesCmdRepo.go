@@ -297,7 +297,10 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["maxStartRetries"] = updateDto.MaxStartRetries
 	}
 
-	err = repo.persistentDbSvc.Handler.Model(&serviceEntity).Updates(updateMap).Error
+	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.InstalledService{}).
+		Where("name = ?", updateDto.Name.String()).
+		Updates(updateMap).Error
 	if err != nil {
 		return err
 	}
@@ -306,5 +309,17 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
+	err := repo.Stop(name)
+	if err != nil {
+		return err
+	}
+
+	err = repo.persistentDbSvc.Handler.
+		Where("name = ?", name.String()).
+		Delete(dbModel.InstalledService{}).Error
+	if err != nil {
+		return err
+	}
+
 	return repo.Reload()
 }
