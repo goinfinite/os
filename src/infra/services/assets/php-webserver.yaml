@@ -23,7 +23,7 @@ installCmdSteps:
   - cp /app/conf/php-webserver/template /app/conf/php-webserver/primary.conf
   - sed -i "s/speedia.net/%primaryHostname%/g" /app/conf/php-webserver/primary.conf
   - chown -R lsadm:nogroup /app/conf/php-webserver/
-  - install -d -o nobody -g nogroup -m 755 /app/logs/php-webserver
+  - chown -R nobody:nogroup /app/logs/php-webserver
   - /speedia/os cron create -s "*/2 * * * *" -d "AutoReloadPhpWebServerAfterHtaccessChange" -c "if ! find /app/html -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +; then /speedia/os services update -n php-webserver -s restart; fi"
 uninstallCmdSteps:
   - apt-get purge -y openlitespeed lsphp*
