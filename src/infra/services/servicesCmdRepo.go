@@ -77,16 +77,27 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
-) error {
+) (installedServiceName valueObject.ServiceName, err error) {
 	servicesQueryRepo := NewServicesQueryRepo(repo.persistentDbSvc)
 	installableService, err := servicesQueryRepo.ReadInstallableByName(createDto.Name)
 	if err != nil {
-		return err
+		return installedServiceName, err
 	}
 
-	if installableService.Nature.String() == "multi" && createDto.StartupFile == nil {
-		return errors.New("MultiNatureServicesRequiresStartupFile")
+	if installableService.Nature.String() == "multi" {
+		if createDto.StartupFile == nil {
+			return installedServiceName, errors.New("MultiNatureServicesRequiresStartupFile")
+		}
+
+		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
+		createDto.Name, err = valueObject.NewServiceName(
+			createDto.Name.String() + "-" + startupFileHash,
+		)
+		if err != nil {
+			return installedServiceName, errors.New("AppendStartupFileHashToNameError: " + err.Error())
+		}
 	}
+	installedServiceName = createDto.Name
 
 	serviceVersion := installableService.Versions[0]
 	if createDto.Version != nil {
@@ -95,7 +106,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return err
+		return installedServiceName, err
 	}
 
 	stepsPlaceholders := map[string]string{
@@ -108,12 +119,12 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
-	serviceNameStr := createDto.Name.String()
+	installedServiceNameStr := installedServiceName.String()
 	defaultDirectories := []string{"conf", "logs"}
 	for _, defaultDir := range defaultDirectories {
-		err = infraHelper.MakeDir("/app/" + defaultDir + "/" + serviceNameStr)
+		err = infraHelper.MakeDir("/app/" + defaultDir + "/" + installedServiceNameStr)
 		if err != nil {
-			return errors.New("CreateDefaultDirsError: " + err.Error())
+			return installedServiceName, errors.New("CreateDefaultDirsError: " + err.Error())
 		}
 	}
 
@@ -121,14 +132,14 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installableService.InstallCmdSteps, stepsPlaceholders,
 	)
 	if err != nil {
-		return err
+		return installedServiceName, err
 	}
 
 	for stepIndex, cmdStep := range finalInstallCmdSteps {
 		_, err = infraHelper.RunCmdWithSubShell(cmdStep.String())
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New(
+			return installedServiceName, errors.New(
 				"RunCmdStepError (" + stepIndexStr + "): " + err.Error(),
 			)
 		}
@@ -138,7 +149,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		[]valueObject.UnixCommand{installableService.StartCmd}, stepsPlaceholders,
 	)
 	if err != nil {
-		return err
+		return installedServiceName, err
 	}
 
 	if len(createDto.PortBindings) == 0 {
@@ -146,7 +157,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	}
 
 	installedServiceModel := dbModel.NewInstalledService(
-		createDto.Name.String(),
+		installedServiceNameStr,
 		installableService.Nature.String(),
 		installableService.Type.String(),
 		serviceVersion.String(),
@@ -167,10 +178,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
-		return err
+		return installedServiceName, err
 	}
 
-	return repo.Reload()
+	return installedServiceName, repo.Reload()
 }
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
