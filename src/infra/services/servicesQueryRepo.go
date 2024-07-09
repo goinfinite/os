@@ -177,9 +177,9 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 	}
 
 	// # supervisorctl status
-	// cron                             RUNNING   pid 2, uptime 0:00:11
-	// nginx                            RUNNING   pid 24, uptime 0:00:10
-	// os-api                           RUNNING   pid 3, uptime 0:00:11
+	// cron                             RUNNING   pid 120, uptime 0:00:35
+	// nginx                            STOPPED   Not started
+	// os-api                           RUNNING   pid 121, uptime 0:00:35
 	supervisorStatusLines := strings.Split(supervisorStatus, "\n")
 	if len(supervisorStatusLines) == 0 {
 		return servicesWithMetrics, errors.New("SupervisorStatusEmpty")
@@ -191,7 +191,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 		}
 
 		supervisorStatusLineParts := strings.Fields(supervisorStatusLine)
-		if len(supervisorStatusLineParts) != 6 {
+		if len(supervisorStatusLineParts) < 4 {
 			continue
 		}
 
@@ -201,18 +201,14 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 			continue
 		}
 
-		serviceEntity, exists := serviceNameServiceEntityMap[serviceName.String()]
-		if !exists {
-			continue
-		}
-
 		rawServiceStatus := supervisorStatusLineParts[1]
 		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 		if err != nil {
 			continue
 		}
 
-		if serviceStatus.String() != "running" {
+		serviceEntity, exists := serviceNameServiceEntityMap[serviceName.String()]
+		if !exists || serviceStatus.String() != "running" {
 			serviceWithMetrics := dto.NewInstalledServiceWithMetrics(serviceEntity, nil)
 			servicesWithMetrics = append(servicesWithMetrics, serviceWithMetrics)
 			continue
