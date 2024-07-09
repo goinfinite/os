@@ -21,13 +21,13 @@ func CreateInstallableService(
 		return errors.New("ServiceAlreadyInstalled")
 	}
 
-	err = servicesCmdRepo.CreateInstallable(createDto)
+	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
 		log.Printf("CreateInstallableServiceError: %v", err)
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
-	serviceEntity, err := servicesQueryRepo.ReadByName(createDto.Name)
+	serviceEntity, err := servicesQueryRepo.ReadByName(installedServiceName)
 	if err != nil {
 		log.Printf("GetServiceByNameError: %s", err.Error())
 		return errors.New("GetServiceByNameInfraError")
@@ -43,6 +43,6 @@ func CreateInstallableService(
 	}
 
 	return createFirstMapping(
-		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, createDto.Name,
+		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, installedServiceName,
 	)
 }
