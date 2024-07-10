@@ -50,14 +50,18 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Reload() error {
-	_, err := infraHelper.RunCmd("supervisorctl", "reload")
+	_, err := infraHelper.RunCmd("supervisorctl", "update")
 	return err
 }
 
 func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 	cmdSteps []valueObject.UnixCommand,
 	placeholders map[string]string,
-) (finalCmdSteps []valueObject.UnixCommand, err error) {
+) (usableCmdSteps []valueObject.UnixCommand, err error) {
+	if len(cmdSteps) == 0 {
+		return usableCmdSteps, nil
+	}
+
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
 		stepPlaceholders, _ := infraHelper.GetAllRegexGroupMatches(cmdStepStr, `%(.*?)%`)
@@ -75,15 +79,15 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 			)
 		}
 
-		finalCmdStep, err := valueObject.NewUnixCommand(cmdStepStr)
+		usableCmdStep, err := valueObject.NewUnixCommand(cmdStepStr)
 		if err != nil {
 			return nil, errors.New("InvalidCmdStep: " + cmdStepStr)
 		}
 
-		finalCmdSteps = append(finalCmdSteps, finalCmdStep)
+		usableCmdSteps = append(usableCmdSteps, usableCmdStep)
 	}
 
-	return finalCmdSteps, nil
+	return usableCmdSteps, nil
 }
 
 func (repo *ServicesCmdRepo) CreateInstallable(
@@ -138,14 +142,14 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
-	finalInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
+	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
 		installableService.InstallCmdSteps, stepsPlaceholders,
 	)
 	if err != nil {
 		return installedServiceName, err
 	}
 
-	for stepIndex, cmdStep := range finalInstallCmdSteps {
+	for stepIndex, cmdStep := range usableInstallCmdSteps {
 		_, err = infraHelper.RunCmdWithSubShell(cmdStep.String())
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
@@ -155,35 +159,67 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
-	finalStartCmd, err := repo.replaceCmdStepsPlaceholders(
-		[]valueObject.UnixCommand{installableService.StartCmd}, stepsPlaceholders,
-	)
-	if err != nil {
-		return installedServiceName, err
+	usableCmdSteps := map[string][]valueObject.UnixCommand{
+		"start":     []valueObject.UnixCommand{installableService.StartCmd},
+		"stop":      installableService.StopCmdSteps,
+		"preStart":  installableService.PreStartCmdSteps,
+		"postStart": installableService.PostStartCmdSteps,
+		"preStop":   installableService.PreStopCmdSteps,
+		"postStop":  installableService.PostStopCmdSteps,
+	}
+	for cmdStepType, cmdSteps := range usableCmdSteps {
+		usableCmdSteps[cmdStepType], err = repo.replaceCmdStepsPlaceholders(
+			cmdSteps, stepsPlaceholders,
+		)
+		if err != nil {
+			return installedServiceName, err
+		}
 	}
 
-	if len(createDto.PortBindings) == 0 {
-		createDto.PortBindings = installableService.PortBindings
+	usableStartCmdSteps := usableCmdSteps["start"]
+	if len(usableStartCmdSteps) == 0 {
+		return installedServiceName, errors.New("MissingStartCmdStep")
 	}
+	usableStartCmd := usableStartCmdSteps[0]
 
 	installedServiceModel := dbModel.NewInstalledService(
-		installedServiceNameStr,
-		installableService.Nature.String(),
-		installableService.Type.String(),
-		serviceVersion.String(),
-		finalStartCmd[0].String(),
-		createDto.Envs,
-		createDto.PortBindings,
-		nil,
-		createDto.AutoStart,
-		createDto.TimeoutStartSecs,
-		createDto.AutoRestart,
-		createDto.MaxStartRetries,
+		installedServiceNameStr, installableService.Nature.String(),
+		installableService.Type.String(), serviceVersion.String(),
+		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
+		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
+		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
+		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
+		createDto.MaxStartRetries, nil, nil,
 	)
+
+	if installableService.ExecUser != nil {
+		execUserStr := installableService.ExecUser.String()
+		installedServiceModel.ExecUser = &execUserStr
+	}
+
+	if installableService.WorkingDirectory != nil {
+		workingDirectoryStr := installableService.WorkingDirectory.String()
+		installedServiceModel.WorkingDirectory = &workingDirectoryStr
+	}
+
+	if installableService.StartupFile != nil {
+		startupFileStr := installableService.StartupFile.String()
+		installedServiceModel.StartupFile = &startupFileStr
+	}
 
 	if createDto.StartupFile != nil {
 		startupFileStr := createDto.StartupFile.String()
 		installedServiceModel.StartupFile = &startupFileStr
+	}
+
+	if installableService.LogOutputPath != nil {
+		logOutputPathStr := installableService.LogOutputPath.String()
+		installedServiceModel.LogOutputPath = &logOutputPathStr
+	}
+
+	if installableService.LogErrorPath != nil {
+		logErrorPathStr := installableService.LogErrorPath.String()
+		installedServiceModel.LogErrorPath = &logErrorPathStr
 	}
 
 	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
@@ -205,12 +241,41 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		createDto.StartCmd.String(),
 		createDto.Envs,
 		createDto.PortBindings,
+		createDto.StopCmdSteps,
+		createDto.PreStartCmdSteps,
+		createDto.PostStartCmdSteps,
+		createDto.PreStopCmdSteps,
+		createDto.PostStopCmdSteps,
 		nil,
 		nil,
 		nil,
+		createDto.AutoStart,
+		createDto.AutoRestart,
+		createDto.TimeoutStartSecs,
+		createDto.MaxStartRetries,
 		nil,
 		nil,
 	)
+
+	if createDto.ExecUser != nil {
+		execUserStr := createDto.ExecUser.String()
+		installedServiceModel.ExecUser = &execUserStr
+	}
+
+	if createDto.WorkingDirectory != nil {
+		workingDirectoryStr := createDto.WorkingDirectory.String()
+		installedServiceModel.WorkingDirectory = &workingDirectoryStr
+	}
+
+	if createDto.LogOutputPath != nil {
+		logOutputPathStr := createDto.LogOutputPath.String()
+		installedServiceModel.LogOutputPath = &logOutputPathStr
+	}
+
+	if createDto.LogErrorPath != nil {
+		logErrorPathStr := createDto.LogErrorPath.String()
+		installedServiceModel.LogErrorPath = &logErrorPathStr
+	}
 
 	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
