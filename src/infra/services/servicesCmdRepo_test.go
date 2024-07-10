@@ -30,17 +30,9 @@ func TestServiceCmdRepo(t *testing.T) {
 		unixCommand, _ := valueObject.NewUnixCommand("python3 -m http.server")
 
 		createDto := dto.NewCreateCustomService(
-			serviceName,
-			serviceType,
-			unixCommand,
-			[]valueObject.ServiceEnv{},
-			[]valueObject.PortBinding{portBinding},
-			nil,
-			nil,
-			nil,
-			nil,
-			nil,
-			nil,
+			serviceName, serviceType, unixCommand, []valueObject.ServiceEnv{},
+			[]valueObject.PortBinding{portBinding}, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		)
 
 		err = servicesCmdRepo.CreateCustom(createDto)
