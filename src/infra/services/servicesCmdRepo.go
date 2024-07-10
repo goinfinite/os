@@ -311,6 +311,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		}
 	}
 
+	installedServiceModel := dbModel.InstalledService{}
 	updateMap := map[string]interface{}{}
 	if updateDto.Type != nil {
 		updateMap["type"] = updateDto.Type.String()
@@ -330,21 +331,58 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	}
 
 	if updateDto.Envs != nil {
-		envsStr := ""
-		for _, env := range updateDto.Envs {
-			envsStr += env.String() + ";"
-		}
-		envsStr = strings.TrimSuffix(envsStr, ";")
-		updateMap["envs"] = &envsStr
+		updateMap["envs"] = installedServiceModel.JoinEnvs(updateDto.Envs)
 	}
 
 	if updateDto.PortBindings != nil {
-		portBindingsStr := ""
-		for _, portBinding := range updateDto.PortBindings {
-			portBindingsStr += portBinding.String() + ";"
-		}
-		portBindingsStr = strings.TrimSuffix(portBindingsStr, ";")
-		updateMap["portBindings"] = &portBindingsStr
+		updateMap["portBindings"] = installedServiceModel.JoinPortBindings(
+			updateDto.PortBindings,
+		)
+	}
+
+	if updateDto.StopCmdSteps != nil {
+		updateMap["stopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+			updateDto.StopCmdSteps,
+		)
+	}
+
+	if updateDto.PreStartCmdSteps != nil {
+		updateMap["preStartCmdSteps"] = installedServiceModel.JoinCmdSteps(
+			updateDto.PreStartCmdSteps,
+		)
+	}
+
+	if updateDto.PostStartCmdSteps != nil {
+		updateMap["postStartCmdSteps"] = installedServiceModel.JoinCmdSteps(
+			updateDto.PostStartCmdSteps,
+		)
+	}
+
+	if updateDto.PreStopCmdSteps != nil {
+		updateMap["preStopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+			updateDto.PreStopCmdSteps,
+		)
+	}
+
+	if updateDto.PostStopCmdSteps != nil {
+		updateMap["postStopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+			updateDto.PostStopCmdSteps,
+		)
+	}
+
+	if updateDto.ExecUser != nil {
+		execUserStr := updateDto.ExecUser.String()
+		updateMap["execUser"] = &execUserStr
+	}
+
+	if updateDto.WorkingDirectory != nil {
+		workingDirectoryStr := updateDto.WorkingDirectory.String()
+		updateMap["workingDirectory"] = &workingDirectoryStr
+	}
+
+	if updateDto.StartupFile != nil {
+		startupFileStr := updateDto.StartupFile.String()
+		updateMap["startupFile"] = &startupFileStr
 	}
 
 	if updateDto.AutoStart != nil {
@@ -363,8 +401,18 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["maxStartRetries"] = updateDto.MaxStartRetries
 	}
 
+	if updateDto.LogOutputPath != nil {
+		logOutputPathStr := updateDto.LogOutputPath.String()
+		updateMap["logOutputPath"] = &logOutputPathStr
+	}
+
+	if updateDto.LogErrorPath != nil {
+		logErrorPathStr := updateDto.LogErrorPath.String()
+		updateMap["logErrorPath"] = &logErrorPathStr
+	}
+
 	err = repo.persistentDbSvc.Handler.
-		Model(&dbModel.InstalledService{}).
+		Model(&installedServiceModel).
 		Where("name = ?", updateDto.Name.String()).
 		Updates(updateMap).Error
 	if err != nil {
