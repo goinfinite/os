@@ -15,9 +15,9 @@ type UpdateService struct {
 	PostStartCmdSteps []valueObject.UnixCommand   `json:"postStartCmdSteps"`
 	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
 	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
-	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
 	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
 	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
+	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
 	AutoStart         *bool                       `json:"autoStart"`
 	AutoRestart       *bool                       `json:"autoRestart"`
 	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
@@ -35,9 +35,8 @@ func NewUpdateService(
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
-	startupFile *valueObject.UnixFilePath,
 	execUser *valueObject.UnixUsername,
-	workingDirectory *valueObject.UnixFilePath,
+	workingDirectory, startupFile *valueObject.UnixFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
@@ -55,9 +54,9 @@ func NewUpdateService(
 		PostStartCmdSteps: postStartSteps,
 		PreStopCmdSteps:   preStopSteps,
 		PostStopCmdSteps:  postStopSteps,
-		StartupFile:       startupFile,
 		ExecUser:          execUser,
 		WorkingDirectory:  workingDirectory,
+		StartupFile:       startupFile,
 		AutoStart:         autoStart,
 		AutoRestart:       autoRestart,
 		TimeoutStartSecs:  timeoutStartSecs,

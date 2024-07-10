@@ -306,9 +306,9 @@ func (controller *ServicesController) Update() *cobra.Command {
 			}
 
 			updateSvcDto := dto.NewUpdateService(
-				svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr, []valueObject.ServiceEnv{},
-				portBindings, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil,
-				nil, nil, nil, nil,
+				svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr,
+				[]valueObject.ServiceEnv{}, portBindings, nil, nil, nil, nil, nil,
+				nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)

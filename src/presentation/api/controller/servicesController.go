@@ -346,7 +346,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	updateSvcDto := dto.NewUpdateService(
 		svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr, []valueObject.ServiceEnv{},
-		svcPortBindings, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil,
+		svcPortBindings, nil, nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil,
 		nil, nil, nil, nil,
 	)
 

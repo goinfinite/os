@@ -22,9 +22,9 @@ type InstalledService struct {
 	PostStartCmdSteps *string
 	PreStopCmdSteps   *string
 	PostStopCmdSteps  *string
-	StartupFile       *string
 	ExecUser          *string
 	WorkingDirectory  *string
+	StartupFile       *string
 	AutoStart         *bool
 	AutoRestart       *bool
 	TimeoutStartSecs  *uint
@@ -83,7 +83,7 @@ func NewInstalledService(
 	name, nature, serviceType, version, startCmd string,
 	envs []valueObject.ServiceEnv, portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
-	startupFile, execUser, workingDirectory *string, autoStart, autoRestart *bool,
+	execUser, workingDirectory, startupFile *string, autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint, logOutputPath, logErrorPath *string,
 ) InstalledService {
 	var envsPtr *string
@@ -169,9 +169,9 @@ func NewInstalledService(
 		PostStartCmdSteps: postStartStepsPtr,
 		PreStopCmdSteps:   preStopStepsPtr,
 		PostStopCmdSteps:  postStopStepsPtr,
-		StartupFile:       startupFile,
 		ExecUser:          execUser,
 		WorkingDirectory:  workingDirectory,
+		StartupFile:       startupFile,
 		AutoStart:         autoStart,
 		AutoRestart:       autoRestart,
 		TimeoutStartSecs:  timeoutStartSecs,
@@ -293,15 +293,6 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		}
 	}
 
-	var startupFilePtr *valueObject.UnixFilePath
-	if model.StartupFile != nil {
-		startupFile, err := valueObject.NewUnixFilePath(*model.StartupFile)
-		if err != nil {
-			return serviceEntity, err
-		}
-		startupFilePtr = &startupFile
-	}
-
 	var execUserPtr *valueObject.UnixUsername
 	if model.ExecUser != nil {
 		execUser, err := valueObject.NewUnixUsername(*model.ExecUser)
@@ -318,6 +309,15 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 			return serviceEntity, err
 		}
 		workingDirectoryPtr = &workingDirectory
+	}
+
+	var startupFilePtr *valueObject.UnixFilePath
+	if model.StartupFile != nil {
+		startupFile, err := valueObject.NewUnixFilePath(*model.StartupFile)
+		if err != nil {
+			return serviceEntity, err
+		}
+		startupFilePtr = &startupFile
 	}
 
 	var autoStart *bool
@@ -361,7 +361,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 	return entity.NewInstalledService(
 		name, nature, serviceType, version, startCmd, status, envs, portBindings,
 		stopCmdSteps, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps, postStopCmdSteps,
-		startupFilePtr, execUserPtr, workingDirectoryPtr, autoStart, autoRestart,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, autoStart, autoRestart,
 		timeoutStartSecs, maxStartRetries, logOutputPathPtr, logErrorPathPtr,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
