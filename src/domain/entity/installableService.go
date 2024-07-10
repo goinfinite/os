@@ -9,6 +9,7 @@ type InstallableService struct {
 	StartCmd           valueObject.UnixCommand        `json:"startCmd"`
 	Description        valueObject.ServiceDescription `json:"description"`
 	Versions           []valueObject.ServiceVersion   `json:"versions"`
+	Envs               []valueObject.ServiceEnv       `json:"envs"`
 	PortBindings       []valueObject.PortBinding      `json:"portBindings"`
 	InstallCmdSteps    []valueObject.UnixCommand      `json:"-"`
 	UninstallCmdSteps  []valueObject.UnixCommand      `json:"-"`
@@ -17,7 +18,11 @@ type InstallableService struct {
 	PostStartCmdSteps  []valueObject.UnixCommand      `json:"-"`
 	PreStopCmdSteps    []valueObject.UnixCommand      `json:"-"`
 	PostStopCmdSteps   []valueObject.UnixCommand      `json:"-"`
+	ExecUser           *valueObject.UnixUsername      `json:"execUser"`
+	WorkingDirectory   *valueObject.UnixFilePath      `json:"workingDirectory"`
 	StartupFile        *valueObject.UnixFilePath      `json:"startupFile"`
+	LogOutputPath      *valueObject.UnixFilePath      `json:"logOutputPath"`
+	LogErrorPath       *valueObject.UnixFilePath      `json:"logErrorPath"`
 	EstimatedSizeBytes *valueObject.Byte              `json:"estimatedSizeBytes"`
 	AvatarUrl          *valueObject.Url               `json:"avatarUrl"`
 }
@@ -29,15 +34,13 @@ func NewInstallableService(
 	startCmd valueObject.UnixCommand,
 	description valueObject.ServiceDescription,
 	versions []valueObject.ServiceVersion,
+	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	installCmdSteps []valueObject.UnixCommand,
-	uninstallCmdSteps []valueObject.UnixCommand,
+	installCmdSteps, uninstallCmdSteps []valueObject.UnixCommand,
 	uninstallFilePaths []valueObject.UnixFilePath,
-	preStartCmdSteps []valueObject.UnixCommand,
-	postStartCmdSteps []valueObject.UnixCommand,
-	preStopCmdSteps []valueObject.UnixCommand,
-	postStopCmdSteps []valueObject.UnixCommand,
-	startupFile *valueObject.UnixFilePath,
+	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	execUser *valueObject.UnixUsername,
+	workingDirectory, startupFile, logOutputPath, logErrorPath *valueObject.UnixFilePath,
 	estimatedSizeBytes *valueObject.Byte,
 	avatarUrl *valueObject.Url,
 ) InstallableService {
@@ -48,15 +51,20 @@ func NewInstallableService(
 		StartCmd:           startCmd,
 		Description:        description,
 		Versions:           versions,
+		Envs:               envs,
 		PortBindings:       portBindings,
 		InstallCmdSteps:    installCmdSteps,
 		UninstallCmdSteps:  uninstallCmdSteps,
 		UninstallFilePaths: uninstallFilePaths,
-		PreStartCmdSteps:   preStartCmdSteps,
-		PostStartCmdSteps:  postStartCmdSteps,
-		PreStopCmdSteps:    preStopCmdSteps,
-		PostStopCmdSteps:   postStopCmdSteps,
+		PreStartCmdSteps:   preStartSteps,
+		PostStartCmdSteps:  postStartSteps,
+		PreStopCmdSteps:    preStopSteps,
+		PostStopCmdSteps:   postStopSteps,
+		ExecUser:           execUser,
+		WorkingDirectory:   workingDirectory,
 		StartupFile:        startupFile,
+		LogOutputPath:      logOutputPath,
+		LogErrorPath:       logErrorPath,
 		EstimatedSizeBytes: estimatedSizeBytes,
 		AvatarUrl:          avatarUrl,
 	}
