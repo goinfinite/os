@@ -105,14 +105,18 @@ func (repo *ServicesCmdRepo) Reload() error {
 	if err != nil {
 		return err
 	}
+	if len(serviceEntities) == 0 {
+		return errors.New("NoServicesFoundDuringReload")
+	}
 
-	newPassword := infraHelper.GenPass(16)
+	ctlPassword := infraHelper.GenStrongShortHash(serviceEntities[0].CreatedAt.String())
 
-	fileTemplate := `[unix_http_server]
+	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
+[unix_http_server]
 file=/run/supervisord.sock
 chmod=0700
 username=supervisord
-password=` + newPassword + `
+password=` + ctlPassword + `
 
 [supervisord]
 nodaemon=true
@@ -126,26 +130,47 @@ pidfile=/run/supervisord.pid
 [supervisorctl]
 serverurl=unix:///run/supervisord.sock
 username=supervisord
-password=` + newPassword + `
+password=` + ctlPassword + `
 
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
-
-{{- range . }}
-[program:{{ .Name }}]
-command={{ .StartCmd }}
-user={{ .ExecUser }}
-directory={{ .WorkingDirectory }}
-autostart={{ .AutoStart }}
-autorestart={{ .AutoRestart }}
-startretries={{ .MaxStartRetries }}
-startsecs={{ .TimeoutStartSecs }}
-stdout_logfile={{ .LogOutputPath }}
+{{ range . }}
+[program:{{.Name}}]
+command={{.StartCmd}}
+user={{ or .ExecUser "root" }}
+{{- if .WorkingDirectory}}
+directory={{.WorkingDirectory}}
+{{- end}}
+autostart={{ or .AutoStart "true" }}
+autorestart={{ or .AutoRestart "true" }}
+startretries={{ or .MaxStartRetries "3" }}
+startsecs={{ or .TimeoutStartSecs "10" }}
+{{- if .LogOutputPath}}
+stdout_logfile={{.LogOutputPath}}
+{{- if eq (printf "%s" .LogOutputPath) "/dev/stdout"}}
+stdout_logfile_maxbytes=0
+{{- else}}
 stdout_logfile_maxbytes=10MB
-stderr_logfile={{ .LogErrorPath }}
+{{end}}
+{{- else}}
+stdout_logfile=/app/logs/{{.Name}}.log
+stdout_logfile_maxbytes=10MB
+{{- end}}
+{{- if .LogErrorPath}}
+stderr_logfile={{.LogErrorPath}}
+{{- if eq (printf "%s" .LogErrorPath) "/dev/stderr"}}
+stderr_logfile_maxbytes=0
+{{- else}}
 stderr_logfile_maxbytes=10MB
-environment={{ range .Envs }}{{ . }},{{ end }}
-{{- end }}
+{{end}}
+{{- else}}
+stderr_logfile=/app/logs/{{.Name}}_error.log
+stderr_logfile_maxbytes=10MB
+{{- end}}
+{{- if .Envs}}
+environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{end}}
+{{- end}}
+{{end}}
 `
 
 	templatePtr, err := template.New("supervisorConf").Parse(fileTemplate)
@@ -168,7 +193,7 @@ environment={{ range .Envs }}{{ . }},{{ end }}
 
 	_, err = infraHelper.RunCmd("supervisorctl", "reread")
 	if err != nil {
-		return err
+		return errors.New("SupervisorRereadError: " + err.Error())
 	}
 
 	recentUnixTime := valueObject.NewUnixTimeBeforeNow(30 * time.Second)
