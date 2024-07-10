@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/alessio/shellescape"
@@ -29,12 +30,62 @@ func NewServicesCmdRepo(
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd("supervisorctl", "start", name.String())
+	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	if err != nil {
+		return err
+	}
+
+	for stepIndex, preStartStep := range serviceEntity.PreStartCmdSteps {
+		_, err := infraHelper.RunCmdWithSubShell(preStartStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("PreStartCmdStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
+	_, err = infraHelper.RunCmd("supervisorctl", "start", serviceEntity.Name.String())
+	if err != nil {
+		return err
+	}
+
+	for stepIndex, postStartStep := range serviceEntity.PostStartCmdSteps {
+		_, err = infraHelper.RunCmdWithSubShell(postStartStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("PostStartCmdStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
 	return err
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	_, err := infraHelper.RunCmd("supervisorctl", "stop", name.String())
+	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	if err != nil {
+		return err
+	}
+
+	for stepIndex, preStopStep := range serviceEntity.PreStopCmdSteps {
+		_, err := infraHelper.RunCmdWithSubShell(preStopStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("PreStopCmdStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
+	_, err = infraHelper.RunCmd("supervisorctl", "stop", serviceEntity.Name.String())
+	if err != nil {
+		return err
+	}
+
+	for stepIndex, postStopStep := range serviceEntity.PostStopCmdSteps {
+		_, err = infraHelper.RunCmdWithSubShell(postStopStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("PostStopCmdStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
 	return err
 }
 
@@ -50,8 +101,89 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Reload() error {
-	_, err := infraHelper.RunCmd("supervisorctl", "update")
-	return err
+	serviceEntities, err := repo.servicesQueryRepo.Read()
+	if err != nil {
+		return err
+	}
+
+	newPassword := infraHelper.GenPass(16)
+
+	fileTemplate := `[unix_http_server]
+file=/run/supervisord.sock
+chmod=0700
+username=supervisord
+password=` + newPassword + `
+
+[supervisord]
+nodaemon=true
+user=root
+directory=/speedia
+logfile=/dev/stdout
+logfile_maxbytes=0
+loglevel=ERROR
+pidfile=/run/supervisord.pid
+
+[supervisorctl]
+serverurl=unix:///run/supervisord.sock
+username=supervisord
+password=` + newPassword + `
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
+
+{{- range . }}
+[program:{{ .Name }}]
+command={{ .StartCmd }}
+user={{ .ExecUser }}
+directory={{ .WorkingDirectory }}
+autostart={{ .AutoStart }}
+autorestart={{ .AutoRestart }}
+startretries={{ .MaxStartRetries }}
+startsecs={{ .TimeoutStartSecs }}
+stdout_logfile={{ .LogOutputPath }}
+stdout_logfile_maxbytes=10MB
+stderr_logfile={{ .LogErrorPath }}
+stderr_logfile_maxbytes=10MB
+environment={{ range .Envs }}{{ . }},{{ end }}
+{{- end }}
+`
+
+	templatePtr, err := template.New("supervisorConf").Parse(fileTemplate)
+	if err != nil {
+		return errors.New("TemplateParsingError: " + err.Error())
+	}
+
+	var supervisorConfFileContent strings.Builder
+	err = templatePtr.Execute(&supervisorConfFileContent, serviceEntities)
+	if err != nil {
+		return errors.New("TemplateExecutionError: " + err.Error())
+	}
+
+	err = infraHelper.UpdateFile(
+		"/speedia/supervisord.conf", supervisorConfFileContent.String(), true,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = infraHelper.RunCmd("supervisorctl", "reread")
+	if err != nil {
+		return err
+	}
+
+	recentUnixTime := valueObject.NewUnixTimeBeforeNow(30 * time.Second)
+	for _, serviceEntity := range serviceEntities {
+		if serviceEntity.UpdatedAt < recentUnixTime {
+			continue
+		}
+
+		err = repo.Restart(serviceEntity.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
