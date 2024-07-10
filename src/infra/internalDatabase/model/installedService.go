@@ -1,6 +1,7 @@
 package dbModel
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -79,6 +80,72 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	return []interface{}{osApiService, cronService, nginxService}, nil
 }
 
+func (InstalledService) JoinCmdSteps(cmdSteps []valueObject.UnixCommand) string {
+	cmdStepsStr := ""
+	for _, cmdStep := range cmdSteps {
+		cmdStepsStr += cmdStep.String() + "\n"
+	}
+	return strings.TrimSuffix(cmdStepsStr, "\n")
+}
+
+func (InstalledService) SplitCmdSteps(cmdStepsStr string) []valueObject.UnixCommand {
+	rawCmdStepsList := strings.Split(cmdStepsStr, "\n")
+	var cmdSteps []valueObject.UnixCommand
+	for stepIndex, rawCmdStep := range rawCmdStepsList {
+		cmdStep, err := valueObject.NewUnixCommand(rawCmdStep)
+		if err != nil {
+			log.Printf("[index %d] %s", stepIndex, err)
+			continue
+		}
+		cmdSteps = append(cmdSteps, cmdStep)
+	}
+	return cmdSteps
+}
+
+func (InstalledService) JoinEnvs(envs []valueObject.ServiceEnv) string {
+	envsStr := ""
+	for _, env := range envs {
+		envsStr += env.String() + ";"
+	}
+	return strings.TrimSuffix(envsStr, ";")
+}
+
+func (InstalledService) SplitEnvs(envsStr string) []valueObject.ServiceEnv {
+	rawEnvsList := strings.Split(envsStr, ";")
+	var envs []valueObject.ServiceEnv
+	for envIndex, rawEnv := range rawEnvsList {
+		env, err := valueObject.NewServiceEnv(rawEnv)
+		if err != nil {
+			log.Printf("[index %d] %s", envIndex, err)
+			continue
+		}
+		envs = append(envs, env)
+	}
+	return envs
+}
+
+func (InstalledService) JoinPortBindings(portBindings []valueObject.PortBinding) string {
+	portBindingsStr := ""
+	for _, portBinding := range portBindings {
+		portBindingsStr += portBinding.String() + ";"
+	}
+	return strings.TrimSuffix(portBindingsStr, ";")
+}
+
+func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.PortBinding {
+	rawPortBindingsList := strings.Split(portBindingsStr, ";")
+	var portBindings []valueObject.PortBinding
+	for portIndex, rawPortBinding := range rawPortBindingsList {
+		portBinding, err := valueObject.NewPortBinding(rawPortBinding)
+		if err != nil {
+			log.Printf("[index %d] %s", portIndex, err)
+			continue
+		}
+		portBindings = append(portBindings, portBinding)
+	}
+	return portBindings
+}
+
 func NewInstalledService(
 	name, nature, serviceType, version, startCmd string,
 	envs []valueObject.ServiceEnv, portBindings []valueObject.PortBinding,
@@ -88,71 +155,43 @@ func NewInstalledService(
 ) InstalledService {
 	var envsPtr *string
 	if len(envs) > 0 {
-		envsStr := ""
-		for _, env := range envs {
-			envsStr += env.String() + ";"
-		}
-		envsStr = strings.TrimSuffix(envsStr, ";")
+		envsStr := InstalledService{}.JoinEnvs(envs)
 		envsPtr = &envsStr
 	}
 
 	var portBindingsPtr *string
 	if len(portBindings) > 0 {
-		portBindingsStr := ""
-		for _, portBinding := range portBindings {
-			portBindingsStr += portBinding.String() + ";"
-		}
-		portBindingsStr = strings.TrimSuffix(portBindingsStr, ";")
+		portBindingsStr := InstalledService{}.JoinPortBindings(portBindings)
 		portBindingsPtr = &portBindingsStr
 	}
 
 	var stopStepsPtr *string
 	if len(stopSteps) > 0 {
-		stopStepsStr := ""
-		for _, stopStep := range stopSteps {
-			stopStepsStr += stopStep.String() + "\n"
-		}
-		stopStepsStr = strings.TrimSuffix(stopStepsStr, "\n")
+		stopStepsStr := InstalledService{}.JoinCmdSteps(stopSteps)
 		stopStepsPtr = &stopStepsStr
 	}
 
 	var preStartStepsPtr *string
 	if len(preStartSteps) > 0 {
-		preStartStepsStr := ""
-		for _, preStartStep := range preStartSteps {
-			preStartStepsStr += preStartStep.String() + "\n"
-		}
-		preStartStepsStr = strings.TrimSuffix(preStartStepsStr, "\n")
+		preStartStepsStr := InstalledService{}.JoinCmdSteps(preStartSteps)
 		preStartStepsPtr = &preStartStepsStr
 	}
 
 	var postStartStepsPtr *string
 	if len(postStartSteps) > 0 {
-		postStartStepsStr := ""
-		for _, postStartStep := range postStartSteps {
-			postStartStepsStr += postStartStep.String() + "\n"
-		}
-		postStartStepsStr = strings.TrimSuffix(postStartStepsStr, "\n")
+		postStartStepsStr := InstalledService{}.JoinCmdSteps(postStartSteps)
 		postStartStepsPtr = &postStartStepsStr
 	}
 
 	var preStopStepsPtr *string
 	if len(preStopSteps) > 0 {
-		preStopStepsStr := ""
-		for _, preStopStep := range preStopSteps {
-			preStopStepsStr += preStopStep.String() + "\n"
-		}
-		preStopStepsStr = strings.TrimSuffix(preStopStepsStr, "\n")
+		preStopStepsStr := InstalledService{}.JoinCmdSteps(preStopSteps)
 		preStopStepsPtr = &preStopStepsStr
 	}
 
 	var postStopStepsPtr *string
 	if len(postStopSteps) > 0 {
-		postStopStepsStr := ""
-		for _, postStopStep := range postStopSteps {
-			postStopStepsStr += postStopStep.String() + "\n"
-		}
-		postStopStepsStr = strings.TrimSuffix(postStopStepsStr, "\n")
+		postStopStepsStr := InstalledService{}.JoinCmdSteps(postStopSteps)
 		postStopStepsPtr = &postStopStepsStr
 	}
 
@@ -211,86 +250,37 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	var envs []valueObject.ServiceEnv
 	if model.Envs != nil {
-		rawEnvsList := strings.Split(*model.Envs, ";")
-		for _, rawEnv := range rawEnvsList {
-			env, err := valueObject.NewServiceEnv(rawEnv)
-			if err != nil {
-				return serviceEntity, err
-			}
-			envs = append(envs, env)
-		}
+		envs = model.SplitEnvs(*model.Envs)
 	}
 
 	var portBindings []valueObject.PortBinding
 	if model.PortBindings != nil {
-		rawPortBindingsList := strings.Split(*model.PortBindings, ";")
-		for _, rawPortBinding := range rawPortBindingsList {
-			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
-			if err != nil {
-				return serviceEntity, err
-			}
-			portBindings = append(portBindings, portBinding)
-		}
+		portBindings = model.SplitPortBindings(*model.PortBindings)
 	}
 
 	var stopCmdSteps []valueObject.UnixCommand
 	if model.StopCmdSteps != nil {
-		rawStopCmdStepsList := strings.Split(*model.StopCmdSteps, "\n")
-		for _, rawStopCmdStep := range rawStopCmdStepsList {
-			stopCmdStep, err := valueObject.NewUnixCommand(rawStopCmdStep)
-			if err != nil {
-				return serviceEntity, err
-			}
-			stopCmdSteps = append(stopCmdSteps, stopCmdStep)
-		}
+		stopCmdSteps = model.SplitCmdSteps(*model.StopCmdSteps)
 	}
 
 	var preStartCmdSteps []valueObject.UnixCommand
 	if model.PreStartCmdSteps != nil {
-		rawPreStartCmdStepsList := strings.Split(*model.PreStartCmdSteps, "\n")
-		for _, rawPreStartCmdStep := range rawPreStartCmdStepsList {
-			preStartCmdStep, err := valueObject.NewUnixCommand(rawPreStartCmdStep)
-			if err != nil {
-				return serviceEntity, err
-			}
-			preStartCmdSteps = append(preStartCmdSteps, preStartCmdStep)
-		}
+		preStartCmdSteps = model.SplitCmdSteps(*model.PreStartCmdSteps)
 	}
 
 	var postStartCmdSteps []valueObject.UnixCommand
 	if model.PostStartCmdSteps != nil {
-		rawPostStartCmdStepsList := strings.Split(*model.PostStartCmdSteps, "\n")
-		for _, rawPostStartCmdStep := range rawPostStartCmdStepsList {
-			postStartCmdStep, err := valueObject.NewUnixCommand(rawPostStartCmdStep)
-			if err != nil {
-				return serviceEntity, err
-			}
-			postStartCmdSteps = append(postStartCmdSteps, postStartCmdStep)
-		}
+		postStartCmdSteps = model.SplitCmdSteps(*model.PostStartCmdSteps)
 	}
 
 	var preStopCmdSteps []valueObject.UnixCommand
 	if model.PreStopCmdSteps != nil {
-		rawPreStopCmdStepsList := strings.Split(*model.PreStopCmdSteps, "\n")
-		for _, rawPreStopCmdStep := range rawPreStopCmdStepsList {
-			preStopCmdStep, err := valueObject.NewUnixCommand(rawPreStopCmdStep)
-			if err != nil {
-				return serviceEntity, err
-			}
-			preStopCmdSteps = append(preStopCmdSteps, preStopCmdStep)
-		}
+		preStopCmdSteps = model.SplitCmdSteps(*model.PreStopCmdSteps)
 	}
 
 	var postStopCmdSteps []valueObject.UnixCommand
 	if model.PostStopCmdSteps != nil {
-		rawPostStopCmdStepsList := strings.Split(*model.PostStopCmdSteps, "\n")
-		for _, rawPostStopCmdStep := range rawPostStopCmdStepsList {
-			postStopCmdStep, err := valueObject.NewUnixCommand(rawPostStopCmdStep)
-			if err != nil {
-				return serviceEntity, err
-			}
-			postStopCmdSteps = append(postStopCmdSteps, postStopCmdStep)
-		}
+		postStopCmdSteps = model.SplitCmdSteps(*model.PostStopCmdSteps)
 	}
 
 	var execUserPtr *valueObject.UnixUsername
