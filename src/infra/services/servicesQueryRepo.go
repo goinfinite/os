@@ -276,13 +276,13 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		return installableService, errors.New("MissingParam: " + requiredParam)
 	}
 
-	serviceName, err := valueObject.NewServiceName(serviceMap["name"])
+	name, err := valueObject.NewServiceName(serviceMap["name"])
 	if err != nil {
 		return installableService, err
 	}
-	serviceNameStr := serviceName.String()
+	nameStr := name.String()
 
-	serviceNature, err := valueObject.NewServiceNature(serviceMap["nature"])
+	nature, err := valueObject.NewServiceNature(serviceMap["nature"])
 	if err != nil {
 		return installableService, err
 	}
@@ -297,12 +297,12 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		return installableService, err
 	}
 
-	serviceDescription, err := valueObject.NewServiceDescription(serviceMap["description"])
+	description, err := valueObject.NewServiceDescription(serviceMap["description"])
 	if err != nil {
 		return installableService, err
 	}
 
-	serviceVersions := []valueObject.ServiceVersion{}
+	versions := []valueObject.ServiceVersion{}
 	if serviceMap["versions"] != nil {
 		versionsMap, assertOk := serviceMap["versions"].([]interface{})
 		if !assertOk {
@@ -311,10 +311,26 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		for versionIndex, rawVersion := range versionsMap {
 			version, err := valueObject.NewServiceVersion(rawVersion)
 			if err != nil {
-				log.Printf("(%s) [index %d] %s", serviceNameStr, versionIndex, err)
+				log.Printf("(%s) [index %d] %s", nameStr, versionIndex, err)
 				continue
 			}
-			serviceVersions = append(serviceVersions, version)
+			versions = append(versions, version)
+		}
+	}
+
+	envs := []valueObject.ServiceEnv{}
+	if serviceMap["envs"] != nil {
+		envsMap, assertOk := serviceMap["envs"].([]interface{})
+		if !assertOk {
+			return installableService, errors.New("InvalidEnvs")
+		}
+		for envIndex, rawEnv := range envsMap {
+			env, err := valueObject.NewServiceEnv(rawEnv)
+			if err != nil {
+				log.Printf("(%s) [index %d] %s", nameStr, envIndex, err)
+				continue
+			}
+			envs = append(envs, env)
 		}
 	}
 
@@ -327,10 +343,20 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		for portIndex, rawPortBinding := range portBindingsMap {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
-				log.Printf("(%s) [index: %d] %s", serviceNameStr, portIndex, err)
+				log.Printf("(%s) [index: %d] %s", nameStr, portIndex, err)
 				continue
 			}
 			portBindings = append(portBindings, portBinding)
+		}
+	}
+
+	stopCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["stopCmdSteps"] != nil {
+		stopCmdSteps, err = repo.parseManifestCmdSteps(
+			"Stop", serviceMap["stopCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
 		}
 	}
 
@@ -363,7 +389,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		for fileIndex, rawFileName := range filesMap {
 			fileName, err := valueObject.NewUnixFilePath(rawFileName)
 			if err != nil {
-				log.Printf("(%s) [index %d] %s", serviceNameStr, fileIndex, err)
+				log.Printf("(%s) [index %d] %s", nameStr, fileIndex, err)
 				continue
 			}
 			uninstallFilePaths = append(uninstallFilePaths, fileName)
@@ -410,6 +436,24 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	var execUserPtr *valueObject.UnixUsername
+	if serviceMap["execUser"] != nil {
+		execUser, err := valueObject.NewUnixUsername(serviceMap["execUser"])
+		if err != nil {
+			return installableService, err
+		}
+		execUserPtr = &execUser
+	}
+
+	var workingDirectoryPtr *valueObject.UnixFilePath
+	if serviceMap["workingDirectory"] != nil {
+		workingDirectory, err := valueObject.NewUnixFilePath(serviceMap["workingDirectory"])
+		if err != nil {
+			return installableService, err
+		}
+		workingDirectoryPtr = &workingDirectory
+	}
+
 	var startupFilePtr *valueObject.UnixFilePath
 	if serviceMap["startupFile"] != nil {
 		startupFile, err := valueObject.NewUnixFilePath(serviceMap["startupFile"])
@@ -417,6 +461,24 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 			return installableService, err
 		}
 		startupFilePtr = &startupFile
+	}
+
+	var logOutputPathPtr *valueObject.UnixFilePath
+	if serviceMap["logOutputPath"] != nil {
+		logOutputPath, err := valueObject.NewUnixFilePath(serviceMap["logOutputPath"])
+		if err != nil {
+			return installableService, err
+		}
+		logOutputPathPtr = &logOutputPath
+	}
+
+	var logErrorPathPtr *valueObject.UnixFilePath
+	if serviceMap["logErrorPath"] != nil {
+		logErrorPath, err := valueObject.NewUnixFilePath(serviceMap["logErrorPath"])
+		if err != nil {
+			return installableService, err
+		}
+		logErrorPathPtr = &logErrorPath
 	}
 
 	var estimatedSizeBytesPtr *valueObject.Byte
@@ -438,11 +500,11 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	return entity.NewInstallableService(
-		serviceName, serviceNature, serviceType, startCommand,
-		serviceDescription, serviceVersions, portBindings, installCmdSteps,
-		uninstallCmdSteps, uninstallFilePaths, preStartCmdSteps, postStartCmdSteps,
-		preStopCmdSteps, postStopCmdSteps, startupFilePtr, estimatedSizeBytesPtr,
-		avatarUrlPtr,
+		name, nature, serviceType, startCommand, description, versions, envs,
+		portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps, uninstallFilePaths,
+		preStartCmdSteps, postStartCmdSteps, preStopCmdSteps, postStopCmdSteps,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
+		logErrorPathPtr, estimatedSizeBytesPtr, avatarUrlPtr,
 	), nil
 }
 
