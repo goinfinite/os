@@ -159,8 +159,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
+	startCmdSteps := []valueObject.UnixCommand{installableService.StartCmd}
 	usableCmdSteps := map[string][]valueObject.UnixCommand{
-		"start":     []valueObject.UnixCommand{installableService.StartCmd},
+		"start":     startCmdSteps,
 		"stop":      installableService.StopCmdSteps,
 		"preStart":  installableService.PreStartCmdSteps,
 		"postStart": installableService.PostStartCmdSteps,
