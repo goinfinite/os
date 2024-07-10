@@ -100,7 +100,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	if installableService.Nature.String() == "multi" {
 		if createDto.StartupFile == nil {
-			return installedServiceName, errors.New("MultiNatureServicesRequiresStartupFile")
+			if installableService.StartupFile == nil {
+				return installedServiceName, errors.New("MissingStartupFile")
+			}
+			createDto.StartupFile = installableService.StartupFile
 		}
 
 		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
@@ -108,7 +111,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 			createDto.Name.String() + "-" + startupFileHash,
 		)
 		if err != nil {
-			return installedServiceName, errors.New("AppendStartupFileHashToNameError: " + err.Error())
+			return installedServiceName, errors.New(
+				"AddFileHashNameSuffixError: " + err.Error(),
+			)
 		}
 	}
 	installedServiceName = createDto.Name
@@ -201,11 +206,6 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableService.WorkingDirectory != nil {
 		workingDirectoryStr := installableService.WorkingDirectory.String()
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
-	}
-
-	if installableService.StartupFile != nil {
-		startupFileStr := installableService.StartupFile.String()
-		installedServiceModel.StartupFile = &startupFileStr
 	}
 
 	if createDto.StartupFile != nil {
