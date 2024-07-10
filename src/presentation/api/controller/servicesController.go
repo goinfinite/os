@@ -158,16 +158,8 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	}
 
 	createInstallableServiceDto := dto.NewCreateInstallableService(
-		serviceName,
-		[]valueObject.ServiceEnv{},
-		svcPortBindings,
-		svcVersionPtr,
-		svcStartupFilePtr,
-		nil,
-		nil,
-		nil,
-		nil,
-		&autoCreateMapping,
+		serviceName, []valueObject.ServiceEnv{}, svcPortBindings, svcVersionPtr,
+		svcStartupFilePtr, nil, nil, nil, nil, &autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -253,16 +245,8 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 
 	createCustomServiceDto := dto.NewCreateCustomService(
-		serviceName,
-		svcType,
-		startCmd,
-		[]valueObject.ServiceEnv{},
-		svcPortBindings,
-		svcVersionPtr,
-		nil,
-		nil,
-		nil,
-		nil,
+		serviceName, svcType, startCmd, []valueObject.ServiceEnv{}, svcPortBindings,
+		nil, nil, nil, nil, nil, svcVersionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
 		&autoCreateMapping,
 	)
 
@@ -344,15 +328,6 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		svcVersionPtr = &version
 	}
 
-	var svcStartupFilePtr *valueObject.UnixFilePath
-	if requestBody["startupFile"] != nil {
-		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
-		}
-		svcStartupFilePtr = &startupFile
-	}
-
 	var svcPortBindings []valueObject.PortBinding
 	if requestBody["portBindings"] != nil {
 		svcPortBindings = parsePortBindings(
@@ -360,19 +335,19 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		)
 	}
 
+	var startupFilePtr *valueObject.UnixFilePath
+	if requestBody["startupFile"] != nil {
+		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		startupFilePtr = &startupFile
+	}
+
 	updateSvcDto := dto.NewUpdateService(
-		svcName,
-		svcTypePtr,
-		startCmdPtr,
-		svcStatusPtr,
-		svcVersionPtr,
-		svcStartupFilePtr,
-		[]valueObject.ServiceEnv{},
-		svcPortBindings,
-		nil,
-		nil,
-		nil,
-		nil,
+		svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr, []valueObject.ServiceEnv{},
+		svcPortBindings, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil,
+		nil, nil, nil, nil,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)

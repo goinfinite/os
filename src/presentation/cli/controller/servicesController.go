@@ -104,16 +104,8 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			createInstallableServiceDto := dto.NewCreateInstallableService(
-				svcName,
-				[]valueObject.ServiceEnv{},
-				portBindings,
-				svcVersionPtr,
-				startupFilePtr,
-				nil,
-				nil,
-				nil,
-				nil,
-				&autoCreateMapping,
+				svcName, []valueObject.ServiceEnv{}, portBindings, svcVersionPtr,
+				startupFilePtr, nil, nil, nil, nil, &autoCreateMapping,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
@@ -163,7 +155,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName, err := valueObject.NewServiceName(nameStr)
+			serviceName, err := valueObject.NewServiceName(nameStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -197,16 +189,8 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			createCustomServiceDto := dto.NewCreateCustomService(
-				svcName,
-				svcType,
-				startCmd,
-				[]valueObject.ServiceEnv{},
-				portBindings,
-				svcVersionPtr,
-				nil,
-				nil,
-				nil,
-				nil,
+				serviceName, svcType, startCmd, []valueObject.ServiceEnv{}, portBindings,
+				nil, nil, nil, nil, nil, svcVersionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
 				&autoCreateMapping,
 			)
 
@@ -322,18 +306,9 @@ func (controller *ServicesController) Update() *cobra.Command {
 			}
 
 			updateSvcDto := dto.NewUpdateService(
-				svcName,
-				svcTypePtr,
-				startCmdPtr,
-				svcStatusPtr,
-				svcVersionPtr,
-				startupFilePtr,
-				[]valueObject.ServiceEnv{},
-				portBindings,
-				nil,
-				nil,
-				nil,
-				nil,
+				svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr, []valueObject.ServiceEnv{},
+				portBindings, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil,
+				nil, nil, nil, nil,
 			)
 
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)

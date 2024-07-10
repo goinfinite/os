@@ -5,45 +5,64 @@ import "github.com/speedianet/os/src/domain/valueObject"
 type UpdateService struct {
 	Name              valueObject.ServiceName     `json:"name"`
 	Type              *valueObject.ServiceType    `json:"type"`
-	StartCmd          *valueObject.UnixCommand    `json:"startCmd"`
-	Status            *valueObject.ServiceStatus  `json:"status"`
 	Version           *valueObject.ServiceVersion `json:"version"`
-	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
+	Status            *valueObject.ServiceStatus  `json:"status"`
+	StartCmd          *valueObject.UnixCommand    `json:"startCmd"`
 	Envs              []valueObject.ServiceEnv    `json:"envs"`
 	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
+	StopCmdSteps      []valueObject.UnixCommand   `json:"stopCmdSteps"`
+	PreStartCmdSteps  []valueObject.UnixCommand   `json:"preStartCmdSteps"`
+	PostStartCmdSteps []valueObject.UnixCommand   `json:"postStartCmdSteps"`
+	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
+	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
+	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
+	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
+	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
 	AutoStart         *bool                       `json:"autoStart"`
-	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
 	AutoRestart       *bool                       `json:"autoRestart"`
+	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
 	MaxStartRetries   *uint                       `json:"maxStartRetries"`
-	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
+	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
+	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
 }
 
 func NewUpdateService(
 	name valueObject.ServiceName,
 	svcType *valueObject.ServiceType,
-	startCmd *valueObject.UnixCommand,
-	status *valueObject.ServiceStatus,
 	version *valueObject.ServiceVersion,
-	startupFile *valueObject.UnixFilePath,
+	status *valueObject.ServiceStatus,
+	startCmd *valueObject.UnixCommand,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	autoStart *bool,
-	timeoutStartSecs *uint,
-	autoRestart *bool,
-	maxStartRetries *uint,
+	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	startupFile *valueObject.UnixFilePath,
+	execUser *valueObject.UnixUsername,
+	workingDirectory *valueObject.UnixFilePath,
+	autoStart, autoRestart *bool,
+	timeoutStartSecs, maxStartRetries *uint,
+	logOutputPath, logErrorPath *valueObject.UnixFilePath,
 ) UpdateService {
 	return UpdateService{
-		Name:             name,
-		Type:             svcType,
-		StartCmd:         startCmd,
-		Status:           status,
-		Version:          version,
-		StartupFile:      startupFile,
-		Envs:             envs,
-		PortBindings:     portBindings,
-		AutoStart:        autoStart,
-		TimeoutStartSecs: timeoutStartSecs,
-		AutoRestart:      autoRestart,
-		MaxStartRetries:  maxStartRetries,
+		Name:              name,
+		Type:              svcType,
+		Version:           version,
+		Status:            status,
+		StartCmd:          startCmd,
+		Envs:              envs,
+		PortBindings:      portBindings,
+		StopCmdSteps:      stopSteps,
+		PreStartCmdSteps:  preStartSteps,
+		PostStartCmdSteps: postStartSteps,
+		PreStopCmdSteps:   preStopSteps,
+		PostStopCmdSteps:  postStopSteps,
+		StartupFile:       startupFile,
+		ExecUser:          execUser,
+		WorkingDirectory:  workingDirectory,
+		AutoStart:         autoStart,
+		AutoRestart:       autoRestart,
+		TimeoutStartSecs:  timeoutStartSecs,
+		MaxStartRetries:   maxStartRetries,
+		LogOutputPath:     logOutputPath,
+		LogErrorPath:      logErrorPath,
 	}
 }
