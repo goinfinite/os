@@ -11,6 +11,7 @@ type InstallableService struct {
 	Versions           []valueObject.ServiceVersion   `json:"versions"`
 	Envs               []valueObject.ServiceEnv       `json:"envs"`
 	PortBindings       []valueObject.PortBinding      `json:"portBindings"`
+	StopCmdSteps       []valueObject.UnixCommand      `json:"-"`
 	InstallCmdSteps    []valueObject.UnixCommand      `json:"-"`
 	UninstallCmdSteps  []valueObject.UnixCommand      `json:"-"`
 	UninstallFilePaths []valueObject.UnixFilePath     `json:"-"`
@@ -36,9 +37,9 @@ func NewInstallableService(
 	versions []valueObject.ServiceVersion,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	installCmdSteps, uninstallCmdSteps []valueObject.UnixCommand,
+	stopSteps, installSteps, uninstallSteps []valueObject.UnixCommand,
 	uninstallFilePaths []valueObject.UnixFilePath,
-	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *valueObject.UnixFilePath,
 	estimatedSizeBytes *valueObject.Byte,
@@ -53,8 +54,9 @@ func NewInstallableService(
 		Versions:           versions,
 		Envs:               envs,
 		PortBindings:       portBindings,
-		InstallCmdSteps:    installCmdSteps,
-		UninstallCmdSteps:  uninstallCmdSteps,
+		StopCmdSteps:       stopSteps,
+		InstallCmdSteps:    installSteps,
+		UninstallCmdSteps:  uninstallSteps,
 		UninstallFilePaths: uninstallFilePaths,
 		PreStartCmdSteps:   preStartSteps,
 		PostStartCmdSteps:  postStartSteps,
