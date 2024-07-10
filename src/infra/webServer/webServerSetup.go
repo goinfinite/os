@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
@@ -63,7 +64,7 @@ func (ws *WebServerSetup) FirstSetup() {
 		return
 	}
 
-	log.Print("FirstBootDetected! Please await while the web server is configured...")
+	log.Print("FirstBootDetected! PleaseAwait...")
 
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
@@ -72,28 +73,20 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	primaryVhostStr := primaryVhost.String()
 
-	log.Print("UpdatingVhost...")
+	log.Print("UpdatingPrimaryVirtualHost...")
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+primaryVhostStr+"/g",
-		primaryConfFilePath,
+		"sed", "-i", "s/speedia.net/"+primaryVhostStr+"/g", primaryConfFilePath,
 	)
 	if err != nil {
 		log.Fatal("UpdateVhostFailed")
 	}
 
-	log.Print("GeneratingDhparam...")
+	log.Print("GeneratingDhParam...")
 
 	_, err = infraHelper.RunCmd(
-		"openssl",
-		"dhparam",
-		"-dsaparam",
-		"-out",
-		"/etc/nginx/dhparam.pem",
-		"2048",
+		"openssl", "dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
 	)
 	if err != nil {
 		log.Fatal("GenerateDhparamFailed")
@@ -103,22 +96,31 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	aliases := []string{}
 	err = infraHelper.CreateSelfSignedSsl(
-		infraEnvs.PkiConfDir,
-		primaryVhostStr,
-		aliases,
+		infraEnvs.PkiConfDir, primaryVhostStr, aliases,
 	)
 	if err != nil {
-		log.Fatal("GenerateSelfSignedCertFailed")
+		log.Fatal("GenerateSelfSignedCertFailed: ", err.Error())
 	}
 
-	log.Print("WebServerConfigured!")
+	log.Print("ConfiguringWebServerAutoStart...")
 
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	err = servicesCmdRepo.Start(serviceName)
+	nginxServiceName, _ := valueObject.NewServiceName("nginx")
+	nginxAutoStart := true
+	updateServiceDto := dto.NewUpdateService(
+		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil,
+	)
+	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {
-		log.Fatal("StartNginxFailed")
+		log.Fatal("UpdateNginxAutoStartFailed: ", err.Error())
 	}
+
+	log.Print("WebServerConfigured! RestartingServices...")
+
+	// Do not write any code after this as supervisorctl reload will restart
+	// the OS API and any remaining code will not be executed.
+	_, _ = infraHelper.RunCmd("supervisorctl", "-p", "replacedOnFirstBoot", "reload")
 }
 
 func (ws *WebServerSetup) OnStartSetup() {
@@ -135,9 +137,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 
 	nginxConfFilePath := "/etc/nginx/nginx.conf"
 	workerCount, err := infraHelper.RunCmd(
-		"awk",
-		"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}",
-		nginxConfFilePath,
+		"awk", "/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath,
 	)
 	if err != nil {
 		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
@@ -150,10 +150,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 	log.Print("UpdatingNginxWorkersCount...")
 
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"-e",
-		"s/^worker_processes.*/worker_processes "+cpuCoresStr+";/g",
+		"sed", "-i", "-e", "s/^worker_processes.*/worker_processes "+cpuCoresStr+";/g",
 		nginxConfFilePath,
 	)
 	if err != nil {
