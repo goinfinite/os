@@ -475,7 +475,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	}
 
 	if updateDto.StartCmd != nil {
-		updateMap["startCmd"] = updateDto.StartCmd.String()
+		updateMap["start_cmd"] = updateDto.StartCmd.String()
 	}
 
 	if updateDto.Version != nil {
@@ -484,7 +484,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 
 	if updateDto.StartupFile != nil {
 		startupFileStr := updateDto.StartupFile.String()
-		updateMap["startupFile"] = &startupFileStr
+		updateMap["startup_file"] = &startupFileStr
 	}
 
 	if updateDto.Envs != nil {
@@ -492,80 +492,80 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	}
 
 	if updateDto.PortBindings != nil {
-		updateMap["portBindings"] = installedServiceModel.JoinPortBindings(
+		updateMap["port_bindings"] = installedServiceModel.JoinPortBindings(
 			updateDto.PortBindings,
 		)
 	}
 
 	if updateDto.StopCmdSteps != nil {
-		updateMap["stopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+		updateMap["stop_cmd_steps"] = installedServiceModel.JoinCmdSteps(
 			updateDto.StopCmdSteps,
 		)
 	}
 
 	if updateDto.PreStartCmdSteps != nil {
-		updateMap["preStartCmdSteps"] = installedServiceModel.JoinCmdSteps(
+		updateMap["pre_start_cmd_steps"] = installedServiceModel.JoinCmdSteps(
 			updateDto.PreStartCmdSteps,
 		)
 	}
 
 	if updateDto.PostStartCmdSteps != nil {
-		updateMap["postStartCmdSteps"] = installedServiceModel.JoinCmdSteps(
+		updateMap["post_start_cmd_steps"] = installedServiceModel.JoinCmdSteps(
 			updateDto.PostStartCmdSteps,
 		)
 	}
 
 	if updateDto.PreStopCmdSteps != nil {
-		updateMap["preStopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+		updateMap["pre_stop_cmd_steps"] = installedServiceModel.JoinCmdSteps(
 			updateDto.PreStopCmdSteps,
 		)
 	}
 
 	if updateDto.PostStopCmdSteps != nil {
-		updateMap["postStopCmdSteps"] = installedServiceModel.JoinCmdSteps(
+		updateMap["post_stop_cmd_steps"] = installedServiceModel.JoinCmdSteps(
 			updateDto.PostStopCmdSteps,
 		)
 	}
 
 	if updateDto.ExecUser != nil {
 		execUserStr := updateDto.ExecUser.String()
-		updateMap["execUser"] = &execUserStr
+		updateMap["exec_user"] = &execUserStr
 	}
 
 	if updateDto.WorkingDirectory != nil {
 		workingDirectoryStr := updateDto.WorkingDirectory.String()
-		updateMap["workingDirectory"] = &workingDirectoryStr
+		updateMap["working_directory"] = &workingDirectoryStr
 	}
 
 	if updateDto.StartupFile != nil {
 		startupFileStr := updateDto.StartupFile.String()
-		updateMap["startupFile"] = &startupFileStr
+		updateMap["startup_file"] = &startupFileStr
 	}
 
 	if updateDto.AutoStart != nil {
-		updateMap["autoStart"] = updateDto.AutoStart
+		updateMap["auto_start"] = updateDto.AutoStart
 	}
 
 	if updateDto.TimeoutStartSecs != nil {
-		updateMap["timeoutStartSecs"] = updateDto.TimeoutStartSecs
+		updateMap["timeout_start_secs"] = updateDto.TimeoutStartSecs
 	}
 
 	if updateDto.AutoRestart != nil {
-		updateMap["autoRestart"] = updateDto.AutoRestart
+		updateMap["auto_restart"] = updateDto.AutoRestart
 	}
 
 	if updateDto.MaxStartRetries != nil {
-		updateMap["maxStartRetries"] = updateDto.MaxStartRetries
+		updateMap["max_start_retries"] = updateDto.MaxStartRetries
 	}
 
 	if updateDto.LogOutputPath != nil {
 		logOutputPathStr := updateDto.LogOutputPath.String()
-		updateMap["logOutputPath"] = &logOutputPathStr
+		updateMap["log_output_path"] = &logOutputPathStr
 	}
 
 	if updateDto.LogErrorPath != nil {
 		logErrorPathStr := updateDto.LogErrorPath.String()
-		updateMap["logErrorPath"] = &logErrorPathStr
+		updateMap["log_error_path"] = &logErrorPathStr
 	}
 
 	err = repo.persistentDbSvc.Handler.
