@@ -43,9 +43,14 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		}
 	}
 
-	_, err = infraHelper.RunCmd("supervisorctl", "start", serviceEntity.Name.String())
+	startOutput, err := infraHelper.RunCmd(
+		"supervisorctl", "start", serviceEntity.Name.String(),
+	)
 	if err != nil {
-		return err
+		// Supervisor returns the error on the stdout, so you'll see this pattern
+		// here and in other places where we run supervisorctl commands.
+		combinedOutput := startOutput + " " + err.Error()
+		return errors.New("SupervisorStartError: " + combinedOutput)
 	}
 
 	for stepIndex, postStartStep := range serviceEntity.PostStartCmdSteps {
@@ -73,9 +78,12 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		}
 	}
 
-	_, err = infraHelper.RunCmd("supervisorctl", "stop", serviceEntity.Name.String())
+	stopOutput, err := infraHelper.RunCmd(
+		"supervisorctl", "stop", serviceEntity.Name.String(),
+	)
 	if err != nil {
-		return err
+		combinedOutput := stopOutput + " " + err.Error()
+		return errors.New("SupervisorStopError: " + combinedOutput)
 	}
 
 	for stepIndex, postStopStep := range serviceEntity.PostStopCmdSteps {
@@ -100,13 +108,13 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 	return repo.Start(name)
 }
 
-func (repo *ServicesCmdRepo) Reload() error {
+func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 	serviceEntities, err := repo.servicesQueryRepo.Read()
 	if err != nil {
 		return err
 	}
 	if len(serviceEntities) == 0 {
-		return errors.New("NoServicesFoundDuringReload")
+		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
 	ctlPassword := infraHelper.GenStrongShortHash(serviceEntities[0].CreatedAt.String())
@@ -195,18 +203,6 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
 		return errors.New("SupervisorRereadError: " + combinedOutput)
-	}
-
-	recentUnixTime := valueObject.NewUnixTimeBeforeNow(30 * time.Second)
-	for _, serviceEntity := range serviceEntities {
-		if serviceEntity.UpdatedAt < recentUnixTime {
-			continue
-		}
-
-		err = repo.Restart(serviceEntity.Name)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -386,7 +382,12 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	return installedServiceName, repo.Reload()
+	err = repo.updateProcessManagerConf()
+	if err != nil {
+		return installedServiceName, err
+	}
+
+	return installedServiceName, repo.Start(installedServiceName)
 }
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
@@ -441,7 +442,12 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		return err
 	}
 
-	return repo.Reload()
+	err = repo.updateProcessManagerConf()
+	if err != nil {
+		return err
+	}
+
+	return repo.Start(createDto.Name)
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
@@ -577,7 +583,12 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		return err
 	}
 
-	return repo.Reload()
+	err = repo.updateProcessManagerConf()
+	if err != nil {
+		return err
+	}
+
+	return repo.Restart(updateDto.Name)
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
@@ -593,5 +604,5 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	return repo.Reload()
+	return repo.updateProcessManagerConf()
 }
