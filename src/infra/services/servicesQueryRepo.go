@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -53,15 +54,54 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 		servicesEntities = append(servicesEntities, serviceEntity)
 	}
 
+	rawStoppedServices, err := infraHelper.RunCmdWithSubShell(
+		"supervisorctl status | grep -v 'RUNNING' | awk '{print $1}'",
+	)
+	if err != nil {
+		log.Printf("GetStoppedServicesError: %s", err.Error())
+		return servicesEntities, nil
+	}
+
+	if len(rawStoppedServices) == 0 {
+		return servicesEntities, nil
+	}
+
+	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
+	stoppedServiceNames := []string{}
+	for _, rawStoppedService := range rawStoppedServicesLines {
+		if rawStoppedService == "" {
+			continue
+		}
+
+		serviceName, err := valueObject.NewServiceName(rawStoppedService)
+		if err != nil {
+			log.Printf("InvalidStoppedServiceName: %s", rawStoppedService)
+			continue
+		}
+
+		stoppedServiceNames = append(stoppedServiceNames, serviceName.String())
+	}
+
+	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
+	for serviceIndex, serviceEntity := range servicesEntities {
+		if !slices.Contains(stoppedServiceNames, serviceEntity.Name.String()) {
+			continue
+		}
+
+		servicesEntities[serviceIndex].Status = stoppedStatus
+	}
+
 	return servicesEntities, nil
 }
 
 func (repo *ServicesQueryRepo) ReadByName(
 	name valueObject.ServiceName,
 ) (serviceEntity entity.InstalledService, err error) {
+	serviceNameStr := name.String()
+
 	var serviceModel dbModel.InstalledService
 	queryResult := repo.persistentDbSvc.Handler.
-		Where("name = ?", name.String()).
+		Where("name = ?", serviceNameStr).
 		Limit(1).
 		Find(&serviceModel)
 	if queryResult.Error != nil {
@@ -76,6 +116,15 @@ func (repo *ServicesQueryRepo) ReadByName(
 	if err != nil {
 		return serviceEntity, err
 	}
+
+	rawServiceStoppedResult, err := infraHelper.RunCmdWithSubShell(
+		"supervisorctl status " + serviceNameStr + " | grep -v 'RUNNING'",
+	)
+	if len(rawServiceStoppedResult) == 0 || err != nil {
+		return serviceEntity, nil
+	}
+
+	serviceEntity.Status, _ = valueObject.NewServiceStatus("stopped")
 
 	return serviceEntity, nil
 }
@@ -201,14 +250,18 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 			continue
 		}
 
+		serviceEntity, exists := serviceNameServiceEntityMap[serviceName.String()]
+		if !exists {
+			continue
+		}
+
 		rawServiceStatus := supervisorStatusLineParts[1]
 		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 		if err != nil {
 			continue
 		}
 
-		serviceEntity, exists := serviceNameServiceEntityMap[serviceName.String()]
-		if !exists || serviceStatus.String() != "running" {
+		if serviceStatus.String() != "running" {
 			serviceWithMetrics := dto.NewInstalledServiceWithMetrics(serviceEntity, nil)
 			servicesWithMetrics = append(servicesWithMetrics, serviceWithMetrics)
 			continue
