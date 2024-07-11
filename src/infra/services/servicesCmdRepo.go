@@ -216,13 +216,23 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 }
 
 func (repo *ServicesCmdRepo) createDefaultDirectories(
-	name valueObject.ServiceName,
+	serviceName valueObject.ServiceName, execUser *valueObject.UnixUsername,
 ) error {
 	defaultDirectories := []string{"conf", "logs"}
 	for _, defaultDir := range defaultDirectories {
-		err := infraHelper.MakeDir("/app/" + defaultDir + "/" + name.String())
+		nameStr := serviceName.String()
+		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+
+		err := infraHelper.MakeDir(defaultDirPath)
 		if err != nil {
 			return errors.New("CreateDefaultDirsError: " + err.Error())
+		}
+
+		if execUser != nil {
+			_, err = infraHelper.RunCmd("chown", "-R", execUser.String(), defaultDirPath)
+			if err != nil {
+				return errors.New("ChownDefaultDirsError: " + err.Error())
+			}
 		}
 	}
 
@@ -313,7 +323,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
-	err = repo.createDefaultDirectories(installedServiceName)
+	err = repo.createDefaultDirectories(
+		installedServiceName, installableService.ExecUser,
+	)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -444,7 +456,7 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		return err
 	}
 
-	err = repo.createDefaultDirectories(createDto.Name)
+	err = repo.createDefaultDirectories(createDto.Name, createDto.ExecUser)
 	if err != nil {
 		return err
 	}
