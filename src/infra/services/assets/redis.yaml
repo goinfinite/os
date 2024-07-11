@@ -15,7 +15,11 @@ installCmdSteps:
   - curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
   - echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" >/etc/apt/sources.list.d/redis.list
   - versionTag=%version%; if [ -n "${versionTag}" ]; then versionTag="=6:${versionTag}*" ; fi; install_packages redis-server${versionTag}
-  - sed -i "s/^daemonize yes/daemonize no/g" /etc/redis/redis.conf
+  - sed -i "s|^daemonize yes|daemonize no|g" /etc/redis/redis.conf
+  - sed -i "s|^logfile|#logfile|g" /etc/redis/redis.conf
+  - sed -i "s|^loglevel notice|loglevel warning|g" /etc/redis/redis.conf
+  - install -d -m 755 -o redis -g redis /run/redis/
+  - chown redis:redis -R /app/logs/redis/
   - rm -rf /app/conf/redis/
   - ln -s /etc/redis/ /app/conf/redis
 uninstallCmdSteps:
