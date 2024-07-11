@@ -84,7 +84,7 @@ func (ws *WebServerSetup) FirstSetup() {
 		log.Fatal("UpdateVhostFailed")
 	}
 
-	log.Print("GeneratingDhParam...")
+	log.Print("GeneratingDhParams...")
 
 	_, err = infraHelper.RunCmd(
 		"openssl", "dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
