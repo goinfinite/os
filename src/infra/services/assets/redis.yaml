@@ -24,11 +24,14 @@ installCmdSteps:
   - ln -s /etc/redis/ /app/conf/redis
 uninstallCmdSteps:
   - apt-get purge -y redis-server redis-tools
+  - unlink /app/conf/redis
 uninstallFilePaths:
   - /etc/redis
   - /var/lib/redis
   - /var/log/redis
+  - /usr/share/keyrings/redis-archive-keyring.gpg
   - /etc/apt/sources.list.d/redis.list
+  - /run/redis/
 execUser: redis
 estimatedSizeBytes: 15728640
 avatarUrl: https://speedia.net/assets/os/services/redis/redis-avatar.jpg
