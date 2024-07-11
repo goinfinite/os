@@ -229,7 +229,13 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 		}
 
 		if execUser != nil {
-			_, err = infraHelper.RunCmd("chown", "-R", execUser.String(), defaultDirPath)
+			execUserStr := execUser.String()
+			_, err := infraHelper.RunCmd("id", execUserStr)
+			if err != nil {
+				continue
+			}
+
+			_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
 			if err != nil {
 				return errors.New("ChownDefaultDirsError: " + err.Error())
 			}
