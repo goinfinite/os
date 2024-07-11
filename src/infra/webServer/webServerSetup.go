@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -113,7 +114,9 @@ func (ws *WebServerSetup) FirstSetup() {
 	)
 	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {
-		log.Fatal("UpdateNginxAutoStartFailed: ", err.Error())
+		if !strings.Contains(err.Error(), "Unauthorized") {
+			log.Fatal("UpdateNginxAutoStartFailed: ", err.Error())
+		}
 	}
 
 	log.Print("WebServerConfigured! RestartingServices...")

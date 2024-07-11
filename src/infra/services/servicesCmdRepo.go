@@ -191,9 +191,10 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("supervisorctl", "reread")
+	reReadOutput, err := infraHelper.RunCmd("supervisorctl", "reread")
 	if err != nil {
-		return errors.New("SupervisorRereadError: " + err.Error())
+		combinedOutput := reReadOutput + " " + err.Error()
+		return errors.New("SupervisorRereadError: " + combinedOutput)
 	}
 
 	recentUnixTime := valueObject.NewUnixTimeBeforeNow(30 * time.Second)
