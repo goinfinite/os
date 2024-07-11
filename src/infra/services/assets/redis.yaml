@@ -23,7 +23,7 @@ installCmdSteps:
   - rm -rf /app/conf/redis/
   - ln -s /etc/redis/ /app/conf/redis
 uninstallCmdSteps:
-  - apt-get purge -y redis-server
+  - apt-get purge -y redis-server redis-tools
 uninstallFilePaths:
   - /etc/redis
   - /var/lib/redis
