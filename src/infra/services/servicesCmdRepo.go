@@ -124,6 +124,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 
 	ctlPassword := infraHelper.GenStrongShortHash(serviceEntities[0].CreatedAt.String())
 
+	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
 [unix_http_server]
 file=/run/supervisord.sock
@@ -185,6 +186,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 {{- end}}
 {{end}}
 `
+	// cSpell:enable
 
 	templatePtr, err := template.New("supervisorConf").Parse(fileTemplate)
 	if err != nil {
