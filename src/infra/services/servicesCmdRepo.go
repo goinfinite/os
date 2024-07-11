@@ -91,6 +91,14 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return errors.New("SupervisorStopError: " + combinedOutput)
 	}
 
+	for stepIndex, stopStep := range serviceEntity.StopCmdSteps {
+		_, err = infraHelper.RunCmdWithSubShell(stopStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("StopCmdStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
 	for stepIndex, postStopStep := range serviceEntity.PostStopCmdSteps {
 		_, err = infraHelper.RunCmdWithSubShell(postStopStep.String())
 		if err != nil {
