@@ -43,14 +43,19 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		}
 	}
 
-	startOutput, err := infraHelper.RunCmd(
-		"supervisorctl", "start", serviceEntity.Name.String(),
-	)
+	serviceNameStr := serviceEntity.Name.String()
+	startOutput, err := infraHelper.RunCmd("supervisorctl", "start", serviceNameStr)
 	if err != nil {
-		// Supervisor returns the error on the stdout, so you'll see this pattern
-		// here and in other places where we run supervisorctl commands.
 		combinedOutput := startOutput + " " + err.Error()
-		return errors.New("SupervisorStartError: " + combinedOutput)
+		if !strings.Contains(combinedOutput, "no such process") {
+			return errors.New("SupervisorStartError: " + combinedOutput)
+		}
+
+		addOutput, err := infraHelper.RunCmd("supervisorctl", "add", serviceNameStr)
+		if err != nil {
+			combinedOutput = addOutput + " " + err.Error()
+			return errors.New("SupervisorAddError: " + combinedOutput)
+		}
 	}
 
 	for stepIndex, postStartStep := range serviceEntity.PostStartCmdSteps {
@@ -394,27 +399,12 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	customNature, _ := valueObject.NewServiceNature("custom")
 
 	installedServiceModel := dbModel.NewInstalledService(
-		createDto.Name.String(),
-		customNature.String(),
-		createDto.Type.String(),
-		createDto.Version.String(),
-		createDto.StartCmd.String(),
-		createDto.Envs,
-		createDto.PortBindings,
-		createDto.StopCmdSteps,
-		createDto.PreStartCmdSteps,
-		createDto.PostStartCmdSteps,
-		createDto.PreStopCmdSteps,
-		createDto.PostStopCmdSteps,
-		nil,
-		nil,
-		nil,
-		createDto.AutoStart,
-		createDto.AutoRestart,
-		createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries,
-		nil,
-		nil,
+		createDto.Name.String(), customNature.String(), createDto.Type.String(),
+		createDto.Version.String(), createDto.StartCmd.String(), createDto.Envs,
+		createDto.PortBindings, createDto.StopCmdSteps, createDto.PreStartCmdSteps,
+		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps, createDto.PostStopCmdSteps,
+		nil, nil, nil, createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
+		createDto.MaxStartRetries, nil, nil,
 	)
 
 	if createDto.ExecUser != nil {
