@@ -39,11 +39,13 @@ installCmdSteps:
   - ln -s /etc/postgresql/%version%/main/ /app/conf/postgresql
 uninstallCmdSteps:
   - apt-get purge -y postgresql*
+  - unlink /app/conf/postgresql
 uninstallFilePaths:
   - /etc/postgresql
   - /var/lib/postgresql
   - /var/log/postgresql
   - /usr/lib/postgresql
+  - /usr/share/postgresql-common/pgdg
   - /etc/apt/sources.list.d/pgdg.list
   - /root/.pgpass
 execUser: postgres
