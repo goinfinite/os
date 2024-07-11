@@ -2,6 +2,7 @@
 
 ```log
 0.0.3 - 2024/XX/XX
+refactor: everything services related
 fix: move /_/api to /api
 
 0.0.2 - 2024/07/04
