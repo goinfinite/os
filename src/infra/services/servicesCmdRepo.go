@@ -66,7 +66,7 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
@@ -99,7 +99,7 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
@@ -167,7 +167,7 @@ stdout_logfile_maxbytes=0
 stdout_logfile_maxbytes=10MB
 {{end}}
 {{- else}}
-stdout_logfile=/app/logs/{{.Name}}.log
+stdout_logfile=/app/logs/{{.Name}}/{{.Name}}.log
 stdout_logfile_maxbytes=10MB
 {{- end}}
 {{- if .LogErrorPath}}
@@ -178,7 +178,7 @@ stderr_logfile_maxbytes=0
 stderr_logfile_maxbytes=10MB
 {{end}}
 {{- else}}
-stderr_logfile=/app/logs/{{.Name}}_error.log
+stderr_logfile=/app/logs/{{.Name}}/{{.Name}}_error.log
 stderr_logfile_maxbytes=10MB
 {{- end}}
 {{- if .Envs}}
@@ -210,6 +210,20 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
 		return errors.New("SupervisorRereadError: " + combinedOutput)
+	}
+
+	return nil
+}
+
+func (repo *ServicesCmdRepo) createDefaultDirectories(
+	name valueObject.ServiceName,
+) error {
+	defaultDirectories := []string{"conf", "logs"}
+	for _, defaultDir := range defaultDirectories {
+		err := infraHelper.MakeDir("/app/" + defaultDir + "/" + name.String())
+		if err != nil {
+			return errors.New("CreateDefaultDirsError: " + err.Error())
+		}
 	}
 
 	return nil
@@ -299,13 +313,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
-	installedServiceNameStr := installedServiceName.String()
-	defaultDirectories := []string{"conf", "logs"}
-	for _, defaultDir := range defaultDirectories {
-		err = infraHelper.MakeDir("/app/" + defaultDir + "/" + installedServiceNameStr)
-		if err != nil {
-			return installedServiceName, errors.New("CreateDefaultDirsError: " + err.Error())
-		}
+	err = repo.createDefaultDirectories(installedServiceName)
+	if err != nil {
+		return installedServiceName, err
 	}
 
 	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
@@ -350,7 +360,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	usableStartCmd := usableStartCmdSteps[0]
 
 	installedServiceModel := dbModel.NewInstalledService(
-		installedServiceNameStr, installableService.Nature.String(),
+		installedServiceName.String(), installableService.Nature.String(),
 		installableService.Type.String(), serviceVersion.String(),
 		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
@@ -430,6 +440,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	}
 
 	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
+	if err != nil {
+		return err
+	}
+
+	err = repo.createDefaultDirectories(createDto.Name)
 	if err != nil {
 		return err
 	}
