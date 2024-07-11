@@ -617,7 +617,12 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
-	err := repo.Stop(name)
+	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	if err != nil {
+		return err
+	}
+
+	err = repo.Stop(name)
 	if err != nil {
 		return err
 	}
@@ -629,5 +634,35 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	return repo.updateProcessManagerConf()
+	err = repo.updateProcessManagerConf()
+	if err != nil {
+		return err
+	}
+
+	if serviceEntity.Nature.String() == "custom" {
+		return nil
+	}
+
+	installableEntity, err := repo.servicesQueryRepo.ReadInstallableByName(name)
+	if err != nil {
+		return errors.New("GetInstallableEntityError: " + err.Error())
+	}
+
+	for stepIndex, uninstallCmdStep := range installableEntity.UninstallCmdSteps {
+		_, err := infraHelper.RunCmdWithSubShell(uninstallCmdStep.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			return errors.New("UninstallStepError (" + stepIndexStr + "): " + err.Error())
+		}
+	}
+
+	for fileIndex, uninstallFilePath := range installableEntity.UninstallFilePaths {
+		_, err := infraHelper.RunCmd("rm", "-rf", uninstallFilePath.String())
+		if err != nil {
+			fileIndexStr := strconv.Itoa(fileIndex)
+			return errors.New("RemoveFilePathError (" + fileIndexStr + "): " + err.Error())
+		}
+	}
+
+	return nil
 }
