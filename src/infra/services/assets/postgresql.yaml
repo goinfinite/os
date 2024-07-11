@@ -26,7 +26,7 @@ installCmdSteps:
   - chmod 600 /etc/ssl/private/ssl-cert-snakeoil.key
   - sed -i '1ilocal all all trust' /etc/postgresql/%version%/main/pg_hba.conf
   - chown -R postgres:adm /app/logs/postgresql/
-  - su -c "/usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -l /app/logs/postgresql/main.log -c -o '--config_file=/etc/postgresql/%version%/main/postgresql.conf' start" postgres
+  - su -c "/usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -l /app/logs/postgresql/postgresql.log -c -o '--config_file=/etc/postgresql/%version%/main/postgresql.conf' start" postgres
   - psql -U postgres -c "ALTER USER postgres WITH PASSWORD '%randomPassword%';"
   - echo "*:*:*:postgres:%randomPassword%" >/root/.pgpass
   - chmod 400 /root/.pgpass
@@ -34,7 +34,7 @@ installCmdSteps:
   - chown postgres:postgres /var/lib/postgresql/.pgpass
   - chmod 400 /var/lib/postgresql/.pgpass
   - sed -i '1s/.*/local all postgres scram-sha-256/' /etc/postgresql/%version%/main/pg_hba.conf
-  - su -c "/usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -l /app/logs/postgresql/main.log -c -o '--config_file=/etc/postgresql/%version%/main/postgresql.conf' stop" postgres
+  - su -c "/usr/lib/postgresql/%version%/bin/pg_ctl -D /var/lib/postgresql/%version%/main -l /app/logs/postgresql/postgresql.log -c -o '--config_file=/etc/postgresql/%version%/main/postgresql.conf' stop" postgres
   - rm -rf /app/conf/postgresql
   - ln -s /etc/postgresql/%version%/main/ /app/conf/postgresql
 uninstallCmdSteps:
@@ -46,5 +46,6 @@ uninstallFilePaths:
   - /usr/lib/postgresql
   - /etc/apt/sources.list.d/pgdg.list
   - /root/.pgpass
+execUser: postgres
 estimatedSizeBytes: 367001600
 avatarUrl: https://speedia.net/assets/os/services/postgresql/postgresql-avatar.jpg

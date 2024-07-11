@@ -25,5 +25,6 @@ uninstallFilePaths:
   - /var/lib/redis
   - /var/log/redis
   - /etc/apt/sources.list.d/redis.list
+execUser: redis
 estimatedSizeBytes: 15728640
 avatarUrl: https://speedia.net/assets/os/services/redis/redis-avatar.jpg
