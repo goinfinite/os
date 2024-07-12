@@ -187,6 +187,6 @@ func DeleteCronController() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&cronIdStr, "id", "i", "", "CronId")
-	cmd.Flags().StringVarP(&cronIdStr, "comment", "d", "", "CronComment")
+	cmd.Flags().StringVarP(&cronCommentStr, "comment", "d", "", "CronComment")
 	return cmd
 }
