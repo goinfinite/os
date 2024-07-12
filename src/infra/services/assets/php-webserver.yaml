@@ -30,7 +30,7 @@ uninstallCmdSteps:
   - if [ -f "/usr/bin/php" ]; then unlink /usr/bin/php; fi
   - apt-get purge -y openlitespeed lsphp*
 stopCmdSteps:
-  - if pgrep litespeed >/dev/null; then /usr/local/lsws/bin/lswsctrl stop; fi
+  - sleep 1; if pgrep litespeed >/dev/null; then /usr/local/lsws/bin/lswsctrl stop; fi
   - if pgrep lsphp >/dev/null; then pkill lsphp; fi
 estimatedSizeBytes: 157286400
 avatarUrl: https://speedia.net/assets/os/services/php-webserver/php-webserver-avatar.jpg
