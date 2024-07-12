@@ -24,7 +24,7 @@ import (
 // @Router       /v1/auth/login/ [post]
 func AuthLoginController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

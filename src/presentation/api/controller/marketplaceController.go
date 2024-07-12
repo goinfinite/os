@@ -96,7 +96,7 @@ func parseDataFieldsFromBody(
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
 	requiredParams := []string{"hostname"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

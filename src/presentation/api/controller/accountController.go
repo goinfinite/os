@@ -43,7 +43,7 @@ func GetAccountsController(c echo.Context) error {
 // @Router       /v1/account/ [post]
 func CreateAccountController(c echo.Context) error {
 	requiredParams := []string{"username", "password"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -82,7 +82,7 @@ func CreateAccountController(c echo.Context) error {
 // @Success      200 {object} object{} "AccountUpdated message or NewKeyString"
 // @Router       /v1/account/ [put]
 func UpdateAccountController(c echo.Context) error {
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	var accountIdPtr *valueObject.AccountId
 	if requestBody["id"] != nil {

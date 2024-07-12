@@ -75,7 +75,7 @@ func GetFilesController(c echo.Context) error {
 // @Router       /v1/files/ [post]
 func CreateFileController(c echo.Context) error {
 	requiredParams := []string{"filePath"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -141,7 +141,7 @@ func CreateFileController(c echo.Context) error {
 // @Router       /v1/files/ [put]
 func UpdateFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -220,7 +220,7 @@ func UpdateFileController(c echo.Context) error {
 // @Router       /v1/files/copy/ [post]
 func CopyFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -276,7 +276,7 @@ func CopyFileController(c echo.Context) error {
 // @Router       /v1/files/delete/ [put]
 func DeleteFileController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -342,7 +342,7 @@ func DeleteFileController(c echo.Context) error {
 // @Router       /v1/files/compress/ [post]
 func CompressFilesController(c echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -414,7 +414,7 @@ func CompressFilesController(c echo.Context) error {
 // @Router       /v1/files/extract/ [put]
 func ExtractFilesController(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -459,7 +459,7 @@ func ExtractFilesController(c echo.Context) error {
 // @Router       /v1/files/upload/ [post]
 func UploadFilesController(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	if requestBody["destinationPath"] == nil {
 		requestBody["destinationPath"] = c.QueryParam("destinationPath")

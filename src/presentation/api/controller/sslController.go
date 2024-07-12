@@ -85,7 +85,7 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
 	requiredParams := []string{"virtualHosts", "certificate", "key"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -184,7 +184,7 @@ func (controller *SslController) SslCertificateWatchdog() {
 // @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	requiredParams := []string{"sslPairId", "virtualHosts"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

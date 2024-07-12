@@ -58,7 +58,7 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Router       /v1/vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
 	requiredParams := []string{"hostname"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -167,7 +167,7 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	requiredParams := []string{"hostname", "path", "targetType"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
