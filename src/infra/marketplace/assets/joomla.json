@@ -34,6 +34,7 @@
     }
   ],
   "installCmdSteps": [
+    "if [[ $(echo -n \"%adminPassword%\" | wc -m) -lt 12 ]]; then echo -n AdminPasswordTooShort >&2; exit 1; fi",
     "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
     "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
     "os db create -n joomlaDb_%installUuid% -t mysql",
