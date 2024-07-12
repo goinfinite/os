@@ -1,10 +1,18 @@
 # Changelog
 
 ```log
-0.0.2 - 2024/X/X
+0.0.3 - 2024/XX/XX
+refactor: everything services related
+fix: move /_/api to /api
+
+0.0.2 - 2024/07/04
 refactor: vhost infra with models
+refactor: replace with valid ssl
 feat: add restart status to services
 feat: accept pkcs1 format for ssl private key
+feat: uninstallSteps and files for mktplace
+feat: .htaccess auto reload
+fix: cron not working
 fix: add read only mode middleware
 fix: services deactivate loop on read only mode
 fix: rename assets of php to php-webserver

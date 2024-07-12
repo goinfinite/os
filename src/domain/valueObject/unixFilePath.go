@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const unixFilePathRegexExpression = `^\/?[^\n\r\t\f\0\?\[\]\<\>]+$`
@@ -12,73 +14,67 @@ const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
-func NewUnixFilePath(value string) (UnixFilePath, error) {
-	unixFilePath := UnixFilePath(value)
-
-	if !unixFilePath.isValid() {
-		return "", errors.New("InvalidUnixFilePath")
-	}
-
-	if unixFilePath.isRelative() {
-		return "", errors.New("RelativePathNotAllowed")
-	}
-
-	return unixFilePath, nil
-}
-
-func NewUnixFilePathPanic(value string) UnixFilePath {
-	unixFilePath, err := NewUnixFilePath(value)
+func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return filePath, errors.New("UnixFilePathValueMustBeString")
 	}
-	return unixFilePath
-}
 
-func (unixFilePath UnixFilePath) isValid() bool {
+	stringValue = strings.TrimSpace(stringValue)
+
 	unixFilePathRegex := regexp.MustCompile(unixFilePathRegexExpression)
-	return unixFilePathRegex.MatchString(string(unixFilePath))
-}
+	if !unixFilePathRegex.MatchString(stringValue) {
+		return filePath, errors.New("InvalidUnixFilePath")
+	}
 
-func (unixFilePath UnixFilePath) isRelative() bool {
-	unixFilePathStr := string(unixFilePath)
-
-	isOnlyFileName := !strings.Contains(unixFilePathStr, "/")
+	isOnlyFileName := !strings.Contains(stringValue, "/")
+	if isOnlyFileName {
+		return filePath, errors.New("PathIsFileNameOnly")
+	}
 
 	unixFileRelativePathRegex := regexp.MustCompile(unixFileRelativePathRegexExpression)
-	return isOnlyFileName || unixFileRelativePathRegex.MatchString(unixFilePathStr)
+	if unixFileRelativePathRegex.MatchString(stringValue) {
+		return filePath, errors.New("RelativePathNotAllowed")
+	}
+
+	return UnixFilePath(stringValue), nil
 }
 
-func (unixFilePath UnixFilePath) GetWithoutExtension() UnixFilePath {
-	unixFilePathExtStr := filepath.Ext(string(unixFilePath))
-	unixFilePathWithoutExtStr := strings.TrimSuffix(string(unixFilePath), unixFilePathExtStr)
+func (vo UnixFilePath) GetWithoutExtension() UnixFilePath {
+	unixFilePathExtStr := filepath.Ext(string(vo))
+	if unixFilePathExtStr == "" {
+		return vo
+	}
+
+	unixFilePathWithoutExtStr := strings.TrimSuffix(string(vo), unixFilePathExtStr)
 	unixFilePathWithoutExt, _ := NewUnixFilePath(unixFilePathWithoutExtStr)
 	return unixFilePathWithoutExt
 }
 
-func (unixFilePath UnixFilePath) GetFileName() UnixFileName {
-	unixFileBase := filepath.Base(string(unixFilePath))
+func (vo UnixFilePath) GetFileName() UnixFileName {
+	unixFileBase := filepath.Base(string(vo))
 	unixFileName, _ := NewUnixFileName(unixFileBase)
 	return unixFileName
 }
 
-func (unixFilePath UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
-	unixFileBase := filepath.Base(string(unixFilePath))
-	unixFilePathExt := filepath.Ext(string(unixFilePath))
+func (vo UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
+	unixFileBase := filepath.Base(string(vo))
+	unixFilePathExt := filepath.Ext(string(vo))
 	unixFileBaseWithoutExtStr := strings.TrimSuffix(string(unixFileBase), unixFilePathExt)
 	unixFileNameWithoutExt, _ := NewUnixFileName(unixFileBaseWithoutExtStr)
 	return unixFileNameWithoutExt
 }
 
-func (unixFilePath UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
-	unixFileExtensionStr := filepath.Ext(string(unixFilePath))
+func (vo UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
+	unixFileExtensionStr := filepath.Ext(string(vo))
 	return NewUnixFileExtension(unixFileExtensionStr)
 }
 
-func (unixFilePath UnixFilePath) GetFileDir() UnixFilePath {
-	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(unixFilePath)))
+func (vo UnixFilePath) GetFileDir() UnixFilePath {
+	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(vo)))
 	return unixFileDirPath
 }
 
-func (unixFilePath UnixFilePath) String() string {
-	return string(unixFilePath)
+func (vo UnixFilePath) String() string {
+	return string(vo)
 }

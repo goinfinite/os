@@ -14,9 +14,10 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
+
+const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
 	transientDbSvc *internalDbInfra.TransientDatabaseService
@@ -41,9 +42,7 @@ func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
 	ipAddress valueObject.IpAddress,
 	err error,
 ) {
-	cachedIpAddressStr, err := repo.transientDbSvc.Get(
-		infraData.GlobalConfigs.PublicIpTransientKey,
-	)
+	cachedIpAddressStr, err := repo.transientDbSvc.Get(PublicIpTransientKey)
 	if err == nil {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
@@ -53,10 +52,7 @@ func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
 		return ipAddress, errors.New("ReadServerPublicIpAddressError: " + err.Error())
 	}
 
-	err = repo.transientDbSvc.Set(
-		infraData.GlobalConfigs.PublicIpTransientKey,
-		serverPublicIpAddress.String(),
-	)
+	err = repo.transientDbSvc.Set(PublicIpTransientKey, serverPublicIpAddress.String())
 	if err != nil {
 		return ipAddress, errors.New("PersistPublicIpFailed: " + err.Error())
 	}

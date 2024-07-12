@@ -6,8 +6,8 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	infraData "github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
@@ -117,10 +117,10 @@ func (repo *VirtualHostQueryRepo) GetVirtualHostMappingsFilePath(
 
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = infraData.GlobalConfigs.PrimaryVhostFileName + ".conf"
+		vhostFileNameStr = infraEnvs.PrimaryVhostFileName
 	}
 
 	return valueObject.NewUnixFilePath(
-		infraData.GlobalConfigs.MappingsConfDir + "/" + vhostFileNameStr,
+		infraEnvs.MappingsConfDir + "/" + vhostFileNameStr,
 	)
 }

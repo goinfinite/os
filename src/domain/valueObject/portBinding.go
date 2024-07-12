@@ -3,6 +3,8 @@ package valueObject
 import (
 	"errors"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type PortBinding struct {
@@ -10,43 +12,39 @@ type PortBinding struct {
 	Protocol NetworkProtocol `json:"protocol"`
 }
 
-func NewPortBinding(
-	port NetworkPort,
-	protocol NetworkProtocol,
-) PortBinding {
-	return PortBinding{
-		Port:     port,
-		Protocol: protocol,
+func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return portBinding, errors.New("PortBindingValueMustBeString")
 	}
-}
 
-func NewPortBindingFromString(value string) (PortBinding, error) {
-	var portBinding PortBinding
+	stringValue = strings.TrimSpace(stringValue)
+	stringValue = strings.ToLower(stringValue)
 
-	if value == "" {
+	if len(stringValue) == 0 {
+		return portBinding, errors.New("EmptyPortBinding")
+	}
+
+	if !strings.Contains(stringValue, "/") {
+		stringValue += "/tcp"
+	}
+
+	bindingParts := strings.Split(stringValue, "/")
+	if len(bindingParts) != 2 {
 		return portBinding, errors.New("InvalidPortBinding")
 	}
 
-	if !strings.Contains(value, "/") {
-		return portBinding, errors.New("InvalidPortBinding")
-	}
-
-	specParts := strings.Split(value, "/")
-	if len(specParts) != 2 {
-		return portBinding, errors.New("InvalidPortBinding")
-	}
-
-	port, err := NewNetworkPort(specParts[0])
+	port, err := NewNetworkPort(bindingParts[0])
 	if err != nil {
 		return portBinding, err
 	}
 
-	protocol, err := NewNetworkProtocol(specParts[1])
+	protocol, err := NewNetworkProtocol(bindingParts[1])
 	if err != nil {
 		return portBinding, err
 	}
 
-	return NewPortBinding(port, protocol), nil
+	return PortBinding{Port: port, Protocol: protocol}, nil
 }
 
 func (portBinding PortBinding) GetPort() NetworkPort {

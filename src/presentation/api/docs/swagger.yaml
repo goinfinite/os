@@ -1,4 +1,4 @@
-basePath: /_/api
+basePath: /api
 definitions:
   dto.CompressUnixFiles:
     properties:
@@ -40,17 +40,57 @@ definitions:
     properties:
       autoCreateMapping:
         type: boolean
-      command:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
         type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
+      startCmd:
+        type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
       version:
+        type: string
+      workingDirectory:
         type: string
     type: object
   dto.CreateDatabase:
@@ -75,6 +115,16 @@ definitions:
     properties:
       autoCreateMapping:
         type: boolean
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
@@ -83,6 +133,8 @@ definitions:
         type: array
       startupFile:
         type: string
+      timeoutStartSecs:
+        type: integer
       version:
         type: string
     type: object
@@ -161,17 +213,26 @@ definitions:
       urlPath:
         type: string
     type: object
-  dto.Login:
+  dto.InstalledServiceWithMetrics:
     properties:
-      password:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      createdAt:
+        type: integer
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
         type: string
-      username:
+      logErrorPath:
         type: string
-    type: object
-  dto.ServiceWithMetrics:
-    properties:
-      command:
+      logOutputPath:
         type: string
+      maxStartRetries:
+        type: integer
       metrics:
         $ref: '#/definitions/valueObject.ServiceMetrics'
       name:
@@ -182,13 +243,48 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       status:
         type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
+      updatedAt:
+        type: integer
       version:
+        type: string
+      workingDirectory:
+        type: string
+    type: object
+  dto.Login:
+    properties:
+      password:
+        type: string
+      username:
         type: string
     type: object
   dto.UpdateAccount:
@@ -230,21 +326,61 @@ definitions:
     type: object
   dto.UpdateService:
     properties:
-      command:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
         type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       status:
         type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
       version:
+        type: string
+      workingDirectory:
         type: string
     type: object
   dto.UpdateUnixFiles:
@@ -332,9 +468,33 @@ definitions:
     type: object
   entity.InstallableService:
     properties:
+      avatarUrl:
+        type: string
+      description:
+        type: string
+      envs:
+        items:
+          type: string
+        type: array
+      estimatedSizeBytes:
+        type: integer
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
       name:
         type: string
       nature:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      startCmd:
+        type: string
+      startupFile:
         type: string
       type:
         type: string
@@ -342,6 +502,8 @@ definitions:
         items:
           type: string
         type: array
+      workingDirectory:
+        type: string
     type: object
   entity.Mapping:
     properties:
@@ -659,7 +821,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: OsApi
-  version: 0.0.2
+  version: 0.0.3
 paths:
   /v1/account/:
     get:
@@ -1390,7 +1552,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ServiceWithMetrics'
+              $ref: '#/definitions/dto.InstalledServiceWithMetrics'
             type: array
       security:
       - Bearer: []
@@ -1450,7 +1612,7 @@ paths:
       - application/json
       description: Install a new custom service.
       parameters:
-      - description: name, type and command is required.<br />If version is not provided,
+      - description: name, type and startCmd is required.<br />If version is not provided,
           it will be 'lts'.<br />If portBindings is not provided, it wil be default
           service port bindings.<br />If autoCreateMapping is not provided, it will
           be 'true'.

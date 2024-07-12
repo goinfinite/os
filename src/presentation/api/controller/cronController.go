@@ -59,9 +59,14 @@ func CreateCronController(c echo.Context) error {
 		}
 	}
 
+	cronCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
 	createCronDto := dto.NewCreateCron(
 		valueObject.NewCronSchedulePanic(requestBody["schedule"].(string)),
-		valueObject.NewUnixCommandPanic(requestBody["command"].(string)),
+		cronCommand,
 		cronCommentPtr,
 	)
 
@@ -105,7 +110,10 @@ func UpdateCronController(c echo.Context) error {
 
 	var cronCommandPtr *valueObject.UnixCommand
 	if requestBody["command"] != nil {
-		cronCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
+		cronCommand, err := valueObject.NewUnixCommand(requestBody["command"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		cronCommandPtr = &cronCommand
 	}
 
@@ -159,10 +167,12 @@ func DeleteCronController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
+	deleteDto := dto.NewDeleteCron(&cronId, nil)
+
 	err = useCase.DeleteCron(
 		cronQueryRepo,
 		cronCmdRepo,
-		cronId,
+		deleteDto,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())

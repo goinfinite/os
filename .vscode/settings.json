@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "accs",
+    "alessio",
     "apikey",
     "autorestart",
     "Bavail",
@@ -66,6 +67,7 @@
     "speedia",
     "speedianet",
     "sqlite",
+    "supervisorctl",
     "supervisord",
     "svcs",
     "Svcs",

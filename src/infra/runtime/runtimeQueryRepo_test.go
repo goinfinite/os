@@ -6,18 +6,11 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 func TestRuntimeQueryRepo(t *testing.T) {
 	t.Skip("SkipRuntimeQueryRepoTest")
 	testHelpers.LoadEnvVars()
-
-	err := servicesInfra.CreateInstallableSimplified("php")
-	if err != nil {
-		t.Errorf("InstallDependenciesFail: %v", err)
-		return
-	}
 
 	repo := RuntimeQueryRepo{}
 

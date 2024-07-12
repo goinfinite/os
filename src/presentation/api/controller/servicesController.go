@@ -34,11 +34,11 @@ func NewServicesController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} dto.ServiceWithMetrics
+// @Success      200 {array} dto.InstalledServiceWithMetrics
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesList, err := useCase.ReadServicesWithMetrics(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -56,8 +56,8 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Success      200 {array} entity.InstallableService
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesList, err := useCase.ReadInstallableServices(servicesQueryRepo)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -68,19 +68,33 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 	var svcPortBindings []valueObject.PortBinding
 	for _, portBinding := range bindings {
-		portBindingMap := portBinding.(map[string]interface{})
-		svcPort := valueObject.NewNetworkPortPanic(
-			portBindingMap["port"],
-		)
-		svcProtocol := valueObject.NewNetworkProtocolPanic(
-			portBindingMap["protocol"].(string),
-		)
-		svcPortBinding := valueObject.NewPortBinding(
-			svcPort,
-			svcProtocol,
-		)
+		portBindingMap, assertOk := portBinding.(map[string]interface{})
+		if !assertOk {
+			panic("InvalidPortBinding")
+		}
+
+		port, err := valueObject.NewNetworkPort(portBindingMap["port"])
+		if err != nil {
+			panic(err)
+		}
+		portBindingStr := port.String()
+
+		if portBindingMap["protocol"] != nil {
+			protocol, err := valueObject.NewNetworkProtocol(portBindingMap["protocol"])
+			if err != nil {
+				panic(err)
+			}
+
+			portBindingStr += "/" + protocol.String()
+		}
+
+		svcPortBinding, err := valueObject.NewPortBinding(portBindingStr)
+		if err != nil {
+			panic(err)
+		}
 		svcPortBindings = append(svcPortBindings, svcPortBinding)
 	}
+
 	return svcPortBindings
 }
 
@@ -100,22 +114,27 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	serviceName, err := valueObject.NewServiceName(requestBody["name"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcStartupFilePtr *valueObject.UnixFilePath
 	if requestBody["startupFile"] != nil {
-		svcStartupFile := valueObject.NewUnixFilePathPanic(
-			requestBody["startupFile"].(string),
-		)
-		svcStartupFilePtr = &svcStartupFile
+		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcStartupFilePtr = &startupFile
 	}
 
 	var svcPortBindings []valueObject.PortBinding
@@ -139,20 +158,17 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	}
 
 	createInstallableServiceDto := dto.NewCreateInstallableService(
-		svcName,
-		svcVersionPtr,
-		svcStartupFilePtr,
-		svcPortBindings,
-		autoCreateMapping,
+		serviceName, []valueObject.ServiceEnv{}, svcPortBindings, svcVersionPtr,
+		svcStartupFilePtr, nil, nil, nil, nil, &autoCreateMapping,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateInstallableService(
+	err = useCase.CreateInstallableService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
@@ -175,25 +191,37 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and command is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
+// @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and startCmd is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
-	requiredParams := []string{"name", "type", "command"}
+	requiredParams := []string{"name", "type", "startCmd"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
-	svcType := valueObject.NewServiceTypePanic(requestBody["type"].(string))
-	svcCommand := valueObject.NewUnixCommandPanic(requestBody["command"].(string))
+	serviceName, err := valueObject.NewServiceName(requestBody["name"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
+
+	svcType, err := valueObject.NewServiceType(requestBody["type"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
+
+	startCmd, err := valueObject.NewUnixCommand(requestBody["startCmd"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcPortBindings []valueObject.PortBinding
@@ -217,21 +245,18 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 
 	createCustomServiceDto := dto.NewCreateCustomService(
-		svcName,
-		svcType,
-		svcCommand,
-		svcVersionPtr,
-		svcPortBindings,
-		autoCreateMapping,
+		serviceName, svcType, startCmd, []valueObject.ServiceEnv{}, svcPortBindings,
+		nil, nil, nil, nil, nil, svcVersionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
+		&autoCreateMapping,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateCustomService(
+	err = useCase.CreateCustomService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
@@ -263,22 +288,27 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	svcName := valueObject.NewServiceNamePanic(requestBody["name"].(string))
+	svcName, err := valueObject.NewServiceName(requestBody["name"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
 	var svcTypePtr *valueObject.ServiceType
 	if requestBody["type"] != nil {
-		svcType := valueObject.NewServiceTypePanic(
-			requestBody["type"].(string),
-		)
+		svcType, err := valueObject.NewServiceType(requestBody["type"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 		svcTypePtr = &svcType
 	}
 
-	var svcCommandPtr *valueObject.UnixCommand
-	if requestBody["command"] != nil {
-		svcCommand := valueObject.NewUnixCommandPanic(
-			requestBody["command"].(string),
-		)
-		svcCommandPtr = &svcCommand
+	var startCmdPtr *valueObject.UnixCommand
+	if requestBody["startCmd"] != nil {
+		startCmd, err := valueObject.NewUnixCommand(requestBody["startCmd"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		startCmdPtr = &startCmd
 	}
 
 	var svcStatusPtr *valueObject.ServiceStatus
@@ -291,18 +321,11 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcVersionPtr *valueObject.ServiceVersion
 	if requestBody["version"] != nil {
-		svcVersion := valueObject.NewServiceVersionPanic(
-			requestBody["version"].(string),
-		)
-		svcVersionPtr = &svcVersion
-	}
-
-	var svcStartupFilePtr *valueObject.UnixFilePath
-	if requestBody["startupFile"] != nil {
-		svcStartupFile := valueObject.NewUnixFilePathPanic(
-			requestBody["startupFile"].(string),
-		)
-		svcStartupFilePtr = &svcStartupFile
+		version, err := valueObject.NewServiceVersion(requestBody["version"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		svcVersionPtr = &version
 	}
 
 	var svcPortBindings []valueObject.PortBinding
@@ -312,22 +335,27 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		)
 	}
 
+	var startupFilePtr *valueObject.UnixFilePath
+	if requestBody["startupFile"] != nil {
+		startupFile, err := valueObject.NewUnixFilePath(requestBody["startupFile"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		startupFilePtr = &startupFile
+	}
+
 	updateSvcDto := dto.NewUpdateService(
-		svcName,
-		svcTypePtr,
-		svcCommandPtr,
-		svcStatusPtr,
-		svcVersionPtr,
-		svcStartupFilePtr,
-		svcPortBindings,
+		svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr, []valueObject.ServiceEnv{},
+		svcPortBindings, nil, nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil,
+		nil, nil, nil, nil,
 	)
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.UpdateService(
+	err = useCase.UpdateService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingQueryRepo,
@@ -352,13 +380,16 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {
-	svcName := valueObject.NewServiceNamePanic(c.Param("svcName"))
+	svcName, err := valueObject.NewServiceName(c.Param("svcName"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
 
-	servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.DeleteService(
+	err = useCase.DeleteService(
 		servicesQueryRepo,
 		servicesCmdRepo,
 		mappingCmdRepo,

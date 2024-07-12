@@ -1,31 +1,33 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
 
 type UnixCommand string
 
-func NewUnixCommand(value string) (UnixCommand, error) {
-	cmd := UnixCommand(value)
-	if !cmd.isValid() {
-		return "", errors.New("InvalidUnixCommand")
-	}
-	return cmd, nil
-}
-
-func NewUnixCommandPanic(value string) UnixCommand {
-	cmd, err := NewUnixCommand(value)
+func NewUnixCommand(value interface{}) (UnixCommand, error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return "", errors.New("UnixCommandValueMustBeString")
 	}
-	return cmd
+
+	stringValue = strings.TrimSpace(stringValue)
+
+	if len(stringValue) < 2 {
+		return "", errors.New("UnixCommandTooShort")
+	}
+
+	if len(stringValue) > 4096 {
+		return "", errors.New("UnixCommandTooLong")
+	}
+
+	return UnixCommand(stringValue), nil
 }
 
-func (cmd UnixCommand) isValid() bool {
-	isTooShort := len(string(cmd)) < 3
-	isTooLong := len(string(cmd)) > 2048
-	return !isTooShort && !isTooLong
-}
-
-func (cmd UnixCommand) String() string {
-	return string(cmd)
+func (vo UnixCommand) String() string {
+	return string(vo)
 }

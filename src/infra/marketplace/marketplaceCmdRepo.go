@@ -45,8 +45,8 @@ func (repo *MarketplaceCmdRepo) installServices(
 	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
 ) error {
-	serviceQueryRepo := servicesInfra.ServicesQueryRepo{}
-	serviceCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
+	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 
 	shouldCreatePhpVirtualHost := false
 	for _, serviceWithVersion := range services {
@@ -54,24 +54,32 @@ func (repo *MarketplaceCmdRepo) installServices(
 			shouldCreatePhpVirtualHost = true
 		}
 
-		_, err := serviceQueryRepo.GetByName(serviceWithVersion.Name)
+		_, err := servicesQueryRepo.ReadByName(serviceWithVersion.Name)
 		if err == nil {
 			continue
 		}
 
-		autoCreateMapping := false
 		createServiceDto := dto.NewCreateInstallableService(
-			serviceWithVersion.Name, serviceWithVersion.Version, nil, nil, autoCreateMapping,
+			serviceWithVersion.Name,
+			[]valueObject.ServiceEnv{},
+			[]valueObject.PortBinding{},
+			serviceWithVersion.Version,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
 		)
 
-		err = serviceCmdRepo.CreateInstallable(createServiceDto)
+		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
 		if err != nil {
 			return errors.New("InstallRequiredServiceError: " + err.Error())
 		}
 	}
 
 	if shouldCreatePhpVirtualHost {
-		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(repo.persistentDbSvc)
 		return runtimeCmdRepo.CreatePhpVirtualHost(vhostName)
 	}
 
@@ -135,9 +143,9 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 }
 
 func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
-	cmdSteps []valueObject.MarketplaceItemCmdStep,
+	cmdSteps []valueObject.UnixCommand,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
-) (cmdStepsWithDataFields []valueObject.MarketplaceItemCmdStep, err error) {
+) (cmdStepsWithDataFields []valueObject.UnixCommand, err error) {
 	dataFieldsMap := map[string]string{}
 	for _, dataField := range dataFields {
 		dataFieldKeyStr := dataField.Name.String()
@@ -146,7 +154,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		cmdStepDataFieldPlaceholders, _ := infraHelper.GetAllRegexGroupMatches(
+		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
 			cmdStepStr, `%(.*?)%`,
 		)
 
@@ -160,7 +168,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 			cmdStepStr = cmdStepWithDataFieldStr
 		}
 
-		cmdStepWithDataField, _ := valueObject.NewMarketplaceItemCmdStep(cmdStepStr)
+		cmdStepWithDataField, _ := valueObject.NewUnixCommand(cmdStepStr)
 		cmdStepsWithDataFields = append(cmdStepsWithDataFields, cmdStepWithDataField)
 	}
 
@@ -168,7 +176,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	catalogCmdSteps []valueObject.MarketplaceItemCmdStep,
+	catalogCmdSteps []valueObject.UnixCommand,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
@@ -627,9 +635,9 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 		unusedServiceNames = append(unusedServiceNames, serviceName)
 	}
 
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 	for _, unusedService := range unusedServiceNames {
-		err = servicesCmdRepo.Uninstall(unusedService)
+		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
 			log.Printf("UninstallUnusedServiceError: %s", err.Error())
 			continue

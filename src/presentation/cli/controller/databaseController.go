@@ -5,12 +5,25 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	databaseInfra "github.com/speedianet/os/src/infra/database"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
-func GetDatabasesController() *cobra.Command {
+type DatabaseController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewDatabaseController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *DatabaseController {
+	return &DatabaseController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
+
+func (controller *DatabaseController) Read() *cobra.Command {
 	var dbTypeStr string
 
 	cmd := &cobra.Command{
@@ -18,7 +31,9 @@ func GetDatabasesController() *cobra.Command {
 		Short: "GetDatabases",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+			serviceName, _ := valueObject.NewServiceName(dbType.String())
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
@@ -36,7 +51,7 @@ func GetDatabasesController() *cobra.Command {
 	return cmd
 }
 
-func CreateDatabaseController() *cobra.Command {
+func (controller *DatabaseController) Create() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 
@@ -45,7 +60,9 @@ func CreateDatabaseController() *cobra.Command {
 		Short: "CreateNewDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+			serviceName, _ := valueObject.NewServiceName(dbType.String())
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
@@ -74,7 +91,7 @@ func CreateDatabaseController() *cobra.Command {
 	return cmd
 }
 
-func DeleteDatabaseController() *cobra.Command {
+func (controller *DatabaseController) Delete() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 
@@ -83,7 +100,9 @@ func DeleteDatabaseController() *cobra.Command {
 		Short: "DeleteDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+			serviceName, _ := valueObject.NewServiceName(dbType.String())
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 
@@ -110,7 +129,7 @@ func DeleteDatabaseController() *cobra.Command {
 	return cmd
 }
 
-func CreateDatabaseUserController() *cobra.Command {
+func (controller *DatabaseController) CreateUser() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 	var dbUserStr string
@@ -122,7 +141,9 @@ func CreateDatabaseUserController() *cobra.Command {
 		Short: "CreateNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+			serviceName, _ := valueObject.NewServiceName(dbType.String())
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 			dbUser := valueObject.NewDatabaseUsernamePanic(dbUserStr)
@@ -178,7 +199,7 @@ func CreateDatabaseUserController() *cobra.Command {
 	return cmd
 }
 
-func DeleteDatabaseUserController() *cobra.Command {
+func (controller *DatabaseController) DeleteUser() *cobra.Command {
 	var dbTypeStr string
 	var dbNameStr string
 	var dbUserStr string
@@ -188,7 +209,9 @@ func DeleteDatabaseUserController() *cobra.Command {
 		Short: "DeleteDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbType := valueObject.NewDatabaseTypePanic(dbTypeStr)
-			sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+			serviceName, _ := valueObject.NewServiceName(dbType.String())
+			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 			dbName := valueObject.NewDatabaseNamePanic(dbNameStr)
 			dbUser := valueObject.NewDatabaseUsernamePanic(dbUserStr)

@@ -4,8 +4,10 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/speedianet/os/src/presentation/api"
 )
 
 type Router struct {
@@ -38,6 +40,12 @@ func (router *Router) RegisterRoutes() {
 	router.rootRoute()
 
 	router.baseRoute.RouteNotFound("/*", func(c echo.Context) error {
+		urlPath := c.Request().URL.Path
+		isApi := strings.HasPrefix(urlPath, api.ApiBasePath)
+		if isApi {
+			return c.NoContent(http.StatusNotFound)
+		}
+
 		return c.Redirect(http.StatusTemporaryRedirect, "/_/")
 	})
 }

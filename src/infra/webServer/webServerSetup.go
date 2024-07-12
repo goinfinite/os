@@ -6,24 +6,29 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	infraData "github.com/speedianet/os/src/infra/infraData"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type WebServerSetup struct {
-	transientDbSvc *internalDbInfra.TransientDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
 }
 
 func NewWebServerSetup(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
-		transientDbSvc: transientDbSvc,
+		persistentDbSvc: persistentDbSvc,
+		transientDbSvc:  transientDbSvc,
 	}
 }
 
@@ -45,7 +50,7 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 		"-i",
 		"-e",
 		"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN="+desiredChildProcessesStr+";/g",
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateMaxChildProcessesFailed")
@@ -60,7 +65,7 @@ func (ws *WebServerSetup) FirstSetup() {
 		return
 	}
 
-	log.Print("FirstBootDetected! Please await while the web server is configured...")
+	log.Print("FirstBootDetected! PleaseAwait...")
 
 	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
@@ -69,28 +74,20 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	primaryVhostStr := primaryVhost.String()
 
-	log.Print("UpdatingVhost...")
+	log.Print("UpdatingPrimaryVirtualHost...")
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"s/speedia.net/"+primaryVhostStr+"/g",
-		primaryConfFilePath,
+		"sed", "-i", "s/speedia.net/"+primaryVhostStr+"/g", primaryConfFilePath,
 	)
 	if err != nil {
 		log.Fatal("UpdateVhostFailed")
 	}
 
-	log.Print("GeneratingDhparam...")
+	log.Print("GeneratingDhParams...")
 
 	_, err = infraHelper.RunCmd(
-		"openssl",
-		"dhparam",
-		"-dsaparam",
-		"-out",
-		"/etc/nginx/dhparam.pem",
-		"2048",
+		"openssl", "dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
 	)
 	if err != nil {
 		log.Fatal("GenerateDhparamFailed")
@@ -100,20 +97,33 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	aliases := []string{}
 	err = infraHelper.CreateSelfSignedSsl(
-		infraData.GlobalConfigs.PkiConfDir,
-		primaryVhostStr,
-		aliases,
+		infraEnvs.PkiConfDir, primaryVhostStr, aliases,
 	)
 	if err != nil {
-		log.Fatal("GenerateSelfSignedCertFailed")
+		log.Fatal("GenerateSelfSignedCertFailed: ", err.Error())
 	}
 
-	log.Print("WebServerConfigured!")
+	log.Print("ConfiguringWebServerAutoStart...")
 
-	err = servicesInfra.SupervisordFacade{}.Start("nginx")
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
+	nginxServiceName, _ := valueObject.NewServiceName("nginx")
+	nginxAutoStart := true
+	updateServiceDto := dto.NewUpdateService(
+		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil,
+	)
+	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {
-		log.Fatal("StartNginxFailed")
+		if !strings.Contains(err.Error(), "Unauthorized") {
+			log.Fatal("UpdateNginxAutoStartFailed: ", err.Error())
+		}
 	}
+
+	log.Print("WebServerConfigured! RestartingServices...")
+
+	// Do not write any code after this as supervisorctl reload will restart
+	// the OS API and any remaining code will not be executed.
+	_, _ = infraHelper.RunCmd("supervisorctl", "-p", "replacedOnFirstBoot", "reload")
 }
 
 func (ws *WebServerSetup) OnStartSetup() {
@@ -130,9 +140,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 
 	nginxConfFilePath := "/etc/nginx/nginx.conf"
 	workerCount, err := infraHelper.RunCmd(
-		"awk",
-		"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}",
-		nginxConfFilePath,
+		"awk", "/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath,
 	)
 	if err != nil {
 		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
@@ -145,22 +153,22 @@ func (ws *WebServerSetup) OnStartSetup() {
 	log.Print("UpdatingNginxWorkersCount...")
 
 	_, err = infraHelper.RunCmd(
-		"sed",
-		"-i",
-		"-e",
-		"s/^worker_processes.*/worker_processes "+cpuCoresStr+";/g",
+		"sed", "-i", "-e", "s/^worker_processes.*/worker_processes "+cpuCoresStr+";/g",
 		nginxConfFilePath,
 	)
 	if err != nil {
 		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
-	err = servicesInfra.SupervisordFacade{}.Restart("nginx")
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
+	serviceName, _ := valueObject.NewServiceName("nginx")
+	err = servicesCmdRepo.Restart(serviceName)
 	if err != nil {
 		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
-	_, err = servicesInfra.ServicesQueryRepo{}.GetByName("php-webserver")
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
+	_, err = servicesQueryRepo.ReadByName("php-webserver")
 	if err == nil {
 		err = ws.updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,

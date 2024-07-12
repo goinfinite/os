@@ -4,37 +4,31 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type NetworkProtocol string
 
 var ValidNetworkProtocols = []string{
-	"http",
-	"https",
-	"ws",
-	"wss",
-	"grpc",
-	"grpcs",
-	"tcp",
-	"udp",
+	"http", "https", "ws", "wss", "grpc", "grpcs", "tcp", "udp",
 }
 
-func NewNetworkProtocol(value string) (NetworkProtocol, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidNetworkProtocols, value) {
+func NewNetworkProtocol(value interface{}) (NetworkProtocol, error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return "", errors.New("NetworkProtocolMustBeString")
+	}
+
+	stringValue = strings.TrimSpace(stringValue)
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidNetworkProtocols, stringValue) {
 		return "", errors.New("InvalidNetworkProtocol")
 	}
-	return NetworkProtocol(value), nil
+	return NetworkProtocol(stringValue), nil
 }
 
-func NewNetworkProtocolPanic(value string) NetworkProtocol {
-	np, err := NewNetworkProtocol(value)
-	if err != nil {
-		panic(err)
-	}
-	return np
-}
-
-func (np NetworkProtocol) String() string {
-	return string(np)
+func (vo NetworkProtocol) String() string {
+	return string(vo)
 }

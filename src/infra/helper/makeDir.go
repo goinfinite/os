@@ -14,6 +14,9 @@ func MakeDir(dirPath string) error {
 
 	err = os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
 		return err
 	}
 

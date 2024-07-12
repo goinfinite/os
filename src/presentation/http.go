@@ -36,8 +36,11 @@ func NewCustomLogger() *log.Logger {
 	return log.New(&CustomLogger{}, "", 0)
 }
 
-func webServerSetup(transientDbSvc *internalDbInfra.TransientDatabaseService) {
-	ws := wsInfra.NewWebServerSetup(transientDbSvc)
+func webServerSetup(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+) {
+	ws := wsInfra.NewWebServerSetup(persistentDbSvc, transientDbSvc)
 	ws.FirstSetup()
 	ws.OnStartSetup()
 }
@@ -57,7 +60,7 @@ func HttpServerInit(
 		ErrorLog: NewCustomLogger(),
 	}
 
-	webServerSetup(transientDbSvc)
+	webServerSetup(persistentDbSvc, transientDbSvc)
 
 	pkiDir := "/speedia/pki"
 	certFile := pkiDir + "/os.crt"

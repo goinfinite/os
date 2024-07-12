@@ -2,9 +2,9 @@ package authInfra
 
 import (
 	"testing"
-	"time"
 
 	testHelpers "github.com/speedianet/os/src/devUtils"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
@@ -15,9 +15,7 @@ func TestAuthCmdRepo(t *testing.T) {
 		authCmdRepo := AuthCmdRepo{}
 		token, err := authCmdRepo.GenerateSessionToken(
 			valueObject.AccountId(1000),
-			valueObject.UnixTime(
-				time.Now().Add(3*time.Hour).Unix(),
-			),
+			valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
 			valueObject.NewIpAddressPanic("127.0.0.1"),
 		)
 		if err != nil {

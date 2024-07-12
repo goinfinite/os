@@ -40,8 +40,8 @@ func NewRuntimeController(
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
 func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
-	svcName := valueObject.NewServiceNamePanic("php")
-	sharedHelper.StopIfServiceUnavailable(svcName.String())
+	serviceName, _ := valueObject.NewServiceName("php-webserver")
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
@@ -147,8 +147,8 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
-	svcName := valueObject.NewServiceNamePanic("php")
-	sharedHelper.StopIfServiceUnavailable(svcName.String())
+	serviceName, _ := valueObject.NewServiceName("php-webserver")
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
 
@@ -177,7 +177,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	)
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo()
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(controller.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
 	err = useCase.UpdatePhpConfigs(

@@ -39,8 +39,8 @@ func NewSslCertificate(
 		return sslCertificate, err
 	}
 
-	issuedAt := valueObject.UnixTime(parsedCert.NotBefore.Unix())
-	expiresAt := valueObject.UnixTime(parsedCert.NotAfter.Unix())
+	issuedAt := valueObject.NewUnixTimeWithGoTime(parsedCert.NotBefore)
+	expiresAt := valueObject.NewUnixTimeWithGoTime(parsedCert.NotAfter)
 
 	isIntermediary := true
 

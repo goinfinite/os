@@ -60,7 +60,11 @@ func (controller *SslController) Create() *cobra.Command {
 				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
 			}
 
-			certificateFilePath := valueObject.NewUnixFilePathPanic(certificateFilePathStr)
+			certificateFilePath, err := valueObject.NewUnixFilePath(certificateFilePathStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
+			}
+
 			certificateContentStr, err := infraHelper.GetFileContent(
 				certificateFilePath.String(),
 			)

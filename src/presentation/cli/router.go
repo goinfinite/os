@@ -76,11 +76,16 @@ func (router Router) databaseRoutes() {
 	}
 
 	rootCmd.AddCommand(databaseCmd)
-	databaseCmd.AddCommand(cliController.GetDatabasesController())
-	databaseCmd.AddCommand(cliController.CreateDatabaseController())
-	databaseCmd.AddCommand(cliController.DeleteDatabaseController())
-	databaseCmd.AddCommand(cliController.CreateDatabaseUserController())
-	databaseCmd.AddCommand(cliController.DeleteDatabaseUserController())
+
+	databaseController := cliController.NewDatabaseController(
+		router.persistentDbSvc,
+	)
+
+	databaseCmd.AddCommand(databaseController.Read())
+	databaseCmd.AddCommand(databaseController.Create())
+	databaseCmd.AddCommand(databaseController.Delete())
+	databaseCmd.AddCommand(databaseController.CreateUser())
+	databaseCmd.AddCommand(databaseController.DeleteUser())
 }
 
 func (router Router) marketplaceRoutes() {

@@ -13,10 +13,10 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.0.2"
+        "version": "0.0.3"
     },
     "host": "localhost:1618",
-    "basePath": "/_/api",
+    "basePath": "/api",
     "paths": {
         "/v1/account/": {
             "get": {
@@ -1179,7 +1179,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ServiceWithMetrics"
+                                "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
                             }
                         }
                     }
@@ -1243,7 +1243,7 @@
                 "summary": "CreateCustomService",
                 "parameters": [
                     {
-                        "description": "name, type and command is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
+                        "description": "name, type and startCmd is required.\u003cbr /\u003eIf version is not provided, it will be 'lts'.\u003cbr /\u003eIf portBindings is not provided, it wil be default service port bindings.\u003cbr /\u003eIf autoCreateMapping is not provided, it will be 'true'.",
                         "name": "createCustomServiceDto",
                         "in": "body",
                         "required": true,
@@ -1785,8 +1785,29 @@
                 "autoCreateMapping": {
                     "type": "boolean"
                 },
-                "command": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
                     "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -1797,10 +1818,49 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -1839,6 +1899,21 @@
                 "autoCreateMapping": {
                     "type": "boolean"
                 },
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -1850,6 +1925,9 @@
                 },
                 "startupFile": {
                     "type": "string"
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
                 },
                 "version": {
                     "type": "string"
@@ -1972,22 +2050,35 @@
                 }
             }
         },
-        "dto.Login": {
+        "dto.InstalledServiceWithMetrics": {
             "type": "object",
             "properties": {
-                "password": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
                     "type": "string"
                 },
-                "username": {
+                "logErrorPath": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.ServiceWithMetrics": {
-            "type": "object",
-            "properties": {
-                "command": {
+                },
+                "logOutputPath": {
                     "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
                 },
                 "metrics": {
                     "$ref": "#/definitions/valueObject.ServiceMetrics"
@@ -2004,16 +2095,69 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
                 "startupFile": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
                 },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
+                "updatedAt": {
+                    "type": "integer"
+                },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Login": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -2078,8 +2222,29 @@
         "dto.UpdateService": {
             "type": "object",
             "properties": {
-                "command": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
                     "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -2090,16 +2255,55 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
                 "startupFile": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
                 },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2235,10 +2439,46 @@
         "entity.InstallableService": {
             "type": "object",
             "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "estimatedSizeBytes": {
+                    "type": "integer"
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
                 "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "startupFile": {
                     "type": "string"
                 },
                 "type": {
@@ -2249,6 +2489,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
                 }
             }
         },

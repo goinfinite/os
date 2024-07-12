@@ -3,22 +3,20 @@ FROM docker.io/bitnami/minideb:bullseye-amd64
 WORKDIR /speedia
 
 RUN apt-get update && apt-get upgrade -y \
-    && install_packages ca-certificates wget curl tar procps debian-archive-keyring lsb-release gnupg2 haveged rsync zip unzip bind9-dnsutils build-essential git certbot \
-    && curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor > "/usr/share/keyrings/nginx-archive-keyring.gpg" \ 
-    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" > "/etc/apt/sources.list.d/nginx.list" \
-    && install_packages nginx cron \
-    && mkdir -p /app/logs/nginx /app/conf/pki /app/html \
-    && chown -R nobody:nogroup /app
+    && install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
+    curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
+    tar unzip vim wget zip
 
-RUN wget -qO supervisord.tar.gz https://github.com/ochinchina/supervisord/releases/download/v0.7.3/supervisord_0.7.3_Linux_64-bit.tar.gz \
-    && tar -xzf supervisord.tar.gz \
-    && mv supervisord_*/supervisord /usr/bin/supervisord \
-    && rm -rf supervisord*
+RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
+    && install_packages nginx \
+    && mkdir -p /app/logs/cron /app/logs/nginx /app/conf/pki /app/html \
+    && chown -R nobody:nogroup /app
 
 RUN curl -skL "https://mise.run" | sh \
     && mv /root/.local/bin/mise /usr/bin/mise \
     && chmod +x /usr/bin/mise \
-    && echo 'eval "$(/usr/bin/mise activate bash)"' >> /etc/profile
+    && echo 'eval "$(/usr/bin/mise activate bash)"' >>/etc/profile
 
 COPY /container/nginx/root/* /etc/nginx/
 

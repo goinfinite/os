@@ -8,22 +8,29 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
-	"github.com/speedianet/os/src/infra/infraData"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
 type RuntimeCmdRepo struct {
+	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	runtimeQueryRepo RuntimeQueryRepo
 }
 
-func NewRuntimeCmdRepo() *RuntimeCmdRepo {
-	return &RuntimeCmdRepo{runtimeQueryRepo: RuntimeQueryRepo{}}
+func NewRuntimeCmdRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *RuntimeCmdRepo {
+	return &RuntimeCmdRepo{
+		persistentDbSvc:  persistentDbSvc,
+		runtimeQueryRepo: RuntimeQueryRepo{},
+	}
 }
 
 func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
 	phpSvcName, _ := valueObject.NewServiceName("php-webserver")
-	servicesCmdRepo := servicesInfra.ServicesCmdRepo{}
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 	err := servicesCmdRepo.Restart(phpSvcName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed: " + err.Error())
@@ -285,7 +292,7 @@ virtualhost ` + hostname.String() + ` {
 `
 	shouldOverwrite := false
 	err = infraHelper.UpdateFile(
-		infraData.GlobalConfigs.OlsHttpdConfFilePath, phpVhostHttpdConf, shouldOverwrite,
+		infraEnvs.PhpWebserverMainConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
 		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
@@ -295,7 +302,7 @@ virtualhost ` + hostname.String() + ` {
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
 	_, err = infraHelper.RunCmd(
 		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine,
-		infraData.GlobalConfigs.OlsHttpdConfFilePath,
+		infraEnvs.PhpWebserverMainConfFilePath,
 	)
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())

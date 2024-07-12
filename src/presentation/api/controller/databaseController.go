@@ -8,9 +8,22 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	databaseInfra "github.com/speedianet/os/src/infra/database"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
+
+type DatabaseController struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+}
+
+func NewDatabaseController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *DatabaseController {
+	return &DatabaseController{
+		persistentDbSvc: persistentDbSvc,
+	}
+}
 
 // GetDatabases godoc
 // @Summary      GetDatabases
@@ -22,9 +35,11 @@ import (
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
 // @Success      200 {array} entity.Database
 // @Router       /v1/database/{dbType}/ [get]
-func GetDatabasesController(c echo.Context) error {
+func (controller *DatabaseController) Read(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+	serviceName, _ := valueObject.NewServiceName(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
@@ -47,9 +62,11 @@ func GetDatabasesController(c echo.Context) error {
 // @Param        createDatabaseDto body dto.CreateDatabase true "All props are required."
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
-func CreateDatabaseController(c echo.Context) error {
+func (controller *DatabaseController) Create(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+	serviceName, _ := valueObject.NewServiceName(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	requiredParams := []string{"dbName"}
 	requestBody, _ := apiHelper.GetRequestBody(c)
@@ -84,9 +101,11 @@ func CreateDatabaseController(c echo.Context) error {
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
-func DeleteDatabaseController(c echo.Context) error {
+func (controller *DatabaseController) Delete(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+	serviceName, _ := valueObject.NewServiceName(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -117,9 +136,11 @@ func DeleteDatabaseController(c echo.Context) error {
 // @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "privileges is optional. When not provided, privileges will be 'ALL'."
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
-func CreateDatabaseUserController(c echo.Context) error {
+func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+	serviceName, _ := valueObject.NewServiceName(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
@@ -172,9 +193,11 @@ func CreateDatabaseUserController(c echo.Context) error {
 // @Param        dbUser path string true "DatabaseUsername to delete."
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
-func DeleteDatabaseUserController(c echo.Context) error {
+func (controller *DatabaseController) DeleteUser(c echo.Context) error {
 	dbType := valueObject.NewDatabaseTypePanic(c.Param("dbType"))
-	sharedHelper.StopIfServiceUnavailable(dbType.String())
+
+	serviceName, _ := valueObject.NewServiceName(dbType.String())
+	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 	dbUser := valueObject.NewDatabaseUsernamePanic(c.Param("dbUser"))

@@ -29,8 +29,8 @@ func (controller *ServicesController) Read() *cobra.Command {
 		Use:   "list",
 		Short: "GetServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesList, err := useCase.GetServicesWithMetrics(servicesQueryRepo)
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesList, err := useCase.ReadServicesWithMetrics(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -47,8 +47,8 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 		Use:   "list-installables",
 		Short: "GetInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesList, err := useCase.GetInstallableServices(servicesQueryRepo)
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesList, err := useCase.ReadInstallableServices(servicesQueryRepo)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
@@ -71,23 +71,32 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Use:   "create-installable",
 		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
 			var startupFilePtr *valueObject.UnixFilePath
 			if startupFileStr != "" {
-				startupFile := valueObject.NewUnixFilePathPanic(startupFileStr)
+				startupFile, err := valueObject.NewUnixFilePath(startupFileStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				startupFilePtr = &startupFile
 			}
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
@@ -95,20 +104,17 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			createInstallableServiceDto := dto.NewCreateInstallableService(
-				svcName,
-				svcVersionPtr,
-				startupFilePtr,
-				portBindings,
-				autoCreateMapping,
+				svcName, []valueObject.ServiceEnv{}, portBindings, svcVersionPtr,
+				startupFilePtr, nil, nil, nil, nil, &autoCreateMapping,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateInstallableService(
+			err = useCase.CreateInstallableService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -132,11 +138,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
 	)
 	cmd.Flags().BoolVarP(
-		&autoCreateMapping,
-		"auto-create-mapping",
-		"a",
-		true,
-		"AutoCreateMapping",
+		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
 	)
 	return cmd
 }
@@ -144,7 +146,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var nameStr string
 	var typeStr string
-	var commandStr string
+	var startCmdStr string
 	var versionStr string
 	var portBindingsSlice []string
 	var autoCreateMapping bool
@@ -153,19 +155,33 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
-			svcType := valueObject.NewServiceTypePanic(typeStr)
-			svcCommand := valueObject.NewUnixCommandPanic(commandStr)
+			serviceName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			svcType, err := valueObject.NewServiceType(typeStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			startCmd, err := valueObject.NewUnixCommand(startCmdStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
@@ -173,21 +189,18 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			createCustomServiceDto := dto.NewCreateCustomService(
-				svcName,
-				svcType,
-				svcCommand,
-				svcVersionPtr,
-				portBindings,
-				autoCreateMapping,
+				serviceName, svcType, startCmd, []valueObject.ServiceEnv{}, portBindings,
+				nil, nil, nil, nil, nil, svcVersionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
+				&autoCreateMapping,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateCustomService(
+			err = useCase.CreateCustomService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -207,8 +220,8 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)")
 	cmd.MarkFlagRequired("type")
-	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
-	cmd.MarkFlagRequired("command")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
+	cmd.MarkFlagRequired("start-command")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
@@ -226,7 +239,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 func (controller *ServicesController) Update() *cobra.Command {
 	var nameStr string
 	var typeStr string
-	var commandStr string
+	var startCmdStr string
 	var statusStr string
 	var versionStr string
 	var startupFileStr string
@@ -236,11 +249,17 @@ func (controller *ServicesController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var svcTypePtr *valueObject.ServiceType
 			if typeStr != "" {
-				svcType := valueObject.NewServiceTypePanic(typeStr)
+				svcType, err := valueObject.NewServiceType(typeStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				svcTypePtr = &svcType
 			}
 
@@ -250,27 +269,36 @@ func (controller *ServicesController) Update() *cobra.Command {
 				svcStatusPtr = &svcStatus
 			}
 
-			var svcCommandPtr *valueObject.UnixCommand
-			if commandStr != "" {
-				svcCommand := valueObject.NewUnixCommandPanic(commandStr)
-				svcCommandPtr = &svcCommand
+			var startCmdPtr *valueObject.UnixCommand
+			if startCmdStr != "" {
+				startCmd, err := valueObject.NewUnixCommand(startCmdStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				startCmdPtr = &startCmd
 			}
 
 			var svcVersionPtr *valueObject.ServiceVersion
 			if versionStr != "" {
-				svcVersion := valueObject.NewServiceVersionPanic(versionStr)
-				svcVersionPtr = &svcVersion
+				version, err := valueObject.NewServiceVersion(versionStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				svcVersionPtr = &version
 			}
 
-			var svcStartupFilePtr *valueObject.UnixFilePath
+			var startupFilePtr *valueObject.UnixFilePath
 			if startupFileStr != "" {
-				svcStartupFile := valueObject.NewUnixFilePathPanic(startupFileStr)
-				svcStartupFilePtr = &svcStartupFile
+				startupFile, err := valueObject.NewUnixFilePath(startupFileStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+				startupFilePtr = &startupFile
 			}
 
 			var portBindings []valueObject.PortBinding
 			for _, portBinding := range portBindingsSlice {
-				svcPortBinding, err := valueObject.NewPortBindingFromString(portBinding)
+				svcPortBinding, err := valueObject.NewPortBinding(portBinding)
 				if err != nil {
 					cliHelper.ResponseWrapper(false, err.Error())
 				}
@@ -278,21 +306,17 @@ func (controller *ServicesController) Update() *cobra.Command {
 			}
 
 			updateSvcDto := dto.NewUpdateService(
-				svcName,
-				svcTypePtr,
-				svcCommandPtr,
-				svcStatusPtr,
-				svcVersionPtr,
-				svcStartupFilePtr,
-				portBindings,
+				svcName, svcTypePtr, svcVersionPtr, svcStatusPtr, startCmdPtr,
+				[]valueObject.ServiceEnv{}, portBindings, nil, nil, nil, nil, nil,
+				nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
 			)
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.UpdateService(
+			err = useCase.UpdateService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingQueryRepo,
@@ -310,7 +334,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
-	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "UnixCommand")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
@@ -327,13 +351,16 @@ func (controller *ServicesController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteService",
 		Run: func(cmd *cobra.Command, args []string) {
-			svcName := valueObject.NewServiceNamePanic(nameStr)
+			svcName, err := valueObject.NewServiceName(nameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
-			servicesQueryRepo := servicesInfra.ServicesQueryRepo{}
-			servicesCmdRepo := servicesInfra.NewServicesCmdRepo()
+			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
+			servicesCmdRepo := servicesInfra.NewServicesCmdRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.DeleteService(
+			err = useCase.DeleteService(
 				servicesQueryRepo,
 				servicesCmdRepo,
 				mappingCmdRepo,

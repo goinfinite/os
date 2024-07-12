@@ -10,6 +10,8 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
+const SessionTokenExpiresIn time.Duration = 3 * time.Hour
+
 func GetSessionToken(
 	authQueryRepo repository.AuthQueryRepo,
 	authCmdRepo repository.AuthCmdRepo,
@@ -26,7 +28,7 @@ func GetSessionToken(
 	}
 
 	accountId := accountDetails.Id
-	expiresIn := valueObject.UnixTime(time.Now().Add(3 * time.Hour).Unix())
+	expiresIn := valueObject.NewUnixTimeAfterNow(SessionTokenExpiresIn)
 
 	return authCmdRepo.GenerateSessionToken(accountId, expiresIn, login.IpAddress)
 }
