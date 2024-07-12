@@ -3,6 +3,7 @@ module github.com/speedianet/os
 go 1.22
 
 require (
+	github.com/alecthomas/chroma v0.10.0
 	github.com/alessio/shellescape v1.4.2
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/glebarez/sqlite v1.11.0
@@ -17,6 +18,7 @@ require (
 	golang.org/x/crypto v0.25.0
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37
 	golang.org/x/net v0.27.0
+	golang.org/x/term v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.10
 )
@@ -25,6 +27,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
+	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
