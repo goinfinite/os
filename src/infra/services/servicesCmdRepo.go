@@ -29,18 +29,33 @@ func NewServicesCmdRepo(
 	}
 }
 
+func (repo *ServicesCmdRepo) runCmdSteps(
+	stepType string,
+	steps []valueObject.UnixCommand,
+) error {
+	for stepIndex, step := range steps {
+		stepOutput, err := infraHelper.RunCmdWithSubShell(step.String())
+		if err != nil {
+			stepIndexStr := strconv.Itoa(stepIndex)
+			combinedOutput := stepOutput + " " + err.Error()
+			return errors.New(
+				stepType + "CmdStepError (" + stepIndexStr + "): " + combinedOutput,
+			)
+		}
+	}
+
+	return nil
+}
+
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
 	if err != nil {
 		return err
 	}
 
-	for stepIndex, preStartStep := range serviceEntity.PreStartCmdSteps {
-		_, err := infraHelper.RunCmdWithSubShell(preStartStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("PreStartCmdStepError (" + stepIndexStr + "): " + err.Error())
-		}
+	err = repo.runCmdSteps("PreStart", serviceEntity.PreStartCmdSteps)
+	if err != nil {
+		return err
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
@@ -58,15 +73,7 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		}
 	}
 
-	for stepIndex, postStartStep := range serviceEntity.PostStartCmdSteps {
-		_, err = infraHelper.RunCmdWithSubShell(postStartStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("PostStartCmdStepError (" + stepIndexStr + "): " + err.Error())
-		}
-	}
-
-	return nil
+	return repo.runCmdSteps("PostStart", serviceEntity.PostStartCmdSteps)
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
@@ -75,12 +82,9 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return err
 	}
 
-	for stepIndex, preStopStep := range serviceEntity.PreStopCmdSteps {
-		_, err := infraHelper.RunCmdWithSubShell(preStopStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("PreStopCmdStepError (" + stepIndexStr + "): " + err.Error())
-		}
+	err = repo.runCmdSteps("PreStop", serviceEntity.PreStopCmdSteps)
+	if err != nil {
+		return err
 	}
 
 	stopOutput, err := infraHelper.RunCmd(
@@ -91,23 +95,12 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return errors.New("SupervisorStopError: " + combinedOutput)
 	}
 
-	for stepIndex, stopStep := range serviceEntity.StopCmdSteps {
-		_, err = infraHelper.RunCmdWithSubShell(stopStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("StopCmdStepError (" + stepIndexStr + "): " + err.Error())
-		}
+	err = repo.runCmdSteps("Stop", serviceEntity.StopCmdSteps)
+	if err != nil {
+		return err
 	}
 
-	for stepIndex, postStopStep := range serviceEntity.PostStopCmdSteps {
-		_, err = infraHelper.RunCmdWithSubShell(postStopStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("PostStopCmdStepError (" + stepIndexStr + "): " + err.Error())
-		}
-	}
-
-	return nil
+	return repo.runCmdSteps("PostStop", serviceEntity.PostStopCmdSteps)
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
@@ -166,7 +159,7 @@ directory={{.WorkingDirectory}}
 autostart={{ or .AutoStart "true" }}
 autorestart={{ or .AutoRestart "true" }}
 startretries={{ or .MaxStartRetries "3" }}
-startsecs={{ or .TimeoutStartSecs "10" }}
+startsecs={{ or .TimeoutStartSecs "5" }}
 {{- if .LogOutputPath}}
 stdout_logfile={{.LogOutputPath}}
 {{- if eq (printf "%s" .LogOutputPath) "/dev/stdout"}}
@@ -263,7 +256,7 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		stepPlaceholders, _ := infraHelper.GetAllRegexGroupMatches(cmdStepStr, `%(.*?)%`)
+		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(cmdStepStr, `%(.*?)%`)
 
 		for _, stepPlaceholder := range stepPlaceholders {
 			placeholderValue, exists := placeholders[stepPlaceholder]
@@ -351,14 +344,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	for stepIndex, cmdStep := range usableInstallCmdSteps {
-		_, err = infraHelper.RunCmdWithSubShell(cmdStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return installedServiceName, errors.New(
-				"RunCmdStepError (" + stepIndexStr + "): " + err.Error(),
-			)
-		}
+	err = repo.runCmdSteps("Install", usableInstallCmdSteps)
+	if err != nil {
+		return installedServiceName, err
 	}
 
 	startCmdSteps := []valueObject.UnixCommand{installableService.StartCmd}
@@ -662,12 +650,9 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return errors.New("GetInstallableEntityError: " + err.Error())
 	}
 
-	for stepIndex, uninstallCmdStep := range installableEntity.UninstallCmdSteps {
-		_, err := infraHelper.RunCmdWithSubShell(uninstallCmdStep.String())
-		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			return errors.New("UninstallStepError (" + stepIndexStr + "): " + err.Error())
-		}
+	err = repo.runCmdSteps("Uninstall", installableEntity.UninstallCmdSteps)
+	if err != nil {
+		return err
 	}
 
 	for fileIndex, uninstallFilePath := range installableEntity.UninstallFilePaths {
