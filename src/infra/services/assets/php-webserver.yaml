@@ -15,7 +15,7 @@ startCmd: /usr/local/lsws/bin/litespeed -d
 installCmdSteps:
   - curl -skL https://repo.litespeed.sh | bash
   - install_packages openlitespeed
-  - for v in "74" "80" "81"; do install_packages lsphp${v} lsphp${v}-common lsphp${v}-curl lsphp${v}-intl lsphp${v}-mysql lsphp${v}-opcache; done
+  - for v in "74" "80" "81" "82" "83"; do install_packages lsphp${v} lsphp${v}-common lsphp${v}-curl lsphp${v}-intl lsphp${v}-mysql lsphp${v}-opcache; done
   - ln -s /usr/local/lsws/lsphp82/bin/php /usr/bin/php
   - curl -skL -o /usr/local/lsws/conf/httpd_config.conf https://speedia.net/assets/os/services/php-webserver/httpd_config.conf
   - sed -i "s/speedia.net/%primaryHostname%/g" /usr/local/lsws/conf/httpd_config.conf
