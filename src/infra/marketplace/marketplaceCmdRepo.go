@@ -154,7 +154,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		cmdStepDataFieldPlaceholders, _ := infraHelper.GetAllRegexGroupMatches(
+		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
 			cmdStepStr, `%(.*?)%`,
 		)
 

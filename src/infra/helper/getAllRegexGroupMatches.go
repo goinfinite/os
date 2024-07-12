@@ -1,23 +1,22 @@
 package infraHelper
 
 import (
-	"errors"
 	"regexp"
 )
 
-func GetAllRegexGroupMatches(input string, regexExpression string) ([]string, error) {
+func GetAllRegexGroupMatches(input string, regexExpression string) []string {
 	matchesValues := []string{}
 
 	regex := regexp.MustCompile(regexExpression)
 	matches := regex.FindAllStringSubmatch(input, -1)
 
 	if len(matches) == 0 {
-		return matchesValues, errors.New("RegexGroupNotFound")
+		return matchesValues
 	}
 
 	for _, match := range matches {
 		matchesValues = append(matchesValues, match[1])
 	}
 
-	return matchesValues, nil
+	return matchesValues
 }
