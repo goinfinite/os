@@ -26,11 +26,11 @@ installCmdSteps:
   - chown -R nobody:nogroup /app/logs/php-webserver
   - /speedia/os cron create -s "*/2 * * * *" -d "AutoReloadPhpWebServerAfterHtaccessChange" -c "if ! find /app/html -maxdepth 7 -type f -name '.htaccess' -newer /usr/local/lsws/cgid -exec false {} +; then /speedia/os services update -n php-webserver -s restart; fi"
 uninstallCmdSteps:
-  - apt-get purge -y openlitespeed lsphp*
   - /speedia/os cron delete -d "AutoReloadPhpWebServerAfterHtaccessChange"
+  - if [ -f "/usr/bin/php" ]; then unlink /usr/bin/php; fi
+  - apt-get purge -y openlitespeed lsphp*
 stopCmdSteps:
-  - /usr/local/lsws/bin/lswsctrl stop
-  - pkill lsphp
-  - pkill sleep
+  - if pgrep litespeed >/dev/null; then /usr/local/lsws/bin/lswsctrl stop; fi
+  - if pgrep lsphp >/dev/null; then pkill lsphp; fi
 estimatedSizeBytes: 157286400
 avatarUrl: https://speedia.net/assets/os/services/php-webserver/php-webserver-avatar.jpg
