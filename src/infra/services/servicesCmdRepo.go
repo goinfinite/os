@@ -33,6 +33,10 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 	stepType string,
 	steps []valueObject.UnixCommand,
 ) error {
+	if len(steps) == 0 {
+		return nil
+	}
+
 	for stepIndex, step := range steps {
 		stepOutput, err := infraHelper.RunCmdWithSubShell(step.String())
 		if err != nil {
@@ -43,6 +47,8 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 			)
 		}
 	}
+
+	time.Sleep(1 * time.Second)
 
 	return nil
 }
@@ -73,6 +79,8 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		}
 	}
 
+	time.Sleep(1 * time.Second)
+
 	return repo.runCmdSteps("PostStart", serviceEntity.PostStartCmdSteps)
 }
 
@@ -95,6 +103,8 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return errors.New("SupervisorStopError: " + combinedOutput)
 	}
 
+	time.Sleep(1 * time.Second)
+
 	err = repo.runCmdSteps("Stop", serviceEntity.StopCmdSteps)
 	if err != nil {
 		return err
@@ -108,8 +118,6 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 	if err != nil {
 		return err
 	}
-
-	time.Sleep(1 * time.Second)
 
 	return repo.Start(name)
 }
@@ -159,7 +167,7 @@ directory={{.WorkingDirectory}}
 autostart={{ or .AutoStart "true" }}
 autorestart={{ or .AutoRestart "true" }}
 startretries={{ or .MaxStartRetries "3" }}
-startsecs={{ or .TimeoutStartSecs "5" }}
+startsecs={{ or .TimeoutStartSecs "3" }}
 {{- if .LogOutputPath}}
 stdout_logfile={{.LogOutputPath}}
 {{- if eq (printf "%s" .LogOutputPath) "/dev/stdout"}}
