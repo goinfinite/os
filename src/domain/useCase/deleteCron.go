@@ -23,6 +23,7 @@ func DeleteCron(
 			log.Printf("DeleteCronError: %s", err)
 			return errors.New("DeleteCronInfraError")
 		}
+		return nil
 	}
 
 	err := cronCmdRepo.DeleteByComment(*deleteDto.Comment)
