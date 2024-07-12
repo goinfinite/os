@@ -1797,6 +1797,15 @@
                         "type": "string"
                     }
                 },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -1809,8 +1818,38 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "startCmd": {
                     "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -1819,6 +1858,9 @@
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2026,6 +2068,15 @@
                         "type": "string"
                     }
                 },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2044,6 +2095,30 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -2052,6 +2127,12 @@
                 },
                 "status": {
                     "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -2063,6 +2144,9 @@
                     "type": "integer"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2138,6 +2222,30 @@
         "dto.UpdateService": {
             "type": "object",
             "properties": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2145,6 +2253,30 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "startCmd": {
@@ -2156,10 +2288,22 @@
                 "status": {
                     "type": "string"
                 },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2301,8 +2445,23 @@
                 "description": {
                     "type": "string"
                 },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "estimatedSizeBytes": {
                     "type": "integer"
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -2330,6 +2489,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
                 }
             }
         },

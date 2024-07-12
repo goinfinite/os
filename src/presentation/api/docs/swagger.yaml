@@ -48,6 +48,12 @@ definitions:
         items:
           type: string
         type: array
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
       maxStartRetries:
         type: integer
       name:
@@ -56,13 +62,35 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
       startCmd:
         type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
       timeoutStartSecs:
         type: integer
       type:
         type: string
       version:
+        type: string
+      workingDirectory:
         type: string
     type: object
   dto.CreateDatabase:
@@ -197,6 +225,12 @@ definitions:
         items:
           type: string
         type: array
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
       maxStartRetries:
         type: integer
       metrics:
@@ -209,12 +243,32 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
       startCmd:
         type: string
       startupFile:
         type: string
       status:
         type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
       timeoutStartSecs:
         type: integer
       type:
@@ -222,6 +276,8 @@ definitions:
       updatedAt:
         type: integer
       version:
+        type: string
+      workingDirectory:
         type: string
     type: object
   dto.Login:
@@ -270,11 +326,43 @@ definitions:
     type: object
   dto.UpdateService:
     properties:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
+      maxStartRetries:
+        type: integer
       name:
         type: string
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
         type: array
       startCmd:
         type: string
@@ -282,9 +370,17 @@ definitions:
         type: string
       status:
         type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
       type:
         type: string
       version:
+        type: string
+      workingDirectory:
         type: string
     type: object
   dto.UpdateUnixFiles:
@@ -376,8 +472,18 @@ definitions:
         type: string
       description:
         type: string
+      envs:
+        items:
+          type: string
+        type: array
       estimatedSizeBytes:
         type: integer
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
       name:
         type: string
       nature:
@@ -396,6 +502,8 @@ definitions:
         items:
           type: string
         type: array
+      workingDirectory:
+        type: string
     type: object
   entity.Mapping:
     properties:

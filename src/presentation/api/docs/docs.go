@@ -1804,6 +1804,15 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -1816,8 +1825,38 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "startCmd": {
                     "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -1826,6 +1865,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2033,6 +2075,15 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2051,6 +2102,30 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -2059,6 +2134,12 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -2070,6 +2151,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2145,6 +2229,30 @@ const docTemplate = `{
         "dto.UpdateService": {
             "type": "object",
             "properties": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2152,6 +2260,30 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "startCmd": {
@@ -2163,10 +2295,22 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
                 "type": {
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                },
+                "workingDirectory": {
                     "type": "string"
                 }
             }
@@ -2308,8 +2452,23 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "estimatedSizeBytes": {
                     "type": "integer"
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -2337,6 +2496,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
                 }
             }
         },
