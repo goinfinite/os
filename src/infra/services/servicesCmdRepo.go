@@ -630,13 +630,19 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.Stop(name)
+	err = repo.Stop(serviceEntity.Name)
 	if err != nil {
 		return err
 	}
 
+	serviceNameStr := serviceEntity.Name.String()
+	_, err = infraHelper.RunCmd("supervisorctl", "remove", serviceNameStr)
+	if err != nil {
+		return errors.New("SupervisorRemoveError: " + err.Error())
+	}
+
 	err = repo.persistentDbSvc.Handler.
-		Where("name = ?", name.String()).
+		Where("name = ?", serviceNameStr).
 		Delete(dbModel.InstalledService{}).Error
 	if err != nil {
 		return err
