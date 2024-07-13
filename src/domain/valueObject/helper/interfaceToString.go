@@ -4,11 +4,10 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
-func InterfaceToString(input interface{}) (string, error) {
-	var output string
-
+func InterfaceToString(input interface{}) (output string, err error) {
 	switch v := input.(type) {
 	case string:
 		output = v
@@ -28,5 +27,5 @@ func InterfaceToString(input interface{}) (string, error) {
 		return "", errors.New("CannotConvertToString")
 	}
 
-	return output, nil
+	return strings.TrimSpace(output), nil
 }
