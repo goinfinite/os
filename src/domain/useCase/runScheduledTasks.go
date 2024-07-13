@@ -34,7 +34,7 @@ func RunScheduledTasks(
 
 		err = scheduledTaskCmdRepo.Run(pendingTask)
 		if err != nil {
-			log.Printf("(%d) RunScheduledTaskError: %s", pendingTask.Id.Read(), err)
+			log.Printf("(%d) RunScheduledTaskError: %s", pendingTask.Id, err)
 			continue
 		}
 	}
