@@ -3,6 +3,7 @@ package service
 import (
 	"strings"
 
+	"github.com/alessio/shellescape"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -108,7 +109,8 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 
 		for _, dataField := range dataFields {
-			installParams = append(installParams, "--dataFields", dataField.String())
+			escapedField := shellescape.Quote(dataField.String())
+			installParams = append(installParams, "--dataFields", escapedField)
 		}
 
 		cliCmd += " " + strings.Join(installParams, " ")
