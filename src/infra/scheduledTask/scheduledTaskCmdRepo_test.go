@@ -6,6 +6,7 @@ import (
 	testHelpers "github.com/speedianet/os/src/devUtils"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 )
 
 func TestScheduledTaskCmdRepo(t *testing.T) {
@@ -16,7 +17,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 	t.Run("CreateScheduledTask", func(t *testing.T) {
 		name, _ := valueObject.NewScheduledTaskName("test")
-		command, _ := valueObject.NewUnixCommand("/var/speedia/control account get")
+		command, _ := valueObject.NewUnixCommand(infraEnvs.SpeediaOsBinary + " account get")
 		containerTag, _ := valueObject.NewScheduledTaskTag("account")
 		tags := []valueObject.ScheduledTaskTag{containerTag}
 		timeoutSecs := uint(60)
@@ -69,6 +70,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 		if completedTask.Status.String() != "completed" {
 			t.Errorf("ExpectedCompletedButGot: %v", completedTask.Status.String())
+			return
 		}
 
 		err = scheduledTaskCmdRepo.Delete(completedTask.Id)
