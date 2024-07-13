@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	"github.com/speedianet/os/src/presentation"
 	cliController "github.com/speedianet/os/src/presentation/cli/controller"
@@ -28,7 +29,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "ShowSoftwareVersion",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Speedia OS v0.0.2")
+		fmt.Println("Speedia OS v" + infraEnvs.SpeediaOsVersion)
 	},
 }
 
@@ -100,10 +101,10 @@ func (router Router) marketplaceRoutes() {
 		router.persistentDbSvc,
 	)
 
-	marketplaceCmd.AddCommand(marketplaceController.ReadInstalled())
-	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
-	marketplaceCmd.AddCommand(marketplaceController.DeleteInstalledItem())
 	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
+	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
+	marketplaceCmd.AddCommand(marketplaceController.ReadInstalledItems())
+	marketplaceCmd.AddCommand(marketplaceController.DeleteInstalledItem())
 }
 
 func (router Router) o11yRoutes() {
