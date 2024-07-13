@@ -2,6 +2,7 @@ package infraEnvs
 
 const (
 	SpeediaOsVersion             string = "0.0.3"
+	SpeediaOsBinary              string = "/speedia/os"
 	PersistentDatabaseFilePath   string = "/speedia/os.db"
 	PrimaryPublicDir             string = "/app/html"
 	VirtualHostsConfDir          string = "/app/conf/nginx"
