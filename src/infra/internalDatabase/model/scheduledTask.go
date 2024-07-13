@@ -32,13 +32,15 @@ func (ScheduledTask) JoinTags(tags []valueObject.ScheduledTaskTag) string {
 	for _, tag := range tags {
 		tagsStr += tag.String() + ";"
 	}
+
 	return strings.TrimSuffix(tagsStr, ";")
 }
 
-func (ScheduledTask) SplitTags(tagsStr string) []valueObject.ScheduledTaskTag {
-	rawTagsList := strings.Split(tagsStr, ";")
-	var tags []valueObject.ScheduledTaskTag
-	for tagIndex, rawTag := range rawTagsList {
+func (ScheduledTask) SplitTags(rawTagsStr string) []valueObject.ScheduledTaskTag {
+	tags := []valueObject.ScheduledTaskTag{}
+
+	rawTagsParts := strings.Split(rawTagsStr, ";")
+	for tagIndex, rawTag := range rawTagsParts {
 		tag, err := valueObject.NewScheduledTaskTag(rawTag)
 		if err != nil {
 			log.Printf("[index %d] %s", tagIndex, err)
@@ -46,6 +48,7 @@ func (ScheduledTask) SplitTags(tagsStr string) []valueObject.ScheduledTaskTag {
 		}
 		tags = append(tags, tag)
 	}
+
 	return tags
 }
 
