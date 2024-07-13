@@ -89,7 +89,7 @@ func (controller *MarketplaceController) parseDataFields(
 // @Tags         marketplace
 // @Accept       json
 // @Produce      json
-// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "directory will be the virtual host root directory."
+// @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "urlPath is both the install directory and HTTP sub-directory."
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {

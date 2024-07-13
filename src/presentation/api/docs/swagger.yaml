@@ -1445,7 +1445,7 @@ paths:
       - application/json
       description: Install a marketplace catalog item.
       parameters:
-      - description: directory will be the virtual host root directory.
+      - description: urlPath is both the install directory and HTTP sub-directory.
         in: body
         name: InstallMarketplaceCatalogItem
         required: true

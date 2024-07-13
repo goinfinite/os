@@ -960,7 +960,7 @@ const docTemplate = `{
                 "summary": "InstallCatalogItem",
                 "parameters": [
                     {
-                        "description": "directory will be the virtual host root directory.",
+                        "description": "urlPath is both the install directory and HTTP sub-directory.",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
