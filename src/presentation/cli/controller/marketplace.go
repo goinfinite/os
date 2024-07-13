@@ -113,7 +113,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostName")
-	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogItemId")
+	cmd.Flags().IntVarP(&catalogIdInt, "id", "i", 0, "CatalogItemId")
 	cmd.Flags().StringVarP(&slugStr, "slug", "s", "", "CatalogItemSlug")
 	cmd.Flags().StringVarP(&urlPath, "urlPath", "d", "", "UrlPath")
 	cmd.Flags().StringSliceVarP(
