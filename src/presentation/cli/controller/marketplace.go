@@ -82,8 +82,10 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
-				"hostname": hostnameStr,
+			requestBody := map[string]interface{}{}
+
+			if hostnameStr != "" {
+				requestBody["hostname"] = hostnameStr
 			}
 
 			if catalogIdInt != 0 {
@@ -111,7 +113,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostName")
-	cmd.MarkFlagRequired("hostname")
 	cmd.Flags().IntVarP(&catalogIdInt, "catalogId", "i", 0, "CatalogItemId")
 	cmd.Flags().StringVarP(&slugStr, "slug", "s", "", "CatalogItemSlug")
 	cmd.Flags().StringVarP(&urlPath, "urlPath", "d", "", "UrlPath")

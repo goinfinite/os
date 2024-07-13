@@ -4,6 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
@@ -34,17 +35,18 @@ func (service *MarketplaceService) ReadCatalog() ServiceOutput {
 
 func (service *MarketplaceService) InstallCatalogItem(
 	input map[string]interface{},
+	shouldSchedule bool,
 ) ServiceOutput {
-	requiredParams := []string{"hostname"}
-
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	hostname, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(input["hostname"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+	if input["hostname"] != nil {
+		hostname, err = valueObject.NewFqdn(input["hostname"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 
 	var idPtr *valueObject.MarketplaceItemId
@@ -83,14 +85,14 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 	}
 
+	dto := dto.NewInstallMarketplaceCatalogItem(
+		hostname, idPtr, slugPtr, urlPathPtr, dataFields,
+	)
+
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(service.persistentDbSvc)
 	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(service.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
-
-	dto := dto.NewInstallMarketplaceCatalogItem(
-		hostname, idPtr, slugPtr, urlPathPtr, dataFields,
-	)
 
 	err = useCase.InstallMarketplaceCatalogItem(
 		marketplaceQueryRepo, marketplaceCmdRepo, vhostQueryRepo, vhostCmdRepo, dto,
