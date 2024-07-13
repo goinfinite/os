@@ -189,6 +189,7 @@ func (router Router) RegisterRoutes() {
 	router.marketplaceRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
+	router.scheduledTaskRoutes()
 	router.servicesRoutes()
 	router.sslRoutes()
 	router.vhostsRoutes()

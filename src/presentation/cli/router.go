@@ -139,6 +139,18 @@ func (router Router) runtimeRoutes() {
 	phpCmd.AddCommand(runtimeController.UpdatePhpModule())
 }
 
+func (router *Router) scheduledTaskRoutes() {
+	var scheduledTaskCmd = &cobra.Command{
+		Use:   "task",
+		Short: "ScheduledTaskManagement",
+	}
+
+	scheduledTaskController := cliController.NewScheduledTaskController(router.persistentDbSvc)
+	scheduledTaskCmd.AddCommand(scheduledTaskController.Read())
+	scheduledTaskCmd.AddCommand(scheduledTaskController.Update())
+	rootCmd.AddCommand(scheduledTaskCmd)
+}
+
 func (router Router) serveRoutes() {
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
@@ -223,6 +235,7 @@ func (router Router) RegisterRoutes() {
 	router.marketplaceRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
+	router.scheduledTaskRoutes()
 	router.serveRoutes()
 	router.servicesRoutes()
 	router.sslRoutes()
