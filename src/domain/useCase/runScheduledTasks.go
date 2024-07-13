@@ -9,8 +9,6 @@ import (
 
 const ScheduledTasksRunIntervalSecs uint = 120
 
-var scheduledTasksDefaultTimeoutSecs uint = 300
-
 func RunScheduledTasks(
 	scheduledTaskQueryRepo repository.ScheduledTaskQueryRepo,
 	scheduledTaskCmdRepo repository.ScheduledTaskCmdRepo,
@@ -32,10 +30,6 @@ func RunScheduledTasks(
 			if nowUnixTime.Read() < pendingTask.RunAt.Read() {
 				continue
 			}
-		}
-
-		if pendingTask.TimeoutSecs == nil {
-			pendingTask.TimeoutSecs = &scheduledTasksDefaultTimeoutSecs
 		}
 
 		err = scheduledTaskCmdRepo.Run(pendingTask)
