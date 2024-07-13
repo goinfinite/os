@@ -6,6 +6,7 @@ import (
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -34,15 +35,8 @@ func (repo *ScheduledTaskCmdRepo) Create(
 	}
 
 	scheduledTaskModel := dbModel.NewScheduledTask(
-		0,
-		createDto.Name.String(),
-		newTaskStatus.String(),
-		createDto.Command.String(),
-		createDto.Tags,
-		createDto.TimeoutSecs,
-		runAtPtr,
-		nil,
-		nil,
+		0, createDto.Name.String(), newTaskStatus.String(), createDto.Command.String(),
+		createDto.Tags, createDto.TimeoutSecs, runAtPtr, nil, nil,
 	)
 
 	return repo.persistentDbSvc.Handler.Create(&scheduledTaskModel).Error
@@ -81,10 +75,11 @@ func (repo *ScheduledTaskCmdRepo) Run(
 		return err
 	}
 
-	timeoutStr := "300"
+	timeoutSecs := useCase.ScheduledTasksDefaultTimeoutSecs
 	if pendingTask.TimeoutSecs != nil {
-		timeoutStr = strconv.FormatUint(uint64(*pendingTask.TimeoutSecs), 10)
+		timeoutSecs = *pendingTask.TimeoutSecs
 	}
+	timeoutStr := strconv.FormatUint(uint64(timeoutSecs), 10)
 
 	cmdWithTimeout := "timeout --kill-after=10s " + timeoutStr + " " + pendingTask.Command.String()
 	rawOutput, rawError := infraHelper.RunCmdWithSubShell(cmdWithTimeout)

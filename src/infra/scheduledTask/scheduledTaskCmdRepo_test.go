@@ -17,9 +17,11 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 	t.Run("CreateScheduledTask", func(t *testing.T) {
 		name, _ := valueObject.NewScheduledTaskName("test")
-		command, _ := valueObject.NewUnixCommand(infraEnvs.SpeediaOsBinary + " account get")
-		containerTag, _ := valueObject.NewScheduledTaskTag("account")
-		tags := []valueObject.ScheduledTaskTag{containerTag}
+		command, _ := valueObject.NewUnixCommand(
+			infraEnvs.SpeediaOsBinary + " account get",
+		)
+		tag, _ := valueObject.NewScheduledTaskTag("account")
+		tags := []valueObject.ScheduledTaskTag{tag}
 		timeoutSecs := uint(60)
 		runAt := valueObject.NewUnixTimeNow()
 
@@ -60,6 +62,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 		err = scheduledTaskCmdRepo.Run(pendingTasks[0])
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			return
 		}
 
 		completedTask, err := scheduledTaskQueryRepo.ReadById(pendingTasks[0].Id)
