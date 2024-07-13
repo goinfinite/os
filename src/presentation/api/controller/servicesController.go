@@ -110,7 +110,7 @@ func parsePortBindings(bindings []interface{}) []valueObject.PortBinding {
 // @Router       /v1/services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	requiredParams := []string{"name"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -196,7 +196,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	requiredParams := []string{"name", "type", "startCmd"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -284,7 +284,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
 	requiredParams := []string{"name"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

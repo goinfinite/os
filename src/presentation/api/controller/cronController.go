@@ -42,7 +42,7 @@ func GetCronsController(c echo.Context) error {
 // @Router       /v1/cron/ [post]
 func CreateCronController(c echo.Context) error {
 	requiredParams := []string{"schedule", "command"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -98,7 +98,7 @@ func CreateCronController(c echo.Context) error {
 // @Router       /v1/cron/ [put]
 func UpdateCronController(c echo.Context) error {
 	requiredParams := []string{"id"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 

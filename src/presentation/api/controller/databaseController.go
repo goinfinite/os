@@ -69,7 +69,7 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
 	requiredParams := []string{"dbName"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	dbName := valueObject.NewDatabaseNamePanic(requestBody["dbName"].(string))
@@ -145,7 +145,7 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	dbName := valueObject.NewDatabaseNamePanic(c.Param("dbName"))
 
 	requiredParams := []string{"username", "password"}
-	requestBody, _ := apiHelper.GetRequestBody(c)
+	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 	username := valueObject.NewDatabaseUsernamePanic(requestBody["username"].(string))

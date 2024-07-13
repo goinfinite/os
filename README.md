@@ -41,7 +41,7 @@ os mktplace install -s wp -n myapp.net \
   -f 'adminMailAddress:user@example.com'
 ```
 
-The API Swagger documentation is available at `https://localhost:1618/_/api/swagger/`.
+The API Swagger documentation is available at `https://localhost:1618/api/swagger/`.
 
 Speedia OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
 

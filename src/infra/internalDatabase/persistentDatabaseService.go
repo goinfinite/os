@@ -99,6 +99,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.Mapping{},
 		&dbModel.MarketplaceInstalledItem{},
 		&dbModel.InstalledService{},
+		&dbModel.ScheduledTask{},
 	)
 	if err != nil {
 		return errors.New("DatabaseMigrationError: " + err.Error())

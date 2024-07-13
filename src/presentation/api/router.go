@@ -124,6 +124,15 @@ func (router Router) runtimeRoutes() {
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
 }
 
+func (router *Router) scheduledTaskRoutes() {
+	scheduledTaskGroup := router.baseRoute.Group("/v1/scheduled-task")
+
+	scheduledTaskController := apiController.NewScheduledTaskController(router.persistentDbSvc)
+	scheduledTaskGroup.GET("/", scheduledTaskController.Read)
+	scheduledTaskGroup.PUT("/", scheduledTaskController.Update)
+	go scheduledTaskController.Run()
+}
+
 func (router Router) servicesRoutes() {
 	servicesGroup := router.baseRoute.Group("/v1/services")
 	servicesController := apiController.NewServicesController(
@@ -180,6 +189,7 @@ func (router Router) RegisterRoutes() {
 	router.marketplaceRoutes()
 	router.o11yRoutes()
 	router.runtimeRoutes()
+	router.scheduledTaskRoutes()
 	router.servicesRoutes()
 	router.sslRoutes()
 	router.vhostsRoutes()

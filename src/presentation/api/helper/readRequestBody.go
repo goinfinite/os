@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetRequestBody(c echo.Context) (map[string]interface{}, error) {
+func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 	requestData := map[string]interface{}{}
 
 	contentType := c.Request().Header.Get("Content-Type")

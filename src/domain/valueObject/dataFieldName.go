@@ -3,22 +3,29 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const dataFieldNameRegex string = `^\w[\w-]{1,128}\w$`
 
 type DataFieldName string
 
-func NewDataFieldName(value string) (DataFieldName, error) {
-	dfn := DataFieldName(value)
-	if !dfn.isValid() {
+func NewDataFieldName(value interface{}) (DataFieldName, error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return "", errors.New("DataFieldNameMustBeString")
+	}
+
+	re := regexp.MustCompile(dataFieldNameRegex)
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidDataFieldName")
 	}
 
-	return dfn, nil
+	return DataFieldName(stringValue), nil
 }
 
-func NewDataFieldNamePanic(value string) DataFieldName {
+func NewDataFieldNamePanic(value interface{}) DataFieldName {
 	dfn, err := NewDataFieldName(value)
 	if err != nil {
 		panic(err)
@@ -27,11 +34,6 @@ func NewDataFieldNamePanic(value string) DataFieldName {
 	return dfn
 }
 
-func (dfn DataFieldName) isValid() bool {
-	re := regexp.MustCompile(dataFieldNameRegex)
-	return re.MatchString(string(dfn))
-}
-
-func (dfn DataFieldName) String() string {
-	return string(dfn)
+func (vo DataFieldName) String() string {
+	return string(vo)
 }

@@ -1,7 +1,11 @@
 # Changelog
 
 ```log
-0.0.3 - 2024/XX/XX
+0.0.4 - 2024/07/XX
+feat: add async tasks
+refactor: marketplace presentation layer
+
+0.0.3 - 2024/07/12
 refactor: everything services related
 fix: move /_/api to /api
 

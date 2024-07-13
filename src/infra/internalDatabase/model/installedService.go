@@ -50,7 +50,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Nature:           "solo",
 		Type:             "system",
 		Version:          infraEnvs.SpeediaOsVersion,
-		StartCmd:         "/speedia/os serve",
+		StartCmd:         infraEnvs.SpeediaOsBinary + " serve",
 		PortBindings:     &osApiPortBindings,
 		WorkingDirectory: &osWorkingDirectory,
 		LogOutputPath:    &osLogOutputPath,

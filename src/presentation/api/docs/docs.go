@@ -923,7 +923,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "List marketplace catalog services names, types, steps and more.",
+                "description": "List marketplace catalog items.",
                 "consumes": [
                     "application/json"
                 ],
@@ -960,7 +960,7 @@ const docTemplate = `{
                 "summary": "InstallCatalogItem",
                 "parameters": [
                     {
-                        "description": "directory will be the virtual host root directory.",
+                        "description": "urlPath is both the install directory and HTTP sub-directory.",
                         "name": "InstallMarketplaceCatalogItem",
                         "in": "body",
                         "required": true,
@@ -1017,7 +1017,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Delete/Uninstall a marketplace installed item.",
+                "description": "Delete/Uninstall an installed item.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1038,7 +1038,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "Should uninstall all services that were installed with the marketplace item installation? Default is 'true'.",
+                        "description": "Should uninstall all services not being used? Default is 'true'.",
                         "name": "shouldUninstallServices",
                         "in": "query"
                     }
@@ -1511,6 +1511,74 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "SslPairDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/task/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List scheduled tasks.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "ReadScheduledTasks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ScheduledTask"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Reschedule a task or change its status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "UpdateScheduledTask",
+                "parameters": [
+                    {
+                        "description": "UpdateScheduledTask (Only id is required.)",
+                        "name": "updateScheduledTaskDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateScheduledTask"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ScheduledTaskUpdated",
                         "schema": {
                             "type": "object"
                         }
@@ -2226,6 +2294,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateScheduledTask": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "runAt": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateService": {
             "type": "object",
             "properties": {
@@ -2710,6 +2792,47 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.ScheduledTask": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "output": {
+                    "type": "string"
+                },
+                "runAt": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutSecs": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.SslCertificate": {
             "type": "object",
             "properties": {
@@ -2980,7 +3103,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.3",
+	Version:          "0.0.4",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
