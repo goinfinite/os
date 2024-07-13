@@ -324,6 +324,15 @@ definitions:
       version:
         type: string
     type: object
+  dto.UpdateScheduledTask:
+    properties:
+      id:
+        type: integer
+      runAt:
+        type: integer
+      status:
+        type: string
+    type: object
   dto.UpdateService:
     properties:
       autoRestart:
@@ -640,6 +649,33 @@ definitions:
         type: array
       value:
         type: string
+    type: object
+  entity.ScheduledTask:
+    properties:
+      command:
+        type: string
+      createdAt:
+        type: integer
+      err:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      output:
+        type: string
+      runAt:
+        type: integer
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      timeoutSecs:
+        type: integer
+      updatedAt:
+        type: integer
     type: object
   entity.SslCertificate:
     properties:
@@ -1389,7 +1425,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List marketplace catalog services names, types, steps and more.
+      description: List marketplace catalog items.
       produces:
       - application/json
       responses:
@@ -1448,15 +1484,14 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete/Uninstall a marketplace installed item.
+      description: Delete/Uninstall an installed item.
       parameters:
       - description: MarketplaceInstalledItemId to delete.
         in: path
         name: installedId
         required: true
         type: integer
-      - description: Should uninstall all services that were installed with the marketplace
-          item installation? Default is 'true'.
+      - description: Should uninstall all services not being used? Default is 'true'.
         in: query
         name: shouldUninstallServices
         type: boolean
@@ -1768,6 +1803,48 @@ paths:
       summary: DeleteSslPairVhosts
       tags:
       - ssl
+  /v1/task/:
+    get:
+      consumes:
+      - application/json
+      description: List scheduled tasks.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ScheduledTask'
+            type: array
+      security:
+      - Bearer: []
+      summary: ReadScheduledTasks
+      tags:
+      - task
+    put:
+      consumes:
+      - application/json
+      description: Reschedule a task or change its status.
+      parameters:
+      - description: UpdateScheduledTask (Only id is required.)
+        in: body
+        name: updateScheduledTaskDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateScheduledTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ScheduledTaskUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateScheduledTask
+      tags:
+      - task
   /v1/vhosts/:
     get:
       consumes:
