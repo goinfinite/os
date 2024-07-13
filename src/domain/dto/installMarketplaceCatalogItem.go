@@ -5,17 +5,17 @@ import (
 )
 
 type InstallMarketplaceCatalogItem struct {
-	Id         *valueObject.MarketplaceItemId
-	Slug       *valueObject.MarketplaceItemSlug
-	Hostname   valueObject.Fqdn
-	UrlPath    *valueObject.UrlPath
-	DataFields []valueObject.MarketplaceInstallableItemDataField
+	Hostname   valueObject.Fqdn                                  `json:"hostname"`
+	Id         *valueObject.MarketplaceItemId                    `json:"id"`
+	Slug       *valueObject.MarketplaceItemSlug                  `json:"slug"`
+	UrlPath    *valueObject.UrlPath                              `json:"urlPath"`
+	DataFields []valueObject.MarketplaceInstallableItemDataField `json:"dataFields"`
 }
 
 func NewInstallMarketplaceCatalogItem(
+	hostname valueObject.Fqdn,
 	id *valueObject.MarketplaceItemId,
 	slug *valueObject.MarketplaceItemSlug,
-	hostname valueObject.Fqdn,
 	urlPath *valueObject.UrlPath,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
 ) InstallMarketplaceCatalogItem {
