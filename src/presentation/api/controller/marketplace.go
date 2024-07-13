@@ -104,11 +104,8 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 			continue
 		}
 
-		urlPath, err := valueObject.NewUrlPath(requestBody[key])
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
-		requestBody["urlPath"] = urlPath
+		requestBody["urlPath"] = requestBody[key]
+		break
 	}
 
 	if requestBody["dataFields"] != nil {
