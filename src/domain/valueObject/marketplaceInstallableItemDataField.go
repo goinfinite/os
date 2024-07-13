@@ -29,3 +29,7 @@ func NewMarketplaceInstallableItemDataFieldPanic(
 
 	return marketplaceInstallableItemDataField
 }
+
+func (vo MarketplaceInstallableItemDataField) String() string {
+	return vo.Name.String() + ":" + vo.Value.String()
+}
