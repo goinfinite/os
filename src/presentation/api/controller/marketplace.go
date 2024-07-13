@@ -132,7 +132,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.InstallCatalogItem(requestBody),
+		c, controller.marketplaceService.InstallCatalogItem(requestBody, true),
 	)
 }
 

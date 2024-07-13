@@ -105,7 +105,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 			requestBody["dataFields"] = dataFields
 
 			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.InstallCatalogItem(requestBody),
+				controller.marketplaceService.InstallCatalogItem(requestBody, false),
 			)
 		},
 	}
