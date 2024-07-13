@@ -1,12 +1,16 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
+	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
 )
@@ -83,6 +87,49 @@ func (service *MarketplaceService) InstallCatalogItem(
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidDataFields")
 		}
+	}
+
+	if shouldSchedule {
+		cliCmd := infraEnvs.SpeediaOsBinary + " mktplace install"
+		installParams := []string{
+			"--hostname", hostname.String(),
+		}
+
+		if idPtr != nil {
+			installParams = append(installParams, "--id", idPtr.String())
+		}
+
+		if slugPtr != nil {
+			installParams = append(installParams, "--slug", slugPtr.String())
+		}
+
+		if urlPathPtr != nil {
+			installParams = append(installParams, "--urlPath", urlPathPtr.String())
+		}
+
+		for _, dataField := range dataFields {
+			installParams = append(installParams, "--dataFields", dataField.String())
+		}
+
+		cliCmd += " " + strings.Join(installParams, " ")
+
+		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbSvc)
+		taskName, _ := valueObject.NewScheduledTaskName("InstallMarketplaceCatalogItem")
+		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
+		taskTags := []valueObject.ScheduledTaskTag{taskTag}
+		timeoutSeconds := uint(600)
+
+		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
+			taskName, taskCmd, taskTags, &timeoutSeconds, nil,
+		)
+
+		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		if err != nil {
+			return NewServiceOutput(InfraError, err.Error())
+		}
+
+		return NewServiceOutput(Created, "InstallMarketplaceCatalogItemScheduled")
 	}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(
