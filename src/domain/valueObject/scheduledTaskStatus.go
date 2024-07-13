@@ -20,7 +20,6 @@ func NewScheduledTaskStatus(value interface{}) (ScheduledTaskStatus, error) {
 		return "", errors.New("ScheduledTaskStatusMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidScheduledTaskStatuses, stringValue) {

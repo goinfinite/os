@@ -3,7 +3,6 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -18,11 +17,8 @@ func NewScheduledTaskName(value interface{}) (ScheduledTaskName, error) {
 		return "", errors.New("ScheduledTaskNameMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
 	re := regexp.MustCompile(scheduledTaskNameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidScheduledTaskName")
 	}
 

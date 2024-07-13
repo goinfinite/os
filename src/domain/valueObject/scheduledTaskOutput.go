@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -15,7 +14,6 @@ func NewScheduledTaskOutput(value interface{}) (ScheduledTaskOutput, error) {
 		return "", errors.New("ScheduledTaskOutputMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
 	valueLength := len(stringValue)
 	if valueLength > 2048 {
 		stringValue = stringValue[:2048]
