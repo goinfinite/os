@@ -41,10 +41,12 @@ func (router Router) authRoutes() {
 
 func (router Router) accountRoutes() {
 	accountGroup := router.baseRoute.Group("/v1/account")
-	accountGroup.GET("/", apiController.GetAccountsController)
-	accountGroup.POST("/", apiController.CreateAccountController)
-	accountGroup.PUT("/", apiController.UpdateAccountController)
-	accountGroup.DELETE("/:accountId/", apiController.DeleteAccountController)
+	accountController := apiController.NewAccountController()
+
+	accountGroup.GET("/", accountController.Read)
+	accountGroup.POST("/", accountController.Create)
+	accountGroup.PUT("/", accountController.Update)
+	accountGroup.DELETE("/:accountId/", accountController.Delete)
 }
 
 func (router Router) cronRoutes() {
