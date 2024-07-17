@@ -6,7 +6,7 @@ import (
 
 func TestPassword(t *testing.T) {
 	t.Run("ValidPassword", func(t *testing.T) {
-		validPassword := []string{
+		validPasswords := []string{
 			"password123",
 			"S3cureP@ssw0rd!",
 			"A_longer_password_with_various_chars123!",
@@ -14,7 +14,7 @@ func TestPassword(t *testing.T) {
 			"Th1s!s@G00dPass",
 		}
 
-		for _, password := range validPassword {
+		for _, password := range validPasswords {
 			_, err := NewPassword(password)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %v", password, err)
@@ -23,7 +23,7 @@ func TestPassword(t *testing.T) {
 	})
 
 	t.Run("InvalidPassword", func(t *testing.T) {
-		invalidPassword := []string{
+		invalidPasswords := []string{
 			"short",
 			"tiny",
 			"abc",
@@ -31,7 +31,7 @@ func TestPassword(t *testing.T) {
 			"p@ss1",
 		}
 
-		for _, password := range invalidPassword {
+		for _, password := range invalidPasswords {
 			_, err := NewPassword(password)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", password)

@@ -6,7 +6,7 @@ import (
 
 func TestUsername(t *testing.T) {
 	t.Run("ValidUsername", func(t *testing.T) {
-		validUsername := []string{
+		validUsernames := []string{
 			"a",
 			"a_1",
 			"_abc-123",
@@ -14,7 +14,7 @@ func TestUsername(t *testing.T) {
 			"valid_name_with_30_chars",
 		}
 
-		for _, username := range validUsername {
+		for _, username := range validUsernames {
 			_, err := NewUsername(username)
 			if err != nil {
 				t.Errorf("Expected no error for %s, got %v", username, err)
@@ -23,7 +23,7 @@ func TestUsername(t *testing.T) {
 	})
 
 	t.Run("InvalidUsername", func(t *testing.T) {
-		invalidUsername := []string{
+		invalidUsernames := []string{
 			"/1invalid_start_with_digit",
 			"-invalid-start-with-dash",
 			"invalid_character$more_than_30_chars",
@@ -31,7 +31,7 @@ func TestUsername(t *testing.T) {
 			"inv@lid_char",
 		}
 
-		for _, username := range invalidUsername {
+		for _, username := range invalidUsernames {
 			_, err := NewUsername(username)
 			if err == nil {
 				t.Errorf("Expected error for %s, got nil", username)
