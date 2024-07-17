@@ -136,7 +136,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
 [unix_http_server]
-file=/run/supervisord.sock
+file=/run/supervisor.sock
 chmod=0700
 username=supervisord
 password=` + ctlPassword + `
@@ -151,7 +151,7 @@ loglevel=ERROR
 pidfile=/run/supervisord.pid
 
 [supervisorctl]
-serverurl=unix:///run/supervisord.sock
+serverurl=unix:///run/supervisor.sock
 username=supervisord
 password=` + ctlPassword + `
 
