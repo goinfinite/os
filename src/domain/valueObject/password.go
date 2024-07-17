@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -14,7 +13,6 @@ func NewPassword(value interface{}) (password Password, err error) {
 	if err != nil {
 		return "", errors.New("PasswordValueMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 
 	valueLength := len(stringValue)
 	if valueLength < 6 {
@@ -26,14 +24,6 @@ func NewPassword(value interface{}) (password Password, err error) {
 	}
 
 	return Password(stringValue), nil
-}
-
-func NewPasswordPanic(value interface{}) Password {
-	pass, err := NewPassword(value)
-	if err != nil {
-		panic(err)
-	}
-	return pass
 }
 
 func (vo Password) String() string {
