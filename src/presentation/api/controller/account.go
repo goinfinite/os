@@ -58,8 +58,7 @@ func (controller AccountController) Create(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        updateDto 	  body dto.UpdateAccount  true   "Only id or username is required."
-// @Success      200 {object} object{} "AccountUpdated"
-// @Success      200 {object} object{} "New API key in string format"
+// @Success      200 {object} object{} "'AccountUpdated' message or new API key in string format"
 // @Router       /v1/account/ [put]
 func (controller AccountController) Update(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
