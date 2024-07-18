@@ -16,8 +16,8 @@ func NewAccountController() AccountController {
 	}
 }
 
-// GetAccounts	 godoc
-// @Summary      GetAccounts
+// ReadAccounts	 godoc
+// @Summary      ReadAccounts
 // @Description  List accounts.
 // @Tags         account
 // @Accept       json
