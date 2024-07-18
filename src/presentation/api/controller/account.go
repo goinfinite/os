@@ -83,7 +83,7 @@ func (controller AccountController) Update(c echo.Context) error {
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller AccountController) Delete(c echo.Context) error {
 	requestBody := map[string]interface{}{
-		"accountId": c.Param("accountId"),
+		"id": c.Param("accountId"),
 	}
 
 	return apiHelper.ServiceResponseWrapper(
