@@ -875,7 +875,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetAccounts
+      summary: ReadAccounts
       tags:
       - account
     post:

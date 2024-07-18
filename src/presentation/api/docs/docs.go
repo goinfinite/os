@@ -41,7 +41,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "GetAccounts",
+                "summary": "ReadAccounts",
                 "responses": {
                     "200": {
                         "description": "OK",
