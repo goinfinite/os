@@ -25,6 +25,15 @@ func NewUsername(value interface{}) (username Username, err error) {
 	return Username(stringValue), nil
 }
 
+// TODO: remove this constructor when no longer used.
+func NewUsernamePanic(value interface{}) Username {
+	user, err := NewUsername(value)
+	if err != nil {
+		panic(err)
+	}
+	return user
+}
+
 func (vo Username) String() string {
 	return string(vo)
 }

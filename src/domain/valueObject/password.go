@@ -26,6 +26,15 @@ func NewPassword(value interface{}) (password Password, err error) {
 	return Password(stringValue), nil
 }
 
+// TODO: remove this constructor when no longer used.
+func NewPasswordPanic(value interface{}) Password {
+	pass, err := NewPassword(value)
+	if err != nil {
+		panic(err)
+	}
+	return pass
+}
+
 func (vo Password) String() string {
 	return string(vo)
 }
