@@ -9,13 +9,13 @@ import (
 
 type AccountId uint64
 
-func NewAccountId(value interface{}) (AccountId, error) {
-	accountId, err := voHelper.InterfaceToUint64(value)
+func NewAccountId(value interface{}) (accountId AccountId, err error) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("AccountIdMustBeInt")
+		return accountId, errors.New("AccountIdMustBeInt")
 	}
 
-	return AccountId(accountId), nil
+	return AccountId(uintValue), nil
 }
 
 // TODO: remove this constructor when no longer used.
