@@ -14,7 +14,7 @@ type Username string
 func NewUsername(value interface{}) (username Username, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return username, errors.New("UsernameValueMustBeString")
+		return username, errors.New("UsernameMustBeString")
 	}
 
 	re := regexp.MustCompile(usernameRegex)
