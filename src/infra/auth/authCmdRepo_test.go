@@ -10,13 +10,18 @@ import (
 
 func TestAuthCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
+	authCmdRepo := AuthCmdRepo{}
 
 	t.Run("GetSessionToken", func(t *testing.T) {
-		authCmdRepo := AuthCmdRepo{}
+		ipAddress, err := valueObject.NewIpAddress("127.0.0.1")
+		if err != nil {
+			t.Errorf("UnexpectedError: %s", err.Error())
+		}
+
 		token, err := authCmdRepo.GenerateSessionToken(
 			valueObject.AccountId(1000),
 			valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
-			valueObject.NewIpAddressPanic("127.0.0.1"),
+			ipAddress,
 		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %s", err.Error())
