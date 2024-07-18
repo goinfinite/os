@@ -989,7 +989,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetCrons
+      summary: ReadCrons
       tags:
       - cron
     post:
