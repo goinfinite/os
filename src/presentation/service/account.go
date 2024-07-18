@@ -28,7 +28,6 @@ func (service AccountService) Read() ServiceOutput {
 
 func (service AccountService) Create(input map[string]interface{}) ServiceOutput {
 	requiredParams := []string{"username", "password"}
-
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
