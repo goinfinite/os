@@ -137,7 +137,7 @@ func (service AccountService) Update(input map[string]interface{}) ServiceOutput
 }
 
 func (service AccountService) Delete(input map[string]interface{}) ServiceOutput {
-	accountId, err := valueObject.NewAccountId(input["accountId"])
+	accountId, err := valueObject.NewAccountId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
