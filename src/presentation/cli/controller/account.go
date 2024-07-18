@@ -77,7 +77,7 @@ func (controller AccountController) Update() *cobra.Command {
 			}
 
 			if passwordStr != "" {
-				requestBody["slug"] = passwordStr
+				requestBody["password"] = passwordStr
 			}
 
 			cliHelper.ServiceResponseWrapper(
