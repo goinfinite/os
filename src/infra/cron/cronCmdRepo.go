@@ -85,7 +85,7 @@ func (repo *CronCmdRepo) Create(createCron dto.CreateCron) error {
 
 func (repo *CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 	cronToUpdateId := updateCron.Id
-	cronToUpdateListIndex := cronToUpdateId.Get() - 1
+	cronToUpdateListIndex := cronToUpdateId.Read() - 1
 
 	newCronSchedule := repo.currentCrontab[cronToUpdateListIndex].Schedule
 	if updateCron.Schedule != nil {
@@ -113,7 +113,7 @@ func (repo *CronCmdRepo) Update(updateCron dto.UpdateCron) error {
 func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	var cronsToKeep []entity.Cron
 	for _, currentCron := range repo.currentCrontab {
-		if cronId.Get() == currentCron.Id.Get() {
+		if cronId.Read() == currentCron.Id.Read() {
 			continue
 		}
 		cronsToKeep = append(cronsToKeep, currentCron)

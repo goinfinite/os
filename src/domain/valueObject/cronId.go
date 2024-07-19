@@ -18,7 +18,7 @@ func NewCronId(value interface{}) (cronId CronId, err error) {
 	return CronId(uintValue), nil
 }
 
-func (vo CronId) Get() uint64 {
+func (vo CronId) Read() uint64 {
 	return uint64(vo)
 }
 
