@@ -115,11 +115,7 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	err = useCase.UpdateCron(
-		cronQueryRepo,
-		cronCmdRepo,
-		updateCronDto,
-	)
+	err = useCase.UpdateCron(cronQueryRepo, cronCmdRepo, updateCronDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
