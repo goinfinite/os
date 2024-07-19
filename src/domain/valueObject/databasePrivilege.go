@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type DatabasePrivilege string
@@ -65,28 +67,21 @@ var ValidDatabasePrivileges = []string{
 	"USAGE",
 }
 
-func NewDatabasePrivilege(value string) (DatabasePrivilege, error) {
-	value = strings.ReplaceAll(value, "-", " ")
-
-	dp := DatabasePrivilege(strings.ToUpper(value))
-	if !dp.isValid() {
-		return "", errors.New("InvalidDatabasePrivilege")
-	}
-	return dp, nil
-}
-
-func NewDatabasePrivilegePanic(value string) DatabasePrivilege {
-	dp, err := NewDatabasePrivilege(value)
+func NewDatabasePrivilege(value interface{}) (
+	dbPrivilege DatabasePrivilege, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return dbPrivilege, errors.New("DatabasePrivilegeMustBeString")
 	}
-	return dp
+	stringValue = strings.ReplaceAll(stringValue, "-", " ")
+
+	if slices.Contains(ValidDatabasePrivileges, stringValue) {
+		return dbPrivilege, errors.New("InvalidDatabasePrivilege")
+	}
+	return DatabasePrivilege(stringValue), nil
 }
 
-func (dp DatabasePrivilege) isValid() bool {
-	return slices.Contains(ValidDatabasePrivileges, dp.String())
-}
-
-func (dp DatabasePrivilege) String() string {
-	return string(dp)
+func (vo DatabasePrivilege) String() string {
+	return string(vo)
 }
