@@ -53,9 +53,9 @@ func (router Router) authenticationRoutes() {
 		Use:   "auth",
 		Short: "Authentication&Authorization",
 	}
-
 	rootCmd.AddCommand(authCmd)
-	authenticationController := cliController.AuthenticationController{}
+
+	authenticationController := cliController.AuthController{}
 	authCmd.AddCommand(authenticationController.Login())
 }
 

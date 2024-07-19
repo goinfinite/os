@@ -36,7 +36,9 @@ func (router Router) swaggerRoute() {
 
 func (router Router) authRoutes() {
 	authGroup := router.baseRoute.Group("/v1/auth")
-	authGroup.POST("/login/", apiController.AuthLoginController)
+	authController := apiController.NewAuthController()
+
+	authGroup.POST("/login/", authController.GenerateJwtWithCredentials)
 }
 
 func (router Router) accountRoutes() {
