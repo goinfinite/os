@@ -1,48 +1,37 @@
 package cliController
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	accountInfra "github.com/speedianet/os/src/infra/account"
-	authInfra "github.com/speedianet/os/src/infra/auth"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
 )
 
-type AuthenticationController struct {
+type AuthController struct {
+	authService *service.AuthService
 }
 
-func (controller *AuthenticationController) Login() *cobra.Command {
-	var usernameStr string
-	var passwordStr string
-	var ipAddressStr string
+func NewAuthController() *AuthController {
+	return &AuthController{
+		authService: service.NewAuthService(),
+	}
+}
+
+func (controller *AuthController) Login() *cobra.Command {
+	var usernameStr, passwordStr, ipAddressStr string
 
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Login",
 		Run: func(cmd *cobra.Command, args []string) {
-			username := valueObject.NewUsernamePanic(usernameStr)
-			password := valueObject.NewPasswordPanic(passwordStr)
-			ipAddress := valueObject.NewIpAddressPanic(ipAddressStr)
-
-			loginDto := dto.NewLogin(username, password, ipAddress)
-
-			authQueryRepo := authInfra.AuthQueryRepo{}
-			authCmdRepo := authInfra.AuthCmdRepo{}
-			accQueryRepo := accountInfra.AccQueryRepo{}
-
-			accessToken, err := useCase.GetSessionToken(
-				authQueryRepo,
-				authCmdRepo,
-				accQueryRepo,
-				loginDto,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+			requestBody := map[string]interface{}{
+				"username":  usernameStr,
+				"password":  passwordStr,
+				"ipAddress": ipAddressStr,
 			}
 
-			cliHelper.ResponseWrapper(true, accessToken)
+			cliHelper.ServiceResponseWrapper(
+				controller.authService.GenerateJwtWithCredentials(requestBody),
+			)
 		},
 	}
 

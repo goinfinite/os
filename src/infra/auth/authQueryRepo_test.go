@@ -20,7 +20,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	token, err := authCmdRepo.GenerateSessionToken(
 		valueObject.AccountId(1000),
 		valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
-		valueObject.NewIpAddressPanic("127.0.0.1"),
+		valueObject.NewLocalhostIpAddress(),
 	)
 	if err != nil {
 		t.Errorf("UnexpectedError: %s", err.Error())
@@ -30,7 +30,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		login := dto.NewLogin(
 			valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME")),
 			valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS")),
-			valueObject.NewIpAddressPanic("127.0.0.1"),
+			valueObject.NewLocalhostIpAddress(),
 		)
 
 		isValid := authQueryRepo.IsLoginValid(login)
@@ -43,7 +43,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		login := dto.NewLogin(
 			valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME")),
 			valueObject.NewPasswordPanic("wrongPassword"),
-			valueObject.NewIpAddressPanic("127.0.0.1"),
+			valueObject.NewLocalhostIpAddress(),
 		)
 
 		isValid := authQueryRepo.IsLoginValid(login)
