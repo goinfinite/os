@@ -17,9 +17,7 @@ func NewAuthController() *AuthController {
 }
 
 func (controller *AuthController) Login() *cobra.Command {
-	var usernameStr string
-	var passwordStr string
-	var ipAddressStr string
+	var usernameStr, passwordStr, ipAddressStr string
 
 	cmd := &cobra.Command{
 		Use:   "login",
