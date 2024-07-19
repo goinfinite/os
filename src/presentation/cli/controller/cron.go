@@ -28,9 +28,7 @@ func (controller *CronController) Read() *cobra.Command {
 }
 
 func (controller *CronController) Create() *cobra.Command {
-	var scheduleStr string
-	var commandStr string
-	var commentStr string
+	var scheduleStr, commandStr, commentStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -60,10 +58,7 @@ func (controller *CronController) Create() *cobra.Command {
 }
 
 func (controller *CronController) Update() *cobra.Command {
-	var idStr string
-	var scheduleStr string
-	var commandStr string
-	var commentStr string
+	var idStr, scheduleStr, commandStr, commentStr string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -100,8 +95,7 @@ func (controller *CronController) Update() *cobra.Command {
 }
 
 func (controller *CronController) Delete() *cobra.Command {
-	var idStr string
-	var commentStr string
+	var idStr, commentStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
