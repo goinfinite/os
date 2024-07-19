@@ -41,7 +41,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "GetAccounts",
+                "summary": "ReadAccounts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -73,7 +73,7 @@ const docTemplate = `{
                 "summary": "UpdateAccount",
                 "parameters": [
                     {
-                        "description": "Only id is required.",
+                        "description": "Only id or username is required.",
                         "name": "updateDto",
                         "in": "body",
                         "required": true,
@@ -84,7 +84,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "AccountUpdated message or NewKeyString",
+                        "description": "'AccountUpdated' message or new API key in string format",
                         "schema": {
                             "type": "object"
                         }
