@@ -7,11 +7,11 @@ import (
 )
 
 type CronController struct {
-	cronService service.CronService
+	cronService *service.CronService
 }
 
-func NewCronController() CronController {
-	return CronController{
+func NewCronController() *CronController {
+	return &CronController{
 		cronService: service.NewCronService(),
 	}
 }
@@ -25,7 +25,7 @@ func NewCronController() CronController {
 // @Security     Bearer
 // @Success      200 {array} entity.Cron
 // @Router       /v1/cron/ [get]
-func (controller CronController) Read(c echo.Context) error {
+func (controller *CronController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read())
 }
 
@@ -39,7 +39,7 @@ func (controller CronController) Read(c echo.Context) error {
 // @Param        createCronDto 	  body    dto.CreateCron  true  "comment is optional."
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
-func (controller CronController) Create(c echo.Context) error {
+func (controller *CronController) Create(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (controller CronController) Create(c echo.Context) error {
 // @Param        updateCronDto 	  body dto.UpdateCron  true  "Only id is required."
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
-func (controller CronController) Update(c echo.Context) error {
+func (controller *CronController) Update(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (controller CronController) Update(c echo.Context) error {
 // @Param        cronId 	  path   string  true  "CronId to delete."
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
-func (controller CronController) Delete(c echo.Context) error {
+func (controller *CronController) Delete(c echo.Context) error {
 	requestBody := map[string]interface{}{
 		"id": c.Param("cronId"),
 	}

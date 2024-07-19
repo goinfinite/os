@@ -7,16 +7,16 @@ import (
 )
 
 type CronController struct {
-	cronService service.CronService
+	cronService *service.CronService
 }
 
-func NewCronController() CronController {
-	return CronController{
+func NewCronController() *CronController {
+	return &CronController{
 		cronService: service.NewCronService(),
 	}
 }
 
-func (controller CronController) Read() *cobra.Command {
+func (controller *CronController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "GetCrons",
@@ -27,7 +27,7 @@ func (controller CronController) Read() *cobra.Command {
 	return cmd
 }
 
-func (controller CronController) Create() *cobra.Command {
+func (controller *CronController) Create() *cobra.Command {
 	var scheduleStr string
 	var commandStr string
 	var commentStr string
@@ -59,7 +59,7 @@ func (controller CronController) Create() *cobra.Command {
 	return cmd
 }
 
-func (controller CronController) Update() *cobra.Command {
+func (controller *CronController) Update() *cobra.Command {
 	var idStr string
 	var scheduleStr string
 	var commandStr string
@@ -99,7 +99,7 @@ func (controller CronController) Update() *cobra.Command {
 	return cmd
 }
 
-func (controller CronController) Delete() *cobra.Command {
+func (controller *CronController) Delete() *cobra.Command {
 	var idStr string
 	var commentStr string
 

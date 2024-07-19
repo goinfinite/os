@@ -11,11 +11,11 @@ import (
 type CronService struct {
 }
 
-func NewCronService() CronService {
-	return CronService{}
+func NewCronService() *CronService {
+	return &CronService{}
 }
 
-func (service CronService) Read() ServiceOutput {
+func (service *CronService) Read() ServiceOutput {
 	cronQueryRepo := cronInfra.CronQueryRepo{}
 	cronsList, err := useCase.GetCrons(cronQueryRepo)
 	if err != nil {
@@ -25,7 +25,7 @@ func (service CronService) Read() ServiceOutput {
 	return NewServiceOutput(Success, cronsList)
 }
 
-func (service CronService) Create(input map[string]interface{}) ServiceOutput {
+func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 	requiredParams := []string{"schedule", "command"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -66,7 +66,7 @@ func (service CronService) Create(input map[string]interface{}) ServiceOutput {
 	return NewServiceOutput(Success, "CronCreated")
 }
 
-func (service CronService) Update(input map[string]interface{}) ServiceOutput {
+func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 	requiredParams := []string{"id"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -127,7 +127,7 @@ func (service CronService) Update(input map[string]interface{}) ServiceOutput {
 	return NewServiceOutput(Success, "CronUpdated")
 }
 
-func (service CronService) Delete(input map[string]interface{}) ServiceOutput {
+func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 	cronId, err := valueObject.NewCronId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
