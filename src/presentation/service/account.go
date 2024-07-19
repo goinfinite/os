@@ -51,11 +51,7 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 	filesCmdRepo := filesInfra.FilesCmdRepo{}
 
 	err = useCase.CreateAccount(
-		accQueryRepo,
-		accCmdRepo,
-		filesQueryRepo,
-		filesCmdRepo,
-		dto,
+		accQueryRepo, accCmdRepo, filesQueryRepo, filesCmdRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -99,32 +95,21 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 	}
 
 	dto := dto.NewUpdateAccount(
-		accountIdPtr,
-		usernamePtr,
-		passwordPtr,
-		shouldUpdateApiKeyPtr,
+		accountIdPtr, usernamePtr, passwordPtr, shouldUpdateApiKeyPtr,
 	)
 
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
 
 	if dto.Password != nil {
-		err := useCase.UpdateAccountPassword(
-			accQueryRepo,
-			accCmdRepo,
-			dto,
-		)
+		err := useCase.UpdateAccountPassword(accQueryRepo, accCmdRepo, dto)
 		if err != nil {
 			return NewServiceOutput(InfraError, err.Error())
 		}
 	}
 
 	if dto.ShouldUpdateApiKey != nil && *dto.ShouldUpdateApiKey {
-		newApiKey, err := useCase.UpdateAccountApiKey(
-			accQueryRepo,
-			accCmdRepo,
-			dto,
-		)
+		newApiKey, err := useCase.UpdateAccountApiKey(accQueryRepo, accCmdRepo, dto)
 		if err != nil {
 			return NewServiceOutput(InfraError, err.Error())
 		}
@@ -144,11 +129,7 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 	accQueryRepo := accountInfra.AccQueryRepo{}
 	accCmdRepo := accountInfra.AccCmdRepo{}
 
-	err = useCase.DeleteAccount(
-		accQueryRepo,
-		accCmdRepo,
-		accountId,
-	)
+	err = useCase.DeleteAccount(accQueryRepo, accCmdRepo, accountId)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
