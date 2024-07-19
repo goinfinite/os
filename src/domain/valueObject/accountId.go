@@ -18,7 +18,6 @@ func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	return AccountId(uintValue), nil
 }
 
-// TODO: remove this constructor when no longer used.
 func NewAccountIdPanic(value interface{}) AccountId {
 	accId, err := NewAccountId(value)
 	if err != nil {
