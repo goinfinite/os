@@ -38,12 +38,14 @@ func (router Router) accountRoutes() {
 		Use:   "account",
 		Short: "AccountManagement",
 	}
-
 	rootCmd.AddCommand(accountCmd)
-	accountCmd.AddCommand(cliController.GetAccountsController())
-	accountCmd.AddCommand(cliController.CreateAccountController())
-	accountCmd.AddCommand(cliController.DeleteAccountController())
-	accountCmd.AddCommand(cliController.UpdateAccountController())
+
+	accountController := cliController.NewAccountController()
+
+	accountCmd.AddCommand(accountController.Read())
+	accountCmd.AddCommand(accountController.Create())
+	accountCmd.AddCommand(accountController.Update())
+	accountCmd.AddCommand(accountController.Delete())
 }
 
 func (router Router) authenticationRoutes() {
@@ -75,13 +77,11 @@ func (router Router) databaseRoutes() {
 		Use:   "db",
 		Short: "DatabaseManagement",
 	}
-
 	rootCmd.AddCommand(databaseCmd)
 
 	databaseController := cliController.NewDatabaseController(
 		router.persistentDbSvc,
 	)
-
 	databaseCmd.AddCommand(databaseController.Read())
 	databaseCmd.AddCommand(databaseController.Create())
 	databaseCmd.AddCommand(databaseController.Delete())
@@ -94,13 +94,11 @@ func (router Router) marketplaceRoutes() {
 		Use:   "mktplace",
 		Short: "Marketplace",
 	}
-
 	rootCmd.AddCommand(marketplaceCmd)
 
 	marketplaceController := cliController.NewMarketplaceController(
 		router.persistentDbSvc,
 	)
-
 	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
 	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
 	marketplaceCmd.AddCommand(marketplaceController.ReadInstalledItems())
@@ -122,14 +120,12 @@ func (router Router) runtimeRoutes() {
 		Use:   "runtime",
 		Short: "RuntimeManagement",
 	}
-
 	rootCmd.AddCommand(runtimeCmd)
 
 	var phpCmd = &cobra.Command{
 		Use:   "php",
 		Short: "PhpManagement",
 	}
-
 	runtimeCmd.AddCommand(phpCmd)
 
 	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
@@ -144,11 +140,11 @@ func (router *Router) scheduledTaskRoutes() {
 		Use:   "task",
 		Short: "ScheduledTaskManagement",
 	}
+	rootCmd.AddCommand(scheduledTaskCmd)
 
 	scheduledTaskController := cliController.NewScheduledTaskController(router.persistentDbSvc)
 	scheduledTaskCmd.AddCommand(scheduledTaskController.Read())
 	scheduledTaskCmd.AddCommand(scheduledTaskController.Update())
-	rootCmd.AddCommand(scheduledTaskCmd)
 }
 
 func (router Router) serveRoutes() {
@@ -187,7 +183,6 @@ func (router Router) sslRoutes() {
 		Use:   "ssl",
 		Short: "SslManagement",
 	}
-
 	rootCmd.AddCommand(sslCmd)
 
 	sslController := cliController.NewSslController(
@@ -204,7 +199,6 @@ func (router Router) virtualHostRoutes() {
 		Use:   "vhost",
 		Short: "VirtualHostManagement",
 	}
-
 	rootCmd.AddCommand(vhostCmd)
 
 	vhostController := cliController.NewVirtualHostController(
@@ -218,8 +212,8 @@ func (router Router) virtualHostRoutes() {
 		Use:   "mapping",
 		Short: "MappingManagement",
 	}
-
 	vhostCmd.AddCommand(mappingCmd)
+
 	mappingCmd.AddCommand(vhostController.ReadWithMappings())
 	mappingCmd.AddCommand(vhostController.CreateMapping())
 	mappingCmd.AddCommand(vhostController.DeleteMapping())

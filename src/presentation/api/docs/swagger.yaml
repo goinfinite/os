@@ -875,7 +875,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetAccounts
+      summary: ReadAccounts
       tags:
       - account
     post:
@@ -906,7 +906,7 @@ paths:
       - application/json
       description: Update an account.
       parameters:
-      - description: Only id is required.
+      - description: Only id or username is required.
         in: body
         name: updateDto
         required: true
@@ -916,7 +916,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: AccountUpdated message or NewKeyString
+          description: '''AccountUpdated'' message or new API key in string format'
           schema:
             type: object
       security:
