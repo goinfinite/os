@@ -12,11 +12,11 @@ import (
 type AccountService struct {
 }
 
-func NewAccountService() AccountService {
-	return AccountService{}
+func NewAccountService() *AccountService {
+	return &AccountService{}
 }
 
-func (service AccountService) Read() ServiceOutput {
+func (service *AccountService) Read() ServiceOutput {
 	accountsQueryRepo := accountInfra.AccQueryRepo{}
 	accountsList, err := useCase.GetAccounts(accountsQueryRepo)
 	if err != nil {
@@ -26,7 +26,7 @@ func (service AccountService) Read() ServiceOutput {
 	return NewServiceOutput(Success, accountsList)
 }
 
-func (service AccountService) Create(input map[string]interface{}) ServiceOutput {
+func (service *AccountService) Create(input map[string]interface{}) ServiceOutput {
 	requiredParams := []string{"username", "password"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -64,7 +64,7 @@ func (service AccountService) Create(input map[string]interface{}) ServiceOutput
 	return NewServiceOutput(Success, "AccountCreated")
 }
 
-func (service AccountService) Update(input map[string]interface{}) ServiceOutput {
+func (service *AccountService) Update(input map[string]interface{}) ServiceOutput {
 	var accountIdPtr *valueObject.AccountId
 	if input["id"] != nil {
 		accountId, err := valueObject.NewAccountId(input["id"])
@@ -135,7 +135,7 @@ func (service AccountService) Update(input map[string]interface{}) ServiceOutput
 	return NewServiceOutput(Success, "AccountUpdated")
 }
 
-func (service AccountService) Delete(input map[string]interface{}) ServiceOutput {
+func (service *AccountService) Delete(input map[string]interface{}) ServiceOutput {
 	accountId, err := valueObject.NewAccountId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())

@@ -7,7 +7,7 @@ import (
 )
 
 type AccountController struct {
-	accountService service.AccountService
+	accountService *service.AccountService
 }
 
 func NewAccountController() AccountController {
