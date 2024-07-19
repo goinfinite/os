@@ -22,6 +22,10 @@ func NewIpAddress(value interface{}) (ipAddress IpAddress, err error) {
 	return IpAddress(stringValue), nil
 }
 
+func NewLocalhostIpAddress() IpAddress {
+	return IpAddress("127.0.0.1")
+}
+
 func (vo IpAddress) String() string {
 	return string(vo)
 }
