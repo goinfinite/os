@@ -26,7 +26,7 @@ func NewAccountIdPanic(value interface{}) AccountId {
 	return accId
 }
 
-func (vo AccountId) Get() uint64 {
+func (vo AccountId) Read() uint64 {
 	return uint64(vo)
 }
 
