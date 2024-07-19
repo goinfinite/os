@@ -7,11 +7,11 @@ import (
 )
 
 type AuthController struct {
-	authService service.AuthService
+	authService *service.AuthService
 }
 
-func NewAuthController() AuthController {
-	return AuthController{
+func NewAuthController() *AuthController {
+	return &AuthController{
 		authService: service.NewAuthService(),
 	}
 }
@@ -26,7 +26,7 @@ func NewAuthController() AuthController {
 // @Success      200 {object} entity.AccessToken
 // @Failure      401 {object} string
 // @Router       /v1/auth/login/ [post]
-func (controller AuthController) GenerateJwtWithCredentials(c echo.Context) error {
+func (controller *AuthController) GenerateJwtWithCredentials(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err

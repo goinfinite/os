@@ -7,16 +7,16 @@ import (
 )
 
 type AuthController struct {
-	authService service.AuthService
+	authService *service.AuthService
 }
 
-func NewAuthController() AuthController {
-	return AuthController{
+func NewAuthController() *AuthController {
+	return &AuthController{
 		authService: service.NewAuthService(),
 	}
 }
 
-func (controller AuthController) Login() *cobra.Command {
+func (controller *AuthController) Login() *cobra.Command {
 	var usernameStr string
 	var passwordStr string
 	var ipAddressStr string

@@ -12,11 +12,11 @@ import (
 type AuthService struct {
 }
 
-func NewAuthService() AuthService {
-	return AuthService{}
+func NewAuthService() *AuthService {
+	return &AuthService{}
 }
 
-func (service AuthService) GenerateJwtWithCredentials(
+func (service *AuthService) GenerateJwtWithCredentials(
 	input map[string]interface{},
 ) ServiceOutput {
 	requiredParams := []string{"username", "password", "ipAddress"}
@@ -47,10 +47,7 @@ func (service AuthService) GenerateJwtWithCredentials(
 	accQueryRepo := accountInfra.AccQueryRepo{}
 
 	accessToken, err := useCase.GetSessionToken(
-		authQueryRepo,
-		authCmdRepo,
-		accQueryRepo,
-		dto,
+		authQueryRepo, authCmdRepo, accQueryRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
