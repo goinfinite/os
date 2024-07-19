@@ -10,13 +10,13 @@ type AccountController struct {
 	accountService *service.AccountService
 }
 
-func NewAccountController() AccountController {
-	return AccountController{
+func NewAccountController() *AccountController {
+	return &AccountController{
 		accountService: service.NewAccountService(),
 	}
 }
 
-func (controller AccountController) Read() *cobra.Command {
+func (controller *AccountController) Read() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetAccounts",
@@ -28,7 +28,7 @@ func (controller AccountController) Read() *cobra.Command {
 	return cmd
 }
 
-func (controller AccountController) Create() *cobra.Command {
+func (controller *AccountController) Create() *cobra.Command {
 	var usernameStr string
 	var passwordStr string
 
@@ -54,7 +54,7 @@ func (controller AccountController) Create() *cobra.Command {
 	return cmd
 }
 
-func (controller AccountController) Update() *cobra.Command {
+func (controller *AccountController) Update() *cobra.Command {
 	var accountIdStr string
 	var usernameStr string
 	var passwordStr string
@@ -95,7 +95,7 @@ func (controller AccountController) Update() *cobra.Command {
 	return cmd
 }
 
-func (controller AccountController) Delete() *cobra.Command {
+func (controller *AccountController) Delete() *cobra.Command {
 	var accountIdStr string
 
 	cmd := &cobra.Command{
