@@ -135,13 +135,14 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseUserPrivileges(
 }
 
 func (repo MysqlDatabaseQueryRepo) Get() ([]entity.Database, error) {
+	databases := []entity.Database{}
+
 	dbNames, err := repo.getDatabaseNames()
 	if err != nil {
-		return []entity.Database{}, err
+		return databases, err
 	}
 	dbType, _ := valueObject.NewDatabaseType("mariadb")
 
-	var databases []entity.Database
 	for _, dbName := range dbNames {
 		dbSize, err := repo.getDatabaseSize(dbName)
 		if err != nil {
