@@ -40,6 +40,6 @@ func shouldHaveAtSign(value string) bool {
 	return frequencyRegex.MatchString(value)
 }
 
-func (schedule CronSchedule) String() string {
-	return string(schedule)
+func (vo CronSchedule) String() string {
+	return string(vo)
 }
