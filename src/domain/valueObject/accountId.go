@@ -9,13 +9,13 @@ import (
 
 type AccountId uint64
 
-func NewAccountId(value interface{}) (AccountId, error) {
-	accId, err := voHelper.InterfaceToUint64(value)
+func NewAccountId(value interface{}) (accountId AccountId, err error) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("InvalidAccountId")
+		return accountId, errors.New("AccountIdMustBeInt")
 	}
 
-	return AccountId(accId), nil
+	return AccountId(uintValue), nil
 }
 
 func NewAccountIdPanic(value interface{}) AccountId {
@@ -26,10 +26,10 @@ func NewAccountIdPanic(value interface{}) AccountId {
 	return accId
 }
 
-func (id AccountId) Get() uint64 {
-	return uint64(id)
+func (vo AccountId) Read() uint64 {
+	return uint64(vo)
 }
 
-func (id AccountId) String() string {
-	return strconv.FormatUint(uint64(id), 10)
+func (vo AccountId) String() string {
+	return strconv.FormatUint(uint64(vo), 10)
 }
