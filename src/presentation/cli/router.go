@@ -110,9 +110,10 @@ func (router Router) o11yRoutes() {
 		Use:   "o11y",
 		Short: "O11yManagement",
 	}
-
 	rootCmd.AddCommand(o11yCmd)
-	o11yCmd.AddCommand(cliController.ReadO11yOverviewController(router.transientDbSvc))
+
+	o11yController := cliController.NewO11yController(router.transientDbSvc)
+	o11yCmd.AddCommand(o11yController.ReadOverview())
 }
 
 func (router Router) runtimeRoutes() {
