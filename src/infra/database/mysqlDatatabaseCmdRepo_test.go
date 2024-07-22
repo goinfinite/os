@@ -18,10 +18,31 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 		t.Error("Error starting command")
 	}
 
+	dbName, err := valueObject.NewDatabaseName("testing")
+	if err != nil {
+		t.Errorf("Unexpecting error: %s", err.Error())
+	}
+
+	dbUsername, err := valueObject.NewDatabaseUsername("testing")
+	if err != nil {
+		t.Errorf("Unexpecting error: %s", err.Error())
+	}
+
+	dbPassword, err := valueObject.NewPassword("testing")
+	if err != nil {
+		t.Errorf("Unexpecting error: %s", err.Error())
+	}
+
+	dbPrivilege, err := valueObject.NewDatabasePrivilege("ALL")
+	if err != nil {
+		t.Errorf("Unexpecting error: %s", err.Error())
+	}
+	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
+
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 
 	t.Run("CreateDatabase", func(t *testing.T) {
-		err := mysqlDatabaseCmdRepo.Create("testing")
+		err := mysqlDatabaseCmdRepo.Create(dbName)
 		if err != nil {
 			t.Error("Error creating database")
 		}
@@ -29,12 +50,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 
 	t.Run("CreateDatabaseUser", func(t *testing.T) {
 		createDatabaseUserDto := dto.NewCreateDatabaseUser(
-			valueObject.NewDatabaseNamePanic("testing"),
-			valueObject.NewDatabaseUsernamePanic("testing"),
-			valueObject.NewPasswordPanic("testing"),
-			[]valueObject.DatabasePrivilege{
-				valueObject.NewDatabasePrivilegePanic("ALL"),
-			},
+			dbName, dbUsername, dbPassword, dbPrivileges,
 		)
 
 		err := mysqlDatabaseCmdRepo.CreateUser(createDatabaseUserDto)
@@ -44,9 +60,6 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteDatabaseUser", func(t *testing.T) {
-		dbName := valueObject.NewDatabaseNamePanic("testing")
-		dbUsername := valueObject.NewDatabaseUsernamePanic("testing")
-
 		err := mysqlDatabaseCmdRepo.DeleteUser(dbName, dbUsername)
 		if err != nil {
 			t.Error("Error removing database user")
@@ -54,7 +67,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteDatabase", func(t *testing.T) {
-		err := mysqlDatabaseCmdRepo.Delete("testing")
+		err := mysqlDatabaseCmdRepo.Delete(dbName)
 		if err != nil {
 			t.Error("Error removing database")
 		}

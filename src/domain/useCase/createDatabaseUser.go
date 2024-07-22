@@ -20,8 +20,13 @@ func CreateDatabaseUser(
 	}
 
 	if len(createDatabaseUser.Privileges) == 0 {
+		defaultPrivilege, err := valueObject.NewDatabasePrivilege("ALL")
+		if err != nil {
+			return err
+		}
+
 		createDatabaseUser.Privileges = []valueObject.DatabasePrivilege{
-			valueObject.NewDatabasePrivilegePanic("ALL"),
+			defaultPrivilege,
 		}
 	}
 
