@@ -75,8 +75,9 @@ func NewDatabasePrivilege(value interface{}) (
 		return dbPrivilege, errors.New("DatabasePrivilegeMustBeString")
 	}
 	stringValue = strings.ReplaceAll(stringValue, "-", " ")
+	stringValue = strings.ToUpper(stringValue)
 
-	if slices.Contains(ValidDatabasePrivileges, stringValue) {
+	if !slices.Contains(ValidDatabasePrivileges, stringValue) {
 		return dbPrivilege, errors.New("InvalidDatabasePrivilege")
 	}
 	return DatabasePrivilege(stringValue), nil
