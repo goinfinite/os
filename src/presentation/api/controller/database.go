@@ -106,11 +106,11 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	requestBody["dbType"] = c.Param("dbType")
 	requestBody["dbName"] = c.Param("dbName")
 
-	privilegesSlice := []string{}
+	rawPrivilegesSlice := []string{}
 	for _, rawPrivilege := range requestBody["privileges"].([]interface{}) {
-		privilegesSlice = append(privilegesSlice, rawPrivilege.(string))
+		rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilege.(string))
 	}
-	requestBody["privileges"] = privilegesSlice
+	requestBody["privileges"] = rawPrivilegesSlice
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.databaseService.CreateUser(requestBody),
