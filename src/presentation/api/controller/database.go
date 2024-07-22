@@ -8,16 +8,16 @@ import (
 )
 
 type DatabaseController struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	databaseService *service.DatabaseService
+	persistentDbService *internalDbInfra.PersistentDatabaseService
+	dbService           *service.DatabaseService
 }
 
 func NewDatabaseController(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *DatabaseController {
 	return &DatabaseController{
-		persistentDbSvc: persistentDbSvc,
-		databaseService: service.NewDatabaseService(persistentDbSvc),
+		persistentDbService: persistentDbService,
+		dbService:           service.NewDatabaseService(persistentDbService),
 	}
 }
 
@@ -37,7 +37,7 @@ func (controller *DatabaseController) Read(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.databaseService.Read(requestBody),
+		c, controller.dbService.Read(requestBody),
 	)
 }
 
@@ -60,7 +60,7 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 	requestBody["dbType"] = c.Param("dbType")
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.databaseService.Create(requestBody),
+		c, controller.dbService.Create(requestBody),
 	)
 }
 
@@ -82,7 +82,7 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.databaseService.Delete(requestBody),
+		c, controller.dbService.Delete(requestBody),
 	)
 }
 
@@ -113,7 +113,7 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	requestBody["privileges"] = rawPrivilegesSlice
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.databaseService.CreateUser(requestBody),
+		c, controller.dbService.CreateUser(requestBody),
 	)
 }
 
@@ -137,6 +137,6 @@ func (controller *DatabaseController) DeleteUser(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.databaseService.DeleteUser(requestBody),
+		c, controller.dbService.DeleteUser(requestBody),
 	)
 }

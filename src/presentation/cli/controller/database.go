@@ -8,16 +8,16 @@ import (
 )
 
 type DatabaseController struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	databaseService *service.DatabaseService
+	persistentDbService *internalDbInfra.PersistentDatabaseService
+	dbService           *service.DatabaseService
 }
 
 func NewDatabaseController(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *DatabaseController {
 	return &DatabaseController{
-		persistentDbSvc: persistentDbSvc,
-		databaseService: service.NewDatabaseService(persistentDbSvc),
+		persistentDbService: persistentDbService,
+		dbService:           service.NewDatabaseService(persistentDbService),
 	}
 }
 
@@ -33,7 +33,7 @@ func (controller *DatabaseController) Read() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.databaseService.Read(requestBody),
+				controller.dbService.Read(requestBody),
 			)
 		},
 	}
@@ -56,7 +56,7 @@ func (controller *DatabaseController) Create() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.databaseService.Create(requestBody),
+				controller.dbService.Create(requestBody),
 			)
 		},
 	}
@@ -81,7 +81,7 @@ func (controller *DatabaseController) Delete() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.databaseService.Delete(requestBody),
+				controller.dbService.Delete(requestBody),
 			)
 		},
 	}
@@ -110,7 +110,7 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.databaseService.CreateUser(requestBody),
+				controller.dbService.CreateUser(requestBody),
 			)
 		},
 	}
@@ -148,7 +148,7 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.databaseService.DeleteUser(requestBody),
+				controller.dbService.DeleteUser(requestBody),
 			)
 		},
 	}
