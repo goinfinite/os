@@ -58,14 +58,23 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"name":              nameStr,
-				"version":           versionStr,
-				"startupFile":       startupFileStr,
-				"portBindings":      portBindingsSlice,
 				"autoCreateMapping": autoCreateMapping,
 			}
 
+			if versionStr != "" {
+				requestBody["version"] = versionStr
+			}
+
+			if startupFileStr != "" {
+				requestBody["startupFile"] = startupFileStr
+			}
+
+			if len(portBindingsSlice) > 0 {
+				requestBody["portBindings"] = portBindingsSlice
+			}
+
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.CreateInstallable(requestBody),
+				controller.serviceServices.CreateInstallable(requestBody, false),
 			)
 		},
 	}
@@ -96,12 +105,15 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				"name":              nameStr,
 				"type":              typeStr,
 				"startCmd":          startCmdStr,
-				"portBindings":      portBindingsSlice,
 				"autoCreateMapping": autoCreateMapping,
 			}
 
 			if versionStr != "" {
 				requestBody["version"] = versionStr
+			}
+
+			if len(portBindingsSlice) > 0 {
+				requestBody["portBindings"] = portBindingsSlice
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -139,13 +151,31 @@ func (controller *ServicesController) Update() *cobra.Command {
 		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"name":         nameStr,
-				"type":         typeStr,
-				"startCmd":     startCmdStr,
-				"status":       statusStr,
-				"version":      versionStr,
-				"startupFile":  startupFileStr,
-				"portBindings": portBindingsSlice,
+				"name": nameStr,
+			}
+
+			if typeStr != "" {
+				requestBody["type"] = typeStr
+			}
+
+			if startCmdStr != "" {
+				requestBody["startCmd"] = startCmdStr
+			}
+
+			if statusStr != "" {
+				requestBody["status"] = statusStr
+			}
+
+			if versionStr != "" {
+				requestBody["version"] = versionStr
+			}
+
+			if startupFileStr != "" {
+				requestBody["startupFile"] = startupFileStr
+			}
+
+			if len(portBindingsSlice) > 0 {
+				requestBody["portBindings"] = portBindingsSlice
 			}
 
 			cliHelper.ServiceResponseWrapper(
