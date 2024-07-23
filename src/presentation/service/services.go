@@ -2,11 +2,16 @@ package service
 
 import (
 	"log"
+	"strconv"
+	"strings"
 
+	"github.com/alessio/shellescape"
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
@@ -48,6 +53,7 @@ func (service *ServicesService) ReadInstallables() ServiceOutput {
 
 func (service *ServicesService) CreateInstallable(
 	input map[string]interface{},
+	shouldSchedule bool,
 ) ServiceOutput {
 	requiredParams := []string{"name"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
@@ -103,6 +109,47 @@ func (service *ServicesService) CreateInstallable(
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidAutoCreateMapping")
 		}
+	}
+
+	if shouldSchedule {
+		cliCmd := infraEnvs.SpeediaOsBinary + " services create-installable"
+		installParams := []string{
+			"--name", name.String(),
+			"--auto-create-mapping", strconv.FormatBool(autoCreateMapping),
+		}
+
+		if versionPtr != nil {
+			installParams = append(installParams, "--version", versionPtr.String())
+		}
+
+		if startupFilePtr != nil {
+			installParams = append(installParams, "--startup-file", startupFilePtr.String())
+		}
+
+		for _, portBinding := range portBindings {
+			escapedField := shellescape.Quote(portBinding.String())
+			installParams = append(installParams, "--port-bindings", escapedField)
+		}
+
+		cliCmd += " " + strings.Join(installParams, " ")
+
+		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbService)
+		taskName, _ := valueObject.NewScheduledTaskName("CreateInstallableService")
+		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskTag, _ := valueObject.NewScheduledTaskTag("services")
+		taskTags := []valueObject.ScheduledTaskTag{taskTag}
+		timeoutSeconds := uint(600)
+
+		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
+			taskName, taskCmd, taskTags, &timeoutSeconds, nil,
+		)
+
+		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		if err != nil {
+			return NewServiceOutput(InfraError, err.Error())
+		}
+
+		return NewServiceOutput(Created, "CreateInstallableServiceScheduled")
 	}
 
 	dto := dto.NewCreateInstallableService(
