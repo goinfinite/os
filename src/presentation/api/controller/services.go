@@ -105,7 +105,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	requestBody["portBindings"] = rawPortBindings
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.CreateInstallable(requestBody),
+		c, controller.serviceService.CreateInstallable(requestBody, true),
 	)
 }
 
