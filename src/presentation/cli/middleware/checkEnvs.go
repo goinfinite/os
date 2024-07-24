@@ -1,4 +1,4 @@
-package sharedMiddleware
+package cliMiddleware
 
 import (
 	"crypto/rand"

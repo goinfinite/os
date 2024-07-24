@@ -7,7 +7,6 @@ import (
 
 	cliInit "github.com/speedianet/os/src/presentation/cli/init"
 	cliMiddleware "github.com/speedianet/os/src/presentation/cli/middleware"
-	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +31,8 @@ func CliInit() {
 	defer cliMiddleware.PanicHandler()
 	cliMiddleware.PreventRootless()
 
-	sharedMiddleware.CheckEnvs()
+	cliMiddleware.CheckEnvs()
+	cliMiddleware.LogHandler()
 
 	transientDbSvc := cliInit.TransientDatabaseService()
 	persistentDbSvc := cliInit.PersistentDatabaseService()

@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
-	sharedMiddleware "github.com/speedianet/os/src/presentation/shared/middleware"
 )
 
 const (
@@ -15,7 +14,7 @@ const (
 )
 
 // @title			OsApi
-// @version			0.0.4
+// @version			0.0.5
 // @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
 
@@ -38,8 +37,6 @@ func ApiInit(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) {
-	sharedMiddleware.CheckEnvs()
-
 	baseRoute := e.Group(ApiBasePath)
 
 	e.Pre(apiMiddleware.AddTrailingSlash(ApiBasePath))
