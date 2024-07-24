@@ -1,7 +1,12 @@
 # Changelog
 
 ```log
-0.0.4 - 2024/07/XX
+0.0.5 - 2024/XX/XX
+refactor: api and cli controllers to use services layer
+feat: add log handler middleware
+fix: supervisorctl auth error when using cron
+
+0.0.4 - 2024/07/17
 feat: add async tasks
 refactor: marketplace presentation layer
 
