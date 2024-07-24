@@ -49,8 +49,9 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var nameStr, versionStr, startupFileStr string
-	var portBindingsSlice []string
-	var autoCreateMapping bool
+	var envsSlice, portBindingsSlice []string
+	var autoStart, autoRestart, autoCreateMapping bool
+	var timeoutStartSecsInt, maxStartRetriesInt int
 
 	cmd := &cobra.Command{
 		Use:   "create-installable",
@@ -58,7 +59,13 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"name":              nameStr,
+				"autoStart":         autoStart,
+				"autoRestart":       autoRestart,
 				"autoCreateMapping": autoCreateMapping,
+			}
+
+			if len(envsSlice) > 0 {
+				requestBody["envs"] = envsSlice
 			}
 
 			if versionStr != "" {
@@ -73,6 +80,14 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				requestBody["portBindings"] = portBindingsSlice
 			}
 
+			if timeoutStartSecsInt != 0 {
+				requestBody["timeoutStartSecs"] = uint(timeoutStartSecsInt)
+			}
+
+			if maxStartRetriesInt != 0 {
+				requestBody["maxStartRetries"] = uint(maxStartRetriesInt)
+			}
+
 			cliHelper.ServiceResponseWrapper(
 				controller.serviceServices.CreateInstallable(requestBody, false),
 			)
@@ -81,10 +96,23 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
+	cmd.Flags().StringSliceVarP(&envsSlice, "envs", "e", []string{}, "Envs (name=value)")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
+	cmd.Flags().IntVarP(
+		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
+	)
+	cmd.Flags().BoolVarP(
+		&autoStart, "auto-start", "s", true, "AutoStart",
+	)
+	cmd.Flags().IntVarP(
+		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
+	)
+	cmd.Flags().BoolVarP(
+		&autoRestart, "auto-restart", "r", true, "AutoRestart",
 	)
 	cmd.Flags().BoolVarP(
 		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
@@ -94,8 +122,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var nameStr, typeStr, startCmdStr, versionStr string
-	var portBindingsSlice []string
-	var autoCreateMapping bool
+	var envsSlice, portBindingsSlice []string
+	var autoStart, autoRestart, autoCreateMapping bool
+	var timeoutStartSecsInt, maxStartRetriesInt int
 
 	cmd := &cobra.Command{
 		Use:   "create-custom",
@@ -105,7 +134,13 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				"name":              nameStr,
 				"type":              typeStr,
 				"startCmd":          startCmdStr,
+				"autoStart":         autoStart,
+				"autoRestart":       autoRestart,
 				"autoCreateMapping": autoCreateMapping,
+			}
+
+			if len(envsSlice) > 0 {
+				requestBody["envs"] = envsSlice
 			}
 
 			if versionStr != "" {
@@ -114,6 +149,14 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = portBindingsSlice
+			}
+
+			if timeoutStartSecsInt != 0 {
+				requestBody["timeoutStartSecs"] = uint(timeoutStartSecsInt)
+			}
+
+			if maxStartRetriesInt != 0 {
+				requestBody["maxStartRetries"] = uint(maxStartRetriesInt)
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -128,9 +171,22 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.MarkFlagRequired("type")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.MarkFlagRequired("start-command")
+	cmd.Flags().StringSliceVarP(&envsSlice, "envs", "e", []string{}, "Envs (name=value)")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+	)
+	cmd.Flags().IntVarP(
+		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
+	)
+	cmd.Flags().BoolVarP(
+		&autoStart, "auto-start", "s", true, "AutoStart",
+	)
+	cmd.Flags().IntVarP(
+		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
+	)
+	cmd.Flags().BoolVarP(
+		&autoRestart, "auto-restart", "r", true, "AutoRestart",
 	)
 	cmd.Flags().BoolVarP(
 		&autoCreateMapping,

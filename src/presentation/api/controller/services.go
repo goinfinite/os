@@ -1,9 +1,11 @@
 package apiController
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
@@ -96,6 +98,14 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 		return err
 	}
 
+	rawEnvsSlice := []string{}
+	if requestBody["envs"] != nil {
+		for _, rawEnv := range requestBody["envs"].([]interface{}) {
+			rawEnvsSlice = append(rawEnvsSlice, rawEnv.(string))
+		}
+	}
+	requestBody["envs"] = rawEnvsSlice
+
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
 		rawPortBindings = parseRawPortBindings(
@@ -103,6 +113,28 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 		)
 	}
 	requestBody["portBindings"] = rawPortBindings
+
+	if requestBody["timeoutStartSecs"] != nil {
+		requestBody["timeoutStartSecs"], err = voHelper.InterfaceToUint(
+			requestBody["timeoutStartSecs"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "TimeoutStartSecsMustBeUint",
+			)
+		}
+	}
+
+	if requestBody["maxStartRetries"] != nil {
+		requestBody["maxStartRetries"], err = voHelper.InterfaceToUint(
+			requestBody["maxStartRetries"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "MaxStartRetriesMustBeUint",
+			)
+		}
+	}
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.serviceService.CreateInstallable(requestBody, true),
@@ -125,6 +157,14 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		return err
 	}
 
+	rawEnvsSlice := []string{}
+	if requestBody["envs"] != nil {
+		for _, rawEnv := range requestBody["envs"].([]interface{}) {
+			rawEnvsSlice = append(rawEnvsSlice, rawEnv.(string))
+		}
+	}
+	requestBody["envs"] = rawEnvsSlice
+
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
 		rawPortBindings = parseRawPortBindings(
@@ -132,6 +172,28 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		)
 	}
 	requestBody["portBindings"] = rawPortBindings
+
+	if requestBody["timeoutStartSecs"] != nil {
+		requestBody["timeoutStartSecs"], err = voHelper.InterfaceToUint(
+			requestBody["timeoutStartSecs"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "TimeoutStartSecsMustBeUint",
+			)
+		}
+	}
+
+	if requestBody["maxStartRetries"] != nil {
+		requestBody["maxStartRetries"], err = voHelper.InterfaceToUint(
+			requestBody["maxStartRetries"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(
+				c, http.StatusBadRequest, "MaxStartRetriesMustBeUint",
+			)
+		}
+	}
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.serviceService.CreateCustom(requestBody),
