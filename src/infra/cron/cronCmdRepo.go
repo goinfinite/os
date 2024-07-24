@@ -18,7 +18,7 @@ type CronCmdRepo struct {
 func NewCronCmdRepo() (*CronCmdRepo, error) {
 	cronQueryRepo := CronQueryRepo{}
 
-	currentCrontab, err := cronQueryRepo.Get()
+	currentCrontab, err := cronQueryRepo.Read()
 	if err != nil {
 		return nil, err
 	}
