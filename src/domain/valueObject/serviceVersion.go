@@ -21,8 +21,7 @@ func NewServiceVersion(value interface{}) (ServiceVersion, error) {
 	stringValue = strings.TrimSpace(stringValue)
 
 	re := regexp.MustCompile(serviceVersionRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidServiceVersion")
 	}
 
