@@ -84,8 +84,24 @@ func (service *ServicesService) CreateInstallable(
 		startupFilePtr = &startupFile
 	}
 
+	envs := []valueObject.ServiceEnv{}
+	if input["envs"] != nil {
+		rawEnvs, assertOk := input["envs"].([]string)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidEnvs")
+		}
+
+		for _, rawEnv := range rawEnvs {
+			env, err := valueObject.NewServiceEnv(rawEnv)
+			if err != nil {
+				continue
+			}
+			envs = append(envs, env)
+		}
+	}
+
 	portBindings := []valueObject.PortBinding{}
-	if _, exists := input["portBindings"]; exists {
+	if input["portBindings"] != nil {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidPortBindings")
@@ -98,6 +114,50 @@ func (service *ServicesService) CreateInstallable(
 			}
 			portBindings = append(portBindings, portBinding)
 		}
+	}
+
+	var autoStartPtr *bool
+	if input["autoStart"] != nil {
+		var err error
+		autoStart, err := sharedHelper.ParseBoolParam(
+			input["autoStart"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidAutoStart")
+		}
+		autoStartPtr = &autoStart
+	}
+
+	var timeoutStartSecsPtr *uint
+	if input["timeoutStartSecs"] != nil {
+		var assertOk bool
+		timeoutStartSecs, assertOk := input["timeoutStartSecs"].(uint)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidTimeoutStartSecs")
+		}
+		timeoutStartSecsPtr = &timeoutStartSecs
+	}
+
+	var autoRestartPtr *bool
+	if input["autoRestart"] != nil {
+		var err error
+		autoRestart, err := sharedHelper.ParseBoolParam(
+			input["autoRestart"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidAutoRestart")
+		}
+		autoRestartPtr = &autoRestart
+	}
+
+	var maxStartRetriesPtr *uint
+	if input["maxStartRetries"] != nil {
+		var assertOk bool
+		maxStartRetries, assertOk := input["maxStartRetries"].(uint)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidMaxStartRetries")
+		}
+		maxStartRetriesPtr = &maxStartRetries
 	}
 
 	autoCreateMapping := true
@@ -118,6 +178,20 @@ func (service *ServicesService) CreateInstallable(
 			"--auto-create-mapping", strconv.FormatBool(autoCreateMapping),
 		}
 
+		if len(envs) > 0 {
+			for _, env := range envs {
+				escapedField := shellescape.Quote(env.String())
+				installParams = append(installParams, "--envs", escapedField)
+			}
+		}
+
+		if len(portBindings) > 0 {
+			for _, portBinding := range portBindings {
+				escapedField := shellescape.Quote(portBinding.String())
+				installParams = append(installParams, "--port-bindings", escapedField)
+			}
+		}
+
 		if versionPtr != nil {
 			installParams = append(installParams, "--version", versionPtr.String())
 		}
@@ -126,9 +200,24 @@ func (service *ServicesService) CreateInstallable(
 			installParams = append(installParams, "--startup-file", startupFilePtr.String())
 		}
 
-		for _, portBinding := range portBindings {
-			escapedField := shellescape.Quote(portBinding.String())
-			installParams = append(installParams, "--port-bindings", escapedField)
+		if autoStartPtr != nil {
+			autoStartStr := strconv.FormatBool(*autoStartPtr)
+			installParams = append(installParams, "--auto-start", autoStartStr)
+		}
+
+		if timeoutStartSecsPtr != nil {
+			timeoutStartSecsStr := strconv.FormatUint(uint64(*timeoutStartSecsPtr), 10)
+			installParams = append(installParams, "--timeout-start-secs", timeoutStartSecsStr)
+		}
+
+		if autoRestartPtr != nil {
+			autoRestartStr := strconv.FormatBool(*autoRestartPtr)
+			installParams = append(installParams, "--auto-restart", autoRestartStr)
+		}
+
+		if maxStartRetriesPtr != nil {
+			maxStartRetriesStr := strconv.FormatUint(uint64(*maxStartRetriesPtr), 10)
+			installParams = append(installParams, "--max-start-retries", maxStartRetriesStr)
 		}
 
 		cliCmd += " " + strings.Join(installParams, " ")
@@ -153,8 +242,8 @@ func (service *ServicesService) CreateInstallable(
 	}
 
 	dto := dto.NewCreateInstallableService(
-		name, nil, portBindings, versionPtr, startupFilePtr,
-		nil, nil, nil, nil, &autoCreateMapping,
+		name, envs, portBindings, versionPtr, startupFilePtr, autoStartPtr,
+		timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr, &autoCreateMapping,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
