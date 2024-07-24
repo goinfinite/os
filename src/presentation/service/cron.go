@@ -65,7 +65,7 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "CronCreated")
+	return NewServiceOutput(Created, "CronCreated")
 }
 
 func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
