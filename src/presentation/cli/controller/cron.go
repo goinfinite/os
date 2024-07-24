@@ -18,8 +18,8 @@ func NewCronController() *CronController {
 
 func (controller *CronController) Read() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetCrons",
+		Use:   "get",
+		Short: "ReadCrons",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(controller.cronService.Read())
 		},
