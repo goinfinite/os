@@ -21,16 +21,8 @@ func TestCronCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
-		command, err := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
-		comment, err := valueObject.NewCronComment("Test cron job")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
+		command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
+		comment, _ := valueObject.NewCronComment("Test cron job")
 		createCron := dto.NewCreateCron(schedule, command, &comment)
 
 		err = cronCmdRepo.Create(createCron)
@@ -45,21 +37,9 @@ func TestCronCmdRepo(t *testing.T) {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 
-		schedule, err := valueObject.NewCronSchedule("* * * * 0")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
-		command, err := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
-		comment, err := valueObject.NewCronComment("update test")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
+		schedule, _ := valueObject.NewCronSchedule("* * * * 0")
+		command, _ := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
+		comment, _ := valueObject.NewCronComment("update test")
 		updateCron := dto.NewUpdateCron(id, &schedule, &command, &comment)
 
 		err = cronCmdRepo.Update(updateCron)
@@ -69,11 +49,7 @@ func TestCronCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteCron", func(t *testing.T) {
-		id, err := valueObject.NewCronId(1)
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
+		id, _ := valueObject.NewCronId(1)
 		err = cronCmdRepo.Delete(id)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
