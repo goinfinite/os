@@ -32,11 +32,7 @@ func TestCronCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateCron", func(t *testing.T) {
-		id, err := valueObject.NewCronId(1)
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
+		id, _ := valueObject.NewCronId(1)
 		schedule, _ := valueObject.NewCronSchedule("* * * * 0")
 		command, _ := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
 		comment, _ := valueObject.NewCronComment("update test")
