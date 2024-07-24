@@ -4,7 +4,7 @@ import (
 	"embed"
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"math"
 	"slices"
 	"strconv"
@@ -47,7 +47,11 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 	for _, serviceModel := range servicesModels {
 		serviceEntity, err := serviceModel.ToEntity()
 		if err != nil {
-			log.Printf("[%s] %s", serviceModel.Name, err.Error())
+			slog.Debug(
+				"ModelToEntityError",
+				slog.String("serviceName", serviceModel.Name),
+				slog.Any("error", err),
+			)
 			continue
 		}
 
@@ -55,10 +59,10 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 	}
 
 	rawStoppedServices, err := infraHelper.RunCmdWithSubShell(
-		"supervisorctl status | grep -v 'RUNNING' | awk '{print $1}'",
+		SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'",
 	)
 	if err != nil {
-		log.Printf("GetStoppedServicesError: %s", err.Error())
+		slog.Debug("ReadStoppedServicesError", slog.Any("error", err))
 		return servicesEntities, nil
 	}
 
@@ -75,7 +79,10 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 
 		serviceName, err := valueObject.NewServiceName(rawStoppedService)
 		if err != nil {
-			log.Printf("InvalidStoppedServiceName: %s", rawStoppedService)
+			slog.Debug(
+				"InvalidStoppedServiceName",
+				slog.String("serviceName", rawStoppedService),
+			)
 			continue
 		}
 
@@ -118,7 +125,7 @@ func (repo *ServicesQueryRepo) ReadByName(
 	}
 
 	rawServiceStoppedResult, err := infraHelper.RunCmdWithSubShell(
-		"supervisorctl status " + serviceNameStr + " | grep -v 'RUNNING'",
+		SupervisorCtlBin + " status " + serviceNameStr + " | grep -v 'RUNNING'",
 	)
 	if len(rawServiceStoppedResult) == 0 || err != nil {
 		return serviceEntity, nil
@@ -220,7 +227,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 		serviceNameServiceEntityMap[serviceEntity.Name.String()] = serviceEntity
 	}
 
-	supervisorStatus, _ := infraHelper.RunCmd("supervisorctl", "status")
+	supervisorStatus, _ := infraHelper.RunCmdWithSubShell(SupervisorCtlBin + " status")
 	if len(supervisorStatus) == 0 {
 		return servicesWithMetrics, errors.New("GetSupervisorStatusError")
 	}
@@ -295,13 +302,17 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 ) (cmdSteps []valueObject.UnixCommand, err error) {
 	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
 	if !assertOk {
-		return cmdSteps, errors.New("InvalidCmdSteps")
+		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
 
-	for stepIndex, rawCmd := range cmdStepsMap {
+	for _, rawCmd := range cmdStepsMap {
 		command, err := valueObject.NewUnixCommand(rawCmd)
 		if err != nil {
-			log.Printf("(%sCmdSteps) [index %d] %s", stepsType, stepIndex, err)
+			slog.Debug(
+				"ParseInvalidCmdStepError",
+				slog.String("stepsType", stepsType),
+				slog.Any("rawCmd", rawCmd),
+			)
 			return cmdSteps, err
 		}
 		cmdSteps = append(cmdSteps, command)
@@ -361,10 +372,14 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		if !assertOk {
 			return installableService, errors.New("InvalidServiceVersions")
 		}
-		for versionIndex, rawVersion := range versionsMap {
+		for _, rawVersion := range versionsMap {
 			version, err := valueObject.NewServiceVersion(rawVersion)
 			if err != nil {
-				log.Printf("(%s) [index %d] %s", nameStr, versionIndex, err)
+				slog.Debug(
+					"ParseInvalidServiceVersionError",
+					slog.String("serviceName", nameStr),
+					slog.Any("version", rawVersion),
+				)
 				continue
 			}
 			versions = append(versions, version)
@@ -377,10 +392,14 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		if !assertOk {
 			return installableService, errors.New("InvalidEnvs")
 		}
-		for envIndex, rawEnv := range envsMap {
+		for _, rawEnv := range envsMap {
 			env, err := valueObject.NewServiceEnv(rawEnv)
 			if err != nil {
-				log.Printf("(%s) [index %d] %s", nameStr, envIndex, err)
+				slog.Debug(
+					"ParseInvalidEnvError",
+					slog.String("serviceName", nameStr),
+					slog.Any("env", rawEnv),
+				)
 				continue
 			}
 			envs = append(envs, env)
@@ -393,10 +412,14 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		if !assertOk {
 			return installableService, errors.New("InvalidPortBindings")
 		}
-		for portIndex, rawPortBinding := range portBindingsMap {
+		for _, rawPortBinding := range portBindingsMap {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
-				log.Printf("(%s) [index: %d] %s", nameStr, portIndex, err)
+				slog.Debug(
+					"ParseInvalidPortBindingError",
+					slog.String("serviceName", nameStr),
+					slog.Any("portBinding", rawPortBinding),
+				)
 				continue
 			}
 			portBindings = append(portBindings, portBinding)
@@ -439,10 +462,14 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		if !assertOk {
 			return installableService, errors.New("InvalidUninstallFilePaths")
 		}
-		for fileIndex, rawFileName := range filesMap {
+		for _, rawFileName := range filesMap {
 			fileName, err := valueObject.NewUnixFilePath(rawFileName)
 			if err != nil {
-				log.Printf("(%s) [index %d] %s", nameStr, fileIndex, err)
+				slog.Debug(
+					"ParseInvalidUninstallFilePathError",
+					slog.String("serviceName", nameStr),
+					slog.Any("filePath", rawFileName),
+				)
 				continue
 			}
 			uninstallFilePaths = append(uninstallFilePaths, fileName)
@@ -574,15 +601,20 @@ func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, 
 		rawServiceFilePath := "assets/" + serviceFileName
 		serviceFilePath, err := valueObject.NewUnixFilePath(rawServiceFilePath)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), rawServiceFilePath)
+			slog.Debug(
+				"InvalidServiceFilePathError",
+				slog.Any("assetFile", rawServiceFilePath),
+			)
 			continue
 		}
 		serviceFilePathStr := serviceFilePath.String()
 
 		installableService, err := repo.installableServiceFactory(serviceFilePath)
 		if err != nil {
-			log.Printf(
-				"ReadServiceFileError (%s): %s", serviceFilePathStr, err.Error(),
+			slog.Debug(
+				"InstallableServiceFactoryError",
+				slog.String("assetFile", serviceFilePathStr),
+				slog.Any("error", err),
 			)
 			continue
 		}
