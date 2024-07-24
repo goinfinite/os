@@ -17,7 +17,7 @@ func NewCronService() *CronService {
 
 func (service *CronService) Read() ServiceOutput {
 	cronQueryRepo := cronInfra.CronQueryRepo{}
-	cronsList, err := useCase.GetCrons(cronQueryRepo)
+	cronsList, err := useCase.ReadCrons(cronQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
