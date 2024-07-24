@@ -89,5 +89,4 @@ func (controller *CronController) Delete(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.cronService.Delete(requestBody),
 	)
-
 }
