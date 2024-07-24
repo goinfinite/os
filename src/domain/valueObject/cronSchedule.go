@@ -26,8 +26,7 @@ func NewCronSchedule(value interface{}) (cronSchedule CronSchedule, err error) {
 	}
 
 	re := regexp.MustCompile(cronScheduleRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return cronSchedule, errors.New("InvalidCronSchedule")
 	}
 
