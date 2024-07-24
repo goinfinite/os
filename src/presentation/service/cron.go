@@ -9,15 +9,17 @@ import (
 )
 
 type CronService struct {
+	queryRepo cronInfra.CronQueryRepo
 }
 
 func NewCronService() *CronService {
-	return &CronService{}
+	return &CronService{
+		queryRepo: cronInfra.CronQueryRepo{},
+	}
 }
 
 func (service *CronService) Read() ServiceOutput {
-	cronQueryRepo := cronInfra.CronQueryRepo{}
-	cronsList, err := useCase.ReadCrons(cronQueryRepo)
+	cronsList, err := useCase.ReadCrons(service.queryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -32,33 +34,33 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	cronSchedule, err := valueObject.NewCronSchedule(input["schedule"])
+	schedule, err := valueObject.NewCronSchedule(input["schedule"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	cronCommand, err := valueObject.NewUnixCommand(input["command"])
+	command, err := valueObject.NewUnixCommand(input["command"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	var cronCommentPtr *valueObject.CronComment
+	var commentPtr *valueObject.CronComment
 	if input["comment"] != nil {
-		cronComment, err := valueObject.NewCronComment(input["comment"])
+		comment, err := valueObject.NewCronComment(input["comment"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-		cronCommentPtr = &cronComment
+		commentPtr = &comment
 	}
 
-	dto := dto.NewCreateCron(cronSchedule, cronCommand, cronCommentPtr)
+	dto := dto.NewCreateCron(schedule, command, commentPtr)
 
-	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	cmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	err = useCase.CreateCron(cronCmdRepo, dto)
+	err = useCase.CreateCron(cmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -73,49 +75,46 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	cronId, err := valueObject.NewCronId(input["id"])
+	id, err := valueObject.NewCronId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	var cronSchedulePtr *valueObject.CronSchedule
+	var schedulePtr *valueObject.CronSchedule
 	if input["schedule"] != nil {
-		cronSchedule, err := valueObject.NewCronSchedule(input["schedule"])
+		schedule, err := valueObject.NewCronSchedule(input["schedule"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-		cronSchedulePtr = &cronSchedule
+		schedulePtr = &schedule
 	}
 
-	var cronCommandPtr *valueObject.UnixCommand
+	var commandPtr *valueObject.UnixCommand
 	if input["command"] != nil {
-		cronCommand, err := valueObject.NewUnixCommand(input["command"])
+		command, err := valueObject.NewUnixCommand(input["command"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-		cronCommandPtr = &cronCommand
+		commandPtr = &command
 	}
 
-	var cronCommentPtr *valueObject.CronComment
+	var commentPtr *valueObject.CronComment
 	if input["comment"] != nil {
-		cronComment, err := valueObject.NewCronComment(input["comment"])
+		comment, err := valueObject.NewCronComment(input["comment"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-		cronCommentPtr = &cronComment
+		commentPtr = &comment
 	}
 
-	updateCronDto := dto.NewUpdateCron(
-		cronId, cronSchedulePtr, cronCommandPtr, cronCommentPtr,
-	)
+	dto := dto.NewUpdateCron(id, schedulePtr, commandPtr, commentPtr)
 
-	cronQueryRepo := cronInfra.CronQueryRepo{}
-	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	cmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	err = useCase.UpdateCron(cronQueryRepo, cronCmdRepo, updateCronDto)
+	err = useCase.UpdateCron(service.queryRepo, cmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -124,20 +123,19 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 }
 
 func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
-	cronId, err := valueObject.NewCronId(input["id"])
+	id, err := valueObject.NewCronId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	cronQueryRepo := cronInfra.CronQueryRepo{}
-	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	cmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	deleteDto := dto.NewDeleteCron(&cronId, nil)
+	dto := dto.NewDeleteCron(&id, nil)
 
-	err = useCase.DeleteCron(cronQueryRepo, cronCmdRepo, deleteDto)
+	err = useCase.DeleteCron(service.queryRepo, cmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
