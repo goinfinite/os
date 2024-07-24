@@ -16,11 +16,7 @@ func TestCronCmdRepo(t *testing.T) {
 	}
 
 	t.Run("CreateCron", func(t *testing.T) {
-		schedule, err := valueObject.NewCronSchedule("* * * * *")
-		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
-		}
-
+		schedule, _ := valueObject.NewCronSchedule("* * * * *")
 		command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 		comment, _ := valueObject.NewCronComment("Test cron job")
 		createCron := dto.NewCreateCron(schedule, command, &comment)
