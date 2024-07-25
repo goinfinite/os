@@ -6,17 +6,31 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type SslCertificateContent string
 
-func NewSslCertificateContent(sslCertificate string) (SslCertificateContent, error) {
-	certificate := SslCertificateContent(sslCertificate)
-	if !certificate.isValid() {
-		return "", errors.New("InvalidSslCertificateContent")
+func NewSslCertificateContent(input interface{}) (
+	certContent SslCertificateContent, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(input)
+	if err != nil {
+		return certContent, errors.New("SslCertificateContentMustBeString")
 	}
 
-	return certificate, nil
+	pemBlock, _ := pem.Decode([]byte(stringValue))
+	if pemBlock == nil {
+		return certContent, errors.New("InvalidSslCertificateContent")
+	}
+
+	_, err = x509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return certContent, errors.New("InvalidSslCertificateContent")
+	}
+
+	return SslCertificateContent(stringValue), nil
 }
 
 func NewSslCertificateContentPanic(certificate string) SslCertificateContent {
@@ -27,24 +41,12 @@ func NewSslCertificateContentPanic(certificate string) SslCertificateContent {
 	return sslCertificate
 }
 
-func (sslCrt SslCertificateContent) isValid() bool {
-	block, _ := pem.Decode([]byte(sslCrt))
-	if block == nil {
-		return false
-	}
-
-	_, err := x509.ParseCertificate(block.Bytes)
-	return err == nil
-}
-
 func NewSslCertificateContentFromEncodedContent(
 	encodedContent EncodedContent,
-) (SslCertificateContent, error) {
-	var sslCertificateContent SslCertificateContent
-
+) (certContent SslCertificateContent, err error) {
 	decodedContent, err := encodedContent.GetDecodedContent()
 	if err != nil {
-		return sslCertificateContent, errors.New("InvalidSslCertificate")
+		return certContent, errors.New("InvalidSslCertificate")
 	}
 
 	return NewSslCertificateContent(decodedContent)
@@ -61,11 +63,11 @@ func NewSslCertificateContentFromEncodedContentPanic(
 	return NewSslCertificateContentPanic(decodedContent)
 }
 
-func (sslCrt SslCertificateContent) String() string {
-	return string(sslCrt)
+func (vo SslCertificateContent) String() string {
+	return string(vo)
 }
 
-func (sslCrt SslCertificateContent) MarshalJSON() ([]byte, error) {
-	sslCrtBytes := []byte(string(sslCrt))
-	return json.Marshal(base64.StdEncoding.EncodeToString(sslCrtBytes))
+func (vo SslCertificateContent) MarshalJSON() ([]byte, error) {
+	voBytes := []byte(string(vo))
+	return json.Marshal(base64.StdEncoding.EncodeToString(voBytes))
 }
