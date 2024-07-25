@@ -33,8 +33,8 @@ func NewSslController(
 
 func (controller *SslController) Read() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetSslPairs",
+		Use:   "get",
+		Short: "ReadSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(controller.sslService.Read())
 		},
