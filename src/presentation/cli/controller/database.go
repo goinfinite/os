@@ -102,11 +102,14 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 		Short: "CreateNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"dbType":     dbTypeStr,
-				"dbName":     dbNameStr,
-				"username":   dbUserStr,
-				"password":   dbPassStr,
-				"privileges": privilegesSlice,
+				"dbType":   dbTypeStr,
+				"dbName":   dbNameStr,
+				"username": dbUserStr,
+				"password": dbPassStr,
+			}
+
+			if len(privilegesSlice) > 0 {
+				requestBody["privileges"] = privilegesSlice
 			}
 
 			cliHelper.ServiceResponseWrapper(
