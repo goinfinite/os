@@ -4,35 +4,33 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const cronScheduleRegex string = `^((?P<frequencyStr>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)) ?|((?P<minute>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<hour>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<day>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<month>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<weekday>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )?)$`
 
 type CronSchedule string
 
-func NewCronSchedule(value string) (CronSchedule, error) {
-	if shouldHaveAtSign(value) {
-		hasAtSign := strings.HasPrefix(value, "@")
+func NewCronSchedule(value interface{}) (cronSchedule CronSchedule, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return cronSchedule, errors.New("CronScheduleMustBeString")
+	}
+
+	if shouldHaveAtSign(stringValue) {
+		hasAtSign := strings.HasPrefix(stringValue, "@")
 		if !hasAtSign {
-			value = "@" + value
+			stringValue = "@" + stringValue
 		}
 	}
 
-	schedule := CronSchedule(value)
-
-	if !schedule.isValid() {
-		return "", errors.New("InvalidCronSchedule")
+	re := regexp.MustCompile(cronScheduleRegex)
+	if !re.MatchString(stringValue) {
+		return cronSchedule, errors.New("InvalidCronSchedule")
 	}
 
-	return schedule, nil
-}
-
-func NewCronSchedulePanic(value string) CronSchedule {
-	schedule, err := NewCronSchedule(value)
-	if err != nil {
-		panic(err)
-	}
-	return schedule
+	return CronSchedule(stringValue), nil
 }
 
 func shouldHaveAtSign(value string) bool {
@@ -41,11 +39,6 @@ func shouldHaveAtSign(value string) bool {
 	return frequencyRegex.MatchString(value)
 }
 
-func (schedule CronSchedule) isValid() bool {
-	scheduleRe := regexp.MustCompile(cronScheduleRegex)
-	return scheduleRe.MatchString(string(schedule))
-}
-
-func (schedule CronSchedule) String() string {
-	return string(schedule)
+func (vo CronSchedule) String() string {
+	return string(vo)
 }

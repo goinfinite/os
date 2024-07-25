@@ -57,7 +57,7 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "AccountCreated")
+	return NewServiceOutput(Created, "AccountCreated")
 }
 
 func (service *AccountService) Update(input map[string]interface{}) ServiceOutput {
