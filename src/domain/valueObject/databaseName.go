@@ -18,8 +18,7 @@ func NewDatabaseName(value interface{}) (dbName DatabaseName, err error) {
 	}
 
 	re := regexp.MustCompile(databaseNameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return dbName, errors.New("InvalidDatabaseName")
 	}
 

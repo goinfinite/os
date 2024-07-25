@@ -20,8 +20,7 @@ func NewDatabaseUsername(value interface{}) (
 	}
 
 	re := regexp.MustCompile(databaseUsernameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return dbUsername, errors.New("InvalidDatabaseUsername")
 	}
 	return DatabaseUsername(stringValue), nil
