@@ -13,11 +13,13 @@ import (
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	"github.com/speedianet/os/src/presentation/service"
 )
 
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	sslService      *service.SslService
 }
 
 func NewSslController(
@@ -27,6 +29,7 @@ func NewSslController(
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
+		sslService:      service.NewSslService(persistentDbSvc, transientDbSvc),
 	}
 }
 
@@ -40,13 +43,7 @@ func NewSslController(
 // @Success      200 {array} entity.SslPair
 // @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(c echo.Context) error {
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, sslPairsList)
+	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
 }
 
 func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {

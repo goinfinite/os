@@ -10,12 +10,14 @@ import (
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
 )
 
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	sslService      *service.SslService
 }
 
 func NewSslController(
@@ -25,6 +27,7 @@ func NewSslController(
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
+		sslService:      service.NewSslService(persistentDbSvc, transientDbSvc),
 	}
 }
 
@@ -33,13 +36,7 @@ func (controller *SslController) Read() *cobra.Command {
 		Use:   "list",
 		Short: "GetSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslPairsList, err := useCase.ReadSslPairs(sslQueryRepo)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, sslPairsList)
+			cliHelper.ServiceResponseWrapper(controller.sslService.Read())
 		},
 	}
 
