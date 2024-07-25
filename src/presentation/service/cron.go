@@ -9,17 +9,17 @@ import (
 )
 
 type CronService struct {
-	queryRepo cronInfra.CronQueryRepo
+	cronQueryRepo cronInfra.CronQueryRepo
 }
 
 func NewCronService() *CronService {
 	return &CronService{
-		queryRepo: cronInfra.CronQueryRepo{},
+		cronQueryRepo: cronInfra.CronQueryRepo{},
 	}
 }
 
 func (service *CronService) Read() ServiceOutput {
-	cronsList, err := useCase.ReadCrons(service.queryRepo)
+	cronsList, err := useCase.ReadCrons(service.cronQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -114,7 +114,7 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	err = useCase.UpdateCron(service.queryRepo, cmdRepo, dto)
+	err = useCase.UpdateCron(service.cronQueryRepo, cmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -135,7 +135,7 @@ func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 
 	dto := dto.NewDeleteCron(&id, nil)
 
-	err = useCase.DeleteCron(service.queryRepo, cmdRepo, dto)
+	err = useCase.DeleteCron(service.cronQueryRepo, cmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
