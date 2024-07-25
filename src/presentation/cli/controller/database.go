@@ -25,8 +25,8 @@ func (controller *DatabaseController) Read() *cobra.Command {
 	var dbTypeStr string
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetDatabases",
+		Use:   "get",
+		Short: "ReadDatabases",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"dbType": dbTypeStr,
