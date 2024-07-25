@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-func TestNewCronId(t *testing.T) {
-	t.Run("ValidId", func(t *testing.T) {
-		validIds := []interface{}{
+func TestCronId(t *testing.T) {
+	t.Run("ValidCronId", func(t *testing.T) {
+		validCronIds := []interface{}{
 			"0",
 			int(0),
 			int8(0),
@@ -22,16 +22,16 @@ func TestNewCronId(t *testing.T) {
 			float64(0),
 		}
 
-		for _, schedule := range validIds {
-			_, err := NewCronId(schedule)
+		for _, cronId := range validCronIds {
+			_, err := NewCronId(cronId)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", schedule, err)
+				t.Errorf("Expected no error for %s, got %v", cronId, err)
 			}
 		}
 	})
 
-	t.Run("InvalidId", func(t *testing.T) {
-		invalidIds := []interface{}{
+	t.Run("InvalidCronId", func(t *testing.T) {
+		invalidCronIds := []interface{}{
 			"-1",
 			int(-1),
 			int8(-1),
@@ -42,10 +42,10 @@ func TestNewCronId(t *testing.T) {
 			float64(-1),
 		}
 
-		for _, schedule := range invalidIds {
-			_, err := NewCronId(schedule)
+		for _, cronId := range invalidCronIds {
+			_, err := NewCronId(cronId)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", schedule)
+				t.Errorf("Expected error for %s, got nil", cronId)
 			}
 		}
 	})

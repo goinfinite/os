@@ -61,7 +61,7 @@ func (repo CronQueryRepo) cronFactory(
 	return entity.NewCron(id, schedule, cmd, cronCommentPtr), nil
 }
 
-func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
+func (repo CronQueryRepo) Read() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
 	cronOut, err := infraHelper.RunCmd("crontab", "-l")
@@ -96,10 +96,10 @@ func (repo CronQueryRepo) Get() ([]entity.Cron, error) {
 	return crons, nil
 }
 
-func (repo CronQueryRepo) GetById(
+func (repo CronQueryRepo) ReadById(
 	cronId valueObject.CronId,
 ) (cronEntity entity.Cron, err error) {
-	crons, err := repo.Get()
+	crons, err := repo.Read()
 	if err != nil {
 		return cronEntity, err
 	}
