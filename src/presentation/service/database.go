@@ -36,7 +36,7 @@ func (service *DatabaseService) Read(input map[string]interface{}) ServiceOutput
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
-	databasesList, err := useCase.GetDatabases(databaseQueryRepo)
+	databasesList, err := useCase.ReadDatabases(databaseQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
