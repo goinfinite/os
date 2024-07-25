@@ -13,7 +13,7 @@ func DeleteDatabase(
 	dbCmdRepo repository.DatabaseCmdRepo,
 	dbName valueObject.DatabaseName,
 ) error {
-	_, err := dbQueryRepo.GetByName(dbName)
+	_, err := dbQueryRepo.ReadByName(dbName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}

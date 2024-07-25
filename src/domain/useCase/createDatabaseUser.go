@@ -14,7 +14,7 @@ func CreateDatabaseUser(
 	dbCmdRepo repository.DatabaseCmdRepo,
 	createDatabaseUser dto.CreateDatabaseUser,
 ) error {
-	_, err := dbQueryRepo.GetByName(createDatabaseUser.DatabaseName)
+	_, err := dbQueryRepo.ReadByName(createDatabaseUser.DatabaseName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}

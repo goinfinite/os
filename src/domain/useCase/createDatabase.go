@@ -13,7 +13,7 @@ func CreateDatabase(
 	dbCmdRepo repository.DatabaseCmdRepo,
 	createDatabase dto.CreateDatabase,
 ) error {
-	_, err := dbQueryRepo.GetByName(createDatabase.DatabaseName)
+	_, err := dbQueryRepo.ReadByName(createDatabase.DatabaseName)
 	if err == nil {
 		return errors.New("DatabaseAlreadyExists")
 	}

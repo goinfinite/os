@@ -14,7 +14,7 @@ func DeleteDatabaseUser(
 	dbName valueObject.DatabaseName,
 	dbUser valueObject.DatabaseUsername,
 ) error {
-	_, err := dbQueryRepo.GetByName(dbName)
+	_, err := dbQueryRepo.ReadByName(dbName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}

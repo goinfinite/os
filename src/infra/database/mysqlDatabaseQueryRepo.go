@@ -134,7 +134,7 @@ func (repo MysqlDatabaseQueryRepo) getDatabaseUserPrivileges(
 	return dbUserPrivileges, nil
 }
 
-func (repo MysqlDatabaseQueryRepo) Get() ([]entity.Database, error) {
+func (repo MysqlDatabaseQueryRepo) Read() ([]entity.Database, error) {
 	databases := []entity.Database{}
 
 	dbNames, err := repo.getDatabaseNames()

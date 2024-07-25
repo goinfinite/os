@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetDatabases(
+func ReadDatabases(
 	databaseQueryRepo repository.DatabaseQueryRepo,
 ) ([]entity.Database, error) {
-	return databaseQueryRepo.Get()
+	return databaseQueryRepo.Read()
 }
