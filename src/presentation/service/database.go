@@ -77,7 +77,7 @@ func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "DatabaseCreated")
+	return NewServiceOutput(Created, "DatabaseCreated")
 }
 
 func (service *DatabaseService) Delete(input map[string]interface{}) ServiceOutput {
@@ -170,7 +170,7 @@ func (service *DatabaseService) CreateUser(
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "DatabaseUserCreated")
+	return NewServiceOutput(Created, "DatabaseUserCreated")
 }
 
 func (service *DatabaseService) DeleteUser(
