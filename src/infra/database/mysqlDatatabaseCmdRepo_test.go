@@ -18,25 +18,10 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 		t.Error("Error starting command")
 	}
 
-	dbName, err := valueObject.NewDatabaseName("testing")
-	if err != nil {
-		t.Errorf("Unexpecting error: %s", err.Error())
-	}
-
-	dbUsername, err := valueObject.NewDatabaseUsername("testing")
-	if err != nil {
-		t.Errorf("Unexpecting error: %s", err.Error())
-	}
-
-	dbPassword, err := valueObject.NewPassword("testing")
-	if err != nil {
-		t.Errorf("Unexpecting error: %s", err.Error())
-	}
-
-	dbPrivilege, err := valueObject.NewDatabasePrivilege("ALL")
-	if err != nil {
-		t.Errorf("Unexpecting error: %s", err.Error())
-	}
+	dbName, _ := valueObject.NewDatabaseName("testing")
+	dbUsername, _ := valueObject.NewDatabaseUsername("testing")
+	dbPassword, _ := valueObject.NewPassword("testing")
+	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
