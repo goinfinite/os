@@ -2,6 +2,7 @@ package servicesInfra
 
 import (
 	"errors"
+	"log/slog"
 	"strconv"
 	"strings"
 	"text/template"
@@ -14,6 +15,8 @@ import (
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 )
+
+const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /speedia/supervisord.conf"
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -38,7 +41,11 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 	}
 
 	for stepIndex, step := range steps {
-		stepOutput, err := infraHelper.RunCmdWithSubShell(step.String())
+		stepStr := step.String()
+
+		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
+
+		stepOutput, err := infraHelper.RunCmdWithSubShell(stepStr)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
 			combinedOutput := stepOutput + " " + err.Error()
@@ -65,14 +72,18 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	startOutput, err := infraHelper.RunCmd("supervisorctl", "start", serviceNameStr)
+	startOutput, err := infraHelper.RunCmdWithSubShell(
+		SupervisorCtlBin + " start " + serviceNameStr,
+	)
 	if err != nil {
 		combinedOutput := startOutput + " " + err.Error()
 		if !strings.Contains(combinedOutput, "no such process") {
 			return errors.New("SupervisorStartError: " + combinedOutput)
 		}
 
-		addOutput, err := infraHelper.RunCmd("supervisorctl", "add", serviceNameStr)
+		addOutput, err := infraHelper.RunCmdWithSubShell(
+			SupervisorCtlBin + " add " + serviceNameStr,
+		)
 		if err != nil {
 			combinedOutput = addOutput + " " + err.Error()
 			return errors.New("SupervisorAddError: " + combinedOutput)
@@ -95,8 +106,8 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return err
 	}
 
-	stopOutput, err := infraHelper.RunCmd(
-		"supervisorctl", "stop", serviceEntity.Name.String(),
+	stopOutput, err := infraHelper.RunCmdWithSubShell(
+		SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
 	)
 	if err != nil {
 		combinedOutput := stopOutput + " " + err.Error()
@@ -215,7 +226,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return err
 	}
 
-	reReadOutput, err := infraHelper.RunCmd("supervisorctl", "reread")
+	reReadOutput, err := infraHelper.RunCmdWithSubShell(SupervisorCtlBin + " reread")
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
 		return errors.New("SupervisorRereadError: " + combinedOutput)
@@ -632,9 +643,12 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	_, err = infraHelper.RunCmd("supervisorctl", "remove", serviceNameStr)
+	removeOutput, err := infraHelper.RunCmdWithSubShell(
+		SupervisorCtlBin + " remove " + serviceNameStr,
+	)
 	if err != nil {
-		return errors.New("SupervisorRemoveError: " + err.Error())
+		combinedOutput := removeOutput + " " + err.Error()
+		return errors.New("SupervisorRemoveError: " + combinedOutput)
 	}
 
 	err = repo.persistentDbSvc.Handler.
@@ -664,7 +678,11 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	for fileIndex, uninstallFilePath := range installableEntity.UninstallFilePaths {
-		_, err := infraHelper.RunCmd("rm", "-rf", uninstallFilePath.String())
+		filePathStr := uninstallFilePath.String()
+
+		slog.Debug("RemovingFilePath", slog.String("filePath", filePathStr))
+
+		_, err := infraHelper.RunCmd("rm", "-rf", filePathStr)
 		if err != nil {
 			fileIndexStr := strconv.Itoa(fileIndex)
 			return errors.New("RemoveFilePathError (" + fileIndexStr + "): " + err.Error())

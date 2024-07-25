@@ -21,7 +21,7 @@ docker run --rm --name myapp-container \
 
 In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic.
 
-You can customize the container name, vhost, and host ports as needed. The --rm flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
+You can customize the container name, vhost, and host ports as needed. The `--rm` flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
 
 After deploying the container, access the shell to create a new account with the following command:
 
@@ -35,7 +35,7 @@ Once the account is created, you can access the dashboard at `https://localhost:
 Through the dashboard, you can deploy applications using the Marketplace feature with just a few clicks. You can also use the CLI for deployments, such as:
 
 ```
-os mktplace install -s wp -n myapp.net \
+os mktplace install -s wp \
   -f 'adminUsername:admin' \
   -f 'adminPassword:abc123' \
   -f 'adminMailAddress:user@example.com'
@@ -57,13 +57,9 @@ To run this project during development you must install [Air](https://github.com
 
 You must have an `.env` file in the root of the git directory **during development**. You can use the `.env.example` file as a template. Air will read the `.env` file and use it to run the project during development.
 
-If you add a new env var that is required to run the apis, please add it to the `src/presentation/shared/checkEnvs.go` file.
+If you add a new env var that is required to run the apis, please add it to the `src/presentation/cli/checkEnvs.go` file.
 
-When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system. For instance, if you want to set the `ENV1` variable, you can do it in the `.env` file or in the command line:
-
-```
-ENV1=XXX /speedia/os
-```
+When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system.
 
 ### Unit Testing
 
@@ -103,7 +99,7 @@ To run the project you may use the following command:
 podman run --name sos --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it sos:latest
 ```
 
-When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy.
+When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
 
 ### VSCode Extensions
 

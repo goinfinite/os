@@ -2,9 +2,9 @@ package presentation
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
-	"strings"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
@@ -13,28 +13,6 @@ import (
 	"github.com/speedianet/os/src/presentation/api"
 	"github.com/speedianet/os/src/presentation/ui"
 )
-
-type CustomLogger struct{}
-
-func (*CustomLogger) Write(rawMessage []byte) (int, error) {
-	messageStr := strings.TrimSpace(string(rawMessage))
-
-	shouldLog := true
-	if strings.HasSuffix(messageStr, "tls: unknown certificate") {
-		shouldLog = false
-	}
-
-	messageLen := len(rawMessage)
-	if !shouldLog {
-		return messageLen, nil
-	}
-
-	return messageLen, log.Output(2, messageStr)
-}
-
-func NewCustomLogger() *log.Logger {
-	return log.New(&CustomLogger{}, "", 0)
-}
 
 func webServerSetup(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
@@ -54,11 +32,7 @@ func HttpServerInit(
 	api.ApiInit(e, persistentDbSvc, transientDbSvc)
 	ui.UiInit(e)
 
-	httpServer := http.Server{
-		Addr:     ":1618",
-		Handler:  e,
-		ErrorLog: NewCustomLogger(),
-	}
+	httpServer := http.Server{Addr: ":1618", Handler: e}
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 
@@ -68,13 +42,15 @@ func HttpServerInit(
 	if !infraHelper.FileExists(certFile) {
 		err := infraHelper.MakeDir(pkiDir)
 		if err != nil {
-			log.Fatalf("MakePkiDirFailed: %v", err)
+			slog.Error("MakePkiDirFailed", slog.Any("error", err))
+			os.Exit(1)
 		}
 
 		aliases := []string{}
 		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", aliases)
 		if err != nil {
-			log.Fatalf("GenerateSelfSignedCertFailed: %v", err)
+			slog.Error("GenerateSelfSignedCertFailed", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}
 
@@ -95,6 +71,7 @@ _____________________________________________________________________
 
 	err := httpServer.ListenAndServeTLS(certFile, keyFile)
 	if err != http.ErrServerClosed {
-		log.Fatal(err)
+		slog.Error("HttpServerError", slog.Any("error", err))
+		os.Exit(1)
 	}
 }
