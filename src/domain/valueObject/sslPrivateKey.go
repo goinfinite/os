@@ -34,37 +34,6 @@ func NewSslPrivateKey(value interface{}) (privateKey SslPrivateKey, err error) {
 	return SslPrivateKey(stringValue), nil
 }
 
-func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
-	sslPrivateKey, err := NewSslPrivateKey(privateKey)
-	if err != nil {
-		panic(err)
-	}
-	return sslPrivateKey
-}
-
-func NewSslPrivateKeyFromEncodedContent(
-	encodedContent EncodedContent,
-) (privateKey SslPrivateKey, err error) {
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		return privateKey, errors.New("InvalidSslPrivateKey")
-	}
-
-	return NewSslPrivateKey(decodedContent)
-}
-
-// TODO: Remover isso.
-func NewSslPrivateKeyFromEncodedContentPanic(
-	encodedContent EncodedContent,
-) SslPrivateKey {
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		panic("InvalidSslPrivateKey")
-	}
-
-	return NewSslPrivateKeyPanic(decodedContent)
-}
-
 func (vo SslPrivateKey) String() string {
 	return string(vo)
 }
