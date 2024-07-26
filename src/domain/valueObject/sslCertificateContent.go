@@ -33,36 +33,6 @@ func NewSslCertificateContent(input interface{}) (
 	return SslCertificateContent(stringValue), nil
 }
 
-func NewSslCertificateContentPanic(certificate string) SslCertificateContent {
-	sslCertificate, err := NewSslCertificateContent(certificate)
-	if err != nil {
-		panic(err)
-	}
-	return sslCertificate
-}
-
-func NewSslCertificateContentFromEncodedContent(
-	encodedContent EncodedContent,
-) (certContent SslCertificateContent, err error) {
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		return certContent, errors.New("InvalidSslCertificate")
-	}
-
-	return NewSslCertificateContent(decodedContent)
-}
-
-func NewSslCertificateContentFromEncodedContentPanic(
-	encodedContent EncodedContent,
-) SslCertificateContent {
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		panic("InvalidSslCertificate")
-	}
-
-	return NewSslCertificateContentPanic(decodedContent)
-}
-
 func (vo SslCertificateContent) String() string {
 	return string(vo)
 }
