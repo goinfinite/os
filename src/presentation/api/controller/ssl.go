@@ -6,12 +6,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
 )
@@ -81,45 +79,49 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
-	requiredParams := []string{"virtualHosts", "certificate", "key"}
-	requestBody, _ := apiHelper.ReadRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	sslCertificateEncoded := valueObject.NewEncodedContentPanic(
-		requestBody["certificate"].(string),
-	)
-	sslCertificateContent := valueObject.NewSslCertificateContentFromEncodedContentPanic(
-		sslCertificateEncoded,
-	)
-	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
-
-	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
-	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
-
-	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
-
-	createSslPairDto := dto.NewCreateSslPair(
-		virtualHosts,
-		sslCertificate,
-		sslPrivateKey,
-	)
-
-	sslCmdRepo := sslInfra.NewSslCmdRepo(
-		controller.persistentDbSvc, controller.transientDbSvc,
-	)
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-
-	err := useCase.CreateSslPair(
-		sslCmdRepo,
-		vhostQueryRepo,
-		createSslPairDto,
-	)
+	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "SslPairCreated")
+	rawVhostsSlice := []string{}
+	switch rawVhosts := requestBody["virtualHosts"].(type) {
+	case string:
+		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
+	case []interface{}:
+		for _, rawVhost := range rawVhosts {
+			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
+		}
+	}
+	requestBody["virtualHosts"] = rawVhostsSlice
+
+	encodedCert, err := valueObject.NewEncodedContent(requestBody["certificate"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	decodedCert, err := encodedCert.GetDecodedContent()
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			c, http.StatusBadRequest, "CannotDecodeSslCertificateContent",
+		)
+	}
+	requestBody["certificate"] = decodedCert
+
+	encodedKey, err := valueObject.NewEncodedContent(requestBody["key"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	decodedKey, err := encodedKey.GetDecodedContent()
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			c, http.StatusBadRequest, "CannotDecodeSslPrivateKeyContent",
+		)
+	}
+	requestBody["key"] = decodedKey
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.Create(requestBody),
+	)
 }
 
 // DeleteSslPair	 godoc

@@ -2,13 +2,11 @@ package cliController
 
 import (
 	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -45,68 +43,51 @@ func (controller *SslController) Read() *cobra.Command {
 
 func (controller *SslController) Create() *cobra.Command {
 	var virtualHostsSlice []string
-	var certificateFilePathStr string
-	var keyFilePathStr string
+	var certFilePathStr, keyFilePathStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			var virtualHosts []valueObject.Fqdn
-			for _, vhost := range virtualHostsSlice {
-				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+			requestBody := map[string]interface{}{
+				"virtualHosts": virtualHostsSlice,
 			}
 
-			certificateFilePath, err := valueObject.NewUnixFilePath(certificateFilePathStr)
+			certFilePath, err := valueObject.NewUnixFilePath(certFilePathStr)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
 			}
-
-			certificateContentStr, err := infraHelper.GetFileContent(
-				certificateFilePath.String(),
-			)
+			certContentStr, err := infraHelper.GetFileContent(certFilePath.String())
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
-			sslCertificateContent := valueObject.NewSslCertificateContentPanic(certificateContentStr)
+			requestBody["certificate"] = certContentStr
 
-			privateKeyContentStr, err := infraHelper.GetFileContent(keyFilePathStr)
+			privateKeyFilePath, err := valueObject.NewUnixFilePath(keyFilePathStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "OpenPrivateKeyFileError")
+				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
 			}
-
-			sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
-			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
-
-			createSslDto := dto.NewCreateSslPair(
-				virtualHosts,
-				sslCertificate,
-				sslPrivateKey,
-			)
-
-			sslCmdRepo := sslInfra.NewSslCmdRepo(
-				controller.persistentDbSvc, controller.transientDbSvc,
-			)
-			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-
-			err = useCase.CreateSslPair(
-				sslCmdRepo,
-				vhostQueryRepo,
-				createSslDto,
+			privateKeyContentStr, err := infraHelper.GetFileContent(
+				privateKeyFilePath.String(),
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				cliHelper.ResponseWrapper(false, "OpenSslPrivateKeyFileError")
 			}
+			requestBody["key"] = privateKeyContentStr
 
-			cliHelper.ResponseWrapper(true, "SslPairCreated")
+			cliHelper.ServiceResponseWrapper(controller.sslService.Create(requestBody))
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts")
+	cmd.Flags().StringSliceVarP(
+		&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts",
+	)
 	cmd.MarkFlagRequired("virtualHosts")
-	cmd.Flags().StringVarP(&certificateFilePathStr, "certFilePath", "c", "", "CertificateFilePath")
+	cmd.Flags().StringVarP(
+		&certFilePathStr, "certFilePath", "c", "", "SslCertificateFilePath",
+	)
 	cmd.MarkFlagRequired("certFilePath")
-	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "KeyFilePath")
+	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "SslKeyFilePath")
 	cmd.MarkFlagRequired("keyFilePath")
 	return cmd
 }
