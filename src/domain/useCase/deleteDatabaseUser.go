@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -21,14 +21,14 @@ func DeleteDatabaseUser(
 
 	err = dbCmdRepo.DeleteUser(dbName, dbUser)
 	if err != nil {
-		log.Printf("DeleteDatabaseUserError: %s", err.Error())
+		slog.Error("DeleteDatabaseUserError", slog.Any("error", err))
 		return errors.New("DeleteDatabaseUserInfraError")
 	}
 
-	log.Printf(
-		"Database user '%s' for '%s' deleted.",
-		dbUser.String(),
-		dbName.String(),
+	slog.Info(
+		"DatabaseUserDeleted",
+		slog.String("databaseName", dbUser.String()),
+		slog.String("databaseUsername", dbName.String()),
 	)
 
 	return nil

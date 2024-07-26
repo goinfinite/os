@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -20,11 +20,14 @@ func DeleteDatabase(
 
 	err = dbCmdRepo.Delete(dbName)
 	if err != nil {
-		log.Printf("DeleteDatabaseError: %s", err.Error())
+		slog.Error("DeleteDatabaseError", slog.Any("error", err))
 		return errors.New("DeleteDatabaseInfraError")
 	}
 
-	log.Printf("Database '%v' deleted.", dbName.String())
+	slog.Info(
+		"DatabaseDeleted",
+		slog.String("databaseName", dbName.String()),
+	)
 
 	return nil
 }

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -20,11 +20,14 @@ func CreateDatabase(
 
 	err = dbCmdRepo.Create(createDatabase.DatabaseName)
 	if err != nil {
-		log.Printf("CreateDatabaseError: %s", err.Error())
+		slog.Error("CreateDatabaseError", slog.Any("error", err))
 		return errors.New("CreateDatabaseInfraError")
 	}
 
-	log.Printf("Database %s created", createDatabase.DatabaseName)
+	slog.Info(
+		"DatabaseCreated",
+		slog.String("databaseName", createDatabase.DatabaseName.String()),
+	)
 
 	return nil
 }
