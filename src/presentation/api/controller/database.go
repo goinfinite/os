@@ -108,7 +108,12 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 
 	rawPrivilegesSlice := []string{}
 	for _, rawPrivilege := range requestBody["privileges"].([]interface{}) {
-		rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilege.(string))
+		rawPrivilegeStr, assertOk := rawPrivilege.(string)
+		if !assertOk {
+			continue
+		}
+
+		rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilegeStr)
 	}
 	requestBody["privileges"] = rawPrivilegesSlice
 
