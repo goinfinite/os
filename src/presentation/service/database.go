@@ -23,6 +23,12 @@ func NewDatabaseService(
 }
 
 func (service *DatabaseService) Read(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"dbType"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
 	dbType, err := valueObject.NewDatabaseType(input["dbType"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
