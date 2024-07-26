@@ -135,23 +135,13 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(c echo.Context) error {
-	sslSerialNumber := valueObject.NewSslIdPanic(c.Param("sslPairId"))
-
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(
-		controller.persistentDbSvc, controller.transientDbSvc,
-	)
-
-	err := useCase.DeleteSslPair(
-		sslQueryRepo,
-		sslCmdRepo,
-		sslSerialNumber,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	requestBody := map[string]interface{}{
+		"id": c.Param("sslPairId"),
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairDeleted")
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.Delete(requestBody),
+	)
 }
 
 func (controller *SslController) SslCertificateWatchdog() {

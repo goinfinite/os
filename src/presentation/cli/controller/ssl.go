@@ -99,28 +99,15 @@ func (controller *SslController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslId := valueObject.NewSslIdPanic(sslPairIdStr)
-
-			cronQueryRepo := sslInfra.SslQueryRepo{}
-			cronCmdRepo := sslInfra.NewSslCmdRepo(
-				controller.persistentDbSvc, controller.transientDbSvc,
-			)
-
-			err := useCase.DeleteSslPair(
-				cronQueryRepo,
-				cronCmdRepo,
-				sslId,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+			requestBody := map[string]interface{}{
+				"id": sslPairIdStr,
 			}
-
-			cliHelper.ResponseWrapper(true, "SslPairDeleted")
+			cliHelper.ServiceResponseWrapper(controller.sslService.Delete(requestBody))
 		},
 	}
 
-	cmd.Flags().StringVarP(&sslPairIdStr, "id", "i", "", "SslPairId")
-	cmd.MarkFlagRequired("sslPairId")
+	cmd.Flags().StringVarP(&sslPairIdStr, "pairId", "i", "", "SslPairId")
+	cmd.MarkFlagRequired("pairId")
 	return cmd
 }
 

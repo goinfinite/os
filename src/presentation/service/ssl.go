@@ -78,3 +78,20 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 
 	return NewServiceOutput(Created, "SslPairCreated")
 }
+
+func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
+
+	pairId, err := valueObject.NewSslId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	err = useCase.DeleteSslPair(sslQueryRepo, sslCmdRepo, pairId)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "SslPairDeleted")
+}
