@@ -1,6 +1,8 @@
 package apiController
 
 import (
+	"log/slog"
+
 	"github.com/labstack/echo/v4"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
@@ -107,13 +109,19 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	requestBody["dbName"] = c.Param("dbName")
 
 	rawPrivilegesSlice := []string{}
-	for _, rawPrivilege := range requestBody["privileges"].([]interface{}) {
-		rawPrivilegeStr, assertOk := rawPrivilege.(string)
-		if !assertOk {
-			continue
-		}
+	if requestBody["privileges"] != nil {
+		for _, rawPrivilege := range requestBody["privileges"].([]interface{}) {
+			rawPrivilegeStr, assertOk := rawPrivilege.(string)
+			if !assertOk {
+				slog.Debug(
+					"InvalidDatabaseUserPrivilege",
+					slog.Any("privilege", rawPrivilege),
+				)
+				continue
+			}
 
-		rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilegeStr)
+			rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilegeStr)
+		}
 	}
 	requestBody["privileges"] = rawPrivilegesSlice
 
