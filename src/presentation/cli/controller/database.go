@@ -127,10 +127,7 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 	cmd.Flags().StringVarP(&dbPassStr, "password", "p", "", "Password")
 	cmd.MarkFlagRequired("password")
 	cmd.Flags().StringSliceVarP(
-		&privilegesSlice,
-		"privileges",
-		"r",
-		[]string{},
+		&privilegesSlice, "privileges", "r", []string{},
 		"DatabasePrivileges (Comma-separated)",
 	)
 
