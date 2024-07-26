@@ -110,7 +110,7 @@ func (repo PostgresDatabaseQueryRepo) getDatabaseUsernames(
 	return dbUsernameList, nil
 }
 
-func (repo PostgresDatabaseQueryRepo) Get() ([]entity.Database, error) {
+func (repo PostgresDatabaseQueryRepo) Read() ([]entity.Database, error) {
 	var databases []entity.Database
 
 	dbNames, err := repo.getDatabaseNames()
@@ -171,7 +171,7 @@ func (repo PostgresDatabaseQueryRepo) UserExists(
 	return userExists == "1"
 }
 
-func (repo PostgresDatabaseQueryRepo) GetDatabaseNamesByUser(
+func (repo PostgresDatabaseQueryRepo) ReadDatabaseNamesByUser(
 	dbUser valueObject.DatabaseUsername,
 ) ([]valueObject.DatabaseName, error) {
 	dbNames := []valueObject.DatabaseName{}
