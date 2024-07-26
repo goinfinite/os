@@ -90,13 +90,3 @@ func NewSslCertificate(
 		ExpiresAt:            expiresAt,
 	}, nil
 }
-
-func NewSslCertificatePanic(
-	certContent valueObject.SslCertificateContent,
-) SslCertificate {
-	certificate, err := NewSslCertificate(certContent)
-	if err != nil {
-		panic(err)
-	}
-	return certificate
-}
