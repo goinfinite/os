@@ -80,7 +80,7 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "VirtualHostCreated")
+	return NewServiceOutput(Created, "VirtualHostCreated")
 }
 
 func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceOutput {
