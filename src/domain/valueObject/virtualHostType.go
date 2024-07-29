@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type VirtualHostType string
@@ -16,12 +18,17 @@ var ValidVirtualHostTypes = []string{
 	"alias",
 }
 
-func NewVirtualHostType(value string) (VirtualHostType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidVirtualHostTypes, value) {
-		return "", errors.New("InvalidVirtualHostType")
+func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return vhostType, errors.New("VirtualHostTypeMustBeString")
 	}
-	return VirtualHostType(value), nil
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidVirtualHostTypes, stringValue) {
+		return vhostType, errors.New("InvalidVirtualHostType")
+	}
+	return VirtualHostType(stringValue), nil
 }
 
 func NewVirtualHostTypePanic(value string) VirtualHostType {
@@ -32,6 +39,6 @@ func NewVirtualHostTypePanic(value string) VirtualHostType {
 	return vt
 }
 
-func (vt VirtualHostType) String() string {
-	return string(vt)
+func (vo VirtualHostType) String() string {
+	return string(vo)
 }
