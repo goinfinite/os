@@ -6,6 +6,6 @@ import (
 )
 
 type DatabaseQueryRepo interface {
-	Get() ([]entity.Database, error)
-	GetByName(dbName valueObject.DatabaseName) (entity.Database, error)
+	Read() ([]entity.Database, error)
+	ReadByName(dbName valueObject.DatabaseName) (entity.Database, error)
 }

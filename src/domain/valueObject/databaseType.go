@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	"golang.org/x/exp/maps"
 )
 
@@ -15,22 +16,19 @@ var databaseTypesWithAliases = map[string][]string{
 	"postgresql": {"postgres"},
 }
 
-func NewDatabaseType(value string) (DatabaseType, error) {
-	value = strings.ToLower(value)
-	value, err := databaseTypeAdapter(value)
+func NewDatabaseType(value interface{}) (dbType DatabaseType, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("InvalidDatabaseType")
+		return dbType, errors.New("DatabaseTypeMustBeString")
+	}
+	stringValue = strings.ToLower(stringValue)
+
+	stringValue, err = databaseTypeAdapter(stringValue)
+	if err != nil {
+		return dbType, errors.New("InvalidDatabaseType")
 	}
 
-	return DatabaseType(value), nil
-}
-
-func NewDatabaseTypePanic(value string) DatabaseType {
-	dt, err := NewDatabaseType(value)
-	if err != nil {
-		panic(err.Error())
-	}
-	return dt
+	return DatabaseType(stringValue), nil
 }
 
 func databaseTypeAdapter(value string) (string, error) {
@@ -50,6 +48,6 @@ func databaseTypeAdapter(value string) (string, error) {
 	return "", errors.New("InvalidDatabaseType")
 }
 
-func (dt DatabaseType) String() string {
-	return string(dt)
+func (vo DatabaseType) String() string {
+	return string(vo)
 }
