@@ -13,17 +13,20 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	"github.com/speedianet/os/src/presentation/service"
 )
 
 type VirtualHostController struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
+	virtualHostService *service.VirtualHostService
 }
 
 func NewVirtualHostController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		persistentDbSvc: persistentDbSvc,
+		persistentDbSvc:    persistentDbSvc,
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }
 
@@ -37,13 +40,7 @@ func NewVirtualHostController(
 // @Success      200 {array} entity.VirtualHost
 // @Router       /v1/vhosts/ [get]
 func (controller *VirtualHostController) Read(c echo.Context) error {
-	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostsList, err := useCase.ReadVirtualHosts(vhostsQueryRepo)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsList)
+	return apiHelper.ServiceResponseWrapper(c, controller.virtualHostService.Read())
 }
 
 // CreateVirtualHost    godoc

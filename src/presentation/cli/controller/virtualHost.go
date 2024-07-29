@@ -10,33 +10,30 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
+	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
 )
 
 type VirtualHostController struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
+	virtualHostService *service.VirtualHostService
 }
 
 func NewVirtualHostController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		persistentDbSvc: persistentDbSvc,
+		persistentDbSvc:    persistentDbSvc,
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }
 
 func (controller *VirtualHostController) Read() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetVirtualHosts",
+		Use:   "get",
+		Short: "ReadVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-			vhostsList, err := useCase.ReadVirtualHosts(vhostQueryRepo)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, vhostsList)
+			cliHelper.ServiceResponseWrapper(controller.virtualHostService.Read())
 		},
 	}
 
