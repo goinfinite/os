@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestNewCronSchedule(t *testing.T) {
+func TestCronSchedule(t *testing.T) {
 	t.Run("ValidSchedule", func(t *testing.T) {
 		validSchedules := []string{
 			"@annually",

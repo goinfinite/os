@@ -53,10 +53,12 @@ func (router Router) accountRoutes() {
 
 func (router Router) cronRoutes() {
 	cronGroup := router.baseRoute.Group("/v1/cron")
-	cronGroup.GET("/", apiController.GetCronsController)
-	cronGroup.POST("/", apiController.CreateCronController)
-	cronGroup.PUT("/", apiController.UpdateCronController)
-	cronGroup.DELETE("/:cronId/", apiController.DeleteCronController)
+	cronController := apiController.NewCronController()
+
+	cronGroup.GET("/", cronController.Read)
+	cronGroup.POST("/", cronController.Create)
+	cronGroup.PUT("/", cronController.Update)
+	cronGroup.DELETE("/:cronId/", cronController.Delete)
 }
 
 func (router Router) databaseRoutes() {
@@ -67,17 +69,10 @@ func (router Router) databaseRoutes() {
 
 	databaseGroup.GET("/:dbType/", databaseController.Read)
 	databaseGroup.POST("/:dbType/", databaseController.Create)
+	databaseGroup.DELETE("/:dbType/:dbName/", databaseController.Delete)
+	databaseGroup.POST("/:dbType/:dbName/user/", databaseController.CreateUser)
 	databaseGroup.DELETE(
-		"/:dbType/:dbName/",
-		databaseController.Delete,
-	)
-	databaseGroup.POST(
-		"/:dbType/:dbName/user/",
-		databaseController.CreateUser,
-	)
-	databaseGroup.DELETE(
-		"/:dbType/:dbName/user/:dbUser/",
-		databaseController.DeleteUser,
+		"/:dbType/:dbName/user/:dbUser/", databaseController.DeleteUser,
 	)
 }
 

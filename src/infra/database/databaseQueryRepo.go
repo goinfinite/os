@@ -19,21 +19,21 @@ func NewDatabaseQueryRepo(
 	}
 }
 
-func (repo DatabaseQueryRepo) Get() ([]entity.Database, error) {
+func (repo DatabaseQueryRepo) Read() ([]entity.Database, error) {
 	switch repo.dbType {
 	case "mariadb":
-		return MysqlDatabaseQueryRepo{}.Get()
+		return MysqlDatabaseQueryRepo{}.Read()
 	case "postgresql":
-		return PostgresDatabaseQueryRepo{}.Get()
+		return PostgresDatabaseQueryRepo{}.Read()
 	default:
 		return []entity.Database{}, errors.New("DatabaseTypeNotSupported")
 	}
 }
 
-func (repo DatabaseQueryRepo) GetByName(
+func (repo DatabaseQueryRepo) ReadByName(
 	name valueObject.DatabaseName,
 ) (entity.Database, error) {
-	dbs, err := repo.Get()
+	dbs, err := repo.Read()
 	if err != nil {
 		return entity.Database{}, err
 	}

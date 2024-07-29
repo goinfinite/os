@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -14,27 +14,32 @@ func CreateDatabaseUser(
 	dbCmdRepo repository.DatabaseCmdRepo,
 	createDatabaseUser dto.CreateDatabaseUser,
 ) error {
-	_, err := dbQueryRepo.GetByName(createDatabaseUser.DatabaseName)
+	_, err := dbQueryRepo.ReadByName(createDatabaseUser.DatabaseName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}
 
 	if len(createDatabaseUser.Privileges) == 0 {
+		defaultPrivilege, err := valueObject.NewDatabasePrivilege("ALL")
+		if err != nil {
+			return err
+		}
+
 		createDatabaseUser.Privileges = []valueObject.DatabasePrivilege{
-			valueObject.NewDatabasePrivilegePanic("ALL"),
+			defaultPrivilege,
 		}
 	}
 
 	err = dbCmdRepo.CreateUser(createDatabaseUser)
 	if err != nil {
-		log.Printf("CreateDatabaseUserError: %s", err.Error())
+		slog.Error("CreateDatabaseUserError", slog.Any("error", err))
 		return errors.New("CreateDatabaseUserInfraError")
 	}
 
-	log.Printf(
-		"Database user '%s' for '%s' created.",
-		createDatabaseUser.Username.String(),
-		createDatabaseUser.DatabaseName.String(),
+	slog.Info(
+		"DatabaseUserCreated",
+		slog.String("databaseName", createDatabaseUser.DatabaseName.String()),
+		slog.String("databaseUsername", createDatabaseUser.Username.String()),
 	)
 
 	return nil

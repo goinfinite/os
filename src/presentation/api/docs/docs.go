@@ -223,7 +223,7 @@ const docTemplate = `{
                 "tags": [
                     "cron"
                 ],
-                "summary": "GetCrons",
+                "summary": "ReadCrons",
                 "responses": {
                     "200": {
                         "description": "OK",

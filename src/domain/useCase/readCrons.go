@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetCrons(
+func ReadCrons(
 	cronQueryRepo repository.CronQueryRepo,
 ) ([]entity.Cron, error) {
-	return cronQueryRepo.Get()
+	return cronQueryRepo.Read()
 }
