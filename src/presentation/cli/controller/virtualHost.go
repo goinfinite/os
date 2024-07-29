@@ -1,10 +1,7 @@
 package cliController
 
 import (
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -165,21 +162,13 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
-
-			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-
-			err := useCase.DeleteMapping(
-				mappingQueryRepo,
-				mappingCmdRepo,
-				mappingId,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+			requestBody := map[string]interface{}{
+				"id": mappingIdUint,
 			}
 
-			cliHelper.ResponseWrapper(true, "MappingDeleted")
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.DeleteMapping(requestBody),
+			)
 		},
 	}
 

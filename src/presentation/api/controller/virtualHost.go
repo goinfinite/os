@@ -1,13 +1,8 @@
 package apiController
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
 )
@@ -125,19 +120,11 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
-	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
-
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-
-	err := useCase.DeleteMapping(
-		mappingQueryRepo,
-		mappingCmdRepo,
-		mappingId,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+	requestBody := map[string]interface{}{
+		"id": c.Param("mappingId"),
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "MappingDeleted")
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.DeleteMapping(requestBody),
+	)
 }

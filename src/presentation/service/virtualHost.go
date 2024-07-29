@@ -199,3 +199,28 @@ func (service *VirtualHostService) CreateMapping(
 
 	return NewServiceOutput(Created, "MappingCreated")
 }
+
+func (service *VirtualHostService) DeleteMapping(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	id, err := valueObject.NewMappingId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbSvc)
+
+	err = useCase.DeleteMapping(mappingQueryRepo, mappingCmdRepo, id)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "MappingDeleted")
+}
