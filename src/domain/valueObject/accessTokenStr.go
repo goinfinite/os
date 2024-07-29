@@ -3,31 +3,28 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
+
+const accessTokenStrRegex = `^[a-zA-Z0-9\-_=+/.]{22,444}$`
 
 type AccessTokenStr string
 
-func NewAccessTokenStr(value string) (AccessTokenStr, error) {
-	ats := AccessTokenStr(value)
-	if !ats.isValid() {
+func NewAccessTokenStr(value interface{}) (accessTokenStr AccessTokenStr, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return accessTokenStr, errors.New("AccessTokenStrMustBeString")
+	}
+
+	re := regexp.MustCompile(accessTokenStrRegex)
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidAccessTokenStr")
 	}
-	return ats, nil
+
+	return AccessTokenStr(stringValue), nil
 }
 
-func NewAccessTokenStrPanic(value string) AccessTokenStr {
-	ats := AccessTokenStr(value)
-	if !ats.isValid() {
-		panic("InvalidAccessTokenStr")
-	}
-	return ats
-}
-
-func (ats AccessTokenStr) isValid() bool {
-	re := regexp.MustCompile(`^[a-zA-Z0-9\-_=+/.]{22,444}$`)
-	return re.MatchString(string(ats))
-}
-
-func (ats AccessTokenStr) String() string {
-	return string(ats)
+func (vo AccessTokenStr) String() string {
+	return string(vo)
 }
