@@ -93,16 +93,7 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 // @Success      200 {array} dto.VirtualHostWithMappings
 // @Router       /v1/vhosts/mapping/ [get]
 func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error {
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-
-	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-		mappingQueryRepo,
-	)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, vhostsWithMappings)
+	return apiHelper.ServiceResponseWrapper(c, controller.virtualHostService.ReadWithMappings())
 }
 
 // CreateVirtualHostMapping godoc

@@ -97,21 +97,12 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 
 func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetVirtualHostsWithMappings",
+		Use:   "get",
+		Short: "ReadVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
-			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(
-				controller.persistentDbSvc,
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.ReadWithMappings(),
 			)
-
-			vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-				mappingQueryRepo,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, vhostsWithMappings)
 		},
 	}
 

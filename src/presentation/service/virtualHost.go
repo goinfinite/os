@@ -7,6 +7,7 @@ import (
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
 )
 
@@ -109,4 +110,16 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 	}
 
 	return NewServiceOutput(Success, "VirtualHostDeleted")
+}
+
+func (service *VirtualHostService) ReadWithMappings() ServiceOutput {
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
+	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
+		mappingQueryRepo,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, vhostsWithMappings)
 }
