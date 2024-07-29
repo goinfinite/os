@@ -6,6 +6,7 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
@@ -122,4 +123,79 @@ func (service *VirtualHostService) ReadWithMappings() ServiceOutput {
 	}
 
 	return NewServiceOutput(Success, vhostsWithMappings)
+}
+
+func (service *VirtualHostService) CreateMapping(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"hostname", "path", "targetType"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	hostname, err := valueObject.NewFqdn(input["hostname"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	path, err := valueObject.NewMappingPath(input["path"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	rawMatchPattern := "begins-with"
+	if input["matchPattern"] != nil {
+		rawMatchPattern = input["matchPattern"].(string)
+	}
+	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	targetType, err := valueObject.NewMappingTargetType(input["targetType"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var targetValuePtr *valueObject.MappingTargetValue
+	if input["targetValue"] != nil {
+		targetValue, err := valueObject.NewMappingTargetValue(
+			input["targetValue"], targetType,
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetValuePtr = &targetValue
+	}
+
+	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	if input["targetHttpResponseCode"] != nil {
+		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+			input["targetHttpResponseCode"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetHttpResponseCodePtr = &targetHttpResponseCode
+	}
+
+	dto := dto.NewCreateMapping(
+		hostname, path, matchPattern, targetType, targetValuePtr,
+		targetHttpResponseCodePtr,
+	)
+
+	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
+	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
+
+	err = useCase.CreateMapping(
+		mappingQueryRepo, mappingCmdRepo, vhostQueryRepo, servicesQueryRepo, dto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "MappingCreated")
 }

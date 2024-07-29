@@ -1,12 +1,9 @@
 package cliController
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
@@ -110,69 +107,34 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 }
 
 func (controller *VirtualHostController) CreateMapping() *cobra.Command {
-	var hostnameStr string
-	var pathStr string
-	var matchPatternStr string
-	var targetTypeStr string
-	var targetValueStr string
+	var hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr string
 	var targetHttpResponseCodeUint uint
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
-			path := valueObject.NewMappingPathPanic(pathStr)
+			requestBody := map[string]interface{}{
+				"hostname":   hostnameStr,
+				"path":       pathStr,
+				"targetType": targetTypeStr,
+			}
 
-			matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
 			if matchPatternStr != "" {
-				matchPattern = valueObject.NewMappingMatchPatternPanic(matchPatternStr)
+				requestBody["matchPattern"] = matchPatternStr
 			}
 
-			targetType := valueObject.NewMappingTargetTypePanic(targetTypeStr)
-
-			var targetValuePtr *valueObject.MappingTargetValue
 			if targetValueStr != "" {
-				targetValue := valueObject.NewMappingTargetValuePanic(
-					targetValueStr, targetType,
-				)
-				targetValuePtr = &targetValue
+				requestBody["targetValue"] = targetValueStr
 			}
 
-			var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 			if targetHttpResponseCodeUint != 0 {
-				targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
-					targetHttpResponseCodeUint,
-				)
-				targetHttpResponseCodePtr = &targetHttpResponseCode
+				requestBody["targetHttpResponseCode"] = targetHttpResponseCodeUint
 			}
 
-			createMappingDto := dto.NewCreateMapping(
-				hostname,
-				path,
-				matchPattern,
-				targetType,
-				targetValuePtr,
-				targetHttpResponseCodePtr,
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.CreateMapping(requestBody),
 			)
-
-			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-
-			err := useCase.CreateMapping(
-				mappingQueryRepo,
-				mappingCmdRepo,
-				vhostQueryRepo,
-				servicesQueryRepo,
-				createMappingDto,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, "MappingCreated")
 		},
 	}
 

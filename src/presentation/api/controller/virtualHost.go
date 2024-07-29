@@ -4,12 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
@@ -107,67 +104,14 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
-	requiredParams := []string{"hostname", "path", "targetType"}
-	requestBody, _ := apiHelper.ReadRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
-	path := valueObject.NewMappingPathPanic(requestBody["path"].(string))
-
-	matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
-	if requestBody["matchPattern"] != nil {
-		matchPattern = valueObject.NewMappingMatchPatternPanic(
-			requestBody["matchPattern"].(string),
-		)
-	}
-
-	targetType := valueObject.NewMappingTargetTypePanic(
-		requestBody["targetType"].(string),
-	)
-
-	var targetValuePtr *valueObject.MappingTargetValue
-	if requestBody["targetValue"] != nil {
-		targetValue := valueObject.NewMappingTargetValuePanic(
-			requestBody["targetValue"], targetType,
-		)
-		targetValuePtr = &targetValue
-	}
-
-	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
-	if requestBody["targetHttpResponseCode"] != nil {
-		targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
-			requestBody["targetHttpResponseCode"],
-		)
-		targetHttpResponseCodePtr = &targetHttpResponseCode
-	}
-
-	createMappingDto := dto.NewCreateMapping(
-		hostname,
-		path,
-		matchPattern,
-		targetType,
-		targetValuePtr,
-		targetHttpResponseCodePtr,
-	)
-
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
-
-	err := useCase.CreateMapping(
-		mappingQueryRepo,
-		mappingCmdRepo,
-		vhostQueryRepo,
-		servicesQueryRepo,
-		createMappingDto,
-	)
+	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "MappingCreated")
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.CreateMapping(requestBody),
+	)
 }
 
 // DeleteVirtualHostMapping godoc
