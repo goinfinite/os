@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MappingTargetType string
@@ -16,12 +18,20 @@ var ValidMappingTargetTypes = []string{
 	"static-files",
 }
 
-func NewMappingTargetType(value string) (MappingTargetType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidMappingTargetTypes, value) {
+func NewMappingTargetType(value interface{}) (
+	mappingTargetType MappingTargetType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return mappingTargetType, errors.New("MappingTargetTypeMustBeString")
+	}
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidMappingTargetTypes, stringValue) {
 		return "", errors.New("InvalidMappingTargetType")
 	}
-	return MappingTargetType(value), nil
+
+	return MappingTargetType(stringValue), nil
 }
 
 func NewMappingTargetTypePanic(value string) MappingTargetType {
@@ -32,6 +42,6 @@ func NewMappingTargetTypePanic(value string) MappingTargetType {
 	return mtt
 }
 
-func (mtt MappingTargetType) String() string {
-	return string(mtt)
+func (vo MappingTargetType) String() string {
+	return string(vo)
 }
