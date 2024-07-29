@@ -38,7 +38,7 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(input["hostname"].(string))
+	hostname, err := valueObject.NewFqdn(input["hostname"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
