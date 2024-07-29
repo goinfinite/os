@@ -144,23 +144,6 @@ func (controller *SslController) Delete(c echo.Context) error {
 	)
 }
 
-func (controller *SslController) SslCertificateWatchdog() {
-	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
-
-	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
-	timer := time.NewTicker(taskInterval)
-	defer timer.Stop()
-
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(
-		controller.persistentDbSvc, controller.transientDbSvc,
-	)
-
-	for range timer.C {
-		useCase.SslCertificateWatchdog(sslQueryRepo, sslCmdRepo)
-	}
-}
-
 // DeleteSslPairVhosts    	 godoc
 // @Summary      DeleteSslPairVhosts
 // @Description  Delete vhosts from a ssl pair.
@@ -197,4 +180,21 @@ func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairVhostsDeleted")
+}
+
+func (controller *SslController) SslCertificateWatchdog() {
+	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
+
+	taskInterval := time.Duration(validationIntervalMinutes) * time.Minute
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo(
+		controller.persistentDbSvc, controller.transientDbSvc,
+	)
+
+	for range timer.C {
+		useCase.SslCertificateWatchdog(sslQueryRepo, sslCmdRepo)
+	}
 }
