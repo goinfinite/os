@@ -80,6 +80,12 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 }
 
 func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
 
