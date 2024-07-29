@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MappingMatchPattern string
@@ -15,12 +17,20 @@ var ValidMappingMatchPatterns = []string{
 	"ends-with",
 }
 
-func NewMappingMatchPattern(value string) (MappingMatchPattern, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidMappingMatchPatterns, value) {
+func NewMappingMatchPattern(value interface{}) (
+	mappingMatchPattern MappingMatchPattern, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return mappingMatchPattern, errors.New("MappingMatchPatternMustBeString")
+	}
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidMappingMatchPatterns, stringValue) {
 		return "", errors.New("InvalidMappingMatchPattern")
 	}
-	return MappingMatchPattern(value), nil
+
+	return MappingMatchPattern(stringValue), nil
 }
 
 func NewMappingMatchPatternPanic(value string) MappingMatchPattern {
@@ -31,6 +41,6 @@ func NewMappingMatchPatternPanic(value string) MappingMatchPattern {
 	return mmp
 }
 
-func (mmp MappingMatchPattern) String() string {
-	return string(mmp)
+func (vo MappingMatchPattern) String() string {
+	return string(vo)
 }
