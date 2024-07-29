@@ -13,20 +13,27 @@ import (
 )
 
 type VirtualHostService struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
+	vhostQueryRepo   *vhostInfra.VirtualHostQueryRepo
+	vhostCmdRepo     *vhostInfra.VirtualHostCmdRepo
+	mappingQueryRepo *mappingInfra.MappingQueryRepo
+	mappingCmdRepo   *mappingInfra.MappingCmdRepo
 }
 
 func NewVirtualHostService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *VirtualHostService {
 	return &VirtualHostService{
-		persistentDbSvc: persistentDbSvc,
+		persistentDbSvc:  persistentDbSvc,
+		vhostQueryRepo:   vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		vhostCmdRepo:     vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
+		mappingQueryRepo: mappingInfra.NewMappingQueryRepo(persistentDbSvc),
+		mappingCmdRepo:   mappingInfra.NewMappingCmdRepo(persistentDbSvc),
 	}
 }
 
 func (service *VirtualHostService) Read() ServiceOutput {
-	vhostsQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
-	vhostsList, err := useCase.ReadVirtualHosts(vhostsQueryRepo)
+	vhostsList, err := useCase.ReadVirtualHosts(service.vhostQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -72,10 +79,7 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 
 	dto := dto.NewCreateVirtualHost(hostname, vhostType, parentHostnamePtr)
 
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
-
-	err = useCase.CreateVirtualHost(vhostQueryRepo, vhostCmdRepo, dto)
+	err = useCase.CreateVirtualHost(service.vhostQueryRepo, service.vhostCmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -100,11 +104,8 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
-
 	err = useCase.DeleteVirtualHost(
-		vhostQueryRepo, vhostCmdRepo, primaryVhost, hostname,
+		service.vhostQueryRepo, service.vhostCmdRepo, primaryVhost, hostname,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -114,9 +115,8 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 }
 
 func (service *VirtualHostService) ReadWithMappings() ServiceOutput {
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
 	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-		mappingQueryRepo,
+		service.mappingQueryRepo,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -185,13 +185,11 @@ func (service *VirtualHostService) CreateMapping(
 		targetHttpResponseCodePtr,
 	)
 
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbSvc)
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
 
 	err = useCase.CreateMapping(
-		mappingQueryRepo, mappingCmdRepo, vhostQueryRepo, servicesQueryRepo, dto,
+		service.mappingQueryRepo, service.mappingCmdRepo, service.vhostQueryRepo,
+		servicesQueryRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -214,10 +212,9 @@ func (service *VirtualHostService) DeleteMapping(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbSvc)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbSvc)
-
-	err = useCase.DeleteMapping(mappingQueryRepo, mappingCmdRepo, id)
+	err = useCase.DeleteMapping(
+		service.mappingQueryRepo, service.mappingCmdRepo, id,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
