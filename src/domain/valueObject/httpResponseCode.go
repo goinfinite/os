@@ -12,18 +12,21 @@ const responseCodeExpression = "^([1-5][0-9][0-9])$"
 
 type HttpResponseCode uint64
 
-func NewHttpResponseCode(value interface{}) (HttpResponseCode, error) {
-	responseCodeUint, err := voHelper.InterfaceToUint64(value)
+func NewHttpResponseCode(value interface{}) (
+	httpResponseCode HttpResponseCode, err error,
+) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
+		return httpResponseCode, errors.New("HttpResponseCodeMustBeUint")
+	}
+
+	re := regexp.MustCompile(responseCodeExpression)
+	stringValue := strconv.FormatUint(uintValue, 10)
+	if !re.MatchString(stringValue) {
 		return 0, errors.New("InvalidHttpResponseCode")
 	}
 
-	responseCode := HttpResponseCode(responseCodeUint)
-	if !responseCode.isValid() {
-		return 0, errors.New("InvalidHttpResponseCode")
-	}
-
-	return responseCode, nil
+	return HttpResponseCode(uintValue), nil
 }
 
 func NewHttpResponseCodePanic(value interface{}) HttpResponseCode {
@@ -35,11 +38,6 @@ func NewHttpResponseCodePanic(value interface{}) HttpResponseCode {
 	return responseCode
 }
 
-func (responseCode HttpResponseCode) isValid() bool {
-	responseCodeRegex := regexp.MustCompile(responseCodeExpression)
-	return responseCodeRegex.MatchString(responseCode.String())
-}
-
-func (responseCode HttpResponseCode) String() string {
-	return strconv.FormatUint(uint64(responseCode), 10)
+func (vo HttpResponseCode) String() string {
+	return strconv.FormatUint(uint64(vo), 10)
 }
