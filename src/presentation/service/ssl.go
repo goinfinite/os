@@ -101,3 +101,37 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 
 	return NewServiceOutput(Success, "SslPairDeleted")
 }
+
+func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"id", "virtualHosts"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
+
+	pairId, err := valueObject.NewSslId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	vhosts := []valueObject.Fqdn{}
+	for _, rawVhost := range input["virtualHosts"].([]string) {
+		vhost, err := valueObject.NewFqdn(rawVhost)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		vhosts = append(vhosts, vhost)
+	}
+
+	dto := dto.NewDeleteSslPairVhosts(pairId, vhosts)
+
+	err = useCase.DeleteSslPairVhosts(sslQueryRepo, sslCmdRepo, dto)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "SslPairVhostsDeleted")
+}

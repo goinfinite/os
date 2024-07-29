@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -42,30 +41,6 @@ func NewSslController(
 // @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
-}
-
-func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
-	_, isStringType := vhostsBodyInput.(string)
-	if isStringType {
-		vhostsBodyInput = []interface{}{vhostsBodyInput}
-	}
-
-	rawVhosts, isInterfaceSliceType := vhostsBodyInput.([]interface{})
-	if !isInterfaceSliceType {
-		panic("InvalidVirtualHosts")
-	}
-
-	vhosts := []valueObject.Fqdn{}
-	for _, rawVhost := range rawVhosts {
-		rawVhostStr, assertOk := rawVhost.(string)
-		if !assertOk {
-			continue
-		}
-
-		vhosts = append(vhosts, valueObject.NewFqdnPanic(rawVhostStr))
-	}
-
-	return vhosts
 }
 
 // CreateSslPair    	 godoc
@@ -155,31 +130,25 @@ func (controller *SslController) Delete(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {
-	requiredParams := []string{"sslPairId", "virtualHosts"}
-	requestBody, _ := apiHelper.ReadRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	sslPairId := valueObject.NewSslIdPanic(requestBody["sslPairId"].(string))
-	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
-
-	dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
-
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(
-		controller.persistentDbSvc, controller.transientDbSvc,
-	)
-
-	err := useCase.DeleteSslPairVhosts(
-		sslQueryRepo,
-		sslCmdRepo,
-		dto,
-	)
+	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusOK, "SslPairVhostsDeleted")
+	rawVhostsSlice := []string{}
+	switch rawVhosts := requestBody["virtualHosts"].(type) {
+	case string:
+		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
+	case []interface{}:
+		for _, rawVhost := range rawVhosts {
+			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
+		}
+	}
+	requestBody["virtualHosts"] = rawVhostsSlice
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.DeleteVhosts(requestBody),
+	)
 }
 
 func (controller *SslController) SslCertificateWatchdog() {

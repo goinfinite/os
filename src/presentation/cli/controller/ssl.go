@@ -1,12 +1,9 @@
 package cliController
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -120,30 +117,14 @@ func (controller *SslController) DeleteVhosts() *cobra.Command {
 		Use:   "remove-vhosts",
 		Short: "RemoveSslPairVhosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			sslPairId := valueObject.NewSslIdPanic(sslPairIdStr)
-
-			var virtualHosts []valueObject.Fqdn
-			for _, vhost := range virtualHostsSlice {
-				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+			requestBody := map[string]interface{}{
+				"id":           sslPairIdStr,
+				"virtualHosts": virtualHostsSlice,
 			}
 
-			dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)
-
-			sslQueryRepo := sslInfra.SslQueryRepo{}
-			sslCmdRepo := sslInfra.NewSslCmdRepo(
-				controller.persistentDbSvc, controller.transientDbSvc,
+			cliHelper.ServiceResponseWrapper(
+				controller.sslService.DeleteVhosts(requestBody),
 			)
-
-			err := useCase.DeleteSslPairVhosts(
-				sslQueryRepo,
-				sslCmdRepo,
-				dto,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, "SslPairVhostsRemoved")
 		},
 	}
 
