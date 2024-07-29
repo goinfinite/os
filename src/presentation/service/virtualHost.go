@@ -4,6 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
@@ -78,4 +79,34 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 	}
 
 	return NewServiceOutput(Success, "VirtualHostCreated")
+}
+
+func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"hostname"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	hostname, err := valueObject.NewFqdn(input["hostname"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
+	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
+
+	err = useCase.DeleteVirtualHost(
+		vhostQueryRepo, vhostCmdRepo, primaryVhost, hostname,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "VirtualHostDeleted")
 }

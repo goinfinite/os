@@ -4,7 +4,6 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
@@ -81,27 +80,13 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
-
-			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
-
-			primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-			if err != nil {
-				panic("PrimaryVirtualHostNotFound")
+			requestBody := map[string]interface{}{
+				"hostname": hostnameStr,
 			}
 
-			err = useCase.DeleteVirtualHost(
-				vhostQueryRepo,
-				vhostCmdRepo,
-				primaryVhost,
-				hostname,
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.Delete(requestBody),
 			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, "VirtualHostDeleted")
 		},
 	}
 
