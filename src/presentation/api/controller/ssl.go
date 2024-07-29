@@ -43,6 +43,20 @@ func (controller *SslController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
 }
 
+func parseRawVhosts(rawVhostsInput interface{}) []string {
+	rawVhostsSlice := []string{}
+	switch rawVhosts := rawVhostsInput.(type) {
+	case string:
+		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
+	case []interface{}:
+		for _, rawVhost := range rawVhosts {
+			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
+		}
+	}
+
+	return rawVhostsSlice
+}
+
 // CreateSslPair    	 godoc
 // @Summary      CreateSslPair
 // @Description  Create a new ssl pair.
@@ -58,17 +72,7 @@ func (controller *SslController) Create(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	rawVhostsSlice := []string{}
-	switch rawVhosts := requestBody["virtualHosts"].(type) {
-	case string:
-		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
-	case []interface{}:
-		for _, rawVhost := range rawVhosts {
-			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
-		}
-	}
-	requestBody["virtualHosts"] = rawVhostsSlice
+	requestBody["virtualHosts"] = parseRawVhosts(requestBody["virtualHosts"])
 
 	encodedCert, err := valueObject.NewEncodedContent(requestBody["certificate"])
 	if err != nil {
@@ -134,17 +138,7 @@ func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	rawVhostsSlice := []string{}
-	switch rawVhosts := requestBody["virtualHosts"].(type) {
-	case string:
-		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
-	case []interface{}:
-		for _, rawVhost := range rawVhosts {
-			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
-		}
-	}
-	requestBody["virtualHosts"] = rawVhostsSlice
+	requestBody["virtualHosts"] = parseRawVhosts(requestBody["virtualHosts"])
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.sslService.DeleteVhosts(requestBody),
