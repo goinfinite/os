@@ -41,47 +41,27 @@ func (controller *VirtualHostController) Read() *cobra.Command {
 }
 
 func (controller *VirtualHostController) Create() *cobra.Command {
-	var hostnameStr string
-	var typeStr string
-	var parentHostnameStr string
+	var hostnameStr, typeStr, parentHostnameStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
+			requestBody := map[string]interface{}{
+				"hostname": hostnameStr,
+			}
 
-			vhostTypeStr := "top-level"
 			if typeStr != "" {
-				vhostTypeStr = typeStr
+				requestBody["type"] = typeStr
 			}
-			vhostType := valueObject.NewVirtualHostTypePanic(vhostTypeStr)
 
-			var parentHostnamePtr *valueObject.Fqdn
 			if parentHostnameStr != "" {
-				parentHostname := valueObject.NewFqdnPanic(parentHostnameStr)
-				parentHostnamePtr = &parentHostname
+				requestBody["parentHostname"] = parentHostnameStr
 			}
 
-			createVirtualHostDto := dto.NewCreateVirtualHost(
-				hostname,
-				vhostType,
-				parentHostnamePtr,
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.Create(requestBody),
 			)
-
-			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
-
-			err := useCase.CreateVirtualHost(
-				vhostQueryRepo,
-				vhostCmdRepo,
-				createVirtualHostDto,
-			)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-
-			cliHelper.ResponseWrapper(true, "VirtualHostCreated")
 		},
 	}
 
@@ -90,9 +70,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 	cmd.Flags().StringVarP(
 		&typeStr, "type", "t", "", "VirtualHostType (top-level|subdomain|alias)",
 	)
-	cmd.Flags().StringVarP(
-		&parentHostnameStr, "parent", "p", "", "ParentHostname",
-	)
+	cmd.Flags().StringVarP(&parentHostnameStr, "parent", "p", "", "ParentHostname")
 	return cmd
 }
 

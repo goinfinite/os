@@ -54,46 +54,14 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /v1/vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
-	requiredParams := []string{"hostname"}
-	requestBody, _ := apiHelper.ReadRequestBody(c)
-
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
-
-	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
-
-	vhostTypeStr := "top-level"
-	if requestBody["type"] != nil {
-		vhostTypeStr = requestBody["type"].(string)
-	}
-	vhostType := valueObject.NewVirtualHostTypePanic(vhostTypeStr)
-
-	var parentHostnamePtr *valueObject.Fqdn
-	if requestBody["parentHostname"] != nil {
-		parentHostname := valueObject.NewFqdnPanic(
-			requestBody["parentHostname"].(string),
-		)
-		parentHostnamePtr = &parentHostname
-	}
-
-	createVirtualHostDto := dto.NewCreateVirtualHost(
-		hostname,
-		vhostType,
-		parentHostnamePtr,
-	)
-
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
-
-	err := useCase.CreateVirtualHost(
-		vhostQueryRepo,
-		vhostCmdRepo,
-		createVirtualHostDto,
-	)
+	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "VirtualHostCreated")
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.Create(requestBody),
+	)
 }
 
 // DeleteVirtualHost godoc
