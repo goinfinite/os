@@ -8,7 +8,6 @@ import (
 )
 
 type VirtualHostController struct {
-	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
 	virtualHostService *service.VirtualHostService
 }
 
@@ -16,7 +15,6 @@ func NewVirtualHostController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		persistentDbSvc:    persistentDbSvc,
 		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }
