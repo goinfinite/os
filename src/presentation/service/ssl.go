@@ -14,6 +14,8 @@ import (
 type SslService struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	sslQueryRepo    sslInfra.SslQueryRepo
+	sslCmdRepo      *sslInfra.SslCmdRepo
 }
 
 func NewSslService(
@@ -23,12 +25,13 @@ func NewSslService(
 	return &SslService{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
+		sslQueryRepo:    sslInfra.SslQueryRepo{},
+		sslCmdRepo:      sslInfra.NewSslCmdRepo(persistentDbSvc, transientDbSvc),
 	}
 }
 
 func (service *SslService) Read() ServiceOutput {
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	pairsList, err := useCase.ReadSslPairs(sslQueryRepo)
+	pairsList, err := useCase.ReadSslPairs(service.sslQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -68,10 +71,9 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 
 	dto := dto.NewCreateSslPair(vhosts, cert, privateKeyContent)
 
-	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
-	err = useCase.CreateSslPair(sslCmdRepo, vhostQueryRepo, dto)
+	err = useCase.CreateSslPair(service.sslCmdRepo, vhostQueryRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -86,15 +88,12 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
-
 	pairId, err := valueObject.NewSslId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	err = useCase.DeleteSslPair(sslQueryRepo, sslCmdRepo, pairId)
+	err = useCase.DeleteSslPair(service.sslQueryRepo, service.sslCmdRepo, pairId)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -108,9 +107,6 @@ func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOut
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-
-	sslQueryRepo := sslInfra.SslQueryRepo{}
-	sslCmdRepo := sslInfra.NewSslCmdRepo(service.persistentDbSvc, service.transientDbSvc)
 
 	pairId, err := valueObject.NewSslId(input["id"])
 	if err != nil {
@@ -128,7 +124,7 @@ func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOut
 
 	dto := dto.NewDeleteSslPairVhosts(pairId, vhosts)
 
-	err = useCase.DeleteSslPairVhosts(sslQueryRepo, sslCmdRepo, dto)
+	err = useCase.DeleteSslPairVhosts(service.sslQueryRepo, service.sslCmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
