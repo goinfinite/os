@@ -25,15 +25,6 @@ func NewDataFieldName(value interface{}) (DataFieldName, error) {
 	return DataFieldName(stringValue), nil
 }
 
-func NewDataFieldNamePanic(value interface{}) DataFieldName {
-	dfn, err := NewDataFieldName(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return dfn
-}
-
 func (vo DataFieldName) String() string {
 	return string(vo)
 }
