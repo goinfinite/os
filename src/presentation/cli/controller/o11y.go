@@ -22,7 +22,7 @@ func NewO11yController(
 func (controller *O11yController) ReadOverview() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "overview",
-		Short: "GetO11yOverview",
+		Short: "ReadO11yOverview",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(controller.o11yService.ReadOverview())
 		},
