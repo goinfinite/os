@@ -2,10 +2,10 @@ package cliController
 
 import (
 	"errors"
+	"log/slog"
 	"strconv"
 	"strings"
 
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -67,68 +67,56 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	return cmd
 }
 
-func (controller *RuntimeController) parsePhpModules(
+func (controller *RuntimeController) parseRawPhpModules(
 	rawPhpModules []string,
-) []entity.PhpModule {
-	modules := []entity.PhpModule{}
-	if len(rawPhpModules) == 0 {
-		return modules
-	}
-
+) []interface{} {
+	rawModulesMapSlice := []interface{}{}
 	for _, rawModule := range rawPhpModules {
 		rawModuleParts := strings.Split(rawModule, ":")
 		rawModulePartsLength := len(rawModuleParts)
 		if rawModulePartsLength == 0 {
-			continue
-		}
-
-		moduleName, err := valueObject.NewPhpModuleName(rawModuleParts[0])
-		if err != nil {
+			slog.Debug("PhpModuleEmpty", slog.String("module", rawModule))
 			continue
 		}
 
 		moduleStatus := true
 		if rawModulePartsLength > 1 {
+			var err error
 			moduleStatus, err = sharedHelper.ParseBoolParam(rawModuleParts[1])
 			if err != nil {
 				moduleStatus = false
 			}
 		}
 
-		modules = append(modules, entity.NewPhpModule(moduleName, moduleStatus))
+		moduleMap := map[string]interface{}{
+			"name":   rawModuleParts[0],
+			"status": moduleStatus,
+		}
+		rawModulesMapSlice = append(rawModulesMapSlice, moduleMap)
 	}
 
-	return modules
+	return rawModulesMapSlice
 }
 
-func (controller *RuntimeController) parsePhpSettings(
+func (controller *RuntimeController) parseRawPhpSettings(
 	rawPhpSettings []string,
-) []entity.PhpSetting {
-	settings := []entity.PhpSetting{}
-	if len(rawPhpSettings) == 0 {
-		return settings
-	}
-
+) []interface{} {
+	rawSettingsSlice := []interface{}{}
 	for _, rawSetting := range rawPhpSettings {
 		rawSettingParts := strings.Split(rawSetting, ":")
-		if len(rawSettingParts) != 2 {
+		if len(rawSettingParts) == 0 {
+			slog.Debug("PhpSettingEmpty", slog.String("setting", rawSetting))
 			continue
 		}
 
-		settingName, err := valueObject.NewPhpSettingName(rawSettingParts[0])
-		if err != nil {
-			continue
+		settingMap := map[string]interface{}{
+			"name":  rawSettingParts[0],
+			"value": rawSettingParts[1],
 		}
-
-		settingValue, err := valueObject.NewPhpSettingValue(rawSettingParts[1])
-		if err != nil {
-			continue
-		}
-
-		settings = append(settings, entity.NewPhpSetting(settingName, settingValue, nil))
+		rawSettingsSlice = append(rawSettingsSlice, settingMap)
 	}
 
-	return settings
+	return rawSettingsSlice
 }
 
 func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
@@ -143,13 +131,19 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
+
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
 				"version":  phpVersionStr,
 			}
 
-			requestBody["modules"] = controller.parsePhpModules(modulesSlice)
-			requestBody["settings"] = controller.parsePhpSettings(settingsSlice)
+			if len(modulesSlice) > 0 {
+				requestBody["modules"] = controller.parseRawPhpModules(modulesSlice)
+			}
+
+			if len(settingsSlice) > 0 {
+				requestBody["settings"] = controller.parseRawPhpSettings(settingsSlice)
+			}
 
 			cliHelper.ServiceResponseWrapper(
 				controller.runtimeService.UpdatePhpConfigs(requestBody),
@@ -188,7 +182,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 
 			moduleStatusStr := strconv.FormatBool(moduleStatusBool)
 			rawPhpModuleParam := moduleNameStr + ":" + moduleStatusStr
-			requestBody["modules"] = controller.parsePhpModules(
+			requestBody["modules"] = controller.parseRawPhpModules(
 				[]string{rawPhpModuleParam},
 			)
 
@@ -225,7 +219,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			}
 
 			rawPhpSettingParam := settingNameStr + ":" + settingValueStr
-			requestBody["settings"] = controller.parsePhpSettings(
+			requestBody["settings"] = controller.parseRawPhpSettings(
 				[]string{rawPhpSettingParam},
 			)
 
