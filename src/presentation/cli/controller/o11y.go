@@ -8,16 +8,14 @@ import (
 )
 
 type O11yController struct {
-	transientDbService *internalDbInfra.TransientDatabaseService
-	o11yService        *service.O11yService
+	o11yService *service.O11yService
 }
 
 func NewO11yController(
 	transientDbService *internalDbInfra.TransientDatabaseService,
 ) *O11yController {
 	return &O11yController{
-		transientDbService: transientDbService,
-		o11yService:        service.NewO11yService(transientDbService),
+		o11yService: service.NewO11yService(transientDbService),
 	}
 }
 
