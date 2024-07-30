@@ -18,14 +18,6 @@ func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	return AccountId(uintValue), nil
 }
 
-func NewAccountIdPanic(value interface{}) AccountId {
-	accId, err := NewAccountId(value)
-	if err != nil {
-		panic(err)
-	}
-	return accId
-}
-
 func (vo AccountId) Read() uint64 {
 	return uint64(vo)
 }
