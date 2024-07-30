@@ -1,24 +1,21 @@
 package apiController
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/useCase"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	o11yInfra "github.com/speedianet/os/src/infra/o11y"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
+	"github.com/speedianet/os/src/presentation/service"
 )
 
 type O11yController struct {
-	transientDbSvc *internalDbInfra.TransientDatabaseService
+	o11yService *service.O11yService
 }
 
 func NewO11yController(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbService *internalDbInfra.TransientDatabaseService,
 ) *O11yController {
 	return &O11yController{
-		transientDbSvc: transientDbSvc,
+		o11yService: service.NewO11yService(transientDbService),
 	}
 }
 
@@ -32,11 +29,5 @@ func NewO11yController(
 // @Success      200 {object} entity.O11yOverview
 // @Router       /v1/o11y/overview/ [get]
 func (controller *O11yController) ReadOverview(c echo.Context) error {
-	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(controller.transientDbSvc)
-	o11yOverview, err := useCase.GetO11yOverview(o11yQueryRepo)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
-	}
-
-	return apiHelper.ResponseWrapper(c, http.StatusOK, o11yOverview)
+	return apiHelper.ServiceResponseWrapper(c, controller.o11yService.ReadOverview())
 }
