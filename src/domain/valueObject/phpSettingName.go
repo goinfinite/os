@@ -18,10 +18,10 @@ func NewPhpSettingName(value interface{}) (settingName PhpSettingName, err error
 	}
 
 	re := regexp.MustCompile(phpSettingNameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return settingName, errors.New("InvalidPhpSettingName")
 	}
+
 	return PhpSettingName(stringValue), nil
 }
 
