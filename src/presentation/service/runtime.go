@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -36,14 +35,12 @@ func (service *RuntimeService) ReadPhpConfigs(
 
 	hostname, err := valueObject.NewFqdn(input["hostname"])
 	if err != nil {
-		log.Printf("%s --> '%+v'", err.Error(), input)
 		return NewServiceOutput(UserError, err.Error())
 	}
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
 	if err != nil {
-		log.Printf("%s --> '%+v'", err.Error(), input)
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
