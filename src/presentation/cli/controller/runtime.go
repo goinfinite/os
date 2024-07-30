@@ -16,16 +16,14 @@ import (
 )
 
 type RuntimeController struct {
-	persistentDbService *internalDbInfra.PersistentDatabaseService
-	runtimeService      *service.RuntimeService
+	runtimeService *service.RuntimeService
 }
 
 func NewRuntimeController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *RuntimeController {
 	return &RuntimeController{
-		persistentDbService: persistentDbService,
-		runtimeService:      service.NewRuntimeService(persistentDbService),
+		runtimeService: service.NewRuntimeService(persistentDbService),
 	}
 }
 
