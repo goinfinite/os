@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type DataFieldType string
@@ -25,22 +27,20 @@ var validDataFieldTypes = []string{
 	"url",
 }
 
-func NewDataFieldType(value string) (DataFieldType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(validDataFieldTypes, value) {
-		return "", errors.New("InvalidDataFieldType")
-	}
-
-	return DataFieldType(value), nil
-}
-
-func NewDataFieldTypePanic(value string) DataFieldType {
-	vo, err := NewDataFieldType(value)
+func NewDataFieldType(value interface{}) (
+	dataFieldType DataFieldType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return dataFieldType, errors.New("DataFieldTypeMustBeString")
 	}
 
-	return vo
+	stringValue = strings.ToLower(stringValue)
+	if !slices.Contains(validDataFieldTypes, stringValue) {
+		return dataFieldType, errors.New("InvalidDataFieldType")
+	}
+
+	return DataFieldType(stringValue), nil
 }
 
 func (vo DataFieldType) String() string {
