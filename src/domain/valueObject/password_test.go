@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestPassword(t *testing.T) {
 	t.Run("ValidPassword", func(t *testing.T) {

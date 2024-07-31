@@ -14,24 +14,15 @@ func NewPassword(value interface{}) (password Password, err error) {
 		return "", errors.New("PasswordValueMustBeString")
 	}
 
-	valueLength := len(stringValue)
-	if valueLength < 6 {
+	if len(stringValue) < 6 {
 		return password, errors.New("PasswordTooShort")
 	}
 
-	if valueLength > 64 {
+	if len(stringValue) > 64 {
 		return password, errors.New("PasswordTooLong")
 	}
 
 	return Password(stringValue), nil
-}
-
-func NewPasswordPanic(value interface{}) Password {
-	pass, err := NewPassword(value)
-	if err != nil {
-		panic(err)
-	}
-	return pass
 }
 
 func (vo Password) String() string {
