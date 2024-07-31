@@ -89,16 +89,31 @@ func (controller *SslController) Create(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	sslCertificateEncoded := valueObject.NewEncodedContentPanic(
+	sslCertificateEncoded, err := valueObject.NewEncodedContent(
 		requestBody["certificate"].(string),
 	)
-	sslCertificateContent := valueObject.NewSslCertificateContentFromEncodedContentPanic(
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	sslCertificateContent, err := valueObject.NewSslCertificateContentFromEncodedContent(
 		sslCertificateEncoded,
 	)
-	sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	sslCertificate, err := entity.NewSslCertificate(sslCertificateContent)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
-	sslPrivateKeyEncoded := valueObject.NewEncodedContentPanic(requestBody["key"].(string))
-	sslPrivateKey := valueObject.NewSslPrivateKeyFromEncodedContentPanic(sslPrivateKeyEncoded)
+	sslPrivateKeyEncoded, err := valueObject.NewEncodedContent(requestBody["key"].(string))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	sslPrivateKey, err := valueObject.NewSslPrivateKeyFromEncodedContent(sslPrivateKeyEncoded)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	virtualHosts := parseVirtualHosts(requestBody["virtualHosts"])
 
@@ -113,7 +128,7 @@ func (controller *SslController) Create(c echo.Context) error {
 	)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateSslPair(
+	err = useCase.CreateSslPair(
 		sslCmdRepo,
 		vhostQueryRepo,
 		createSslPairDto,
