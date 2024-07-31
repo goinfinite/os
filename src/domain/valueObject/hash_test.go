@@ -44,7 +44,7 @@ func TestHash(t *testing.T) {
 	})
 
 	t.Run("InvalidHash", func(t *testing.T) {
-		invalidHashes := []string{
+		invalidHashes := []interface{}{
 			"",
 			"     ",
 			"Kf81h",
