@@ -18,11 +18,8 @@ func NewFailureReason(value interface{}) (failureReason FailureReason, err error
 		return failureReason, errors.New("FailureReasonEmpty")
 	}
 
-	maxProcessingFailureSize := 256
-	if len(stringValue) > 256 {
-		maxProcessingFailureSizeIndex := maxProcessingFailureSize - 1
-		partialProcessingFailure := stringValue[:maxProcessingFailureSizeIndex]
-		stringValue = partialProcessingFailure
+	if len(stringValue) > 2048 {
+		stringValue = stringValue[:2048]
 	}
 
 	return FailureReason(stringValue), nil
