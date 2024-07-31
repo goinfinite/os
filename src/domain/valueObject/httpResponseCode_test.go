@@ -1,11 +1,9 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewHttpResponseCode(t *testing.T) {
-	t.Run("ValidResponseCode", func(t *testing.T) {
+	t.Run("ValidHttpResponseCode", func(t *testing.T) {
 		validResponseCodes := []interface{}{
 			"100",
 			"200",
@@ -31,7 +29,7 @@ func TestNewHttpResponseCode(t *testing.T) {
 		}
 	})
 
-	t.Run("InvalidResponseCode", func(t *testing.T) {
+	t.Run("InvalidHttpResponseCode", func(t *testing.T) {
 		invalidResponseCodes := []interface{}{
 			"@blabla",
 			"<script>alert('xss')</script>",
