@@ -4,7 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"slices"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -21,15 +20,13 @@ func NewUnixFileName(value interface{}) (fileName UnixFileName, err error) {
 		return fileName, errors.New("UnixFileNameValueMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
-	unixFileNameRegex := regexp.MustCompile(unixFileNameRegexExpression)
-	if !unixFileNameRegex.MatchString(stringValue) {
-		return "", errors.New("InvalidUnixFileName")
+	re := regexp.MustCompile(unixFileNameRegexExpression)
+	if !re.MatchString(stringValue) {
+		return fileName, errors.New("InvalidUnixFileName")
 	}
 
 	if slices.Contains(reservedUnixFileNames, stringValue) {
-		return "", errors.New("ReservedUnixFileName")
+		return fileName, errors.New("ReservedUnixFileName")
 	}
 
 	return UnixFileName(stringValue), nil
