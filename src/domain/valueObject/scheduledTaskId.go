@@ -7,15 +7,17 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type ScheduledTaskId uint
+type ScheduledTaskId uint64
 
-func NewScheduledTaskId(value interface{}) (ScheduledTaskId, error) {
-	id, err := voHelper.InterfaceToUint(value)
+func NewScheduledTaskId(value interface{}) (
+	scheduledTaskId ScheduledTaskId, err error,
+) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("InvalidScheduledTaskId")
+		return scheduledTaskId, errors.New("ScheduledTaskIdMustBeUint64")
 	}
 
-	return ScheduledTaskId(id), nil
+	return ScheduledTaskId(uintValue), nil
 }
 
 func (vo ScheduledTaskId) String() string {
