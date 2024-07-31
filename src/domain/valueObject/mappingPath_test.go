@@ -1,12 +1,10 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewMappingPath(t *testing.T) {
 	t.Run("ValidMappingPath", func(t *testing.T) {
-		validMappingPaths := []string{
+		validMappingPaths := []interface{}{
 			"",
 			"/",
 			"/img/",
@@ -28,7 +26,7 @@ func TestNewMappingPath(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingPath", func(t *testing.T) {
-		invalidMappingPaths := []string{
+		invalidMappingPaths := []interface{}{
 			"UNION SELECT * FROM USERS",
 			"/path\n/path",
 			"?param=value",
