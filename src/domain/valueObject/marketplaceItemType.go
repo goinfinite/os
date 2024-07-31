@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MarketplaceItemType string
@@ -14,30 +16,22 @@ var ValidMarketplaceItemTypes = []string{
 	"stack",
 }
 
-func NewMarketplaceItemType(value string) (MarketplaceItemType, error) {
-	value = strings.ToLower(value)
+func NewMarketplaceItemType(value interface{}) (
+	marketplaceItemType MarketplaceItemType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return marketplaceItemType, errors.New("MarketplaceItemTypeMustBeString")
+	}
+	stringValue = strings.ToLower(stringValue)
 
-	mit := MarketplaceItemType(value)
-	if !mit.isValid() {
+	if !slices.Contains(ValidMarketplaceItemTypes, stringValue) {
 		return "", errors.New("InvalidMarketplaceItemType")
 	}
 
-	return MarketplaceItemType(value), nil
+	return MarketplaceItemType(stringValue), nil
 }
 
-func NewMarketplaceItemTypePanic(value string) MarketplaceItemType {
-	mit, err := NewMarketplaceItemType(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return mit
-}
-
-func (mit MarketplaceItemType) isValid() bool {
-	return slices.Contains(ValidMarketplaceItemTypes, string(mit))
-}
-
-func (mit MarketplaceItemType) String() string {
-	return string(mit)
+func (vo MarketplaceItemType) String() string {
+	return string(vo)
 }

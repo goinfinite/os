@@ -1,12 +1,10 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestMarketplaceItemType(t *testing.T) {
 	t.Run("ValidMarketplaceItemType", func(t *testing.T) {
-		validMarketplaceItemTypes := []string{
+		validMarketplaceItemTypes := []interface{}{
 			"app",
 			"framework",
 			"stack",
@@ -20,7 +18,7 @@ func TestMarketplaceItemType(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemType", func(t *testing.T) {
-		invalidMarketplaceItemTypes := []string{
+		invalidMarketplaceItemTypes := []interface{}{
 			"",
 			"service",
 			"mobile",
