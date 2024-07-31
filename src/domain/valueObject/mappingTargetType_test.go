@@ -1,12 +1,10 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestMappingTargetType(t *testing.T) {
 	t.Run("ValidMappingTargetType", func(t *testing.T) {
-		validMappingTargetTypes := []string{
+		validMappingTargetTypes := []interface{}{
 			"url",
 			"service",
 			"response-code",
@@ -23,7 +21,7 @@ func TestMappingTargetType(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingTargetType", func(t *testing.T) {
-		invalidMappingTargetTypes := []string{
+		invalidMappingTargetTypes := []interface{}{
 			"response-header",
 			"reverse-proxy",
 			"template",
