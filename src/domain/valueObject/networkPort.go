@@ -9,16 +9,16 @@ import (
 
 type NetworkPort uint
 
-func NewNetworkPort(value interface{}) (NetworkPort, error) {
-	np, err := voHelper.InterfaceToUint(value)
+func NewNetworkPort(value interface{}) (networkPort NetworkPort, err error) {
+	uintValue, err := voHelper.InterfaceToUint(value)
 	if err != nil {
-		return 0, errors.New("InvalidNetworkPort")
+		return networkPort, errors.New("NetworkPortMustBeUint")
 	}
 
-	return NetworkPort(np), nil
+	return NetworkPort(uintValue), nil
 }
 
-func (vo NetworkPort) Get() uint {
+func (vo NetworkPort) Uint() uint {
 	return uint(vo)
 }
 
