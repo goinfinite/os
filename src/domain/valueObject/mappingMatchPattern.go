@@ -24,8 +24,8 @@ func NewMappingMatchPattern(value interface{}) (
 	if err != nil {
 		return mappingMatchPattern, errors.New("MappingMatchPatternMustBeString")
 	}
-
 	stringValue = strings.ToLower(stringValue)
+
 	if !slices.Contains(ValidMappingMatchPatterns, stringValue) {
 		return mappingMatchPattern, errors.New("InvalidMappingMatchPattern")
 	}
