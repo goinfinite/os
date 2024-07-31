@@ -4,39 +4,31 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MarketplaceItemName string
 
 const marketplaceItemNameRegexExpression = `^\p{L}[\p{L}\'\ \-]{3,30}$`
 
-func NewMarketplaceItemName(value string) (MarketplaceItemName, error) {
-	value = strings.TrimSpace(value)
-
-	min := MarketplaceItemName(value)
-	if !min.isValid() {
-		return "", errors.New("InvalidMarketplaceItemName")
-	}
-
-	return min, nil
-}
-
-func NewMarketplaceItemNamePanic(value string) MarketplaceItemName {
-	min, err := NewMarketplaceItemName(value)
+func NewMarketplaceItemName(value interface{}) (
+	marketplaceItemName MarketplaceItemName, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return marketplaceItemName, errors.New("MarketplaceItemNameMustBeString")
+	}
+	stringValue = strings.TrimSpace(stringValue)
+
+	re := regexp.MustCompile(marketplaceItemNameRegexExpression)
+	if !re.MatchString(stringValue) {
+		return marketplaceItemName, errors.New("InvalidMarketplaceItemName")
 	}
 
-	return min
+	return MarketplaceItemName(stringValue), nil
 }
 
-func (min MarketplaceItemName) isValid() bool {
-	marketplaceItemNameCompiledRegex := regexp.MustCompile(
-		marketplaceItemNameRegexExpression,
-	)
-	return marketplaceItemNameCompiledRegex.MatchString(string(min))
-}
-
-func (min MarketplaceItemName) String() string {
-	return string(min)
+func (vo MarketplaceItemName) String() string {
+	return string(vo)
 }
