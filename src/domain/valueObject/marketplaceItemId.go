@@ -7,27 +7,20 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type MarketplaceItemId uint
+type MarketplaceItemId uint16
 
-func NewMarketplaceItemId(value interface{}) (MarketplaceItemId, error) {
-	marketplaceItemUid, err := voHelper.InterfaceToUint(value)
+func NewMarketplaceItemId(value interface{}) (
+	marketplaceItemId MarketplaceItemId, err error,
+) {
+	uintValue, err := voHelper.InterfaceToUint16(value)
 	if err != nil {
-		return 0, errors.New("InvalidMarketplaceItemId")
+		return marketplaceItemId, errors.New("MarketplaceItemIdMustBeUint16")
 	}
 
-	return MarketplaceItemId(marketplaceItemUid), nil
+	return MarketplaceItemId(uintValue), nil
 }
 
-func NewMarketplaceItemIdPanic(value interface{}) MarketplaceItemId {
-	vo, err := NewMarketplaceItemId(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return vo
-}
-
-func (vo MarketplaceItemId) Get() uint {
+func (vo MarketplaceItemId) Uint() uint {
 	return uint(vo)
 }
 

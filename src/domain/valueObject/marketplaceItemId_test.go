@@ -1,12 +1,11 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestMarketplaceItemId(t *testing.T) {
 	t.Run("ValidMarketplaceItemId", func(t *testing.T) {
 		validMarketplaceItemIds := []interface{}{
+			0,
 			1,
 			3,
 			1000,
@@ -14,10 +13,10 @@ func TestMarketplaceItemId(t *testing.T) {
 			"12345",
 		}
 
-		for _, value := range validMarketplaceItemIds {
-			_, err := NewMarketplaceItemId(value)
+		for _, itemId := range validMarketplaceItemIds {
+			_, err := NewMarketplaceItemId(itemId)
 			if err != nil {
-				t.Errorf("(%v) ExpectedNoErrorButGot: %s", value, err.Error())
+				t.Errorf("(%v) ExpectedNoErrorButGot: %s", itemId, err.Error())
 			}
 		}
 	})
@@ -29,10 +28,10 @@ func TestMarketplaceItemId(t *testing.T) {
 			"-455",
 		}
 
-		for _, value := range invalidMarketplaceItemIds {
-			_, err := NewMarketplaceItemId(value)
+		for _, itemId := range invalidMarketplaceItemIds {
+			_, err := NewMarketplaceItemId(itemId)
 			if err == nil {
-				t.Errorf("(%v) ExpectedErrorButGotNil", value)
+				t.Errorf("(%v) ExpectedErrorButGotNil", itemId)
 			}
 		}
 	})
