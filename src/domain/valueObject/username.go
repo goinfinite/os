@@ -18,19 +18,11 @@ func NewUsername(value interface{}) (username Username, err error) {
 	}
 
 	re := regexp.MustCompile(usernameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
-		return "", errors.New("InvalidUsername")
+	if !re.MatchString(stringValue) {
+		return username, errors.New("InvalidUsername")
 	}
-	return Username(stringValue), nil
-}
 
-func NewUsernamePanic(value interface{}) Username {
-	user, err := NewUsername(value)
-	if err != nil {
-		panic(err)
-	}
-	return user
+	return Username(stringValue), nil
 }
 
 func (vo Username) String() string {
