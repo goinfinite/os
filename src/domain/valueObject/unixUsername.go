@@ -12,19 +12,16 @@ const unixUsernameRegex string = `^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$`
 
 type UnixUsername string
 
-func NewUnixUsername(value interface{}) (UnixUsername, error) {
+func NewUnixUsername(value interface{}) (unixUsername UnixUsername, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("UnixUsernameMustBeString")
+		return unixUsername, errors.New("UnixUsernameMustBeString")
 	}
-
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	re := regexp.MustCompile(unixUsernameRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
-		return "", errors.New("InvalidUnixUsername")
+	if !re.MatchString(stringValue) {
+		return unixUsername, errors.New("InvalidUnixUsername")
 	}
 
 	return UnixUsername(stringValue), nil
