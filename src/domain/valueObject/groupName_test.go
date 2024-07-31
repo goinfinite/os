@@ -4,12 +4,13 @@ import "testing"
 
 func TestGroupName(t *testing.T) {
 	t.Run("ValidGroupName", func(t *testing.T) {
-		validGroupNames := []string{
+		validGroupNames := []interface{}{
 			"ssl-cert",
 			"damn-man--",
 			"root",
 			"mysql",
 		}
+
 		for _, groupName := range validGroupNames {
 			_, err := NewGroupName(groupName)
 			if err != nil {
@@ -19,7 +20,7 @@ func TestGroupName(t *testing.T) {
 	})
 
 	t.Run("InvalidGroupName", func(t *testing.T) {
-		invalidGroupNames := []string{
+		invalidGroupNames := []interface{}{
 			"",
 			".",
 			"..",
@@ -30,6 +31,7 @@ func TestGroupName(t *testing.T) {
 			"<root>",
 			"not a valid user",
 		}
+
 		for _, groupName := range invalidGroupNames {
 			_, err := NewGroupName(groupName)
 			if err == nil {

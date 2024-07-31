@@ -3,34 +3,28 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const groupNameRegexExpression = `^[a-zA-Z0-9_-]{1,32}$`
 
 type GroupName string
 
-func NewGroupName(value string) (GroupName, error) {
-	groupName := GroupName(value)
-	if !groupName.isValid() {
+func NewGroupName(value interface{}) (groupName GroupName, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return groupName, errors.New("GroupNameMustBeString")
+	}
+
+	re := regexp.MustCompile(groupNameRegexExpression)
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidGroupName")
 	}
 
-	return groupName, nil
+	return GroupName(stringValue), nil
 }
 
-func NewGroupNamePanic(value string) GroupName {
-	groupName, err := NewGroupName(value)
-	if err != nil {
-		panic(err)
-	}
-	return groupName
-}
-
-func (groupName GroupName) isValid() bool {
-	groupNameRegex := regexp.MustCompile(groupNameRegexExpression)
-	return groupNameRegex.MatchString(string(groupName))
-}
-
-func (groupName GroupName) String() string {
-	return string(groupName)
+func (vo GroupName) String() string {
+	return string(vo)
 }
