@@ -17,7 +17,6 @@ func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
 	if err != nil {
 		return urlPath, errors.New("UrlPathValueMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 
 	hasLeadingSlash := strings.HasPrefix(stringValue, "/")
 	if !hasLeadingSlash {
@@ -25,21 +24,11 @@ func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
 	}
 
 	re := regexp.MustCompile(urlPathRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return urlPath, errors.New("InvalidUrlPath")
 	}
 
 	return UrlPath(stringValue), nil
-}
-
-func NewUrlPathPanic(value interface{}) UrlPath {
-	vo, err := NewUrlPath(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return vo
 }
 
 func (vo UrlPath) String() string {
