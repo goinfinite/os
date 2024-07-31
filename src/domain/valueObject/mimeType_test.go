@@ -4,7 +4,7 @@ import "testing"
 
 func TestMimeType(t *testing.T) {
 	t.Run("ValidMimeType", func(t *testing.T) {
-		validMimeTypes := []string{
+		validMimeTypes := []interface{}{
 			"directory",
 			"generic",
 			"application/cdmi-object",
@@ -18,6 +18,7 @@ func TestMimeType(t *testing.T) {
 			"video/vnd.ms-playready.media.pyv",
 			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
 		}
+
 		for _, mimeType := range validMimeTypes {
 			_, err := NewMimeType(mimeType)
 			if err != nil {
@@ -27,7 +28,7 @@ func TestMimeType(t *testing.T) {
 	})
 
 	t.Run("InvalidMimeType", func(t *testing.T) {
-		invalidMimeTypes := []string{
+		invalidMimeTypes := []interface{}{
 			"",
 			".",
 			"..",
@@ -35,6 +36,7 @@ func TestMimeType(t *testing.T) {
 			"application+blabla/vnd.ms~excel",
 			"csv",
 		}
+
 		for _, mimeType := range invalidMimeTypes {
 			_, err := NewMimeType(mimeType)
 			if err == nil {
