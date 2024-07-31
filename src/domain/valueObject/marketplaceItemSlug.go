@@ -19,7 +19,6 @@ func NewMarketplaceItemSlug(value interface{}) (
 	if err != nil {
 		return marketplaceItemSlug, errors.New("MarketplaceItemSlugValueMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	re := regexp.MustCompile(marketplaceItemSlugRegexExpression)

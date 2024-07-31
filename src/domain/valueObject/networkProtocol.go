@@ -21,7 +21,6 @@ func NewNetworkProtocol(value interface{}) (
 	if err != nil {
 		return networkProtocol, errors.New("NetworkProtocolMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidNetworkProtocols, stringValue) {

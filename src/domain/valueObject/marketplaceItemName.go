@@ -3,7 +3,6 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -19,7 +18,6 @@ func NewMarketplaceItemName(value interface{}) (
 	if err != nil {
 		return marketplaceItemName, errors.New("MarketplaceItemNameMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 
 	re := regexp.MustCompile(marketplaceItemNameRegexExpression)
 	if !re.MatchString(stringValue) {

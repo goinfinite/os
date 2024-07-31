@@ -3,7 +3,6 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -17,7 +16,6 @@ func NewServiceEnv(value interface{}) (serviceEnv ServiceEnv, err error) {
 	if err != nil {
 		return serviceEnv, errors.New("ServiceEnvMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 
 	re := regexp.MustCompile(serviceEnvRegex)
 	if !re.MatchString(stringValue) {

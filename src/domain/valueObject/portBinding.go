@@ -17,7 +17,6 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 	if err != nil {
 		return portBinding, errors.New("PortBindingValueMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if len(stringValue) == 0 {

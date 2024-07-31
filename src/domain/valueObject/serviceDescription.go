@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -16,7 +15,6 @@ func NewServiceDescription(value interface{}) (
 	if err != nil {
 		return serviceDescription, errors.New("ServiceDescriptionValueMustBeString")
 	}
-	stringValue = strings.TrimSpace(stringValue)
 
 	if len(stringValue) < 2 {
 		return serviceDescription, errors.New("ServiceDescriptionTooSmall")
