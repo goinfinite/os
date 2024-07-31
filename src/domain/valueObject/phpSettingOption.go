@@ -2,31 +2,31 @@ package valueObject
 
 import (
 	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type PhpSettingOption string
 
-func NewPhpSettingOption(value string) (PhpSettingOption, error) {
-	settingOption := PhpSettingOption(value)
-	if !settingOption.isValid() {
-		return "", errors.New("InvalidPhpSettingOption")
+func NewPhpSettingOption(value interface{}) (
+	phpSettingOption PhpSettingOption, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return phpSettingOption, errors.New("PhpSettingOptionMustBeString")
 	}
-	return settingOption, nil
-}
 
-func NewPhpSettingOptionPanic(value string) PhpSettingOption {
-	settingOption := PhpSettingOption(value)
-	if !settingOption.isValid() {
-		panic("InvalidPhpSettingOption")
+	if len(stringValue) == 0 {
+		return phpSettingOption, errors.New("PhpSettingOptionEmpty")
 	}
-	return settingOption
+
+	if len(stringValue) > 255 {
+		return phpSettingOption, errors.New("PhpSettingOptionTooLong")
+	}
+
+	return PhpSettingOption(stringValue), nil
 }
 
-func (settingOption PhpSettingOption) isValid() bool {
-	valueLen := len(settingOption)
-	return valueLen > 0 && valueLen <= 255
-}
-
-func (settingOption PhpSettingOption) String() string {
-	return string(settingOption)
+func (vo PhpSettingOption) String() string {
+	return string(vo)
 }
