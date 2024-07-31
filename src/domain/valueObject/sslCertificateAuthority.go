@@ -3,39 +3,34 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const sslCertificateAuthorityRegex string = `^\w{1,3}[\w\.\,\'\(\)\ \-]{0,100}$`
 
 type SslCertificateAuthority string
 
-func NewSslCertificateAuthority(value string) (SslCertificateAuthority, error) {
-	sca := SslCertificateAuthority(value)
+func NewSslCertificateAuthority(value interface{}) (
+	certificateAuthority SslCertificateAuthority, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return certificateAuthority, errors.New("SslCertificateAuthorityMustBeString")
+	}
 
-	if !sca.isValid() {
+	re := regexp.MustCompile(sslCertificateAuthorityRegex)
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidSslCertificateAuthority")
 	}
 
-	return SslCertificateAuthority(sca), nil
+	return SslCertificateAuthority(stringValue), nil
 }
 
-func NewSslCertificateAuthorityPanic(value string) SslCertificateAuthority {
-	sn, err := NewSslCertificateAuthority(value)
-	if err != nil {
-		panic(err)
-	}
-	return sn
+func (vo SslCertificateAuthority) String() string {
+	return string(vo)
 }
 
-func (sca SslCertificateAuthority) isValid() bool {
-	compiledScaRegex := regexp.MustCompile(sslCertificateAuthorityRegex)
-	return compiledScaRegex.MatchString(string(sca))
-}
-
-func (sca SslCertificateAuthority) String() string {
-	return string(sca)
-}
-
-func (sca SslCertificateAuthority) IsSelfSigned() bool {
-	return string(sca) == "Self-signed"
+func (vo SslCertificateAuthority) IsSelfSigned() bool {
+	return string(vo) == "Self-signed"
 }
