@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 var ValidPhpModuleNames = []string{
@@ -45,29 +47,19 @@ var ValidPhpModuleNames = []string{
 
 type PhpModuleName string
 
-func NewPhpModuleName(value string) (PhpModuleName, error) {
-	value = strings.TrimSpace(value)
-	value = strings.ToLower(value)
-
-	moduleName := PhpModuleName(value)
-	if !moduleName.isValid() {
-		return "", errors.New("InvalidPhpModuleName")
-	}
-	return moduleName, nil
-}
-
-func NewPhpModuleNamePanic(value string) PhpModuleName {
-	moduleName, err := NewPhpModuleName(value)
+func NewPhpModuleName(value interface{}) (moduleName PhpModuleName, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic("InvalidPhpModuleName")
+		return moduleName, errors.New("PhpModuleNameMustBeString")
 	}
-	return moduleName
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidPhpModuleNames, stringValue) {
+		return moduleName, errors.New("InvalidPhpModuleName")
+	}
+	return PhpModuleName(stringValue), nil
 }
 
-func (moduleName PhpModuleName) isValid() bool {
-	return slices.Contains(ValidPhpModuleNames, moduleName.String())
-}
-
-func (moduleName PhpModuleName) String() string {
-	return string(moduleName)
+func (vo PhpModuleName) String() string {
+	return string(vo)
 }
