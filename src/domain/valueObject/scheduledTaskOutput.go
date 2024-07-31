@@ -8,14 +8,15 @@ import (
 
 type ScheduledTaskOutput string
 
-func NewScheduledTaskOutput(value interface{}) (ScheduledTaskOutput, error) {
+func NewScheduledTaskOutput(value interface{}) (
+	scheduledTaskOutput ScheduledTaskOutput, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
 		return "", errors.New("ScheduledTaskOutputMustBeString")
 	}
 
-	valueLength := len(stringValue)
-	if valueLength > 2048 {
+	if len(stringValue) > 2048 {
 		stringValue = stringValue[:2048]
 	}
 
