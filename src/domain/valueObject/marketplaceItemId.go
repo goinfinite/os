@@ -20,8 +20,8 @@ func NewMarketplaceItemId(value interface{}) (
 	return MarketplaceItemId(uintValue), nil
 }
 
-func (vo MarketplaceItemId) Uint() uint {
-	return uint(vo)
+func (vo MarketplaceItemId) Uint16() uint16 {
+	return uint16(vo)
 }
 
 func (vo MarketplaceItemId) String() string {

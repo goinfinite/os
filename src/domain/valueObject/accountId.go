@@ -18,7 +18,7 @@ func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	return AccountId(uintValue), nil
 }
 
-func (vo AccountId) Read() uint64 {
+func (vo AccountId) Uint() uint64 {
 	return uint64(vo)
 }
 
