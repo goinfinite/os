@@ -13,22 +13,22 @@ func TestAccessTokenStr(t *testing.T) {
 		for _, accessTokenStr := range validAccessTokenStrs {
 			_, err := NewAccessTokenStr(accessTokenStr)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", accessTokenStr, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", accessTokenStr, err.Error(),
+				)
 			}
 		}
 	})
 
 	t.Run("InvalidAccessTokenStr", func(t *testing.T) {
 		invalidAccessTokenStrs := []interface{}{
-			"",
-			"invalidAuthToken",
-			"12345678",
+			"", "invalidAuthToken", "12345678",
 		}
 
 		for _, accessTokenStr := range invalidAccessTokenStrs {
 			_, err := NewAccessTokenStr(accessTokenStr)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", accessTokenStr)
+				t.Errorf("Expected error for '%v', got nil", accessTokenStr)
 			}
 		}
 	})

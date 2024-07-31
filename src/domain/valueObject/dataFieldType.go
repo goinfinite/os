@@ -11,20 +11,8 @@ import (
 type DataFieldType string
 
 var validDataFieldTypes = []string{
-	"checkbox",
-	"color",
-	"date",
-	"email",
-	"image",
-	"number",
-	"password",
-	"radio",
-	"range",
-	"search",
-	"tel",
-	"text",
-	"time",
-	"url",
+	"checkbox", "color", "date", "email", "image", "number", "password", "radio",
+	"range", "search", "tel", "text", "time", "url",
 }
 
 func NewDataFieldType(value interface{}) (

@@ -17,11 +17,11 @@ func NewInlineHtmlContent(value interface{}) (
 	}
 
 	if len(stringValue) == 0 {
-		return "", errors.New("InlineHtmlContentTooSmall")
+		return inlineHtmlContent, errors.New("InlineHtmlContentTooSmall")
 	}
 
 	if len(stringValue) > 3500 {
-		return "", errors.New("InlineHtmlContentTooBig")
+		return inlineHtmlContent, errors.New("InlineHtmlContentTooBig")
 	}
 
 	return InlineHtmlContent(stringValue), nil

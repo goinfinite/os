@@ -11,7 +11,9 @@ func TestNetworkProtocol(t *testing.T) {
 		for _, networkProtocol := range validNetworkProtocols {
 			_, err := NewNetworkProtocol(networkProtocol)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", networkProtocol, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", networkProtocol, err.Error(),
+				)
 			}
 		}
 	})
@@ -24,7 +26,7 @@ func TestNetworkProtocol(t *testing.T) {
 		for _, networkProtocol := range invalidNetworkProtocols {
 			_, err := NewNetworkProtocol(networkProtocol)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", networkProtocol)
+				t.Errorf("Expected error for '%v', got nil", networkProtocol)
 			}
 		}
 	})

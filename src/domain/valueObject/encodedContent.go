@@ -19,7 +19,7 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 	}
 
 	if len(stringValue) == 0 {
-		return encodedContent, errors.New("EncodedContentEmpty")
+		return encodedContent, errors.New("EmptyEncodedContent")
 	}
 
 	re := regexp.MustCompile(encodedContentRegexExpression)

@@ -7,19 +7,19 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type AccountId uint64
+type AccountId uint
 
 func NewAccountId(value interface{}) (accountId AccountId, err error) {
-	uintValue, err := voHelper.InterfaceToUint64(value)
+	uintValue, err := voHelper.InterfaceToUint(value)
 	if err != nil {
-		return accountId, errors.New("AccountIdMustBeUint64")
+		return accountId, errors.New("AccountIdMustBeUint")
 	}
 
 	return AccountId(uintValue), nil
 }
 
-func (vo AccountId) Uint() uint64 {
-	return uint64(vo)
+func (vo AccountId) Uint() uint {
+	return uint(vo)
 }
 
 func (vo AccountId) String() string {

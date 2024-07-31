@@ -11,7 +11,9 @@ func TestPortBinding(t *testing.T) {
 		for _, portBinding := range validPortBindings {
 			_, err := NewPortBinding(portBinding)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", portBinding, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", portBinding, err.Error(),
+				)
 			}
 		}
 	})
@@ -24,7 +26,7 @@ func TestPortBinding(t *testing.T) {
 		for _, portBinding := range invalidPortBindings {
 			_, err := NewPortBinding(portBinding)
 			if err == nil {
-				t.Errorf("Expected error for %v, got nil", portBinding)
+				t.Errorf("Expected error for '%v', got nil", portBinding)
 			}
 		}
 	})

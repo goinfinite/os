@@ -9,9 +9,8 @@ import (
 
 type AccessTokenType string
 
-var ValidAccessTokenType = []string{
-	"sessionToken",
-	"accountApiKey",
+var validAccessTokenType = []string{
+	"sessionToken", "accountApiKey",
 }
 
 func NewAccessTokenType(value interface{}) (
@@ -22,7 +21,7 @@ func NewAccessTokenType(value interface{}) (
 		return accessTokenType, errors.New("AccessTokenTypeMustBeString")
 	}
 
-	if !slices.Contains(ValidAccessTokenType, stringValue) {
+	if !slices.Contains(validAccessTokenType, stringValue) {
 		return accessTokenType, errors.New("InvalidAccessTokenType")
 	}
 

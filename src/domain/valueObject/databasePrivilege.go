@@ -10,61 +10,24 @@ import (
 
 type DatabasePrivilege string
 
-var ValidDatabasePrivileges = []string{
-	"ALL PRIVILEGES",
-	"ALL",
-	"ALTER ROUTINE",
-	"ALTER SYSTEM",
-	"ALTER",
+var validDatabasePrivileges = []string{
+	"ALL PRIVILEGES", "ALL", "ALTER ROUTINE", "ALTER SYSTEM", "ALTER",
 	"BYPASSRLS",
-	"CONNECT",
-	"CREATE DOMAIN",
-	"CREATE FUNCTION",
-	"CREATE GROUP",
-	"CREATE INDEX",
-	"CREATE LANGUAGE",
-	"CREATE PROCEDURE",
-	"CREATE ROLE",
-	"CREATE ROUTINE",
-	"CREATE SCHEMA",
-	"CREATE TABLE",
-	"CREATE TEMP",
-	"CREATE TEMPORARY TABLES",
-	"CREATE TRIGGER",
-	"CREATE TYPE",
-	"CREATE USER",
-	"CREATE VIEW",
-	"CREATE",
-	"CREATEDB",
-	"CREATEROLE",
-	"DELETE HISTORY",
-	"DELETE",
-	"DROP",
-	"EVENT",
-	"EXECUTE",
+	"CONNECT", "CREATE DOMAIN", "CREATE FUNCTION", "CREATE GROUP", "CREATE INDEX",
+	"CREATE LANGUAGE", "CREATE PROCEDURE", "CREATE ROLE", "CREATE ROUTINE",
+	"CREATE SCHEMA", "CREATE TABLE", "CREATE TEMP", "CREATE TEMPORARY TABLES",
+	"CREATE TRIGGER", "CREATE TYPE", "CREATE USER", "CREATE VIEW", "CREATE",
+	"CREATEDB", "CREATEROLE",
+	"DELETE HISTORY", "DELETE", "DROP",
+	"EVENT", "EXECUTE",
 	"FILE",
-	"INDEX",
-	"INSERT",
+	"INDEX", "INSERT",
 	"LOCK TABLES",
-	"PASSWORDADMIN",
-	"PROCESS",
-	"PROXY",
-	"REFERENCES",
-	"RELOAD",
-	"REPLICATION CLIENT",
-	"REPLICATION SLAVE",
-	"REPLICATION",
-	"SELECT",
-	"SET",
-	"SHOW VIEW",
-	"SHUTDOWN",
-	"SUPER",
-	"SUPERUSER",
-	"TEMPORARY",
-	"TRIGGER",
-	"TRUNCATE",
-	"UPDATE",
-	"USAGE",
+	"PASSWORDADMIN", "PROCESS", "PROXY",
+	"REFERENCES", "RELOAD", "REPLICATION CLIENT", "REPLICATION SLAVE", "REPLICATION",
+	"SELECT", "SET", "SHOW VIEW", "SHUTDOWN", "SUPER", "SUPERUSER",
+	"TEMPORARY", "TRIGGER", "TRUNCATE",
+	"UPDATE", "USAGE",
 }
 
 func NewDatabasePrivilege(value interface{}) (
@@ -77,7 +40,7 @@ func NewDatabasePrivilege(value interface{}) (
 	stringValue = strings.ReplaceAll(stringValue, "-", " ")
 	stringValue = strings.ToUpper(stringValue)
 
-	if !slices.Contains(ValidDatabasePrivileges, stringValue) {
+	if !slices.Contains(validDatabasePrivileges, stringValue) {
 		return dbPrivilege, errors.New("InvalidDatabasePrivilege")
 	}
 	return DatabasePrivilege(stringValue), nil

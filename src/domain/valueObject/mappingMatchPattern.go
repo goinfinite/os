@@ -10,11 +10,8 @@ import (
 
 type MappingMatchPattern string
 
-var ValidMappingMatchPatterns = []string{
-	"begins-with",
-	"contains",
-	"equals",
-	"ends-with",
+var validMappingMatchPatterns = []string{
+	"begins-with", "contains", "equals", "ends-with",
 }
 
 func NewMappingMatchPattern(value interface{}) (
@@ -26,7 +23,7 @@ func NewMappingMatchPattern(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(ValidMappingMatchPatterns, stringValue) {
+	if !slices.Contains(validMappingMatchPatterns, stringValue) {
 		return mappingMatchPattern, errors.New("InvalidMappingMatchPattern")
 	}
 

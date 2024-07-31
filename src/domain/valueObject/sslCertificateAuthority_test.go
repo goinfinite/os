@@ -12,7 +12,7 @@ func TestSslCertificateAuthority(t *testing.T) {
 		for _, sslCertificateAuthority := range validsSslCertificateAuthority {
 			_, err := NewSslCertificateAuthority(sslCertificateAuthority)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", sslCertificateAuthority, err.Error())
+				t.Errorf("Expected no error for '%v', got '%s'", sslCertificateAuthority, err.Error())
 			}
 		}
 	})
@@ -25,7 +25,7 @@ func TestSslCertificateAuthority(t *testing.T) {
 		for _, sslCertificateAuthority := range invalidsSslCertificateAuthority {
 			_, err := NewSslCertificateAuthority(sslCertificateAuthority)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", sslCertificateAuthority)
+				t.Errorf("Expected error for '%v', got nil", sslCertificateAuthority)
 			}
 		}
 	})

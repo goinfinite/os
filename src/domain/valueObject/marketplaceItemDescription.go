@@ -19,11 +19,15 @@ func NewMarketplaceItemDescription(value interface{}) (
 	}
 
 	if len(stringValue) < 2 {
-		return "", errors.New("MarketplaceItemDescriptionTooSmall")
+		return marketplaceItemDescription, errors.New(
+			"MarketplaceItemDescriptionTooSmall",
+		)
 	}
 
 	if len(stringValue) > 2048 {
-		return "", errors.New("MarketplaceItemDescriptionTooBig")
+		return marketplaceItemDescription, errors.New(
+			"MarketplaceItemDescriptionTooBig",
+		)
 	}
 
 	return MarketplaceItemDescription(stringValue), nil

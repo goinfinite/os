@@ -12,7 +12,7 @@ func TestPhpSettingOption(t *testing.T) {
 		for _, name := range validSettingOptions {
 			_, err := NewPhpSettingOption(name)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", name, err)
+				t.Errorf("Expected no error for '%v', got '%s'", name, err.Error())
 			}
 		}
 	})
@@ -25,7 +25,7 @@ func TestPhpSettingOption(t *testing.T) {
 		for _, name := range invalidSettingOptions {
 			_, err := NewPhpSettingOption(name)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", name)
+				t.Errorf("Expected error for '%v', got nil", name)
 			}
 		}
 	})

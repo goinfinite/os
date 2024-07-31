@@ -15,7 +15,7 @@ func NewFailureReason(value interface{}) (failureReason FailureReason, err error
 	}
 
 	if len(stringValue) == 0 {
-		return failureReason, errors.New("FailureReasonEmpty")
+		return failureReason, errors.New("EmptyFailureReason")
 	}
 
 	if len(stringValue) > 2048 {

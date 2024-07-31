@@ -19,7 +19,7 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 	stringValue = strings.ToLower(stringValue)
 
 	if len(stringValue) == 0 {
-		return settingValue, errors.New("PhpSettingValueEmpty")
+		return settingValue, errors.New("EmptyPhpSettingValue")
 	}
 
 	if len(stringValue) > 255 {

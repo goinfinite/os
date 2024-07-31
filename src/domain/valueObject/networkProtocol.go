@@ -10,7 +10,7 @@ import (
 
 type NetworkProtocol string
 
-var ValidNetworkProtocols = []string{
+var validNetworkProtocols = []string{
 	"http", "https", "ws", "wss", "grpc", "grpcs", "tcp", "udp",
 }
 
@@ -23,7 +23,7 @@ func NewNetworkProtocol(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(ValidNetworkProtocols, stringValue) {
+	if !slices.Contains(validNetworkProtocols, stringValue) {
 		return networkProtocol, errors.New("InvalidNetworkProtocol")
 	}
 

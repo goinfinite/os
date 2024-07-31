@@ -50,10 +50,11 @@ func TestHash(t *testing.T) {
 			"Kf81h",
 			"TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQ3JhcyBhbGlxdWV0IGRpYW0gaWQgcGxhY2VyYXQgZGFwaWJ1cy4gQ3VyYWJpdHVyIGVsZWlmZW5kIG1hdHRpcyB1cm5hIG5vbiB2dWxwdXRhdGUuIFN1c3BlbmRpc3NlIHBvdGVudGkuIE51bmMgZGlnbmlzc2ltIG5pc2wgdml0YWUgbnVsb",
 		}
+
 		for _, invalidHash := range invalidHashes {
 			_, err := NewHash(invalidHash)
 			if err == nil {
-				t.Errorf("Expected error for '%s', got nil", invalidHash)
+				t.Errorf("Expected error for '%v', got nil", invalidHash)
 			}
 		}
 	})

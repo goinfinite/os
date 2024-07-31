@@ -13,7 +13,7 @@ func NewScheduledTaskOutput(value interface{}) (
 ) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ScheduledTaskOutputMustBeString")
+		return scheduledTaskOutput, errors.New("ScheduledTaskOutputMustBeString")
 	}
 
 	if len(stringValue) > 2048 {

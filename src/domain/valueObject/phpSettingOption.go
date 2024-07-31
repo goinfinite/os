@@ -17,7 +17,7 @@ func NewPhpSettingOption(value interface{}) (
 	}
 
 	if len(stringValue) == 0 {
-		return phpSettingOption, errors.New("PhpSettingOptionEmpty")
+		return phpSettingOption, errors.New("EmptyPhpSettingOption")
 	}
 
 	if len(stringValue) > 255 {

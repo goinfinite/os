@@ -21,7 +21,7 @@ func NewSslCertificateAuthority(value interface{}) (
 
 	re := regexp.MustCompile(sslCertificateAuthorityRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidSslCertificateAuthority")
+		return certificateAuthority, errors.New("InvalidSslCertificateAuthority")
 	}
 
 	return SslCertificateAuthority(stringValue), nil

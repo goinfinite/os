@@ -19,7 +19,7 @@ func NewAccessTokenStr(value interface{}) (accessTokenStr AccessTokenStr, err er
 
 	re := regexp.MustCompile(accessTokenStrRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidAccessTokenStr")
+		return accessTokenStr, errors.New("InvalidAccessTokenStr")
 	}
 
 	return AccessTokenStr(stringValue), nil

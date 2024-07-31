@@ -23,7 +23,7 @@ func NewPhpVersion(value interface{}) (phpVersion PhpVersion, err error) {
 
 	re := regexp.MustCompile(phpVersionRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidPhpVersion")
+		return phpVersion, errors.New("InvalidPhpVersion")
 	}
 
 	return PhpVersion(stringValue), nil

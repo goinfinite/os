@@ -19,7 +19,7 @@ func NewGroupName(value interface{}) (groupName GroupName, err error) {
 
 	re := regexp.MustCompile(groupNameRegexExpression)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidGroupName")
+		return groupName, errors.New("InvalidGroupName")
 	}
 
 	return GroupName(stringValue), nil

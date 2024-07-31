@@ -11,7 +11,7 @@ type Password string
 func NewPassword(value interface{}) (password Password, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("PasswordValueMustBeString")
+		return password, errors.New("PasswordValueMustBeString")
 	}
 
 	if len(stringValue) < 6 {
