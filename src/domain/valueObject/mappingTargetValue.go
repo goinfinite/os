@@ -2,9 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
-
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MappingTargetValue string
@@ -12,33 +9,27 @@ type MappingTargetValue string
 func NewMappingTargetValue(
 	value interface{},
 	targetType MappingTargetType,
-) (vo MappingTargetValue, err error) {
-	voStr, err := voHelper.InterfaceToString(value)
-	if err != nil {
-		return "", errors.New("InvalidMappingTargetValue")
-	}
-	voStr = strings.TrimSpace(voStr)
-
+) (mappingTargetValue MappingTargetValue, err error) {
 	switch targetType.String() {
 	case "url":
-		targetUrl, err := NewUrl(voStr)
+		targetUrl, err := NewUrl(value)
 		if err == nil {
 			return MappingTargetValue(targetUrl.String()), nil
 		}
 	case "service":
-		targetServiceName, err := NewServiceName(voStr)
+		targetServiceName, err := NewServiceName(value)
 		if err == nil {
 			return MappingTargetValue(targetServiceName.String()), nil
 		}
 	case "response-code":
-		targetHttpResponseCode, err := NewHttpResponseCode(voStr)
+		targetHttpResponseCode, err := NewHttpResponseCode(value)
 		if err == nil {
 			return MappingTargetValue(
 				targetHttpResponseCode.String(),
 			), nil
 		}
 	case "inline-html":
-		targetInlineHtmlContent, err := NewInlineHtmlContent(voStr)
+		targetInlineHtmlContent, err := NewInlineHtmlContent(value)
 		if err == nil {
 			return MappingTargetValue(
 				targetInlineHtmlContent.String(),
@@ -46,19 +37,7 @@ func NewMappingTargetValue(
 		}
 	}
 
-	return vo, errors.New("InvalidMappingTargetValue")
-}
-
-func NewMappingTargetValuePanic(
-	value interface{},
-	targetType MappingTargetType,
-) (vo MappingTargetValue) {
-	vo, err := NewMappingTargetValue(value, targetType)
-	if err != nil {
-		panic(err)
-	}
-
-	return vo
+	return mappingTargetValue, errors.New("InvalidMappingTargetValue")
 }
 
 func (vo MappingTargetValue) String() string {

@@ -1,13 +1,11 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewMappingTargetValue(t *testing.T) {
 	t.Run("ValidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		validMappingTargetUrlValues := []string{
+		validMappingTargetUrlValues := []interface{}{
 			"localhost",
 			"localhost:8080",
 			"speedia.net",
@@ -31,7 +29,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		invalidMappingTargetUrlValues := []string{
+		invalidMappingTargetUrlValues := []interface{}{
 			"",
 			" ",
 			"http://",
@@ -61,7 +59,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("ValidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		validMappingTargetServiceNameValues := []string{
+		validMappingTargetServiceNameValues := []interface{}{
 			"openlitespeed",
 			"litespeed",
 			"nginx",
@@ -81,7 +79,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		invalidMappingTargetServiceNameValues := []string{
+		invalidMappingTargetServiceNameValues := []interface{}{
 			"nginx@",
 			"my<>sql",
 			"php#fpm",
@@ -142,7 +140,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("ValidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		validMappingTargetInlineHtmlContentValues := []string{
+		validMappingTargetInlineHtmlContentValues := []interface{}{
 			"Some nice inline html content",
 			"<h1>Nice title here</h1>",
 			"<p>With some regular text here too...<h2>",
@@ -158,7 +156,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		invalidMappingTargetInlineHtmlContentValues := []string{
+		invalidMappingTargetInlineHtmlContentValues := []interface{}{
 			"",
 		}
 
