@@ -1,33 +1,33 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
 
 type FailureReason string
 
-func NewFailureReason(value string) (FailureReason, error) {
-	maxProcessingFailureSize := 256
-
-	if len(value) < 1 {
-		return "", errors.New("EmptyFailureReason")
-	}
-
-	if len(value) > maxProcessingFailureSize {
-		maxProcessingFailureSizeIndex := maxProcessingFailureSize - 1
-		partialProcessingFailure := value[:maxProcessingFailureSizeIndex]
-		value = partialProcessingFailure
-	}
-
-	return FailureReason(value), nil
-}
-
-func NewFailureReasonPanic(value string) FailureReason {
-	fileProcessingFailure, err := NewFailureReason(value)
+func NewFailureReason(value interface{}) (failureReason FailureReason, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return failureReason, errors.New("FailureReasonMustBeString")
 	}
-	return fileProcessingFailure
+
+	if len(stringValue) == 0 {
+		return failureReason, errors.New("FailureReasonEmpty")
+	}
+
+	maxProcessingFailureSize := 256
+	if len(stringValue) > 256 {
+		maxProcessingFailureSizeIndex := maxProcessingFailureSize - 1
+		partialProcessingFailure := stringValue[:maxProcessingFailureSizeIndex]
+		stringValue = partialProcessingFailure
+	}
+
+	return FailureReason(stringValue), nil
 }
 
-func (fileProcessingFailure FailureReason) String() string {
-	return string(fileProcessingFailure)
+func (vo FailureReason) String() string {
+	return string(vo)
 }
