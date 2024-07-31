@@ -52,17 +52,26 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
+			hostname, err := valueObject.NewFqdn(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			vhostTypeStr := "top-level"
 			if typeStr != "" {
 				vhostTypeStr = typeStr
 			}
-			vhostType := valueObject.NewVirtualHostTypePanic(vhostTypeStr)
+			vhostType, err := valueObject.NewVirtualHostType(vhostTypeStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var parentHostnamePtr *valueObject.Fqdn
 			if parentHostnameStr != "" {
-				parentHostname := valueObject.NewFqdnPanic(parentHostnameStr)
+				parentHostname, err := valueObject.NewFqdn(parentHostnameStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				parentHostnamePtr = &parentHostname
 			}
 
@@ -75,7 +84,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateVirtualHost(
+			err = useCase.CreateVirtualHost(
 				vhostQueryRepo,
 				vhostCmdRepo,
 				createVirtualHostDto,
@@ -106,7 +115,10 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
+			hostname, err := valueObject.NewFqdn(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 			vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
@@ -170,29 +182,50 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 		Use:   "create",
 		Short: "CreateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname := valueObject.NewFqdnPanic(hostnameStr)
-			path := valueObject.NewMappingPathPanic(pathStr)
-
-			matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
-			if matchPatternStr != "" {
-				matchPattern = valueObject.NewMappingMatchPatternPanic(matchPatternStr)
+			hostname, err := valueObject.NewFqdn(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+			path, err := valueObject.NewMappingPath(pathStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			targetType := valueObject.NewMappingTargetTypePanic(targetTypeStr)
+			matchPattern, err := valueObject.NewMappingMatchPattern("begins-with")
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+			if matchPatternStr != "" {
+				matchPattern, err = valueObject.NewMappingMatchPattern(matchPatternStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+			}
+
+			targetType, err := valueObject.NewMappingTargetType(targetTypeStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			var targetValuePtr *valueObject.MappingTargetValue
 			if targetValueStr != "" {
-				targetValue := valueObject.NewMappingTargetValuePanic(
+				targetValue, err := valueObject.NewMappingTargetValue(
 					targetValueStr, targetType,
 				)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				targetValuePtr = &targetValue
 			}
 
 			var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 			if targetHttpResponseCodeUint != 0 {
-				targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
+				targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
 					targetHttpResponseCodeUint,
 				)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				targetHttpResponseCodePtr = &targetHttpResponseCode
 			}
 
@@ -210,7 +243,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 			vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 			servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 
-			err := useCase.CreateMapping(
+			err = useCase.CreateMapping(
 				mappingQueryRepo,
 				mappingCmdRepo,
 				vhostQueryRepo,
@@ -252,12 +285,15 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			mappingId := valueObject.NewMappingIdPanic(mappingIdUint)
+			mappingId, err := valueObject.NewMappingId(mappingIdUint)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 			mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-			err := useCase.DeleteMapping(
+			err = useCase.DeleteMapping(
 				mappingQueryRepo,
 				mappingCmdRepo,
 				mappingId,

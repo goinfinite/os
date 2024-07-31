@@ -57,7 +57,11 @@ func (controller *SslController) Create() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {
-				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+				virtualHost, err := valueObject.NewFqdn(vhost)
+				if err != nil {
+					continue
+				}
+				virtualHosts = append(virtualHosts, virtualHost)
 			}
 
 			certificateFilePath, err := valueObject.NewUnixFilePath(certificateFilePathStr)
@@ -71,7 +75,10 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
-			sslCertificateContent := valueObject.NewSslCertificateContentPanic(certificateContentStr)
+			sslCertificateContent, err := valueObject.NewSslCertificateContent(certificateContentStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			privateKeyContentStr, err := infraHelper.GetFileContent(keyFilePathStr)
 			if err != nil {
@@ -79,7 +86,10 @@ func (controller *SslController) Create() *cobra.Command {
 			}
 
 			sslCertificate := entity.NewSslCertificatePanic(sslCertificateContent)
-			sslPrivateKey := valueObject.NewSslPrivateKeyPanic(privateKeyContentStr)
+			sslPrivateKey, err := valueObject.NewSslPrivateKey(privateKeyContentStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			createSslDto := dto.NewCreateSslPair(
 				virtualHosts,
@@ -158,7 +168,11 @@ func (controller *SslController) DeleteVhosts() *cobra.Command {
 
 			var virtualHosts []valueObject.Fqdn
 			for _, vhost := range virtualHostsSlice {
-				virtualHosts = append(virtualHosts, valueObject.NewFqdnPanic(vhost))
+				virtualHost, err := valueObject.NewFqdn(vhost)
+				if err != nil {
+					continue
+				}
+				virtualHosts = append(virtualHosts, virtualHost)
 			}
 
 			dto := dto.NewDeleteSslPairVhosts(sslPairId, virtualHosts)

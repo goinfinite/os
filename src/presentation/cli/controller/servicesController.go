@@ -265,7 +265,10 @@ func (controller *ServicesController) Update() *cobra.Command {
 
 			var svcStatusPtr *valueObject.ServiceStatus
 			if statusStr != "" {
-				svcStatus := valueObject.NewServiceStatusPanic(statusStr)
+				svcStatus, err := valueObject.NewServiceStatus(statusStr)
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				svcStatusPtr = &svcStatus
 			}
 

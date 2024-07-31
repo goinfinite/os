@@ -37,7 +37,10 @@ func getHostname(hostnameStr string) (valueObject.Fqdn, error) {
 
 	hostname := primaryVhost
 	if hostnameStr != "" {
-		hostname = valueObject.NewFqdnPanic(hostnameStr)
+		hostname, err = valueObject.NewFqdn(hostnameStr)
+		if err != nil {
+			cliHelper.ResponseWrapper(false, err.Error())
+		}
 	}
 
 	return hostname, nil
@@ -85,7 +88,10 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			serviceName, _ := valueObject.NewServiceName("php-webserver")
 			sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
-			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
+			phpVersion, err := valueObject.NewPhpVersion(phpVersionStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
@@ -100,7 +106,10 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 					continue
 				}
 
-				moduleName := valueObject.NewPhpModuleNamePanic(moduleParts[0])
+				moduleName, err := valueObject.NewPhpModuleName(moduleParts[0])
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
 				moduleStatus := true
 				if modulePartsLength > 1 {
 					moduleStatus, err = sharedHelper.ParseBoolParam(moduleParts[1])
@@ -122,8 +131,16 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 					continue
 				}
 
-				settingName := valueObject.NewPhpSettingNamePanic(settingParts[0])
-				settingValue := valueObject.NewPhpSettingValuePanic(settingParts[1])
+				settingName, err := valueObject.NewPhpSettingName(settingParts[0])
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+
+				settingValue, err := valueObject.NewPhpSettingValue(settingParts[1])
+				if err != nil {
+					cliHelper.ResponseWrapper(false, err.Error())
+				}
+
 				phpSettings = append(
 					phpSettings,
 					entity.NewPhpSetting(settingName, settingValue, nil),
@@ -185,11 +202,22 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
+			phpVersion, err := valueObject.NewPhpVersion(phpVersionStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			phpSettings := []entity.PhpSetting{}
-			settingName := valueObject.NewPhpSettingNamePanic(settingNameStr)
-			settingValue := valueObject.NewPhpSettingValuePanic(settingValueStr)
+			settingName, err := valueObject.NewPhpSettingName(settingNameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
+			settingValue, err := valueObject.NewPhpSettingValue(settingValueStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			phpSettings = append(
 				phpSettings,
 				entity.NewPhpSetting(settingName, settingValue, nil),
@@ -248,10 +276,17 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 				cliHelper.ResponseWrapper(false, err.Error())
 			}
 
-			phpVersion := valueObject.NewPhpVersionPanic(phpVersionStr)
+			phpVersion, err := valueObject.NewPhpVersion(phpVersionStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
 
 			phpModules := []entity.PhpModule{}
-			moduleName := valueObject.NewPhpModuleNamePanic(moduleNameStr)
+			moduleName, err := valueObject.NewPhpModuleName(moduleNameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+
 			phpModules = append(
 				phpModules,
 				entity.NewPhpModule(moduleName, moduleStatusBool),
