@@ -12,7 +12,7 @@ type AccountId uint64
 func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return accountId, errors.New("AccountIdMustBeInt")
+		return accountId, errors.New("AccountIdMustBeUint64")
 	}
 
 	return AccountId(uintValue), nil
