@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestCronId(t *testing.T) {
 	t.Run("ValidCronId", func(t *testing.T) {

@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestDataFieldName(t *testing.T) {
 	t.Run("ValidDataFieldName", func(t *testing.T) {

@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestFailureReason(t *testing.T) {
 	t.Run("ValidFailureReason", func(t *testing.T) {

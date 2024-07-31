@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestDatabaseUsername(t *testing.T) {
 	t.Run("ValidDatabaseUsername", func(t *testing.T) {

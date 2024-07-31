@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestDatabaseType(t *testing.T) {
 	t.Run("ValidDatabaseType", func(t *testing.T) {

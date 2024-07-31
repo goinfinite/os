@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestDatabasePrivilege(t *testing.T) {
 	t.Run("ValidDatabasePrivilege", func(t *testing.T) {

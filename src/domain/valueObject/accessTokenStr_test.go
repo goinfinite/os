@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestAccessTokenStr(t *testing.T) {
 	t.Run("ValidAccessTokenStr", func(t *testing.T) {

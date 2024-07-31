@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewByte(t *testing.T) {
 	t.Run("ValidByte", func(t *testing.T) {
