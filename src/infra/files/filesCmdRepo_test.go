@@ -15,35 +15,27 @@ func TestFilesCmdRepo(t *testing.T) {
 	currentUser, _ := user.Current()
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
 
+	filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
+
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
-		dirPermissions := valueObject.NewUnixFilePermissionsPanic("0777")
-
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
+		mimeType, _ := valueObject.NewMimeType("directory")
 
-		createUnixFile := dto.NewCreateUnixFile(
-			filePath,
-			&dirPermissions,
-			valueObject.NewMimeTypePanic("directory"),
-		)
+		dto := dto.NewCreateUnixFile(filePath, &filePermissions, mimeType)
 
-		err := filesCmdRepo.Create(createUnixFile)
+		err := filesCmdRepo.Create(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("CreateUnixFile", func(t *testing.T) {
-		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
-
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")
+		mimeType, _ := valueObject.NewMimeType("generic")
 
-		createUnixFile := dto.NewCreateUnixFile(
-			filePath,
-			&filePermissions,
-			valueObject.NewMimeTypePanic("generic"),
-		)
+		dto := dto.NewCreateUnixFile(filePath, &filePermissions, mimeType)
 
-		err := filesCmdRepo.Create(createUnixFile)
+		err := filesCmdRepo.Create(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -51,11 +43,9 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("UpdateUnixFileContent", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")
+		encodedContent, _ := valueObject.NewEncodedContent("Q29udGVudCB0byB0ZXN0")
 
-		err := filesCmdRepo.UpdateContent(
-			filePath,
-			valueObject.NewEncodedContentPanic("Q29udGVudCB0byB0ZXN0"),
-		)
+		err := filesCmdRepo.UpdateContent(filePath, encodedContent)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -63,7 +53,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("UpdateUnixDirectoryPermissions", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
-		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
+		filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
 
 		err := filesCmdRepo.UpdatePermissions(filePath, filePermissions)
 		if err != nil {
@@ -75,7 +65,6 @@ func TestFilesCmdRepo(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
-		filePermissions := valueObject.NewUnixFilePermissionsPanic("0777")
 
 		err := filesCmdRepo.UpdatePermissions(filePath, filePermissions)
 		if err != nil {
@@ -111,9 +100,9 @@ func TestFilesCmdRepo(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir_")
 		destinationFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 
-		copyUnixFileDto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, true)
+		dto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, true)
 
-		err := filesCmdRepo.Copy(copyUnixFileDto)
+		err := filesCmdRepo.Copy(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -127,19 +116,16 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 
-		copyUnixFileDto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, false)
+		dto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, false)
 
-		err := filesCmdRepo.Copy(copyUnixFileDto)
+		err := filesCmdRepo.Copy(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
 	t.Run("CompressUnixFile (with compression type)", func(t *testing.T) {
-		var compressionTypePtr *valueObject.UnixCompressionType
-		compressionType := valueObject.NewUnixCompressionTypePanic("gzip")
-		compressionTypePtr = &compressionType
-
+		compressionType, _ := valueObject.NewUnixCompressionType("gzip")
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
@@ -147,13 +133,12 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirCompress",
 		)
 
-		compressUnixFiles := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath},
-			destinationFilePath,
-			compressionTypePtr,
+		dto := dto.NewCompressUnixFiles(
+			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath,
+			&compressionType,
 		)
 
-		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		_, err := filesCmdRepo.Compress(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -167,13 +152,11 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirCompress",
 		)
 
-		compressUnixFiles := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath},
-			destinationFilePath,
-			nil,
+		dto := dto.NewCompressUnixFiles(
+			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
 		)
 
-		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		_, err := filesCmdRepo.Compress(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -187,13 +170,11 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirCompress_.gzip",
 		)
 
-		compressUnixFiles := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath},
-			destinationFilePath,
-			nil,
+		dto := dto.NewCompressUnixFiles(
+			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
 		)
 
-		_, err := filesCmdRepo.Compress(compressUnixFiles)
+		_, err := filesCmdRepo.Compress(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -207,9 +188,9 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirExtracted",
 		)
 
-		extractFileDto := dto.NewExtractUnixFiles(sourceFilePath, destinationFilePath)
+		dto := dto.NewExtractUnixFiles(sourceFilePath, destinationFilePath)
 
-		err := filesCmdRepo.Extract(extractFileDto)
+		err := filesCmdRepo.Extract(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
