@@ -12,18 +12,20 @@ func TestPhpSettingValue(t *testing.T) {
 		for _, value := range validValues {
 			_, err := NewPhpSettingValue(value)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", value, err)
+				t.Errorf("Expected no error for %v, got %s", value, err.Error())
 			}
 		}
 	})
 
 	t.Run("InvalidPhpSettingValues", func(t *testing.T) {
-		invalidValues := []string{""}
+		invalidValues := []interface{}{
+			"",
+		}
 
 		for _, value := range invalidValues {
 			_, err := NewPhpSettingValue(value)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", value)
+				t.Errorf("Expected error for %v, got nil", value)
 			}
 		}
 	})
