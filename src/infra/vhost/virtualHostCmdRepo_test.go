@@ -20,10 +20,10 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	vhostName, _ := infraHelper.GetPrimaryVirtualHost()
 
 	t.Run("Create", func(t *testing.T) {
-		vhostType := valueObject.NewVirtualHostTypePanic("top-level")
-		createDto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
+		vhostType, _ := valueObject.NewVirtualHostType("top-level")
+		dto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
 
-		err := vhostCmdRepo.Create(createDto)
+		err := vhostCmdRepo.Create(dto)
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}

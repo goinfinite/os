@@ -16,35 +16,29 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
 	runtimeCmdRepo := NewRuntimeCmdRepo(persistentDbSvc)
 
-	t.Run("UpdatePhpVersion", func(t *testing.T) {
-		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-		if err != nil {
-			t.Errorf("PrimaryVirtualHostNotFound")
-		}
+	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	if err != nil {
+		t.Errorf("PrimaryVirtualHostNotFound")
+	}
+	vhostHostname, _ := valueObject.NewFqdn(primaryVhost.String())
 
-		err = runtimeCmdRepo.UpdatePhpVersion(
-			valueObject.NewFqdnPanic(primaryVhost.String()),
-			valueObject.NewPhpVersionPanic("8.1"),
-		)
+	t.Run("UpdatePhpVersion", func(t *testing.T) {
+		phpVersion, _ := valueObject.NewPhpVersion("8.1")
+
+		err := runtimeCmdRepo.UpdatePhpVersion(vhostHostname, phpVersion)
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)
 		}
 	})
 
 	t.Run("UpdatePhpSettings", func(t *testing.T) {
-		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-		if err != nil {
-			t.Errorf("PrimaryVirtualHostNotFound")
-		}
+		phpSettingName, _ := valueObject.NewPhpSettingName("display_errors")
+		phpSettingValue, _ := valueObject.NewPhpSettingValue("Off")
 
 		err = runtimeCmdRepo.UpdatePhpSettings(
-			valueObject.NewFqdnPanic(primaryVhost.String()),
+			vhostHostname,
 			[]entity.PhpSetting{
-				entity.NewPhpSetting(
-					valueObject.NewPhpSettingNamePanic("display_errors"),
-					valueObject.NewPhpSettingValuePanic("Off"),
-					nil,
-				),
+				entity.NewPhpSetting(phpSettingName, phpSettingValue, nil),
 			},
 		)
 		if err != nil {
@@ -53,18 +47,12 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdatePhpModules", func(t *testing.T) {
-		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-		if err != nil {
-			t.Errorf("PrimaryVirtualHostNotFound")
-		}
+		phpModuleName, _ := valueObject.NewPhpModuleName("ioncube")
 
 		err = runtimeCmdRepo.UpdatePhpModules(
-			valueObject.NewFqdnPanic(primaryVhost.String()),
+			vhostHostname,
 			[]entity.PhpModule{
-				entity.NewPhpModule(
-					valueObject.NewPhpModuleNamePanic("ioncube"),
-					true,
-				),
+				entity.NewPhpModule(phpModuleName, true),
 			},
 		)
 		if err != nil {
@@ -72,12 +60,9 @@ func TestRuntimeCmdRepo(t *testing.T) {
 		}
 
 		err = runtimeCmdRepo.UpdatePhpModules(
-			valueObject.NewFqdnPanic(primaryVhost.String()),
+			vhostHostname,
 			[]entity.PhpModule{
-				entity.NewPhpModule(
-					valueObject.NewPhpModuleNamePanic("ioncube"),
-					false,
-				),
+				entity.NewPhpModule(phpModuleName, false),
 			},
 		)
 		if err != nil {

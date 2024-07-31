@@ -432,7 +432,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 
 	err = repo.persistentDbSvc.Handler.Delete(
 		dbModel.Mapping{},
-		mappingId.Get(),
+		mappingId.Uint64(),
 	).Error
 	if err != nil {
 		return err
@@ -504,7 +504,7 @@ func (repo *MappingCmdRepo) RecreateByServiceName(
 
 		_, err = repo.Create(createDto)
 		if err != nil {
-			log.Printf("%s: %d", err.Error(), mapping.Id.Get())
+			log.Printf("%s: %d", err.Error(), mapping.Id.Uint64())
 		}
 	}
 

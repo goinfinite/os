@@ -28,14 +28,14 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	}
 
 	now := time.Now()
-	tokenExpiration := time.Unix(expiresIn.Read(), 0)
+	tokenExpiration := time.Unix(expiresIn.Int64(), 0)
 
 	claims := jwt.MapClaims{
 		"iss":        apiURL,
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
-		"accountId":  accountId.Read(),
+		"accountId":  accountId.Uint(),
 		"originalIp": ipAddress.String(),
 	}
 

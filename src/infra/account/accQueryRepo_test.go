@@ -38,7 +38,7 @@ func TestAccQueryRepo(t *testing.T) {
 	})
 
 	t.Run("GetInvalidAccount", func(t *testing.T) {
-		username := valueObject.NewUsernamePanic("invalid")
+		username, _ := valueObject.NewUsername("invalid")
 
 		_, err := authQueryRepo.GetByUsername(username)
 		if err == nil {

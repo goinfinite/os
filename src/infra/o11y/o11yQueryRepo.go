@@ -336,7 +336,7 @@ func (repo *O11yQueryRepo) getCurrentResourceUsage() (
 	if err != nil {
 		return valueObject.CurrentResourceUsage{}, errors.New("GetStorageInfoFailed")
 	}
-	storageUsagePercent := float64(storageInfo.Used.Get()) / float64(storageInfo.Total.Get()) * 100
+	storageUsagePercent := float64(storageInfo.Used.Int64()) / float64(storageInfo.Total.Int64()) * 100
 
 	return valueObject.NewCurrentResourceUsage(
 		cpuUsagePercent,

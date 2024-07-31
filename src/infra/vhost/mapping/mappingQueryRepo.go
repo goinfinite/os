@@ -30,7 +30,7 @@ func (repo *MappingQueryRepo) ReadById(
 	model := dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
-		Where("id = ?", id.Get()).
+		Where("id = ?", id.Uint64()).
 		First(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
