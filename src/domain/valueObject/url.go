@@ -18,15 +18,13 @@ func NewUrl(value interface{}) (url Url, err error) {
 		return url, errors.New("UrlValueMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
 	if !strings.HasPrefix(stringValue, "http") {
 		stringValue = "https://" + stringValue
 	}
 
 	urlRegex := regexp.MustCompile(urlRegexExpression)
 	if !urlRegex.MatchString(stringValue) {
-		return "", errors.New("InvalidUrl")
+		return url, errors.New("InvalidUrl")
 	}
 
 	return Url(stringValue), nil
