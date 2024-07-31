@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestIpAddress(t *testing.T) {
 	t.Run("ValidIpAddress", func(t *testing.T) {
