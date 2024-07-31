@@ -67,7 +67,11 @@ func parseVirtualHosts(vhostsBodyInput interface{}) []valueObject.Fqdn {
 			continue
 		}
 
-		vhosts = append(vhosts, valueObject.NewFqdnPanic(rawVhostStr))
+		vhost, err := valueObject.NewFqdn(rawVhostStr)
+		if err != nil {
+			continue
+		}
+		vhosts = append(vhosts, vhost)
 	}
 
 	return vhosts
@@ -95,8 +99,12 @@ func (controller *SslController) Create(c echo.Context) error {
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
-	sslCertificateContent, err := valueObject.NewSslCertificateContentFromEncodedContent(
-		sslCertificateEncoded,
+	decodedContent, err := sslCertificateEncoded.GetDecodedContent()
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	sslCertificateContent, err := valueObject.NewSslCertificateContent(
+		decodedContent,
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -110,7 +118,11 @@ func (controller *SslController) Create(c echo.Context) error {
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
-	sslPrivateKey, err := valueObject.NewSslPrivateKeyFromEncodedContent(sslPrivateKeyEncoded)
+	decodedContent, err = sslPrivateKeyEncoded.GetDecodedContent()
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	sslPrivateKey, err := valueObject.NewSslPrivateKey(decodedContent)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}

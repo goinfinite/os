@@ -62,19 +62,28 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
+	hostname, err := valueObject.NewFqdn(requestBody["hostname"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	vhostTypeStr := "top-level"
 	if requestBody["type"] != nil {
 		vhostTypeStr = requestBody["type"].(string)
 	}
-	vhostType := valueObject.NewVirtualHostTypePanic(vhostTypeStr)
+	vhostType, err := valueObject.NewVirtualHostType(vhostTypeStr)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	var parentHostnamePtr *valueObject.Fqdn
 	if requestBody["parentHostname"] != nil {
-		parentHostname := valueObject.NewFqdnPanic(
-			requestBody["parentHostname"].(string),
+		parentHostname, err := valueObject.NewFqdn(
+			requestBody["parentHostname"],
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		parentHostnamePtr = &parentHostname
 	}
 
@@ -87,7 +96,7 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateVirtualHost(
+	err = useCase.CreateVirtualHost(
 		vhostQueryRepo,
 		vhostCmdRepo,
 		createVirtualHostDto,
@@ -110,7 +119,10 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /v1/vhosts/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {
-	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+	hostname, err := valueObject.NewFqdn(c.Param("hostname"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(controller.persistentDbSvc)
@@ -171,33 +183,52 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	hostname := valueObject.NewFqdnPanic(requestBody["hostname"].(string))
-	path := valueObject.NewMappingPathPanic(requestBody["path"].(string))
-
-	matchPattern := valueObject.NewMappingMatchPatternPanic("begins-with")
-	if requestBody["matchPattern"] != nil {
-		matchPattern = valueObject.NewMappingMatchPatternPanic(
-			requestBody["matchPattern"].(string),
-		)
+	hostname, err := valueObject.NewFqdn(requestBody["hostname"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	targetType := valueObject.NewMappingTargetTypePanic(
-		requestBody["targetType"].(string),
+	path, err := valueObject.NewMappingPath(requestBody["path"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+
+	matchPattern, _ := valueObject.NewMappingMatchPattern("begins-with")
+	if requestBody["matchPattern"] != nil {
+		matchPattern, err = valueObject.NewMappingMatchPattern(
+			requestBody["matchPattern"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+	}
+
+	targetType, err := valueObject.NewMappingTargetType(
+		requestBody["targetType"],
 	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	var targetValuePtr *valueObject.MappingTargetValue
 	if requestBody["targetValue"] != nil {
-		targetValue := valueObject.NewMappingTargetValuePanic(
+		targetValue, err := valueObject.NewMappingTargetValue(
 			requestBody["targetValue"], targetType,
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		targetValuePtr = &targetValue
 	}
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 	if requestBody["targetHttpResponseCode"] != nil {
-		targetHttpResponseCode := valueObject.NewHttpResponseCodePanic(
+		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
 			requestBody["targetHttpResponseCode"],
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
@@ -215,7 +246,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(controller.persistentDbSvc)
 
-	err := useCase.CreateMapping(
+	err = useCase.CreateMapping(
 		mappingQueryRepo,
 		mappingCmdRepo,
 		vhostQueryRepo,
@@ -240,12 +271,15 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
-	mappingId := valueObject.NewMappingIdPanic(c.Param("mappingId"))
+	mappingId, err := valueObject.NewMappingId(c.Param("mappingId"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(controller.persistentDbSvc)
 	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(controller.persistentDbSvc)
 
-	err := useCase.DeleteMapping(
+	err = useCase.DeleteMapping(
 		mappingQueryRepo,
 		mappingCmdRepo,
 		mappingId,

@@ -3,7 +3,6 @@ package apiController
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/dto"
@@ -43,7 +42,10 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
 	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
-	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+	hostname, err := valueObject.NewFqdn(c.Param("hostname"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
 	phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
@@ -67,9 +69,9 @@ func getPhpModules(requestBody map[string]interface{}) ([]entity.PhpModule, erro
 			return nil, errors.New("InvalidModuleStruct")
 		}
 
-		moduleName, ok := moduleMap["name"].(string)
-		if !ok {
-			return nil, errors.New("InvalidModuleName")
+		moduleName, err := valueObject.NewPhpModuleName(moduleMap["name"])
+		if err != nil {
+			return nil, err
 		}
 
 		moduleStatus, ok := moduleMap["status"].(bool)
@@ -77,13 +79,7 @@ func getPhpModules(requestBody map[string]interface{}) ([]entity.PhpModule, erro
 			return nil, errors.New("InvalidModuleStatus")
 		}
 
-		phpModules = append(
-			phpModules,
-			entity.NewPhpModule(
-				valueObject.NewPhpModuleNamePanic(moduleName),
-				moduleStatus,
-			),
-		)
+		phpModules = append(phpModules, entity.NewPhpModule(moduleName, moduleStatus))
 	}
 
 	return phpModules, nil
@@ -102,32 +98,20 @@ func getPhpSettings(requestBody map[string]interface{}) ([]entity.PhpSetting, er
 			return nil, errors.New("InvalidSettingStruct")
 		}
 
-		settingName, ok := settingMap["name"].(string)
-		if !ok {
-			return nil, errors.New("InvalidSettingName")
+		settingName, err := valueObject.NewPhpSettingName(settingMap["name"])
+		if err != nil {
+			return nil, err
 		}
 
-		valueSent := settingMap["value"]
-		var settingValue string
-		switch value := valueSent.(type) {
-		case string:
-			settingValue = value
-		case bool:
-			settingValue = strconv.FormatBool(value)
-		case int:
-			settingValue = strconv.Itoa(value)
-		case float64:
-			settingValue = strconv.FormatFloat(value, 'f', -1, 64)
-		default:
-			return nil, errors.New("InvalidSettingValue")
+		settingValue, err := valueObject.NewPhpSettingValue(settingMap["value"])
+		if err != nil {
+			return nil, err
 		}
 
 		phpSettings = append(
 			phpSettings,
 			entity.NewPhpSetting(
-				valueObject.NewPhpSettingNamePanic(settingName),
-				valueObject.NewPhpSettingValuePanic(settingValue),
-				[]valueObject.PhpSettingOption{},
+				settingName, settingValue, []valueObject.PhpSettingOption{},
 			),
 		)
 	}
@@ -150,14 +134,20 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
 	sharedHelper.StopIfServiceUnavailable(controller.persistentDbSvc, serviceName)
 
-	hostname := valueObject.NewFqdnPanic(c.Param("hostname"))
+	hostname, err := valueObject.NewFqdn(c.Param("hostname"))
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	requiredParams := []string{"version"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	phpVersion := valueObject.NewPhpVersionPanic(requestBody["version"].(string))
+	phpVersion, err := valueObject.NewPhpVersion(requestBody["version"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
 
 	phpModules, err := getPhpModules(requestBody)
 	if err != nil {

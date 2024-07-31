@@ -313,9 +313,10 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	var svcStatusPtr *valueObject.ServiceStatus
 	if requestBody["status"] != nil {
-		svcStatus := valueObject.NewServiceStatusPanic(
-			requestBody["status"].(string),
-		)
+		svcStatus, err := valueObject.NewServiceStatus(requestBody["status"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		svcStatusPtr = &svcStatus
 	}
 
