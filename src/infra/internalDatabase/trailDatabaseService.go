@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/glebarez/sqlite"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ type TrailDatabaseService struct {
 
 func NewTrailDatabaseService() (*TrailDatabaseService, error) {
 	ormSvc, err := gorm.Open(
-		sqlite.Open("/var/speedia/trail.db"),
+		sqlite.Open(infraEnvs.TrailDatabaseFilePath),
 		&gorm.Config{},
 	)
 	if err != nil {
