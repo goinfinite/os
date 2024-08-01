@@ -102,7 +102,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.ScheduledTask{},
 	)
 	if err != nil {
-		return errors.New("DatabaseMigrationError: " + err.Error())
+		return errors.New("PersistentDatabaseMigrationError: " + err.Error())
 	}
 
 	modelsWithInitialEntries := map[string]interface{}{
