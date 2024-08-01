@@ -5,15 +5,22 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	accountInfra "github.com/speedianet/os/src/infra/account"
+	activityRecordInfra "github.com/speedianet/os/src/infra/activityRecord"
 	authInfra "github.com/speedianet/os/src/infra/auth"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
 )
 
 type AuthService struct {
+	trailDbSvc *internalDbInfra.TrailDatabaseService
 }
 
-func NewAuthService() *AuthService {
-	return &AuthService{}
+func NewAuthService(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AuthService {
+	return &AuthService{
+		trailDbSvc: trailDbSvc,
+	}
 }
 
 func (service *AuthService) GenerateJwtWithCredentials(
@@ -45,9 +52,16 @@ func (service *AuthService) GenerateJwtWithCredentials(
 	authQueryRepo := authInfra.AuthQueryRepo{}
 	authCmdRepo := authInfra.AuthCmdRepo{}
 	accQueryRepo := accountInfra.AccQueryRepo{}
+	activityRecordQueryRepo := activityRecordInfra.NewActivityRecordQueryRepo(
+		service.trailDbSvc,
+	)
+	activityRecordCmdRepo := activityRecordInfra.NewActivityRecordCmdRepo(
+		service.trailDbSvc,
+	)
 
 	accessToken, err := useCase.GetSessionToken(
-		authQueryRepo, authCmdRepo, accQueryRepo, dto,
+		authQueryRepo, authCmdRepo, accQueryRepo, activityRecordQueryRepo,
+		activityRecordCmdRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

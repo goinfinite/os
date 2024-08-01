@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"github.com/labstack/echo/v4"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
 )
@@ -10,9 +11,11 @@ type AuthController struct {
 	authService *service.AuthService
 }
 
-func NewAuthController() *AuthController {
+func NewAuthController(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AuthController {
 	return &AuthController{
-		authService: service.NewAuthService(),
+		authService: service.NewAuthService(trailDbSvc),
 	}
 }
 

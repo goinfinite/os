@@ -36,6 +36,7 @@ func ApiInit(
 	e *echo.Echo,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	baseRoute := e.Group(ApiBasePath)
 
@@ -51,6 +52,6 @@ func ApiInit(
 	e.Use(apiMiddleware.ReadOnlyMode(ApiBasePath))
 	e.Use(apiMiddleware.Auth(ApiBasePath))
 
-	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc)
+	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()
 }

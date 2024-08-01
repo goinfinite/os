@@ -26,10 +26,11 @@ func webServerSetup(
 func HttpServerInit(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	e := echo.New()
 
-	api.ApiInit(e, persistentDbSvc, transientDbSvc)
+	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 	ui.UiInit(e)
 
 	httpServer := http.Server{Addr: ":1618", Handler: e}
