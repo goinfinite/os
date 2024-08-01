@@ -66,3 +66,57 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 
 	return repo.trailDbSvc.Handler.Create(&securityEventModel).Error
 }
+
+func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecords) error {
+	deleteModel := dbModel.ActivityRecord{}
+	if deleteDto.Id != nil {
+		deleteModel.ID = deleteDto.Id.Uint64()
+	}
+
+	if deleteDto.Level != nil {
+		deleteModel.Level = deleteDto.Level.String()
+	}
+
+	if deleteDto.Code != nil {
+		codeStr := deleteDto.Code.String()
+		deleteModel.Code = &codeStr
+	}
+
+	if deleteDto.Message != nil {
+		messageStr := deleteDto.Message.String()
+		deleteModel.Message = &messageStr
+	}
+
+	if deleteDto.IpAddress != nil {
+		ipAddressStr := deleteDto.IpAddress.String()
+		deleteModel.IpAddress = &ipAddressStr
+	}
+
+	if deleteDto.OperatorAccountId != nil {
+		operatorAccountId := deleteDto.OperatorAccountId.Read()
+		deleteModel.OperatorAccountId = &operatorAccountId
+	}
+
+	if deleteDto.TargetAccountId != nil {
+		targetAccountId := deleteDto.TargetAccountId.Read()
+		deleteModel.TargetAccountId = &targetAccountId
+	}
+
+	if deleteDto.Username != nil {
+		usernameStr := deleteDto.Username.String()
+		deleteModel.Username = &usernameStr
+	}
+
+	if deleteDto.MappingId != nil {
+		mappingId := deleteDto.MappingId.Get()
+		deleteModel.MappingId = &mappingId
+	}
+
+	dbQuery := repo.trailDbSvc.Handler.Where(&deleteModel)
+
+	if deleteDto.CreatedAt != nil {
+		dbQuery.Where("created_at >= ?", deleteDto.CreatedAt.GetAsGoTime())
+	}
+
+	return dbQuery.Delete(&dbModel.ActivityRecord{}).Error
+}

@@ -6,4 +6,5 @@ import (
 
 type ActivityRecordCmdRepo interface {
 	Create(createDto dto.CreateActivityRecord) error
+	Delete(deleteDto dto.DeleteActivityRecords) error
 }

@@ -31,4 +31,16 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
+
+	t.Run("DeleteActivityRecords", func(t *testing.T) {
+		ipAddress := valueObject.NewLocalhostIpAddress()
+		deleteDto := dto.NewDeleteActivityRecords(
+			nil, &level, &recordCode, nil, &ipAddress, nil, nil, nil, nil, nil,
+		)
+
+		err := activityRecordCmdRepo.Delete(deleteDto)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %v", err)
+		}
+	})
 }
