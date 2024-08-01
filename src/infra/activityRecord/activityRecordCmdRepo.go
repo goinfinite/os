@@ -1,4 +1,4 @@
-package infra
+package activityRecordInfra
 
 import (
 	"github.com/speedianet/os/src/domain/dto"
