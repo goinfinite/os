@@ -14,7 +14,7 @@ func NewActivityRecordId(value interface{}) (
 ) {
 	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return activityRecordId, errors.New("InvalidActivityRecordId")
+		return activityRecordId, errors.New("ActivityRecordIdMustBeUint64")
 	}
 
 	return ActivityRecordId(uintValue), nil
