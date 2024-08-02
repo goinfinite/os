@@ -392,6 +392,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	}
 	usableStartCmd := usableStartCmdSteps[0]
 
+	if len(createDto.PortBindings) == 0 {
+		createDto.PortBindings = installableService.PortBindings
+	}
+
 	installedServiceModel := dbModel.NewInstalledService(
 		installedServiceName.String(), installableService.Nature.String(),
 		installableService.Type.String(), serviceVersion.String(),
