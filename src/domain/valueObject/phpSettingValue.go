@@ -23,7 +23,7 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 	}
 
 	if len(stringValue) > 255 {
-		return settingValue, errors.New("PhpSettingValueTOoLong")
+		return settingValue, errors.New("PhpSettingValueTooLong")
 	}
 
 	if stringValue == "on" || stringValue == "true" {
