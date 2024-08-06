@@ -24,6 +24,9 @@ var NativeSvcNamesWithAliases = map[string][]string{
 	},
 	"postgresql": {"postgres"},
 	"redis":      {"redis-server"},
+	"java-webserver": {
+		"java", "jdk", "openjdk", "tomcat",
+	},
 }
 
 func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
