@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -67,15 +68,19 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	return cmd
 }
 
-func (controller *RuntimeController) parseRawPhpModules(
-	rawPhpModules []string,
-) []interface{} {
-	rawModulesMapSlice := []interface{}{}
+func parsePhpModules(rawPhpModules []string) []entity.PhpModule {
+	modules := []entity.PhpModule{}
 	for _, rawModule := range rawPhpModules {
 		rawModuleParts := strings.Split(rawModule, ":")
 		rawModulePartsLength := len(rawModuleParts)
 		if rawModulePartsLength == 0 {
 			slog.Debug("PhpModuleEmpty", slog.String("module", rawModule))
+			continue
+		}
+
+		moduleName, err := valueObject.NewPhpModuleName(rawModuleParts[0])
+		if err != nil {
+			slog.Debug("InvalidPhpModuleName", slog.Any("name", rawModuleParts[0]))
 			continue
 		}
 
@@ -88,20 +93,14 @@ func (controller *RuntimeController) parseRawPhpModules(
 			}
 		}
 
-		moduleMap := map[string]interface{}{
-			"name":   rawModuleParts[0],
-			"status": moduleStatus,
-		}
-		rawModulesMapSlice = append(rawModulesMapSlice, moduleMap)
+		modules = append(modules, entity.NewPhpModule(moduleName, moduleStatus))
 	}
 
-	return rawModulesMapSlice
+	return modules
 }
 
-func (controller *RuntimeController) parseRawPhpSettings(
-	rawPhpSettings []string,
-) []interface{} {
-	rawSettingsSlice := []interface{}{}
+func parsePhpSettings(rawPhpSettings []string) []entity.PhpSetting {
+	settings := []entity.PhpSetting{}
 	for _, rawSetting := range rawPhpSettings {
 		rawSettingParts := strings.Split(rawSetting, ":")
 		if len(rawSettingParts) == 0 {
@@ -109,14 +108,31 @@ func (controller *RuntimeController) parseRawPhpSettings(
 			continue
 		}
 
-		settingMap := map[string]interface{}{
-			"name":  rawSettingParts[0],
-			"value": rawSettingParts[1],
+		settingName, err := valueObject.NewPhpSettingName(rawSettingParts[0])
+		if err != nil {
+			slog.Debug(
+				"InvalidPhpSettingName", slog.Any("name", rawSettingParts[0]),
+			)
+			continue
 		}
-		rawSettingsSlice = append(rawSettingsSlice, settingMap)
+
+		settingValue, err := valueObject.NewPhpSettingValue(rawSettingParts[1])
+		if err != nil {
+			slog.Debug(
+				"InvalidPhpSettingValue", slog.Any("value", rawSettingParts[1]),
+			)
+			continue
+		}
+
+		settings = append(
+			settings,
+			entity.NewPhpSetting(
+				settingName, settingValue, []valueObject.PhpSettingOption{},
+			),
+		)
 	}
 
-	return rawSettingsSlice
+	return settings
 }
 
 func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
@@ -138,11 +154,11 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			}
 
 			if len(modulesSlice) > 0 {
-				requestBody["modules"] = controller.parseRawPhpModules(modulesSlice)
+				requestBody["modules"] = parsePhpModules(modulesSlice)
 			}
 
 			if len(settingsSlice) > 0 {
-				requestBody["settings"] = controller.parseRawPhpSettings(settingsSlice)
+				requestBody["settings"] = parsePhpSettings(settingsSlice)
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -182,7 +198,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 
 			moduleStatusStr := strconv.FormatBool(moduleStatusBool)
 			rawPhpModuleParam := moduleNameStr + ":" + moduleStatusStr
-			requestBody["modules"] = controller.parseRawPhpModules(
+			requestBody["modules"] = parsePhpModules(
 				[]string{rawPhpModuleParam},
 			)
 
@@ -219,7 +235,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			}
 
 			rawPhpSettingParam := settingNameStr + ":" + settingValueStr
-			requestBody["settings"] = controller.parseRawPhpSettings(
+			requestBody["settings"] = parsePhpSettings(
 				[]string{rawPhpSettingParam},
 			)
 
