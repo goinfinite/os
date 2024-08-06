@@ -26,11 +26,12 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 		return settingValue, errors.New("PhpSettingValueTooLong")
 	}
 
-	if stringValue == "on" || stringValue == "true" {
+	switch stringValue {
+	case "on":
+	case "true":
 		stringValue = "On"
-	}
-
-	if stringValue == "off" || stringValue == "false" {
+	case "off":
+	case "false":
 		stringValue = "Off"
 	}
 
