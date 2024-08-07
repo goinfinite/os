@@ -23,13 +23,13 @@ func CreateInstallableService(
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
-		slog.Info("CreateInstallableServiceError: %v", slog.Any("err", err))
+		slog.Info("CreateInstallableServiceError", slog.Any("err", err))
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
 	serviceEntity, err := servicesQueryRepo.ReadByName(installedServiceName)
 	if err != nil {
-		slog.Info("GetServiceByNameError: %s", slog.Any("err", err))
+		slog.Info("GetServiceByNameError", slog.Any("err", err))
 		return errors.New("GetServiceByNameInfraError")
 	}
 
