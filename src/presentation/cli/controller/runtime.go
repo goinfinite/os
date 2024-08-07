@@ -2,13 +2,10 @@ package cliController
 
 import (
 	"errors"
-	"log/slog"
 	"strconv"
-	"strings"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
@@ -68,73 +65,6 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	return cmd
 }
 
-func parsePhpModules(rawPhpModules []string) []entity.PhpModule {
-	modules := []entity.PhpModule{}
-	for _, rawModule := range rawPhpModules {
-		rawModuleParts := strings.Split(rawModule, ":")
-		rawModulePartsLength := len(rawModuleParts)
-		if rawModulePartsLength == 0 {
-			slog.Debug("PhpModuleEmpty", slog.String("module", rawModule))
-			continue
-		}
-
-		moduleName, err := valueObject.NewPhpModuleName(rawModuleParts[0])
-		if err != nil {
-			slog.Debug("InvalidPhpModuleName", slog.Any("name", rawModuleParts[0]))
-			continue
-		}
-
-		moduleStatus := true
-		if rawModulePartsLength > 1 {
-			var err error
-			moduleStatus, err = voHelper.InterfaceToBool(rawModuleParts[1])
-			if err != nil {
-				moduleStatus = false
-			}
-		}
-
-		modules = append(modules, entity.NewPhpModule(moduleName, moduleStatus))
-	}
-
-	return modules
-}
-
-func parsePhpSettings(rawPhpSettings []string) []entity.PhpSetting {
-	settings := []entity.PhpSetting{}
-	for _, rawSetting := range rawPhpSettings {
-		rawSettingParts := strings.Split(rawSetting, ":")
-		if len(rawSettingParts) == 0 {
-			slog.Debug("PhpSettingEmpty", slog.String("setting", rawSetting))
-			continue
-		}
-
-		settingName, err := valueObject.NewPhpSettingName(rawSettingParts[0])
-		if err != nil {
-			slog.Debug(
-				"InvalidPhpSettingName", slog.Any("name", rawSettingParts[0]),
-			)
-			continue
-		}
-
-		settingValue, err := valueObject.NewPhpSettingValue(rawSettingParts[1])
-		if err != nil {
-			slog.Debug(
-				"InvalidPhpSettingValue", slog.Any("value", rawSettingParts[1]),
-			)
-			continue
-		}
-
-		settings = append(
-			settings,
-			entity.NewPhpSetting(
-				settingName, settingValue, []valueObject.PhpSettingOption{},
-			),
-		)
-	}
-
-	return settings
-}
-
 func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 	var hostnameStr, phpVersionStr string
 	var modulesSlice, settingsSlice []string
@@ -154,11 +84,27 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			}
 
 			if len(modulesSlice) > 0 {
-				requestBody["modules"] = parsePhpModules(modulesSlice)
+				modules := []entity.PhpModule{}
+				for _, rawModule := range modulesSlice {
+					module, err := entity.NewPhpModuleFromString(rawModule)
+					if err != nil {
+						continue
+					}
+					modules = append(modules, module)
+				}
+				requestBody["modules"] = modules
 			}
 
 			if len(settingsSlice) > 0 {
-				requestBody["settings"] = parsePhpSettings(settingsSlice)
+				settings := []entity.PhpSetting{}
+				for _, rawSetting := range settingsSlice {
+					setting, err := entity.NewPhpSettingFromString(rawSetting)
+					if err != nil {
+						continue
+					}
+					settings = append(settings, setting)
+				}
+				requestBody["settings"] = settings
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -198,9 +144,11 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 
 			moduleStatusStr := strconv.FormatBool(moduleStatusBool)
 			rawPhpModuleParam := moduleNameStr + ":" + moduleStatusStr
-			requestBody["modules"] = parsePhpModules(
-				[]string{rawPhpModuleParam},
-			)
+			module, err := entity.NewPhpModuleFromString(rawPhpModuleParam)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err)
+			}
+			requestBody["modules"] = []entity.PhpModule{module}
 
 			cliHelper.ServiceResponseWrapper(
 				controller.runtimeService.UpdatePhpConfigs(requestBody),
@@ -235,9 +183,11 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			}
 
 			rawPhpSettingParam := settingNameStr + ":" + settingValueStr
-			requestBody["settings"] = parsePhpSettings(
-				[]string{rawPhpSettingParam},
-			)
+			setting, err := entity.NewPhpSettingFromString(rawPhpSettingParam)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err)
+			}
+			requestBody["settings"] = []entity.PhpSetting{setting}
 
 			cliHelper.ServiceResponseWrapper(
 				controller.runtimeService.UpdatePhpConfigs(requestBody),
