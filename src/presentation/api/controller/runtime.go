@@ -53,7 +53,7 @@ func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
 	if !assertOk {
 		rawModuleUnit, assertOk := rawPhpModules.(map[string]interface{})
 		if !assertOk {
-			return modules, errors.New("InvalidPhpModules")
+			return modules, errors.New("InvalidPhpModulesStructure")
 		}
 		rawModulesSlice = []interface{}{rawModuleUnit}
 	}
@@ -90,7 +90,7 @@ func parsePhpSettings(rawPhpSettings interface{}) ([]entity.PhpSetting, error) {
 	if !assertOk {
 		rawSettingUnit, assertOk := rawPhpSettings.(map[string]interface{})
 		if !assertOk {
-			return settings, errors.New("InvalidPhpSettings")
+			return settings, errors.New("InvalidPhpSettingsStructure")
 		}
 		rawPhpSettings = []interface{}{rawSettingUnit}
 	}
