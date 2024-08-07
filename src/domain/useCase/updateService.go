@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -36,7 +36,7 @@ func UpdateService(
 
 	err = servicesCmdRepo.Update(updateDto)
 	if err != nil {
-		log.Printf("UpdateServiceError: %s", err.Error())
+		slog.Info("UpdateServiceError", slog.Any("err", err))
 		return errors.New("UpdateServiceInfraError")
 	}
 
@@ -46,7 +46,7 @@ func UpdateService(
 
 	err = mappingCmdRepo.RecreateByServiceName(updateDto.Name)
 	if err != nil {
-		log.Printf("RecreateMappingError: %s", err.Error())
+		slog.Info("RecreateMappingError", slog.Any("err", err))
 	}
 
 	return nil

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
@@ -13,7 +13,7 @@ func ReadInstallableServices(
 ) ([]entity.InstallableService, error) {
 	installableServices, err := servicesQueryRepo.ReadInstallables()
 	if err != nil {
-		log.Printf("ReadInstallableServicesError: %s", err.Error())
+		slog.Info("ReadInstallableServicesError", slog.Any("err", err))
 		return installableServices, errors.New("ReadInstallableServicesInfraError")
 	}
 
