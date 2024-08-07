@@ -8,11 +8,11 @@ import (
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -87,7 +87,7 @@ func parsePhpModules(rawPhpModules []string) []entity.PhpModule {
 		moduleStatus := true
 		if rawModulePartsLength > 1 {
 			var err error
-			moduleStatus, err = sharedHelper.ParseBoolParam(rawModuleParts[1])
+			moduleStatus, err = voHelper.InterfaceToBool(rawModuleParts[1])
 			if err != nil {
 				moduleStatus = false
 			}

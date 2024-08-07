@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
@@ -66,15 +67,13 @@ func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
 
 		moduleName, err := valueObject.NewPhpModuleName(rawModuleMap["name"])
 		if err != nil {
-			slog.Debug("InvalidPhpModuleName", slog.Any("name", rawModuleMap["name"]))
+			slog.Debug(err.Error(), slog.Any("name", rawModuleMap["name"]))
 			continue
 		}
 
-		moduleStatus, assertOk := rawModuleMap["status"].(bool)
-		if !assertOk {
-			slog.Debug(
-				"InvalidPhpModuleStatus", slog.Any("status", rawModuleMap["status"]),
-			)
+		moduleStatus, err := voHelper.InterfaceToBool(rawModuleMap["status"])
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("status", rawModuleMap["status"]))
 			continue
 		}
 
