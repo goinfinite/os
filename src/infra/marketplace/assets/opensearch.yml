@@ -5,14 +5,34 @@ name: OpenSearch
 type: app
 description: OpenSearch is a flexible, scalable, open-source way to build solutions for data-intensive applications. Explore, enrich, and visualize your data with built-in performance, developer-friendly tools, and powerful integrations for machine learning, data processing, and more.
 services:
+  - java
 mappings:
 dataFields:
+  - name: adminPassword
+    label: Admin Password
+    type: password
+    isRequired: true
 installCmdSteps:
-  - curl -skL -o %installTempDir%/opensearch.tar.gz https://artifacts.opensearch.org/releases/bundle/opensearch/2.15.0/opensearch-2.15.0-linux-x64.tar.gz
-  - tar -xvf %installTempDir%/opensearch.tar.gz -C %installDirectory% --strip-components=1
-  - sysctl -w vm.max_map_count=262144 && sysctl -p
-uninstallCmdSteps:
+  - curl -skL -o %installTempDir%opensearch.tar.gz https://artifacts.opensearch.org/releases/bundle/opensearch/2.15.0/opensearch-2.15.0-linux-x64.tar.gz
+  - tar -xvf %installTempDir%opensearch.tar.gz -C %installDirectory% --strip-components=1
+  - useradd -m -d /home/opensearch opensearchusr
+  - chown -R opensearchusr %installDirectory%/opensearch-tar-install.sh
+  - chmod +x %installDirectory%/opensearch-tar-install.sh
+  - su - opensearchusr -s /bin/bash -c "OPENSEARCH_INITIAL_ADMIN_PASSWORD=%adminPassword% %installDirectory%/opensearch-tar-install.sh"
 uninstallFileNames:
+  - bin
+  - config
+  - jdk
+  - lib
+  - logs
+  - modules
+  - plugins
+  - LICENSE.txt
+  - NOTICE.txt
+  - README.md
+  - manifest.yml
+  - opensearch-tar-install.sh
+  - performance-analyzer-rca
 estimatedSizeBytes: 100000000
 avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
