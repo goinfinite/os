@@ -4,69 +4,66 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type PhpSettingValue string
 
-func NewPhpSettingValue(value string) (PhpSettingValue, error) {
-	value = strings.Trim(value, "\"")
-	value = strings.TrimSpace(value)
+func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return settingValue, errors.New("PhpSettingValueMustBeString")
+	}
+	stringValue = strings.Trim(stringValue, "\"")
+	stringValue = strings.ToLower(stringValue)
 
-	settingValue := PhpSettingValue(value)
-	if !settingValue.isValid() {
-		return "", errors.New("InvalidPhpSettingValue")
+	if len(stringValue) == 0 {
+		return settingValue, errors.New("PhpSettingValueEmpty")
 	}
 
-	if settingValue == "on" || settingValue == "true" {
-		settingValue = "On"
+	if len(stringValue) > 255 {
+		return settingValue, errors.New("PhpSettingValueTooLong")
 	}
 
-	if settingValue == "off" || settingValue == "false" {
-		settingValue = "Off"
+	switch stringValue {
+	case "on":
+	case "true":
+		stringValue = "On"
+	case "off":
+	case "false":
+		stringValue = "Off"
 	}
 
-	return settingValue, nil
+	return PhpSettingValue(stringValue), nil
 }
 
-func NewPhpSettingValuePanic(value string) PhpSettingValue {
-	settingValue := PhpSettingValue(value)
-	if !settingValue.isValid() {
-		panic("InvalidPhpSettingValue")
-	}
-	return settingValue
+func (vo PhpSettingValue) String() string {
+	return string(vo)
 }
 
-func (settingValue PhpSettingValue) isValid() bool {
-	valueLen := len(settingValue)
-	return valueLen > 0 && valueLen <= 255
+func (vo PhpSettingValue) IsBool() bool {
+	return vo == "On" || vo == "Off"
 }
 
-func (settingValue PhpSettingValue) String() string {
-	return string(settingValue)
-}
-
-func (settingValue PhpSettingValue) IsBool() bool {
-	return settingValue == "On" || settingValue == "Off"
-}
-
-func (settingValue PhpSettingValue) IsNumber() bool {
-	_, err := strconv.Atoi(settingValue.String())
+func (vo PhpSettingValue) IsNumber() bool {
+	_, err := strconv.Atoi(vo.String())
 	return err == nil
 }
 
-func (settingValue PhpSettingValue) IsByteSize() bool {
-	lastChar := settingValue[len(settingValue)-1]
+func (vo PhpSettingValue) IsByteSize() bool {
+	lastChar := vo[len(vo)-1]
 	return lastChar == 'K' || lastChar == 'M' || lastChar == 'G'
 }
 
-func (settingValue PhpSettingValue) GetType() string {
-	if settingValue.IsBool() {
+func (vo PhpSettingValue) GetType() string {
+	if vo.IsBool() {
 		return "bool"
 	}
-	if settingValue.IsNumber() {
+	if vo.IsNumber() {
 		return "number"
 	}
-	if settingValue.IsByteSize() {
+	if vo.IsByteSize() {
 		return "byteSize"
 	}
 	return "string"

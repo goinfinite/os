@@ -7,7 +7,8 @@ import (
 )
 
 func InterfaceToInt64(input interface{}) (output int64, err error) {
-	var defaultErr error = errors.New("InvalidInput")
+	defaultErr := errors.New("CannotConvertToInt64")
+
 	switch v := input.(type) {
 	case string:
 		output, err = strconv.ParseInt(v, 10, 64)

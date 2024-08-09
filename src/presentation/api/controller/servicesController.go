@@ -7,12 +7,12 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type ServicesController struct {
@@ -147,7 +147,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = sharedHelper.ParseBoolParam(
+		autoCreateMapping, err = voHelper.InterfaceToBool(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
@@ -234,7 +234,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	autoCreateMapping := true
 	if requestBody["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = sharedHelper.ParseBoolParam(
+		autoCreateMapping, err = voHelper.InterfaceToBool(
 			requestBody["autoCreateMapping"],
 		)
 		if err != nil {
