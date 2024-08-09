@@ -20,6 +20,10 @@ import (
 
 type ServicesService struct {
 	persistentDbService *internalDbInfra.PersistentDatabaseService
+	servicesQueryRepo   *servicesInfra.ServicesQueryRepo
+	servicesCmdRepo     *servicesInfra.ServicesCmdRepo
+	mappingQueryRepo    *mappingInfra.MappingQueryRepo
+	mappingCmdRepo      *mappingInfra.MappingCmdRepo
 }
 
 func NewServicesService(
@@ -27,12 +31,15 @@ func NewServicesService(
 ) *ServicesService {
 	return &ServicesService{
 		persistentDbService: persistentDbService,
+		servicesQueryRepo:   servicesInfra.NewServicesQueryRepo(persistentDbService),
+		servicesCmdRepo:     servicesInfra.NewServicesCmdRepo(persistentDbService),
+		mappingQueryRepo:    mappingInfra.NewMappingQueryRepo(persistentDbService),
+		mappingCmdRepo:      mappingInfra.NewMappingCmdRepo(persistentDbService),
 	}
 }
 
 func (service *ServicesService) Read() ServiceOutput {
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesList, err := useCase.ReadServicesWithMetrics(servicesQueryRepo)
+	servicesList, err := useCase.ReadServicesWithMetrics(service.servicesQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -41,8 +48,7 @@ func (service *ServicesService) Read() ServiceOutput {
 }
 
 func (service *ServicesService) ReadInstallables() ServiceOutput {
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesList, err := useCase.ReadInstallableServices(servicesQueryRepo)
+	servicesList, err := useCase.ReadInstallableServices(service.servicesQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -117,7 +123,6 @@ func (service *ServicesService) CreateInstallable(
 
 	var autoStartPtr *bool
 	if input["autoStart"] != nil {
-		var err error
 		autoStart, err := voHelper.InterfaceToBool(input["autoStart"])
 		if err != nil {
 			return NewServiceOutput(UserError, "AutoStartMustBeBool")
@@ -136,7 +141,6 @@ func (service *ServicesService) CreateInstallable(
 
 	var autoRestartPtr *bool
 	if input["autoRestart"] != nil {
-		var err error
 		autoRestart, err := voHelper.InterfaceToBool(
 			input["autoRestart"],
 		)
@@ -157,7 +161,6 @@ func (service *ServicesService) CreateInstallable(
 
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
-		var err error
 		autoCreateMapping, err = voHelper.InterfaceToBool(input["autoCreateMapping"])
 		if err != nil {
 			return NewServiceOutput(UserError, "AutoCreateMappingMustBeBool")
@@ -239,15 +242,11 @@ func (service *ServicesService) CreateInstallable(
 		timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr, &autoCreateMapping,
 	)
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbService)
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbService)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbService)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
 
 	err = useCase.CreateInstallableService(
-		servicesQueryRepo, servicesCmdRepo, mappingQueryRepo,
-		mappingCmdRepo, vhostQueryRepo, dto,
+		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
+		service.mappingCmdRepo, vhostQueryRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -307,7 +306,6 @@ func (service *ServicesService) CreateCustom(
 
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
-		var err error
 		autoCreateMapping, err = voHelper.InterfaceToBool(input["autoCreateMapping"])
 		if err != nil {
 			return NewServiceOutput(UserError, "AutoCreateMappingMustBeBool")
@@ -320,15 +318,11 @@ func (service *ServicesService) CreateCustom(
 		&autoCreateMapping,
 	)
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbService)
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbService)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbService)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
 
 	err = useCase.CreateCustomService(
-		servicesQueryRepo, servicesCmdRepo, mappingQueryRepo,
-		mappingCmdRepo, vhostQueryRepo, dto,
+		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
+		service.mappingCmdRepo, vhostQueryRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -415,13 +409,9 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
 	)
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbService)
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(service.persistentDbService)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbService)
-
 	err = useCase.UpdateService(
-		servicesQueryRepo, servicesCmdRepo, mappingQueryRepo, mappingCmdRepo, dto,
+		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
+		service.mappingCmdRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -442,15 +432,9 @@ func (service *ServicesService) Delete(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbService)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbService)
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(service.persistentDbService)
-
 	err = useCase.DeleteService(
-		servicesQueryRepo,
-		servicesCmdRepo,
-		mappingCmdRepo,
-		name,
+		service.servicesQueryRepo, service.servicesCmdRepo,
+		service.mappingCmdRepo, name,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
