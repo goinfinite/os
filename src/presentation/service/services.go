@@ -9,6 +9,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
@@ -16,7 +17,6 @@ import (
 	vhostInfra "github.com/speedianet/os/src/infra/vhost"
 	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 type ServicesService struct {
@@ -119,7 +119,7 @@ func (service *ServicesService) CreateInstallable(
 	var autoStartPtr *bool
 	if input["autoStart"] != nil {
 		var err error
-		autoStart, err := sharedHelper.ParseBoolParam(
+		autoStart, err := voHelper.InterfaceToBool(
 			input["autoStart"],
 		)
 		if err != nil {
@@ -141,7 +141,7 @@ func (service *ServicesService) CreateInstallable(
 	var autoRestartPtr *bool
 	if input["autoRestart"] != nil {
 		var err error
-		autoRestart, err := sharedHelper.ParseBoolParam(
+		autoRestart, err := voHelper.InterfaceToBool(
 			input["autoRestart"],
 		)
 		if err != nil {
@@ -163,7 +163,7 @@ func (service *ServicesService) CreateInstallable(
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = sharedHelper.ParseBoolParam(
+		autoCreateMapping, err = voHelper.InterfaceToBool(
 			input["autoCreateMapping"],
 		)
 		if err != nil {
@@ -316,7 +316,7 @@ func (service *ServicesService) CreateCustom(
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = sharedHelper.ParseBoolParam(
+		autoCreateMapping, err = voHelper.InterfaceToBool(
 			input["autoCreateMapping"],
 		)
 		if err != nil {
