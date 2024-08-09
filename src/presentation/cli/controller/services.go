@@ -21,8 +21,8 @@ func NewServicesController(
 
 func (controller *ServicesController) Read() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "GetServices",
+		Use:   "get",
+		Short: "ReadServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(controller.serviceServices.Read())
 		},
@@ -33,8 +33,8 @@ func (controller *ServicesController) Read() *cobra.Command {
 
 func (controller *ServicesController) ReadInstallables() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-installables",
-		Short: "GetInstallableServices",
+		Use:   "get-installables",
+		Short: "ReadInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(
 				controller.serviceServices.ReadInstallables(),
