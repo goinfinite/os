@@ -2,7 +2,6 @@ package apiController
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
@@ -59,22 +58,18 @@ func parseRawPortBindings(bindings []interface{}) []string {
 			continue
 		}
 
-		rawPortStr, assertOk := rawPortBindingMap["port"].(string)
-		if !assertOk {
-			rawPortFloat, assertOk := rawPortBindingMap["port"].(float64)
-			if !assertOk {
-				continue
-			}
-			rawPortStr = strconv.FormatFloat(rawPortFloat, 'f', -1, 64)
-		}
-
-		rawProtocolStr, assertOk := rawPortBindingMap["protocol"].(string)
-		if !assertOk {
+		rawPortStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
+		if err != nil {
 			continue
 		}
 
-		rawPortBinding = rawPortStr + "/" + rawProtocolStr
-		rawPortBindings = append(rawPortBindings, rawPortBinding.(string))
+		rawProtocolStr, err := voHelper.InterfaceToString(rawPortBindingMap["protocol"])
+		if err != nil {
+			continue
+		}
+
+		rawPortBindingStr := rawPortStr + "/" + rawProtocolStr
+		rawPortBindings = append(rawPortBindings, rawPortBindingStr)
 	}
 
 	return rawPortBindings
