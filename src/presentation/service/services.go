@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -99,6 +100,7 @@ func (service *ServicesService) CreateInstallable(
 		for _, rawEnv := range rawEnvs {
 			env, err := valueObject.NewServiceEnv(rawEnv)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("env", rawEnv))
 				continue
 			}
 			envs = append(envs, env)
@@ -115,6 +117,7 @@ func (service *ServicesService) CreateInstallable(
 		for _, rawPortBinding := range rawPortBindings {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
 				continue
 			}
 			portBindings = append(portBindings, portBinding)
@@ -298,6 +301,7 @@ func (service *ServicesService) CreateCustom(
 		for _, rawPortBinding := range rawPortBindings {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
 				continue
 			}
 			portBindings = append(portBindings, portBinding)
@@ -389,6 +393,7 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		for _, rawPortBinding := range rawPortBindings {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
 				continue
 			}
 			portBindings = append(portBindings, portBinding)

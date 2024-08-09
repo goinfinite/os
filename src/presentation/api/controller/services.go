@@ -1,6 +1,8 @@
 package apiController
 
 import (
+	"log/slog"
+
 	"github.com/labstack/echo/v4"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -53,16 +55,21 @@ func parseRawPortBindings(bindings []interface{}) []string {
 	for _, rawPortBinding := range bindings {
 		rawPortBindingMap, assertOk := rawPortBinding.(map[string]interface{})
 		if !assertOk {
+			slog.Debug(
+				"InvalidPortBindingStructure", slog.Any("portBinding", rawPortBinding),
+			)
 			continue
 		}
 
 		rawPortStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("port", rawPortStr))
 			continue
 		}
 
 		rawProtocolStr, err := voHelper.InterfaceToString(rawPortBindingMap["protocol"])
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("port", rawPortStr))
 			continue
 		}
 
