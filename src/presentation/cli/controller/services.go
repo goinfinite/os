@@ -8,16 +8,14 @@ import (
 )
 
 type ServicesController struct {
-	persistentDbService *internalDbInfra.PersistentDatabaseService
-	serviceServices     *service.ServicesService
+	serviceServices *service.ServicesService
 }
 
 func NewServicesController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		persistentDbService: persistentDbService,
-		serviceServices:     service.NewServicesService(persistentDbService),
+		serviceServices: service.NewServicesService(persistentDbService),
 	}
 }
 
