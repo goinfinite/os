@@ -8,13 +8,13 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func GetAccessTokenDetails(
+func ReadAccessTokenDetails(
 	authQueryRepo repository.AuthQueryRepo,
 	accessToken valueObject.AccessTokenStr,
 	trustedIpAddress []valueObject.IpAddress,
 	ipAddress valueObject.IpAddress,
 ) (dto.AccessTokenDetails, error) {
-	accessTokenDetails, err := authQueryRepo.GetAccessTokenDetails(accessToken)
+	accessTokenDetails, err := authQueryRepo.ReadAccessTokenDetails(accessToken)
 	if err != nil {
 		return dto.AccessTokenDetails{}, err
 	}

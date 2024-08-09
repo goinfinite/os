@@ -27,7 +27,7 @@ func getAccountIdFromAccessToken(
 		trustedIps = append(trustedIps, ipAddress)
 	}
 
-	accessTokenDetails, err := useCase.GetAccessTokenDetails(
+	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
 		authQueryRepo,
 		accessTokenValue,
 		trustedIps,

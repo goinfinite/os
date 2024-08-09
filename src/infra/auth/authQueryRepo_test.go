@@ -53,7 +53,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ValidSessionAccessToken", func(t *testing.T) {
-		_, err = authQueryRepo.GetAccessTokenDetails(token.TokenStr)
+		_, err = authQueryRepo.ReadAccessTokenDetails(token.TokenStr)
 		if err != nil {
 			t.Error(err)
 		}
@@ -63,7 +63,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		invalidToken := valueObject.NewAccessTokenStrPanic(
 			"invalidTokenInvalidTokenInvalidTokenInvalidTokenInvalidToken",
 		)
-		_, err := authQueryRepo.GetAccessTokenDetails(invalidToken)
+		_, err := authQueryRepo.ReadAccessTokenDetails(invalidToken)
 		if err == nil {
 			t.Error("ExpectingError")
 		}
