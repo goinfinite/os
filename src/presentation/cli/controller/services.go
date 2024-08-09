@@ -8,14 +8,14 @@ import (
 )
 
 type ServicesController struct {
-	serviceServices *service.ServicesService
+	servicesServices *service.ServicesService
 }
 
 func NewServicesController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		serviceServices: service.NewServicesService(persistentDbService),
+		servicesServices: service.NewServicesService(persistentDbService),
 	}
 }
 
@@ -24,7 +24,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.ServiceResponseWrapper(controller.serviceServices.Read())
+			cliHelper.ServiceResponseWrapper(controller.servicesServices.Read())
 		},
 	}
 
@@ -37,7 +37,7 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 		Short: "ReadInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.ReadInstallables(),
+				controller.servicesServices.ReadInstallables(),
 			)
 		},
 	}
@@ -87,7 +87,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.CreateInstallable(requestBody, false),
+				controller.servicesServices.CreateInstallable(requestBody, false),
 			)
 		},
 	}
@@ -158,7 +158,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.CreateCustom(requestBody),
+				controller.servicesServices.CreateCustom(requestBody),
 			)
 		},
 	}
@@ -233,7 +233,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.Update(requestBody),
+				controller.servicesServices.Update(requestBody),
 			)
 		},
 	}
@@ -263,7 +263,7 @@ func (controller *ServicesController) Delete() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.serviceServices.Delete(requestBody),
+				controller.servicesServices.Delete(requestBody),
 			)
 		},
 	}

@@ -12,14 +12,14 @@ import (
 )
 
 type ServicesController struct {
-	serviceService *service.ServicesService
+	servicesService *service.ServicesService
 }
 
 func NewServicesController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		serviceService: service.NewServicesService(persistentDbService),
+		servicesService: service.NewServicesService(persistentDbService),
 	}
 }
 
@@ -33,7 +33,7 @@ func NewServicesController(
 // @Success      200 {array} dto.InstalledServiceWithMetrics
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.serviceService.Read())
+	return apiHelper.ServiceResponseWrapper(c, controller.servicesService.Read())
 }
 
 // ReadInstallableServices	 godoc
@@ -47,7 +47,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.ReadInstallables(),
+		c, controller.servicesService.ReadInstallables(),
 	)
 }
 
@@ -135,7 +135,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.CreateInstallable(requestBody, true),
+		c, controller.servicesService.CreateInstallable(requestBody, true),
 	)
 }
 
@@ -194,7 +194,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.CreateCustom(requestBody),
+		c, controller.servicesService.CreateCustom(requestBody),
 	)
 }
 
@@ -223,7 +223,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	requestBody["portBindings"] = rawPortBindings
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.Update(requestBody),
+		c, controller.servicesService.Update(requestBody),
 	)
 }
 
@@ -243,6 +243,6 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.serviceService.Delete(requestBody),
+		c, controller.servicesService.Delete(requestBody),
 	)
 }
