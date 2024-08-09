@@ -94,7 +94,11 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	rawEnvsSlice := []string{}
 	if requestBody["envs"] != nil {
 		for _, rawEnv := range requestBody["envs"].([]interface{}) {
-			rawEnvsSlice = append(rawEnvsSlice, rawEnv.(string))
+			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
+			if err != nil {
+				continue
+			}
+			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
 		}
 	}
 	requestBody["envs"] = rawEnvsSlice
@@ -153,7 +157,11 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	rawEnvsSlice := []string{}
 	if requestBody["envs"] != nil {
 		for _, rawEnv := range requestBody["envs"].([]interface{}) {
-			rawEnvsSlice = append(rawEnvsSlice, rawEnv.(string))
+			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
+			if err != nil {
+				continue
+			}
+			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
 		}
 	}
 	requestBody["envs"] = rawEnvsSlice
