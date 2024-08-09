@@ -6,18 +6,17 @@ import (
 	"strconv"
 )
 
-func InterfaceToUint(input interface{}) (uint, error) {
-	var output uint
-	var err error
-	var defaultErr error = errors.New("InvalidInput")
+func InterfaceToUint(input interface{}) (output uint, err error) {
+	defaultErr := errors.New("CannotConvertToUint")
+
 	switch v := input.(type) {
 	case string:
 		uint64Value, err := strconv.ParseUint(v, 10, 64)
 		if err != nil {
-			return 0, defaultErr
+			err = defaultErr
 		}
 		if uint64Value > 4294967295 {
-			return 0, defaultErr
+			err = defaultErr
 		}
 		output = uint(uint64Value)
 	case int, int8, int16, int32, int64:
