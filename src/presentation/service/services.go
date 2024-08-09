@@ -1,7 +1,6 @@
 package service
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -88,7 +87,7 @@ func (service *ServicesService) CreateInstallable(
 	if input["envs"] != nil {
 		rawEnvs, assertOk := input["envs"].([]string)
 		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidEnvs")
+			return NewServiceOutput(UserError, "EnvsMustBeStringArray")
 		}
 
 		for _, rawEnv := range rawEnvs {
@@ -104,7 +103,7 @@ func (service *ServicesService) CreateInstallable(
 	if input["portBindings"] != nil {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
 		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidPortBindings")
+			return NewServiceOutput(UserError, "PortBindingsMustBeStringArray")
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
@@ -119,21 +118,18 @@ func (service *ServicesService) CreateInstallable(
 	var autoStartPtr *bool
 	if input["autoStart"] != nil {
 		var err error
-		autoStart, err := voHelper.InterfaceToBool(
-			input["autoStart"],
-		)
+		autoStart, err := voHelper.InterfaceToBool(input["autoStart"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidAutoStart")
+			return NewServiceOutput(UserError, "AutoStartMustBeBool")
 		}
 		autoStartPtr = &autoStart
 	}
 
 	var timeoutStartSecsPtr *uint
 	if input["timeoutStartSecs"] != nil {
-		var assertOk bool
-		timeoutStartSecs, assertOk := input["timeoutStartSecs"].(uint)
-		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidTimeoutStartSecs")
+		timeoutStartSecs, err := voHelper.InterfaceToUint(input["timeoutStartSecs"])
+		if err != nil {
+			return NewServiceOutput(UserError, "TimeoutStartSecsMustBeUint")
 		}
 		timeoutStartSecsPtr = &timeoutStartSecs
 	}
@@ -145,17 +141,16 @@ func (service *ServicesService) CreateInstallable(
 			input["autoRestart"],
 		)
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidAutoRestart")
+			return NewServiceOutput(UserError, "AutoRestartMustBeBool")
 		}
 		autoRestartPtr = &autoRestart
 	}
 
 	var maxStartRetriesPtr *uint
 	if input["maxStartRetries"] != nil {
-		var assertOk bool
-		maxStartRetries, assertOk := input["maxStartRetries"].(uint)
-		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidMaxStartRetries")
+		maxStartRetries, err := voHelper.InterfaceToUint(input["maxStartRetries"])
+		if err != nil {
+			return NewServiceOutput(UserError, "MaxStartRetriesMustBeUint")
 		}
 		maxStartRetriesPtr = &maxStartRetries
 	}
@@ -163,11 +158,9 @@ func (service *ServicesService) CreateInstallable(
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = voHelper.InterfaceToBool(
-			input["autoCreateMapping"],
-		)
+		autoCreateMapping, err = voHelper.InterfaceToBool(input["autoCreateMapping"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidAutoCreateMapping")
+			return NewServiceOutput(UserError, "AutoCreateMappingMustBeBool")
 		}
 	}
 
@@ -289,7 +282,6 @@ func (service *ServicesService) CreateCustom(
 
 	var versionPtr *valueObject.ServiceVersion
 	if input["version"] != nil {
-		log.Printf("Version: %v", input["version"])
 		version, err := valueObject.NewServiceVersion(input["version"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
@@ -301,7 +293,7 @@ func (service *ServicesService) CreateCustom(
 	if _, exists := input["portBindings"]; exists {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
 		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidPortBindings")
+			return NewServiceOutput(UserError, "PortBindingsMustBeStringArray")
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
@@ -316,11 +308,9 @@ func (service *ServicesService) CreateCustom(
 	autoCreateMapping := true
 	if input["autoCreateMapping"] != nil {
 		var err error
-		autoCreateMapping, err = voHelper.InterfaceToBool(
-			input["autoCreateMapping"],
-		)
+		autoCreateMapping, err = voHelper.InterfaceToBool(input["autoCreateMapping"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidAutoCreateMapping")
+			return NewServiceOutput(UserError, "AutoCreateMappingMustBeBool")
 		}
 	}
 
@@ -379,7 +369,7 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 
 	var statusPtr *valueObject.ServiceStatus
 	if input["status"] != nil {
-		status, err := valueObject.NewServiceStatus(input["status"].(string))
+		status, err := valueObject.NewServiceStatus(input["status"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
@@ -399,7 +389,7 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 	if _, exists := input["portBindings"]; exists {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
 		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidPortBindings")
+			return NewServiceOutput(UserError, "PortBindingsMustBeStringArray")
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
