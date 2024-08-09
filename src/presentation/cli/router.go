@@ -64,12 +64,13 @@ func (router Router) cronRoutes() {
 		Use:   "cron",
 		Short: "CronManagement",
 	}
-
 	rootCmd.AddCommand(cronCmd)
-	cronCmd.AddCommand(cliController.GetCronsController())
-	cronCmd.AddCommand(cliController.CreateCronController())
-	cronCmd.AddCommand(cliController.UpdateCronController())
-	cronCmd.AddCommand(cliController.DeleteCronController())
+
+	cronController := cliController.NewCronController()
+	cronCmd.AddCommand(cronController.Read())
+	cronCmd.AddCommand(cronController.Create())
+	cronCmd.AddCommand(cronController.Update())
+	cronCmd.AddCommand(cronController.Delete())
 }
 
 func (router Router) databaseRoutes() {
@@ -110,9 +111,10 @@ func (router Router) o11yRoutes() {
 		Use:   "o11y",
 		Short: "O11yManagement",
 	}
-
 	rootCmd.AddCommand(o11yCmd)
-	o11yCmd.AddCommand(cliController.ReadO11yOverviewController(router.transientDbSvc))
+
+	o11yController := cliController.NewO11yController(router.transientDbSvc)
+	o11yCmd.AddCommand(o11yController.ReadOverview())
 }
 
 func (router Router) runtimeRoutes() {

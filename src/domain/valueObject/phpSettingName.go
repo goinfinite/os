@@ -3,33 +3,28 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const phpSettingNameRegex string = `^\w[\w\.-]{1,62}\w$`
 
 type PhpSettingName string
 
-func NewPhpSettingName(value string) (PhpSettingName, error) {
-	settingName := PhpSettingName(value)
-	if !settingName.isValid() {
-		return "", errors.New("InvalidPhpSettingName")
+func NewPhpSettingName(value interface{}) (settingName PhpSettingName, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return settingName, errors.New("PhpSettingNameMustBeString")
 	}
-	return settingName, nil
-}
 
-func NewPhpSettingNamePanic(value string) PhpSettingName {
-	settingName := PhpSettingName(value)
-	if !settingName.isValid() {
-		panic("InvalidPhpSettingName")
-	}
-	return settingName
-}
-
-func (settingName PhpSettingName) isValid() bool {
 	re := regexp.MustCompile(phpSettingNameRegex)
-	return re.MatchString(string(settingName))
+	if !re.MatchString(stringValue) {
+		return settingName, errors.New("InvalidPhpSettingName")
+	}
+
+	return PhpSettingName(stringValue), nil
 }
 
-func (settingName PhpSettingName) String() string {
-	return string(settingName)
+func (vo PhpSettingName) String() string {
+	return string(vo)
 }

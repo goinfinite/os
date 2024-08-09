@@ -12,7 +12,7 @@ func TestMysqlDatabaseQueryRepo(t *testing.T) {
 
 	t.Run("GetDatabases", func(t *testing.T) {
 		databasesQueryRepo := MysqlDatabaseQueryRepo{}
-		databasesList, err := databasesQueryRepo.Get()
+		databasesList, err := databasesQueryRepo.Read()
 		if err != nil {
 			t.Errorf("Error: %v", err)
 		}

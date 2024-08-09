@@ -1,29 +1,28 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
 
 type CronComment string
 
-func NewCronComment(value string) (CronComment, error) {
-	comment := CronComment(value)
-	if !comment.isValid() {
-		return "", errors.New("InvalidCronComment")
-	}
-	return comment, nil
-}
-
-func NewCronCommentPanic(value string) CronComment {
-	comment, err := NewCronComment(value)
+func NewCronComment(value interface{}) (cronComment CronComment, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return cronComment, errors.New("CronCommentMustBeString")
 	}
-	return comment
-}
 
-func (comment CronComment) isValid() bool {
-	isTooShort := len(string(comment)) < 2
-	isTooLong := len(string(comment)) > 512
-	return !isTooShort && !isTooLong
+	if len(stringValue) < 2 {
+		return cronComment, errors.New("CronCommentIsTooShort")
+	}
+
+	if len(stringValue) > 512 {
+		return cronComment, errors.New("CronCommentIsTooLong")
+	}
+
+	return CronComment(stringValue), nil
 }
 
 func (comment CronComment) String() string {

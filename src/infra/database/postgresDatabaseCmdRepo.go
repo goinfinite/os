@@ -112,7 +112,7 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 	}
 
 	postgresDatabaseQueryRepo := PostgresDatabaseQueryRepo{}
-	userDbNames, err := postgresDatabaseQueryRepo.GetDatabaseNamesByUser(dbUser)
+	userDbNames, err := postgresDatabaseQueryRepo.ReadDatabaseNamesByUser(dbUser)
 	if err != nil {
 		return err
 	}
