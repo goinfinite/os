@@ -25,7 +25,7 @@ func NewPhpSetting(
 	}
 }
 
-// format: name:value:option,option,option
+// format: name:value:suggestedValue1,suggestedValue2,suggestedValue3
 func NewPhpSettingFromString(stringValue string) (setting PhpSetting, err error) {
 	stringValueParts := strings.Split(stringValue, ":")
 	if len(stringValueParts) == 0 {
