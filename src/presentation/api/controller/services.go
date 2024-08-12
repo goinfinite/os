@@ -104,6 +104,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 		for _, rawEnv := range requestBody["envs"].([]interface{}) {
 			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
 			if err != nil {
+				slog.Debug(err.Error(), slog.Any("env", rawEnv))
 				continue
 			}
 			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
@@ -145,6 +146,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		for _, rawEnv := range requestBody["envs"].([]interface{}) {
 			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
 			if err != nil {
+				slog.Debug(err.Error(), slog.Any("env", rawEnv))
 				continue
 			}
 			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
