@@ -67,10 +67,13 @@ func parseRawPortBindings(bindings []interface{}) []string {
 			continue
 		}
 
-		rawProtocolStr, err := voHelper.InterfaceToString(rawPortBindingMap["protocol"])
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("port", rawPortStr))
-			continue
+		rawProtocolStr := ""
+		if _, protocolInputExists := rawPortBindingMap["protocol"]; protocolInputExists {
+			rawProtocolStr, err = voHelper.InterfaceToString(rawPortBindingMap["protocol"])
+			if err != nil {
+				slog.Debug(err.Error(), slog.String("port", rawPortStr))
+				continue
+			}
 		}
 
 		rawPortBindingStr := rawPortStr + "/" + rawProtocolStr
