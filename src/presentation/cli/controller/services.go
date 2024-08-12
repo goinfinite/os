@@ -94,11 +94,14 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
-	cmd.Flags().StringSliceVarP(&envsSlice, "envs", "e", []string{}, "Envs (name=value)")
+	cmd.Flags().StringSliceVarP(
+		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
+	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringSliceVarP(
-		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+		&portBindingsSlice, "port-bindings", "p", []string{},
+		"PortBindings (port/protocol)",
 	)
 	cmd.Flags().IntVarP(
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
@@ -165,14 +168,19 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
 	cmd.MarkFlagRequired("name")
-	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)")
+	cmd.Flags().StringVarP(
+		&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)",
+	)
 	cmd.MarkFlagRequired("type")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.MarkFlagRequired("start-command")
-	cmd.Flags().StringSliceVarP(&envsSlice, "envs", "e", []string{}, "Envs (name=value)")
+	cmd.Flags().StringSliceVarP(
+		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
+	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringSliceVarP(
-		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+		&portBindingsSlice, "port-bindings", "p", []string{},
+		"PortBindings (port/protocol)",
 	)
 	cmd.Flags().IntVarP(
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
@@ -242,7 +250,8 @@ func (controller *ServicesController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringSliceVarP(
-		&portBindingsSlice, "port-bindings", "p", []string{}, "PortBindings (port/protocol)",
+		&portBindingsSlice, "port-bindings", "p", []string{},
+		"PortBindings (port/protocol)",
 	)
 	return cmd
 }
