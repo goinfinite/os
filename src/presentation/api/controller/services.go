@@ -1,7 +1,9 @@
 package apiController
 
 import (
+	"errors"
 	"log/slog"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
@@ -50,9 +52,18 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	)
 }
 
-func parseRawPortBindings(bindings []interface{}) []string {
+func parseRawPortBindings(bindings interface{}) ([]string, error) {
 	rawPortBindings := []string{}
-	for _, rawPortBinding := range bindings {
+	rawPortBindingsSlice, assertOk := bindings.([]interface{})
+	if !assertOk {
+		rawPortBindingUnique, assertOk := bindings.(map[string]interface{})
+		if !assertOk {
+			return rawPortBindings, errors.New("PortBindingsMustBeMapOrMapSlice")
+		}
+		rawPortBindingsSlice = []interface{}{rawPortBindingUnique}
+	}
+
+	for _, rawPortBinding := range rawPortBindingsSlice {
 		rawPortBindingMap, assertOk := rawPortBinding.(map[string]interface{})
 		if !assertOk {
 			slog.Debug(
@@ -80,7 +91,7 @@ func parseRawPortBindings(bindings []interface{}) []string {
 		rawPortBindings = append(rawPortBindings, rawPortBindingStr)
 	}
 
-	return rawPortBindings
+	return rawPortBindings, nil
 }
 
 // CreateInstallableService godoc
@@ -114,9 +125,10 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings = parseRawPortBindings(
-			requestBody["portBindings"].([]interface{}),
-		)
+		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 	}
 	requestBody["portBindings"] = rawPortBindings
 
@@ -156,9 +168,10 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings = parseRawPortBindings(
-			requestBody["portBindings"].([]interface{}),
-		)
+		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 	}
 	requestBody["portBindings"] = rawPortBindings
 
@@ -185,9 +198,10 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings = parseRawPortBindings(
-			requestBody["portBindings"].([]interface{}),
-		)
+		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 	}
 	requestBody["portBindings"] = rawPortBindings
 
