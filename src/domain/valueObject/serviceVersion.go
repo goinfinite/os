@@ -3,7 +3,6 @@ package valueObject
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -18,11 +17,8 @@ func NewServiceVersion(value interface{}) (ServiceVersion, error) {
 		return "", errors.New("ServiceVersionMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
 	re := regexp.MustCompile(serviceVersionRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidServiceVersion")
 	}
 

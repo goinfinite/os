@@ -1210,7 +1210,7 @@ const docTemplate = `{
                 "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped' or 'uninstalled'.",
+                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped', 'uninstalled' or 'restarting'.",
                         "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
@@ -3102,7 +3102,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.4",
+	Version:          "0.0.5",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
