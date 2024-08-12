@@ -187,11 +187,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		&autoRestart, "auto-restart", "r", true, "AutoRestart",
 	)
 	cmd.Flags().BoolVarP(
-		&autoCreateMapping,
-		"auto-create-mapping",
-		"a",
-		true,
-		"AutoCreateMapping",
+		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
 	)
 	return cmd
 }
