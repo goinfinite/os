@@ -255,7 +255,7 @@ func (service *ServicesService) CreateInstallable(
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "InstallableServiceCreated")
+	return NewServiceOutput(Created, "InstallableServiceCreated")
 }
 
 func (service *ServicesService) CreateCustom(
@@ -332,7 +332,7 @@ func (service *ServicesService) CreateCustom(
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "CustomServiceCreated")
+	return NewServiceOutput(Created, "CustomServiceCreated")
 }
 
 func (service *ServicesService) Update(input map[string]interface{}) ServiceOutput {
