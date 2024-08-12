@@ -3,11 +3,15 @@ package ui
 import (
 	"embed"
 	"io/fs"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	"github.com/speedianet/os/src/presentation/api"
+	"golang.org/x/net/websocket"
 )
 
 type Router struct {
@@ -19,25 +23,69 @@ func NewRouter(baseRoute *echo.Group) *Router {
 }
 
 //go:embed dist/*
-var frontFiles embed.FS
+var previousDashFiles embed.FS
 
-func UiFs() http.Handler {
-	frontFileFs, err := fs.Sub(frontFiles, "dist")
+//go:embed assets/*
+var assetsFiles embed.FS
+
+func (router *Router) assetsRoute() {
+	assetsFs, err := fs.Sub(assetsFiles, "assets")
 	if err != nil {
-		panic(err)
+		slog.Error("ReadAssetsFilesError", slog.Any("error", err))
+		os.Exit(1)
 	}
+	assetsFileServer := http.FileServer(http.FS(assetsFs))
 
-	return http.FileServer(http.FS(frontFileFs))
+	router.baseRoute.GET(
+		"/assets/*",
+		echo.WrapHandler(http.StripPrefix("/assets/", assetsFileServer)),
+	)
 }
 
-func (router *Router) rootRoute() {
-	router.baseRoute.GET("/*", echo.WrapHandler(
-		http.StripPrefix("/_", UiFs())),
+func (router *Router) devRoutes() {
+	devGroup := router.baseRoute.Group("/dev")
+	devGroup.GET("/hot-reload", func(c echo.Context) error {
+		websocket.Handler(func(ws *websocket.Conn) {
+			defer ws.Close()
+			for {
+				err := websocket.Message.Send(ws, "WS Hot Reload Activated!")
+				if err != nil {
+					break
+				}
+
+				msgReceived := ""
+				err = websocket.Message.Receive(ws, &msgReceived)
+				if err != nil {
+					break
+				}
+			}
+		}).ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
+}
+
+func (router *Router) previousDashboardRoute() {
+	dashFilesFs, err := fs.Sub(previousDashFiles, "dist")
+	if err != nil {
+		slog.Error("ReadPreviousDashFilesError", slog.Any("error", err))
+		os.Exit(1)
+	}
+	dashFileServer := http.FileServer(http.FS(dashFilesFs))
+
+	previousDashGroup := router.baseRoute.Group("/_")
+	previousDashGroup.GET(
+		"/*", echo.WrapHandler(http.StripPrefix("/_", dashFileServer)),
 	)
 }
 
 func (router *Router) RegisterRoutes() {
-	router.rootRoute()
+	router.assetsRoute()
+
+	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+		router.devRoutes()
+	}
+
+	router.previousDashboardRoute()
 
 	router.baseRoute.RouteNotFound("/*", func(c echo.Context) error {
 		urlPath := c.Request().URL.Path
