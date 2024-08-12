@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.0.4"
+        "version": "0.0.5"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -1204,7 +1204,7 @@
                 "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped' or 'uninstalled'.",
+                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped', 'uninstalled' or 'restarting'.",
                         "name": "updateServiceDto",
                         "in": "body",
                         "required": true,

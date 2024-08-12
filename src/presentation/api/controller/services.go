@@ -202,7 +202,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        updateServiceDto	body dto.UpdateService	true	"Only name is required.<br />Solo services can only change status.<br />status may be 'running', 'stopped' or 'uninstalled'."
+// @Param        updateServiceDto	body dto.UpdateService	true	"Only name is required.<br />Solo services can only change status.<br />status may be 'running', 'stopped', 'uninstalled' or 'restarting'."
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
