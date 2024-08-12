@@ -52,6 +52,29 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	)
 }
 
+func parseRawEnvs(envs interface{}) ([]string, error) {
+	rawEnvs := []string{}
+	rawEnvsSlice, assertOk := envs.([]interface{})
+	if !assertOk {
+		rawEnvUnique, assertOk := envs.(string)
+		if !assertOk {
+			return rawEnvs, errors.New("EnvsMustBeStringOrStringSlice")
+		}
+		rawEnvsSlice = []interface{}{rawEnvUnique}
+	}
+
+	for _, rawEnv := range rawEnvsSlice {
+		rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("env", rawEnv))
+			continue
+		}
+		rawEnvs = append(rawEnvs, rawEnvStr)
+	}
+
+	return rawEnvs, nil
+}
+
 func parseRawPortBindings(bindings interface{}) ([]string, error) {
 	rawPortBindings := []string{}
 	rawPortBindingsSlice, assertOk := bindings.([]interface{})
@@ -110,18 +133,14 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 		return err
 	}
 
-	rawEnvsSlice := []string{}
+	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		for _, rawEnv := range requestBody["envs"].([]interface{}) {
-			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
-			if err != nil {
-				slog.Debug(err.Error(), slog.Any("env", rawEnv))
-				continue
-			}
-			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
+		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["envs"] = rawEnvsSlice
+	requestBody["envs"] = rawEnvs
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
@@ -153,18 +172,14 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		return err
 	}
 
-	rawEnvsSlice := []string{}
+	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		for _, rawEnv := range requestBody["envs"].([]interface{}) {
-			rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
-			if err != nil {
-				slog.Debug(err.Error(), slog.Any("env", rawEnv))
-				continue
-			}
-			rawEnvsSlice = append(rawEnvsSlice, rawEnvStr)
+		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["envs"] = rawEnvsSlice
+	requestBody["envs"] = rawEnvs
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
@@ -196,14 +211,21 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		return err
 	}
 
-	rawPortBindings := []string{}
+	if requestBody["envs"] != nil {
+		rawEnvs, err := parseRawEnvs(requestBody["envs"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		requestBody["envs"] = rawEnvs
+	}
+
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err := parseRawPortBindings(requestBody["portBindings"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
+		requestBody["portBindings"] = rawPortBindings
 	}
-	requestBody["portBindings"] = rawPortBindings
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.Update(requestBody),
