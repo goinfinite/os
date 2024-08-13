@@ -1,12 +1,15 @@
 package apiController
 
 import (
+	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	sslInfra "github.com/speedianet/os/src/infra/ssl"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
@@ -43,18 +46,27 @@ func (controller *SslController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
 }
 
-func parseRawVhosts(rawVhostsInput interface{}) []string {
-	rawVhostsSlice := []string{}
-	switch rawVhosts := rawVhostsInput.(type) {
-	case string:
-		rawVhostsSlice = append(rawVhostsSlice, rawVhosts)
-	case []interface{}:
-		for _, rawVhost := range rawVhosts {
-			rawVhostsSlice = append(rawVhostsSlice, rawVhost.(string))
+func parseRawVhosts(rawVhostsInput interface{}) (rawVhosts []string, err error) {
+	rawVhostsSlice, assertOk := rawVhostsInput.([]interface{})
+	if !assertOk {
+		rawVhostUniqueStr, err := voHelper.InterfaceToString(rawVhostsInput)
+		if err != nil {
+			return rawVhosts, errors.New("VirtualHostsMustBeStringOrStringSlice")
 		}
+		return append(rawVhosts, rawVhostUniqueStr), err
 	}
 
-	return rawVhostsSlice
+	rawVhosts = []string{}
+	for _, rawVhost := range rawVhostsSlice {
+		rawVhostStr, err := voHelper.InterfaceToString(rawVhost)
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("vhost", rawVhost))
+			continue
+		}
+		rawVhosts = append(rawVhosts, rawVhostStr)
+	}
+
+	return rawVhosts, err
 }
 
 // CreateSslPair    	 godoc
@@ -72,7 +84,12 @@ func (controller *SslController) Create(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	requestBody["virtualHosts"] = parseRawVhosts(requestBody["virtualHosts"])
+
+	rawVhosts, err := parseRawVhosts(requestBody["virtualHosts"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	requestBody["virtualHosts"] = rawVhosts
 
 	encodedCert, err := valueObject.NewEncodedContent(requestBody["certificate"])
 	if err != nil {
@@ -138,7 +155,12 @@ func (controller *SslController) DeleteVhosts(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	requestBody["virtualHosts"] = parseRawVhosts(requestBody["virtualHosts"])
+
+	rawVhosts, err := parseRawVhosts(requestBody["virtualHosts"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	}
+	requestBody["virtualHosts"] = rawVhosts
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.sslService.DeleteVhosts(requestBody),
