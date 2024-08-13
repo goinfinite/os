@@ -18,8 +18,7 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 		return encodedContent, errors.New("EncodedContentMustBeString")
 	}
 
-	isEmpty := len(stringValue) < 1
-	if isEmpty {
+	if len(stringValue) == 0 {
 		return encodedContent, errors.New("EncodedContentIsEmpty")
 	}
 
