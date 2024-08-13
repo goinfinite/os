@@ -252,6 +252,7 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 			execUserStr := execUser.String()
 			_, err := infraHelper.RunCmd("id", execUserStr)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("execUser", execUserStr))
 				continue
 			}
 

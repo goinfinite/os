@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	"golang.org/x/exp/maps"
 )
 
@@ -29,21 +30,18 @@ var ServiceStatusesWithAliases = map[string][]string{
 	},
 }
 
-func NewServiceStatus(value string) (ServiceStatus, error) {
-	value, err := ServiceStatusAdapter(value)
+func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", err
+		return status, errors.New("ServiceStatusMustBeString")
 	}
 
-	return ServiceStatus(value), nil
-}
-
-func NewServiceStatusPanic(value string) ServiceStatus {
-	ss, err := NewServiceStatus(value)
+	stringValue, err = ServiceStatusAdapter(stringValue)
 	if err != nil {
-		panic(err)
+		return status, err
 	}
-	return ss
+
+	return ServiceStatus(stringValue), nil
 }
 
 func ServiceStatusAdapter(value string) (string, error) {
