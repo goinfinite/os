@@ -17,7 +17,9 @@ func TestNewSslId(t *testing.T) {
 		for _, validSslId := range validSslIds {
 			_, err := NewSslId(validSslId)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", validSslId, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", validSslId, err.Error(),
+				)
 			}
 		}
 	})
@@ -34,7 +36,7 @@ func TestNewSslId(t *testing.T) {
 		for _, invalidSslId := range invalidSslIds {
 			_, err := NewSslId(invalidSslId)
 			if err == nil {
-				t.Errorf("Expected error for %s, but got nil", invalidSslId)
+				t.Errorf("Expected error for '%v', but got nil", invalidSslId)
 			}
 		}
 	})
@@ -100,7 +102,9 @@ PZIyej7kPh0NXWwDyV9uhyk=
 			validCertContent, validChainCertsContent, validKeyContent,
 		)
 		if err != nil {
-			t.Errorf("Expected no error for %s, got %v", validCertContent, err)
+			t.Errorf(
+				"Expected no error for '%v', got '%s'", validCertContent, err.Error(),
+			)
 		}
 	})
 
@@ -132,7 +136,9 @@ yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 		validCertContent, _ := NewSslCertificateContent(validCert)
 		_, err := NewSslIdFromSslCertificateContent(validCertContent)
 		if err != nil {
-			t.Errorf("Expected no error for %s, got %v", validCertContent, err)
+			t.Errorf(
+				"Expected no error for '%v', got '%s'", validCertContent, err.Error(),
+			)
 		}
 	})
 }
