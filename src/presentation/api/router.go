@@ -69,17 +69,10 @@ func (router Router) databaseRoutes() {
 
 	databaseGroup.GET("/:dbType/", databaseController.Read)
 	databaseGroup.POST("/:dbType/", databaseController.Create)
+	databaseGroup.DELETE("/:dbType/:dbName/", databaseController.Delete)
+	databaseGroup.POST("/:dbType/:dbName/user/", databaseController.CreateUser)
 	databaseGroup.DELETE(
-		"/:dbType/:dbName/",
-		databaseController.Delete,
-	)
-	databaseGroup.POST(
-		"/:dbType/:dbName/user/",
-		databaseController.CreateUser,
-	)
-	databaseGroup.DELETE(
-		"/:dbType/:dbName/user/:dbUser/",
-		databaseController.DeleteUser,
+		"/:dbType/:dbName/user/:dbUser/", databaseController.DeleteUser,
 	)
 }
 

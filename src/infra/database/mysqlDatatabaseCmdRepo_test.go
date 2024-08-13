@@ -18,10 +18,16 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 		t.Error("Error starting command")
 	}
 
+	dbName, _ := valueObject.NewDatabaseName("testing")
+	dbUsername, _ := valueObject.NewDatabaseUsername("testing")
+	dbPassword, _ := valueObject.NewPassword("testing")
+	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
+	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
+
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 
 	t.Run("CreateDatabase", func(t *testing.T) {
-		err := mysqlDatabaseCmdRepo.Create("testing")
+		err := mysqlDatabaseCmdRepo.Create(dbName)
 		if err != nil {
 			t.Error("Error creating database")
 		}
@@ -29,12 +35,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 
 	t.Run("CreateDatabaseUser", func(t *testing.T) {
 		createDatabaseUserDto := dto.NewCreateDatabaseUser(
-			valueObject.NewDatabaseNamePanic("testing"),
-			valueObject.NewDatabaseUsernamePanic("testing"),
-			valueObject.NewPasswordPanic("testing"),
-			[]valueObject.DatabasePrivilege{
-				valueObject.NewDatabasePrivilegePanic("ALL"),
-			},
+			dbName, dbUsername, dbPassword, dbPrivileges,
 		)
 
 		err := mysqlDatabaseCmdRepo.CreateUser(createDatabaseUserDto)
@@ -44,9 +45,6 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteDatabaseUser", func(t *testing.T) {
-		dbName := valueObject.NewDatabaseNamePanic("testing")
-		dbUsername := valueObject.NewDatabaseUsernamePanic("testing")
-
 		err := mysqlDatabaseCmdRepo.DeleteUser(dbName, dbUsername)
 		if err != nil {
 			t.Error("Error removing database user")
@@ -54,7 +52,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteDatabase", func(t *testing.T) {
-		err := mysqlDatabaseCmdRepo.Delete("testing")
+		err := mysqlDatabaseCmdRepo.Delete(dbName)
 		if err != nil {
 			t.Error("Error removing database")
 		}

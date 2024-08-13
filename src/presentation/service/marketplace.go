@@ -7,6 +7,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/speedianet/os/src/infra/envs"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -180,7 +181,7 @@ func (service *MarketplaceService) DeleteInstalledItem(
 
 	shouldUninstallServices := true
 	if input["shouldUninstallServices"] != nil {
-		shouldUninstallServices, err = serviceHelper.ParseBoolParam(
+		shouldUninstallServices, err = voHelper.InterfaceToBool(
 			input["shouldUninstallServices"],
 		)
 		if err != nil {
