@@ -27,15 +27,6 @@ func NewSslId(value interface{}) (sslId SslId, err error) {
 	return SslId(stringValue), nil
 }
 
-func NewSslIdPanic(value string) SslId {
-	sslId, err := NewSslId(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return sslId
-}
-
 func sslIdFactory(value string) (sslId SslId, err error) {
 	hash := sha3.New256()
 	_, err = hash.Write([]byte(value))
