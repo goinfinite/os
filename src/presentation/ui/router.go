@@ -10,16 +10,25 @@ import (
 
 	"github.com/labstack/echo/v4"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	"github.com/speedianet/os/src/presentation/api"
+	"github.com/speedianet/os/src/presentation/ui/presenter"
 	"golang.org/x/net/websocket"
 )
 
 type Router struct {
-	baseRoute *echo.Group
+	baseRoute       *echo.Group
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
-func NewRouter(baseRoute *echo.Group) *Router {
-	return &Router{baseRoute: baseRoute}
+func NewRouter(
+	baseRoute *echo.Group,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *Router {
+	return &Router{
+		baseRoute:       baseRoute,
+		persistentDbSvc: persistentDbSvc,
+	}
 }
 
 //go:embed dist/*
@@ -40,6 +49,13 @@ func (router *Router) assetsRoute() {
 		"/assets/*",
 		echo.WrapHandler(http.StripPrefix("/assets/", assetsFileServer)),
 	)
+}
+
+func (router *Router) mappingsRoutes() {
+	mappingsGroup := router.baseRoute.Group("/mappings")
+
+	mappingsPresenter := presenter.NewMappingsPresenter(router.persistentDbSvc)
+	mappingsGroup.GET("/", mappingsPresenter.Handler)
 }
 
 func (router *Router) devRoutes() {
@@ -80,6 +96,7 @@ func (router *Router) previousDashboardRoute() {
 
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
+	router.mappingsRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 		router.devRoutes()
