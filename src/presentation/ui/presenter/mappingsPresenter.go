@@ -23,6 +23,6 @@ func NewMappingsPresenter(
 }
 
 func (presenter *MappingsPresenter) Handler(c echo.Context) error {
-	pageContent := page.VirtualHostIndex()
+	pageContent := page.MappingsIndex()
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

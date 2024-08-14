@@ -1,11 +1,10 @@
 package page
 
-script VirtualHostIndexLocalState() {
+script MappingsIndexLocalState() {
     document.addEventListener('alpine:init', () => {
-		Alpine.data('virtualHost', () => ({})
+		Alpine.data('mappings', () => ({})
     })
 }
 
-templ VirtualHostIndex() {
-    @VirtualHostIndexLocalState()
+templ MappingsIndex() {
 }
