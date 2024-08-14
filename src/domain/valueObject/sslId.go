@@ -27,9 +27,9 @@ func NewSslId(value interface{}) (sslId SslId, err error) {
 	return SslId(stringValue), nil
 }
 
-func sslIdFactory(value string) (sslId SslId, err error) {
+func sslIdFactory(sslCertContent *string) (sslId SslId, err error) {
 	hash := sha3.New256()
-	_, err = hash.Write([]byte(value))
+	_, err = hash.Write([]byte(*sslCertContent))
 	if err != nil {
 		return sslId, errors.New("InvalidSslId")
 	}
@@ -50,7 +50,7 @@ func NewSslIdFromSslPairContent(
 	}
 	contentToEncode := sslCertificate.String() + "\n" + sslChainCertificatesMerged + "\n" + sslPrivateKey.String()
 
-	sslId, err = sslIdFactory(contentToEncode)
+	sslId, err = sslIdFactory(&contentToEncode)
 	if err != nil {
 		return sslId, errors.New("InvalidSslIdFromSslPairContent")
 	}
@@ -61,7 +61,8 @@ func NewSslIdFromSslPairContent(
 func NewSslIdFromSslCertificateContent(
 	sslCertificate SslCertificateContent,
 ) (sslId SslId, err error) {
-	sslId, err = sslIdFactory(sslCertificate.String())
+	certContentStr := sslCertificate.String()
+	sslId, err = sslIdFactory(&certContentStr)
 	if err != nil {
 		return sslId, errors.New("InvalidSslIdFromSslCertificateContent")
 	}
