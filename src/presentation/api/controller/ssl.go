@@ -91,7 +91,12 @@ func (controller *SslController) Create(c echo.Context) error {
 	}
 	requestBody["virtualHosts"] = rawVhosts
 
-	encodedCert, err := valueObject.NewEncodedContent(requestBody["certificate"])
+	if _, exists := requestBody["encodedCertificate"]; !exists {
+		if _, exists = requestBody["certificate"]; exists {
+			requestBody["encodedCertificate"] = requestBody["certificate"]
+		}
+	}
+	encodedCert, err := valueObject.NewEncodedContent(requestBody["encodedCertificate"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -103,7 +108,12 @@ func (controller *SslController) Create(c echo.Context) error {
 	}
 	requestBody["certificate"] = decodedCert
 
-	encodedKey, err := valueObject.NewEncodedContent(requestBody["key"])
+	if _, exists := requestBody["encodedKey"]; !exists {
+		if _, exists = requestBody["key"]; exists {
+			requestBody["encodedKey"] = requestBody["key"]
+		}
+	}
+	encodedKey, err := valueObject.NewEncodedContent(requestBody["encodedKey"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
