@@ -4,26 +4,30 @@ import (
 	"encoding/base64"
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const encodedContentRegexExpression = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
+const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
 
 type EncodedContent string
 
-func NewEncodedContent(value string) (EncodedContent, error) {
-	isEmpty := len(value) < 1
-	if isEmpty {
-		return "", errors.New("InvalidEncodedContent")
+func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return encodedContent, errors.New("EncodedContentMustBeString")
 	}
 
-	encodedBaseContentRegex := regexp.MustCompile(encodedContentRegexExpression)
-	isValid := encodedBaseContentRegex.MatchString(value)
-
-	if !isValid {
-		return "", errors.New("InvalidEncodedContent")
+	if len(stringValue) == 0 {
+		return encodedContent, errors.New("EncodedContentIsEmpty")
 	}
 
-	return EncodedContent(value), nil
+	re := regexp.MustCompile(encodedContentRegex)
+	if !re.MatchString(stringValue) {
+		return encodedContent, errors.New("InvalidEncodedContent")
+	}
+
+	return EncodedContent(stringValue), nil
 }
 
 func NewEncodedContentPanic(value string) EncodedContent {
@@ -34,15 +38,15 @@ func NewEncodedContentPanic(value string) EncodedContent {
 	return encodedContent
 }
 
-func (encodedBaseContent EncodedContent) GetDecodedContent() (string, error) {
-	decodedContent, err := base64.StdEncoding.DecodeString(string(encodedBaseContent))
+func (vo EncodedContent) GetDecodedContent() (voStr string, err error) {
+	decodedContent, err := base64.StdEncoding.DecodeString(string(vo))
 	if err != nil {
-		return "", err
+		return voStr, err
 	}
 
 	return string(decodedContent), nil
 }
 
-func (encodedBaseContent EncodedContent) String() string {
-	return string(encodedBaseContent)
+func (vo EncodedContent) String() string {
+	return string(vo)
 }

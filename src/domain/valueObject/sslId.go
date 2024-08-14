@@ -5,6 +5,7 @@ import (
 	"errors"
 	"regexp"
 
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -12,34 +13,25 @@ const sslIdExpression = "^[a-fA-F0-9]{64}$"
 
 type SslId string
 
-func NewSslId(value string) (SslId, error) {
-	sslId := SslId(value)
-	if !sslId.isValid() {
-		return "", errors.New("InvalidSslId")
-	}
-
-	return sslId, nil
-}
-
-func NewSslIdPanic(value string) SslId {
-	sslId, err := NewSslId(value)
+func NewSslId(value interface{}) (sslId SslId, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return sslId, errors.New("SslIdMustBeString")
 	}
 
-	return sslId
+	re := regexp.MustCompile(sslIdExpression)
+	if !re.MatchString(stringValue) {
+		return sslId, errors.New("InvalidSslId")
+	}
+
+	return SslId(stringValue), nil
 }
 
-func (sslId SslId) isValid() bool {
-	sslIdRegex := regexp.MustCompile(sslIdExpression)
-	return sslIdRegex.MatchString(string(sslId))
-}
-
-func sslIdFactory(value string) (SslId, error) {
+func sslIdFactory(sslCertContent *string) (sslId SslId, err error) {
 	hash := sha3.New256()
-	_, err := hash.Write([]byte(value))
+	_, err = hash.Write([]byte(*sslCertContent))
 	if err != nil {
-		return "", errors.New("InvalidSslId")
+		return sslId, errors.New("InvalidSslId")
 	}
 	sslIdBytes := hash.Sum(nil)
 	sslIdStr := hex.EncodeToString(sslIdBytes)
@@ -51,17 +43,16 @@ func NewSslIdFromSslPairContent(
 	sslCertificate SslCertificateContent,
 	sslChainCertificates []SslCertificateContent,
 	sslPrivateKey SslPrivateKey,
-) (SslId, error) {
-	var sslChainCertificatesMerged string
+) (sslId SslId, err error) {
+	sslChainCertificatesMerged := ""
 	for _, sslChainCertificate := range sslChainCertificates {
 		sslChainCertificatesMerged += sslChainCertificate.String() + "\n"
 	}
-
 	contentToEncode := sslCertificate.String() + "\n" + sslChainCertificatesMerged + "\n" + sslPrivateKey.String()
 
-	sslId, err := sslIdFactory(contentToEncode)
+	sslId, err = sslIdFactory(&contentToEncode)
 	if err != nil {
-		return "", errors.New("InvalidSslIdFromSslPairContent")
+		return sslId, errors.New("InvalidSslIdFromSslPairContent")
 	}
 
 	return sslId, nil
@@ -69,15 +60,16 @@ func NewSslIdFromSslPairContent(
 
 func NewSslIdFromSslCertificateContent(
 	sslCertificate SslCertificateContent,
-) (SslId, error) {
-	sslId, err := sslIdFactory(sslCertificate.String())
+) (sslId SslId, err error) {
+	certContentStr := sslCertificate.String()
+	sslId, err = sslIdFactory(&certContentStr)
 	if err != nil {
-		return "", errors.New("InvalidSslIdFromSslCertificateContent")
+		return sslId, errors.New("InvalidSslIdFromSslCertificateContent")
 	}
 
 	return sslId, nil
 }
 
-func (sslId SslId) String() string {
-	return string(sslId)
+func (vo SslId) String() string {
+	return string(vo)
 }
