@@ -110,7 +110,7 @@ func (controller *SslController) DeleteVhosts() *cobra.Command {
 	var virtualHostsSlice []string
 
 	cmd := &cobra.Command{
-		Use:   "remove-vhosts",
+		Use:   "delete-vhosts",
 		Short: "RemoveSslPairVhosts",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
