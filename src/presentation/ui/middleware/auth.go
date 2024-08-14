@@ -51,7 +51,7 @@ func Authentication() echo.MiddlewareFunc {
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie("control-access-token")
+			accessTokenCookie, err := c.Cookie("os-access-token")
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}
