@@ -1,0 +1,119 @@
+package layout
+
+import (
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	componentUtil "github.com/speedianet/os/src/presentation/ui/component/util"
+	"os"
+)
+
+script MainLayoutState() {
+	document.addEventListener('alpine:initializing', () => {
+		Alpine.store('main', {
+			textualViewSelector: Alpine.$persist(false).as('dash.textualViewSelector'),
+		});
+	});
+}
+
+script DevWsHotReload() {
+	hotReloadWs = new WebSocket("wss://" + document.location.host + "/dev/hot-reload");
+	hotReloadWs.onclose = (() => {
+		setTimeout(() => {location.reload()}, 2000);
+	});
+}
+
+templ MainLayout(pageContent templ.Component, currentUrl string) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Speedia OS</title>
+			<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
+			<link
+				rel="stylesheet"
+				type="text/css"
+				href="https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind-compat.min.css"
+			/>
+			<link
+				rel="stylesheet"
+				type="text/css"
+				href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"
+			/>
+			<link
+				rel="stylesheet"
+				type="text/css"
+				href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css"
+			/>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Julius Sans One:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap"
+			/>
+			<link
+				rel="stylesheet"
+				href="/assets/additional.css"
+			/>
+			<script type="text/javascript">
+				window.__unocss = {
+					theme: {
+						colors: {
+							'speedia': {
+								'50': '#dea893',
+								'100': '#d89a81',
+								'200': '#d38b6f',
+								'300': '#cd7d5d',
+								'400': '#ca7654',
+								'500': '#c97350',
+								'600': '#c46f4d',
+								'700': '#ba6949',
+								'800': '#a55e41',
+								'900': '#905239',
+								'950': '#7c4631',
+							},
+							'control': {
+								'50': '#667b73',
+								'100': '#4c655c',
+								'200': '#334f45',
+								'300': '#19392d',
+								'400': '#0c2e22',
+								'500': '#06261b',
+								'600': '#06271b',
+								'700': '#06251a',
+								'800': '#052117',
+								'900': '#041d14',
+								'950': '#041911',
+							},
+							'os': {
+								'5': '#66737a',
+								'100': '#4d5b64',
+								'200': '#34444e',
+								'300': '#1a2d38',
+								'400': '#0d212d',
+								'500': '#071b27',
+								'600': '#071a26',
+								'700': '#061924',
+								'800': '#061620',
+								'900': '#05131c',
+								'950': '#041118',
+							}
+						},
+					}
+				}
+			</script>
+			<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime@0.61.5/uno.global.min.js" integrity="sha256-miwoG1k3DDK5ai24d7edKuvz3xRNHkUNcX8zl6qru5U=" crossorigin="anonymous"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.1/dist/htmx.min.js" integrity="sha256-bUqqSw0+i0yR+Nl7kqNhoZsb1FRN6j9mj9w+YqY5ld8=" crossorigin="anonymous"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.14.1/dist/cdn.min.js" integrity="sha256-jFBwr6faTqqhp3sVi4/VTxJ0FpaF9YGZN1ZGLl/5QYM=" crossorigin="anonymous"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" integrity="sha256-NY2a+7GrW++i9IBhowd25bzXcH9BCmBrqYX5i8OxwDQ=" crossorigin="anonymous"></script>
+			if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+				@DevWsHotReload()
+			}
+		</head>
+		<body class="bg-os-500 flex text-white">
+			@MainLayoutState()
+			@componentUtil.LoadingOverlay()
+			@Sidebar(currentUrl)
+			<!-- Page Content -->
+			<div class="w-full overflow-x-hidden p-6">
+				@pageContent
+			</div>
+			@componentUtil.Toast()
+		</body>
+	</html>
+}

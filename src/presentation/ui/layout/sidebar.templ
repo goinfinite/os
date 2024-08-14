@@ -1,0 +1,79 @@
+package layout
+
+import infraEnvs "github.com/speedianet/os/src/infra/envs"
+
+type SidebarItem struct {
+	Label             string
+	Icon              string
+	Link              string
+	AdditionalClasses string
+}
+
+func sidebarItemsGetter(currentUrl string) []SidebarItem {
+	sidebarItems := []SidebarItem{
+		{Label: "Overview", Icon: "ph-speedometer", Link: "/_/#/overview"},
+		{Label: "Accounts", Icon: "ph-users-three", Link: "/_/#/accounts"},
+		{Label: "Container Profiles", Icon: "ph-intersect-square", Link: "/container/profile/"},
+		{Label: "Mappings", Icon: "ph-graph", Link: "/mappings"},
+	}
+
+	for itemIndex := range sidebarItems {
+		if sidebarItems[itemIndex].Link != currentUrl {
+			continue
+		}
+
+		sidebarItems[itemIndex].AdditionalClasses = " text-speedia-500"
+		break
+	}
+
+	return sidebarItems
+}
+
+templ Sidebar(currentUrl string) {
+	<!-- Sidebar JavaScript -->
+	<script defer type="text/javascript">
+	function clearSession() {
+		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		window.location.href = "/_/#/login";
+	}
+	</script>
+	<!-- Sidebar HTML -->
+	<sidebar class="bg-os-900 flex h-screen w-28 flex-col items-center">
+		<div class="my-7">
+			<a
+				href="/_/#/overview"
+				class="mx-auto mb-2 flex w-[84px] max-w-[84px] items-center justify-center"
+			>
+				<img
+					src="/assets/os-logo-dark.svg"
+					alt="Speedia OS"
+				/>
+			</a>
+			<p class="text-center text-xs">v{ infraEnvs.SpeediaOsVersion }</p>
+		</div>
+		<button
+			type="button"
+			onclick="clearSession()"
+			class="hover:bg-speedia-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
+		>
+			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
+			logout
+		</button>
+		<div class="mt-4">
+			<ul>
+				for _, item := range sidebarItemsGetter(currentUrl) {
+					<li class={ "my-2 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
+						<a href={ templ.URL(item.Link) }>
+							<div class="mx-auto mb-1 flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-2">
+								<i class={ "ph-duotone " + item.Icon + " block text-3xl" }></i>
+							</div>
+							<div class="text-center text-sm">
+								{ item.Label }
+							</div>
+						</a>
+					</li>
+				}
+			</ul>
+		</div>
+	</sidebar>
+}
