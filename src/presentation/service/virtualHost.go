@@ -4,6 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	infraHelper "github.com/speedianet/os/src/infra/helper"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
@@ -55,10 +56,9 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 
 	rawVhostType := "top-level"
 	if input["type"] != nil {
-		var assertOk bool
-		rawVhostType, assertOk = input["type"].(string)
-		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidVirtualHostType")
+		rawVhostType, err = voHelper.InterfaceToString(input["type"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
 		}
 	}
 	vhostType, err := valueObject.NewVirtualHostType(rawVhostType)
@@ -68,9 +68,7 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 
 	var parentHostnamePtr *valueObject.Fqdn
 	if input["parentHostname"] != nil {
-		parentHostname, err := valueObject.NewFqdn(
-			input["parentHostname"],
-		)
+		parentHostname, err := valueObject.NewFqdn(input["parentHostname"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
@@ -146,7 +144,10 @@ func (service *VirtualHostService) CreateMapping(
 
 	rawMatchPattern := "begins-with"
 	if input["matchPattern"] != nil {
-		rawMatchPattern = input["matchPattern"].(string)
+		rawMatchPattern, err = voHelper.InterfaceToString(input["matchPattern"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
 	if err != nil {
