@@ -68,7 +68,7 @@ templ Sidebar(currentUrl string) {
 	}
 	</script>
 	<!-- Sidebar HTML -->
-	<sidebar class="bg-os-900 flex h-screen w-24 flex-col items-center">
+	<sidebar class="bg-os-900 flex h-screen w-30 flex-col items-center">
 		<div class="my-7">
 			<a
 				href="/_/#/overview"
@@ -81,32 +81,14 @@ templ Sidebar(currentUrl string) {
 			</a>
 			<p class="text-center text-xs">v{ infraEnvs.SpeediaOsVersion }</p>
 		</div>
-		<div class="inline-flex space-x-2">
-			<div class="relative group">
-				<button
-					type="button"
-					onclick="openSettings()"
-					class="flex rounded-md border border-neutral-500 bg-transparent transition-all hover:border-transparent hover:bg-speedia-500 p-2"
-				>
-					<i class="ph-bold ph-gear text-base"></i>
-				</button>
-				<div class="absolute hidden bottom-full mb-2 transition-all  group-hover:block w-max p-2 bg-speedia-500 text-white text-xs rounded-md shadow-lg">
-					Settings
-				</div>
-			</div>
-			<div class="relative group">
-				<button
-					type="button"
-					onclick="clearSession()"
-					class="flex rounded-md border border-neutral-500 bg-transparent transition-all hover:border-transparent hover:bg-speedia-500 p-2"
-				>
-					<i class="ph-bold ph-sign-out text-base"></i>
-				</button>
-				<div class="absolute hidden bottom-full mb-2 transition-all group-hover:block w-max p-2 bg-speedia-500 text-white text-xs rounded-md shadow-lg">
-					Logout
-				</div>
-			</div>
-		</div>
+		<button
+			type="button"
+			onclick="clearSession()"
+			class="hover:bg-speedia-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
+		>
+			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
+			logout
+		</button>
 		<button
 			id="scrollButton"
 			onclick="scrollToTop()"
