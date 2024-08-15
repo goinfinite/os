@@ -19,23 +19,14 @@ func NewHttpResponseCode(value interface{}) (
 	if err != nil {
 		return httpResponseCode, errors.New("HttpResponseCodeMustBeUint")
 	}
+	stringValue := strconv.FormatUint(uintValue, 10)
 
 	re := regexp.MustCompile(responseCodeExpression)
-	stringValue := strconv.FormatUint(uintValue, 10)
 	if !re.MatchString(stringValue) {
-		return 0, errors.New("InvalidHttpResponseCode")
+		return httpResponseCode, errors.New("InvalidHttpResponseCode")
 	}
 
 	return HttpResponseCode(uintValue), nil
-}
-
-func NewHttpResponseCodePanic(value interface{}) HttpResponseCode {
-	responseCode, err := NewHttpResponseCode(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return responseCode
 }
 
 func (vo HttpResponseCode) String() string {
