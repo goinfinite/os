@@ -345,7 +345,7 @@ func (repo *O11yQueryRepo) getCurrentResourceUsage() (
 	), nil
 }
 
-func (repo *O11yQueryRepo) GetOverview() (entity.O11yOverview, error) {
+func (repo *O11yQueryRepo) ReadOverview() (entity.O11yOverview, error) {
 	var o11yOverview entity.O11yOverview
 
 	hostnameStr, err := os.Hostname()

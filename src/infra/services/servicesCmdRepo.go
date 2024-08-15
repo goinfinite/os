@@ -252,6 +252,7 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 			execUserStr := execUser.String()
 			_, err := infraHelper.RunCmd("id", execUserStr)
 			if err != nil {
+				slog.Debug(err.Error(), slog.String("execUser", execUserStr))
 				continue
 			}
 
@@ -391,6 +392,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, errors.New("MissingStartCmdStep")
 	}
 	usableStartCmd := usableStartCmdSteps[0]
+
+	if len(createDto.PortBindings) == 0 {
+		createDto.PortBindings = installableService.PortBindings
+	}
 
 	installedServiceModel := dbModel.NewInstalledService(
 		installedServiceName.String(), installableService.Nature.String(),

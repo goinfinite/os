@@ -6,20 +6,22 @@ import (
 	"strconv"
 )
 
-func InterfaceToInt64(input interface{}) (output int64, err error) {
+func InterfaceToBool(input interface{}) (output bool, err error) {
 	switch v := input.(type) {
+	case bool:
+		return v, nil
 	case string:
-		return strconv.ParseInt(v, 10, 64)
+		return strconv.ParseBool(v)
 	case int, int8, int16, int32, int64:
 		intValue := reflect.ValueOf(v).Int()
-		return int64(intValue), nil
+		return intValue != 0, nil
 	case uint, uint8, uint16, uint32, uint64:
 		uintValue := reflect.ValueOf(v).Uint()
-		return int64(uintValue), nil
+		return uintValue != 0, nil
 	case float32, float64:
 		floatValue := reflect.ValueOf(v).Float()
-		return int64(floatValue), nil
+		return floatValue != 0, nil
 	default:
-		return 0, errors.New("CannotConvertToInt64")
+		return false, errors.New("CannotConvertToBool")
 	}
 }
