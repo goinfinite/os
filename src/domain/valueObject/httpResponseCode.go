@@ -8,7 +8,7 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const responseCodeExpression = "^([1-5][0-9][0-9])$"
+const responseCodeRegex = "^([1-5][0-9][0-9])$"
 
 type HttpResponseCode uint64
 
@@ -21,7 +21,7 @@ func NewHttpResponseCode(value interface{}) (
 	}
 	stringValue := strconv.FormatUint(uintValue, 10)
 
-	re := regexp.MustCompile(responseCodeExpression)
+	re := regexp.MustCompile(responseCodeRegex)
 	if !re.MatchString(stringValue) {
 		return httpResponseCode, errors.New("InvalidHttpResponseCode")
 	}
