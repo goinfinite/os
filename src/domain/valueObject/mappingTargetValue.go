@@ -40,18 +40,6 @@ func NewMappingTargetValue(
 	return mappingTargetValue, errors.New("InvalidMappingTargetValue")
 }
 
-func NewMappingTargetValuePanic(
-	value interface{},
-	targetType MappingTargetType,
-) (vo MappingTargetValue) {
-	vo, err := NewMappingTargetValue(value, targetType)
-	if err != nil {
-		panic(err)
-	}
-
-	return vo
-}
-
 func (vo MappingTargetValue) String() string {
 	return string(vo)
 }

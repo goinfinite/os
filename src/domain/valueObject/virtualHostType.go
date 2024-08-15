@@ -11,11 +11,7 @@ import (
 type VirtualHostType string
 
 var ValidVirtualHostTypes = []string{
-	"primary",
-	"top-level",
-	"subdomain",
-	"wildcard",
-	"alias",
+	"primary", "top-level", "subdomain", "wildcard", "alias",
 }
 
 func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error) {
@@ -29,14 +25,6 @@ func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error
 		return vhostType, errors.New("InvalidVirtualHostType")
 	}
 	return VirtualHostType(stringValue), nil
-}
-
-func NewVirtualHostTypePanic(value string) VirtualHostType {
-	vt, err := NewVirtualHostType(value)
-	if err != nil {
-		panic(err)
-	}
-	return vt
 }
 
 func (vo VirtualHostType) String() string {

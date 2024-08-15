@@ -17,6 +17,7 @@ func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
 	if err != nil {
 		return mappingPath, errors.New("MappingPathMustBeString")
 	}
+
 	hasLeadingSlash := strings.HasPrefix(stringValue, "/")
 	if !hasLeadingSlash {
 		stringValue = "/" + stringValue
@@ -27,14 +28,6 @@ func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
 		return mappingPath, errors.New("InvalidMappingPath")
 	}
 	return MappingPath(stringValue), nil
-}
-
-func NewMappingPathPanic(value string) MappingPath {
-	mappingPath, err := NewMappingPath(value)
-	if err != nil {
-		panic(err)
-	}
-	return mappingPath
 }
 
 func (vo MappingPath) String() string {

@@ -11,11 +11,7 @@ import (
 type MappingTargetType string
 
 var ValidMappingTargetTypes = []string{
-	"url",
-	"service",
-	"response-code",
-	"inline-html",
-	"static-files",
+	"url", "service", "response-code", "inline-html", "static-files",
 }
 
 func NewMappingTargetType(value interface{}) (
@@ -28,18 +24,10 @@ func NewMappingTargetType(value interface{}) (
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidMappingTargetTypes, stringValue) {
-		return "", errors.New("InvalidMappingTargetType")
+		return mappingTargetType, errors.New("InvalidMappingTargetType")
 	}
 
 	return MappingTargetType(stringValue), nil
-}
-
-func NewMappingTargetTypePanic(value string) MappingTargetType {
-	mtt, err := NewMappingTargetType(value)
-	if err != nil {
-		panic(err)
-	}
-	return mtt
 }
 
 func (vo MappingTargetType) String() string {
