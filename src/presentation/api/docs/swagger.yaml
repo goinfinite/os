@@ -1870,8 +1870,8 @@ paths:
       description: Create a new vhost.
       parameters:
       - description: Only hostname is required.<br />type may be 'top-level', 'subdomain',
-          'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
-          is 'alias', parentHostname it will be required.
+          'wildcard' or 'alias'. If is not provided, will be 'top-level'. If type
+          is 'alias', 'parentHostname' will be required.
         in: body
         name: createVirtualHostDto
         required: true
