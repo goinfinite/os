@@ -1871,7 +1871,7 @@ paths:
       parameters:
       - description: Only hostname is required.<br />type may be 'top-level', 'subdomain',
           'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
-          is 'alias', 'parentHostname' it will be required.
+          is 'alias', 'parentHostname' will be required.
         in: body
         name: createVirtualHostDto
         required: true
