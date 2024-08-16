@@ -17,7 +17,7 @@ func NewInlineHtmlContent(value interface{}) (
 	}
 
 	if len(stringValue) == 0 {
-		return inlineHtmlContent, errors.New("InlineHtmlContentTooSmall")
+		return inlineHtmlContent, errors.New("InlineHtmlContentEmpty")
 	}
 
 	if len(stringValue) > 3500 {
