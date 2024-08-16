@@ -10,16 +10,16 @@ import (
 
 const responseCodeRegex = "^([1-5][0-9][0-9])$"
 
-type HttpResponseCode uint64
+type HttpResponseCode uint16
 
 func NewHttpResponseCode(value interface{}) (
 	httpResponseCode HttpResponseCode, err error,
 ) {
-	uintValue, err := voHelper.InterfaceToUint64(value)
+	uintValue, err := voHelper.InterfaceToUint16(value)
 	if err != nil {
 		return httpResponseCode, errors.New("HttpResponseCodeMustBeUint")
 	}
-	stringValue := strconv.FormatUint(uintValue, 10)
+	stringValue := strconv.FormatUint(uint64(uintValue), 10)
 
 	re := regexp.MustCompile(responseCodeRegex)
 	if !re.MatchString(stringValue) {
