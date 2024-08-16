@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -13,7 +13,7 @@ func ReadVirtualHostsWithMappings(
 ) ([]dto.VirtualHostWithMappings, error) {
 	vhostsWithMappings, err := mappingQueryRepo.ReadWithMappings()
 	if err != nil {
-		log.Printf("ReadWithMappingsError: %s", err.Error())
+		slog.Error("ReadWithMappingsError", slog.Any("err", err))
 		return vhostsWithMappings, errors.New("ReadWithMappingsInfraError")
 	}
 

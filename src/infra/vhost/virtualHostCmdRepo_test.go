@@ -20,7 +20,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	vhostName, _ := infraHelper.GetPrimaryVirtualHost()
 
 	t.Run("Create", func(t *testing.T) {
-		vhostType := valueObject.NewVirtualHostTypePanic("top-level")
+		vhostType, _ := valueObject.NewVirtualHostType("top-level")
 		createDto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
 
 		err := vhostCmdRepo.Create(createDto)

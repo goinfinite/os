@@ -2,7 +2,7 @@ package vhostInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -38,7 +38,7 @@ func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			log.Printf("ModelToEntityError: %s", err.Error())
+			slog.Error("ModelToEntityError", slog.Any("err", err))
 			continue
 		}
 
@@ -91,7 +91,7 @@ func (repo *VirtualHostQueryRepo) ReadAliasesByParentHostname(
 	for _, aliasModel := range aliasesModels {
 		aliasEntity, err := aliasModel.ToEntity()
 		if err != nil {
-			log.Printf("ModelToEntityError: %s", err.Error())
+			slog.Error("ModelToEntityError", slog.Any("err", err))
 			continue
 		}
 

@@ -1634,7 +1634,7 @@ const docTemplate = `{
                 "summary": "CreateVirtualHost",
                 "parameters": [
                     {
-                        "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required.",
+                        "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', 'parentHostname' will be required.",
                         "name": "createVirtualHostDto",
                         "in": "body",
                         "required": true,

@@ -2,31 +2,31 @@ package valueObject
 
 import (
 	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type InlineHtmlContent string
 
-func NewInlineHtmlContent(value string) (InlineHtmlContent, error) {
-	if len(value) == 0 {
-		return "", errors.New("InlineHtmlContentTooSmall")
-	}
-
-	if len(value) > 3500 {
-		return "", errors.New("InlineHtmlContentTooBig")
-	}
-
-	return InlineHtmlContent(value), nil
-}
-
-func NewInlineHtmlContentPanic(value string) InlineHtmlContent {
-	inlineHtmlContent, err := NewInlineHtmlContent(value)
+func NewInlineHtmlContent(value interface{}) (
+	inlineHtmlContent InlineHtmlContent, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return inlineHtmlContent, errors.New("InlineHtmlContentMustBeString")
 	}
 
-	return inlineHtmlContent
+	if len(stringValue) == 0 {
+		return inlineHtmlContent, errors.New("InlineHtmlContentEmpty")
+	}
+
+	if len(stringValue) > 3500 {
+		return inlineHtmlContent, errors.New("InlineHtmlContentTooBig")
+	}
+
+	return InlineHtmlContent(stringValue), nil
 }
 
-func (ihc InlineHtmlContent) String() string {
-	return string(ihc)
+func (vo InlineHtmlContent) String() string {
+	return string(vo)
 }

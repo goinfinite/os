@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
@@ -13,7 +13,7 @@ func ReadVirtualHosts(
 ) ([]entity.VirtualHost, error) {
 	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		log.Printf("ReadVirtualHostsError: %s", err.Error())
+		slog.Error("ReadVirtualHostsError", slog.Any("err", err))
 		return vhosts, errors.New("ReadVirtualHostsInfraError")
 	}
 
