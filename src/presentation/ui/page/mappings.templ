@@ -1,10 +1,118 @@
 package page
 
+import (
+	"github.com/speedianet/os/src/domain/dto"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
 script MappingsIndexLocalState() {
     document.addEventListener('alpine:init', () => {
-		Alpine.data('mappings', () => ({})
+		Alpine.data('vhostWithMappings', () => ({
+            // Primary state
+            vhostWithMappings: {},
+            resetPrimaryState() {
+				this.vhostWithMappings = {
+                    'hostname': '',
+                    'type': '',
+                    'rootDirectory': '',
+                    'parentHostname': null,
+                    'mappings': []
+                }
+            },
+			init() {
+				this.resetPrimaryState();
+			},
+
+            // Modal states
+			isCreateVhostModalOpen: false,
+			openCreateVhostModal() {
+				this.resetPrimaryState();
+
+				this.isCreateVhostModalOpen = true;
+                console.log('openCreateVhostModal');
+			},
+            closeCreateVhostModal() {
+                this.isCreateVhostModalOpen = false;
+            },
+            isCreateMappingModalOpen: false,
+            openCreateMappingModal() {
+				this.resetPrimaryState();
+
+				this.isCreateMappingModalOpen = true;
+                console.log('openCreateMappingModal');
+            },
+            closeCreateMappingModal() {
+                this.isCreateMappingModalOpen = false;
+            },
+            isCreateMappingFromVhostModalOpen: false,
+            openCreateMappingFromVhostModal() {
+				this.resetPrimaryState();
+
+				this.isCreateMappingFromVhostModalOpen = true;
+                console.log('openCreateMappingFromVhostModal');
+            },
+            closeCreateMappingFromVhostModal() {
+                this.isCreateMappingFromVhostModalOpen = false;
+            },
+        }))
     })
 }
 
-templ MappingsIndex() {
+templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
+	@MappingsIndexLocalState()
+	<div class="flex flex-col" x-data="vhostWithMappings">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle("Mappings", "", "ph-graph")
+			</div>
+		</div>
+		<div id="mappings-tables" class="card w-full">
+			@MappingsRegularFormTable(vhostsWithMappings)
+		</div>
+	</div>
+}
+
+templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
+	<table
+		id="vhosts-with-mappings-regular-form-table"
+		hx-get="/vhosts/mapping/"
+		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+		hx-select="#mappings-tables"
+		hx-target="#mappings-tables"
+		hx-swap="outerHTML transition:true"
+		class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out"
+	>
+		<div class="bg-os-800 p-4 rounded-md">
+			<div class="flex justify-between items-center">
+				<input type="text" placeholder="Search" class="rounded p-2"/>
+				<div class="flex space-x-5">
+					@componentForm.SubmitButton("Create virtual hostt", "ph-plus-square", "openCreateVhostModal()", false)
+					@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
+				</div>
+			</div>
+			for _, vhostWithMappings := range vhostsWithMappings {
+				<div class="flex bg-os-500 mt-4 p-4 rounded">
+					<!-- Vhosts Column -->
+					<div class="flex bg-os-800 p-4 w-1/3 min-h-56 flex-col rounded">
+						<div class="flex justify-between items-center">
+							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
+							@componentForm.RoundButton("ph-plus", "openCreateMappingFromVhostModal()", "Create mapping")
+						</div>
+						<div class="flex space-x-3 mt-4">
+							@componentStructural.Tag(vhostWithMappings.RootDirectory.String(), "ph-folder-open", "speedia-300")
+							@componentStructural.Tag(vhostWithMappings.Type.String(), "ph-file-text", "speedia-300")
+						</div>
+					</div>
+					<div class="w-4"></div>
+					<!-- Mappings Column -->
+					<div class="flex bg-os-800 p-4 flex-col rounded w-3/3"></div>
+				</div>
+			}
+			<!-- Pagination -->
+			<div style="margin-top: 1rem; display: flex; justify-content: center;">
+				<button style="background-color: #E27D60; padding: 0.5rem 1rem; border-radius: 4px;">1</button>
+			</div>
+		</div>
+	</table>
 }
