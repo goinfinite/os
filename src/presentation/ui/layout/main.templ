@@ -50,6 +50,12 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 				rel="stylesheet"
 				href="/assets/additional.css"
 			/>
+			<style>
+                ::-webkit-scrollbar {
+                    width: 0;
+                    height: 0;
+                }
+            </style>
 			<script type="text/javascript">
 				window.__unocss = {
 					theme: {
@@ -97,7 +103,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->
-			<div class="w-full overflow-x-hidden p-6">
+			<div class="w-full overflow-x-hidden h-screen overflow-h-auto p-6">
 				@pageContent
 			</div>
 			@componentUtil.Toast()
