@@ -1,0 +1,39 @@
+package componentForm
+
+templ SubmitButton(
+	label, icon, onClick string, denseMode bool,
+) {
+	<button
+		type="submit"
+		@click={ onClick }
+		if denseMode {
+			class="bg-speedia-500 hover:bg-speedia-300 rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+		} else {
+			class="bg-speedia-500 hover:bg-speedia-300 w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+		}
+	>
+		if icon != "" {
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
+		}
+		{ label }
+	</button>
+	<style>
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+    </style>
+}
+
+templ RoundButton(icon, onClick, tooltipText string) {
+	<div class="relative group">
+		<button type="submit" @click={ onClick } class="flex bg-speedia-500 hover:bg-speedia-300 rounded-full p-2">
+			<i class={ "ph-bold " + icon + " items-center justify-center" }></i>
+		</button>
+		if tooltipText != "" {
+			<div class="absolute opacity-0 bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:opacity-100 w-max p-2 bg-speedia-500 text-white text-xs rounded-md shadow-lg">
+				{ tooltipText }
+			</div>
+		}
+	</div>
+}
