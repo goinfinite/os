@@ -24,19 +24,3 @@ templ SubmitButton(
         }
     </style>
 }
-
-templ RoundButton(icon, onClick, tooltipText string) {
-	<div class="relative group">
-		<button
-			type="button"
-			class="inline-flex items-center rounded-full bg-speedia-500 p-2 text-center font-medium hover:bg-speedia-300"
-		>
-			<i class={ "ph-bold " + icon }></i>
-		</button>
-		if tooltipText != "" {
-			<div class="absolute opacity-0 bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:opacity-100 w-max p-2 bg-speedia-500 text-white text-xs rounded-md shadow-lg">
-				{ tooltipText }
-			</div>
-		}
-	</div>
-}
