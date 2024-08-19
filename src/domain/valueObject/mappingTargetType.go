@@ -4,34 +4,32 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MappingTargetType string
 
 var ValidMappingTargetTypes = []string{
-	"url",
-	"service",
-	"response-code",
-	"inline-html",
-	"static-files",
+	"url", "service", "response-code", "inline-html", "static-files",
 }
 
-func NewMappingTargetType(value string) (MappingTargetType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(ValidMappingTargetTypes, value) {
-		return "", errors.New("InvalidMappingTargetType")
-	}
-	return MappingTargetType(value), nil
-}
-
-func NewMappingTargetTypePanic(value string) MappingTargetType {
-	mtt, err := NewMappingTargetType(value)
+func NewMappingTargetType(value interface{}) (
+	mappingTargetType MappingTargetType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return mappingTargetType, errors.New("MappingTargetTypeMustBeString")
 	}
-	return mtt
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidMappingTargetTypes, stringValue) {
+		return mappingTargetType, errors.New("InvalidMappingTargetType")
+	}
+
+	return MappingTargetType(stringValue), nil
 }
 
-func (mtt MappingTargetType) String() string {
-	return string(mtt)
+func (vo MappingTargetType) String() string {
+	return string(vo)
 }

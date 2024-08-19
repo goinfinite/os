@@ -6,68 +6,39 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type SslPrivateKey string
 
-func NewSslPrivateKey(privateKey string) (SslPrivateKey, error) {
-	sslPrivateKey := SslPrivateKey(privateKey)
-	if !sslPrivateKey.isValid() {
-		return "", errors.New("InvalidSslPrivateKey")
-	}
-
-	return sslPrivateKey, nil
-}
-
-func NewSslPrivateKeyPanic(privateKey string) SslPrivateKey {
-	sslPrivateKey, err := NewSslPrivateKey(privateKey)
+func NewSslPrivateKey(value interface{}) (privateKey SslPrivateKey, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return privateKey, errors.New("SslPrivateKeyMustBeString")
 	}
-	return sslPrivateKey
-}
 
-func (sslPrivateKey SslPrivateKey) isValid() bool {
-	block, _ := pem.Decode([]byte(sslPrivateKey))
-	if block == nil {
-		return false
+	pemBlock, _ := pem.Decode([]byte(stringValue))
+	if pemBlock == nil {
+		return privateKey, errors.New("InvalidSslPrivateKey")
 	}
-	_, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+
+	_, err = x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
 	if err != nil {
-		_, err = x509.ParsePKCS1PrivateKey(block.Bytes)
-	}
-	return err == nil
-}
-
-func NewSslPrivateKeyFromEncodedContent(
-	encodedContent EncodedContent,
-) (SslPrivateKey, error) {
-	var sslPrivateKey SslPrivateKey
-
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		return sslPrivateKey, errors.New("InvalidSslPrivateKey")
+		_, err = x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
+		if err != nil {
+			return privateKey, errors.New("InvalidSslPrivateKey")
+		}
 	}
 
-	return NewSslPrivateKey(decodedContent)
+	return SslPrivateKey(stringValue), nil
 }
 
-func NewSslPrivateKeyFromEncodedContentPanic(
-	encodedContent EncodedContent,
-) SslPrivateKey {
-	decodedContent, err := encodedContent.GetDecodedContent()
-	if err != nil {
-		panic("InvalidSslPrivateKey")
-	}
-
-	return NewSslPrivateKeyPanic(decodedContent)
+func (vo SslPrivateKey) String() string {
+	return string(vo)
 }
 
-func (sslPrivateKey SslPrivateKey) String() string {
-	return string(sslPrivateKey)
-}
-
-func (sslPrivateKey SslPrivateKey) MarshalJSON() ([]byte, error) {
-	sslPrivateKeyBytes := []byte(string(sslPrivateKey))
-	return json.Marshal(base64.StdEncoding.EncodeToString(sslPrivateKeyBytes))
+func (vo SslPrivateKey) MarshalJSON() ([]byte, error) {
+	voBytes := []byte(string(vo))
+	return json.Marshal(base64.StdEncoding.EncodeToString(voBytes))
 }

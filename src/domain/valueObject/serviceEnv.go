@@ -21,8 +21,7 @@ func NewServiceEnv(value interface{}) (ServiceEnv, error) {
 	stringValue = strings.TrimSpace(stringValue)
 
 	re := regexp.MustCompile(serviceEnvRegex)
-	isValid := re.MatchString(stringValue)
-	if !isValid {
+	if !re.MatchString(stringValue) {
 		return "", errors.New("InvalidServiceEnv")
 	}
 	return ServiceEnv(stringValue), nil

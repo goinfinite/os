@@ -4,38 +4,32 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
 
 type MappingPath string
 
-func NewMappingPath(value string) (MappingPath, error) {
-	hasLeadingSlash := strings.HasPrefix(value, "/")
-	if !hasLeadingSlash {
-		value = "/" + value
-	}
-
-	mappingPath := MappingPath(value)
-	if !mappingPath.isValid() {
-		return "", errors.New("InvalidMappingPath")
-	}
-	return mappingPath, nil
-}
-
-func NewMappingPathPanic(value string) MappingPath {
-	mappingPath, err := NewMappingPath(value)
+func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return mappingPath, errors.New("MappingPathMustBeString")
 	}
-	return mappingPath
-}
 
-func (mappingPath MappingPath) isValid() bool {
+	hasLeadingSlash := strings.HasPrefix(stringValue, "/")
+	if !hasLeadingSlash {
+		stringValue = "/" + stringValue
+	}
+
 	re := regexp.MustCompile(mappingPathRegex)
-	return re.MatchString(string(mappingPath))
+	if !re.MatchString(stringValue) {
+		return mappingPath, errors.New("InvalidMappingPath")
+	}
+	return MappingPath(stringValue), nil
 }
 
-func (mappingPath MappingPath) String() string {
-	return string(mappingPath)
+func (vo MappingPath) String() string {
+	return string(vo)
 }
