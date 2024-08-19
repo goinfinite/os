@@ -59,7 +59,7 @@ templ Toast() {
 		x-transition
 		x-cloak
 		un-cloak
-		class="bg-control-300 fixed bottom-5 right-10 mb-4 flex w-full max-w-xs flex-row items-center justify-stretch rounded-md text-neutral-50 shadow-md"
+		class="bg-os-300 fixed bottom-5 right-10 mb-4 flex w-full max-w-xs flex-row items-center justify-stretch rounded-md text-neutral-50 shadow-md"
 		role="alert"
 	>
 		<i x-show="$store.toast.toastType == 'danger'" class="ph-duotone ph-warning-octagon items-center justify-center rounded-md bg-red-800 p-2 text-3xl"></i>
@@ -68,7 +68,7 @@ templ Toast() {
 		<button
 			type="button"
 			@click="$store.toast.clearToast()"
-			class="hover:bg-control-400 p-y1 mr-2 rounded-md bg-transparent px-2"
+			class="hover:bg-os-400 p-y1 mr-2 rounded-md bg-transparent px-2"
 		>
 			<i class="ph-bold ph-x text-xs text-neutral-200"></i>
 		</button>
