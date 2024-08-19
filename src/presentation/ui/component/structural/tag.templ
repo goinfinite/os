@@ -1,13 +1,25 @@
 package componentStructural
 
-templ Tag(tagTitle, tagIcon, tagColor string) {
+templ TagWithIcon(tagIcon, tagDescription, tagColor string) {
 	<!-- Tag -->
-	<div class={ "inline-flex items-center border-solid border-2 border-" + tagColor + " rounded-md overflow-hidden text-sm font-medium" }>
+	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
 		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
 			<i class={ "ph-duotone " + tagIcon + " mx-2 text-lg" } style="margin-bottom: 2px;"></i>
 		</div>
 		<div class="flex justify-center items-center h-full">
-			<span class="mx-2" style="margin-bottom: 2px;">{ tagTitle }</span>
+			<span class="mx-2" style="margin-bottom: 2px;">{ tagDescription }</span>
+		</div>
+	</div>
+}
+
+templ TagWithTitle(tagTitle, tagDescription, tagColor string) {
+	<!-- Tag -->
+	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
+		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
+			<span class={ "mx-2 text-white" } style="margin-bottom: 2px;">{ tagTitle }</span>
+		</div>
+		<div class="flex justify-center items-center h-full">
+			<span class="mx-2" style="margin-bottom: 2px;">{ tagDescription }</span>
 		</div>
 	</div>
 }
