@@ -1,8 +1,6 @@
 package componentForm
 
-templ SelectInput(
-	id, label, bindValuePath, defaultOption string, options []string, denseMode bool,
-) {
+templ SelectInput(id, label, bindValuePath string, options []string, includeBlankOption, denseMode bool) {
 	<div class="relative w-full">
 		<select
 			id={ id }
@@ -15,13 +13,12 @@ templ SelectInput(
 				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 			}
 		>
-			<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90" value></option>
+			if includeBlankOption {
+				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90" value>--</option>
+			}
 			for _, option := range options {
 				<option
 					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
-					if option == defaultOption {
-						selected
-					}
 					value={ option }
 				>
 					{ option }
@@ -41,8 +38,7 @@ templ SelectInput(
 }
 
 templ SelectInputWithDescription(
-	id, label, bindValuePath, defaultOption string,
-	options map[string]string, denseMode bool,
+	id, label, bindValuePath string, options map[string]string, includeBlankOption, denseMode bool,
 ) {
 	<div class="relative w-full">
 		<select
@@ -56,13 +52,12 @@ templ SelectInputWithDescription(
 				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 			}
 		>
-			<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90" value></option>
+			if includeBlankOption {
+				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90" value>--</option>
+			}
 			for optionDescription, optionValue := range options {
 				<option
 					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
-					if optionDescription == defaultOption {
-						selected
-					}
 					value={ optionValue }
 				>
 					{ optionDescription }
