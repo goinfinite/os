@@ -1,10 +1,11 @@
 package componentStructural
 
-templ RoundButton(icon, onClick, tooltipText string) {
+templ RoundButton(icon, defaultColor, hoverColor, onClick, tooltipText string) {
 	<div class="relative group">
 		<button
 			type="button"
-			class="inline-flex items-center rounded-full bg-speedia-500 p-2 text-center font-medium hover:bg-speedia-300"
+			@click={ onClick }
+			class={ "inline-flex items-center rounded-full bg-" + defaultColor + " p-2 text-center font-medium hover:bg-" + hoverColor }
 		>
 			<i class={ "ph-bold " + icon }></i>
 		</button>
