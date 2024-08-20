@@ -11,9 +11,7 @@ import (
 type MarketplaceItemType string
 
 var validMarketplaceItemTypes = []string{
-	"app",
-	"framework",
-	"stack",
+	"app", "framework", "stack",
 }
 
 func NewMarketplaceItemType(value interface{}) (
