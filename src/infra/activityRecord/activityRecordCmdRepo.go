@@ -35,15 +35,15 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 		ipAddressPtr = &ipAddress
 	}
 
-	var operatorAccountIdPtr *uint64
+	var operatorAccountIdPtr *uint
 	if createDto.OperatorAccountId != nil {
-		operatorAccountId := createDto.OperatorAccountId.Read()
+		operatorAccountId := createDto.OperatorAccountId.Uint()
 		operatorAccountIdPtr = &operatorAccountId
 	}
 
-	var targetAccountIdPtr *uint64
+	var targetAccountIdPtr *uint
 	if createDto.TargetAccountId != nil {
-		targetAccountId := createDto.TargetAccountId.Read()
+		targetAccountId := createDto.TargetAccountId.Uint()
 		targetAccountIdPtr = &targetAccountId
 	}
 
@@ -55,7 +55,7 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 
 	var mappingIdPtr *uint64
 	if createDto.MappingId != nil {
-		mappingId := createDto.MappingId.Get()
+		mappingId := createDto.MappingId.Uint64()
 		mappingIdPtr = &mappingId
 	}
 
@@ -93,12 +93,12 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecords) e
 	}
 
 	if deleteDto.OperatorAccountId != nil {
-		operatorAccountId := deleteDto.OperatorAccountId.Read()
+		operatorAccountId := deleteDto.OperatorAccountId.Uint()
 		deleteModel.OperatorAccountId = &operatorAccountId
 	}
 
 	if deleteDto.TargetAccountId != nil {
-		targetAccountId := deleteDto.TargetAccountId.Read()
+		targetAccountId := deleteDto.TargetAccountId.Uint()
 		deleteModel.TargetAccountId = &targetAccountId
 	}
 
@@ -108,7 +108,7 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecords) e
 	}
 
 	if deleteDto.MappingId != nil {
-		mappingId := deleteDto.MappingId.Get()
+		mappingId := deleteDto.MappingId.Uint64()
 		deleteModel.MappingId = &mappingId
 	}
 
