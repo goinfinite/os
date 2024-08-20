@@ -1,0 +1,18 @@
+package componentMappings
+
+import componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+
+templ MappingTypeSelectInput(
+	id, label, bindValuePath string, denseMode bool,
+) {
+	@componentForm.SelectInputWithDescription(
+		id, label, bindValuePath,
+		[]componentForm.Option{
+			{Label: "Service", Value: "service"},
+			{Label: "URL", Value: "url"},
+			{Label: "Response Code", Value: "response-code"},
+			{Label: "Inline HTML", Value: "inline-html"},
+			{Label: "Static Files", Value: "static-files"},
+		}, false, denseMode,
+	)
+}

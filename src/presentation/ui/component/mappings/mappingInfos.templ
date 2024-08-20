@@ -1,0 +1,42 @@
+package componentMappings
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
+templ MappingInfos(
+	mapping entity.Mapping, rootDirectory valueObject.UnixFilePath, onClick string,
+) {
+	<div class="bg-os-500 p-4 flex-col rounded mb-1.5">
+		<div class="flex justify-between items-center">
+			<div class="flex space-x-3">
+				<span>{ mapping.Path.String() }</span>
+				if mapping.TargetType.String() == "service" {
+					@componentStructural.TagWithTitle("service", mapping.TargetValue.String(), "teal-900")
+				}
+				if mapping.TargetType.String() == "url" {
+					@componentStructural.TagWithTitle("url", mapping.TargetValue.String(), "purple-900")
+				}
+				if mapping.TargetType.String() == "response-code" {
+					@componentStructural.TagWithTitle("response code", mapping.TargetHttpResponseCode.String(), "cyan-900")
+				}
+				if mapping.TargetType.String() =="inline-html" {
+					if len(mapping.TargetValue.String()) > 50 {
+						@componentStructural.TagWithTitle("inline html", mapping.TargetValue.String()[:50]+"...", "sky-700")
+					} else {
+						@componentStructural.TagWithTitle("inline html", mapping.TargetValue.String(), "sky-700")
+					}
+				}
+				if mapping.TargetType.String() == "static-files" {
+					@componentStructural.TagWithTitle("static files", rootDirectory.String(), "yellow-600")
+				}
+				@componentStructural.TagWithTitle("match pattern", mapping.MatchPattern.String(), "speedia-300")
+			</div>
+			<div>
+				@componentStructural.RoundButton("ph-trash", "red-800", "red-600", onClick, "Delete mapping")
+			</div>
+		</div>
+	</div>
+}

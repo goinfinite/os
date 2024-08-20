@@ -1,0 +1,17 @@
+package componentMappings
+
+import componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+
+templ MatchPatternSelectInput(
+	id, label, bindValuePath string, denseMode bool,
+) {
+	@componentForm.SelectInputWithDescription(
+		id, label, bindValuePath,
+		[]componentForm.Option{
+			{Label: "Begins With", Value: "begins-with"},
+			{Label: "Contains", Value: "contains"},
+			{Label: "Equals", Value: "equals"},
+			{Label: "Ends With", Value: "ends-with"},
+		}, false, denseMode,
+	)
+}
