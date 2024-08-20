@@ -4,31 +4,32 @@ import (
 	"errors"
 	"slices"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type UnixCompressionType string
 
-var validUnixCompressionTypes = []string{
-	"tgz",
-	"zip",
+var ValidUnixCompressionTypes = []string{
+	"tgz", "zip",
 }
 
-func NewUnixCompressionType(value string) (UnixCompressionType, error) {
-	value = strings.ToLower(value)
-	if !slices.Contains(validUnixCompressionTypes, value) {
-		return "", errors.New("InvalidUnixCompressionType")
-	}
-	return UnixCompressionType(value), nil
-}
-
-func NewUnixCompressionTypePanic(value string) UnixCompressionType {
-	unixCompressionType, err := NewUnixCompressionType(value)
+func NewUnixCompressionType(value interface{}) (
+	unixCompressionType UnixCompressionType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return unixCompressionType, errors.New("UnixCompressionTypeMustBeString")
 	}
-	return unixCompressionType
+	stringValue = strings.ToLower(stringValue)
+
+	if !slices.Contains(ValidUnixCompressionTypes, stringValue) {
+		return unixCompressionType, errors.New("InvalidUnixCompressionType")
+	}
+
+	return UnixCompressionType(stringValue), nil
 }
 
-func (unixCompressionType UnixCompressionType) String() string {
-	return string(unixCompressionType)
+func (vo UnixCompressionType) String() string {
+	return string(vo)
 }

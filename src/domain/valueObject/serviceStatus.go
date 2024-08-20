@@ -36,7 +36,7 @@ func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
 		return status, errors.New("ServiceStatusMustBeString")
 	}
 
-	stringValue, err = ServiceStatusAdapter(stringValue)
+	stringValue, err = serviceStatusAdapter(stringValue)
 	if err != nil {
 		return status, err
 	}
@@ -44,8 +44,7 @@ func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
 	return ServiceStatus(stringValue), nil
 }
 
-func ServiceStatusAdapter(value string) (string, error) {
-	value = strings.TrimSpace(value)
+func serviceStatusAdapter(value string) (string, error) {
 	value = strings.ToLower(value)
 
 	if _, isPrimaryStatus := ServiceStatusesWithAliases[value]; isPrimaryStatus {
@@ -62,7 +61,7 @@ func ServiceStatusAdapter(value string) (string, error) {
 	}
 
 	if _, isPrimaryStatus := ServiceStatusesWithAliases[value]; !isPrimaryStatus {
-		return "", errors.New("InvalidServiceStatus")
+		return value, errors.New("InvalidServiceStatus")
 	}
 
 	return value, nil

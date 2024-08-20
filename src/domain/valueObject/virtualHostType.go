@@ -10,7 +10,7 @@ import (
 
 type VirtualHostType string
 
-var ValidVirtualHostTypes = []string{
+var validVirtualHostTypes = []string{
 	"primary", "top-level", "subdomain", "wildcard", "alias",
 }
 
@@ -21,9 +21,10 @@ func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(ValidVirtualHostTypes, stringValue) {
+	if !slices.Contains(validVirtualHostTypes, stringValue) {
 		return vhostType, errors.New("InvalidVirtualHostType")
 	}
+
 	return VirtualHostType(stringValue), nil
 }
 

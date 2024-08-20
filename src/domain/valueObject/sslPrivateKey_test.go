@@ -64,7 +64,9 @@ en/D01Fd9hVhXyGKaOk/nEDxB8fTgQ1dE9JhxUiqHN4Po1ktNG/P8aU=
 		for keyIndex, key := range validKeys {
 			_, err := NewSslPrivateKey(key)
 			if err != nil {
-				t.Errorf("(%d) ExpectedNoErrorButGot: %s", keyIndex, err.Error())
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", keyIndex, err.Error(),
+				)
 			}
 		}
 	})
@@ -97,7 +99,7 @@ AIU+2GKjyT3iMuzZxxFxPFMCAwEAAQ==`,
 		for keyIndex, key := range invalidKeys {
 			_, err := NewSslPrivateKey(key)
 			if err == nil {
-				t.Errorf("(%d) ExpectedErrorButGotNil", keyIndex)
+				t.Errorf("Expected no error for '%v', got nil", keyIndex)
 			}
 		}
 	})

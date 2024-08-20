@@ -15,33 +15,27 @@ type UnixFilePermissions string
  * The "interfaceToUint" helper was not used due to the problem of octal
  * base vs decimal base in file permissions in C-like language.
  */
-func NewUnixFilePermissions(value string) (UnixFilePermissions, error) {
-	unixFilePermissions := UnixFilePermissions(value)
-	if !unixFilePermissions.isValid() {
-		return "", errors.New("InvalidUnixFilePermissions")
+func NewUnixFilePermissions(value interface{}) (
+	unixFilePermission UnixFilePermissions, err error,
+) {
+	stringValue, assertOk := value.(string)
+	if !assertOk {
+		return unixFilePermission, errors.New("UnixFilePermissionsMustBeString")
 	}
 
-	return unixFilePermissions, nil
-}
-
-func NewUnixFilePermissionsPanic(value string) UnixFilePermissions {
-	unixFilePermissions, err := NewUnixFilePermissions(value)
-	if err != nil {
-		panic(err)
+	re := regexp.MustCompile(unixFilePermissionsRegexExpression)
+	if !re.MatchString(stringValue) {
+		return unixFilePermission, errors.New("InvalidUnixFilePermissions")
 	}
-	return UnixFilePermissions(unixFilePermissions)
+
+	return UnixFilePermissions(stringValue), nil
 }
 
-func (unixFilePermissions UnixFilePermissions) isValid() bool {
-	unixFilePermissionsRegex := regexp.MustCompile(unixFilePermissionsRegexExpression)
-	return unixFilePermissionsRegex.MatchString(string(unixFilePermissions))
+func (vo UnixFilePermissions) GetFileMode() fs.FileMode {
+	intValue, _ := strconv.ParseInt(string(vo), 8, 64)
+	return fs.FileMode(intValue)
 }
 
-func (unixFilePermissions UnixFilePermissions) GetFileMode() fs.FileMode {
-	unixFilePermissionsInt, _ := strconv.ParseInt(string(unixFilePermissions), 8, 64)
-	return fs.FileMode(unixFilePermissionsInt)
-}
-
-func (unixFilePermission UnixFilePermissions) String() string {
-	return string(unixFilePermission)
+func (vo UnixFilePermissions) String() string {
+	return string(vo)
 }

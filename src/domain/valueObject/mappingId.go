@@ -7,29 +7,21 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type MappingId uint
+type MappingId uint64
 
-func NewMappingId(value interface{}) (MappingId, error) {
-	mId, err := voHelper.InterfaceToUint64(value)
+func NewMappingId(value interface{}) (mappingId MappingId, err error) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("InvalidMappingId")
+		return mappingId, errors.New("MappingIdMustBeUint64")
 	}
 
-	return MappingId(mId), nil
+	return MappingId(uintValue), nil
 }
 
-func NewMappingIdPanic(value interface{}) MappingId {
-	mId, err := NewMappingId(value)
-	if err != nil {
-		panic(err)
-	}
-	return mId
+func (vo MappingId) Uint64() uint64 {
+	return uint64(vo)
 }
 
-func (mId MappingId) Get() uint {
-	return uint(mId)
-}
-
-func (mId MappingId) String() string {
-	return strconv.FormatUint(uint64(mId), 10)
+func (vo MappingId) String() string {
+	return strconv.FormatUint(uint64(vo), 10)
 }

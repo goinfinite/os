@@ -1,23 +1,17 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestUsername(t *testing.T) {
 	t.Run("ValidUsername", func(t *testing.T) {
 		validUsernames := []string{
-			"a",
-			"a_1",
-			"_abc-123",
-			"b-c_d-e",
-			"valid_name_with_30_chars",
+			"a", "a_1", "_abc-123", "b-c_d-e", "valid_name_with_30_chars",
 		}
 
 		for _, username := range validUsernames {
 			_, err := NewUsername(username)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", username, err)
+				t.Errorf("Expected no error for '%v', got '%s'", username, err.Error())
 			}
 		}
 	})
@@ -34,7 +28,7 @@ func TestUsername(t *testing.T) {
 		for _, username := range invalidUsernames {
 			_, err := NewUsername(username)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", username)
+				t.Errorf("Expected error for '%v', got nil", username)
 			}
 		}
 	})

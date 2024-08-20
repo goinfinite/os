@@ -10,22 +10,23 @@ import (
 
 type NetworkProtocol string
 
-var ValidNetworkProtocols = []string{
+var validNetworkProtocols = []string{
 	"http", "https", "ws", "wss", "grpc", "grpcs", "tcp", "udp",
 }
 
-func NewNetworkProtocol(value interface{}) (NetworkProtocol, error) {
+func NewNetworkProtocol(value interface{}) (
+	networkProtocol NetworkProtocol, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("NetworkProtocolMustBeString")
+		return networkProtocol, errors.New("NetworkProtocolMustBeString")
 	}
-
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(ValidNetworkProtocols, stringValue) {
-		return "", errors.New("InvalidNetworkProtocol")
+	if !slices.Contains(validNetworkProtocols, stringValue) {
+		return networkProtocol, errors.New("InvalidNetworkProtocol")
 	}
+
 	return NetworkProtocol(stringValue), nil
 }
 

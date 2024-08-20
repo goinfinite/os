@@ -7,9 +7,7 @@ type CurrentResourceUsage struct {
 }
 
 func NewCurrentResourceUsage(
-	cpuUsagePercent float64,
-	memUsagePercent float64,
-	storageUsagePercent float64,
+	cpuUsagePercent, memUsagePercent, storageUsagePercent float64,
 ) CurrentResourceUsage {
 	return CurrentResourceUsage{
 		CpuUsagePercent:     cpuUsagePercent,

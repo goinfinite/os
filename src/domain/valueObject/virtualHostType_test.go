@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestVirtualHostType(t *testing.T) {
 	t.Run("ValidVirtualHostType", func(t *testing.T) {

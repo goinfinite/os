@@ -538,13 +538,14 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 			continue
 		}
 
-		_, idAlreadyUsed := catalogItemsIdsMap[catalogItem.Id.Get()]
+		uintCatalogItemId := uint(catalogItem.Id.Uint16())
+		_, idAlreadyUsed := catalogItemsIdsMap[uintCatalogItemId]
 		if idAlreadyUsed {
 			catalogItem.Id, _ = valueObject.NewMarketplaceItemId(0)
 		}
 
-		if catalogItem.Id.Get() != 0 {
-			catalogItemsIdsMap[catalogItem.Id.Get()] = nil
+		if catalogItem.Id.Uint16() != 0 {
+			catalogItemsIdsMap[uintCatalogItemId] = nil
 		}
 
 		catalogItems = append(catalogItems, catalogItem)
@@ -554,7 +555,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 	slices.Sort(catalogItemsIds)
 
 	for itemIndex, catalogItem := range catalogItems {
-		if catalogItem.Id.Get() != 0 {
+		if catalogItem.Id.Uint16() != 0 {
 			continue
 		}
 
@@ -569,11 +570,11 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 		}
 
 		catalogItems[itemIndex].Id = nextAvailableId
-		catalogItemsIds = append(catalogItemsIds, nextAvailableId.Get())
+		catalogItemsIds = append(catalogItemsIds, uint(nextAvailableId.Uint16()))
 	}
 
 	sort.SliceStable(catalogItems, func(i, j int) bool {
-		return catalogItems[i].Id.Get() < catalogItems[j].Id.Get()
+		return catalogItems[i].Id.Uint16() < catalogItems[j].Id.Uint16()
 	})
 
 	return catalogItems, nil
@@ -588,7 +589,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	}
 
 	for _, catalogItem := range catalogItems {
-		if catalogItem.Id.Get() != catalogId.Get() {
+		if catalogItem.Id.Uint16() != catalogId.Uint16() {
 			continue
 		}
 
@@ -655,7 +656,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
 	var model dbModel.MarketplaceInstalledItem
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.MarketplaceInstalledItem{}).
-		Where("id = ?", installedId.Get()).
+		Where("id = ?", installedId.Uint16()).
 		Preload("Mappings").
 		Find(&model).Error
 	if err != nil {

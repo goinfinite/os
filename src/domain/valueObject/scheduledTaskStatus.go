@@ -14,17 +14,19 @@ var ValidScheduledTaskStatuses = []string{
 	"pending", "running", "completed", "failed", "cancelled", "timeout",
 }
 
-func NewScheduledTaskStatus(value interface{}) (ScheduledTaskStatus, error) {
+func NewScheduledTaskStatus(value interface{}) (
+	scheduledTaskStatus ScheduledTaskStatus, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ScheduledTaskStatusMustBeString")
+		return scheduledTaskStatus, errors.New("ScheduledTaskStatusMustBeString")
 	}
-
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidScheduledTaskStatuses, stringValue) {
-		return "", errors.New("InvalidScheduledTaskStatus")
+		return scheduledTaskStatus, errors.New("InvalidScheduledTaskStatus")
 	}
+
 	return ScheduledTaskStatus(stringValue), nil
 }
 

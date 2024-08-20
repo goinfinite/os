@@ -8,32 +8,25 @@ import (
 
 type DataFieldValue string
 
-func NewDataFieldValue(value interface{}) (DataFieldValue, error) {
-	dataFieldValueStr, err := voHelper.InterfaceToString(value)
+func NewDataFieldValue(value interface{}) (
+	dataFieldValue DataFieldValue, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("InvalidDataFieldValue")
+		return dataFieldValue, errors.New("DataFieldValueMustBeString")
 	}
 
-	if len(dataFieldValueStr) == 0 {
-		return "", errors.New("EmptyDataFieldValue")
+	if len(stringValue) == 0 {
+		return dataFieldValue, errors.New("EmptyDataFieldValue")
 	}
 
-	if len(dataFieldValueStr) >= 2048 {
-		return "", errors.New("DataFieldValueTooBig")
+	if len(stringValue) >= 2048 {
+		return dataFieldValue, errors.New("DataFieldValueTooBig")
 	}
 
-	return DataFieldValue(dataFieldValueStr), nil
+	return DataFieldValue(stringValue), nil
 }
 
-func NewDataFieldValuePanic(value interface{}) DataFieldValue {
-	dfv, err := NewDataFieldValue(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return dfv
-}
-
-func (dfv DataFieldValue) String() string {
-	return string(dfv)
+func (vo DataFieldValue) String() string {
+	return string(vo)
 }

@@ -3,37 +3,31 @@ package valueObject
 import (
 	"errors"
 	"net"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type SslHostname string
 
-func NewSslHostname(value string) (SslHostname, error) {
-	sslHostname := SslHostname(value)
-	if !sslHostname.isValid() {
-		return "", errors.New("InvalidSslHostname")
-	}
-
-	return sslHostname, nil
-}
-
-func NewSslHostnamePanic(value string) SslHostname {
-	sslHostname, err := NewSslHostname(value)
+func NewSslHostname(value interface{}) (sslHostname SslHostname, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return sslHostname, errors.New("SslHostnameMustBeString")
 	}
 
-	return sslHostname
-}
-
-func (sslHostname SslHostname) isValid() bool {
-	_, err := NewFqdn(string(sslHostname))
+	_, err = NewFqdn(stringValue)
 	if err == nil {
-		return true
+		return SslHostname(stringValue), nil
 	}
 
-	return net.ParseIP(string(sslHostname)) != nil
+	ipAddress := net.ParseIP(stringValue)
+	if ipAddress != nil {
+		return SslHostname(stringValue), nil
+	}
+
+	return sslHostname, errors.New("InvalidSslHostname")
 }
 
-func (sslHostname SslHostname) String() string {
-	return string(sslHostname)
+func (vo SslHostname) String() string {
+	return string(vo)
 }

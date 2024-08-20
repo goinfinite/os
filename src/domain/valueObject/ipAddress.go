@@ -19,6 +19,7 @@ func NewIpAddress(value interface{}) (ipAddress IpAddress, err error) {
 	if parsedIpAddress == nil {
 		return ipAddress, errors.New("InvalidIpAddress")
 	}
+
 	return IpAddress(stringValue), nil
 }
 
