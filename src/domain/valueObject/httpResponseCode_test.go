@@ -1,11 +1,9 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewHttpResponseCode(t *testing.T) {
-	t.Run("ValidResponseCode", func(t *testing.T) {
+	t.Run("ValidHttpResponseCode", func(t *testing.T) {
 		validResponseCodes := []interface{}{
 			"100",
 			"200",
@@ -23,7 +21,7 @@ func TestNewHttpResponseCode(t *testing.T) {
 			_, err := NewHttpResponseCode(responseCode)
 			if err != nil {
 				t.Errorf(
-					"Expected no error for %v, got %s",
+					"Expected no error for '%v,' got '%s'",
 					responseCode,
 					err.Error(),
 				)
@@ -31,7 +29,7 @@ func TestNewHttpResponseCode(t *testing.T) {
 		}
 	})
 
-	t.Run("InvalidResponseCode", func(t *testing.T) {
+	t.Run("InvalidHttpResponseCode", func(t *testing.T) {
 		invalidResponseCodes := []interface{}{
 			"@blabla",
 			"<script>alert('xss')</script>",
@@ -44,7 +42,7 @@ func TestNewHttpResponseCode(t *testing.T) {
 		for _, responseCode := range invalidResponseCodes {
 			_, err := NewHttpResponseCode(responseCode)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", responseCode)
+				t.Errorf("Expected error for '%v', got nil", responseCode)
 			}
 		}
 	})

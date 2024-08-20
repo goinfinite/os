@@ -1,39 +1,33 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestServiceName(t *testing.T) {
-	t.Run("ValidServiceNames", func(t *testing.T) {
-		validNamesAndAliases := []string{
-			"openlitespeed",
-			"litespeed",
-			"nginx",
-			"node",
-			"mysql",
-			"nodejs",
-			"redis-server",
+	t.Run("ValidServiceName", func(t *testing.T) {
+		validServiceName := []interface{}{
+			"php-webserver", "mariadb", "mysql", "postgresql", "python",
+			"java", "nodejs", "python", "php", "redis-server",
 		}
-		for _, name := range validNamesAndAliases {
-			_, err := NewServiceName(name)
+
+		for _, serviceName := range validServiceName {
+			_, err := NewServiceName(serviceName)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", name, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", serviceName, err.Error(),
+				)
 			}
 		}
 	})
 
-	t.Run("InvalidServiceNames", func(t *testing.T) {
-		invalidNamesAndAliases := []string{
-			"nginx@",
-			"my<>sql",
-			"php#fpm",
-			"node(js)",
+	t.Run("InvalidServiceName", func(t *testing.T) {
+		invalidServiceName := []interface{}{
+			"nginx@", "my<>sql", "php#fpm", "node(js)",
 		}
-		for _, name := range invalidNamesAndAliases {
-			_, err := NewServiceName(name)
+
+		for _, serviceName := range invalidServiceName {
+			_, err := NewServiceName(serviceName)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", name)
+				t.Errorf("Expected error for '%v', got nil", serviceName)
 			}
 		}
 	})

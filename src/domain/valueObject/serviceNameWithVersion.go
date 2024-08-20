@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type ServiceNameWithVersion struct {
@@ -11,34 +13,40 @@ type ServiceNameWithVersion struct {
 	Version *ServiceVersion `json:"version"`
 }
 
-func NewServiceNameWithVersion(name ServiceName, version *ServiceVersion) ServiceNameWithVersion {
+func NewServiceNameWithVersion(
+	name ServiceName, version *ServiceVersion,
+) ServiceNameWithVersion {
 	return ServiceNameWithVersion{
 		Name:    name,
 		Version: version,
 	}
 }
 
-func NewServiceNameWithVersionFromString(value string) (
+func NewServiceNameWithVersionFromString(value interface{}) (
 	serviceNameWithVersion ServiceNameWithVersion, err error,
 ) {
-	value = strings.TrimSpace(value)
-	value = strings.ToLower(value)
-	valueParts := strings.Split(value, ":")
-	if len(valueParts) == 0 {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return serviceNameWithVersion, errors.New("ServiceNameWithVersionMustBeString")
+	}
+
+	stringValue = strings.ToLower(stringValue)
+	stringValueParts := strings.Split(stringValue, ":")
+	if len(stringValueParts) == 0 {
 		return serviceNameWithVersion, errors.New("InvalidServiceNameWithVersion")
 	}
 
-	serviceName, err := NewServiceName(valueParts[0])
+	serviceName, err := NewServiceName(stringValueParts[0])
 	if err != nil {
 		return serviceNameWithVersion, err
 	}
 
 	var serviceVersionPtr *ServiceVersion
-	if len(valueParts) == 1 {
+	if len(stringValueParts) == 1 {
 		return NewServiceNameWithVersion(serviceName, serviceVersionPtr), nil
 	}
 
-	serviceVersion, err := NewServiceVersion(valueParts[1])
+	serviceVersion, err := NewServiceVersion(stringValueParts[1])
 	if err != nil {
 		return serviceNameWithVersion, err
 	}

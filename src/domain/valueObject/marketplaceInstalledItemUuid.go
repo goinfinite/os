@@ -4,43 +4,35 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type MarketplaceInstalledItemUuid string
 
 const marketplaceInstalledItemUuidRegexExpression = `^\w{10,16}$`
 
-func NewMarketplaceInstalledItemUuid(
-	value string,
-) (MarketplaceInstalledItemUuid, error) {
-	value = strings.ToLower(value)
-
-	min := MarketplaceInstalledItemUuid(value)
-	if !min.isValid() {
-		return "", errors.New("InvalidMarketplaceInstalledItemUuid")
-	}
-
-	return min, nil
-}
-
-func NewMarketplaceInstalledItemUuidPanic(
-	value string,
-) MarketplaceInstalledItemUuid {
-	min, err := NewMarketplaceInstalledItemUuid(value)
+func NewMarketplaceInstalledItemUuid(value interface{}) (
+	marketplaceInstalledItemUuid MarketplaceInstalledItemUuid, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return marketplaceInstalledItemUuid, errors.New(
+			"MarketplaceInstalledItemUuidMustBeString",
+		)
+	}
+	stringValue = strings.ToLower(stringValue)
+
+	re := regexp.MustCompile(marketplaceInstalledItemUuidRegexExpression)
+	if !re.MatchString(stringValue) {
+		return marketplaceInstalledItemUuid, errors.New(
+			"InvalidMarketplaceInstalledItemUuid",
+		)
 	}
 
-	return min
+	return MarketplaceInstalledItemUuid(stringValue), nil
 }
 
-func (min MarketplaceInstalledItemUuid) isValid() bool {
-	marketplaceInstalledItemUuidCompiledRegex := regexp.MustCompile(
-		marketplaceInstalledItemUuidRegexExpression,
-	)
-	return marketplaceInstalledItemUuidCompiledRegex.MatchString(string(min))
-}
-
-func (min MarketplaceInstalledItemUuid) String() string {
-	return string(min)
+func (vo MarketplaceInstalledItemUuid) String() string {
+	return string(vo)
 }

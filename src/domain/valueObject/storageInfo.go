@@ -6,11 +6,7 @@ type StorageInfo struct {
 	Used      Byte `json:"used"`
 }
 
-func NewStorageInfo(
-	total Byte,
-	available Byte,
-	used Byte,
-) StorageInfo {
+func NewStorageInfo(total, available, used Byte) StorageInfo {
 	return StorageInfo{
 		Total:     total,
 		Available: available,

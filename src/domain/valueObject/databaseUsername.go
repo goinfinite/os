@@ -23,6 +23,7 @@ func NewDatabaseUsername(value interface{}) (
 	if !re.MatchString(stringValue) {
 		return dbUsername, errors.New("InvalidDatabaseUsername")
 	}
+
 	return DatabaseUsername(stringValue), nil
 }
 

@@ -8,21 +8,21 @@ import (
 
 type Byte int64
 
-func NewByte(value interface{}) (Byte, error) {
-	byteUint, err := voHelper.InterfaceToUint64(value)
+func NewByte(value interface{}) (byteValue Byte, err error) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("InvalidByte")
+		return byteValue, errors.New("ByteMustBeUint64")
 	}
 
-	return Byte(byteUint), nil
+	return Byte(uintValue), nil
 }
 
-func (b Byte) Get() int64 {
+func (b Byte) Int64() int64 {
 	return int64(b)
 }
 
 func (b Byte) ToKiB() int64 {
-	return b.Get() / 1024
+	return b.Int64() / 1024
 }
 
 func (b Byte) ToMiB() int64 {

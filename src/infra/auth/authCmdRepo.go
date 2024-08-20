@@ -28,14 +28,14 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 	}
 
 	now := time.Now()
-	tokenExpiration := time.Unix(expiresIn.Read(), 0)
+	tokenExpiration := time.Unix(expiresIn.Int64(), 0)
 
 	claims := jwt.MapClaims{
 		"iss":        apiURL,
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
-		"accountId":  accountId.Read(),
+		"accountId":  accountId.Uint(),
 		"originalIp": ipAddress.String(),
 	}
 
@@ -45,8 +45,15 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 		return accessToken, errors.New("SessionTokenGenerationError")
 	}
 
-	tokenType := valueObject.NewAccessTokenTypePanic("sessionToken")
-	tokenStr := valueObject.NewAccessTokenStrPanic(tokenStrUnparsed)
+	tokenType, err := valueObject.NewAccessTokenType("sessionToken")
+	if err != nil {
+		return accessToken, err
+	}
+
+	tokenStr, err := valueObject.NewAccessTokenStr(tokenStrUnparsed)
+	if err != nil {
+		return accessToken, err
+	}
 
 	return entity.NewAccessToken(
 		tokenType,

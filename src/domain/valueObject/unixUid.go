@@ -9,36 +9,19 @@ import (
 
 type UnixUid int64
 
-func NewUnixUid(value interface{}) (UnixUid, error) {
-	unixUidInt, err := voHelper.InterfaceToUint64(value)
+func NewUnixUid(value interface{}) (unixUid UnixUid, err error) {
+	intValue, err := voHelper.InterfaceToInt64(value)
 	if err != nil {
-		return 0, errors.New("InvalidUnixUid")
+		return unixUid, errors.New("InvalidUnixUid")
 	}
 
-	unixUid := UnixUid(unixUidInt)
-	if !unixUid.isValid() {
-		return 0, errors.New("InvalidUnixUid")
-	}
-
-	return unixUid, nil
+	return UnixUid(intValue), nil
 }
 
-func NewUnixUidPanic(value int) UnixUid {
-	unixUid, err := NewUnixUid(value)
-	if err != nil {
-		panic(err)
-	}
-	return unixUid
+func (vo UnixUid) Int64() int64 {
+	return int64(vo)
 }
 
-func (unixUid UnixUid) isValid() bool {
-	return unixUid >= 0 && unixUid <= 2147483647
-}
-
-func (gid UnixUid) Get() int64 {
-	return int64(gid)
-}
-
-func (gid UnixUid) String() string {
-	return strconv.FormatInt(int64(gid), 10)
+func (vo UnixUid) String() string {
+	return strconv.FormatInt(int64(vo), 10)
 }

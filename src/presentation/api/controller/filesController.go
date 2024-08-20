@@ -10,9 +10,9 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 func parseSourcePaths(
@@ -84,7 +84,7 @@ func CreateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
 
-	fileType := valueObject.NewMimeTypePanic("generic")
+	fileType, _ := valueObject.NewMimeType("generic")
 	isDirType := false
 	if requestBody["mimeType"] != nil {
 		fileTypeStr := requestBody["mimeType"].(string)
@@ -92,19 +92,24 @@ func CreateFileController(c echo.Context) error {
 	}
 
 	if isDirType {
-		fileType = valueObject.NewMimeTypePanic("directory")
+		fileType, _ = valueObject.NewMimeType("directory")
 	}
 
 	successResponse := "FileCreated"
 
-	filePermissions := valueObject.NewUnixFilePermissionsPanic("0644")
+	filePermissions, _ := valueObject.NewUnixFilePermissions("0644")
 	if fileType.IsDir() {
-		filePermissions = valueObject.NewUnixFilePermissionsPanic("0755")
+		filePermissions, _ = valueObject.NewUnixFilePermissions("0755")
 		successResponse = "DirectoryCreated"
 	}
 
 	if requestBody["permissions"] != nil {
-		filePermissions = valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
+		filePermissions, err = valueObject.NewUnixFilePermissions(
+			requestBody["permissions"].(string),
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 	}
 
 	createUnixFileDto := dto.NewCreateUnixFile(
@@ -171,13 +176,19 @@ func UpdateFileController(c echo.Context) error {
 
 	var permissionsPtr *valueObject.UnixFilePermissions
 	if requestBody["permissions"] != nil {
-		permissions := valueObject.NewUnixFilePermissionsPanic(requestBody["permissions"].(string))
+		permissions, err := valueObject.NewUnixFilePermissions(requestBody["permissions"].(string))
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 		permissionsPtr = &permissions
 	}
 
 	var encodedContentPtr *valueObject.EncodedContent
 	if requestBody["encodedContent"] != nil {
-		encodedContent := valueObject.NewEncodedContentPanic(requestBody["encodedContent"].(string))
+		encodedContent, err := valueObject.NewEncodedContent(requestBody["encodedContent"].(string))
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
 		encodedContentPtr = &encodedContent
 	}
 
@@ -237,9 +248,7 @@ func CopyFileController(c echo.Context) error {
 	shouldOverwrite := false
 	if requestBody["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = sharedHelper.ParseBoolParam(
-			requestBody["shouldOverwrite"],
-		)
+		shouldOverwrite, err = voHelper.InterfaceToBool(requestBody["shouldOverwrite"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidShouldOverwrite",
@@ -298,9 +307,7 @@ func DeleteFileController(c echo.Context) error {
 	hardDelete := false
 	if requestBody["hardDelete"] != nil {
 		var err error
-		hardDelete, err = sharedHelper.ParseBoolParam(
-			requestBody["hardDelete"],
-		)
+		hardDelete, err = voHelper.InterfaceToBool(requestBody["hardDelete"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidHardDelete",
@@ -368,7 +375,12 @@ func CompressFilesController(c echo.Context) error {
 
 	var compressionUnixTypePtr *valueObject.UnixCompressionType
 	if requestBody["compressionType"] != nil {
-		compressionUnixType := valueObject.NewUnixCompressionTypePanic(requestBody["compressionType"].(string))
+		compressionUnixType, err := valueObject.NewUnixCompressionType(
+			requestBody["compressionType"].(string),
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		compressionUnixTypePtr = &compressionUnixType
 	}
 
@@ -474,7 +486,10 @@ func UploadFilesController(c echo.Context) error {
 
 	var filesToUpload []valueObject.FileStreamHandler
 	for _, requestBodyFile := range requestBody["files"].(map[string]*multipart.FileHeader) {
-		fileStreamHandler := valueObject.NewFileStreamHandlerPanic(requestBodyFile)
+		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestBodyFile)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 

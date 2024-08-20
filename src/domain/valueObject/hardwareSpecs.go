@@ -10,10 +10,8 @@ type HardwareSpecs struct {
 
 func NewHardwareSpecs(
 	cpuModel string,
-	cpuCores float64,
-	cpuFrequency float64,
-	memoryTotal Byte,
-	storageTotal Byte,
+	cpuCores, cpuFrequency float64,
+	memoryTotal, storageTotal Byte,
 ) HardwareSpecs {
 	return HardwareSpecs{
 		CpuModel:     cpuModel,

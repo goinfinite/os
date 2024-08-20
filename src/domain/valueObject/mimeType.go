@@ -3,37 +3,32 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const mimeTypeRegexExpression = `^[A-z0-9\-]{1,64}\/[A-z0-9\-\_\+\.\,]{2,128}$|^(directory|generic)$`
 
 type MimeType string
 
-func NewMimeType(value string) (MimeType, error) {
-	mimeType := MimeType(value)
-	if !mimeType.isValid() {
-		return "", errors.New("InvalidMimeType")
-	}
-	return mimeType, nil
-}
-
-func NewMimeTypePanic(value string) MimeType {
-	mimeType, err := NewMimeType(value)
+func NewMimeType(value interface{}) (mimeType MimeType, err error) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return mimeType, errors.New("MimeTypeMustBeString")
 	}
-	return mimeType
+
+	re := regexp.MustCompile(mimeTypeRegexExpression)
+	if !re.MatchString(stringValue) {
+		return mimeType, errors.New("InvalidMimeType")
+	}
+
+	return MimeType(stringValue), nil
 }
 
-func (mimeType MimeType) isValid() bool {
-	mimeTypeRegex := regexp.MustCompile(mimeTypeRegexExpression)
-	return mimeTypeRegex.MatchString(string(mimeType))
+func (vo MimeType) String() string {
+	return string(vo)
 }
 
-func (mimeType MimeType) String() string {
-	return string(mimeType)
-}
-
-func (mimeType MimeType) IsDir() bool {
-	return mimeType == "directory"
+func (vo MimeType) IsDir() bool {
+	return vo == "directory"
 }
