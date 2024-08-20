@@ -27,7 +27,7 @@ func NewPhpModule(
 func NewPhpModuleFromString(stringValue string) (module PhpModule, err error) {
 	stringValueParts := strings.Split(stringValue, ":")
 	if len(stringValueParts) == 0 {
-		return module, errors.New("PhpModuleEmpty")
+		return module, errors.New("EmptyPhpModule")
 	}
 
 	if len(stringValueParts) < 2 {

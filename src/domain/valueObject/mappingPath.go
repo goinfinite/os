@@ -27,6 +27,7 @@ func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
 	if !re.MatchString(stringValue) {
 		return mappingPath, errors.New("InvalidMappingPath")
 	}
+
 	return MappingPath(stringValue), nil
 }
 

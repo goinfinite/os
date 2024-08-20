@@ -10,8 +10,8 @@ import (
 )
 
 func createDummyUser() error {
-	username := valueObject.NewUsernamePanic(os.Getenv("DUMMY_USER_NAME"))
-	password := valueObject.NewPasswordPanic(os.Getenv("DUMMY_USER_PASS"))
+	username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
+	password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
 
 	createUser := dto.CreateAccount{
 		Username: username,
@@ -28,7 +28,7 @@ func createDummyUser() error {
 }
 
 func deleteDummyUser() error {
-	accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
+	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
 	accCmdRepo := AccCmdRepo{}
 	err := accCmdRepo.Delete(accountId)
@@ -48,6 +48,8 @@ func resetDummyUser() {
 func TestAccCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
+	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+
 	t.Run("CreateValidAccount", func(t *testing.T) {
 		err := createDummyUser()
 		if err != nil {
@@ -56,8 +58,8 @@ func TestAccCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CreateInvalidAccount", func(t *testing.T) {
-		username := valueObject.NewUsernamePanic("root")
-		password := valueObject.NewPasswordPanic("invalid")
+		username, _ := valueObject.NewUsername("root")
+		password, _ := valueObject.NewPassword("invalid")
 
 		createUser := dto.CreateAccount{
 			Username: username,
@@ -85,8 +87,7 @@ func TestAccCmdRepo(t *testing.T) {
 	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
-		newPassword := valueObject.NewPasswordPanic("newPassword")
+		newPassword, _ := valueObject.NewPassword("newPassword")
 
 		accCmdRepo := AccCmdRepo{}
 		err := accCmdRepo.UpdatePassword(accountId, newPassword)
@@ -99,8 +100,6 @@ func TestAccCmdRepo(t *testing.T) {
 
 	t.Run("UpdateApiKeyValidAccount", func(t *testing.T) {
 		resetDummyUser()
-
-		accountId := valueObject.NewAccountIdPanic(os.Getenv("DUMMY_USER_ID"))
 
 		accCmdRepo := AccCmdRepo{}
 		_, err := accCmdRepo.UpdateApiKey(accountId)

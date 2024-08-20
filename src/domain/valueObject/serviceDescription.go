@@ -2,27 +2,26 @@ package valueObject
 
 import (
 	"errors"
-	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 type ServiceDescription string
 
-func NewServiceDescription(value interface{}) (ServiceDescription, error) {
+func NewServiceDescription(value interface{}) (
+	serviceDescription ServiceDescription, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ServiceDescriptionValueMustBeString")
+		return serviceDescription, errors.New("ServiceDescriptionValueMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
 	if len(stringValue) < 2 {
-		return "", errors.New("ServiceDescriptionTooSmall")
+		return serviceDescription, errors.New("ServiceDescriptionTooSmall")
 	}
 
 	if len(stringValue) > 2048 {
-		return "", errors.New("ServiceDescriptionTooBig")
+		return serviceDescription, errors.New("ServiceDescriptionTooBig")
 	}
 
 	return ServiceDescription(stringValue), nil

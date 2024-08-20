@@ -21,9 +21,9 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
-		createDto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
+		dto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
 
-		err := vhostCmdRepo.Create(createDto)
+		err := vhostCmdRepo.Create(dto)
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}

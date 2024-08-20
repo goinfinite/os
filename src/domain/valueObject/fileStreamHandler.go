@@ -11,16 +11,21 @@ type FileStreamHandler struct {
 	Open func() (multipart.File, error)
 }
 
-func NewFileStreamHandler(value *multipart.FileHeader) (FileStreamHandler, error) {
+func NewFileStreamHandler(value *multipart.FileHeader) (
+	fileStreamHandler FileStreamHandler, err error,
+) {
 	fileName, err := NewUnixFileName(value.Filename)
 	if err != nil {
-		return FileStreamHandler{}, errors.New("InvalidFileName")
+		return fileStreamHandler, err
 	}
 
-	fileSize := Byte(value.Size)
-	isTooBig := fileSize.ToGiB() > 5
-	if isTooBig {
-		return FileStreamHandler{}, errors.New("FileIsTooBig")
+	fileSize, err := NewByte(value.Size)
+	if err != nil {
+		return fileStreamHandler, errors.New("InvalidFileSize")
+	}
+
+	if fileSize.ToGiB() > 5 {
+		return fileStreamHandler, errors.New("FileIsTooBig")
 	}
 
 	return FileStreamHandler{
@@ -28,13 +33,4 @@ func NewFileStreamHandler(value *multipart.FileHeader) (FileStreamHandler, error
 		Size: fileSize,
 		Open: value.Open,
 	}, nil
-}
-
-func NewFileStreamHandlerPanic(value *multipart.FileHeader) FileStreamHandler {
-	fileStreamHandler, err := NewFileStreamHandler(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return fileStreamHandler
 }

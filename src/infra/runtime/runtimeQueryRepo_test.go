@@ -32,7 +32,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		hostname := valueObject.NewFqdnPanic(primaryVhost.String())
+		hostname, _ := valueObject.NewFqdn(primaryVhost.String())
 		phpConfigs, err := repo.ReadPhpConfigs(hostname)
 
 		if err != nil {

@@ -17,7 +17,7 @@ func NewHttpResponseCode(value interface{}) (
 ) {
 	uintValue, err := voHelper.InterfaceToUint16(value)
 	if err != nil {
-		return httpResponseCode, errors.New("HttpResponseCodeMustBeUint")
+		return httpResponseCode, errors.New("HttpResponseCodeMustBeUint16")
 	}
 	stringValue := strconv.FormatUint(uint64(uintValue), 10)
 

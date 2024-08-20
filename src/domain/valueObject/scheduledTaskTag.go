@@ -12,17 +12,18 @@ const scheduledTaskTagRegex string = `^[a-zA-Z][\w\-]{1,256}$`
 
 type ScheduledTaskTag string
 
-func NewScheduledTaskTag(value interface{}) (ScheduledTaskTag, error) {
+func NewScheduledTaskTag(value interface{}) (
+	scheduledTaskTag ScheduledTaskTag, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ScheduledTaskTagMustBeString")
+		return scheduledTaskTag, errors.New("ScheduledTaskTagMustBeString")
 	}
-
 	stringValue = strings.ToLower(stringValue)
 
 	re := regexp.MustCompile(scheduledTaskTagRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidScheduledTaskTag")
+		return scheduledTaskTag, errors.New("InvalidScheduledTaskTag")
 	}
 
 	return ScheduledTaskTag(stringValue), nil

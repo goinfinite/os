@@ -5,41 +5,38 @@ import (
 	"mime"
 	"regexp"
 	"strings"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const unixFileExtensionRegexExpression = `^[\w\_\-]{1,15}$`
 
 type UnixFileExtension string
 
-func NewUnixFileExtension(value string) (UnixFileExtension, error) {
-	if strings.HasPrefix(value, ".") {
-		value, _ = strings.CutPrefix(value, ".")
-	}
-
-	unixFileExtension := UnixFileExtension(value)
-	if !unixFileExtension.isValid() {
-		return "", errors.New("InvalidUnixFileExtension")
-	}
-	return unixFileExtension, nil
-}
-
-func NewUnixFileExtensionPanic(value string) UnixFileExtension {
-	unixFileExtension, err := NewUnixFileExtension(value)
+func NewUnixFileExtension(value interface{}) (
+	unixFileExtension UnixFileExtension, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return unixFileExtension, errors.New("UnixFileExtensionMustBeString")
 	}
-	return unixFileExtension
+
+	if strings.HasPrefix(stringValue, ".") {
+		stringValue, _ = strings.CutPrefix(stringValue, ".")
+	}
+
+	re := regexp.MustCompile(unixFileExtensionRegexExpression)
+	if !re.MatchString(stringValue) {
+		return unixFileExtension, errors.New("InvalidUnixFileExtension")
+	}
+
+	return UnixFileExtension(stringValue), nil
 }
 
-func (unixFileExtension UnixFileExtension) isValid() bool {
-	unixFileExtensionRegex := regexp.MustCompile(unixFileExtensionRegexExpression)
-	return unixFileExtensionRegex.MatchString(string(unixFileExtension))
-}
-
-func (unixFileExtension UnixFileExtension) GetMimeType() MimeType {
+func (vo UnixFileExtension) GetMimeType() MimeType {
 	mimeTypeStr := "generic"
 
-	fileExtWithLeadingDot := "." + string(unixFileExtension)
+	fileExtWithLeadingDot := "." + string(vo)
 	mimeTypeWithCharset := mime.TypeByExtension(fileExtWithLeadingDot)
 	if len(mimeTypeWithCharset) > 1 {
 		mimeTypeOnly := strings.Split(mimeTypeWithCharset, ";")[0]
@@ -50,6 +47,6 @@ func (unixFileExtension UnixFileExtension) GetMimeType() MimeType {
 	return mimeType
 }
 
-func (unixFileExtension UnixFileExtension) String() string {
-	return string(unixFileExtension)
+func (vo UnixFileExtension) String() string {
+	return string(vo)
 }

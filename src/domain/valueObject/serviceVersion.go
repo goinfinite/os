@@ -11,15 +11,17 @@ const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|l
 
 type ServiceVersion string
 
-func NewServiceVersion(value interface{}) (ServiceVersion, error) {
+func NewServiceVersion(value interface{}) (
+	serviceVersion ServiceVersion, err error,
+) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ServiceVersionMustBeString")
+		return serviceVersion, errors.New("ServiceVersionMustBeString")
 	}
 
 	re := regexp.MustCompile(serviceVersionRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidServiceVersion")
+		return serviceVersion, errors.New("InvalidServiceVersion")
 	}
 
 	return ServiceVersion(stringValue), nil
