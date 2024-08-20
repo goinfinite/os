@@ -240,7 +240,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 	// os-api                           RUNNING   pid 121, uptime 0:00:35
 	supervisorStatusLines := strings.Split(supervisorStatus, "\n")
 	if len(supervisorStatusLines) == 0 {
-		return servicesWithMetrics, errors.New("SupervisorStatusEmpty")
+		return servicesWithMetrics, errors.New("EmptySupervisorStatus")
 	}
 
 	for _, supervisorStatusLine := range supervisorStatusLines {

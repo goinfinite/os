@@ -29,7 +29,7 @@ func NewPhpSetting(
 func NewPhpSettingFromString(stringValue string) (setting PhpSetting, err error) {
 	stringValueParts := strings.Split(stringValue, ":")
 	if len(stringValueParts) == 0 {
-		return setting, errors.New("PhpSettingEmpty")
+		return setting, errors.New("EmptyPhpSetting")
 	}
 
 	if len(stringValueParts) < 2 {
