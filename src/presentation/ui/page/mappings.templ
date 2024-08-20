@@ -2,81 +2,178 @@ package page
 
 import (
 	"github.com/speedianet/os/src/domain/dto"
+	"github.com/speedianet/os/src/domain/valueObject"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentMappings "github.com/speedianet/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 )
 
-script MappingsIndexLocalState() {
+script MappingsIndexLocalState(vhostsHostnames []string) {
     document.addEventListener('alpine:init', () => {
-		Alpine.data('vhostWithMappings', () => ({
+		Alpine.data('mappings', () => ({
             // Primary state
-            vhostWithMappings: {},
-            resetPrimaryState() {
-				this.vhostWithMappings = {
+            virtualHost: {},
+            mapping: {},
+            resetPrimaryStates() {
+				this.virtualHost = {
                     'hostname': '',
-                    'type': '',
+                    'type': 'top-level',
                     'rootDirectory': '',
-                    'parentHostname': null,
-                    'mappings': []
+                    'parentHostname': null
+                }
+                this.mapping = {
+                    'id': 0,
+                    'path': '',
+                    'matchPattern': 'begins-with',
+                    'targetType': 'service',
+                    'targetValue': '',
+                    'targetHttpResponseCode': 200
                 }
             },
 			init() {
-				this.resetPrimaryState();
+				this.resetPrimaryStates();
 			},
+
+            // Auxiliary states
+            isAdvancedSettingsClosed: true,
+            isCreateMappingFromVhost: false,
+            get vhostWithTrailingSlash() {
+                return this.virtualHost.hostname + "/"
+            },
+            availableVhostsHostnames: vhostsHostnames,
+            addAvailableVhostHostname() {
+                this.availableVhostsHostnames.push(this.virtualHost.hostname);
+            },
+            removeAvailableVhostHostname() {
+                const indexToRemove = this.availableVhostsHostnames.indexOf(
+                    this.virtualHost.hostname
+                );
+                this.availableVhostsHostnames.splice(indexToRemove, 1);
+            },
+            resetAuxiliaryStates() {
+                this.isAdvancedSettingsClosed = true;
+                this.isCreateMappingFromVhost = false;
+            },
 
             // Modal states
 			isCreateVhostModalOpen: false,
 			openCreateVhostModal() {
-				this.resetPrimaryState();
+				this.resetPrimaryStates();
 
 				this.isCreateVhostModalOpen = true;
-                console.log('openCreateVhostModal');
 			},
             closeCreateVhostModal() {
                 this.isCreateVhostModalOpen = false;
             },
+            closeCreateVhostModalAfterSuccess() {
+                this.addAvailableVhostHostname();
+
+                this.isCreateVhostModalOpen = false;
+            },
+            isDeleteVhostModalOpen: false,
+            openDeleteVhostModal(vhostHostname) {
+				this.resetPrimaryStates();
+
+				this.virtualHost.hostname = vhostHostname;
+				this.isDeleteVhostModalOpen = true;
+			},
+			closeDeleteVhostModal() {
+				this.isDeleteVhostModalOpen = false;
+			},
+			deleteVhostElement() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/vhosts/' + this.virtualHost.hostname + '/',
+					{swap: 'none'},
+				);
+                this.removeAvailableVhostHostname();
+				this.closeDeleteVhostModal();
+			},
             isCreateMappingModalOpen: false,
             openCreateMappingModal() {
-				this.resetPrimaryState();
+				this.resetPrimaryStates();
+                this.resetAuxiliaryStates();
 
-				this.isCreateMappingModalOpen = true;
-                console.log('openCreateMappingModal');
+                this.isCreateMappingModalOpen = true;
+            },
+            isCreateMappingFromVhostModalOpen: false,
+            openCreateMappingFromVhostModal(vhostHostname) {
+				this.resetPrimaryStates();
+                this.resetAuxiliaryStates();
+
+                this.virtualHost.hostname = vhostHostname
+				this.isCreateMappingFromVhostModalOpen = true;
+                this.isCreateMappingFromVhost = true;
             },
             closeCreateMappingModal() {
                 this.isCreateMappingModalOpen = false;
-            },
-            isCreateMappingFromVhostModalOpen: false,
-            openCreateMappingFromVhostModal() {
-				this.resetPrimaryState();
-
-				this.isCreateMappingFromVhostModalOpen = true;
-                console.log('openCreateMappingFromVhostModal');
-            },
-            closeCreateMappingFromVhostModal() {
                 this.isCreateMappingFromVhostModalOpen = false;
             },
+            isDeleteMappingModalOpen: false,
+            openDeleteMappingModal(mappingId, mappingPath) {
+				this.resetPrimaryStates();
+
+				this.mapping.id = mappingId;
+				this.mapping.path = mappingPath;
+				this.isDeleteMappingModalOpen = true;
+			},
+			closeDeleteMappingModal() {
+				this.isDeleteMappingModalOpen = false;
+			},
+			deleteMappingElement() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/vhosts/mapping/' + this.mapping.id + '/',
+					{swap: 'none'},
+				);
+				this.closeDeleteMappingModal();
+			},
         }))
     })
 }
 
+func filterVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
+	vhostsHostnames := []string{}
+	for _, vhostWithMapping := range vhostsWithMappings {
+		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
+	}
+
+	return vhostsHostnames
+}
+
 templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
-	@MappingsIndexLocalState()
-	<div class="flex flex-col" x-data="vhostWithMappings">
+	@MappingsIndexLocalState(filterVhostsHostnames(vhostsWithMappings))
+	<div class="flex flex-col" x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
 				@componentStructural.PageTitle("Mappings", "", "ph-graph")
+			</div>
+			<div class="my-4 flex space-x-5">
+				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
+				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
 			</div>
 		</div>
 		<div id="mappings-tables" class="card w-full">
 			@MappingsRegularFormTable(vhostsWithMappings)
 		</div>
+		@CreateVhostModal()
+		@componentStructural.DeleteModal(
+			"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
+			"virtualHost.hostname", "virtualHost.hostname",
+		)
+		@CreateMappingModal(vhostsWithMappings)
+		@CreateMappingFromVhostModal(vhostsWithMappings)
+		@componentStructural.DeleteModal(
+			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
+			"mapping.path", "mapping.id",
+		)
 	</div>
 }
 
 templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<table
 		id="vhosts-with-mappings-regular-form-table"
-		hx-get="/vhosts/mapping/"
+		hx-get="/mappings/"
 		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 		hx-select="#mappings-tables"
 		hx-target="#mappings-tables"
@@ -84,35 +181,149 @@ templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings)
 		class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out"
 	>
 		<div class="bg-os-800 p-4 rounded-md">
-			<div class="flex justify-between items-center">
-				<input type="text" placeholder="Search" class="rounded p-2"/>
-				<div class="flex space-x-5">
-					@componentForm.SubmitButton("Create virtual hostt", "ph-plus-square", "openCreateVhostModal()", false)
-					@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
-				</div>
-			</div>
 			for _, vhostWithMappings := range vhostsWithMappings {
-				<div class="flex bg-os-500 mt-4 p-4 rounded">
+				<div class="flex bg-os-500 mb-4 p-4 rounded">
 					<!-- Vhosts Column -->
-					<div class="flex bg-os-800 p-4 w-1/3 min-h-56 flex-col rounded">
+					<div class="flex bg-os-800 p-4 w-3/8 min-h-56 flex-col rounded">
 						<div class="flex justify-between items-center">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
-							@componentForm.RoundButton("ph-plus", "openCreateMappingFromVhostModal()", "Create mapping")
+							<div class="flex space-x-2">
+								@componentStructural.RoundButton("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping")
+								if vhostWithMappings.Type != "primary" {
+									@componentStructural.RoundButton("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host")
+								}
+							</div>
 						</div>
 						<div class="flex space-x-3 mt-4">
-							@componentStructural.Tag(vhostWithMappings.RootDirectory.String(), "ph-folder-open", "speedia-300")
-							@componentStructural.Tag(vhostWithMappings.Type.String(), "ph-file-text", "speedia-300")
+							@componentStructural.TagWithIcon("ph-folder-open", vhostWithMappings.RootDirectory.String(), "speedia-300")
+							@componentStructural.TagWithIcon("ph-file-text", vhostWithMappings.Type.String(), "speedia-300")
 						</div>
 					</div>
 					<div class="w-4"></div>
 					<!-- Mappings Column -->
-					<div class="flex bg-os-800 p-4 flex-col rounded w-3/3"></div>
+					<div class="bg-os-800 p-4 flex-col rounded w-1/1">
+						for _, mapping := range vhostWithMappings.Mappings {
+							@componentMappings.MappingInfos(
+								mapping, vhostWithMappings.RootDirectory,
+								"openDeleteMappingModal("+mapping.Id.String()+", '"+mapping.Path.String()+"')",
+							)
+						}
+					</div>
 				</div>
 			}
-			<!-- Pagination -->
-			<div style="margin-top: 1rem; display: flex; justify-content: center;">
-				<button style="background-color: #E27D60; padding: 0.5rem 1rem; border-radius: 4px;">1</button>
-			</div>
 		</div>
 	</table>
+}
+
+templ VirtualHostRegularForm() {
+	<form
+		hx-post="/api/v1/vhosts/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6">
+			@componentForm.SelectInput("type", "Type", "virtualHost.type", valueObject.AvailableVirtualHostsTypes, false, false)
+		</div>
+		<template x-if="virtualHost.type == 'top-level'">
+			<div class="mb-6">
+				@componentForm.InputField("text", "hostname", "Hostname", "virtualHost.hostname", false)
+			</div>
+		</template>
+		<template x-if="virtualHost.type == 'subdomain'">
+			<div class="mb-6 space-y-6">
+				@componentForm.InputField("text", "hostname", "Subdomain", "virtualHost.hostname", false)
+				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
+			</div>
+		</template>
+		<template x-if="virtualHost.type == 'alias'">
+			<div class="mb-6 space-y-6">
+				@componentForm.InputField("text", "hostname", "Alias", "virtualHost.hostname", false)
+				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
+			</div>
+		</template>
+		<template x-if="virtualHost.type != ''">
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false)
+		</template>
+	</form>
+}
+
+templ CreateVhostModal() {
+	@componentStructural.Modal(
+		"Create Virtual Host", "isCreateVhostModalOpen", "closeCreateVhostModal()",
+		"",
+	) {
+		@VirtualHostRegularForm()
+	}
+}
+
+templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
+	<form
+		hx-post="/api/v1/vhosts/mapping/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6 space-y-6">
+			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", false)
+			<template x-if="isCreateMappingFromVhost">
+				@componentForm.ReadonlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
+			</template>
+			<template x-if="!isCreateMappingFromVhost">
+				@componentForm.SelectInputFromStore("hostname", "Hostname", "virtualHost.hostname", "availableVhostsHostnames", true, false)
+			</template>
+			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostWithTrailingSlash", false)
+		</div>
+		<template x-if="mapping.targetType == 'service'">
+			<div class="mb-6 space-y-6">
+				@componentForm.SelectInput("targetValue", "Service Name", "", valueObject.AvailableSvcNames, true, false)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'url'">
+			<div class="mb-6 space-y-6">
+				@componentForm.InputField("text", "targetValue", "Destination URL", "", false)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'response-code' || mapping.targetType == 'inline-html'">
+			<div class="mb-6 space-y-6">
+				<template x-if="mapping.targetType == 'inline-html'">
+					@componentForm.TextArea("targetValue", "Inline HTML", "", false)
+				</template>
+				@componentMappings.ResponseCodeSelectInput(
+					"targetValue", "Response Code", "mapping.targetHttpResponseCode", false,
+				)
+			</div>
+		</template>
+		<section class="mb-6 w-full rounded-md">
+			<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30" x-bin:open="isAdvancedSettingsClosed">
+				<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
+					<i class="ph-duotone ph-gear mr-2 text-2xl"></i>
+					<span class="font-bold">Advanced Settings</span>
+					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
+				</summary>
+				<div class="mt-5 py-2">
+					@componentMappings.MatchPatternSelectInput(
+						"matchPattern", "Match Pattern", "mapping.matchPattern", false,
+					)
+				</div>
+			</details>
+		</section>
+		@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false)
+	</form>
+}
+
+templ CreateMappingModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+	@componentStructural.Modal(
+		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
+		"",
+	) {
+		@MappingRegularForm(vhostsWithMappings)
+	}
+}
+
+templ CreateMappingFromVhostModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+	@componentStructural.Modal(
+		"Create Mapping", "isCreateMappingFromVhostModalOpen",
+		"closeCreateMappingModal()", "virtualHost.hostname",
+	) {
+		@MappingRegularForm(vhostsWithMappings)
+	}
 }
