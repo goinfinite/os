@@ -19,18 +19,19 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 	stringValue = strings.ToLower(stringValue)
 
 	if len(stringValue) == 0 {
-		return settingValue, errors.New("EmptyPhpSettingValue")
+		return settingValue, errors.New("PhpSettingValueEmpty")
 	}
 
 	if len(stringValue) > 255 {
 		return settingValue, errors.New("PhpSettingValueTooLong")
 	}
 
-	if stringValue == "on" || stringValue == "true" {
+	switch stringValue {
+	case "on":
+	case "true":
 		stringValue = "On"
-	}
-
-	if stringValue == "off" || stringValue == "false" {
+	case "off":
+	case "false":
 		stringValue = "Off"
 	}
 

@@ -6,10 +6,9 @@ import (
 	"strconv"
 )
 
-func InterfaceToUint64(input interface{}) (uint64, error) {
-	var output uint64
-	var err error
-	var defaultErr error = errors.New("InvalidInput")
+func InterfaceToUint64(input interface{}) (output uint64, err error) {
+	defaultErr := errors.New("CannotConvertToUint64")
+
 	switch v := input.(type) {
 	case string:
 		output, err = strconv.ParseUint(v, 10, 64)

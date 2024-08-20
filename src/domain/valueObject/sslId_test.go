@@ -35,7 +35,7 @@ func TestNewSslId(t *testing.T) {
 		for _, invalidSslId := range invalidSslIds {
 			_, err := NewSslId(invalidSslId)
 			if err == nil {
-				t.Errorf("Expected no error for '%v', got nil", invalidSslId)
+				t.Errorf("Expected error for '%v', got nil", invalidSslId)
 			}
 		}
 	})

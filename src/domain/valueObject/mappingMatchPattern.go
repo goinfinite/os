@@ -22,6 +22,7 @@ func NewMappingMatchPattern(value interface{}) (
 		return mappingMatchPattern, errors.New("MappingMatchPatternMustBeString")
 	}
 	stringValue = strings.ToLower(stringValue)
+	stringValue = strings.ReplaceAll(stringValue, " ", "-")
 
 	if !slices.Contains(validMappingMatchPatterns, stringValue) {
 		return mappingMatchPattern, errors.New("InvalidMappingMatchPattern")

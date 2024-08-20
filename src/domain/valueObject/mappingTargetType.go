@@ -11,11 +11,7 @@ import (
 type MappingTargetType string
 
 var validMappingTargetTypes = []string{
-	"url",
-	"service",
-	"response-code",
-	"inline-html",
-	"static-files",
+	"url", "service", "response-code", "inline-html", "static-files",
 }
 
 func NewMappingTargetType(value interface{}) (

@@ -10,9 +10,9 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
 )
 
 func parseSourcePaths(
@@ -248,9 +248,7 @@ func CopyFileController(c echo.Context) error {
 	shouldOverwrite := false
 	if requestBody["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = sharedHelper.ParseBoolParam(
-			requestBody["shouldOverwrite"],
-		)
+		shouldOverwrite, err = voHelper.InterfaceToBool(requestBody["shouldOverwrite"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidShouldOverwrite",
@@ -309,9 +307,7 @@ func DeleteFileController(c echo.Context) error {
 	hardDelete := false
 	if requestBody["hardDelete"] != nil {
 		var err error
-		hardDelete, err = sharedHelper.ParseBoolParam(
-			requestBody["hardDelete"],
-		)
+		hardDelete, err = voHelper.InterfaceToBool(requestBody["hardDelete"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidHardDelete",

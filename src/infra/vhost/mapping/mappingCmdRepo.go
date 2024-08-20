@@ -2,7 +2,7 @@ package mappingInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 	"text/template"
 
@@ -504,7 +504,7 @@ func (repo *MappingCmdRepo) RecreateByServiceName(
 
 		_, err = repo.Create(createDto)
 		if err != nil {
-			log.Printf("%s: %d", err.Error(), mapping.Id.Uint64())
+			slog.Error(err.Error(), slog.Uint64("mappingId", uint64(mapping.Id.Uint64())))
 		}
 	}
 

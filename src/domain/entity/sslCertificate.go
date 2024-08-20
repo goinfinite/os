@@ -20,23 +20,21 @@ type SslCertificate struct {
 }
 
 func NewSslCertificate(
-	sslCertContent valueObject.SslCertificateContent,
-) (SslCertificate, error) {
-	var sslCertificate SslCertificate
-
-	block, _ := pem.Decode([]byte(sslCertContent.String()))
+	certContent valueObject.SslCertificateContent,
+) (certificate SslCertificate, err error) {
+	block, _ := pem.Decode([]byte(certContent.String()))
 	if block == nil {
-		return sslCertificate, errors.New("SslCertificateContentDecodeError")
+		return certificate, errors.New("SslCertificateContentDecodeError")
 	}
 
 	parsedCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return sslCertificate, errors.New("SslCertificateContentParseError")
+		return certificate, errors.New("SslCertificateContentParseError")
 	}
 
-	sslCertId, err := valueObject.NewSslIdFromSslCertificateContent(sslCertContent)
+	certId, err := valueObject.NewSslIdFromSslCertificateContent(certContent)
 	if err != nil {
-		return sslCertificate, err
+		return certificate, err
 	}
 
 	issuedAt := valueObject.NewUnixTimeWithGoTime(parsedCert.NotBefore)
@@ -66,7 +64,7 @@ func NewSslCertificate(
 
 	certAuthority, err := valueObject.NewSslCertificateAuthority(certAuthorityStr)
 	if err != nil {
-		return sslCertificate, err
+		return certificate, err
 	}
 
 	altNames := []valueObject.SslHostname{}
@@ -82,8 +80,8 @@ func NewSslCertificate(
 	}
 
 	return SslCertificate{
-		Id:                   sslCertId,
-		CertificateContent:   sslCertContent,
+		Id:                   certId,
+		CertificateContent:   certContent,
 		CommonName:           commonNamePtr,
 		IsIntermediary:       isIntermediary,
 		CertificateAuthority: certAuthority,
@@ -91,14 +89,4 @@ func NewSslCertificate(
 		IssuedAt:             issuedAt,
 		ExpiresAt:            expiresAt,
 	}, nil
-}
-
-func NewSslCertificatePanic(
-	sslCertificateContent valueObject.SslCertificateContent,
-) SslCertificate {
-	sslCertificate, err := NewSslCertificate(sslCertificateContent)
-	if err != nil {
-		panic(err)
-	}
-	return sslCertificate
 }

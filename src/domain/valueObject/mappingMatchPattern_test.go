@@ -5,7 +5,8 @@ import "testing"
 func TestMappingMatchPattern(t *testing.T) {
 	t.Run("ValidMappingMatchPattern", func(t *testing.T) {
 		validMappingMatchPatterns := []interface{}{
-			"begins-with", "contains", "equals", "ends-with",
+			"begins-with", "begins with", "contains", "equals", "ends-with",
+			"ends with",
 		}
 
 		for _, matchPattern := range validMappingMatchPatterns {

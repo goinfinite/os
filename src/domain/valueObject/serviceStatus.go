@@ -30,21 +30,21 @@ var ServiceStatusesWithAliases = map[string][]string{
 	},
 }
 
-func NewServiceStatus(value interface{}) (serviceStatus ServiceStatus, err error) {
+func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return serviceStatus, errors.New("ServiceStatusMustBeString")
+		return status, errors.New("ServiceStatusMustBeString")
 	}
 
-	stringValue, err = ServiceStatusAdapter(stringValue)
+	stringValue, err = serviceStatusAdapter(stringValue)
 	if err != nil {
-		return serviceStatus, err
+		return status, err
 	}
 
 	return ServiceStatus(stringValue), nil
 }
 
-func ServiceStatusAdapter(value string) (string, error) {
+func serviceStatusAdapter(value string) (string, error) {
 	value = strings.ToLower(value)
 
 	if _, isPrimaryStatus := ServiceStatusesWithAliases[value]; isPrimaryStatus {

@@ -18,9 +18,7 @@ func TestPhpSettingValue(t *testing.T) {
 	})
 
 	t.Run("InvalidPhpSettingValues", func(t *testing.T) {
-		invalidValues := []interface{}{
-			"",
-		}
+		invalidValues := []interface{}{""}
 
 		for _, value := range invalidValues {
 			_, err := NewPhpSettingValue(value)

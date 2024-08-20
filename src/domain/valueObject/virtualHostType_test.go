@@ -4,11 +4,11 @@ import "testing"
 
 func TestVirtualHostType(t *testing.T) {
 	t.Run("ValidVirtualHostType", func(t *testing.T) {
-		validVirtualHostTypes := []string{
+		validVhostTypes := []interface{}{
 			"primary", "top-level", "subdomain", "wildcard", "alias",
 		}
 
-		for _, vhostType := range validVirtualHostTypes {
+		for _, vhostType := range validVhostTypes {
 			_, err := NewVirtualHostType(vhostType)
 			if err != nil {
 				t.Errorf("Expected no error for '%v', got '%s'", vhostType, err.Error())
@@ -17,11 +17,11 @@ func TestVirtualHostType(t *testing.T) {
 	})
 
 	t.Run("InvalidVirtualHostType", func(t *testing.T) {
-		invalidVirtualHostTypes := []string{
-			"secondary", "low-level", "domain", "target",
+		invalidVhostTypes := []interface{}{
+			"extradomain", "low-level", "secondary", "legacy",
 		}
 
-		for _, vhostType := range invalidVirtualHostTypes {
+		for _, vhostType := range invalidVhostTypes {
 			_, err := NewVirtualHostType(vhostType)
 			if err == nil {
 				t.Errorf("Expected error for '%v', got nil", vhostType)

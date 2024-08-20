@@ -16,16 +16,11 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
 	runtimeCmdRepo := NewRuntimeCmdRepo(persistentDbSvc)
 
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-	if err != nil {
-		t.Errorf("PrimaryVirtualHostNotFound")
-	}
-	vhostHostname, _ := valueObject.NewFqdn(primaryVhost.String())
+	primaryVhost, _ := infraHelper.GetPrimaryVirtualHost()
+	phpVersion, _ := valueObject.NewPhpVersion("8.1")
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
-		phpVersion, _ := valueObject.NewPhpVersion("8.1")
-
-		err := runtimeCmdRepo.UpdatePhpVersion(vhostHostname, phpVersion)
+		err := runtimeCmdRepo.UpdatePhpVersion(primaryVhost, phpVersion)
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)
 		}
@@ -35,8 +30,8 @@ func TestRuntimeCmdRepo(t *testing.T) {
 		phpSettingName, _ := valueObject.NewPhpSettingName("display_errors")
 		phpSettingValue, _ := valueObject.NewPhpSettingValue("Off")
 
-		err = runtimeCmdRepo.UpdatePhpSettings(
-			vhostHostname,
+		err := runtimeCmdRepo.UpdatePhpSettings(
+			primaryVhost,
 			[]entity.PhpSetting{
 				entity.NewPhpSetting(phpSettingName, phpSettingValue, nil),
 			},
@@ -49,21 +44,17 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	t.Run("UpdatePhpModules", func(t *testing.T) {
 		phpModuleName, _ := valueObject.NewPhpModuleName("ioncube")
 
-		err = runtimeCmdRepo.UpdatePhpModules(
-			vhostHostname,
-			[]entity.PhpModule{
-				entity.NewPhpModule(phpModuleName, true),
-			},
+		err := runtimeCmdRepo.UpdatePhpModules(
+			primaryVhost,
+			[]entity.PhpModule{entity.NewPhpModule(phpModuleName, true)},
 		)
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)
 		}
 
 		err = runtimeCmdRepo.UpdatePhpModules(
-			vhostHostname,
-			[]entity.PhpModule{
-				entity.NewPhpModule(phpModuleName, false),
-			},
+			primaryVhost,
+			[]entity.PhpModule{entity.NewPhpModule(phpModuleName, false)},
 		)
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)

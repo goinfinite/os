@@ -8,7 +8,7 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-const encodedContentRegexExpression = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
+const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
 
 type EncodedContent string
 
@@ -22,7 +22,7 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 		return encodedContent, errors.New("EmptyEncodedContent")
 	}
 
-	re := regexp.MustCompile(encodedContentRegexExpression)
+	re := regexp.MustCompile(encodedContentRegex)
 	if !re.MatchString(stringValue) {
 		return encodedContent, errors.New("InvalidEncodedContent")
 	}
@@ -30,10 +30,10 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 	return EncodedContent(stringValue), nil
 }
 
-func (vo EncodedContent) GetDecodedContent() (string, error) {
+func (vo EncodedContent) GetDecodedContent() (voStr string, err error) {
 	decodedContent, err := base64.StdEncoding.DecodeString(string(vo))
 	if err != nil {
-		return "", err
+		return voStr, err
 	}
 
 	return string(decodedContent), nil
