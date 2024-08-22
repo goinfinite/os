@@ -11,7 +11,7 @@ import (
 script MappingsIndexLocalState(vhostsHostnames []string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('mappings', () => ({
-            // Primary state
+            // Primary states
             virtualHost: {},
             mapping: {},
             resetPrimaryStates() {
@@ -149,8 +149,8 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				@componentStructural.PageTitle("Mappings", "", "ph-graph")
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
-				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
+				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false, false)
+				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false, false)
 			</div>
 		</div>
 		<div id="mappings-tables" class="card w-full">
@@ -188,9 +188,9 @@ templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings)
 						<div class="flex justify-between items-center">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
-								@componentStructural.RoundButton("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping")
+								@componentStructural.RoundButton("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping", "")
 								if vhostWithMappings.Type != "primary" {
-									@componentStructural.RoundButton("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host")
+									@componentStructural.RoundButton("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host", "")
 								}
 							</div>
 						</div>
@@ -241,8 +241,11 @@ templ VirtualHostRegularForm() {
 				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
 			</div>
 		</template>
-		<template x-if="virtualHost.type != ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false)
+		<template x-if="virtualHost.hostname == ''">
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false, true)
+		</template>
+		<template x-if="virtualHost.hostname != ''">
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false, false)
 		</template>
 	</form>
 }
@@ -306,7 +309,12 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				</div>
 			</details>
 		</section>
-		@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false)
+		<template x-if="mapping.path == '' && mapping.targetValue == ''">
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, true)
+		</template>
+		<template x-if="mapping.path != '' && mapping.targetValue != ''">
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, false)
+		</template>
 	</form>
 }
 

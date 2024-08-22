@@ -1,16 +1,31 @@
 package componentForm
 
+func getComponentClasses(denseMode, isBlocked bool) string {
+	classes := "w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+	if denseMode {
+		classes = "rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+	}
+
+	if isBlocked {
+		return classes + " bg-gray-500 cursor-default"
+	}
+
+	return classes + " bg-speedia-500 hover:bg-speedia-300"
+}
+
 templ SubmitButton(
-	label, icon, onClick string, denseMode bool,
+	label, icon, onClick string, denseMode, isBlocked bool,
 ) {
 	<button
-		type="submit"
-		@click={ onClick }
-		if denseMode {
-			class="bg-speedia-500 hover:bg-speedia-300 rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+		if !isBlocked {
+			type="submit"
 		} else {
-			class="bg-speedia-500 hover:bg-speedia-300 w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+			type="button"
 		}
+		if onClick != "" && !isBlocked {
+			@click={ onClick }
+		}
+		class={ getComponentClasses(denseMode, isBlocked) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
