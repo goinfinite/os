@@ -2449,7 +2449,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/valueObject.AccessTokenType"
+                    "type": "string"
                 }
             }
         },
@@ -2945,17 +2945,6 @@ const docTemplate = `{
                 }
             }
         },
-        "valueObject.AccessTokenType": {
-            "type": "string",
-            "enum": [
-                "sessionToken",
-                "accountApiKey"
-            ],
-            "x-enum-varnames": [
-                "sessionToken",
-                "accountApiKey"
-            ]
-        },
         "valueObject.CurrentResourceUsage": {
             "type": "object",
             "properties": {
@@ -3102,7 +3091,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.5",
+	Version:          "0.0.6",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

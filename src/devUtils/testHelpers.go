@@ -34,3 +34,11 @@ func GetPersistentDbSvc() *internalDbInfra.PersistentDatabaseService {
 	}
 	return persistentDbSvc
 }
+
+func GetTrailDbSvc() *internalDbInfra.TrailDatabaseService {
+	trailDbSvc, err := internalDbInfra.NewTrailDatabaseService()
+	if err != nil {
+		panic("GetTrailDbSvcError: " + err.Error())
+	}
+	return trailDbSvc
+}

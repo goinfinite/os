@@ -19,3 +19,12 @@ func PersistentDatabaseService() *internalDbInfra.PersistentDatabaseService {
 
 	return persistentDbSvc
 }
+
+func TrailDatabaseService() *internalDbInfra.TrailDatabaseService {
+	trailDbSvc, err := internalDbInfra.NewTrailDatabaseService()
+	if err != nil {
+		panic("TrailDatabaseConnectionError:" + err.Error())
+	}
+
+	return trailDbSvc
+}
