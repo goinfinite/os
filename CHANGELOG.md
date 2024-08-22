@@ -1,6 +1,20 @@
 # Changelog
 
 ```log
+0.0.6 - 2024/08/22
+refactor: unify runtime controllers with service layer
+refactor: unify services controllers with service layer
+refactor: unify authentication controllers with service layer
+refactor: unify account controllers with service layer
+refactor: unify cron controllers with service layer
+refactor: unify database controllers with service layer
+refactor: unify o11y controllers with service layer
+refactor: unify ssl controllers with service layer
+refactor: unify vhost controllers with service layer
+refactor: vos to new format and remove all panics
+feat: activity records
+feat: limit login attempts by ip address
+
 0.0.5 - 2024/XX/XX
 refactor: api and cli controllers to use services layer
 feat: add log handler middleware
