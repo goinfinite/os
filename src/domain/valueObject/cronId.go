@@ -12,7 +12,7 @@ type CronId uint64
 func NewCronId(value interface{}) (cronId CronId, err error) {
 	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return cronId, errors.New("CronIdMustBeInt")
+		return cronId, errors.New("CronIdMustBeUint64")
 	}
 
 	return CronId(uintValue), nil

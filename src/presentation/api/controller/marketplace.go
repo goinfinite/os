@@ -73,9 +73,12 @@ func (controller *MarketplaceController) parseDataFields(
 			return dataFields, errors.New(errPrefix + err.Error())
 		}
 
-		dataField := valueObject.NewMarketplaceInstallableItemDataFieldPanic(
+		dataField, err := valueObject.NewMarketplaceInstallableItemDataField(
 			fieldName, fieldValue,
 		)
+		if err != nil {
+			return dataFields, errors.New(errPrefix + err.Error())
+		}
 
 		dataFields = append(dataFields, dataField)
 	}

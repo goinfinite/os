@@ -191,11 +191,13 @@ func (repo *ServicesQueryRepo) getPidMetrics(
 	for _, process := range pidProcesses {
 		pidCpuPercent, err := process.CPUPercent()
 		if err != nil {
+			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
 			continue
 		}
 
 		pidMemPercent, err := process.MemoryPercent()
 		if err != nil {
+			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
 			continue
 		}
 
@@ -238,7 +240,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 	// os-api                           RUNNING   pid 121, uptime 0:00:35
 	supervisorStatusLines := strings.Split(supervisorStatus, "\n")
 	if len(supervisorStatusLines) == 0 {
-		return servicesWithMetrics, errors.New("SupervisorStatusEmpty")
+		return servicesWithMetrics, errors.New("EmptySupervisorStatus")
 	}
 
 	for _, supervisorStatusLine := range supervisorStatusLines {
@@ -254,6 +256,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 		rawServiceName := supervisorStatusLineParts[0]
 		serviceName, err := valueObject.NewServiceName(rawServiceName)
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("name", rawServiceName))
 			continue
 		}
 
@@ -265,6 +268,7 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 		rawServiceStatus := supervisorStatusLineParts[1]
 		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("status", rawServiceStatus))
 			continue
 		}
 
@@ -278,11 +282,13 @@ func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetr
 		rawServicePid = strings.Trim(rawServicePid, ",")
 		servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("pid", rawServicePid))
 			continue
 		}
 
 		serviceMetrics, err := repo.getPidMetrics(int32(servicePidInt))
 		if err != nil {
+			slog.Debug(err.Error(), slog.String("pid", rawServicePid))
 			continue
 		}
 

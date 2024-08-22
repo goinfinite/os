@@ -320,7 +320,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 
 	mappingModels := []dbModel.Mapping{}
 	for _, mappingId := range mappingsId {
-		mappingModel := dbModel.Mapping{ID: uint(mappingId.Get())}
+		mappingModel := dbModel.Mapping{ID: uint(mappingId.Uint64())}
 		mappingModels = append(mappingModels, mappingModel)
 	}
 
@@ -691,7 +691,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	installedItemModel := dbModel.MarketplaceInstalledItem{
-		ID: uint(deleteDto.InstalledId.Get()),
+		ID: uint(deleteDto.InstalledId.Uint16()),
 	}
 	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
 	if err != nil {

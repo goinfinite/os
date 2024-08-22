@@ -2,7 +2,7 @@ package mappingInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 	"text/template"
 
@@ -432,7 +432,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 
 	err = repo.persistentDbSvc.Handler.Delete(
 		dbModel.Mapping{},
-		mappingId.Get(),
+		mappingId.Uint64(),
 	).Error
 	if err != nil {
 		return err
@@ -504,7 +504,7 @@ func (repo *MappingCmdRepo) RecreateByServiceName(
 
 		_, err = repo.Create(createDto)
 		if err != nil {
-			log.Printf("%s: %d", err.Error(), mapping.Id.Get())
+			slog.Error(err.Error(), slog.Uint64("mappingId", uint64(mapping.Id.Uint64())))
 		}
 	}
 

@@ -427,7 +427,7 @@ definitions:
       tokenStr:
         type: string
       type:
-        $ref: '#/definitions/valueObject.AccessTokenType'
+        type: string
     type: object
   entity.Account:
     properties:
@@ -751,14 +751,6 @@ definitions:
       type:
         type: string
     type: object
-  valueObject.AccessTokenType:
-    enum:
-    - sessionToken
-    - accountApiKey
-    type: string
-    x-enum-varnames:
-    - sessionToken
-    - accountApiKey
   valueObject.CurrentResourceUsage:
     properties:
       cpuUsagePercent:
@@ -857,7 +849,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: OsApi
-  version: 0.0.4
+  version: 0.0.6
 paths:
   /v1/account/:
     get:
@@ -1600,7 +1592,7 @@ paths:
       description: Update service details.
       parameters:
       - description: Only name is required.<br />Solo services can only change status.<br
-          />status may be 'running', 'stopped' or 'uninstalled'.
+          />status may be 'running', 'stopped', 'uninstalled' or 'restarting'.
         in: body
         name: updateServiceDto
         required: true
@@ -1871,7 +1863,7 @@ paths:
       parameters:
       - description: Only hostname is required.<br />type may be 'top-level', 'subdomain',
           'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
-          is 'alias', parentHostname it will be required.
+          is 'alias', 'parentHostname' will be required.
         in: body
         name: createVirtualHostDto
         required: true

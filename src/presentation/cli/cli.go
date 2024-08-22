@@ -36,8 +36,9 @@ func CliInit() {
 
 	transientDbSvc := cliInit.TransientDatabaseService()
 	persistentDbSvc := cliInit.PersistentDatabaseService()
+	trailDbSvc := cliInit.TrailDatabaseService()
 
-	router := NewRouter(transientDbSvc, persistentDbSvc)
+	router := NewRouter(transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()
 
 	RunRootCmd()

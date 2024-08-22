@@ -1210,7 +1210,7 @@ const docTemplate = `{
                 "summary": "UpdateService",
                 "parameters": [
                     {
-                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped' or 'uninstalled'.",
+                        "description": "Only name is required.\u003cbr /\u003eSolo services can only change status.\u003cbr /\u003estatus may be 'running', 'stopped', 'uninstalled' or 'restarting'.",
                         "name": "updateServiceDto",
                         "in": "body",
                         "required": true,
@@ -1634,7 +1634,7 @@ const docTemplate = `{
                 "summary": "CreateVirtualHost",
                 "parameters": [
                     {
-                        "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', parentHostname it will be required.",
+                        "description": "Only hostname is required.\u003cbr /\u003etype may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', 'parentHostname' will be required.",
                         "name": "createVirtualHostDto",
                         "in": "body",
                         "required": true,
@@ -2449,7 +2449,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/valueObject.AccessTokenType"
+                    "type": "string"
                 }
             }
         },
@@ -2945,17 +2945,6 @@ const docTemplate = `{
                 }
             }
         },
-        "valueObject.AccessTokenType": {
-            "type": "string",
-            "enum": [
-                "sessionToken",
-                "accountApiKey"
-            ],
-            "x-enum-varnames": [
-                "sessionToken",
-                "accountApiKey"
-            ]
-        },
         "valueObject.CurrentResourceUsage": {
             "type": "object",
             "properties": {
@@ -3102,7 +3091,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.4",
+	Version:          "0.0.6",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

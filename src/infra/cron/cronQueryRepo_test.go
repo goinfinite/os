@@ -1,8 +1,6 @@
 package cronInfra
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestCronQueryRepo(t *testing.T) {
 	t.Run("GetCrons", func(t *testing.T) {

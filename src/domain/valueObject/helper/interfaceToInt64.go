@@ -7,26 +7,19 @@ import (
 )
 
 func InterfaceToInt64(input interface{}) (output int64, err error) {
-	var defaultErr error = errors.New("InvalidInput")
 	switch v := input.(type) {
 	case string:
-		output, err = strconv.ParseInt(v, 10, 64)
+		return strconv.ParseInt(v, 10, 64)
 	case int, int8, int16, int32, int64:
 		intValue := reflect.ValueOf(v).Int()
-		output = int64(intValue)
+		return int64(intValue), nil
 	case uint, uint8, uint16, uint32, uint64:
 		uintValue := reflect.ValueOf(v).Uint()
-		output = int64(uintValue)
+		return int64(uintValue), nil
 	case float32, float64:
 		floatValue := reflect.ValueOf(v).Float()
-		output = int64(floatValue)
+		return int64(floatValue), nil
 	default:
-		err = defaultErr
+		return 0, errors.New("CannotConvertToInt64")
 	}
-
-	if err != nil {
-		return 0, defaultErr
-	}
-
-	return output, nil
 }

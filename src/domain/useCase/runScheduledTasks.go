@@ -27,7 +27,7 @@ func RunScheduledTasks(
 	for _, pendingTask := range pendingTasks {
 		if pendingTask.RunAt != nil {
 			nowUnixTime := valueObject.NewUnixTimeNow()
-			if nowUnixTime.Read() < pendingTask.RunAt.Read() {
+			if nowUnixTime.Int64() < pendingTask.RunAt.Int64() {
 				continue
 			}
 		}

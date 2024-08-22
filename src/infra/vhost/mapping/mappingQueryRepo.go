@@ -2,7 +2,7 @@ package mappingInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/entity"
@@ -30,7 +30,7 @@ func (repo *MappingQueryRepo) ReadById(
 	model := dbModel.Mapping{}
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
-		Where("id = ?", id.Get()).
+		Where("id = ?", id.Uint64()).
 		First(&model).Error
 	if err != nil {
 		return entity, errors.New("ReadDatabaseEntryError")
@@ -61,7 +61,7 @@ func (repo *MappingQueryRepo) ReadByHostname(
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			log.Printf("ModelToEntityError: %s", err.Error())
+			slog.Error("ModelToEntityError", slog.Any("err", err))
 			continue
 		}
 
@@ -86,7 +86,7 @@ func (repo *MappingQueryRepo) ReadByServiceName(
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			log.Printf("ModelToEntityError: %s", err.Error())
+			slog.Error("ModelToEntityError", slog.Any("err", err))
 			continue
 		}
 
@@ -108,7 +108,11 @@ func (repo *MappingQueryRepo) ReadWithMappings() (
 	for _, vhost := range vhosts {
 		mappings, err := repo.ReadByHostname(vhost.Hostname)
 		if err != nil {
-			log.Printf("[%s] ReadMappingsError: %s", vhost.Hostname, err.Error())
+			slog.Error(
+				"ReadMappingsError",
+				slog.String("vhostHostname", vhost.Hostname.String()),
+				slog.Any("err", err),
+			)
 			continue
 		}
 

@@ -34,9 +34,9 @@ func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
 	}
 	svcName := ServiceNameAdapter(stringValue)
 
-	nameRegex := regexp.MustCompile(ServiceNameRegex)
-	if !nameRegex.MatchString(svcName) {
-		return "", errors.New("InvalidServiceName")
+	re := regexp.MustCompile(ServiceNameRegex)
+	if !re.MatchString(svcName) {
+		return serviceName, errors.New("InvalidServiceName")
 	}
 
 	return ServiceName(svcName), nil

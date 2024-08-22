@@ -1,6 +1,7 @@
 package cliController
 
 import (
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -10,9 +11,11 @@ type AuthController struct {
 	authService *service.AuthService
 }
 
-func NewAuthController() *AuthController {
+func NewAuthController(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AuthController {
 	return &AuthController{
-		authService: service.NewAuthService(),
+		authService: service.NewAuthService(trailDbSvc),
 	}
 }
 

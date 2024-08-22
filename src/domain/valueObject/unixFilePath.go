@@ -20,8 +20,6 @@ func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 		return filePath, errors.New("UnixFilePathValueMustBeString")
 	}
 
-	stringValue = strings.TrimSpace(stringValue)
-
 	unixFilePathRegex := regexp.MustCompile(unixFilePathRegexExpression)
 	if !unixFilePathRegex.MatchString(stringValue) {
 		return filePath, errors.New("InvalidUnixFilePath")
