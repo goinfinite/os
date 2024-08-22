@@ -18,8 +18,8 @@ func NewNetworkPort(value interface{}) (networkPort NetworkPort, err error) {
 	return NetworkPort(uintValue), nil
 }
 
-func (vo NetworkPort) Uint() uint {
-	return uint(vo)
+func (vo NetworkPort) Uint16() uint16 {
+	return uint16(vo)
 }
 
 func (vo NetworkPort) String() string {

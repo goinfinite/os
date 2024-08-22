@@ -427,7 +427,7 @@ definitions:
       tokenStr:
         type: string
       type:
-        $ref: '#/definitions/valueObject.AccessTokenType'
+        type: string
     type: object
   entity.Account:
     properties:
@@ -751,14 +751,6 @@ definitions:
       type:
         type: string
     type: object
-  valueObject.AccessTokenType:
-    enum:
-    - sessionToken
-    - accountApiKey
-    type: string
-    x-enum-varnames:
-    - sessionToken
-    - accountApiKey
   valueObject.CurrentResourceUsage:
     properties:
       cpuUsagePercent:
@@ -857,7 +849,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://speedia.net/tos/
   title: OsApi
-  version: 0.0.5
+  version: 0.0.6
 paths:
   /v1/account/:
     get:

@@ -13,15 +13,18 @@ import (
 type Router struct {
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRouter(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *Router {
 	return &Router{
 		transientDbSvc:  transientDbSvc,
 		persistentDbSvc: persistentDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
 }
 
@@ -55,7 +58,7 @@ func (router Router) authenticationRoutes() {
 	}
 	rootCmd.AddCommand(authCmd)
 
-	authenticationController := cliController.AuthController{}
+	authenticationController := cliController.NewAuthController(router.trailDbSvc)
 	authCmd.AddCommand(authenticationController.Login())
 }
 
@@ -144,7 +147,9 @@ func (router *Router) scheduledTaskRoutes() {
 	}
 	rootCmd.AddCommand(scheduledTaskCmd)
 
-	scheduledTaskController := cliController.NewScheduledTaskController(router.persistentDbSvc)
+	scheduledTaskController := cliController.NewScheduledTaskController(
+		router.persistentDbSvc,
+	)
 	scheduledTaskCmd.AddCommand(scheduledTaskController.Read())
 	scheduledTaskCmd.AddCommand(scheduledTaskController.Update())
 }
@@ -154,7 +159,9 @@ func (router Router) serveRoutes() {
 		Use:   "serve",
 		Short: "Start Speedia OS HTTPS server (port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
-			presentation.HttpServerInit(router.persistentDbSvc, router.transientDbSvc)
+			presentation.HttpServerInit(
+				router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
+			)
 		},
 	}
 
