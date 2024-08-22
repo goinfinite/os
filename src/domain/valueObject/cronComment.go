@@ -25,6 +25,6 @@ func NewCronComment(value interface{}) (cronComment CronComment, err error) {
 	return CronComment(stringValue), nil
 }
 
-func (comment CronComment) String() string {
-	return string(comment)
+func (vo CronComment) String() string {
+	return string(vo)
 }

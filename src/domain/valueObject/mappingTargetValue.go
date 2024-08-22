@@ -7,8 +7,7 @@ import (
 type MappingTargetValue string
 
 func NewMappingTargetValue(
-	value interface{},
-	targetType MappingTargetType,
+	value interface{}, targetType MappingTargetType,
 ) (mappingTargetValue MappingTargetValue, err error) {
 	switch targetType.String() {
 	case "url":

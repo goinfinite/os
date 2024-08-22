@@ -1,19 +1,13 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewMappingTargetValue(t *testing.T) {
 	t.Run("ValidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		validMappingTargetUrlValues := []string{
-			"localhost",
-			"localhost:8080",
-			"speedia.net",
-			"http://speedia.net/",
-			"http://www.speedia.net",
-			"https://speedia.net/",
+		validMappingTargetUrlValues := []interface{}{
+			"localhost", "localhost:8080", "speedia.net", "http://speedia.net/",
+			"http://www.speedia.net", "https://speedia.net/",
 			"https://www.speedia.net/",
 			"http://localhost:8080/v1/ticket/253/attachment/b8680d5cc332672c649f4ff8d9e3b77f.svg",
 			"https://www.cnn.com/politics/live-news/house-speaker-vote-10-20-23/index.html",
@@ -21,47 +15,36 @@ func TestNewMappingTargetValue(t *testing.T) {
 			"https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/1200px-WordPress_blue_logo.svg.png",
 		}
 
-		for _, mtv := range validMappingTargetUrlValues {
-			_, err := NewMappingTargetValue(mtv, urlTargetType)
+		for _, urlValue := range validMappingTargetUrlValues {
+			_, err := NewMappingTargetValue(urlValue, urlTargetType)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
+				t.Errorf("Expected no error for '%v', got '%s'", urlValue, err.Error())
 			}
 		}
 	})
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		invalidMappingTargetUrlValues := []string{
-			"",
-			" ",
-			"http://",
-			"https://",
-			"http://notãvalidurl.com/",
-			"https://invalidmaçalink.com.br/",
-			":8080:/",
-			"www.GoOgle.com/",
-			"/home/downloads/",
-			"DROP TABLE users;",
-			"SELECT * FROM users;",
-			"<script>alert('XSS')</script>",
-			"http://<script>alert('XSS')</script>",
-			"https://<script>alert('XSS')</script>",
-			"rm -rf /",
-			"(){|:& };:",
+		invalidMappingTargetUrlValues := []interface{}{
+			"", " ", "http://", "https://", "http://notãvalidurl.com/",
+			"https://invalidmaçalink.com.br/", ":8080:/", "www.GoOgle.com/",
+			"/home/downloads/", "DROP TABLE users;", "SELECT * FROM users;",
+			"<script>alert('XSS')</script>", "http://<script>alert('XSS')</script>",
+			"https://<script>alert('XSS')</script>", "rm -rf /", "(){|:& };:",
 			"INSERT INTO users (name, email) VALUES ('admin', 'admin@example.com');",
 		}
 
-		for _, mtv := range invalidMappingTargetUrlValues {
-			_, err := NewMappingTargetValue(mtv, urlTargetType)
+		for _, urlValue := range invalidMappingTargetUrlValues {
+			_, err := NewMappingTargetValue(urlValue, urlTargetType)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mtv)
+				t.Errorf("Expected error for '%v', got nil", urlValue)
 			}
 		}
 	})
 
 	t.Run("ValidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		validMappingTargetServiceNameValues := []string{
+		validMappingTargetServiceNameValues := []interface{}{
 			"openlitespeed",
 			"litespeed",
 			"nginx",
@@ -71,27 +54,27 @@ func TestNewMappingTargetValue(t *testing.T) {
 			"redis-server",
 		}
 
-		for _, mtv := range validMappingTargetServiceNameValues {
-			_, err := NewMappingTargetValue(mtv, svcNameTargetType)
+		for _, urlValue := range validMappingTargetServiceNameValues {
+			_, err := NewMappingTargetValue(urlValue, svcNameTargetType)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
+				t.Errorf("Expected no error for '%v', got '%s'", urlValue, err.Error())
 			}
 		}
 	})
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		invalidMappingTargetServiceNameValues := []string{
+		invalidMappingTargetServiceNameValues := []interface{}{
 			"nginx@",
 			"my<>sql",
 			"php#fpm",
 			"node(js)",
 		}
 
-		for _, mtv := range invalidMappingTargetServiceNameValues {
-			_, err := NewMappingTargetValue(mtv, svcNameTargetType)
+		for _, urlValue := range invalidMappingTargetServiceNameValues {
+			_, err := NewMappingTargetValue(urlValue, svcNameTargetType)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mtv)
+				t.Errorf("Expected error for '%v', got nil", urlValue)
 			}
 		}
 	})
@@ -111,10 +94,10 @@ func TestNewMappingTargetValue(t *testing.T) {
 			500,
 		}
 
-		for _, mtv := range validMappingTargetResponseCodeValues {
-			_, err := NewMappingTargetValue(mtv, responseCodeTargetType)
+		for _, urlValue := range validMappingTargetResponseCodeValues {
+			_, err := NewMappingTargetValue(urlValue, responseCodeTargetType)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
+				t.Errorf("Expected no error for '%v', got '%s'", urlValue, err.Error())
 			}
 		}
 	})
@@ -132,40 +115,40 @@ func TestNewMappingTargetValue(t *testing.T) {
 			"UNION SELECT * FROM USERS",
 		}
 
-		for _, mtv := range invalidMappingTargetResponseCodeValues {
-			_, err := NewMappingTargetValue(mtv, responseCodeTargetType)
+		for _, urlValue := range invalidMappingTargetResponseCodeValues {
+			_, err := NewMappingTargetValue(urlValue, responseCodeTargetType)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mtv)
+				t.Errorf("Expected error for '%v', got nil", urlValue)
 			}
 		}
 	})
 
 	t.Run("ValidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		validMappingTargetInlineHtmlContentValues := []string{
+		validMappingTargetInlineHtmlContentValues := []interface{}{
 			"Some nice inline html content",
 			"<h1>Nice title here</h1>",
 			"<p>With some regular text here too...<h2>",
 		}
 
-		for _, mtv := range validMappingTargetInlineHtmlContentValues {
-			_, err := NewMappingTargetValue(mtv, inlineHtmlContentTargetType)
+		for _, urlValue := range validMappingTargetInlineHtmlContentValues {
+			_, err := NewMappingTargetValue(urlValue, inlineHtmlContentTargetType)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %s", mtv, err.Error())
+				t.Errorf("Expected no error for '%v', got '%s'", urlValue, err.Error())
 			}
 		}
 	})
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		invalidMappingTargetInlineHtmlContentValues := []string{
+		invalidMappingTargetInlineHtmlContentValues := []interface{}{
 			"",
 		}
 
-		for _, mtv := range invalidMappingTargetInlineHtmlContentValues {
-			_, err := NewMappingTargetValue(mtv, inlineHtmlContentTargetType)
+		for _, urlValue := range invalidMappingTargetInlineHtmlContentValues {
+			_, err := NewMappingTargetValue(urlValue, inlineHtmlContentTargetType)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", mtv)
+				t.Errorf("Expected error for '%v', got nil", urlValue)
 			}
 		}
 	})

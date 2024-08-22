@@ -1,8 +1,6 @@
 package valueObject
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestMappingMatchPattern(t *testing.T) {
 	t.Run("ValidMappingMatchPattern", func(t *testing.T) {

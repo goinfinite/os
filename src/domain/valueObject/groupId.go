@@ -7,39 +7,21 @@ import (
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
-type GroupId int64
+type GroupId uint64
 
-func NewGroupId(value interface{}) (GroupId, error) {
-	groupIdInt, err := voHelper.InterfaceToUint64(value)
+func NewGroupId(value interface{}) (groupId GroupId, err error) {
+	uintValue, err := voHelper.InterfaceToUint64(value)
 	if err != nil {
-		return 0, errors.New("InvalidGroupId")
+		return groupId, errors.New("GroupIdMustBeUint64")
 	}
 
-	groupId := GroupId(groupIdInt)
-	if !groupId.isValid() {
-		return 0, errors.New("InvalidGroupId")
-	}
-
-	return groupId, nil
+	return GroupId(uintValue), nil
 }
 
-func NewGroupIdPanic(value interface{}) GroupId {
-	groupId, err := NewGroupId(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return groupId
+func (vo GroupId) Uint64() uint64 {
+	return uint64(vo)
 }
 
-func (gid GroupId) isValid() bool {
-	return gid >= 0 && gid <= 999999999999
-}
-
-func (gid GroupId) Get() int64 {
-	return int64(gid)
-}
-
-func (gid GroupId) String() string {
-	return strconv.FormatInt(int64(gid), 10)
+func (vo GroupId) String() string {
+	return strconv.FormatUint(uint64(vo), 10)
 }

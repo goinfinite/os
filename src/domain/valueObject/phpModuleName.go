@@ -9,40 +9,11 @@ import (
 )
 
 var ValidPhpModuleNames = []string{
-	"curl",
-	"mysqli",
-	"opcache",
-	"apcu",
-	"igbinary",
-	"imagick",
-	"imap",
-	"intl",
-	"ioncube",
-	"ldap",
-	"mailparse",
-	"memcached",
-	"mcrypt",
-	"mongodb",
-	"msgpack",
-	"parallel",
-	"pdo_mysql",
-	"pdo_sqlite",
-	"pear",
-	"pgsql",
-	"phalcon",
-	"pspell",
-	"redis",
-	"snmp",
-	"solr",
-	"sqlite3",
-	"sqlsrv",
-	"ssh2",
-	"swoole",
-	"sybase",
-	"tidy",
-	"timezonedb",
-	"yaml",
-	"xdebug",
+	"curl", "mysqli", "opcache", "apcu", "igbinary", "imagick", "imap", "intl",
+	"ioncube", "ldap", "mailparse", "memcached", "mcrypt", "mongodb", "msgpack",
+	"parallel", "pdo_mysql", "pdo_sqlite", "pear", "pgsql", "phalcon", "pspell",
+	"redis", "snmp", "solr", "sqlite3", "sqlsrv", "ssh2", "swoole", "sybase",
+	"tidy", "timezonedb", "yaml", "xdebug",
 }
 
 type PhpModuleName string
@@ -57,6 +28,7 @@ func NewPhpModuleName(value interface{}) (moduleName PhpModuleName, err error) {
 	if !slices.Contains(ValidPhpModuleNames, stringValue) {
 		return moduleName, errors.New("InvalidPhpModuleName")
 	}
+
 	return PhpModuleName(stringValue), nil
 }
 

@@ -19,13 +19,12 @@ func NewServiceNature(value interface{}) (serviceNature ServiceNature, err error
 	if err != nil {
 		return serviceNature, errors.New("ServiceNatureValueMustBeString")
 	}
-
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidServiceNatures, stringValue) {
-		return "", errors.New("InvalidServiceNature")
+		return serviceNature, errors.New("InvalidServiceNature")
 	}
+
 	return ServiceNature(stringValue), nil
 }
 

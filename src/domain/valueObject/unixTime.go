@@ -10,13 +10,13 @@ import (
 
 type UnixTime int64
 
-func NewUnixTime(value interface{}) (UnixTime, error) {
-	unixTime, err := voHelper.InterfaceToInt64(value)
+func NewUnixTime(value interface{}) (unixTime UnixTime, err error) {
+	intValue, err := voHelper.InterfaceToInt64(value)
 	if err != nil {
-		return 0, errors.New("InvalidUnixTime")
+		return unixTime, errors.New("UnixTimeMustBeInt64")
 	}
 
-	return UnixTime(unixTime), nil
+	return UnixTime(intValue), nil
 }
 
 func NewUnixTimeNow() UnixTime {
@@ -35,7 +35,7 @@ func NewUnixTimeWithGoTime(goTime time.Time) UnixTime {
 	return UnixTime(goTime.Unix())
 }
 
-func (vo UnixTime) Read() int64 {
+func (vo UnixTime) Int64() int64 {
 	return time.Unix(int64(vo), 0).UTC().Unix()
 }
 

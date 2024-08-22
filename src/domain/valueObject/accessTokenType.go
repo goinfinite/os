@@ -1,39 +1,33 @@
 package valueObject
 
-import "errors"
+import (
+	"errors"
+	"slices"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+)
 
 type AccessTokenType string
 
-const (
-	sessionToken  AccessTokenType = "sessionToken"
-	accountApiKey AccessTokenType = "accountApiKey"
-)
-
-func NewAccessTokenType(value string) (AccessTokenType, error) {
-	att := AccessTokenType(value)
-	if !att.isValid() {
-		return "", errors.New("InvalidAccessTokenType")
-	}
-	return att, nil
+var validAccessTokenType = []string{
+	"sessionToken", "accountApiKey",
 }
 
-func NewAccessTokenTypePanic(value string) AccessTokenType {
-	att := AccessTokenType(value)
-	if !att.isValid() {
-		panic("InvalidAccessTokenType")
+func NewAccessTokenType(value interface{}) (
+	accessTokenType AccessTokenType, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
+	if err != nil {
+		return accessTokenType, errors.New("AccessTokenTypeMustBeString")
 	}
-	return att
+
+	if !slices.Contains(validAccessTokenType, stringValue) {
+		return accessTokenType, errors.New("InvalidAccessTokenType")
+	}
+
+	return AccessTokenType(stringValue), nil
 }
 
-func (att AccessTokenType) isValid() bool {
-	switch att {
-	case sessionToken, accountApiKey:
-		return true
-	default:
-		return false
-	}
-}
-
-func (att AccessTokenType) String() string {
-	return string(att)
+func (vo AccessTokenType) String() string {
+	return string(vo)
 }

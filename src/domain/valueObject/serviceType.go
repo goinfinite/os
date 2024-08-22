@@ -20,12 +20,10 @@ func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
 	if err != nil {
 		return serviceType, errors.New("ServiceTypeValueMustBeString")
 	}
-
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidServiceTypes, stringValue) {
-		return "", errors.New("InvalidServiceType")
+		return serviceType, errors.New("InvalidServiceType")
 	}
 
 	return ServiceType(stringValue), nil

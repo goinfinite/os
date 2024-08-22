@@ -19,7 +19,7 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 	}
 
 	if len(stringValue) == 0 {
-		return encodedContent, errors.New("EncodedContentIsEmpty")
+		return encodedContent, errors.New("EmptyEncodedContent")
 	}
 
 	re := regexp.MustCompile(encodedContentRegex)
@@ -28,14 +28,6 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 	}
 
 	return EncodedContent(stringValue), nil
-}
-
-func NewEncodedContentPanic(value string) EncodedContent {
-	encodedContent, err := NewEncodedContent(value)
-	if err != nil {
-		panic(err)
-	}
-	return encodedContent
 }
 
 func (vo EncodedContent) GetDecodedContent() (voStr string, err error) {

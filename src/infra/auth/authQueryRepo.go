@@ -62,24 +62,25 @@ func (repo AuthQueryRepo) getSessionTokenClaims(
 
 func (repo AuthQueryRepo) getTokenDetailsFromSession(
 	sessionTokenClaims jwt.MapClaims,
-) (dto.AccessTokenDetails, error) {
+) (accessTokenDetails dto.AccessTokenDetails, err error) {
 	issuedIp, err := valueObject.NewIpAddress(
 		sessionTokenClaims["originalIp"].(string),
 	)
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("OriginalIpUnreadable")
+		return accessTokenDetails, errors.New("OriginalIpUnreadable")
 	}
 
 	accountId, err := valueObject.NewAccountId(sessionTokenClaims["accountId"])
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
+		return accessTokenDetails, errors.New("AccountIdUnreadable")
 	}
 
-	return dto.NewAccessTokenDetails(
-		valueObject.NewAccessTokenTypePanic("sessionToken"),
-		accountId,
-		&issuedIp,
-	), nil
+	tokenType, err := valueObject.NewAccessTokenType("sessionToken")
+	if err != nil {
+		return accessTokenDetails, err
+	}
+
+	return dto.NewAccessTokenDetails(tokenType, accountId, &issuedIp), nil
 }
 
 func (repo AuthQueryRepo) decryptApiKey(
@@ -149,21 +150,21 @@ func (repo AuthQueryRepo) getKeyHash(
 
 func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 	token valueObject.AccessTokenStr,
-) (dto.AccessTokenDetails, error) {
+) (accessTokenDetails dto.AccessTokenDetails, err error) {
 	decryptedApiKey, err := repo.decryptApiKey(token)
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("ApiKeyDecryptionError")
+		return accessTokenDetails, errors.New("ApiKeyDecryptionError")
 	}
 
 	// keyFormat: accountId:UUIDv4
 	keyParts := strings.Split(decryptedApiKey, ":")
 	if len(keyParts) != 2 {
-		return dto.AccessTokenDetails{}, errors.New("ApiKeyFormatError")
+		return accessTokenDetails, errors.New("ApiKeyFormatError")
 	}
 
 	accountId, err := valueObject.NewAccountId(keyParts[0])
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("AccountIdUnreadable")
+		return accessTokenDetails, errors.New("AccountIdUnreadable")
 	}
 	uuid := keyParts[1]
 
@@ -173,18 +174,19 @@ func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 
 	storedUuidHash, err := repo.getKeyHash(accountId)
 	if err != nil {
-		return dto.AccessTokenDetails{}, errors.New("AccountKeyHashUnreadable")
+		return accessTokenDetails, errors.New("AccountKeyHashUnreadable")
 	}
 
 	if uuidHashStr != storedUuidHash {
-		return dto.AccessTokenDetails{}, errors.New("AccountKeyHashMismatch")
+		return accessTokenDetails, errors.New("AccountKeyHashMismatch")
 	}
 
-	return dto.NewAccessTokenDetails(
-		valueObject.NewAccessTokenTypePanic("accountApiKey"),
-		accountId,
-		nil,
-	), nil
+	tokenType, err := valueObject.NewAccessTokenType("sessionToken")
+	if err != nil {
+		return accessTokenDetails, err
+	}
+
+	return dto.NewAccessTokenDetails(tokenType, accountId, nil), nil
 }
 
 func (repo AuthQueryRepo) ReadAccessTokenDetails(

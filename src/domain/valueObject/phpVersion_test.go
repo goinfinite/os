@@ -4,29 +4,29 @@ import "testing"
 
 func TestPhpVersion(t *testing.T) {
 	t.Run("ValidPhpVersions", func(t *testing.T) {
-		validPhpVersions := []string{
-			"1.0",
-			"20",
+		validPhpVersions := []interface{}{
+			"1.0", "20",
 		}
+
 		for _, phpVersion := range validPhpVersions {
 			_, err := NewPhpVersion(phpVersion)
 			if err != nil {
-				t.Errorf("Expected no error for %s, got %v", phpVersion, err)
+				t.Errorf(
+					"Expected no error for '%v', got '%s'", phpVersion, err.Error(),
+				)
 			}
 		}
 	})
 
 	t.Run("InvalidPhpVersions", func(t *testing.T) {
-		invalidPhpVersions := []string{
-			"1.0.0",
-			"1.0.",
-			"1..",
-			"100",
+		invalidPhpVersions := []interface{}{
+			"1.0.0", "1.0.", "1..", "100",
 		}
+
 		for _, phpVersion := range invalidPhpVersions {
 			_, err := NewPhpVersion(phpVersion)
 			if err == nil {
-				t.Errorf("Expected error for %s, got nil", phpVersion)
+				t.Errorf("Expected error for '%v', got nil", phpVersion)
 			}
 		}
 	})

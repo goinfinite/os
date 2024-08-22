@@ -17,8 +17,6 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 	if err != nil {
 		return portBinding, errors.New("PortBindingValueMustBeString")
 	}
-
-	stringValue = strings.TrimSpace(stringValue)
 	stringValue = strings.ToLower(stringValue)
 
 	if len(stringValue) == 0 {
@@ -44,17 +42,19 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 		return portBinding, err
 	}
 
-	return PortBinding{Port: port, Protocol: protocol}, nil
+	return PortBinding{
+		Port: port, Protocol: protocol,
+	}, nil
 }
 
-func (portBinding PortBinding) GetPort() NetworkPort {
-	return portBinding.Port
+func (vo PortBinding) GetPort() NetworkPort {
+	return vo.Port
 }
 
-func (portBinding PortBinding) GetProtocol() NetworkProtocol {
-	return portBinding.Protocol
+func (vo PortBinding) GetProtocol() NetworkProtocol {
+	return vo.Protocol
 }
 
-func (portBinding PortBinding) String() string {
-	return portBinding.Port.String() + "/" + portBinding.Protocol.String()
+func (vo PortBinding) String() string {
+	return vo.Port.String() + "/" + vo.Protocol.String()
 }

@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.0.5"
+        "version": "0.0.6"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -2443,7 +2443,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/valueObject.AccessTokenType"
+                    "type": "string"
                 }
             }
         },
@@ -2938,17 +2938,6 @@
                     "type": "string"
                 }
             }
-        },
-        "valueObject.AccessTokenType": {
-            "type": "string",
-            "enum": [
-                "sessionToken",
-                "accountApiKey"
-            ],
-            "x-enum-varnames": [
-                "sessionToken",
-                "accountApiKey"
-            ]
         },
         "valueObject.CurrentResourceUsage": {
             "type": "object",

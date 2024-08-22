@@ -3,35 +3,30 @@ package valueObject
 import (
 	"errors"
 	"regexp"
+
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
 
 const dataFieldLabelRegex string = `^\w[\w- ]{1,127}\w$`
 
 type DataFieldLabel string
 
-func NewDataFieldLabel(value string) (DataFieldLabel, error) {
-	dfl := DataFieldLabel(value)
-	if !dfl.isValid() {
-		return "", errors.New("InvalidDataFieldLabel")
-	}
-
-	return dfl, nil
-}
-
-func NewDataFieldLabelPanic(value string) DataFieldLabel {
-	dfl, err := NewDataFieldLabel(value)
+func NewDataFieldLabel(value interface{}) (
+	dataFieldLabel DataFieldLabel, err error,
+) {
+	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		panic(err)
+		return dataFieldLabel, errors.New("DataFieldLabelMustBeString")
 	}
 
-	return dfl
-}
-
-func (dfl DataFieldLabel) isValid() bool {
 	re := regexp.MustCompile(dataFieldLabelRegex)
-	return re.MatchString(string(dfl))
+	if !re.MatchString(stringValue) {
+		return dataFieldLabel, errors.New("InvalidDataFieldLabel")
+	}
+
+	return DataFieldLabel(stringValue), nil
 }
 
-func (dfl DataFieldLabel) String() string {
-	return string(dfl)
+func (vo DataFieldLabel) String() string {
+	return string(vo)
 }
