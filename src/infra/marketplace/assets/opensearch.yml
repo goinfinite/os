@@ -15,10 +15,9 @@ dataFields:
 installCmdSteps:
   - curl -skL -o %installTempDir%opensearch.tar.gz https://artifacts.opensearch.org/releases/bundle/opensearch/2.15.0/opensearch-2.15.0-linux-x64.tar.gz
   - tar -xvf %installTempDir%opensearch.tar.gz -C %installDirectory% --strip-components=1
-  - useradd -m -d /home/opensearch opensearchusr
-  - chown -R opensearchusr %installDirectory%/opensearch-tar-install.sh
+  - chown -R nobody:nogroup %installDirectory%/opensearch-tar-install.sh
   - chmod +x %installDirectory%/opensearch-tar-install.sh
-  - su - opensearchusr -s /bin/bash -c "OPENSEARCH_INITIAL_ADMIN_PASSWORD=%adminPassword% %installDirectory%/opensearch-tar-install.sh"
+  - OPENSEARCH_INITIAL_ADMIN_PASSWORD=%adminPassword% %installDirectory%/opensearch-tar-install.sh
 uninstallFileNames:
   - bin
   - config
@@ -33,8 +32,9 @@ uninstallFileNames:
   - manifest.yml
   - opensearch-tar-install.sh
   - performance-analyzer-rca
+execUser: opensearchusr
 estimatedSizeBytes: 100000000
-avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
+avatarUrl: https://opensearch.org/assets/media/partners/improving/resource-blog-1.png
 screenshotUrls:
-  - "https://speedia.net/assets/os/marketplace/opencart/oc-1.jpg"
-  - "https://speedia.net/assets/os/marketplace/opencart/oc-2.jpg"
+  - https://aiven.io/docs/assets/images/dashboard-example-9dfa797f561a5617d75bda3335a23d38.png
+  - https://mlbtihvv1ztx.i.optimole.com/cb:MU-o.1a801/w:auto/h:auto/q:90/f:best/ig:avif/https://opster.com/wp-content/uploads/2022/04/image12.png
