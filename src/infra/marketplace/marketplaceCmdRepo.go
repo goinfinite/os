@@ -237,7 +237,7 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 		urlPathStr := urlPath.String()
 		newMappingBase, err := valueObject.NewMappingPath(urlPathStr)
 		if err != nil {
-			slog.Info(err.Error(), slog.String("urlPath", urlPathStr))
+			slog.Error(err.Error(), slog.String("urlPath", urlPathStr))
 			continue
 		}
 		catalogMappingWithNewPath.Path = newMappingBase
@@ -294,7 +294,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
 		if err != nil {
-			slog.Info("CreateItemMappingError", slog.Any("err", err))
+			slog.Error("CreateItemMappingError", slog.Any("err", err))
 			continue
 		}
 
@@ -639,7 +639,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	for _, unusedService := range unusedServiceNames {
 		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
-			slog.Info("UninstallUnusedServiceError", slog.Any("err", err))
+			slog.Error("UninstallUnusedServiceError", slog.Any("err", err))
 			continue
 		}
 	}
@@ -660,7 +660,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	for _, installedItemMapping := range installedItem.Mappings {
 		err = repo.mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
-			slog.Info(
+			slog.Error(
 				"DeleteMappingError",
 				slog.String("mappingPath", installedItemMapping.Path.String()),
 				slog.Any("err", err),

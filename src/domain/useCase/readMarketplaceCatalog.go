@@ -13,7 +13,7 @@ func ReadMarketplaceCatalog(
 ) ([]entity.MarketplaceCatalogItem, error) {
 	catalogItems, err := marketplaceQueryRepo.ReadCatalogItems()
 	if err != nil {
-		slog.Info("ReadMarketplaceCatalogItemsError", slog.Any("err", err))
+		slog.Error("ReadMarketplaceCatalogItemsError", slog.Any("err", err))
 		return nil, errors.New("ReadMarketplaceCatalogItemsInfraError")
 	}
 

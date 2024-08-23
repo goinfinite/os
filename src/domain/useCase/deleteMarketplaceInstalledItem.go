@@ -20,7 +20,7 @@ func DeleteMarketplaceInstalledItem(
 
 	err = marketplaceCmdRepo.UninstallItem(dto)
 	if err != nil {
-		slog.Info("UninstallMarketplaceItemError", slog.Any("err", err))
+		slog.Error("UninstallMarketplaceItemError", slog.Any("err", err))
 		return errors.New("UninstallMarketplaceItemInfraError")
 	}
 

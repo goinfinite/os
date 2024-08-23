@@ -13,7 +13,7 @@ func ReadServicesWithMetrics(
 ) ([]dto.InstalledServiceWithMetrics, error) {
 	servicesWithMetrics, err := servicesQueryRepo.ReadWithMetrics()
 	if err != nil {
-		slog.Info("ReadServicesWithMetricsError", slog.Any("err", err))
+		slog.Error("ReadServicesWithMetricsError", slog.Any("err", err))
 		return servicesWithMetrics, errors.New("ReadServicesWithMetricsInfraError")
 	}
 

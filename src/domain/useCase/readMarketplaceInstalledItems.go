@@ -13,7 +13,7 @@ func ReadMarketplaceInstalledItems(
 ) ([]entity.MarketplaceInstalledItem, error) {
 	installedItems, err := marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
-		slog.Info("ReadMarketplaceInstalledItemsError", slog.Any("err", err))
+		slog.Error("ReadMarketplaceInstalledItemsError", slog.Any("err", err))
 		return nil, errors.New("ReadMarketplaceInstalledItemsInfraError")
 	}
 

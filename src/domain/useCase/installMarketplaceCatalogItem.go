@@ -95,7 +95,7 @@ func InstallMarketplaceCatalogItem(
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
 	if err != nil {
-		slog.Info("InstallMarketplaceCatalogItem", slog.Any("err", err))
+		slog.Error("InstallMarketplaceCatalogItem", slog.Any("err", err))
 		return errors.New("InstallMarketplaceCatalogItemInfraError")
 	}
 
