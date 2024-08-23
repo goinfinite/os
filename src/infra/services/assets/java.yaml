@@ -39,6 +39,14 @@ versions:
   - adoptopenjdk-20
   - adoptopenjdk-21
   - adoptopenjdk-22
+  - adoptopenjdk-openj9-8
+  - adoptopenjdk-openj9-9
+  - adoptopenjdk-openj9-11
+  - adoptopenjdk-openj9-12
+  - adoptopenjdk-openj9-13
+  - adoptopenjdk-openj9-14
+  - adoptopenjdk-openj9-15
+  - adoptopenjdk-openj9-16
   - adoptopenjdk-jre-8
   - adoptopenjdk-jre-9
   - adoptopenjdk-jre-10
@@ -54,6 +62,13 @@ versions:
   - adoptopenjdk-jre-20
   - adoptopenjdk-jre-21
   - adoptopenjdk-jre-22
+  - adoptopenjdk-jre-openj9-8
+  - adoptopenjdk-jre-openj9-11
+  - adoptopenjdk-jre-openj9-12
+  - adoptopenjdk-jre-openj9-13
+  - adoptopenjdk-jre-openj9-14
+  - adoptopenjdk-jre-openj9-15
+  - adoptopenjdk-jre-openj9-16
   - corretto-8
   - corretto-11
   - corretto-15
@@ -188,6 +203,24 @@ versions:
   - sapmachine-jre-20
   - sapmachine-jre-21
   - sapmachine-jre-22
+  - semeru-openj9-8u422-b05_openj9-0.46.0
+  - semeru-openj9-11
+  - semeru-openj9-16
+  - semeru-openj9-17
+  - semeru-openj9-18
+  - semeru-openj9-19
+  - semeru-openj9-20
+  - semeru-openj9-21
+  - semeru-openj9-22
+  - semeru-jre-openj9-8u422-b05_openj9-0.46.0
+  - semeru-jre-openj9-11
+  - semeru-jre-openj9-16
+  - semeru-jre-openj9-17
+  - semeru-jre-openj9-18
+  - semeru-jre-openj9-19
+  - semeru-jre-openj9-20
+  - semeru-jre-openj9-21
+  - semeru-jre-openj9-22
   - temurin-8
   - temurin-11
   - temurin-16
