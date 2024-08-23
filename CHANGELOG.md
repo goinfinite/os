@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.0.7 - 2024/XX/XX
+feat: opensearch and java support
+
 0.0.6 - 2024/08/22
 feat: activity records
 feat: limit login attempts by ip address
