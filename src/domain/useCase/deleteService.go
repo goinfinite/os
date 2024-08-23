@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -26,17 +26,17 @@ func DeleteService(
 
 	err = mappingCmdRepo.DeleteAuto(svcName)
 	if err != nil {
-		log.Printf("DeleteAutoMappingError: %s", err.Error())
+		slog.Error("DeleteAutoMappingError", slog.Any("err", err))
 		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
 	err = servicesCmdRepo.Delete(svcName)
 	if err != nil {
-		log.Printf("DeleteServiceError: %v", err)
+		slog.Error("DeleteServiceError", slog.Any("err", err))
 		return errors.New("DeleteServiceInfraError")
 	}
 
-	log.Printf("Service '%v' deleted.", svcName.String())
+	slog.Info("Service "+svcName.String()+" deleted.", slog.Any("err", err))
 
 	return nil
 }

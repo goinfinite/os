@@ -3,7 +3,7 @@ package marketplaceInfra
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
@@ -60,16 +60,9 @@ func (repo *MarketplaceCmdRepo) installServices(
 		}
 
 		createServiceDto := dto.NewCreateInstallableService(
-			serviceWithVersion.Name,
-			[]valueObject.ServiceEnv{},
-			[]valueObject.PortBinding{},
-			serviceWithVersion.Version,
-			nil,
-			nil,
-			nil,
-			nil,
-			nil,
-			nil,
+			serviceWithVersion.Name, []valueObject.ServiceEnv{},
+			[]valueObject.PortBinding{}, serviceWithVersion.Version,
+			nil, nil, nil, nil, nil, nil,
 		)
 
 		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
@@ -176,6 +169,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
+	stepType string,
 	catalogCmdSteps []valueObject.UnixCommand,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 ) error {
@@ -187,11 +181,16 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	}
 
 	for stepIndex, cmdStep := range preparedCmdSteps {
-		_, err = infraHelper.RunCmdWithSubShell(cmdStep.String())
+		stepStr := cmdStep.String()
+
+		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
+
+		stepOutput, err := infraHelper.RunCmdWithSubShell(stepStr)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
+			combinedOutput := stepOutput + " " + err.Error()
 			return errors.New(
-				"RunCmdStepError (" + stepIndexStr + "): " + err.Error(),
+				stepType + "CmdStepError (" + stepIndexStr + "): " + combinedOutput,
 			)
 		}
 	}
@@ -235,9 +234,10 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 		}
 
 		catalogMappingWithNewPath := catalogMapping
-		newMappingBase, err := valueObject.NewMappingPath(urlPath.String())
+		urlPathStr := urlPath.String()
+		newMappingBase, err := valueObject.NewMappingPath(urlPathStr)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), urlPath.String())
+			slog.Error(err.Error(), slog.String("urlPath", urlPathStr))
 			continue
 		}
 		catalogMappingWithNewPath.Path = newMappingBase
@@ -294,7 +294,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
 		if err != nil {
-			log.Printf("CreateItemMappingError: %s", err.Error())
+			slog.Error("CreateItemMappingError", slog.Any("err", err))
 			continue
 		}
 
@@ -402,7 +402,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps(catalogItem.InstallCmdSteps, receivedDataFields)
+	err = repo.runCmdSteps("Install", catalogItem.InstallCmdSteps, receivedDataFields)
 	if err != nil {
 		return err
 	}
@@ -639,7 +639,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	for _, unusedService := range unusedServiceNames {
 		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
-			log.Printf("UninstallUnusedServiceError: %s", err.Error())
+			slog.Error("UninstallUnusedServiceError", slog.Any("err", err))
 			continue
 		}
 	}
@@ -660,8 +660,10 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	for _, installedItemMapping := range installedItem.Mappings {
 		err = repo.mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
-			log.Printf(
-				"DeleteMappingError (%s): %s", installedItemMapping.Path, err.Error(),
+			slog.Error(
+				"DeleteMappingError",
+				slog.String("mappingPath", installedItemMapping.Path.String()),
+				slog.Any("err", err),
 			)
 			continue
 		}
@@ -683,7 +685,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		installedItem.InstallDirectory, installedItem.UrlPath,
 		installedItem.Hostname, installedItem.InstallUuid,
 	)
-	err = repo.runCmdSteps(catalogItem.UninstallCmdSteps, systemDataFields)
+	err = repo.runCmdSteps("Uninstall", catalogItem.UninstallCmdSteps, systemDataFields)
 	if err != nil {
 		return err
 	}

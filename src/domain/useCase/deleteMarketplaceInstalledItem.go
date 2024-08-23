@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -20,7 +20,7 @@ func DeleteMarketplaceInstalledItem(
 
 	err = marketplaceCmdRepo.UninstallItem(dto)
 	if err != nil {
-		log.Printf("UninstallMarketplaceItemError: %s", err.Error())
+		slog.Error("UninstallMarketplaceItemError", slog.Any("err", err))
 		return errors.New("UninstallMarketplaceItemInfraError")
 	}
 

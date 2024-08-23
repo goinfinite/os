@@ -1,0 +1,21 @@
+name: java
+slugs:
+  - jdk
+  - openjdk
+nature: multi
+type: runtime
+description: Java is a multiplatform, object-oriented programming language that runs on billions of devices worldwide. It powers applications, smartphone operating systems, enterprise software, and many well-known programs.
+versions:
+  - lts
+  - 21
+  - 17
+  - 11
+portBindings:
+  - 8080/http
+startCmd: mise x java@%version% -- java %startupFile%
+installCmdSteps:
+  - mise install java@%version%
+  - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi
+  - if [ ! -s "%startupFile%" ]; then echo 'import com.sun.net.httpserver.HttpServer; import java.net.InetSocketAddress; public class SimpleHttpServer { public static void main(String[] args) throws Exception { HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0); server.start(); } }' >%startupFile%; fi
+startupFile: /speedia/defaultJavaStartupFile.java
+estimatedSizeBytes: 1468000000

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -13,7 +13,7 @@ func ReadServicesWithMetrics(
 ) ([]dto.InstalledServiceWithMetrics, error) {
 	servicesWithMetrics, err := servicesQueryRepo.ReadWithMetrics()
 	if err != nil {
-		log.Printf("ReadServicesWithMetricsError: %s", err.Error())
+		slog.Error("ReadServicesWithMetricsError", slog.Any("err", err))
 		return servicesWithMetrics, errors.New("ReadServicesWithMetricsInfraError")
 	}
 
