@@ -279,6 +279,7 @@ versions:
   - zulu-jre-javafx-22
 portBindings:
   - 8080/http
+startupFile: /app/genericStartupFile.java
 startCmd: mise x java@%version% -- java %startupFile%
 installCmdSteps:
   - mise install java@%version%
