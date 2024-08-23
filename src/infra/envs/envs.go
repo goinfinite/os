@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	SpeediaOsVersion             string = "0.0.6"
+	SpeediaOsVersion             string = "0.0.7"
 	SpeediaOsBinary              string = "/speedia/os"
 	PersistentDatabaseFilePath   string = "/speedia/os.db"
 	TrailDatabaseFilePath        string = "/speedia/trail.db"
