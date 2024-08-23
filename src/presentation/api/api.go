@@ -14,7 +14,7 @@ const (
 )
 
 // @title			OsApi
-// @version			0.0.6
+// @version			0.0.7
 // @description		Speedia OS API
 // @termsOfService	https://speedia.net/tos/
 
