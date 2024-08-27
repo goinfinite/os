@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -23,13 +23,13 @@ func CreateInstallableService(
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
-		log.Printf("CreateInstallableServiceError: %v", err)
+		slog.Error("CreateInstallableServiceError", slog.Any("err", err))
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
 	serviceEntity, err := servicesQueryRepo.ReadByName(installedServiceName)
 	if err != nil {
-		log.Printf("GetServiceByNameError: %s", err.Error())
+		slog.Error("GetServiceByNameError", slog.Any("err", err))
 		return errors.New("GetServiceByNameInfraError")
 	}
 

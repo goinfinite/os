@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/repository"
@@ -13,7 +13,7 @@ func ReadMarketplaceInstalledItems(
 ) ([]entity.MarketplaceInstalledItem, error) {
 	installedItems, err := marketplaceQueryRepo.ReadInstalledItems()
 	if err != nil {
-		log.Printf("ReadMarketplaceInstalledItemsError: %s", err.Error())
+		slog.Error("ReadMarketplaceInstalledItemsError", slog.Any("err", err))
 		return nil, errors.New("ReadMarketplaceInstalledItemsInfraError")
 	}
 

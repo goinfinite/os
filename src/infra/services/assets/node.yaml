@@ -28,6 +28,7 @@ versions:
   - 4
 portBindings:
   - 3000/http
+startupFile: /app/html/index.js
 startCmd: mise x node@%version% -- node %startupFile%
 installCmdSteps:
   - mise install node@%version%
