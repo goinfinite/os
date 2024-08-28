@@ -29,8 +29,7 @@ func (controller *AccountController) Read() *cobra.Command {
 }
 
 func (controller *AccountController) Create() *cobra.Command {
-	var usernameStr string
-	var passwordStr string
+	var usernameStr, passwordStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -55,10 +54,7 @@ func (controller *AccountController) Create() *cobra.Command {
 }
 
 func (controller *AccountController) Update() *cobra.Command {
-	var accountIdStr string
-	var usernameStr string
-	var passwordStr string
-	shouldUpdateApiKeyBool := false
+	var accountIdStr, usernameStr, passwordStr, shouldUpdateApiKeyBool string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -89,8 +85,8 @@ func (controller *AccountController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
-	cmd.Flags().BoolVarP(
-		&shouldUpdateApiKeyBool, "update-api-key", "k", false, "ShouldUpdateApiKey",
+	cmd.Flags().StringVarP(
+		&shouldUpdateApiKeyBool, "update-api-key", "k", "false", "ShouldUpdateApiKey",
 	)
 	return cmd
 }

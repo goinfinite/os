@@ -141,18 +141,15 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 
 func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	var installedIdInt int
-	var shouldUninstallServices bool
+	var shouldUninstallServices string
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteInstalledItem",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"installedId": installedIdInt,
-			}
-
-			if !shouldUninstallServices {
-				requestBody["shouldUninstallServices"] = false
+				"installedId":             installedIdInt,
+				"shouldUninstallServices": shouldUninstallServices,
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -163,8 +160,8 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 
 	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "InstalledItemId")
 	cmd.MarkFlagRequired("installedId")
-	cmd.Flags().BoolVarP(
-		&shouldUninstallServices, "shouldUninstallServices", "s", true,
+	cmd.Flags().StringVarP(
+		&shouldUninstallServices, "shouldUninstallServices", "s", "true",
 		"ShouldUninstallUnusedServices",
 	)
 	return cmd
