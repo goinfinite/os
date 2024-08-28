@@ -10,7 +10,6 @@ services:
   - php:8.2
   - mariadb:10.6
   - opensearch
-  - redis
 mappings:
   - path: /
     matchPattern: begins-with
@@ -50,11 +49,11 @@ dataFields:
       - USD
       - BRL
       - EUR
-  - name: publicAccessKey
+  - name: adobeCommerUsername
     label: Adobe Commerce Public Access Key
     type: text
     isRequired: true
-  - name: privateAccessKey
+  - name: adobeCommercePassword
     label: Adobe Commerce Private Access Key
     type: text
     isRequired: true
@@ -90,20 +89,25 @@ installCmdSteps:
   - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - rm -rf /app/composer-setup.php
   - os runtime php update -n %installHostname% -v 8.2 
-  - composer config --global http-basic.repo.magento.com %publicAccessKey% %privateAccessKey% -q
+  - composer config --global http-basic.repo.magento.com %adobeCommerUsername% %adobeCommercePassword% -q
   - composer create-project --repository-url=https://repo.magento.com/ magento/project-%edition%-edition %installDirectory% -n -q --no-dev
   - composer config --global http-basic.repo.magento.com "" "" -q
   - chown -R nobody:nogroup %installDirectory%
-  - cd /app/html; find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
-  - cd /app/html; find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
-  - chmod u+x bin/magento
+  - cd %installDirectory%; find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
+  - cd %installDirectory%; find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
+  - chmod u+x %installDirectory%/bin/magento
   - os db create -n acDb_%installUuid% -t mysql
   - os db create-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid% -p %installRandomPassword% -r all
   - sed -i "s|memory_limit.*|memory_limit = 1G|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
   - sed -i "s|;realpath_cache_size.*|realpath_cache_size = 10M|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
   - sed -i "s|;realpath_cache_ttl.*|realpath_cache_ttl = 7200|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
   - os services update -n php -s restarting
-  - /app/html/bin/magento setup:install --base-url=http://%installHostname%/ --use-secure=1 --base-url-secure=https://%installHostname%/ --use-secure-admin=1 --db-host=localhost --db-name=acDb_%installUuid% --db-user=acUser_%installUuid% --db-password=%installRandomPassword% --admin-firstname=%adminFirstName% --admin-lastname=%adminLastName% --admin-email=%adminMailAddress% --admin-user=%adminUsername% --admin-password=%adminPassword% --language=%locale% --currency=%currency% --timezone=%timezone% --search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200 --opensearch-index-prefix=acIndex_%installUuid% --opensearch-timeout=15
+  - "sed -i '/^# WARNING: revise all the lines below before you go into production/,/^node.max_local_storage_nodes/{//!d;}' /etc/opensearch/opensearch.yml"
+  - sed -i '/^plugins.security.*/d' /etc/opensearch/opensearch.yml
+  - "echo \"plugins.security.disabled: true\" >> /etc/opensearch/opensearch.yml"
+  - os services update -n opensearch -s restarting
+  - sleep 1; %installDirectory%/bin/magento setup:install --base-url=http://%installHostname%/ --use-secure=1 --base-url-secure=https://%installHostname%/ --use-secure-admin=1 --db-host=localhost --db-name=acDb_%installUuid% --db-user=acUser_%installUuid% --db-password=%installRandomPassword% --admin-firstname=%adminFirstName% --admin-lastname=%adminLastName% --admin-email=%adminMailAddress% --admin-user=%adminUsername% --admin-password=%adminPassword% --language=%locale% --currency=%currency% --timezone=%timezone% --search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200 --opensearch-index-prefix=acIndex_%installUuid% --opensearch-timeout=15 -q -n
+  - chmod u-w %installDirectory%/app/etc
 uninstallCmdSteps:
   - os db delete-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid%
   - os db delete -n acDb_%installUuid% -t mysql
