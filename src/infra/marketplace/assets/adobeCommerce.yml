@@ -49,7 +49,7 @@ dataFields:
       - USD
       - BRL
       - EUR
-  - name: adobeCommerUsername
+  - name: adobeCommerceUsername
     label: Adobe Commerce Public Access Key
     type: text
     isRequired: true
@@ -89,7 +89,7 @@ installCmdSteps:
   - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - rm -rf /app/composer-setup.php
   - os runtime php update -n %installHostname% -v 8.2 
-  - composer config --global http-basic.repo.magento.com %adobeCommerUsername% %adobeCommercePassword% -q
+  - composer config --global http-basic.repo.magento.com %adobeCommerceUsername% %adobeCommercePassword% -q
   - composer create-project --repository-url=https://repo.magento.com/ magento/project-%edition%-edition %installDirectory% -n -q --no-dev
   - composer config --global http-basic.repo.magento.com "" "" -q
   - chown -R nobody:nogroup %installDirectory%
@@ -112,6 +112,24 @@ uninstallCmdSteps:
   - os db delete-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid%
   - os db delete -n acDb_%installUuid% -t mysql
 uninstallFileNames:
+  - app
+  - bin
+  - dev
+  - generated
+  - lib
+  - phpserver
+  - pub
+  - setup
+  - var
+  - vendor
+  - .editorconfig
+  - .htaccess
+  - .php-cs-fixer.dist.php
+  - .user.ini
+  - "*.md"
+  - "*.txt"
+  - "*.sample"
+  - composer*
 estimatedSizeBytes: 100000000
 avatarUrl: https://store-images.s-microsoft.com/image/apps.51820.80a28a07-1a44-4ebb-af14-f567fb6cc38e.e5c28ccc-ccd3-4b8a-8bbd-023b5f08730d.c83fe91d-9545-4e94-8778-a5e17ef208c7
 screenshotUrls:
