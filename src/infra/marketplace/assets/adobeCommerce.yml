@@ -1,0 +1,113 @@
+slugs:
+ - adobe-commerce
+ - adobeCommerce
+ - magento
+ - ac
+name: AdobeCommerce
+type: app
+description: Adobe Commerce is a flexible and scalable commerce platform that lets you create uniquely personalized B2B and B2C experiences, no matter how many brands you have.
+services:
+  - php:8.2
+  - mariadb:10.6
+  - opensearch
+  - redis
+mappings:
+  - path: /
+    matchPattern: begins-with
+    targetType: service
+    targetValue: php
+dataFields:
+  - name: locale
+    label: Adobe Commerce Language
+    type: text
+    defaultValue: en_US
+    options:
+      - en_US
+      - pt_BR
+      - pt_PT
+      - es_ES
+      - de_DE
+      - it_IT
+      - fr_FR
+  - name: timezone
+    label: Adobe Commerce Timezone
+    type: text
+    defaultValue: America/Los_Angeles
+    options:
+      - America/Los_Angeles
+      - America/New_York
+      - America/Sao_Paulo
+      - Europe/Lisbon
+      - Europe/Madrid
+      - Europe/Berlin
+      - Europe/Rome
+      - Europe/Paris
+  - name: currency
+    label: Adobe Commerce Currency
+    type: text
+    defaultValue: USD
+    options:
+      - USD
+      - BRL
+      - EUR
+  - name: publicAccessKey
+    label: Adobe Commerce Public Access Key
+    type: text
+    isRequired: true
+  - name: privateAccessKey
+    label: Adobe Commerce Private Access Key
+    type: text
+    isRequired: true
+  - name: edition
+    label: Adobe Commerce Edition
+    type: text
+    defaultValue: community
+    options:
+      - community
+      - enterprise
+  - name: adminUsername
+    label: Admin Username
+    type: text
+    isRequired: true
+  - name: adminPassword
+    label: Admin Password
+    type: password
+    isRequired: true
+  - name: adminMailAddress
+    label: Admin Email
+    type: email
+    isRequired: true
+  - name: adminFirstName
+    label: Admin First Name
+    type: text
+    isRequired: true
+  - name: adminLastName
+    label: Admin Last Name
+    type: text
+    isRequired: true
+installCmdSteps:
+  - curl -skL -o /app/composer-setup.php https://getcomposer.org/installer
+  - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - rm -rf /app/composer-setup.php
+  - os runtime php update -n %installHostname% -v 8.2 
+  - composer config --global http-basic.repo.magento.com %publicAccessKey% %privateAccessKey% -q
+  - composer create-project --repository-url=https://repo.magento.com/ magento/project-%edition%-edition %installDirectory% -n -q --no-dev
+  - composer config --global http-basic.repo.magento.com "" "" -q
+  - chown -R nobody:nogroup %installDirectory%
+  - cd /app/html; find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
+  - cd /app/html; find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
+  - chmod u+x bin/magento
+  - os db create -n acDb_%installUuid% -t mysql
+  - os db create-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid% -p %installRandomPassword% -r all
+  - sed -i "s|memory_limit.*|memory_limit = 1G|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
+  - sed -i "s|;realpath_cache_size.*|realpath_cache_size = 10M|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
+  - sed -i "s|;realpath_cache_ttl.*|realpath_cache_ttl = 7200|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
+  - os services update -n php -s restarting
+  - /app/html/bin/magento setup:install --base-url=http://%installHostname%/ --use-secure=1 --base-url-secure=https://%installHostname%/ --use-secure-admin=1 --db-host=localhost --db-name=acDb_%installUuid% --db-user=acUser_%installUuid% --db-password=%installRandomPassword% --admin-firstname=%adminFirstName% --admin-lastname=%adminLastName% --admin-email=%adminMailAddress% --admin-user=%adminUsername% --admin-password=%adminPassword% --language=%locale% --currency=%currency% --timezone=%timezone% --search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200 --opensearch-index-prefix=acIndex_%installUuid% --opensearch-timeout=15
+uninstallCmdSteps:
+  - os db delete-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid%
+  - os db delete -n acDb_%installUuid% -t mysql
+uninstallFileNames:
+estimatedSizeBytes: 100000000
+avatarUrl: https://store-images.s-microsoft.com/image/apps.51820.80a28a07-1a44-4ebb-af14-f567fb6cc38e.e5c28ccc-ccd3-4b8a-8bbd-023b5f08730d.c83fe91d-9545-4e94-8778-a5e17ef208c7
+screenshotUrls:
