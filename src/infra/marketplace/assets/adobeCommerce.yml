@@ -85,6 +85,7 @@ dataFields:
     type: text
     isRequired: true
 installCmdSteps:
+  - if [[ $(echo -n \"%adminPassword%\" | wc -m) -lt 16 ]]; then echo -n AdminPasswordTooShort >&2; exit 1; fi
   - curl -skL -o /app/composer-setup.php https://getcomposer.org/installer
   - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - rm -rf /app/composer-setup.php
