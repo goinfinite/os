@@ -234,6 +234,9 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 		if installUrlPathStr == pathStr {
 			continue
 		}
+		if pathStr == "/" {
+			pathStr = ""
+		}
 
 		rawUpdatedPath := installUrlPathStr + pathStr
 		updatedPath, err := valueObject.NewMappingPath(rawUpdatedPath)
