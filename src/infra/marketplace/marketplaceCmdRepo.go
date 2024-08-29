@@ -225,24 +225,28 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 
 func (repo *MarketplaceCmdRepo) updateMappingsBase(
 	catalogMappings []valueObject.MarketplaceItemMapping,
-	urlPath valueObject.UrlPath,
+	installUrlPath valueObject.UrlPath,
 ) []valueObject.MarketplaceItemMapping {
+	installUrlPathStr := installUrlPath.String()
+
 	for mappingIndex, catalogMapping := range catalogMappings {
-		isPathRoot := catalogMapping.Path.String() == "/"
-		if !isPathRoot {
+		pathStr := catalogMapping.Path.String()
+		if installUrlPathStr == pathStr {
 			continue
 		}
 
-		catalogMappingWithNewPath := catalogMapping
-		urlPathStr := urlPath.String()
-		newMappingBase, err := valueObject.NewMappingPath(urlPathStr)
+		rawUpdatedPath := installUrlPathStr + pathStr
+		updatedPath, err := valueObject.NewMappingPath(rawUpdatedPath)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("urlPath", urlPathStr))
+			slog.Error(
+				err.Error(),
+				slog.Int("index", mappingIndex),
+				slog.String("path", rawUpdatedPath),
+			)
 			continue
 		}
-		catalogMappingWithNewPath.Path = newMappingBase
 
-		catalogMappings[mappingIndex] = catalogMappingWithNewPath
+		catalogMappings[mappingIndex].Path = updatedPath
 	}
 
 	return catalogMappings
@@ -307,7 +311,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
 	hostname valueObject.Fqdn,
-	urlPath valueObject.UrlPath,
+	installUrlPath valueObject.UrlPath,
 	installDir valueObject.UnixFilePath,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 	mappingsId []valueObject.MappingId,
@@ -329,7 +333,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 		Name:             catalogItem.Name.String(),
 		Hostname:         hostname.String(),
 		Type:             catalogItem.Type.String(),
-		UrlPath:          urlPath.String(),
+		UrlPath:          installUrlPath.String(),
 		InstallDirectory: installDir.String(),
 		InstallUuid:      installUuid.String(),
 		Services:         servicesListStr,
