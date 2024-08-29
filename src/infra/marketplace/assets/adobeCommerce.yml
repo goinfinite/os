@@ -1,8 +1,8 @@
 slugs:
- - adobe-commerce
- - adobeCommerce
- - magento
- - ac
+  - adobe-commerce
+  - adobeCommerce
+  - magento2
+  - mage2
 name: AdobeCommerce
 type: app
 description: Adobe Commerce is a flexible and scalable commerce platform that lets you create uniquely personalized B2B and B2C experiences, no matter how many brands you have.
@@ -49,12 +49,12 @@ dataFields:
       - USD
       - BRL
       - EUR
-  - name: adobeCommerceUsername
-    label: Adobe Commerce Public Access Key
+  - name: adobeCommerceMarketplacePublicKey
+    label: Adobe Commerce Marketplace Public Key
     type: text
     isRequired: true
-  - name: adobeCommercePassword
-    label: Adobe Commerce Private Access Key
+  - name: adobeCommerceMarketplacePrivateKey
+    label: Adobe Commerce Marketplace Private Key
     type: text
     isRequired: true
   - name: edition
@@ -88,8 +88,8 @@ installCmdSteps:
   - curl -skL -o /app/composer-setup.php https://getcomposer.org/installer
   - php /app/composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - rm -rf /app/composer-setup.php
-  - os runtime php update -n %installHostname% -v 8.2 
-  - composer config --global http-basic.repo.magento.com %adobeCommerceUsername% %adobeCommercePassword% -q
+  - os runtime php update -n %installHostname% -v 8.2
+  - composer config --global http-basic.repo.magento.com %adobeCommerceMarketplacePublicKey% %adobeCommerceMarketplacePrivateKey% -q
   - composer create-project --repository-url=https://repo.magento.com/ magento/project-%edition%-edition %installDirectory% -n -q --no-dev
   - composer config --global http-basic.repo.magento.com "" "" -q
   - chown -R nobody:nogroup %installDirectory%
@@ -98,15 +98,15 @@ installCmdSteps:
   - chmod u+x %installDirectory%/bin/magento
   - os db create -n acDb_%installUuid% -t mysql
   - os db create-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid% -p %installRandomPassword% -r all
+  - "sed -i '/^# WARNING: revise all the lines below before you go into production/,/^node.max_local_storage_nodes/{//!d;}' /etc/opensearch/opensearch.yml"
+  - sed -i '/^plugins.security.*/d' /etc/opensearch/opensearch.yml
+  - 'echo "plugins.security.disabled: true" >> /etc/opensearch/opensearch.yml'
+  - os services update -n opensearch -s restart
   - sed -i "s|memory_limit.*|memory_limit = 1G|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
   - sed -i "s|;realpath_cache_size.*|realpath_cache_size = 10M|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
   - sed -i "s|;realpath_cache_ttl.*|realpath_cache_ttl = 7200|g" /usr/local/lsws/lsphp82/etc/php/8.2/litespeed/php.ini
-  - os services update -n php -s restarting
-  - "sed -i '/^# WARNING: revise all the lines below before you go into production/,/^node.max_local_storage_nodes/{//!d;}' /etc/opensearch/opensearch.yml"
-  - sed -i '/^plugins.security.*/d' /etc/opensearch/opensearch.yml
-  - "echo \"plugins.security.disabled: true\" >> /etc/opensearch/opensearch.yml"
-  - os services update -n opensearch -s restarting
-  - sleep 1; %installDirectory%/bin/magento setup:install --base-url=http://%installHostname%/ --use-secure=1 --base-url-secure=https://%installHostname%/ --use-secure-admin=1 --db-host=localhost --db-name=acDb_%installUuid% --db-user=acUser_%installUuid% --db-password=%installRandomPassword% --admin-firstname=%adminFirstName% --admin-lastname=%adminLastName% --admin-email=%adminMailAddress% --admin-user=%adminUsername% --admin-password=%adminPassword% --language=%locale% --currency=%currency% --timezone=%timezone% --search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200 --opensearch-index-prefix=acIndex_%installUuid% --opensearch-timeout=15 -q -n
+  - os services update -n php -s restart
+  - sleep 3; %installDirectory%/bin/magento setup:install --base-url=http://%installHostname%/ --use-secure=1 --base-url-secure=https://%installHostname%/ --use-secure-admin=1 --db-host=localhost --db-name=acDb_%installUuid% --db-user=acUser_%installUuid% --db-password=%installRandomPassword% --admin-firstname=%adminFirstName% --admin-lastname=%adminLastName% --admin-email=%adminMailAddress% --admin-user=%adminUsername% --admin-password=%adminPassword% --language=%locale% --currency=%currency% --timezone=%timezone% --search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200 --opensearch-index-prefix=acIndex_%installUuid% --opensearch-timeout=15 -q -n
   - chmod u-w %installDirectory%/app/etc
 uninstallCmdSteps:
   - os db delete-user -n acDb_%installUuid% -t mysql -u acUser_%installUuid%
@@ -130,6 +130,9 @@ uninstallFileNames:
   - "*.txt"
   - "*.sample"
   - composer*
-estimatedSizeBytes: 100000000
-avatarUrl: https://store-images.s-microsoft.com/image/apps.51820.80a28a07-1a44-4ebb-af14-f567fb6cc38e.e5c28ccc-ccd3-4b8a-8bbd-023b5f08730d.c83fe91d-9545-4e94-8778-a5e17ef208c7
+estimatedSizeBytes: 779091968
+avatarUrl: https://speedia.net/assets/os/marketplace/adobe-commerce/adobe-commerce-avatar.jpg
 screenshotUrls:
+  - "https://speedia.net/assets/os/marketplace/adobe-commerce/adobe-commerce-1.jpg"
+  - "https://speedia.net/assets/os/marketplace/adobe-commerce/adobe-commerce-2.jpg"
+  - "https://speedia.net/assets/os/marketplace/adobe-commerce/adobe-commerce-3.jpg"
