@@ -268,7 +268,7 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 		<div class="my-6 space-y-6">
 			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", false)
 			<template x-if="isCreateMappingFromVhost">
-				@componentForm.ReadonlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
+				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
 				@componentForm.SelectInputFromStore("hostname", "Hostname", "virtualHost.hostname", "availableVhostsHostnames", true, false)
