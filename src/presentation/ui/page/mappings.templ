@@ -310,7 +310,7 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			</details>
 		</section>
 		<template x-if="mapping.path == '' && mapping.targetValue == ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, true)
+			@componentForm.SubmitButton("Create", "ph-check-fat", "", false, true)
 		</template>
 		<template x-if="mapping.path != '' && mapping.targetValue != ''">
 			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, false)
