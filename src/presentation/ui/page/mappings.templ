@@ -132,7 +132,7 @@ script MappingsIndexLocalState(vhostsHostnames []string) {
     })
 }
 
-func filterVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
+func filterOnlyVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
 	vhostsHostnames := []string{}
 	for _, vhostWithMapping := range vhostsWithMappings {
 		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
@@ -142,7 +142,7 @@ func filterVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []s
 }
 
 templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
-	@MappingsIndexLocalState(filterVhostsHostnames(vhostsWithMappings))
+	@MappingsIndexLocalState(filterOnlyVhostsHostnames(vhostsWithMappings))
 	<div class="flex flex-col" x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
