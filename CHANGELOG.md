@@ -3,6 +3,7 @@
 ```log
 0.0.7 - 2024/XX/XX
 feat: opensearch and java support
+feat: add OpenMage & Adobe Commerce to marketplace
 
 0.0.6 - 2024/08/22
 feat: activity records

@@ -46,9 +46,9 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 }
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
-	var nameStr, versionStr, startupFileStr string
+	var nameStr, versionStr, startupFileStr, autoStartStr, autoRestartStr,
+		autoCreateMappingStr string
 	var envsSlice, portBindingsSlice []string
-	var autoStart, autoRestart, autoCreateMapping bool
 	var timeoutStartSecsInt, maxStartRetriesInt int
 
 	cmd := &cobra.Command{
@@ -57,9 +57,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"name":              nameStr,
-				"autoStart":         autoStart,
-				"autoRestart":       autoRestart,
-				"autoCreateMapping": autoCreateMapping,
+				"autoStart":         autoStartStr,
+				"autoRestart":       autoRestartStr,
+				"autoCreateMapping": autoCreateMappingStr,
 			}
 
 			if len(envsSlice) > 0 {
@@ -106,25 +106,25 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	cmd.Flags().IntVarP(
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
 	)
-	cmd.Flags().BoolVarP(
-		&autoStart, "auto-start", "s", true, "AutoStart",
+	cmd.Flags().StringVarP(
+		&autoStartStr, "auto-start", "s", "true", "AutoStart",
 	)
 	cmd.Flags().IntVarP(
 		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
 	)
-	cmd.Flags().BoolVarP(
-		&autoRestart, "auto-restart", "r", true, "AutoRestart",
+	cmd.Flags().StringVarP(
+		&autoRestartStr, "auto-restart", "r", "true", "AutoRestart",
 	)
-	cmd.Flags().BoolVarP(
-		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
+	cmd.Flags().StringVarP(
+		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
 	)
 	return cmd
 }
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
-	var nameStr, typeStr, startCmdStr, versionStr string
+	var nameStr, typeStr, startCmdStr, versionStr, autoStartStr, autoRestartStr,
+		autoCreateMappingStr string
 	var envsSlice, portBindingsSlice []string
-	var autoStart, autoRestart, autoCreateMapping bool
 	var timeoutStartSecsInt, maxStartRetriesInt int
 
 	cmd := &cobra.Command{
@@ -135,9 +135,9 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				"name":              nameStr,
 				"type":              typeStr,
 				"startCmd":          startCmdStr,
-				"autoStart":         autoStart,
-				"autoRestart":       autoRestart,
-				"autoCreateMapping": autoCreateMapping,
+				"autoStart":         autoStartStr,
+				"autoRestart":       autoRestartStr,
+				"autoCreateMapping": autoCreateMappingStr,
 			}
 
 			if len(envsSlice) > 0 {
@@ -185,17 +185,17 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.Flags().IntVarP(
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
 	)
-	cmd.Flags().BoolVarP(
-		&autoStart, "auto-start", "s", true, "AutoStart",
+	cmd.Flags().StringVarP(
+		&autoStartStr, "auto-start", "s", "true", "AutoStart",
 	)
 	cmd.Flags().IntVarP(
 		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
 	)
-	cmd.Flags().BoolVarP(
-		&autoRestart, "auto-restart", "r", true, "AutoRestart",
+	cmd.Flags().StringVarP(
+		&autoRestartStr, "auto-restart", "r", "true", "AutoRestart",
 	)
-	cmd.Flags().BoolVarP(
-		&autoCreateMapping, "auto-create-mapping", "a", true, "AutoCreateMapping",
+	cmd.Flags().StringVarP(
+		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
 	)
 	return cmd
 }
