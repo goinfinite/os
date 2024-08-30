@@ -54,6 +54,9 @@ script MappingsIndexLocalState(vhostsHostnames []string) {
                 this.isAdvancedSettingsClosed = true;
                 this.isCreateMappingFromVhost = false;
             },
+            clearMappingTargetValue() {
+                this.mapping.targetValue = '';
+            },
 
             // Modal states
 			isCreateVhostModalOpen: false,
@@ -265,8 +268,8 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="my-6 space-y-6">
-			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", false)
+		<div class="-mt-4 my-6 space-y-6">
+			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", "clearMappingTargetValue()")
 			<template x-if="isCreateMappingFromVhost">
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>

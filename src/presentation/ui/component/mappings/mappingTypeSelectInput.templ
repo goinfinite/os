@@ -1,18 +1,17 @@
 package componentMappings
 
-import componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+import (
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+)
 
-templ MappingTypeSelectInput(
-	id, label, bindValuePath string, denseMode bool,
-) {
-	@componentForm.SelectInputWithDescription(
-		id, label, bindValuePath,
-		[]componentForm.Option{
-			{Label: "Service", Value: "service"},
-			{Label: "URL", Value: "url"},
-			{Label: "Response Code", Value: "response-code"},
-			{Label: "Inline HTML", Value: "inline-html"},
-			{Label: "Static Files", Value: "static-files"},
-		}, false, denseMode,
-	)
+templ MappingTypeSelectInput(id, label, bindValuePath, onClick string) {
+	<div id={ id } class="flex flex-wrap space-x-3">
+		for _, mappingType := range valueObject.ValidMappingTargetTypes {
+			@componentForm.RadioInput(
+				mappingType+"-targetType", mappingType,
+				mappingType, bindValuePath, onClick,
+			)
+		}
+	</div>
 }
