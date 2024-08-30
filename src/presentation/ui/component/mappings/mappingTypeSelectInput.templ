@@ -15,7 +15,7 @@ func formatMappingType(mappingType string) string {
 }
 
 templ MappingTypeSelectInput(id, label, bindModelPath, onClick string) {
-	<div class="flex flex-wrap space-x-3">
+	<div class="flex flex-wrap space-x-3 -mb-5">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", formatMappingType(mappingType),
