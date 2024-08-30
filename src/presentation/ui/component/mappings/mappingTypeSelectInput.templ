@@ -14,12 +14,12 @@ func formatMappingType(mappingType string) string {
 	return upperCaser.String(typeWithoutHyphen)
 }
 
-templ MappingTypeSelectInput(id, label, bindValuePath, onClick string) {
-	<div id={ id } class="flex flex-wrap space-x-3">
+templ MappingTypeSelectInput(id, label, bindModelPath, onClick string) {
+	<div class="flex flex-wrap space-x-3">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
-				mappingType+"-targetType", formatMappingType(mappingType),
-				mappingType, bindValuePath, onClick,
+				"targetType", formatMappingType(mappingType),
+				mappingType, bindModelPath, onClick,
 			)
 		}
 	</div>
