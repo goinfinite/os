@@ -25,7 +25,7 @@ script MappingsIndexLocalState() {
                     'id': 0,
                     'path': '',
                     'matchPattern': 'begins-with',
-                    'targetType': 'service',
+                    'targetType': 'url',
                     'targetValue': '',
                     'targetHttpResponseCode': 200
                 }
@@ -125,7 +125,10 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<div class="flex flex-col" x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
-				@componentStructural.PageTitle("Mappings", "", "ph-graph")
+				@componentStructural.PageTitle(
+					"Mappings",
+					"Configure how the server handles different URLs and paths. You can specify where static files are located, set responses for HTTP status codes, redirect requests to different URLs, add inline HTML content, and adjust how the server interacts with services like PHP.",
+					"ph-graph")
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false, false)
@@ -264,6 +267,7 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	>
 		<div class="-mt-4 my-6 space-y-6">
 			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", "clearMappingTargetValue()")
+			@componentMappings.MappingTypeInfoDialog()
 			<template x-if="isCreateMappingFromVhost">
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
