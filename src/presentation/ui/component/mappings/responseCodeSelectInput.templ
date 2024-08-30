@@ -2,9 +2,7 @@ package componentMappings
 
 import componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 
-templ ResponseCodeSelectInput(
-	id, label, bindValuePath string, denseMode bool,
-) {
+templ ResponseCodeSelectInput(id, label, bindValuePath string) {
 	@componentForm.SelectInputWithDescription(
 		id, label, bindValuePath,
 		[]componentForm.Option{
@@ -22,6 +20,6 @@ templ ResponseCodeSelectInput(
 			{Label: "404 - Not Found", Value: "404"},
 			{Label: "501 - Not Implemented", Value: "501"},
 			{Label: "503 - Service Unavailable", Value: "503"},
-		}, false, denseMode,
+		}, false, false,
 	)
 }
