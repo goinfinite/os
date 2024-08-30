@@ -3,13 +3,22 @@ package componentMappings
 import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"strings"
 )
+
+func formatMappingType(mappingType string) string {
+	typeWithoutHyphen := strings.ReplaceAll(mappingType, "-", " ")
+	upperCaser := cases.Title(language.English)
+	return upperCaser.String(typeWithoutHyphen)
+}
 
 templ MappingTypeSelectInput(id, label, bindValuePath, onClick string) {
 	<div id={ id } class="flex flex-wrap space-x-3">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
-				mappingType+"-targetType", mappingType,
+				mappingType+"-targetType", formatMappingType(mappingType),
 				mappingType, bindValuePath, onClick,
 			)
 		}
