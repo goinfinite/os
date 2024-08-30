@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/speedianet/os/src/domain/dto"
@@ -95,7 +95,7 @@ func InstallMarketplaceCatalogItem(
 
 	err = marketplaceCmdRepo.InstallItem(installDto)
 	if err != nil {
-		log.Printf("InstallMarketplaceCatalogItemError: %s", err.Error())
+		slog.Error("InstallMarketplaceCatalogItem", slog.Any("err", err))
 		return errors.New("InstallMarketplaceCatalogItemInfraError")
 	}
 

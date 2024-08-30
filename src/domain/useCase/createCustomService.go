@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
@@ -25,7 +25,7 @@ func createFirstMapping(
 		primaryVhost.Hostname,
 	)
 	if err != nil {
-		log.Printf("ReadPrimaryVhostMappingsError: %s", err.Error())
+		slog.Error("ReadPrimaryVhostMappingsError", slog.Any("err", err))
 		return errors.New("ReadPrimaryVhostMappingsInfraError")
 	}
 	if len(primaryVhostMappings) != 0 {
@@ -48,7 +48,7 @@ func createFirstMapping(
 
 	_, err = mappingCmdRepo.Create(createMappingDto)
 	if err != nil {
-		log.Printf("CreateServiceMappingError: %s", err.Error())
+		slog.Error("CreateServiceMappingError", slog.Any("err", err))
 		return errors.New("CreateServiceMappingInfraError")
 	}
 
@@ -75,7 +75,7 @@ func CreateCustomService(
 
 	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
-		log.Printf("CreateCustomServiceError: %v", err)
+		slog.Error("CreateCustomServiceError", slog.Any("err", err))
 		return errors.New("CreateCustomServiceInfraError")
 	}
 

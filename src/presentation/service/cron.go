@@ -123,9 +123,22 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 }
 
 func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
-	id, err := valueObject.NewCronId(input["id"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+	var idPtr *valueObject.CronId
+	if input["id"] != nil {
+		id, err := valueObject.NewCronId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		idPtr = &id
+	}
+
+	var commentPtr *valueObject.CronComment
+	if input["comment"] != nil {
+		comment, err := valueObject.NewCronComment(input["comment"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		commentPtr = &comment
 	}
 
 	cmdRepo, err := cronInfra.NewCronCmdRepo()
@@ -133,7 +146,7 @@ func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	dto := dto.NewDeleteCron(&id, nil)
+	dto := dto.NewDeleteCron(idPtr, commentPtr)
 
 	err = useCase.DeleteCron(service.cronQueryRepo, cmdRepo, dto)
 	if err != nil {
