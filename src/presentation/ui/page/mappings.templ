@@ -8,7 +8,7 @@ import (
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 )
 
-script MappingsIndexLocalState(vhostsHostnames []string) {
+script MappingsIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('mappings', () => ({
             // Primary states
@@ -40,16 +40,6 @@ script MappingsIndexLocalState(vhostsHostnames []string) {
             get vhostWithTrailingSlash() {
                 return this.virtualHost.hostname + "/"
             },
-            availableVhostsHostnames: vhostsHostnames,
-            addAvailableVhostHostname() {
-                this.availableVhostsHostnames.push(this.virtualHost.hostname);
-            },
-            removeAvailableVhostHostname() {
-                const indexToRemove = this.availableVhostsHostnames.indexOf(
-                    this.virtualHost.hostname
-                );
-                this.availableVhostsHostnames.splice(indexToRemove, 1);
-            },
             resetAuxiliaryStates() {
                 this.isAdvancedSettingsClosed = true;
                 this.isCreateMappingFromVhost = false;
@@ -66,11 +56,6 @@ script MappingsIndexLocalState(vhostsHostnames []string) {
 				this.isCreateVhostModalOpen = true;
 			},
             closeCreateVhostModal() {
-                this.isCreateVhostModalOpen = false;
-            },
-            closeCreateVhostModalAfterSuccess() {
-                this.addAvailableVhostHostname();
-
                 this.isCreateVhostModalOpen = false;
             },
             isDeleteVhostModalOpen: false,
@@ -135,17 +120,8 @@ script MappingsIndexLocalState(vhostsHostnames []string) {
     })
 }
 
-func filterOnlyVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
-	vhostsHostnames := []string{}
-	for _, vhostWithMapping := range vhostsWithMappings {
-		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
-	}
-
-	return vhostsHostnames
-}
-
 templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
-	@MappingsIndexLocalState(filterOnlyVhostsHostnames(vhostsWithMappings))
+	@MappingsIndexLocalState()
 	<div class="flex flex-col" x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
@@ -245,10 +221,10 @@ templ VirtualHostRegularForm() {
 			</div>
 		</template>
 		<template x-if="virtualHost.hostname == ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false, true)
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModal()", false, true)
 		</template>
 		<template x-if="virtualHost.hostname != ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModalAfterSuccess()", false, false)
+			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModal()", false, false)
 		</template>
 	</form>
 }
@@ -260,6 +236,24 @@ templ CreateVhostModal() {
 	) {
 		@VirtualHostRegularForm()
 	}
+}
+
+func filterOnlyVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
+	vhostsHostnames := []string{}
+	for _, vhostWithMapping := range vhostsWithMappings {
+		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
+	}
+
+	return vhostsHostnames
+}
+
+func getOnlyServiceNames() []string {
+	onlyServiceNames := []string{}
+	for serviceName := range valueObject.NativeSvcNamesWithAliases {
+		onlyServiceNames = append(onlyServiceNames, serviceName)
+	}
+
+	return onlyServiceNames
 }
 
 templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
@@ -274,28 +268,30 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInputFromStore("hostname", "Hostname", "virtualHost.hostname", "availableVhostsHostnames", true, false)
+				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", filterOnlyVhostsHostnames(vhostsWithMappings), true, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostWithTrailingSlash", false)
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
-				@componentForm.SelectInput("targetValue", "Service Name", "", valueObject.AvailableSvcNames, true, false)
+				@componentForm.SelectInput("targetValue", "Service Name", "mapping.targetValue", getOnlyServiceNames(), true, false)
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'url'">
 			<div class="mb-6 space-y-6">
-				@componentForm.InputField("text", "targetValue", "Destination URL", "", false)
+				@componentForm.InputField("text", "targetValue", "Destination URL", "mapping.targetValue", false)
 			</div>
 		</template>
-		<template x-if="mapping.targetType == 'response-code' || mapping.targetType == 'inline-html'">
+		<template x-if="mapping.targetType == 'inline-html'">
 			<div class="mb-6 space-y-6">
-				<template x-if="mapping.targetType == 'inline-html'">
-					@componentForm.TextArea("targetValue", "Inline HTML", "", false)
-				</template>
-				@componentMappings.ResponseCodeSelectInput(
-					"targetValue", "Response Code", "mapping.targetHttpResponseCode", false,
-				)
+				@componentForm.TextArea("targetValue", "Inline HTML", "mapping.targetValue", false)
+				@componentMappings.ResponseCodeSelectInput("targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode")
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'response-code'">
+			<div class="mb-6 space-y-6">
+				@componentMappings.ResponseCodeSelectInput("targetValue", "Response Code", "mapping.targetValue")
+				<input type="hidden" x-model="mapping.targetValue" x-bind:value="mapping.targetHttpResponseCode"/>
 			</div>
 		</template>
 		<section class="mb-6 w-full rounded-md">
@@ -306,16 +302,14 @@ templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
 				</summary>
 				<div class="mt-5 py-2">
-					@componentMappings.MatchPatternSelectInput(
-						"matchPattern", "Match Pattern", "mapping.matchPattern", false,
-					)
+					@componentMappings.MatchPatternSelectInput("matchPattern", "Match Pattern", "mapping.matchPattern")
 				</div>
 			</details>
 		</section>
-		<template x-if="mapping.path == '' && mapping.targetValue == ''">
+		<template x-if="virtualHost.hostname == '' || ((mapping.targetType != 'response-code' && mapping.targetType != 'static-files') && mapping.targetValue == '')">
 			@componentForm.SubmitButton("Create", "ph-check-fat", "", false, true)
 		</template>
-		<template x-if="mapping.path != '' && mapping.targetValue != ''">
+		<template x-if="virtualHost.hostname != '' && ((mapping.targetType == 'response-code' || mapping.targetType == 'static-files') || mapping.targetValue != '')">
 			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, false)
 		</template>
 	</form>
