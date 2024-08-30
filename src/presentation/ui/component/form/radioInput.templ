@@ -1,0 +1,33 @@
+package componentForm
+
+templ RadioInput(id, label, bindValue, bindModelPath, onClick string) {
+	<div class="inline-flex items-center">
+		<label class="relative flex items-center p-3 -mr-2 rounded-full cursor-pointer" htmlFor="custom-style1">
+			<input
+				type="radio"
+				name={ id }
+				value={ bindValue }
+				x-model={ bindModelPath }
+				class="peer relative h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border border-speedia-500 bg-inherit transition-all checked:h-4 checked:w-4 checked:border-inherit"
+				if onClick != "" {
+					@click={ onClick }
+				}
+			/>
+			<span class="absolute text-cyan-900 transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					class="w-full h-full scale-105"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+						clip-rule="evenodd"
+					></path>
+				</svg>
+			</span>
+		</label>
+		<label class="ml-1 text-sm font-medium text-neutral-100">{ label }</label>
+	</div>
+}
