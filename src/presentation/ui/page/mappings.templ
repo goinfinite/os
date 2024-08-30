@@ -206,7 +206,7 @@ templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings)
 					<!-- Mappings Column -->
 					<div class="bg-os-800 p-4 flex-col rounded w-1/1">
 						for _, mapping := range vhostWithMappings.Mappings {
-							@componentMappings.MappingInfos(
+							@componentMappings.MappingsInfos(
 								mapping, vhostWithMappings.RootDirectory,
 								"openDeleteMappingModal("+mapping.Id.String()+", '"+mapping.Path.String()+"')",
 							)
