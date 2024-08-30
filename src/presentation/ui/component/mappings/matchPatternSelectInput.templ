@@ -5,7 +5,7 @@ import componentForm "github.com/speedianet/os/src/presentation/ui/component/for
 templ MatchPatternSelectInput(id, label, bindValuePath string) {
 	@componentForm.SelectInputWithDescription(
 		id, label, bindValuePath,
-		[]componentForm.Option{
+		[]componentForm.SelectOption{
 			{Label: "Begins With", Value: "begins-with"},
 			{Label: "Contains", Value: "contains"},
 			{Label: "Equals", Value: "equals"},
