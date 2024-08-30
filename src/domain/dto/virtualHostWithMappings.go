@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"encoding/json"
-
 	"github.com/speedianet/os/src/domain/entity"
 )
 
@@ -19,9 +17,4 @@ func NewVirtualHostWithMappings(
 		VirtualHost: vhost,
 		Mappings:    mappings,
 	}
-}
-
-func (dto VirtualHostWithMappings) JsonSerialize() string {
-	jsonBytes, _ := json.Marshal(dto)
-	return string(jsonBytes)
 }
