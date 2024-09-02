@@ -197,7 +197,7 @@ templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings)
 	</table>
 }
 
-templ VirtualHostRegularForm() {
+templ VirtualHostForm() {
 	<form
 		hx-post="/api/v1/vhosts/"
 		hx-indicator="#loading-overlay"
@@ -237,7 +237,7 @@ templ CreateVhostModal() {
 		"Create Virtual Host", "isCreateVhostModalOpen", "closeCreateVhostModal()",
 		"",
 	) {
-		@VirtualHostRegularForm()
+		@VirtualHostForm()
 	}
 }
 
@@ -259,7 +259,7 @@ func getOnlyServiceNames() []string {
 	return onlyServiceNames
 }
 
-templ MappingRegularForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ MappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<form
 		hx-post="/api/v1/vhosts/mapping/"
 		hx-indicator="#loading-overlay"
@@ -324,7 +324,7 @@ templ CreateMappingModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@MappingRegularForm(vhostsWithMappings)
+		@MappingForm(vhostsWithMappings)
 	}
 }
 
@@ -333,6 +333,6 @@ templ CreateMappingFromVhostModal(vhostsWithMappings []dto.VirtualHostWithMappin
 		"Create Mapping", "isCreateMappingFromVhostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@MappingRegularForm(vhostsWithMappings)
+		@MappingForm(vhostsWithMappings)
 	}
 }
