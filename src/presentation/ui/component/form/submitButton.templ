@@ -14,7 +14,8 @@ func getComponentClasses(denseMode, isBlocked bool) string {
 }
 
 templ SubmitButton(
-	label, icon, onClick string, denseMode, isBlocked bool,
+	label, icon, onClick string,
+	denseMode, isBlocked bool,
 ) {
 	<button
 		if !isBlocked {
