@@ -5,16 +5,16 @@ templ IconToggle(
 ) {
 	<label class="relative flex cursor-pointer flex-wrap items-center gap-2">
 		<input
-			class="checked:bg-speedia-500 checked:ring-speedia-500 hover:bg-dos-300 checked:hover:bg-speedia-800 peer relative h-8 w-16 cursor-pointer appearance-none rounded-lg ring-2 ring-inset ring-neutral-50 ring-opacity-50 transition-colors focus-visible:outline-none"
+			class="checked:bg-speedia-500 checked:ring-speedia-500 hover:bg-os-300 checked:hover:bg-speedia-800 peer relative h-8 w-16 cursor-pointer appearance-none rounded-lg ring-2 ring-inset ring-neutral-50 ring-opacity-50 transition-colors focus-visible:outline-none"
 			type="checkbox"
 			x-model={ bindValuePath }
 		/>
-		<div class="bg-dos-500 group absolute flex h-8 w-8 items-center justify-center rounded-xl text-neutral-50 opacity-100 ring-2 ring-neutral-50 transition-opacity hover:overflow-visible peer-checked:opacity-0">
+		<div class="bg-os-500 group absolute flex h-8 w-8 items-center justify-center rounded-xl text-neutral-50 opacity-100 ring-2 ring-neutral-50 transition-opacity hover:overflow-visible peer-checked:opacity-0">
 			<i class={ "ph-duotone " + uncheckedIcon + " text-2xl" }></i>
 			if uncheckedTooltip != "" {
 				<span
 					role="tooltip"
-					class="text-dos-500 text-nowrap invisible absolute left-1/2 top-full z-10 mt-2 w-auto -translate-x-1/2 rounded bg-neutral-50 p-2 text-center text-xs opacity-0 transition-all before:invisible before:absolute before:bottom-full before:left-1/2 before:z-10 before:-ml-2 before:mt-2 before:border-x-8 before:border-b-8 before:border-x-transparent before:border-b-neutral-50 before:opacity-0 before:transition-all before:content-[''] group-hover:visible group-hover:block group-hover:opacity-100 group-hover:before:visible group-hover:before:opacity-100"
+					class="text-os-500 text-nowrap invisible absolute left-1/2 top-full z-10 mt-2 w-auto -translate-x-1/2 rounded bg-neutral-50 p-2 text-center text-xs opacity-0 transition-all before:invisible before:absolute before:bottom-full before:left-1/2 before:z-10 before:-ml-2 before:mt-2 before:border-x-8 before:border-b-8 before:border-x-transparent before:border-b-neutral-50 before:opacity-0 before:transition-all before:content-[''] group-hover:visible group-hover:block group-hover:opacity-100 group-hover:before:visible group-hover:before:opacity-100"
 				>
 					{ uncheckedTooltip }
 				</span>
