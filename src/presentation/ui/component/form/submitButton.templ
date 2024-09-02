@@ -1,6 +1,6 @@
 package componentForm
 
-func getComponentClasses(denseMode, isBlocked bool) string {
+func getSubmitButtonClasses(denseMode, isBlocked bool) string {
 	classes := "w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
 	if denseMode {
 		classes = "rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
@@ -26,7 +26,7 @@ templ SubmitButton(
 		if onClick != "" && !isBlocked {
 			@click={ onClick }
 		}
-		class={ getComponentClasses(denseMode, isBlocked) }
+		class={ getSubmitButtonClasses(denseMode, isBlocked) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
