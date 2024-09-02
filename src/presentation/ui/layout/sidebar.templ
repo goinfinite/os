@@ -31,16 +31,20 @@ func sidebarItemsGetter(currentUrl string) []SidebarItem {
 		{Label: "Terminal", Icon: "ph-terminal-window", Link: ""},
 	}
 
-	for itemIndex, item := range sidebarItems {
-		if item.Link != currentUrl {
+	activeSidebarItems := []SidebarItem{}
+	for _, item := range sidebarItems {
+		if item.Link == "" {
 			continue
 		}
 
-		sidebarItems[itemIndex].AdditionalClasses = " text-speedia-500"
-		break
+		if item.Link == currentUrl {
+			item.AdditionalClasses = " text-speedia-500"
+		}
+
+		activeSidebarItems = append(activeSidebarItems, item)
 	}
 
-	return sidebarItems
+	return activeSidebarItems
 }
 
 templ Sidebar(currentUrl string) {
@@ -96,18 +100,16 @@ templ Sidebar(currentUrl string) {
 		<div id="sidebarMenu" onscroll="toggleScrollButton()" class="mt-2 flex-1 w-full overflow-y-auto scrollbar-hide hover:scrollbar-show">
 			<ul>
 				for _, item := range sidebarItemsGetter(currentUrl) {
-					if item.Link != "" {
-						<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
-							<a href={ templ.URL(item.Link) }>
-								<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
-									<i class={ "ph-duotone " + item.Icon + " block text-xl" }></i>
-								</div>
-								<div class="text-center text-sm">
-									{ item.Label }
-								</div>
-							</a>
-						</li>
-					}
+					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
+						<a href={ templ.URL(item.Link) }>
+							<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
+								<i class={ "ph-duotone " + item.Icon + " block text-xl" }></i>
+							</div>
+							<div class="text-center text-sm">
+								{ item.Label }
+							</div>
+						</a>
+					</li>
 				}
 			</ul>
 		</div>
