@@ -6,14 +6,6 @@ import (
 	"os"
 )
 
-script MainLayoutState() {
-	document.addEventListener('alpine:initializing', () => {
-		Alpine.store('main', {
-			textualViewSelector: Alpine.$persist(false).as('dash.textualViewSelector'),
-		});
-	});
-}
-
 script DevWsHotReload() {
 	hotReloadWs = new WebSocket("wss://" + document.location.host + "/dev/hot-reload");
 	hotReloadWs.onclose = (() => {
@@ -104,7 +96,6 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 			}
 		</head>
 		<body class="bg-os-500 flex text-white">
-			@MainLayoutState()
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->
