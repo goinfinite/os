@@ -19,7 +19,7 @@ templ MappingTypeSelectInput(id, label, bindModelPath, onClick string) {
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", formatMappingType(mappingType),
-				mappingType, bindModelPath, onClick,
+				"ph-check-fat", mappingType, bindModelPath, onClick,
 			)
 		}
 	</div>
