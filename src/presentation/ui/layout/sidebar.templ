@@ -50,9 +50,6 @@ templ Sidebar(currentUrl string) {
 		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 		window.location.href = "/_/#/login";
 	}
-	function openSettings() {
-		window.location.href = "/_/#/settings";
-	}
     function scrollToTop() {
 		const menu = document.getElementById("sidebarMenu");
 		menu.scrollTo({ top: 0, behavior: 'smooth' });
