@@ -241,7 +241,7 @@ templ CreateVhostModal() {
 	}
 }
 
-func filterOnlyVhostsHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
+func getVirtualHostHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
 	vhostsHostnames := []string{}
 	for _, vhostWithMapping := range vhostsWithMappings {
 		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
@@ -272,7 +272,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", filterOnlyVhostsHostnames(vhostsWithMappings), true, false)
+				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", getVirtualHostHostnames(vhostsWithMappings), true, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
