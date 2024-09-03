@@ -22,7 +22,7 @@ script MappingsIndexLocalState() {
 					'hostname': '',
 					'type': 'top-level',
 					'rootDirectory': '',
-					'parentHostname': null
+					'parentHostname': ''
 				}
 				this.mapping = {
 					'id': 0,
@@ -44,7 +44,14 @@ script MappingsIndexLocalState() {
 				this.isAdvancedSettingsClosed = true;
 				this.isCreateMappingFromVhost = false;
 			},
-			get isCreateMappingSubmitButtonBlock() {
+			get isCreateVhostSubmitButtonBlocked() {
+				if (this.virtualHost.type == 'top-level') {
+					return this.virtualHost.hostname == ''
+				}
+
+				return this.virtualHost.hostname == '' || this.virtualHost.parentHostname == ''
+			},
+			get isCreateMappingSubmitButtonBlocked() {
 				const isTargetValueRequired = this.mapping.targetType != 'response-code' && this.mapping.targetType != 'static-files'
 				if (isTargetValueRequired) {
 					return this.mapping.targetValue == ''
@@ -228,7 +235,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
 			</div>
 		</template>
-		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "virtualHost.hostname == ''", false)
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "isCreateVhostSubmitButtonBlocked", false)
 	</form>
 }
 
@@ -309,7 +316,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				</div>
 			</details>
 		</section>
-		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "isCreateMappingSubmitButtonActive", false)
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "isCreateMappingSubmitButtonBlocked", false)
 	</form>
 }
 
