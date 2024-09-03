@@ -11,55 +11,55 @@ import (
 script MappingsIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('mappings', () => ({
-            // Primary states
-            virtualHost: {},
-            get vhostHostnameWithTrailingSlash() {
-                return this.virtualHost.hostname + "/"
-            },
-            mapping: {},
-            resetPrimaryStates() {
+			// Primary states
+			virtualHost: {},
+			get vhostHostnameWithTrailingSlash() {
+				return this.virtualHost.hostname + "/"
+			},
+			mapping: {},
+			resetPrimaryStates() {
 				this.virtualHost = {
-                    'hostname': '',
-                    'type': 'top-level',
-                    'rootDirectory': '',
-                    'parentHostname': null
-                }
-                this.mapping = {
-                    'id': 0,
-                    'path': '',
-                    'matchPattern': 'begins-with',
-                    'targetType': 'url',
-                    'targetValue': '',
-                    'targetHttpResponseCode': 200
-                }
-            },
+					'hostname': '',
+					'type': 'top-level',
+					'rootDirectory': '',
+					'parentHostname': null
+				}
+				this.mapping = {
+					'id': 0,
+					'path': '',
+					'matchPattern': 'begins-with',
+					'targetType': 'url',
+					'targetValue': '',
+					'targetHttpResponseCode': 200
+				}
+			},
 			init() {
 				this.resetPrimaryStates();
 			},
 
-            // Auxiliary states
-            isAdvancedSettingsClosed: true,
-            isCreateMappingFromVhost: false,
-            resetAuxiliaryStates() {
-                this.isAdvancedSettingsClosed = true;
-                this.isCreateMappingFromVhost = false;
-            },
-            clearMappingTargetValue() {
-                this.mapping.targetValue = '';
-            },
+			// Auxiliary states
+			isAdvancedSettingsClosed: true,
+			isCreateMappingFromVhost: false,
+			resetAuxiliaryStates() {
+				this.isAdvancedSettingsClosed = true;
+				this.isCreateMappingFromVhost = false;
+			},
+			clearMappingTargetValue() {
+				this.mapping.targetValue = '';
+			},
 
-            // Modal states
+			// Modal states
 			isCreateVhostModalOpen: false,
 			openCreateVhostModal() {
 				this.resetPrimaryStates();
 
 				this.isCreateVhostModalOpen = true;
 			},
-            closeCreateVhostModal() {
-                this.isCreateVhostModalOpen = false;
-            },
-            isDeleteVhostModalOpen: false,
-            openDeleteVhostModal(vhostHostname) {
+			closeCreateVhostModal() {
+				this.isCreateVhostModalOpen = false;
+			},
+			isDeleteVhostModalOpen: false,
+			openDeleteVhostModal(vhostHostname) {
 				this.resetPrimaryStates();
 
 				this.virtualHost.hostname = vhostHostname;
@@ -74,31 +74,31 @@ script MappingsIndexLocalState() {
 					'/api/v1/vhosts/' + this.virtualHost.hostname + '/',
 					{swap: 'none'},
 				);
-                this.removeAvailableVhostHostname();
+				this.removeAvailableVhostHostname();
 				this.closeDeleteVhostModal();
 			},
-            isCreateMappingModalOpen: false,
-            openCreateMappingModal() {
+			isCreateMappingModalOpen: false,
+			openCreateMappingModal() {
 				this.resetPrimaryStates();
-                this.resetAuxiliaryStates();
+				this.resetAuxiliaryStates();
 
-                this.isCreateMappingModalOpen = true;
-            },
-            isCreateMappingFromVhostModalOpen: false,
-            openCreateMappingFromVhostModal(vhostHostname) {
+				this.isCreateMappingModalOpen = true;
+			},
+			isCreateMappingFromVhostModalOpen: false,
+			openCreateMappingFromVhostModal(vhostHostname) {
 				this.resetPrimaryStates();
-                this.resetAuxiliaryStates();
+				this.resetAuxiliaryStates();
 
-                this.virtualHost.hostname = vhostHostname
+				this.virtualHost.hostname = vhostHostname
 				this.isCreateMappingFromVhostModalOpen = true;
-                this.isCreateMappingFromVhost = true;
-            },
-            closeCreateMappingModal() {
-                this.isCreateMappingModalOpen = false;
-                this.isCreateMappingFromVhostModalOpen = false;
-            },
-            isDeleteMappingModalOpen: false,
-            openDeleteMappingModal(mappingId, mappingPath) {
+				this.isCreateMappingFromVhost = true;
+			},
+			closeCreateMappingModal() {
+				this.isCreateMappingModalOpen = false;
+				this.isCreateMappingFromVhostModalOpen = false;
+			},
+			isDeleteMappingModalOpen: false,
+			openDeleteMappingModal(mappingId, mappingPath) {
 				this.resetPrimaryStates();
 
 				this.mapping.id = mappingId;
