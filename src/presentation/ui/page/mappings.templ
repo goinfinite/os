@@ -44,6 +44,14 @@ script MappingsIndexLocalState() {
 				this.isAdvancedSettingsClosed = true;
 				this.isCreateMappingFromVhost = false;
 			},
+			get isCreateMappingSubmitButtonBlock() {
+				const isTargetValueRequired = this.mapping.targetType != 'response-code' && this.mapping.targetType != 'static-files'
+				if (isTargetValueRequired) {
+					return this.mapping.targetValue == ''
+				}
+
+				return this.virtualHost.hostname == ''
+			},
 			clearMappingTargetValue() {
 				this.mapping.targetValue = '';
 			},
@@ -131,8 +139,8 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					"ph-graph")
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false, false)
-				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false, false)
+				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
+				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
 			</div>
 		</div>
 		<div id="mappings-tables" class="card w-full">
@@ -223,12 +231,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
 			</div>
 		</template>
-		<template x-if="virtualHost.hostname == ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModal()", false, true)
-		</template>
-		<template x-if="virtualHost.hostname != ''">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateVhostModal()", false, false)
-		</template>
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "virtualHost.hostname == ''", false)
 	</form>
 }
 
@@ -309,12 +312,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				</div>
 			</details>
 		</section>
-		<template x-if="virtualHost.hostname == '' || ((mapping.targetType != 'response-code' && mapping.targetType != 'static-files') && mapping.targetValue == '')">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "", false, true)
-		</template>
-		<template x-if="virtualHost.hostname != '' && ((mapping.targetType == 'response-code' || mapping.targetType == 'static-files') || mapping.targetValue != '')">
-			@componentForm.SubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", false, false)
-		</template>
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "isCreateMappingSubmitButtonActive", false)
 	</form>
 }
 
