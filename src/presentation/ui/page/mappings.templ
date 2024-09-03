@@ -13,6 +13,9 @@ script MappingsIndexLocalState() {
 		Alpine.data('mappings', () => ({
             // Primary states
             virtualHost: {},
+            get vhostHostnameWithTrailingSlash() {
+                return this.virtualHost.hostname + "/"
+            },
             mapping: {},
             resetPrimaryStates() {
 				this.virtualHost = {
@@ -37,9 +40,6 @@ script MappingsIndexLocalState() {
             // Auxiliary states
             isAdvancedSettingsClosed: true,
             isCreateMappingFromVhost: false,
-            get vhostWithTrailingSlash() {
-                return this.virtualHost.hostname + "/"
-            },
             resetAuxiliaryStates() {
                 this.isAdvancedSettingsClosed = true;
                 this.isCreateMappingFromVhost = false;
@@ -274,7 +274,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			<template x-if="!isCreateMappingFromVhost">
 				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", filterOnlyVhostsHostnames(vhostsWithMappings), true, false)
 			</template>
-			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostWithTrailingSlash", false)
+			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
