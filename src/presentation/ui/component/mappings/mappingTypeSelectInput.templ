@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func formatMappingType(mappingType string) string {
+func parseMappingTypeToLabelFormat(mappingType string) string {
 	typeWithoutHyphen := strings.ReplaceAll(mappingType, "-", " ")
 	upperCaser := cases.Title(language.English)
 	return upperCaser.String(typeWithoutHyphen)
@@ -18,7 +18,7 @@ templ MappingTypeSelectInput(id, label, bindModelPath, onClick string) {
 	<div class="flex flex-wrap space-x-3 -mb-5">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
-				"targetType", formatMappingType(mappingType),
+				"targetType", parseMappingTypeToLabelFormat(mappingType),
 				"ph-check-fat", mappingType, bindModelPath, onClick,
 			)
 		}
