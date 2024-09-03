@@ -141,7 +141,7 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			</div>
 		</div>
 		<div id="mappings-tables" class="card w-full">
-			@MappingsRegularFormTable(vhostsWithMappings)
+			@MappingsFormTable(vhostsWithMappings)
 		</div>
 		@CreateVhostModal()
 		@componentStructural.DeleteModal(
@@ -157,9 +157,9 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	</div>
 }
 
-templ MappingsRegularFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<table
-		id="vhosts-with-mappings-regular-form-table"
+		id="vhosts-with-mappings-form-table"
 		hx-get="/mappings/"
 		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 		hx-select="#mappings-tables"
