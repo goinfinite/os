@@ -295,7 +295,6 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 		<template x-if="mapping.targetType == 'response-code'">
 			<div class="mb-6 space-y-6">
 				@componentMappings.ResponseCodeSelectInput("targetValue", "Response Code", "mapping.targetValue")
-				<input type="hidden" x-model="mapping.targetValue" x-bind:value="mapping.targetHttpResponseCode"/>
 			</div>
 		</template>
 		<section class="mb-6 w-full rounded-md">
