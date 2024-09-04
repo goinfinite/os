@@ -3,6 +3,7 @@ package componentForm
 templ InputField(
 	inputType, id, label, bindValuePath string, denseMode bool,
 ) {
+	<!-- InputField -->
 	<div class="relative w-full">
 		<input
 			type={ inputType }
@@ -33,6 +34,7 @@ templ InputField(
 templ InputFieldWithPrefix(
 	inputType, id, label, bindValuePath, prefix string, denseMode bool,
 ) {
+	<!-- InputFieldWithPrefix -->
 	<div class="relative w-full">
 		<div class="flex items-center border-os-200 border rounded-md hover:border-os-100 focus:border-os-50">
 			<span class="bg-os-200 h-10 px-3 border-r border-os-200 rounded-s-md pt-2.7 text-slate-400 text-sm relative cursor-default" x-text={ prefix }></span>
@@ -63,9 +65,10 @@ templ InputFieldWithPrefix(
 	</div>
 }
 
-templ ReadOnlyField(
+templ InputFieldReadOnly(
 	inputType, id, label, bindValuePath string, denseMode bool,
 ) {
+	<!-- InputFieldReadOnly -->
 	<div class="relative w-full">
 		<input
 			type={ inputType }

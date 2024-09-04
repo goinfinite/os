@@ -1,7 +1,7 @@
 package componentStructural
 
 templ TagWithIcon(tagIcon, tagDescription, tagColor string) {
-	<!-- Tag -->
+	<!-- TagWithIcon -->
 	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
 		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
 			<i class={ "ph-duotone " + tagIcon + " mx-2 text-lg" } style="margin-bottom: 2px;"></i>
@@ -13,7 +13,7 @@ templ TagWithIcon(tagIcon, tagDescription, tagColor string) {
 }
 
 templ TagWithTitle(tagTitle, tagDescription, tagColor string) {
-	<!-- Tag -->
+	<!-- TagWithTitle -->
 	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
 		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
 			<span class={ "mx-2 text-white" } style="margin-bottom: 2px;">{ tagTitle }</span>

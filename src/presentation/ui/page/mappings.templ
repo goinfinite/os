@@ -301,7 +301,7 @@ templ CreateMappingForm() {
 		<div class="-mt-4 my-6 space-y-6">
 			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", "mappingTypeShortDescription")
 			<template x-if="isCreateMappingFromVhost">
-				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
+				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
 				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "availableVhostHostnames", true, false)
