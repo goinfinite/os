@@ -1,0 +1,48 @@
+package page
+
+import componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+
+script DatabasesIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('databases', () => ({
+			// Primary states
+			database: {},
+			databaseUser: {},
+			resetPrimaryStates() {
+				this.database = {
+					'name': '',
+					'type': '',
+					'size': ''
+				}
+				this.databaseUser = {
+					'username': '',
+					'dbName': '',
+					'dbType': '',
+					'privileges': []
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Auxiliary states
+
+			// Modal states
+		}))
+	})
+}
+
+templ DatabasesIndex() {
+	@DatabasesIndexLocalState()
+	<div class="flex flex-col" x-data="databases">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"Databases",
+					"",
+					"ph-database",
+				)
+			</div>
+		</div>
+	</div>
+}
