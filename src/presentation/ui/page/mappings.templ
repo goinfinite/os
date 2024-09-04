@@ -8,7 +8,7 @@ import (
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 )
 
-script MappingsIndexLocalState() {
+script MappingsIndexLocalState(vhostsWithMappings []dto.VirtualHostWithMappings) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('mappings', () => ({
 			// Primary states
@@ -51,6 +51,14 @@ script MappingsIndexLocalState() {
 
 				return this.virtualHost.hostname == '' || this.virtualHost.parentHostname == ''
 			},
+			get getAvailableVhostHostnames() {
+				const availableVhostsHostnames = []
+				for (let vhostWithMapping of vhostsWithMappings) {
+					availableVhostsHostnames.push(vhostWithMapping.hostname)
+				}
+
+				return availableVhostsHostnames
+			},
 			get isCreateMappingSubmitButtonBlocked() {
 				const isTargetValueRequired = this.mapping.targetType != 'response-code' && this.mapping.targetType != 'static-files'
 				if (isTargetValueRequired) {
@@ -86,7 +94,6 @@ script MappingsIndexLocalState() {
 					'/api/v1/vhosts/' + this.virtualHost.hostname + '/',
 					{swap: 'none'},
 				);
-				this.removeAvailableVhostHostname();
 				this.closeDeleteVhostModal();
 			},
 			isCreateMappingModalOpen: false,
@@ -133,14 +140,15 @@ script MappingsIndexLocalState() {
 }
 
 templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
-	@MappingsIndexLocalState()
+	@MappingsIndexLocalState(vhostsWithMappings)
 	<div class="flex flex-col" x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
 				@componentStructural.PageTitle(
 					"Mappings",
 					"Configure how the server handles different URLs and paths. You can specify where static files are located, set responses for HTTP status codes, redirect requests to different URLs, add inline HTML content, and adjust how the server interacts with services like PHP.",
-					"ph-graph")
+					"ph-graph",
+				)
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
@@ -155,8 +163,8 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
 			"virtualHost.hostname", "virtualHost.hostname",
 		)
-		@CreateMappingModal(vhostsWithMappings)
-		@CreateMappingFromVhostModal(vhostsWithMappings)
+		@CreateMappingModal()
+		@CreateMappingFromVhostModal()
 		@componentStructural.DeleteModal(
 			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 			"mapping.path", "mapping.id",
@@ -166,7 +174,6 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 
 templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<table
-		id="vhosts-with-mappings-form-table"
 		hx-get="/mappings/"
 		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 		hx-select="#mappings-tables"
@@ -182,9 +189,9 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<div class="flex justify-between items-center">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
-								@componentStructural.RoundButton("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping", "")
+								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping", "")
 								if vhostWithMappings.Type != "primary" {
-									@componentStructural.RoundButton("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host", "")
+									@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host", "")
 								}
 							</div>
 						</div>
@@ -211,6 +218,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 
 templ CreateVhostForm() {
 	<form
+		id="create-vhost"
 		hx-post="/api/v1/vhosts/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -248,7 +256,9 @@ templ CreateVhostModal() {
 	}
 }
 
-func getVirtualHostHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
+func getVirtualHostHostnames(
+	vhostsWithMappings []dto.VirtualHostWithMappings,
+) []string {
 	vhostsHostnames := []string{}
 	for _, vhostWithMapping := range vhostsWithMappings {
 		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
@@ -266,7 +276,7 @@ func getOnlyServiceNames() []string {
 	return onlyServiceNames
 }
 
-templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingForm() {
 	<form
 		hx-post="/api/v1/vhosts/mapping/"
 		hx-indicator="#loading-overlay"
@@ -279,7 +289,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", getVirtualHostHostnames(vhostsWithMappings), true, false)
+				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "getAvailableVhostHostnames", true, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
@@ -320,20 +330,20 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	</form>
 }
 
-templ CreateMappingModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingModal() {
 	@componentStructural.Modal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsWithMappings)
+		@CreateMappingForm()
 	}
 }
 
-templ CreateMappingFromVhostModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingFromVhostModal() {
 	@componentStructural.Modal(
 		"Create Mapping", "isCreateMappingFromVhostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsWithMappings)
+		@CreateMappingForm()
 	}
 }
