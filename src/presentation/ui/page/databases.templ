@@ -1,6 +1,9 @@
 package page
 
-import componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+import (
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
 
 script DatabasesIndexLocalState() {
     document.addEventListener('alpine:init', () => {
@@ -26,6 +29,7 @@ script DatabasesIndexLocalState() {
 			},
 
 			// Auxiliary states
+			selectedDatabaseType: "mariadb",
 
 			// Modal states
 		}))
@@ -44,5 +48,15 @@ templ DatabasesIndex() {
 				)
 			</div>
 		</div>
+		<div id="databases-tabs" class="card w-full">
+			@DatabasesTabs()
+		</div>
+	</div>
+}
+
+templ DatabasesTabs() {
+	@componentStructural.Tab(valueObject.GetDatabaseTypes(), "selectedDatabaseType", "")
+	<div id="databases-table" class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
+		<!-- DatabasesFormTable -->
 	</div>
 }

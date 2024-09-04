@@ -31,8 +31,12 @@ func NewDatabaseType(value interface{}) (dbType DatabaseType, err error) {
 	return DatabaseType(stringValue), nil
 }
 
+func GetDatabaseTypes() []string {
+	return maps.Keys(databaseTypesWithAliases)
+}
+
 func databaseTypeAdapter(value string) (string, error) {
-	databaseTypes := maps.Keys(databaseTypesWithAliases)
+	databaseTypes := GetDatabaseTypes()
 	if slices.Contains(databaseTypes, value) {
 		return value, nil
 	}
