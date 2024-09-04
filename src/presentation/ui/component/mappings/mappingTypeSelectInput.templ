@@ -14,13 +14,14 @@ func parseMappingTypeToLabelFormat(mappingType string) string {
 	return upperCaser.String(typeWithoutHyphen)
 }
 
-templ MappingTypeSelectInput(id, label, bindModelPath, onClick string) {
-	<div class="space-x-3 -mb-5 -ml-3">
+templ MappingTypeSelectInput(id, label, bindModelPath, shortDescription string) {
+	<div class="space-x-3 -ml-3">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", parseMappingTypeToLabelFormat(mappingType),
-				"ph-check-fat", mappingType, bindModelPath, onClick,
+				"ph-check-fat", mappingType, bindModelPath, "",
 			)
 		}
+		<p x-text={ shortDescription } class="text-sm"></p>
 	</div>
 }
