@@ -51,7 +51,7 @@ script MappingsIndexLocalState(vhostsWithMappings []dto.VirtualHostWithMappings)
 
 				return this.virtualHost.hostname == '' || this.virtualHost.parentHostname == ''
 			},
-			get getAvailableVhostHostnames() {
+			get availableVhostHostnames() {
 				const availableVhostsHostnames = []
 				for (let vhostWithMapping of vhostsWithMappings) {
 					availableVhostsHostnames.push(vhostWithMapping.hostname)
@@ -289,7 +289,7 @@ templ CreateMappingForm() {
 				@componentForm.ReadOnlyField("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "getAvailableVhostHostnames", true, false)
+				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "availableVhostHostnames", true, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
