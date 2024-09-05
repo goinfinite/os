@@ -86,17 +86,17 @@ templ SelectInputFromAlpine(
 	</div>
 }
 
-type SelectOption struct {
+type SelectInputCustomOption struct {
 	Label string
 	Value string
 }
 
-templ SelectInputWithDescription(
+templ SelectInputWithCustomOptions(
 	id, label, bindValuePath string,
-	options []SelectOption,
+	options []SelectInputCustomOption,
 	includeBlankOption, denseMode bool,
 ) {
-	<!-- SelectInputWithDescription -->
+	<!-- SelectInputWithCustomOptions -->
 	<div class="relative w-full">
 		<select
 			id={ id }
