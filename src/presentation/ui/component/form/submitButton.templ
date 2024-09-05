@@ -22,7 +22,7 @@ templ SubmitButton(
 	</button>
 }
 
-func getBlockableSubmitButtonClasses(denseMode, isBlocked bool) string {
+func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
 	classes := "w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
 	if denseMode {
 		classes = "rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
@@ -35,29 +35,29 @@ func getBlockableSubmitButtonClasses(denseMode, isBlocked bool) string {
 	return classes + " bg-speedia-500 hover:bg-speedia-300"
 }
 
-templ BlockableSubmitButton(
-	label, icon, onClick, blockCondition string,
+templ DeactivatableSubmitButton(
+	label, icon, onClick, bindDeactivationCondition string,
 	denseMode bool,
 ) {
-	<!-- BlockedSubmitButton -->
+	<!-- DeactivatedSubmitButton -->
 	<button
-		x-show={ blockCondition }
+		x-show={ bindDeactivationCondition }
 		type="button"
-		class={ getBlockableSubmitButtonClasses(denseMode, true) }
+		class={ getDeactivatableSubmitButtonClasses(denseMode, true) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
 		}
 		{ label }
 	</button>
-	<!-- NonBlockedSubmitButton -->
+	<!-- ActivatedSubmitButton -->
 	<button
-		x-show={ "!" + blockCondition }
+		x-show={ "!" + bindDeactivationCondition }
 		type="submit"
 		if onClick != "" {
 			@click={ onClick }
 		}
-		class={ getBlockableSubmitButtonClasses(denseMode, false) }
+		class={ getDeactivatableSubmitButtonClasses(denseMode, false) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
