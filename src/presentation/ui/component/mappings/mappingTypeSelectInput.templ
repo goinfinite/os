@@ -20,7 +20,7 @@ templ MappingTypeSelectInput(id, label, bindModelPath, shortDescription string) 
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", parseMappingTypeToLabelFormat(mappingType),
-				"ph-check-fat", mappingType, bindModelPath, "",
+				mappingType, bindModelPath,
 			)
 		}
 		<p x-text={ shortDescription } class="text-sm"></p>
