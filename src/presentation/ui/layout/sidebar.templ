@@ -58,7 +58,7 @@ templ Sidebar(currentUrl string) {
 		const menu = document.getElementById("sidebarMenu");
 		menu.scrollTo({ top: 0, behavior: 'smooth' });
 	}
-	function toggleScrollButton() {
+	function toggleDisplayScrollButton() {
 		const menu = document.getElementById("sidebarMenu");
 		const scrollButton = document.getElementById("scrollButton");
 		if (menu.scrollTop > 0) {
@@ -97,7 +97,7 @@ templ Sidebar(currentUrl string) {
 		>
 			<i class="ph-duotone ph-arrow-fat-up block"></i>
 		</button>
-		<div id="sidebarMenu" onscroll="toggleScrollButton()" class="mt-2 flex-1 w-full overflow-y-auto scrollbar-hide hover:scrollbar-show">
+		<div id="sidebarMenu" onscroll="toggleDisplayScrollButton()" class="mt-2 flex-1 w-full overflow-y-auto scrollbar-hide hover:scrollbar-show">
 			<ul>
 				for _, item := range sidebarItemsGetter(currentUrl) {
 					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
