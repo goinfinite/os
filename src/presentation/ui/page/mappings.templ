@@ -196,8 +196,8 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							</div>
 						</div>
 						<div class="flex space-x-3 mt-4">
-							@componentStructural.TagWithIcon("ph-folder-open", vhostWithMappings.RootDirectory.String(), "speedia-300")
-							@componentStructural.TagWithIcon("ph-file-text", vhostWithMappings.Type.String(), "speedia-300")
+							@componentStructural.TagWithIconPrefix("ph-folder-open", vhostWithMappings.RootDirectory.String(), "speedia-300")
+							@componentStructural.TagWithIconPrefix("ph-file-text", vhostWithMappings.Type.String(), "speedia-300")
 						</div>
 					</div>
 					<div class="w-4"></div>
