@@ -54,11 +54,11 @@ templ Sidebar(currentUrl string) {
 		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 		window.location.href = "/_/#/login";
 	}
-    function scrollToTop() {
+	function scrollToTop() {
 		const menu = document.getElementById("sidebarMenu");
 		menu.scrollTo({ top: 0, behavior: 'smooth' });
 	}
-    function toggleScrollButton() {
+	function toggleScrollButton() {
 		const menu = document.getElementById("sidebarMenu");
 		const scrollButton = document.getElementById("scrollButton");
 		if (menu.scrollTop > 0) {
@@ -69,7 +69,7 @@ templ Sidebar(currentUrl string) {
 	}
 	</script>
 	<!-- Sidebar HTML -->
-	<sidebar class="bg-os-900 flex h-screen w-30 flex-col items-center">
+	<sidebar id="sidebar" class="bg-os-900 flex h-screen w-30 flex-col items-center">
 		<div class="my-7">
 			<a
 				href="/_/#/overview"
@@ -114,11 +114,4 @@ templ Sidebar(currentUrl string) {
 			</ul>
 		</div>
 	</sidebar>
-	<!-- Sidebar CSS -->
-	<style>
-        ::-webkit-scrollbar {
-            width: 0;
-            height: 0;
-        }
-    </style>
 }
