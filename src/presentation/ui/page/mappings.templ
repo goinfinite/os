@@ -44,14 +44,14 @@ script MappingsIndexLocalState(vhostsWithMappings []dto.VirtualHostWithMappings)
 				this.isAdvancedSettingsClosed = true;
 				this.isCreateMappingFromVhost = false;
 			},
-			get isCreateVhostSubmitButtonBlocked() {
+			get shouldDisableCreateVhostSubmitButton() {
 				if (this.virtualHost.type == 'top-level') {
 					return this.virtualHost.hostname == ''
 				}
 
 				return this.virtualHost.hostname == '' || this.virtualHost.parentHostname == ''
 			},
-			get availableVhostHostnames() {
+			get existentVhostHostnames() {
 				const availableVhostsHostnames = []
 				for (let vhostWithMapping of vhostsWithMappings) {
 					availableVhostsHostnames.push(vhostWithMapping.hostname)
@@ -59,7 +59,7 @@ script MappingsIndexLocalState(vhostsWithMappings []dto.VirtualHostWithMappings)
 
 				return availableVhostsHostnames
 			},
-			get isCreateMappingSubmitButtonBlocked() {
+			get shouldDisableCreateMappingSubmitButton() {
 				const isTargetValueRequired = this.mapping.targetType != 'response-code' && this.mapping.targetType != 'static-files'
 				if (isTargetValueRequired) {
 					return this.mapping.targetValue == ''
@@ -190,7 +190,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
 								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping", "")
-								if vhostWithMappings.Type != "primary" {
+								if vhostWithMappings.Type.String() != "primary" {
 									@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host", "")
 								}
 							</div>
@@ -243,7 +243,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
 			</div>
 		</template>
-		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "isCreateVhostSubmitButtonBlocked", false)
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "shouldDisableCreateVhostSubmitButton", false)
 	</form>
 }
 
@@ -254,17 +254,6 @@ templ CreateVhostModal() {
 	) {
 		@CreateVhostForm()
 	}
-}
-
-func getVirtualHostHostnames(
-	vhostsWithMappings []dto.VirtualHostWithMappings,
-) []string {
-	vhostsHostnames := []string{}
-	for _, vhostWithMapping := range vhostsWithMappings {
-		vhostsHostnames = append(vhostsHostnames, vhostWithMapping.Hostname.String())
-	}
-
-	return vhostsHostnames
 }
 
 func getOnlyServiceNames() []string {
@@ -288,7 +277,7 @@ templ CreateMappingForm() {
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "availableVhostHostnames", true, false)
+				@componentForm.SelectInputFromAlpine("hostname", "Hostname", "virtualHost.hostname", "existentVhostHostnames", true, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
@@ -325,7 +314,7 @@ templ CreateMappingForm() {
 				</div>
 			</details>
 		</section>
-		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "isCreateMappingSubmitButtonBlocked", false)
+		@componentForm.BlockableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "shouldDisableCreateMappingSubmitButton", false)
 	</form>
 }
 
