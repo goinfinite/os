@@ -67,22 +67,6 @@ script MappingsIndexLocalState(vhostsWithMappings []dto.VirtualHostWithMappings)
 
 				return this.virtualHost.hostname == ''
 			},
-			get mappingTypeShortDescription() {
-				switch (this.mapping.targetType) {
-					case 'url':
-						return 'Set up direct redirects to an URL.'
-					case 'service':
-						return 'Configure how requests are forwarded to backend services, such as PHP, for handling dynamic content.'
-					case 'response-code':
-						return 'Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).'
-					case 'inline-html':
-						return 'Send a specific HTTP status code along with HTML content in the server\'s response.'
-					case 'static-files':
-						return 'Set the root directory to make static files accessible. The server will attempt to locate files in various locations until it finds one that exists.'
-					default:
-						return 'No description.'
-				}
-			},
 
 			// Modal states
 			isCreateVhostModalOpen: false,
@@ -299,7 +283,7 @@ templ CreateMappingForm() {
 		hx-swap="none"
 	>
 		<div class="-mt-4 my-6 space-y-6">
-			@componentMappings.MappingTypeSelectInput("targetType", "Type", "mapping.targetType", "mappingTypeShortDescription")
+			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
 			<template x-if="isCreateMappingFromVhost">
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>

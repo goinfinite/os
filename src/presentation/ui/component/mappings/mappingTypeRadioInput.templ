@@ -1,0 +1,32 @@
+package componentMappings
+
+import (
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"strings"
+)
+
+func transformMappingTypeIntoLabelFormat(mappingType string) string {
+	typeWithoutHyphen := strings.ReplaceAll(mappingType, "-", " ")
+	upperCaser := cases.Title(language.English)
+	return upperCaser.String(typeWithoutHyphen)
+}
+
+templ MappingTypeRadioInput(id, label, bindModelPath string) {
+	<!-- MappingTypeSelectInput -->
+	<div class="space-x-3 -ml-3">
+		for _, mappingType := range valueObject.ValidMappingTargetTypes {
+			@componentForm.RadioInput(
+				"targetType", transformMappingTypeIntoLabelFormat(mappingType),
+				mappingType, bindModelPath,
+			)
+		}
+		<p x-show={ bindModelPath + " == 'url'" } class="text-sm">Set up direct redirects to an URL.</p>
+		<p x-show={ bindModelPath + " == 'service'" } class="text-sm">Configure how requests are forwarded to backend services, such as PHP, for handling dynamic content.</p>
+		<p x-show={ bindModelPath + " == 'response-code'" } class="text-sm">Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).</p>
+		<p x-show={ bindModelPath + " == 'inline-html'" } class="text-sm">Send a specific HTTP status code along with HTML content in the server\'s response.</p>
+		<p x-show={ bindModelPath + " == 'static-files'" } class="text-sm">Set the root directory to make static files accessible. The server will attempt to locate files in various locations until it finds one that exists.</p>
+	</div>
+}
