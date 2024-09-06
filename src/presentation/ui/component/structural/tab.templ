@@ -11,7 +11,7 @@ func getTabItemClasses(active bool) string {
 
 templ Tab(
 	tabItems []string,
-	bindActiveItem string,
+	activeItem string,
 ) {
 	<!-- Tab -->
 	<ul class="flex text-sm w-fit font-medium text-center text-os-500 rounded-t-lg bg-os-800 pt-3.5 px-4">
@@ -20,7 +20,7 @@ templ Tab(
 				<button
 					id={ item + "-tab-item" }
 					type="button"
-					x-bind:class={ "'" + item + "' == " + bindActiveItem + " ? '" + getTabItemClasses(true) + "' : '" + getTabItemClasses(false) + "'" }
+					class={ getTabItemClasses(item == activeItem) }
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
 					{ item }
