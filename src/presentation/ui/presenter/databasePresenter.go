@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -64,7 +63,6 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		slog.Debug("GetDatabaseTypeDetailsError", slog.Any("err", err))
 		return nil
 	}
-	log.Printf("DatabaseTypeDetails: %+v", databaseTypeDetails)
 
 	pageContent := page.DatabasesIndex(databaseTypeDetails)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
