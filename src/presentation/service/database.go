@@ -38,7 +38,10 @@ func (service *DatabaseService) Read(input map[string]interface{}) ServiceOutput
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
@@ -71,7 +74,10 @@ func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutp
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	dto := dto.NewCreateDatabase(dbName)
 
@@ -102,7 +108,10 @@ func (service *DatabaseService) Delete(input map[string]interface{}) ServiceOutp
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
 	if err != nil {
@@ -138,7 +147,10 @@ func (service *DatabaseService) CreateUser(
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
 	if err != nil {
@@ -197,7 +209,10 @@ func (service *DatabaseService) DeleteUser(
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
 	if err != nil {

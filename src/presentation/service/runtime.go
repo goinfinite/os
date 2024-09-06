@@ -28,7 +28,10 @@ func (service *RuntimeService) ReadPhpConfigs(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err := sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	hostname, err := valueObject.NewFqdn(input["hostname"])
 	if err != nil {
@@ -48,10 +51,13 @@ func (service *RuntimeService) UpdatePhpConfigs(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	err := sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
 
 	requiredParams := []string{"hostname", "version"}
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	err = serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}

@@ -1,15 +1,17 @@
 package sharedHelper
 
 import (
+	"errors"
+
 	"github.com/speedianet/os/src/domain/valueObject"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	servicesInfra "github.com/speedianet/os/src/infra/services"
 )
 
-func StopIfServiceUnavailable(
+func EnsureServiceAvailability(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	serviceName valueObject.ServiceName,
-) {
+) error {
 	isServiceRunning := true
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(persistentDbSvc)
@@ -23,6 +25,8 @@ func StopIfServiceUnavailable(
 	}
 
 	if !isServiceRunning {
-		panic("ServiceUnavailable: " + serviceName.String())
+		return errors.New("ServiceUnavailable: " + serviceName.String())
 	}
+
+	return nil
 }
