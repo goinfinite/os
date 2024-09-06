@@ -1,17 +1,8 @@
 package componentStructural
 
-func getTabItemClasses(active bool) string {
-	classes := "inline-block py-4 px-5 uppercase rounded-t-md bg-inherit hover:bg-os-300"
-	if !active {
-		return classes + " text-slate-400"
-	}
-
-	return classes + " text-speedia-500 border-b border-speedia-500"
-}
-
 templ Tab(
 	tabItems []string,
-	activeItem string,
+	activeItem, callableOnClick string,
 ) {
 	<!-- Tab -->
 	<ul class="flex text-sm w-fit font-medium text-center text-os-500 rounded-t-lg bg-os-800 pt-3.5 px-4">
@@ -20,7 +11,14 @@ templ Tab(
 				<button
 					id={ item + "-tab-item" }
 					type="button"
-					class={ getTabItemClasses(item == activeItem) }
+					if item == activeItem {
+						class="inline-block py-4 px-5 uppercase rounded-t-md bg-inherit hover:bg-os-300 text-speedia-500 border-b border-speedia-500"
+					} else {
+						class="inline-block py-4 px-5 uppercase rounded-t-md bg-inherit hover:bg-os-300 text-slate-400"
+					}
+					if callableOnClick != "" {
+						@click={ callableOnClick + "('" + item + "')" }
+					}
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
 					{ item }
