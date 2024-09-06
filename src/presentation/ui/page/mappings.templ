@@ -20,17 +20,17 @@ script MappingsIndexLocalState() {
 			resetPrimaryStates() {
 				this.virtualHost = {
 					'hostname': '',
-					'type': 'top-level',
+					'type': '',
 					'rootDirectory': '',
 					'parentHostname': ''
 				}
 				this.mapping = {
 					'id': 0,
 					'path': '',
-					'matchPattern': 'begins-with',
+					'matchPattern': '',
 					'targetType': 'url',
 					'targetValue': '',
-					'targetHttpResponseCode': 200
+					'targetHttpResponseCode': ''
 				}
 			},
 			init() {
@@ -52,8 +52,13 @@ script MappingsIndexLocalState() {
 				return this.virtualHost.hostname == '' || this.virtualHost.parentHostname == ''
 			},
 			get shouldDisableCreateMappingSubmitButton() {
-				const isTargetValueRequired = this.mapping.targetType != 'response-code' && this.mapping.targetType != 'static-files'
+				const isResponseCodeType = this.mapping.targetType == 'response-code'
+				const isTargetValueRequired = isResponseCodeType && this.mapping.targetType != 'static-files'
 				if (isTargetValueRequired) {
+					if (isResponseCodeType) {
+						return this.mapping.targetHttpResponseCode == ''
+					}
+
 					return this.mapping.targetValue == ''
 				}
 
