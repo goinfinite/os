@@ -143,8 +143,8 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				)
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("Create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
-				@componentForm.SubmitButton("Create mapping", "ph-plus-square", "openCreateMappingModal()", false)
+				@componentForm.SubmitButton("create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
+				@componentForm.SubmitButton("create mapping", "ph-plus-square", "openCreateMappingModal()", false)
 			</div>
 		</div>
 		<div
@@ -186,9 +186,9 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<div class="flex justify-between items-center">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
-								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Create mapping", "")
+								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "create mapping", "os-200")
 								if vhostWithMappings.Type.String() != "primary" {
-									@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "Delete virtual host", "")
+									@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')", "delete virtual host", "red-500")
 								}
 							</div>
 						</div>
