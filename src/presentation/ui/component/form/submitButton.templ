@@ -1,0 +1,68 @@
+package componentForm
+
+templ SubmitButton(
+	label, icon, onClick string,
+	denseMode bool,
+) {
+	<!-- SubmitButton -->
+	<button
+		type="submit"
+		if onClick != "" {
+			@click={ onClick }
+		}
+		if denseMode {
+			class="bg-speedia-500 hover:bg-speedia-300 rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+		} else {
+			class="bg-speedia-500 hover:bg-speedia-300 w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+		}
+	>
+		if icon != "" {
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
+		}
+		{ label }
+	</button>
+}
+
+func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
+	classes := "w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+	if denseMode {
+		classes = "rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+	}
+
+	if isBlocked {
+		return classes + " bg-gray-500 cursor-default"
+	}
+
+	return classes + " bg-speedia-500 hover:bg-speedia-300"
+}
+
+templ DeactivatableSubmitButton(
+	label, icon, onClick, deactivationConditionStatePath string,
+	denseMode bool,
+) {
+	<!-- DeactivatedSubmitButton -->
+	<button
+		x-show={ deactivationConditionStatePath }
+		type="button"
+		class={ getDeactivatableSubmitButtonClasses(denseMode, true) }
+	>
+		if icon != "" {
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
+		}
+		{ label }
+	</button>
+	<!-- ActivatedSubmitButton -->
+	<button
+		x-show={ "!" + deactivationConditionStatePath }
+		type="submit"
+		if onClick != "" {
+			@click={ onClick }
+		}
+		class={ getDeactivatableSubmitButtonClasses(denseMode, false) }
+	>
+		if icon != "" {
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
+		}
+		{ label }
+	</button>
+}

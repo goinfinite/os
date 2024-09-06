@@ -1,0 +1,20 @@
+package componentStructural
+
+templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
+	<!-- Tag -->
+	<div class={ "flex rounded-md border-solid border-2 border-" + tagColor + " text-sm" }>
+		<div class={ "bg-" + tagColor + " h-full" }>
+			<div class="flex items-center mx-2 space-x-1">
+				if highlightedIcon != "" {
+					<i class={ "ph-duotone " + highlightedIcon + " text-lg" }></i>
+				}
+				if highlightedLabel != "" {
+					<span class="mb-0.3 text-neutral-50">{ highlightedLabel }</span>
+				}
+			</div>
+		</div>
+		<div class="flex items-center h-full">
+			<span class="mx-2 mb-0.2">{ tagValue }</span>
+		</div>
+	</div>
+}

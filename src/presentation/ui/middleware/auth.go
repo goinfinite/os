@@ -1,8 +1,9 @@
-package apiMiddleware
+package uiMiddleware
 
 import (
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,7 @@ import (
 
 func getAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
-	accessTokenValue valueObject.AccessTokenStr,
+	accessToken valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
@@ -28,10 +29,7 @@ func getAccountIdFromAccessToken(
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo,
-		accessTokenValue,
-		trustedIps,
-		ipAddress,
+		authQueryRepo, accessToken, trustedIps, ipAddress,
 	)
 	if err != nil {
 		return valueObject.AccountId(0), err
@@ -40,18 +38,15 @@ func getAccountIdFromAccessToken(
 	return accessTokenDetails.AccountId, nil
 }
 
-func authError(message string) *echo.HTTPError {
-	return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
-		"status": http.StatusUnauthorized,
-		"body":   message,
-	})
+func shouldSkipUiAuthentication(req *http.Request) bool {
+	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login)/`)
+	return urlSkipRegex.MatchString(req.URL.Path)
 }
 
-func Auth(apiBasePath string) echo.MiddlewareFunc {
+func Authentication() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			shouldSkip := IsSkippableApiCall(c.Request(), apiBasePath)
-			if shouldSkip {
+			if shouldSkipUiAuthentication(c.Request()) {
 				return next(c)
 			}
 
@@ -61,34 +56,34 @@ func Auth(apiBasePath string) echo.MiddlewareFunc {
 				rawAccessToken = accessTokenCookie.Value
 			}
 
+			loginPath := "/_/#/login"
+
 			if rawAccessToken == "" {
 				rawAccessToken = c.Request().Header.Get("Authorization")
 				if rawAccessToken == "" {
-					return authError("MissingAccessToken")
+					return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 				}
 				tokenWithoutPrefix := rawAccessToken[7:]
 				rawAccessToken = tokenWithoutPrefix
 			}
 
-			accessTokenValue, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			accessToken, err := valueObject.NewAccessTokenStr(rawAccessToken)
 			if err != nil {
-				return authError("InvalidAccessToken")
+				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
 			userIpAddress, err := valueObject.NewIpAddress(c.RealIP())
 			if err != nil {
-				return authError("InvalidIpAddress")
+				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
 			authQueryRepo := authInfra.AuthQueryRepo{}
-			accountId, err := getAccountIdFromAccessToken(
-				authQueryRepo, accessTokenValue, userIpAddress,
+			_, err = getAccountIdFromAccessToken(
+				authQueryRepo, accessToken, userIpAddress,
 			)
 			if err != nil {
-				return authError("InvalidAccessToken")
+				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
-
-			c.Set("accountId", accountId.String())
 			return next(c)
 		}
 	}

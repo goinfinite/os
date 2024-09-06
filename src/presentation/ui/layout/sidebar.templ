@@ -1,0 +1,117 @@
+package layout
+
+import infraEnvs "github.com/speedianet/os/src/infra/envs"
+
+type SidebarItem struct {
+	Label             string
+	Icon              string
+	Link              string
+	AdditionalClasses string
+}
+
+func sidebarItemsGetter(currentUrl string) []SidebarItem {
+	sidebarItems := []SidebarItem{
+		{Label: "Overview", Icon: "ph-speedometer", Link: "/_/#/overview/"},
+		{Label: "Accounts", Icon: "ph-users-three", Link: "/_/#/accounts/"},
+		{Label: "Databases", Icon: "ph-database", Link: "/_/#/databases/"},
+		{Label: "Runtime", Icon: "ph-code", Link: "/_/#/runtime/"},
+		{Label: "Cron Jobs", Icon: "ph-clock", Link: "/_/#/crons/"},
+		{Label: "File Manager", Icon: "ph-files", Link: "/_/#/file-manager/"},
+		{Label: "Mappings", Icon: "ph-graph", Link: "/mappings/"},
+		{Label: "SSL Certificate", Icon: "ph-lock", Link: "/_/#/ssl/"},
+		{Label: "Marketplace", Icon: "ph-storefront", Link: "/_/#/marketplace/"},
+		{Label: "Apps", Icon: "ph-circles-four", Link: ""},
+		{Label: "Domains", Icon: "ph-globe", Link: ""},
+		{Label: "Backups", Icon: "ph-cloud-arrow-up", Link: ""},
+		{Label: "Web Servers", Icon: "ph-browsers", Link: ""},
+		{Label: "Metrics", Icon: "ph-chart-bar", Link: ""},
+		{Label: "Logs", Icon: "ph-log", Link: ""},
+		{Label: "Image Optimizer", Icon: "ph-image-square", Link: ""},
+		{Label: "Security", Icon: "ph-shield-checkered", Link: ""},
+		{Label: "Terminal", Icon: "ph-terminal-window", Link: ""},
+	}
+
+	activeSidebarItems := []SidebarItem{}
+	for _, item := range sidebarItems {
+		if item.Link == "" {
+			continue
+		}
+
+		if item.Link == currentUrl {
+			item.AdditionalClasses = " text-speedia-500"
+		}
+
+		activeSidebarItems = append(activeSidebarItems, item)
+	}
+
+	return activeSidebarItems
+}
+
+templ Sidebar(currentUrl string) {
+	<!-- Sidebar JavaScript -->
+	<script defer type="text/javascript">
+	function clearSession() {
+		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		window.location.href = "/_/#/login";
+	}
+	function scrollToTop() {
+		const menu = document.getElementById("sidebarMenu");
+		menu.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+	function toggleScrollButtonDisplay() {
+		const menu = document.getElementById("sidebarMenu");
+		const scrollButton = document.getElementById("scrollButton");
+		if (menu.scrollTop > 0) {
+			scrollButton.style.display = 'flex';
+		} else {
+			scrollButton.style.display = 'none';
+		}
+	}
+	</script>
+	<!-- Sidebar HTML -->
+	<sidebar id="sidebar" class="bg-os-900 flex h-screen w-30 flex-col items-center">
+		<div class="my-7">
+			<a
+				href="/_/#/overview"
+				class="mx-auto mb-2 flex w-[72px] max-w-[72px] items-center justify-center"
+			>
+				<img
+					src="/assets/os-logo.svg"
+					alt="Speedia OS"
+				/>
+			</a>
+			<p class="text-center text-xs">v{ infraEnvs.SpeediaOsVersion }</p>
+		</div>
+		<button
+			type="button"
+			onclick="clearSession()"
+			class="hover:bg-speedia-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
+		>
+			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
+			logout
+		</button>
+		<button
+			id="scrollButton"
+			onclick="scrollToTop()"
+			class="hidden rounded-full border border-neutral-500 bg-transparent transition-all hover:border-transparent hover:bg-speedia-500 p-2 mt-2"
+		>
+			<i class="ph-duotone ph-arrow-fat-up block"></i>
+		</button>
+		<div id="sidebarMenu" onscroll="toggleScrollButtonDisplay()" class="mt-2 flex-1 w-full overflow-y-auto scrollbar-hide hover:scrollbar-show">
+			<ul>
+				for _, item := range sidebarItemsGetter(currentUrl) {
+					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
+						<a href={ templ.URL(item.Link) }>
+							<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
+								<i class={ "ph-duotone " + item.Icon + " block text-xl" }></i>
+							</div>
+							<div class="text-center text-sm">
+								{ item.Label }
+							</div>
+						</a>
+					</li>
+				}
+			</ul>
+		</div>
+	</sidebar>
+}

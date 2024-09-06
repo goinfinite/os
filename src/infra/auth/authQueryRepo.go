@@ -189,7 +189,7 @@ func (repo AuthQueryRepo) getTokenDetailsFromApiKey(
 	return dto.NewAccessTokenDetails(tokenType, accountId, nil), nil
 }
 
-func (repo AuthQueryRepo) GetAccessTokenDetails(
+func (repo AuthQueryRepo) ReadAccessTokenDetails(
 	token valueObject.AccessTokenStr,
 ) (dto.AccessTokenDetails, error) {
 	sessionTokenClaims, err := repo.getSessionTokenClaims(token)

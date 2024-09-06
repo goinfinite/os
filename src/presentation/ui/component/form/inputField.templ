@@ -1,0 +1,94 @@
+package componentForm
+
+templ InputField(
+	inputType, id, label, bindValuePath string, denseMode bool,
+) {
+	<!-- InputField -->
+	<div class="relative w-full">
+		<input
+			type={ inputType }
+			id={ id }
+			name={ id }
+			if bindValuePath != "" {
+				x-model:value={ bindValuePath }
+			}
+			autocomplete="off"
+			placeholder={ label }
+			if denseMode {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full rounded-md border px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
+			} else {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+			}
+		/>
+		if label != "" {
+			<label
+				for={ id }
+				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			>
+				{ label }
+			</label>
+		}
+	</div>
+}
+
+templ InputFieldWithPrefix(
+	inputType, id, label, bindValuePath, prefix string, denseMode bool,
+) {
+	<!-- InputFieldWithPrefix -->
+	<div class="relative w-full">
+		<div class="flex items-center border-os-200 border rounded-md hover:border-os-100 focus:border-os-50">
+			<span class="bg-os-200 h-10 px-3 border-r border-os-200 rounded-s-md pt-2.7 text-slate-400 text-sm relative cursor-default" x-text={ prefix }></span>
+			<input
+				type={ inputType }
+				id={ id }
+				name={ id }
+				if bindValuePath != "" {
+					x-model:value={ bindValuePath }
+				}
+				autocomplete="off"
+				placeholder={ label }
+				if denseMode {
+					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full rounded-r-md px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
+				} else {
+					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+				}
+			/>
+		</div>
+		if label != "" {
+			<label
+				for={ id }
+				class="absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			>
+				{ label }
+			</label>
+		}
+	</div>
+}
+
+templ InputFieldReadOnly(
+	inputType, id, label, bindValuePath string, denseMode bool,
+) {
+	<!-- InputFieldReadOnly -->
+	<div class="relative w-full">
+		<input
+			type={ inputType }
+			id={ id }
+			name={ id }
+			x-model:value={ bindValuePath }
+			if denseMode {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full rounded-md border px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all cursor-default text-slate-400"
+			} else {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all cursor-default text-slate-400"
+			}
+			readonly
+		/>
+		if label != "" {
+			<label
+				for={ id }
+				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			>
+				{ label }
+			</label>
+		}
+	</div>
+}

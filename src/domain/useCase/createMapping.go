@@ -28,14 +28,16 @@ func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error)
 		return createDto, errors.New("MappingMustHaveTargetValue")
 	}
 
-	if isResponseCodeMapping && !hasTargetHttpResponseCode {
-		targetValueStr := createDto.TargetValue.String()
-		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValueStr)
-		if err != nil {
-			return createDto, err
-		}
+	if isResponseCodeMapping {
+		if hasTargetValue {
+			targetValueStr := createDto.TargetValue.String()
+			httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValueStr)
+			if err != nil {
+				return createDto, err
+			}
 
-		createDto.TargetHttpResponseCode = &httpRespondeCode
+			createDto.TargetHttpResponseCode = &httpRespondeCode
+		}
 		createDto.TargetValue = nil
 	}
 

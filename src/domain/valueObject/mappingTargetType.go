@@ -10,7 +10,7 @@ import (
 
 type MappingTargetType string
 
-var validMappingTargetTypes = []string{
+var ValidMappingTargetTypes = []string{
 	"url", "service", "response-code", "inline-html", "static-files",
 }
 
@@ -23,7 +23,7 @@ func NewMappingTargetType(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(validMappingTargetTypes, stringValue) {
+	if !slices.Contains(ValidMappingTargetTypes, stringValue) {
 		return mappingTargetType, errors.New("InvalidMappingTargetType")
 	}
 
