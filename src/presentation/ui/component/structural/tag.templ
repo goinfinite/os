@@ -1,25 +1,20 @@
 package componentStructural
 
-templ TagWithIcon(tagIcon, tagDescription, tagColor string) {
-	<!-- TagWithIcon -->
-	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
-		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
-			<i class={ "ph-duotone " + tagIcon + " mx-2 text-lg" } style="margin-bottom: 2px;"></i>
+templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
+	<!-- Tag -->
+	<div class={ "flex rounded-md border-solid border-2 border-" + tagColor + " text-sm" }>
+		<div class={ "bg-" + tagColor + " h-full" }>
+			<div class="flex items-center mx-2 space-x-1">
+				if highlightedIcon != "" {
+					<i class={ "ph-duotone " + highlightedIcon + " text-lg" }></i>
+				}
+				if highlightedLabel != "" {
+					<span class="mb-0.3 text-neutral-50">{ highlightedLabel }</span>
+				}
+			</div>
 		</div>
-		<div class="flex justify-center items-center h-full">
-			<span class="mx-2" style="margin-bottom: 2px;">{ tagDescription }</span>
-		</div>
-	</div>
-}
-
-templ TagWithTitle(tagTitle, tagDescription, tagColor string) {
-	<!-- TagWithTitle -->
-	<div class={ "flex justify-center items-center rounded-md border-solid border-2 border-" + tagColor + " text-sm font-medium" }>
-		<div class={ "bg-" + tagColor + " flex justify-center items-center h-full" }>
-			<span class={ "mx-2 text-white" } style="margin-bottom: 2px;">{ tagTitle }</span>
-		</div>
-		<div class="flex justify-center items-center h-full">
-			<span class="mx-2" style="margin-bottom: 2px;">{ tagDescription }</span>
+		<div class="flex items-center h-full">
+			<span class="mx-2 mb-0.2">{ tagValue }</span>
 		</div>
 	</div>
 }

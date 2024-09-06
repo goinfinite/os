@@ -1,6 +1,6 @@
 package componentForm
 
-templ RadioInput(id, label, icon, bindValue, bindModelPath, onClick string) {
+templ RadioInput(id, label, bindValue, bindModelPath string) {
 	<!-- RadioInput -->
 	<div class="inline-flex items-center">
 		<label class="relative flex items-center p-3 -mr-2 rounded-full cursor-pointer">
@@ -10,12 +10,9 @@ templ RadioInput(id, label, icon, bindValue, bindModelPath, onClick string) {
 				value={ bindValue }
 				x-model={ bindModelPath }
 				class="peer relative h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border border-speedia-500 bg-inherit transition-all checked:h-4 checked:w-4 checked:border-inherit checked:bg-speedia-500"
-				if onClick != "" {
-					@click={ onClick }
-				}
 			/>
 			<span class="absolute text-white transition-opacity opacity-0 peer-checked:opacity-100 text-xs mx-0.5 mt-0.5">
-				<i class={ "ph-duotone " + icon + " w-full h-full" }></i>
+				<i class="ph-duotone ph-check-fat w-full h-full"></i>
 			</span>
 		</label>
 		<label class="ml-1 text-sm font-medium text-neutral-100">{ label }</label>
