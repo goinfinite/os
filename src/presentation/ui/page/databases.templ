@@ -3,6 +3,7 @@ package page
 import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
 script DatabasesIndexLocalState() {
@@ -29,14 +30,13 @@ script DatabasesIndexLocalState() {
 			},
 
 			// Auxiliary states
-			selectedDatabaseType: "mariadb",
 
 			// Modal states
 		}))
 	})
 }
 
-templ DatabasesIndex() {
+templ DatabasesIndex(databaseTypeDetails presenterDto.DatabaseTypeDetails) {
 	@DatabasesIndexLocalState()
 	<div class="flex flex-col" x-data="databases">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -49,13 +49,13 @@ templ DatabasesIndex() {
 			</div>
 		</div>
 		<div id="databases-tabs" class="card w-full">
-			@DatabasesTabs()
+			@DatabasesTabs(databaseTypeDetails)
 		</div>
 	</div>
 }
 
-templ DatabasesTabs() {
-	@componentStructural.Tab(valueObject.GetDatabaseTypes(), "selectedDatabaseType")
+templ DatabasesTabs(databaseTypeDetails presenterDto.DatabaseTypeDetails) {
+	@componentStructural.Tab(valueObject.GetDatabaseTypes(), databaseTypeDetails.Type.String())
 	<div id="databases-table" class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
 		<!-- DatabasesFormTable -->
 	</div>
