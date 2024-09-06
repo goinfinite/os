@@ -143,10 +143,14 @@ func (service *VirtualHostService) CreateMapping(
 	}
 
 	rawMatchPattern := "begins-with"
-	if input["matchPattern"] != nil && input["matchPattern"] != "" {
-		rawMatchPattern, err = voHelper.InterfaceToString(input["matchPattern"])
+	if input["matchPattern"] != nil {
+		typedRawMatchPattern, err := voHelper.InterfaceToString(input["matchPattern"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
+		}
+
+		if len(typedRawMatchPattern) > 0 {
+			rawMatchPattern = typedRawMatchPattern
 		}
 	}
 	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
