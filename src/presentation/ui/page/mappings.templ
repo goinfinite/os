@@ -53,13 +53,14 @@ script MappingsIndexLocalState() {
 			},
 			get shouldDisableCreateMappingSubmitButton() {
 				const isResponseCodeType = this.mapping.targetType == 'response-code'
-				const isTargetValueRequired = isResponseCodeType && this.mapping.targetType != 'static-files'
-				if (isTargetValueRequired) {
-					if (isResponseCodeType) {
-						return this.mapping.targetHttpResponseCode == ''
-					}
+				const isTargetHttpResponseCodeRequired = isResponseCodeType || this.mapping.targetType == 'inline-html'
+				if (isTargetHttpResponseCodeRequired && this.mapping.targetHttpResponseCode == '') {
+					return true
+				}
 
-					return this.mapping.targetValue == ''
+				const isTargetValueRequired = !isResponseCodeType && this.mapping.targetType != 'static-files'
+				if (isTargetValueRequired && this.mapping.targetValue == '') {
+					return true
 				}
 
 				return this.virtualHost.hostname == ''
