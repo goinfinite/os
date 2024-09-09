@@ -5,18 +5,18 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-type DatabaseTypeSummary struct {
+type SelectedDatabaseTypeSummary struct {
 	Type        valueObject.DatabaseType
 	IsInstalled bool
 	Databases   []entity.Database
 }
 
-func NewDatabaseTypeSummary(
+func NewSelectedDatabaseTypeSummary(
 	dbType valueObject.DatabaseType,
 	isInstalled bool,
 	databases []entity.Database,
-) DatabaseTypeSummary {
-	return DatabaseTypeSummary{
+) SelectedDatabaseTypeSummary {
+	return SelectedDatabaseTypeSummary{
 		Type:        dbType,
 		IsInstalled: isInstalled,
 		Databases:   databases,
