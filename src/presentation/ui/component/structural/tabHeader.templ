@@ -1,9 +1,8 @@
 package componentStructural
 
 type TabHeaderItem struct {
-	Label string
-	// alterar o nome para comportar um "nome técnico"
-	Value string
+	Label          string
+	ComponentValue string
 }
 
 func getTagHeaderClasses(isSelected bool) string {
@@ -25,9 +24,9 @@ templ TabHeader(
 			<li class="text-xl">
 				<button
 					type="button"
-					x-bind:class={ "'" + item.Value + "' == " + bindSelectHeaderItem + " ? '" + getTagHeaderClasses(true) + "' : '" + getTagHeaderClasses(false) + "'" }
+					x-bind:class={ "'" + item.ComponentValue + "' == " + bindSelectHeaderItem + " ? '" + getTagHeaderClasses(true) + "' : '" + getTagHeaderClasses(false) + "'" }
 					x-model={ bindSelectHeaderItem }
-					x-value={ item.Value }
+					x-value={ item.ComponentValue }
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
 					{ item.Label }
