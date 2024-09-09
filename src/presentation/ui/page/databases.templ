@@ -1,6 +1,7 @@
 package page
 
 import (
+	"github.com/speedianet/os/src/domain/valueObject"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
@@ -26,21 +27,20 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 			},
 			init() {
 				this.resetPrimaryStates();
-
-				Alpine.watch(() => this.database.type, () => {
-					htmx.ajax(
-						'GET',
-						'/databases/?dbType=' + this.database.type,
-						{
-							select: '#databases-tab-content',
-							target: '#databases-tab-content',
-							swap: 'outerHTML transition:true'
-						},
-					);
-				});
 			},
 
 			// Auxiliary states
+			changeSelectedDatabaseType(databaseType) {
+				htmx.ajax(
+					'GET',
+					'/databases/?dbType=' + databaseType,
+					{
+						select: '#databases-tabs',
+						target: '#databases-tabs',
+						swap: 'outerHTML transition:true'
+					},
+				);
+			}
 
 			// Modal states
 		}))
@@ -57,27 +57,54 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 				"ph-database",
 			)
 		</div>
-		<div id="databases-tabs" class="card w-full">
+		<div
+			id="databases-tabs"
+			hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-select="#databases-tabs"
+			hx-target="#databases-tabs"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
 			@DatabasesTabs(selectedDbTypeSummary)
 		</div>
 	</div>
 }
 
+func getDatabasesTabHeaderItems(
+	selectedDatabaseType valueObject.DatabaseType,
+) []componentStructural.TabHeaderItem {
+	tabHeaderItems := []componentStructural.TabHeaderItem{
+		{Label: "MySQL/MariaDB/Percona", ComponentValue: "mariadb"},
+		{Label: "PostgreSQL", ComponentValue: "postgresql"},
+	}
+
+	for itemIndex := range tabHeaderItems {
+		if selectedDatabaseType.String() != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = " text-slate-500"
+			continue
+		}
+
+		tabHeaderItems[itemIndex].AdditionalClasses = " text-speedia-500 border-b border-speedia-500"
+	}
+
+	return tabHeaderItems
+}
+
 templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
 	@componentStructural.TabHeader(
-		[]componentStructural.TabHeaderItem{
-			{Label: "MySQL/MariaDB/Percona", ComponentValue: "mariadb"},
-			{Label: "PostgreSQL", ComponentValue: "postgresql"},
-		}, selectedDbTypeSummary.Type.String(), "database.type",
+		getDatabasesTabHeaderItems(selectedDbTypeSummary.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
-	<div
-		id="databases-tab-content"
-		hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
-		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
-		hx-select="#databases-tab-content"
-		hx-target="#databases-tab-content"
-		hx-swap="outerHTML transition:true"
-		class="bg-os-800 p-4 rounded-b-xl rounded-r-xl"
-	></div>
+	<div class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
+		<div class="px-4 bg-os-500 rounded-lg space-y-3">
+			if !selectedDbTypeSummary.IsInstalled {
+				<div class="p-4 bg-os-500 rounded-r-lg">
+					<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
+					<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbTypeSummary.Type.String() }</p>service is not installed yet.</span>
+					@componentStructural.LabeledButton("Schedule "+selectedDbTypeSummary.Type.String()+" service installation", "ph-caret-line-down", "installDatabaseByButton()", true)
+				</div>
+			}
+		</div>
+	</div>
 }
