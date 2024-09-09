@@ -1,0 +1,21 @@
+package componentStructural
+
+templ LabeledButton(
+	label, icon, onClick string,
+	denseMode bool,
+) {
+	<button
+		type="button"
+		if denseMode {
+			class="rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white bg-speedia-500 hover:bg-speedia-300"
+		} else {
+			class="w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white bg-speedia-500 hover:bg-speedia-300"
+		}
+		@click={ onClick }
+	>
+		if icon != "" {
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
+		}
+		{ label }
+	</button>
+}
