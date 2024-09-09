@@ -26,9 +26,9 @@ func NewDatabasesPresenter(
 	}
 }
 
-func (presenter *DatabasesPresenter) getDatabaseTypeDetails(
+func (presenter *DatabasesPresenter) getDatabaseTypeSummary(
 	rawDatabaseType string,
-) (databaseTypeDetails presenterDto.DatabaseTypeDetails, err error) {
+) (databaseTypeDetails presenterDto.DatabaseTypeSummary, err error) {
 	databaseType, err := valueObject.NewDatabaseType(rawDatabaseType)
 	if err != nil {
 		return databaseTypeDetails, err
@@ -47,23 +47,23 @@ func (presenter *DatabasesPresenter) getDatabaseTypeDetails(
 		isInstalled = false
 	}
 
-	return presenterDto.NewDatabaseTypeDetails(
+	return presenterDto.NewDatabaseTypeSummary(
 		databaseType, isInstalled, databases,
 	), nil
 }
 
 func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 	rawDatabaseType := "mariadb"
-	if c.QueryParam("selectedDatabaseType") != "" {
-		rawDatabaseType = c.QueryParam("selectedDatabaseType")
+	if c.QueryParam("dbType") != "" {
+		rawDatabaseType = c.QueryParam("dbType")
 	}
 
-	databaseTypeDetails, err := presenter.getDatabaseTypeDetails(rawDatabaseType)
+	databaseTypeSummary, err := presenter.getDatabaseTypeSummary(rawDatabaseType)
 	if err != nil {
-		slog.Debug("GetDatabaseTypeDetailsError", slog.Any("err", err))
+		slog.Debug("GetDatabaseTypeSummaryError", slog.Any("err", err))
 		return nil
 	}
 
-	pageContent := page.DatabasesIndex(databaseTypeDetails)
+	pageContent := page.DatabasesIndex(databaseTypeSummary)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
