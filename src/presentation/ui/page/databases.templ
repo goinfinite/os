@@ -1,12 +1,11 @@
 package page
 
 import (
-	"github.com/speedianet/os/src/domain/valueObject"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
-script DatabasesIndexLocalState() {
+script DatabasesIndexLocalState(selectedDatabaseType string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('databases', () => ({
 			// Primary states
@@ -15,18 +14,30 @@ script DatabasesIndexLocalState() {
 			resetPrimaryStates() {
 				this.database = {
 					'name': '',
-					'type': '',
+					'type': selectedDatabaseType,
 					'size': ''
 				}
 				this.databaseUser = {
 					'username': '',
 					'dbName': '',
-					'dbType': '',
+					'dbType': selectedDatabaseType,
 					'privileges': []
 				}
 			},
 			init() {
 				this.resetPrimaryStates();
+
+				Alpine.watch(() => this.database.type, () => {
+					htmx.ajax(
+						'GET',
+						'/databases/?dbType=' + this.database.type,
+						{
+							select: '#databases-tab-content',
+							target: '#databases-tab-content',
+							swap: 'outerHTML transition:true'
+						},
+					);
+				});
 			},
 
 			// Auxiliary states
@@ -36,27 +47,37 @@ script DatabasesIndexLocalState() {
 	})
 }
 
-templ DatabasesIndex(databaseTypeDetails presenterDto.DatabaseTypeDetails) {
-	@DatabasesIndexLocalState()
+templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
+	@DatabasesIndexLocalState(selectedDbTypeSummary.Type.String())
 	<div class="flex flex-col" x-data="databases">
 		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"Databases",
-					"",
-					"ph-database",
-				)
-			</div>
+			@componentStructural.PageTitle(
+				"Databases",
+				"",
+				"ph-database",
+			)
 		</div>
 		<div id="databases-tabs" class="card w-full">
-			@DatabasesTabs(databaseTypeDetails)
+			@DatabasesTabs(selectedDbTypeSummary)
 		</div>
 	</div>
 }
 
-templ DatabasesTabs(databaseTypeDetails presenterDto.DatabaseTypeDetails) {
-	@componentStructural.Tab(valueObject.GetDatabaseTypes(), databaseTypeDetails.Type.String())
-	<div id="databases-table" class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
-		<!-- DatabasesFormTable -->
-	</div>
+templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
+	@componentStructural.TabHeader(
+		[]componentStructural.TabHeaderItem{
+			{Label: "MySQL/MariaDB/Percona", ComponentValue: "mariadb"},
+			{Label: "PostgreSQL", ComponentValue: "postgresql"},
+		}, selectedDbTypeSummary.Type.String(), "database.type",
+	)
+	<!-- DatabaseTabContent -->
+	<div
+		id="databases-tab-content"
+		hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
+		hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+		hx-select="#databases-tab-content"
+		hx-target="#databases-tab-content"
+		hx-swap="outerHTML transition:true"
+		class="bg-os-800 p-4 rounded-b-xl rounded-r-xl"
+	></div>
 }
