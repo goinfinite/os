@@ -1,31 +1,23 @@
 package componentStructural
 
 type TabHeaderItem struct {
-	Label          string
-	ComponentValue string
-}
-
-func getTagHeaderClasses(isSelected bool) string {
-	classes := "inline-block py-4 px-5 rounded-t-md bg-inherit hover:bg-os-300"
-	if !isSelected {
-		return classes + " text-slate-400"
-	}
-
-	return classes + " text-speedia-500 border-b border-speedia-500"
+	Label             string
+	ComponentValue    string
+	AdditionalClasses string
 }
 
 templ TabHeader(
 	tabHeaderItems []TabHeaderItem,
-	selectedHeaderItem, bindSelectHeaderItemPath string,
+	onClick string,
 ) {
 	<!-- TabHeader -->
-	<ul class="flex text-sm w-fit font-medium text-center text-os-500 rounded-t-lg bg-os-800 pt-3.5 px-4">
+	<ul class="flex text-sm w-fit font-medium text-center text-os-500 uppercase rounded-t-lg bg-os-800 pt-3.5 px-4">
 		for _, item := range tabHeaderItems {
 			<li class="text-xl">
 				<button
 					type="button"
-					x-bind:class={ "'" + item.ComponentValue + "' == " + bindSelectHeaderItemPath + " ? '" + getTagHeaderClasses(true) + "' : '" + getTagHeaderClasses(false) + "'" }
-					@click={ bindSelectHeaderItemPath + " = '" + item.ComponentValue + "'" }
+					class={ "inline-block py-4 px-5 rounded-t-md bg-inherit hover:bg-os-300" + item.AdditionalClasses }
+					@click={ onClick + "('" + item.ComponentValue + "')" }
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
 					{ item.Label }
