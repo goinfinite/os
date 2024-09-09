@@ -58,12 +58,14 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		rawDatabaseType = c.QueryParam("dbType")
 	}
 
-	selectedDatabaseTypeSummary, err := presenter.getSelectedDatabaseTypeSummary(rawDatabaseType)
+	selectedDbTypeSummary, err := presenter.getSelectedDatabaseTypeSummary(
+		rawDatabaseType,
+	)
 	if err != nil {
 		slog.Debug("GetSelectedDatabaseTypeSummaryError", slog.Any("err", err))
 		return nil
 	}
 
-	pageContent := page.DatabasesIndex(selectedDatabaseTypeSummary)
+	pageContent := page.DatabasesIndex(selectedDbTypeSummary)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
