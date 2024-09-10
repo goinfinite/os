@@ -25,6 +25,11 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 		}
 		for k, v := range formData {
 			if len(v) > 0 {
+				if len(v) > 1 {
+					requestData[k] = v
+					continue
+				}
+
 				requestData[k] = v[0]
 			}
 		}
