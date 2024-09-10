@@ -197,7 +197,7 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 	</div>
 }
 
-templ DatabaseFormTable(selectDatabaseType valueObject.DatabaseType) {
+templ CreateDatabaseForm(selectDatabaseType valueObject.DatabaseType) {
 	<form
 		hx-post={ "/api/v1/database/" + selectDatabaseType.String() }
 		hx-indicator="#loading-overlay"
@@ -215,6 +215,6 @@ templ CreateDatabaseModal(selectDatabaseType valueObject.DatabaseType) {
 		"Create Database", "isDatabaseModalOpen", "closeCreateDatabaseModal()",
 		"database.type",
 	) {
-		@DatabaseFormTable(selectDatabaseType)
+		@CreateDatabaseForm(selectDatabaseType)
 	}
 }
