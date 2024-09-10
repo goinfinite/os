@@ -197,9 +197,9 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 	</div>
 }
 
-templ CreateDatabaseForm(selectDatabaseType valueObject.DatabaseType) {
+templ CreateDatabaseForm(selectedDatabaseType valueObject.DatabaseType) {
 	<form
-		hx-post={ "/api/v1/database/" + selectDatabaseType.String() }
+		hx-post={ "/api/v1/database/" + selectedDatabaseType.String() }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -210,11 +210,11 @@ templ CreateDatabaseForm(selectDatabaseType valueObject.DatabaseType) {
 	</form>
 }
 
-templ CreateDatabaseModal(selectDatabaseType valueObject.DatabaseType) {
+templ CreateDatabaseModal(selectedDatabaseType valueObject.DatabaseType) {
 	@componentStructural.Modal(
 		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()",
 		"database.type",
 	) {
-		@CreateDatabaseForm(selectDatabaseType)
+		@CreateDatabaseForm(selectedDatabaseType)
 	}
 }
