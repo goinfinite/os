@@ -54,7 +54,7 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 				);
 			},
 			get shouldDisableCreateDatabaseSubmitButton() {
-				return this.database.name != ''
+				return this.database.name == ''
 			},
 
 			// Modal states
@@ -67,6 +67,24 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
             closeCreateDatabaseModal() {
                 this.isDatabaseModalOpen = false;
             },
+            isDeleteDatabaseModalOpen: false,
+            openDeleteDatabaseModal(databaseName) {
+				this.resetPrimaryStates();
+
+				this.database.name = databaseName;
+				this.isDeleteDatabaseModalOpen = true;
+			},
+			closeDeleteDatabaseModal() {
+				this.isDeleteDatabaseModalOpen = false;
+			},
+			deleteDatabaseElement() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/database/' + this.database.type + '/' + this.database.name + '/',
+					{swap: 'none'},
+				);
+				this.closeDeleteDatabaseModal();
+			},
 		}))
 	})
 }
@@ -93,6 +111,10 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 			@DatabasesTabs(selectedDbTypeSummary)
 		</div>
 		@CreateDatabaseModal(selectedDbTypeSummary.Type)
+		@componentStructural.DeleteModal(
+			"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()", "deleteDatabaseElement()",
+			"database.name", "database.name",
+		)
 	</div>
 }
 
@@ -162,14 +184,14 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ strconv.FormatInt(database.Size.Int64(), 10) }</th>
 								<th scope="row" class="px-5 py-3 w-1/4 text-right">
 									<div class="inline-flex">
-										@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "", "Delete database", "red-500")
+										@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')", "Delete database", "red-500")
 									</div>
 								</th>
 							</tr>
 						}
-						<div class="bg-os-500 pb-3"></div>
 					</tbody>
 				</table>
+				<div class="bg-os-500 p-0.5"></div>
 			}
 		</div>
 	</div>
