@@ -1,0 +1,33 @@
+package componentDatabases
+
+import (
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	"golang.org/x/text/cases"
+	"strings"
+)
+
+var availableDatabaseUserPrivileges = []string{
+	"ALTER", "ALTER ROUTINE", "CREATE", "CREATE ROUTINE", "CREATE TEMPORARY TABLES",
+	"CREATE VIEW", "DELETE", "DROP", "EVENT", "EXECUTE", "INDEX", "INSERT",
+	"LOCK TABLES", "REFERENCES", "SELECT", "SHOW VIEW", "TRIGGER", "UPDATE",
+}
+
+func transformDbUserPrivilegeIntoComponentValueFormat(
+	dbUserPrivilege string,
+) string {
+	privilegeWithHyphen := strings.ReplaceAll(dbUserPrivilege, " ", "-")
+	return strings.ToLower(privilegeWithHyphen)
+}
+
+templ DatabaseUserPrivilegesRadioInputsSwitchToggles() {
+	<!-- DatabaseUserPrivilegesRadioInputsSwitchToggles -->
+	<div class="bg-os-500 p-5 rounded-md grid grid-cols-2 gap-6">
+		for _, databaseUserPrivilege := range availableDatabaseUserPrivileges {
+			@componentForm.RadioInputSwitchToggle(
+				"privileges", databaseUserPrivilege,
+				transformDbUserPrivilegeIntoComponentValueFormat(databaseUserPrivilege),
+				"databaseUser.privileges",
+			)
+		}
+	</div>
+}
