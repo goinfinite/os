@@ -1934,8 +1934,9 @@ paths:
           'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode
           may be provided. If is not provided, targetHttpResponseCode will be '200'.
           If targetType is 'response-code', targetHttpResponseCode may be provided.
-          If is not provided, targetValue will be required.<br />targetValue must
-          have the same value as the targetType requires.
+          If is not provided, targetValue will be required. If both were provided,
+          targetValue will have priority.<br />targetValue must have the same value
+          as the targetType requires.
         in: body
         name: createMappingDto
         required: true

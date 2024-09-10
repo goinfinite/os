@@ -27,7 +27,7 @@ func getAccountIdFromAccessToken(
 		trustedIps = append(trustedIps, ipAddress)
 	}
 
-	accessTokenDetails, err := useCase.GetAccessTokenDetails(
+	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
 		authQueryRepo,
 		accessTokenValue,
 		trustedIps,
@@ -56,7 +56,7 @@ func Auth(apiBasePath string) echo.MiddlewareFunc {
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie("os-auth-token")
+			accessTokenCookie, err := c.Cookie("os-access-token")
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}

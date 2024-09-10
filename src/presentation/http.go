@@ -31,7 +31,7 @@ func HttpServerInit(
 	e := echo.New()
 
 	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
-	ui.UiInit(e)
+	ui.UiInit(e, persistentDbSvc)
 
 	httpServer := http.Server{Addr: ":1618", Handler: e}
 

@@ -1703,7 +1703,7 @@ const docTemplate = `{
                 "summary": "CreateVirtualHostMapping",
                 "parameters": [
                     {
-                        "description": "hostname, path and targetType are required.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.\u003cbr /\u003etargetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.\u003cbr /\u003etargetValue must have the same value as the targetType requires.",
+                        "description": "hostname, path and targetType are required.\u003cbr /\u003ematchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.\u003cbr /\u003etargetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required. If both were provided, targetValue will have priority.\u003cbr /\u003etargetValue must have the same value as the targetType requires.",
                         "name": "createMappingDto",
                         "in": "body",
                         "required": true,

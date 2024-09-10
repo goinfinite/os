@@ -2,7 +2,6 @@ package cliController
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
@@ -126,8 +125,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 }
 
 func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
-	var hostnameStr, phpVersionStr, moduleNameStr string
-	moduleStatusBool := true
+	var hostnameStr, phpVersionStr, moduleNameStr, moduleStatusStr string
 
 	cmd := &cobra.Command{
 		Use:   "update-module",
@@ -142,7 +140,6 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 				"version":  phpVersionStr,
 			}
 
-			moduleStatusStr := strconv.FormatBool(moduleStatusBool)
 			rawPhpModuleParam := moduleNameStr + ":" + moduleStatusStr
 			module, err := entity.NewPhpModuleFromString(rawPhpModuleParam)
 			if err != nil {
@@ -161,7 +158,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 	cmd.MarkFlagRequired("version")
 	cmd.Flags().StringVarP(&moduleNameStr, "name", "N", "", "PhpModuleName")
 	cmd.MarkFlagRequired("name")
-	cmd.Flags().BoolVarP(&moduleStatusBool, "status", "V", true, "PhpModuleStatus")
+	cmd.Flags().StringVarP(&moduleStatusStr, "status", "V", "true", "PhpModuleStatus")
 	cmd.MarkFlagRequired("status")
 	return cmd
 }

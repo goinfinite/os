@@ -93,7 +93,7 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required.<br />targetValue must have the same value as the targetType requires."
+// @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required. If both were provided, targetValue will have priority.<br />targetValue must have the same value as the targetType requires."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {

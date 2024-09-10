@@ -71,86 +71,40 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
 	}
 
-	for _, rawItemMapping := range rawItemMappings {
+	for mappingIndex, rawItemMapping := range rawItemMappings {
 		rawItemMappingMap, assertOk := rawItemMapping.(map[string]interface{})
 		if !assertOk {
 			slog.Error(
-				"InvalidMarketplaceCatalogItemMapping",
-				slog.Any("mapping", rawItemMapping),
+				"InvalidMarketplaceCatalogItemMapping", slog.Int("index", mappingIndex),
 			)
 			continue
 		}
 
-		rawPath, assertOk := rawItemMappingMap["path"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemMappingPath",
-				slog.String("path", rawPath),
-			)
-			continue
-		}
-		path, err := valueObject.NewMappingPath(rawPath)
+		path, err := valueObject.NewMappingPath(rawItemMappingMap["path"])
 		if err != nil {
-			slog.Error(err.Error(), slog.String("path", rawPath))
+			slog.Error(err.Error(), slog.Int("index", mappingIndex))
 			continue
 		}
 
-		rawMatchPattern, assertOk := rawItemMappingMap["matchPattern"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemMappingMatchPattern",
-				slog.String("path", rawPath),
-				slog.String("matchPattern", rawMatchPattern),
-			)
-			continue
-		}
-		matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
+		matchPattern, err := valueObject.NewMappingMatchPattern(rawItemMappingMap["matchPattern"])
 		if err != nil {
-			slog.Error(
-				err.Error(), slog.String("path", rawPath),
-				slog.String("matchPattern", rawMatchPattern),
-			)
+			slog.Error(err.Error(), slog.Int("index", mappingIndex))
 			continue
 		}
 
-		rawTargetType, assertOk := rawItemMappingMap["targetType"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemMappingTargetType: %s",
-				slog.String("path", rawPath),
-				slog.String("targetType", rawTargetType),
-			)
-			continue
-		}
-		targetType, err := valueObject.NewMappingTargetType(rawTargetType)
+		targetType, err := valueObject.NewMappingTargetType(rawItemMappingMap["targetType"])
 		if err != nil {
-			slog.Error(
-				err.Error(), slog.String("path", rawPath),
-				slog.String("targetType", rawTargetType),
-			)
+			slog.Error(err.Error(), slog.Int("index", mappingIndex))
 			continue
 		}
 
 		var targetValuePtr *valueObject.MappingTargetValue
 		if rawItemMappingMap["targetValue"] != nil {
-			rawTargetValue, assertOk := rawItemMappingMap["targetValue"].(string)
-			if !assertOk {
-				slog.Error(
-					"InvalidMarketplaceCatalogItemMappingTargetValue",
-					slog.String("path", rawPath),
-					slog.String("targetValue", rawTargetValue),
-				)
-				continue
-			}
-
 			targetValue, err := valueObject.NewMappingTargetValue(
-				rawTargetValue, targetType,
+				rawItemMappingMap["targetValue"], targetType,
 			)
 			if err != nil {
-				slog.Error(
-					err.Error(), slog.String("path", rawPath),
-					slog.String("targetValue", rawTargetValue),
-				)
+				slog.Error(err.Error(), slog.Int("index", mappingIndex))
 				continue
 			}
 			targetValuePtr = &targetValue
@@ -158,35 +112,18 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 
 		var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 		if rawItemMappingMap["targetHttpResponseCode"] != nil {
-			rawTargetHttpResponseCode, assertOk := rawItemMappingMap["targetHttpResponseCode"].(string)
-			if !assertOk {
-				slog.Error(
-					"InvalidMarketplaceCatalogItemMappingTargetHttpResponseCode",
-					slog.String("path", rawPath),
-					slog.String("targetHttpResponseCode", rawTargetHttpResponseCode),
-				)
-				continue
-			}
-
 			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
-				rawTargetHttpResponseCode,
+				rawItemMappingMap["targetHttpResponseCode"],
 			)
 			if err != nil {
-				slog.Error(
-					err.Error(), slog.String("path", rawPath),
-					slog.String("targetHttpResponseCode", rawTargetHttpResponseCode),
-				)
+				slog.Error(err.Error(), slog.Int("index", mappingIndex))
 				continue
 			}
 			targetHttpResponseCodePtr = &targetHttpResponseCode
 		}
 
 		itemMapping := valueObject.NewMarketplaceItemMapping(
-			path,
-			matchPattern,
-			targetType,
-			targetValuePtr,
-			targetHttpResponseCodePtr,
+			path, matchPattern, targetType, targetValuePtr, targetHttpResponseCodePtr,
 		)
 		itemMappings = append(itemMappings, itemMapping)
 	}

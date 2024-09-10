@@ -321,15 +321,18 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 
 	mappingConfigTemplate := `{{- range . -}}
 location {{ parseLocationUri .MatchPattern .Path }} {
-	{{- if eq .TargetType "url" "response-code" }}
-	return {{ .TargetHttpResponseCode }} {{ .TargetValue }};
+	{{- if eq .TargetType "response-code" }}
+	return {{ .TargetHttpResponseCode }};
 	{{- end }}
-	{{- if eq .TargetType "service" }}
-{{ getServiceMappingConfig .TargetValue.String }}
+	{{- if eq .TargetType "url" }}
+	return {{ .TargetHttpResponseCode }} {{ .TargetValue }};
 	{{- end }}
 	{{- if eq .TargetType "inline-html" }}
 	add_header Content-Type text/html;
 	return {{ .TargetHttpResponseCode }} "{{ .TargetValue }}";
+	{{- end }}
+	{{- if eq .TargetType "service" }}
+{{ getServiceMappingConfig .TargetValue.String }}
 	{{- end }}
 	{{- if eq .TargetType "static-files" }}
 	try_files $uri $uri/ index.html?$query_string;
@@ -358,9 +361,7 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 
 	shouldOverwrite := true
 	return infraHelper.UpdateFile(
-		mappingFilePath.String(),
-		mappingFileContent.String(),
-		shouldOverwrite,
+		mappingFilePath.String(), mappingFileContent.String(), shouldOverwrite,
 	)
 }
 

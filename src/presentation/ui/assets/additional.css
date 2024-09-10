@@ -1,0 +1,19 @@
+body {
+    font-family: "Lato", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "Julius Sans One", sans-serif;
+    text-shadow: -1px 0 0 #fff;
+    word-spacing: -.1618rem;
+}
+
+.sidebar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+}
