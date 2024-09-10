@@ -90,7 +90,7 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 	)
 }
 
-func parsePrivileges(rawPrivileges interface{}) (
+func parseUserPrivileges(rawPrivileges interface{}) (
 	rawPrivilegesStrSlice []string, err error,
 ) {
 	rawUniquePrivilegeStr, assertOk := rawPrivileges.(string)
@@ -141,7 +141,7 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 
 	rawPrivilegesSlice := []string{}
 	if requestBody["privileges"] != nil {
-		rawPrivilegesSlice, err = parsePrivileges(requestBody["privileges"])
+		rawPrivilegesSlice, err = parseUserPrivileges(requestBody["privileges"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
