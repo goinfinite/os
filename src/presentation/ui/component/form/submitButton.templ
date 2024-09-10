@@ -1,7 +1,8 @@
 package componentForm
 
 templ SubmitButton(
-	label, icon, onClick string, denseMode bool,
+	label, icon, onClick string,
+	denseMode bool,
 ) {
 	<!-- SubmitButton -->
 	<button
@@ -36,12 +37,12 @@ func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
 }
 
 templ DeactivatableSubmitButton(
-	label, icon, onClick, bindDeactivationCondition string,
+	label, icon, onClick, deactivationConditionStatePath string,
 	denseMode bool,
 ) {
 	<!-- DeactivatedSubmitButton -->
 	<button
-		x-show={ bindDeactivationCondition }
+		x-show={ deactivationConditionStatePath }
 		type="button"
 		class={ getDeactivatableSubmitButtonClasses(denseMode, true) }
 	>
@@ -52,7 +53,7 @@ templ DeactivatableSubmitButton(
 	</button>
 	<!-- ActivatedSubmitButton -->
 	<button
-		x-show={ "!" + bindDeactivationCondition }
+		x-show={ "!" + deactivationConditionStatePath }
 		type="submit"
 		if onClick != "" {
 			@click={ onClick }

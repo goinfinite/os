@@ -42,17 +42,17 @@ templ SelectInput(
 	</div>
 }
 
-type SelectInputCustomOption struct {
+type SelectLabelValuePair struct {
 	Label string
 	Value string
 }
 
-templ SelectInputWithCustomOptions(
+templ SelectInputWithLabelValuePair(
 	id, label, bindValuePath string,
-	options []SelectInputCustomOption,
+	options []SelectLabelValuePair,
 	denseMode bool,
 ) {
-	<!-- SelectInputWithCustomOptions -->
+	<!-- SelectInputWithLabelValuePair -->
 	<div class="relative w-full">
 		<select
 			id={ id }

@@ -4,9 +4,9 @@ import componentForm "github.com/speedianet/os/src/presentation/ui/component/for
 
 templ ResponseCodeSelectInput(id, label, bindValuePath string) {
 	<!-- MappingResponseCodeSelectInput -->
-	@componentForm.SelectInputWithCustomOptions(
+	@componentForm.SelectInputWithLabelValuePair(
 		id, label, bindValuePath,
-		[]componentForm.SelectInputCustomOption{
+		[]componentForm.SelectLabelValuePair{
 			{Label: "200 - OK", Value: "200"},
 			{Label: "201 - Created", Value: "201"},
 			{Label: "204 - No Content", Value: "204"},
