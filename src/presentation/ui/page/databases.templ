@@ -58,14 +58,14 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 			},
 
 			// Modal states
-			isDatabaseModalOpen: false,
+			isCreateDatabaseModalOpen: false,
             openCreateDatabaseModal() {
 				this.resetPrimaryStates();
 
-				this.isDatabaseModalOpen = true;
+				this.isCreateDatabaseModalOpen = true;
 			},
             closeCreateDatabaseModal() {
-                this.isDatabaseModalOpen = false;
+                this.isCreateDatabaseModalOpen = false;
             },
             isDeleteDatabaseModalOpen: false,
             openDeleteDatabaseModal(databaseName) {
@@ -212,7 +212,7 @@ templ CreateDatabaseForm(selectDatabaseType valueObject.DatabaseType) {
 
 templ CreateDatabaseModal(selectDatabaseType valueObject.DatabaseType) {
 	@componentStructural.Modal(
-		"Create Database", "isDatabaseModalOpen", "closeCreateDatabaseModal()",
+		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()",
 		"database.type",
 	) {
 		@CreateDatabaseForm(selectDatabaseType)
