@@ -1,7 +1,9 @@
 package page
 
 import (
+	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
+	infraHelper "github.com/speedianet/os/src/infra/helper"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
@@ -14,6 +16,9 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 			// Primary states
 			database: {},
 			databaseUser: {},
+			setDatabaseUserPassword(password) {
+				this.databaseUser.password = password;
+			},
 			resetPrimaryStates() {
 				this.database = {
 					'name': '',
@@ -21,9 +26,9 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 					'size': ''
 				}
 				this.databaseUser = {
-					'username': '',
 					'dbName': '',
-					'dbType': selectedDatabaseType,
+					'username': '',
+					'password': '',
 					'privileges': []
 				}
 			},
@@ -37,8 +42,8 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 					'GET',
 					'/databases/?dbType=' + databaseType,
 					{
-						select: '#databases-tabs',
-						target: '#databases-tabs',
+						select: '#databases-content',
+						target: '#databases-content',
 						swap: 'outerHTML transition:true'
 					},
 				);
@@ -55,6 +60,14 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 			},
 			get shouldDisableCreateDatabaseSubmitButton() {
 				return this.database.name == ''
+			},
+			isDatabaseUserPasswordHumanReadable: false,
+			toggleDatabaseUserPasswordReadability() {
+				this.isDatabaseUserPasswordHumanReadable = !this.isDatabaseUserPasswordHumanReadable;
+			},
+			get shouldDisableCreateDatabaseUserSubmitButton() {
+				console.log('shouldDisableCreateDatabaseUserSubmitButton: ' + this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == '')
+				return this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == ''
 			},
 
 			// Modal states
@@ -85,6 +98,31 @@ script DatabasesIndexLocalState(selectedDatabaseType string) {
 				);
 				this.closeDeleteDatabaseModal();
 			},
+			isCreateDatabaseUserModalOpen: false,
+            openCreateDatabaseUserModal() {
+				this.resetPrimaryStates();
+
+				this.isCreateDatabaseUserModalOpen = true;
+			},
+            closeCreateDatabaseUserModal() {
+                this.isCreateDatabaseUserModalOpen = false;
+            },
+			createDatabaseUser() {
+				htmx.ajax(
+					'POST',
+					'/api/v1/database/' + this.database.type + '/' + this.database.name + '/user/',
+					{
+						swap: 'none',
+						indicator: '#loading-overlay',
+						values: {
+							username: this.databaseUser.username,
+							password: this.databaseUser.password,
+							privileges: this.databaseUser.privileges,
+						}
+					},
+				);
+				this.closeCreateDatabaseUserModal();
+			}
 		}))
 	})
 }
@@ -100,21 +138,24 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 			)
 		</div>
 		<div
-			id="databases-tabs"
+			id="databases-content"
 			hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
-			hx-select="#databases-tabs"
-			hx-target="#databases-tabs"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#create-database-user delay:500ms"
+			hx-select="#databases-content"
+			hx-target="#databases-content"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
-			@DatabasesTabs(selectedDbTypeSummary)
+			<div id="databases-tabs">
+				@DatabasesTabs(selectedDbTypeSummary)
+			</div>
+			@CreateDatabaseModal(selectedDbTypeSummary.Type)
+			@componentStructural.DeleteModal(
+				"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()", "deleteDatabaseElement()",
+				"database.name", "database.name",
+			)
+			@CreateDatabaseUserModal(selectedDbTypeSummary.Databases)
 		</div>
-		@CreateDatabaseModal(selectedDbTypeSummary.Type)
-		@componentStructural.DeleteModal(
-			"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()", "deleteDatabaseElement()",
-			"database.name", "database.name",
-		)
 	</div>
 }
 
@@ -145,7 +186,7 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 	<!-- DatabaseTabContent -->
 	<div class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
 		<div class="px-4 bg-os-500 rounded-lg space-y-3">
-			if !selectedDbTypeSummary.IsInstalled {
+			if selectedDbTypeSummary.IsInstalled {
 				<div class="p-4 bg-os-500 rounded-r-lg">
 					<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
 					<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbTypeSummary.Type.String() }</p>service is not installed yet.</span>
@@ -159,7 +200,7 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 							<th scope="col" class="px-5 py-3 w-2/7 text-center">Users</th>
 							<th scope="col" class="px-5 py-3 w-1/7 text-left">Size</th>
 							<th scope="col" class="px-5 py-3 space-x-2 flex justify-end">
-								@componentForm.SubmitButton("Create user", "ph-user-plus", "", true)
+								@componentForm.SubmitButton("Create user", "ph-user-plus", "openCreateDatabaseUserModal()", true)
 								@componentForm.SubmitButton("Create database", "ph-database", "openCreateDatabaseModal()", true)
 							</th>
 						</tr>
@@ -184,7 +225,9 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ strconv.FormatInt(database.Size.Int64(), 10) }</th>
 								<th scope="row" class="px-5 py-3 w-1/4 text-right">
 									<div class="inline-flex">
-										@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')", "Delete database", "red-500")
+										@componentStructural.CircularIconButtonWithTooltip(
+											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')", "Delete database", "red-500",
+										)
 									</div>
 								</th>
 							</tr>
@@ -206,7 +249,9 @@ templ CreateDatabaseForm(selectedDatabaseType valueObject.DatabaseType) {
 		<div class="my-6">
 			@componentForm.InputField("text", "dbName", "Database Name", "database.name", false)
 		</div>
-		@componentForm.DeactivatableSubmitButton("Create", "ph-check-fat", "closeCreateDatabaseModal()", "shouldDisableCreateDatabaseSubmitButton", false)
+		@componentForm.DeactivatableSubmitButton(
+			"", "Create", "ph-check-fat", "closeCreateDatabaseModal()", "shouldDisableCreateDatabaseSubmitButton", false,
+		)
 	</form>
 }
 
@@ -216,5 +261,45 @@ templ CreateDatabaseModal(selectedDatabaseType valueObject.DatabaseType) {
 		"database.type",
 	) {
 		@CreateDatabaseForm(selectedDatabaseType)
+	}
+}
+
+func getOnlyDatabasesNames(selectedDatabaseTypeDatabases []entity.Database) []string {
+	databasesNames := []string{}
+	for _, database := range selectedDatabaseTypeDatabases {
+		databasesNames = append(databasesNames, database.Name.String())
+	}
+
+	return databasesNames
+}
+
+templ CreateDatabaseUserForm(selectedDatabaseTypeDatabases []entity.Database) {
+	<div class="my-6 space-y-6">
+		@componentForm.SelectInput(
+			"dbName", "Database Name", "database.name", getOnlyDatabasesNames(selectedDatabaseTypeDatabases), false,
+		)
+		@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
+		<div class="space-y-2">
+			@componentForm.PasswordInput(
+				"password", "Password", "databaseUser.password", "isDatabaseUserPasswordHumanReadable", "toggleDatabaseUserPasswordReadability()", false,
+			)
+			<div class="flex justify-end">
+				@componentStructural.LabeledButton(
+					"generate random password", "ph-arrows-clockwise", "os-800", "os-200", "setDatabaseUserPassword('"+infraHelper.GenPass(16)+"')", true,
+				)
+			</div>
+		</div>
+	</div>
+	@componentForm.DeactivatableSubmitButton(
+		"create-database-user", "Create", "ph-check-fat", "createDatabaseUser()", "shouldDisableCreateDatabaseUserSubmitButton", false,
+	)
+}
+
+templ CreateDatabaseUserModal(selectedDatabaseTypeDatabases []entity.Database) {
+	@componentStructural.Modal(
+		"Create Database User", "isCreateDatabaseUserModalOpen", "closeCreateDatabaseUserModal()",
+		"database.type",
+	) {
+		@CreateDatabaseUserForm(selectedDatabaseTypeDatabases)
 	}
 }
