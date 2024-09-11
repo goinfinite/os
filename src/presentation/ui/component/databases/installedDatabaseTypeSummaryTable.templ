@@ -2,7 +2,6 @@ package componentDatabases
 
 import (
 	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/presentation/ui/component/form"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	"strconv"
@@ -24,7 +23,7 @@ templ InstalledDatabaseTypeSummaryTable(
 			</tr>
 		</thead>
 		<tbody>
-			for _, database := range selectedDbTypeSummary.Databases {
+			for _, database := range selectedDatabaseTypeDatabases {
 				<tr class="bg-os-800 text-white">
 					<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
 					<th scope="row" class="px-5 py-3 w-1/4 text-left">
