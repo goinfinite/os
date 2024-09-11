@@ -3,6 +3,7 @@ package servicesInfra
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 	"text/template"
@@ -17,6 +18,8 @@ import (
 )
 
 const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /speedia/supervisord.conf"
+
+var defaultDirectories []string = []string{"conf", "logs"}
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -236,9 +239,8 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 }
 
 func (repo *ServicesCmdRepo) createDefaultDirectories(
-	serviceName valueObject.ServiceName, execUser *valueObject.UnixUsername,
+	serviceName valueObject.ServiceName,
 ) error {
-	defaultDirectories := []string{"conf", "logs"}
 	for _, defaultDir := range defaultDirectories {
 		nameStr := serviceName.String()
 		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
@@ -248,18 +250,32 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 			return errors.New("CreateDefaultDirsError: " + err.Error())
 		}
 
-		if execUser != nil {
-			execUserStr := execUser.String()
-			_, err := infraHelper.RunCmd("id", execUserStr)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("execUser", execUserStr))
-				continue
-			}
+		deletionWarningFilePath := defaultDirPath + "/DONOTDELETE"
+		_, err = os.Create(deletionWarningFilePath)
+		if err != nil {
+			return errors.New("CreateDeletionWarningFileError: " + err.Error())
+		}
+	}
 
-			_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
-			if err != nil {
-				return errors.New("ChownDefaultDirsError: " + err.Error())
-			}
+	return nil
+}
+
+func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
+	serviceName valueObject.ServiceName, execUser valueObject.UnixUsername,
+) error {
+	execUserStr := execUser.String()
+	_, err := infraHelper.RunCmd("id", execUserStr)
+	if err != nil {
+		return errors.New("EnsureExecUserExistenceError: " + err.Error())
+	}
+
+	for _, defaultDir := range defaultDirectories {
+		nameStr := serviceName.String()
+		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+
+		_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
+		if err != nil {
+			return errors.New("ChownDefaultDirsError: " + err.Error())
 		}
 	}
 
@@ -350,9 +366,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
-	err = repo.createDefaultDirectories(
-		installedServiceName, installableService.ExecUser,
-	)
+	err = repo.createDefaultDirectories(installedServiceName)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -367,6 +381,15 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	err = repo.runCmdSteps("Install", usableInstallCmdSteps)
 	if err != nil {
 		return installedServiceName, err
+	}
+
+	if installableService.ExecUser != nil {
+		err = repo.updateDefaultDirectoriesPermissions(
+			installableService.Name, *installableService.ExecUser,
+		)
+		if err != nil {
+			return installedServiceName, err
+		}
 	}
 
 	startCmdSteps := []valueObject.UnixCommand{installableService.StartCmd}
@@ -482,9 +505,18 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		return err
 	}
 
-	err = repo.createDefaultDirectories(createDto.Name, createDto.ExecUser)
+	err = repo.createDefaultDirectories(createDto.Name)
 	if err != nil {
 		return err
+	}
+
+	if createDto.ExecUser != nil {
+		err = repo.updateDefaultDirectoriesPermissions(
+			createDto.Name, *createDto.ExecUser,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = repo.updateProcessManagerConf()
