@@ -64,16 +64,16 @@ script DatabasesIndexLocalState() {
 
 			// Modal states
 			isCreateDatabaseModalOpen: false,
-            openCreateDatabaseModal() {
+			openCreateDatabaseModal() {
 				this.resetPrimaryStates();
 
 				this.isCreateDatabaseModalOpen = true;
 			},
-            closeCreateDatabaseModal() {
-                this.isCreateDatabaseModalOpen = false;
-            },
-            isDeleteDatabaseModalOpen: false,
-            openDeleteDatabaseModal(databaseName) {
+			closeCreateDatabaseModal() {
+				this.isCreateDatabaseModalOpen = false;
+			},
+			isDeleteDatabaseModalOpen: false,
+			openDeleteDatabaseModal(databaseName) {
 				this.resetPrimaryStates();
 
 				this.database.name = databaseName;
@@ -91,14 +91,14 @@ script DatabasesIndexLocalState() {
 				this.closeDeleteDatabaseModal();
 			},
 			isCreateDatabaseUserModalOpen: false,
-            openCreateDatabaseUserModal() {
+			openCreateDatabaseUserModal() {
 				this.resetPrimaryStates();
 
 				this.isCreateDatabaseUserModalOpen = true;
 			},
-            closeCreateDatabaseUserModal() {
-                this.isCreateDatabaseUserModalOpen = false;
-            },
+			closeCreateDatabaseUserModal() {
+				this.isCreateDatabaseUserModalOpen = false;
+			},
 			createDatabaseUser(databaseType) {
 				htmx.ajax(
 					'POST',
@@ -115,8 +115,8 @@ script DatabasesIndexLocalState() {
 				);
 				this.closeCreateDatabaseUserModal();
 			},
-            isDeleteDatabaseUserModalOpen: false,
-            openDeleteDatabaseUserModal(databaseName, databaseUsername) {
+			isDeleteDatabaseUserModalOpen: false,
+			openDeleteDatabaseUserModal(databaseName, databaseUsername) {
 				this.resetPrimaryStates();
 
 				this.database.name = databaseName;
