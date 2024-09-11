@@ -1,0 +1,38 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
+script SslsIndexLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('ssls', () => ({})
+	})
+}
+
+templ SslsIndex(sslPairs []entity.SslPair) {
+	@SslsIndexLocalState()
+	<div x-data="ssls">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"Ssls",
+					"",
+					"ph-lock",
+				)
+			</div>
+			<div class="my-4 flex space-x-5">
+				@componentForm.SubmitButton("create virtual host", "ph-plus-square", "", false)
+				@componentForm.SubmitButton("create mapping", "ph-plus-square", "", false)
+			</div>
+		</div>
+		<div id="ssls-table" class="card w-full">
+			@SslsFormTable(sslPairs)
+		</div>
+	</div>
+}
+
+templ SslsFormTable(sslPairs []entity.SslPair) {
+}
