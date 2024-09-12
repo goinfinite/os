@@ -26,16 +26,16 @@ templ DeleteModal(
 			</div>
 			<h3 class="text-pretty my-3 px-2 text-center text-xl font-bold leading-relaxed">
 				Are you sure you want to delete
-				<strong
-					x-show={ elNameStatePath + " !== ''" }
-					x-text={ elNameStatePath }
-					class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
-				></strong>
-				if elIdStatePath != "" {
-					<span x-show={ elIdStatePath + " !== ''" }>
-						#<strong x-text={ elIdStatePath }></strong>
-					</span>?
+				if elNameStatePath != "" {
+					<strong
+						x-text={ elNameStatePath }
+						class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
+					></strong>
 				}
+				if elIdStatePath != "" {
+					#<strong x-text={ elIdStatePath }></strong>
+				}
+				?
 			</h3>
 			<p class="mb-6 text-center">This process cannot be undone. This will permanently delete the element.</p>
 			<div class="flex flex-row space-x-4">
