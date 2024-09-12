@@ -37,7 +37,7 @@ func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
 }
 
 templ DeactivatableSubmitButton(
-	id, label, icon, onClick, deactivationConditionStatePath string,
+	label, icon, onClick, deactivationConditionStatePath string,
 	denseMode bool,
 ) {
 	<!-- DeactivatedSubmitButton -->
@@ -53,7 +53,6 @@ templ DeactivatableSubmitButton(
 	</button>
 	<!-- ActivatedSubmitButton -->
 	<button
-		id={ id }
 		x-show={ "!" + deactivationConditionStatePath }
 		type="submit"
 		if onClick != "" {
