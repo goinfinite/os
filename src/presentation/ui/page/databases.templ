@@ -3,7 +3,6 @@ package page
 import (
 	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
 	componentDatabases "github.com/speedianet/os/src/presentation/ui/component/databases"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
@@ -16,9 +15,6 @@ script DatabasesIndexLocalState() {
 			// Primary states
 			database: {},
 			databaseUser: {},
-			setDatabaseUserPassword(password) {
-				this.databaseUser.password = password;
-			},
 			resetPrimaryStates() {
 				this.database = {
 					'name': '',
@@ -62,11 +58,27 @@ script DatabasesIndexLocalState() {
 			get shouldDisableCreateDatabaseUserSubmitButton() {
 				return this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == ''
 			},
+			generateRandomUserPassword() {
+				const passwordLength = 16;
+				const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+
+				let passwordContent = '';
+				let passwordIterationCount = 0;
+				while (passwordIterationCount < passwordLength) {
+					const randomIndex = Math.floor(Math.random() * chars.length);
+					const indexAfterRandomIndex = randomIndex + 1;
+					passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
+
+					passwordIterationCount++;
+				}
+
+				this.databaseUser.password = passwordContent;
+			},
 
 			// Modal states
 			isCreateDatabaseModalOpen: false,
 			openCreateDatabaseModal() {
-				this.resetPrimaryStates();
+				this.resetPrimaryStates();                                                                                                                                                                                                  
 
 				this.isCreateDatabaseModalOpen = true;
 			},
@@ -99,21 +111,6 @@ script DatabasesIndexLocalState() {
 			},
 			closeCreateDatabaseUserModal() {
 				this.isCreateDatabaseUserModalOpen = false;
-			},
-			createDatabaseUser(databaseType) {
-				htmx.ajax(
-					'POST',
-					'/api/v1/database/' + databaseType + '/' + this.database.name + '/user/',
-					{
-						swap: 'none',
-						values: {
-							username: this.databaseUser.username,
-							password: this.databaseUser.password,
-							privileges: this.databaseUser.privileges,
-						}
-					},
-				);
-				this.closeCreateDatabaseUserModal();
 			},
 			isDeleteDatabaseUserModalOpen: false,
 			openDeleteDatabaseUserModal(databaseName, databaseUsername) {
@@ -149,7 +146,7 @@ templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview)
 		<div
 			id="databases-page-content"
 			hx-get={ "/databases/?dbType=" + selectedDatabaseTypeOverview.Type.String() }
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#create-database-user delay:500ms"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 			hx-select="#databases-page-content"
 			hx-target="#databases-page-content"
 			hx-swap="outerHTML transition:true"
@@ -168,7 +165,7 @@ templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview)
 			@componentStructural.DeleteModal(
 				"isDeleteDatabaseUserModalOpen", "closeDeleteDatabaseUserModal()",
 				"deleteDatabaseUserElement('"+selectedDatabaseTypeOverview.Type.String()+"')",
-				"databaseUser.username", "database.name",
+				"databaseUser.username", "",
 			)
 		</div>
 	</div>
@@ -185,18 +182,18 @@ func getDatabasesTabHeaderItems(
 	selectedDbTypeStr := selectedDatabaseType.String()
 	for itemIndex := range tabHeaderItems {
 		if selectedDbTypeStr != tabHeaderItems[itemIndex].ComponentValue {
-			tabHeaderItems[itemIndex].AdditionalClasses = "text-slate-500"
+			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
 			continue
 		}
 
-		tabHeaderItems[itemIndex].AdditionalClasses = "text-speedia-500 border-b border-speedia-500"
+		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
 	}
 
 	return tabHeaderItems
 }
 
 templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType) {
-	<div class="p-4 bg-os-500 rounded-r-lg">
+	<div class="px-4 pb-4 pt-2 bg-os-500 rounded-r-lg">
 		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
 		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
 		@componentForm.SubmitButton(
@@ -211,8 +208,8 @@ templ DatabasesTabs(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) 
 		getDatabasesTabHeaderItems(selectedDatabaseTypeOverview.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
-	<div class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
-		<div class="px-4 bg-os-500 rounded-lg space-y-3">
+	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
+		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
 			if selectedDatabaseTypeOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 					<thead class="text-xs uppercase text-neutral-400">
@@ -277,7 +274,8 @@ templ CreateDatabaseForm(selectedDatabaseType valueObject.DatabaseType) {
 			@componentForm.InputField("text", "dbName", "Database Name", "database.name", false)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
-			"", "Create", "ph-check-fat", "closeCreateDatabaseModal()", "shouldDisableCreateDatabaseSubmitButton", false,
+			"Create", "ph-check-fat", "closeCreateDatabaseModal()",
+			"shouldDisableCreateDatabaseSubmitButton", false,
 		)
 	</form>
 }
@@ -300,39 +298,44 @@ func getOnlyDatabasesNames(selectedDatabaseTypeDatabases []entity.Database) []st
 }
 
 templ CreateDatabaseUserForm(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
-	<div class="my-6 space-y-6">
-		@componentForm.SelectInput(
-			"dbName", "Database Name", "database.name",
-			getOnlyDatabasesNames(selectedDatabaseTypeOverview.Databases), false,
-		)
-		@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
-		<div class="space-y-2">
-			@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
-			<div class="flex justify-end">
-				@componentStructural.LabeledButton(
-					"generate random password", "ph-arrows-clockwise", "os-800", "os-200",
-					"setDatabaseUserPassword('"+infraHelper.GenPass(16)+"')", true,
-				)
+	<form
+		hx-post={ "/api/v1/database/" + selectedDatabaseTypeOverview.Type.String() + "/user" }
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6 space-y-6">
+			@componentForm.SelectInput(
+				"dbName", "Database Name", "database.name",
+				getOnlyDatabasesNames(selectedDatabaseTypeOverview.Databases), false,
+			)
+			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
+			<div class="space-y-2">
+				@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
+				<div class="flex justify-end">
+					@componentStructural.LabeledButton(
+						"generate random password", "ph-arrows-clockwise", "os-800", "os-200",
+						"generateRandomUserPassword()", true,
+					)
+				</div>
 			</div>
+			if selectedDatabaseTypeOverview.Type.String() == "mariadb" {
+				<section class="mb-6 w-full rounded-md">
+					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
+						<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
+							<i class="ph-duotone ph-user-gear mr-2 text-2xl"></i>
+							<span class="font-bold">Privileges</span>
+							<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
+						</summary>
+						@componentDatabases.DatabaseUserPrivilegesRadioInputsSwitchToggles()
+					</details>
+				</section>
+			}
 		</div>
-		if selectedDatabaseTypeOverview.Type.String() == "mariadb" {
-			<section class="mb-6 w-full rounded-md">
-				<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
-					<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
-						<i class="ph-duotone ph-user-gear mr-2 text-2xl"></i>
-						<span class="font-bold">Privileges</span>
-						<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
-					</summary>
-					@componentDatabases.DatabaseUserPrivilegesRadioInputsSwitchToggles()
-				</details>
-			</section>
-		}
-	</div>
-	@componentForm.DeactivatableSubmitButton(
-		"create-database-user", "Create", "ph-check-fat",
-		"createDatabaseUser('"+selectedDatabaseTypeOverview.Type.String()+"')",
-		"shouldDisableCreateDatabaseUserSubmitButton", false,
-	)
+		@componentForm.DeactivatableSubmitButton(
+			"Create", "ph-check-fat", "closeCreateDatabaseUserModal()",
+			"shouldDisableCreateDatabaseUserSubmitButton", false,
+		)
+	</form>
 }
 
 templ CreateDatabaseUserModal(
