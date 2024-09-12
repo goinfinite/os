@@ -36,8 +36,8 @@ func (presenter *DatabasesPresenter) getSelectedDatabaseTypeSummary(
 
 	isInstalled := false
 
-	requestInput := map[string]interface{}{"dbType": databaseType.String()}
-	responseOutput := presenter.databaseService.Read(requestInput)
+	requestBody := map[string]interface{}{"dbType": databaseType.String()}
+	responseOutput := presenter.databaseService.Read(requestBody)
 	if responseOutput.Status == service.Success {
 		isInstalled = true
 	}
@@ -62,7 +62,7 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		rawDatabaseType,
 	)
 	if err != nil {
-		slog.Debug("GetSelectedDatabaseTypeSummaryError", slog.Any("err", err))
+		slog.Error("GetSelectedDatabaseTypeSummaryError", slog.Any("err", err))
 		return nil
 	}
 
