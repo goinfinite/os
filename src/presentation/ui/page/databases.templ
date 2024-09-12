@@ -138,7 +138,7 @@ script DatabasesIndexLocalState() {
 	})
 }
 
-templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
+templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
 	@DatabasesIndexLocalState()
 	<div class="flex flex-col" x-data="databases">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -148,7 +148,7 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 		</div>
 		<div
 			id="databases-page-content"
-			hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
+			hx-get={ "/databases/?dbType=" + selectedDatabaseTypeOverview.Type.String() }
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#create-database-user delay:500ms"
 			hx-select="#databases-page-content"
 			hx-target="#databases-page-content"
@@ -156,18 +156,18 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 			class="card w-full"
 		>
 			<div id="databases-tabs">
-				@DatabasesTabs(selectedDbTypeSummary)
+				@DatabasesTabs(selectedDatabaseTypeOverview)
 			</div>
-			@CreateDatabaseModal(selectedDbTypeSummary.Type)
+			@CreateDatabaseModal(selectedDatabaseTypeOverview.Type)
 			@componentStructural.DeleteModal(
 				"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()",
-				"deleteDatabaseElement('"+selectedDbTypeSummary.Type.String()+"')",
+				"deleteDatabaseElement('"+selectedDatabaseTypeOverview.Type.String()+"')",
 				"database.name", "",
 			)
-			@CreateDatabaseUserModal(selectedDbTypeSummary.Type, selectedDbTypeSummary.Databases)
+			@CreateDatabaseUserModal(selectedDatabaseTypeOverview)
 			@componentStructural.DeleteModal(
 				"isDeleteDatabaseUserModalOpen", "closeDeleteDatabaseUserModal()",
-				"deleteDatabaseUserElement('"+selectedDbTypeSummary.Type.String()+"')",
+				"deleteDatabaseUserElement('"+selectedDatabaseTypeOverview.Type.String()+"')",
 				"databaseUser.username", "database.name",
 			)
 		</div>
@@ -206,14 +206,14 @@ templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType
 	</div>
 }
 
-templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
+templ DatabasesTabs(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
 	@componentStructural.TabHeader(
-		getDatabasesTabHeaderItems(selectedDbTypeSummary.Type), "changeSelectedDatabaseType",
+		getDatabasesTabHeaderItems(selectedDatabaseTypeOverview.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
 	<div class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
 		<div class="px-4 bg-os-500 rounded-lg space-y-3">
-			if selectedDbTypeSummary.IsInstalled {
+			if selectedDatabaseTypeOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 					<thead class="text-xs uppercase text-neutral-400">
 						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
@@ -227,7 +227,7 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 						</tr>
 					</thead>
 					<tbody>
-						for _, database := range selectedDbTypeSummary.Databases {
+						for _, database := range selectedDatabaseTypeOverview.Databases {
 							<tr class="bg-os-800 text-white">
 								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
 								<th scope="row" class="px-5 py-3 w-1/4 text-left">
@@ -261,7 +261,7 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 				</table>
 				<div class="bg-os-500 p-0.5"></div>
 			} else {
-				@DatabaseServiceNotInstalledWarning(selectedDbTypeSummary.Type)
+				@DatabaseServiceNotInstalledWarning(selectedDatabaseTypeOverview.Type)
 			}
 		</div>
 	</div>
@@ -299,19 +299,15 @@ func getOnlyDatabasesNames(selectedDatabaseTypeDatabases []entity.Database) []st
 	return databasesNames
 }
 
-templ CreateDatabaseUserForm(
-	selectedDatabaseType valueObject.DatabaseType,
-	selectedDatabaseTypeDatabases []entity.Database,
-) {
+templ CreateDatabaseUserForm(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
 	<div class="my-6 space-y-6">
 		@componentForm.SelectInput(
-			"dbName", "Database Name", "database.name", getOnlyDatabasesNames(selectedDatabaseTypeDatabases), false,
+			"dbName", "Database Name", "database.name",
+			getOnlyDatabasesNames(selectedDatabaseTypeOverview.Databases), false,
 		)
 		@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
 		<div class="space-y-2">
-			@componentForm.PasswordInput(
-				"password", "Password", "databaseUser.password", false,
-			)
+			@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
 			<div class="flex justify-end">
 				@componentStructural.LabeledButton(
 					"generate random password", "ph-arrows-clockwise", "os-800", "os-200",
@@ -319,7 +315,7 @@ templ CreateDatabaseUserForm(
 				)
 			</div>
 		</div>
-		if selectedDatabaseType.String() == "mariadb" {
+		if selectedDatabaseTypeOverview.Type.String() == "mariadb" {
 			<section class="mb-6 w-full rounded-md">
 				<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
 					<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
@@ -333,19 +329,19 @@ templ CreateDatabaseUserForm(
 		}
 	</div>
 	@componentForm.DeactivatableSubmitButton(
-		"create-database-user", "Create", "ph-check-fat", "createDatabaseUser('"+selectedDatabaseType.String()+"')",
+		"create-database-user", "Create", "ph-check-fat",
+		"createDatabaseUser('"+selectedDatabaseTypeOverview.Type.String()+"')",
 		"shouldDisableCreateDatabaseUserSubmitButton", false,
 	)
 }
 
 templ CreateDatabaseUserModal(
-	selectedDatabaseType valueObject.DatabaseType,
-	selectedDatabaseTypeDatabases []entity.Database,
+	selectedDatabaseTypeOverview presenterDto.DatabaseOverview,
 ) {
 	@componentStructural.Modal(
 		"Create Database User", "isCreateDatabaseUserModalOpen",
 		"closeCreateDatabaseUserModal()", "",
 	) {
-		@CreateDatabaseUserForm(selectedDatabaseType, selectedDatabaseTypeDatabases)
+		@CreateDatabaseUserForm(selectedDatabaseTypeOverview)
 	}
 }

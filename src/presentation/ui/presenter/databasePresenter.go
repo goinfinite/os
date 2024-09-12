@@ -26,12 +26,12 @@ func NewDatabasesPresenter(
 	}
 }
 
-func (presenter *DatabasesPresenter) getSelectedDatabaseTypeSummary(
+func (presenter *DatabasesPresenter) getDatabaseOverviewByType(
 	rawDatabaseType string,
-) (selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary, err error) {
+) (databaseOverview presenterDto.DatabaseOverview, err error) {
 	databaseType, err := valueObject.NewDatabaseType(rawDatabaseType)
 	if err != nil {
-		return selectedDbTypeSummary, err
+		return databaseOverview, err
 	}
 
 	isInstalled := false
@@ -47,7 +47,7 @@ func (presenter *DatabasesPresenter) getSelectedDatabaseTypeSummary(
 		isInstalled = false
 	}
 
-	return presenterDto.NewSelectedDatabaseTypeSummary(
+	return presenterDto.NewDatabaseOverview(
 		databaseType, isInstalled, databases,
 	), nil
 }
@@ -58,14 +58,14 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		rawDatabaseType = c.QueryParam("dbType")
 	}
 
-	selectedDbTypeSummary, err := presenter.getSelectedDatabaseTypeSummary(
+	selectedDatabaseOverview, err := presenter.getDatabaseOverviewByType(
 		rawDatabaseType,
 	)
 	if err != nil {
-		slog.Error("GetSelectedDatabaseTypeSummaryError", slog.Any("err", err))
+		slog.Error("GetDatabaseOverviewByTypeError", slog.Any("err", err))
 		return nil
 	}
 
-	pageContent := page.DatabasesIndex(selectedDbTypeSummary)
+	pageContent := page.DatabasesIndex(selectedDatabaseOverview)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
