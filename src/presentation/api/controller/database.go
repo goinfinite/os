@@ -137,7 +137,12 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 		return err
 	}
 	requestBody["dbType"] = c.Param("dbType")
-	requestBody["dbName"] = c.Param("dbName")
+
+	rawDatabaseName := requestBody["dbName"]
+	if rawDatabaseName == "" {
+		rawDatabaseName = c.Param("dbName")
+	}
+	requestBody["dbName"] = rawDatabaseName
 
 	rawPrivilegesSlice := []string{}
 	if requestBody["privileges"] != nil {
