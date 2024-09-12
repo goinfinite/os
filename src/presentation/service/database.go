@@ -38,9 +38,11 @@ func (service *DatabaseService) Read(input map[string]interface{}) ServiceOutput
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	isServiceAvailable := sharedHelper.IsServiceAvailable(
+		service.persistentDbSvc, serviceName,
+	)
+	if !isServiceAvailable {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
@@ -74,9 +76,11 @@ func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutp
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	isServiceAvailable := sharedHelper.IsServiceAvailable(
+		service.persistentDbSvc, serviceName,
+	)
+	if !isServiceAvailable {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
 	dto := dto.NewCreateDatabase(dbName)
@@ -108,9 +112,11 @@ func (service *DatabaseService) Delete(input map[string]interface{}) ServiceOutp
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	isServiceAvailable := sharedHelper.IsServiceAvailable(
+		service.persistentDbSvc, serviceName,
+	)
+	if !isServiceAvailable {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
@@ -147,9 +153,11 @@ func (service *DatabaseService) CreateUser(
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	isServiceAvailable := sharedHelper.IsServiceAvailable(
+		service.persistentDbSvc, serviceName,
+	)
+	if !isServiceAvailable {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
@@ -209,9 +217,11 @@ func (service *DatabaseService) DeleteUser(
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	err = sharedHelper.EnsureServiceAvailability(service.persistentDbSvc, serviceName)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	isServiceAvailable := sharedHelper.IsServiceAvailable(
+		service.persistentDbSvc, serviceName,
+	)
+	if !isServiceAvailable {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(input["dbName"])
