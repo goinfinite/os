@@ -11,12 +11,12 @@ templ TabHeader(
 	onClick string,
 ) {
 	<!-- TabHeader -->
-	<ul class="flex text-sm w-fit font-medium text-center text-os-500 uppercase rounded-t-lg bg-os-800 pt-3.5 px-4">
+	<ul class="flex text-sm w-fit font-medium text-center text-os-500 uppercase rounded-t-lg bg-os-800 pt-3.5 px-4 space-x-2">
 		for _, item := range tabHeaderItems {
 			<li class="text-xl">
 				<button
 					type="button"
-					class={ "inline-block py-4 px-5 rounded-t-md bg-inherit hover:bg-os-300 " + item.AdditionalClasses }
+					class={ "inline-block py-4 px-5 rounded-t-md bg-inherit " + item.AdditionalClasses }
 					@click={ onClick + "('" + item.ComponentValue + "')" }
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
