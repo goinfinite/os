@@ -182,13 +182,14 @@ func getDatabasesTabHeaderItems(
 		{Label: "PostgreSQL", ComponentValue: "postgresql"},
 	}
 
+	selectedDbTypeStr := selectedDatabaseType.String()
 	for itemIndex := range tabHeaderItems {
-		if selectedDatabaseType.String() != tabHeaderItems[itemIndex].ComponentValue {
-			tabHeaderItems[itemIndex].AdditionalClasses = " text-slate-500"
+		if selectedDbTypeStr != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = "text-slate-500"
 			continue
 		}
 
-		tabHeaderItems[itemIndex].AdditionalClasses = " text-speedia-500 border-b border-speedia-500"
+		tabHeaderItems[itemIndex].AdditionalClasses = "text-speedia-500 border-b border-speedia-500"
 	}
 
 	return tabHeaderItems
