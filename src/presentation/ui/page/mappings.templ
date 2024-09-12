@@ -246,7 +246,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
 			</div>
 		</template>
-		@componentForm.DeactivatableSubmitButton("", "Create", "ph-check-fat", "closeCreateVhostModal", "shouldDisableCreateVhostSubmitButton", false)
+		@componentForm.DeactivatableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "shouldDisableCreateVhostSubmitButton", false)
 	</form>
 }
 
@@ -326,7 +326,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				</div>
 			</details>
 		</section>
-		@componentForm.DeactivatableSubmitButton("", "Create", "ph-check-fat", "closeCreateMappingModal()", "shouldDisableCreateMappingSubmitButton", false)
+		@componentForm.DeactivatableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "shouldDisableCreateMappingSubmitButton", false)
 	</form>
 }
 
