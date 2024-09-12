@@ -40,8 +40,8 @@ script DatabasesIndexLocalState() {
 					'GET',
 					'/databases/?dbType=' + databaseType,
 					{
-						select: '#databases-content',
-						target: '#databases-content',
+						select: '#databases-page-content',
+						target: '#databases-page-content',
 						swap: 'outerHTML transition:true'
 					},
 				);
@@ -147,11 +147,11 @@ templ DatabasesIndex(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumm
 			)
 		</div>
 		<div
-			id="databases-content"
+			id="databases-page-content"
 			hx-get={ "/databases/?dbType=" + selectedDbTypeSummary.Type.String() }
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#create-database-user delay:500ms"
-			hx-select="#databases-content"
-			hx-target="#databases-content"
+			hx-select="#databases-page-content"
+			hx-target="#databases-page-content"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
@@ -194,6 +194,17 @@ func getDatabasesTabHeaderItems(
 	return tabHeaderItems
 }
 
+templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType) {
+	<div class="p-4 bg-os-500 rounded-r-lg">
+		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
+		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
+		@componentForm.SubmitButton(
+			"Schedule "+selectedDbType.String()+" service installation", "ph-caret-line-down",
+			"installDatabaseService('"+selectedDbType.String()+"')", true,
+		)
+	</div>
+}
+
 templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSummary) {
 	@componentStructural.TabHeader(
 		getDatabasesTabHeaderItems(selectedDbTypeSummary.Type), "changeSelectedDatabaseType",
@@ -201,15 +212,55 @@ templ DatabasesTabs(selectedDbTypeSummary presenterDto.SelectedDatabaseTypeSumma
 	<!-- DatabaseTabContent -->
 	<div class="bg-os-800 p-4 rounded-b-xl rounded-r-xl">
 		<div class="px-4 bg-os-500 rounded-lg space-y-3">
-			if !selectedDbTypeSummary.IsInstalled {
-				<div class="p-4 bg-os-500 rounded-r-lg">
-					<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
-					<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbTypeSummary.Type.String() }</p>service is not installed yet.</span>
-					@componentForm.SubmitButton("Schedule "+selectedDbTypeSummary.Type.String()+" service installation", "ph-caret-line-down", "installDatabaseService('"+selectedDbTypeSummary.Type.String()+"')", true)
-				</div>
-			} else {
-				@componentDatabases.InstalledDatabaseTypeSummaryTable(selectedDbTypeSummary.Databases)
+			if selectedDbTypeSummary.IsInstalled {
+				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+					<thead class="text-xs uppercase text-neutral-400">
+						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+							<th scope="col" class="px-5 py-3 w-1/7 text-left">Name</th>
+							<th scope="col" class="px-5 py-3 w-2/7 text-center">User(s)</th>
+							<th scope="col" class="px-5 py-3 w-1/7 text-left">Size</th>
+							<th scope="col" class="px-5 py-3 space-x-2 flex justify-end">
+								@componentForm.SubmitButton("Create user", "ph-user-plus", "openCreateDatabaseUserModal()", true)
+								@componentForm.SubmitButton("Create database", "ph-database", "openCreateDatabaseModal()", true)
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, database := range selectedDbTypeSummary.Databases {
+							<tr class="bg-os-800 text-white">
+								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-left">
+									<div class="bg-os-500 rounded-md px-2.5 py-1 max-h-75">
+										for _, user := range database.Users {
+											<div class="flex justify-between items-center p-3 my-1.5 bg-os-800 rounded-md">
+												<span class="font-normal">{ user.Username.String() }</span>
+												<div class="flex space-x-2">
+													@componentStructural.CircularIconButtonWithTooltip(
+														"ph-trash", "red-800", "red-600",
+														"openDeleteDatabaseUserModal('"+database.Name.String()+"', '"+user.Username.String()+"')",
+														"Delete user", "red-500",
+													)
+												</div>
+											</div>
+										}
+									</div>
+								</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Size.String() }</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-right">
+									<div class="inline-flex">
+										@componentStructural.CircularIconButtonWithTooltip(
+											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
+											"Delete database", "red-500",
+										)
+									</div>
+								</th>
+							</tr>
+						}
+					</tbody>
+				</table>
 				<div class="bg-os-500 p-0.5"></div>
+			} else {
+				@DatabaseServiceNotInstalledWarning(selectedDbTypeSummary.Type)
 			}
 		</div>
 	</div>
