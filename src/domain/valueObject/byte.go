@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strconv"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 )
@@ -35,4 +36,8 @@ func (b Byte) ToGiB() int64 {
 
 func (b Byte) ToTiB() int64 {
 	return b.ToGiB() / 1024
+}
+
+func (vo Byte) String() string {
+	return strconv.FormatInt(int64(vo), 10)
 }
