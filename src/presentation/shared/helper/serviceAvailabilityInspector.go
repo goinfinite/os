@@ -8,12 +8,22 @@ import (
 
 const ServiceUnavailableError = "ServiceUnavailable"
 
-func IsServiceAvailable(
+type ServiceAvailabilityInspector struct {
+	servicesQueryRepo *servicesInfra.ServicesQueryRepo
+}
+
+func NewServiceAvailabilityInspector(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) *ServiceAvailabilityInspector {
+	return &ServiceAvailabilityInspector{
+		servicesQueryRepo: servicesInfra.NewServicesQueryRepo(persistentDbSvc),
+	}
+}
+
+func (inspector *ServiceAvailabilityInspector) IsAvailable(
 	serviceName valueObject.ServiceName,
 ) bool {
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(persistentDbSvc)
-	availableSvc, err := servicesQueryRepo.ReadByName(serviceName)
+	availableSvc, err := inspector.servicesQueryRepo.ReadByName(serviceName)
 	if err != nil {
 		return false
 	}
