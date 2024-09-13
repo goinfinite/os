@@ -18,24 +18,24 @@ func NewByte(value interface{}) (byteValue Byte, err error) {
 	return Byte(uintValue), nil
 }
 
-func (b Byte) Int64() int64 {
-	return int64(b)
+func (vo Byte) Int64() int64 {
+	return int64(vo)
 }
 
-func (b Byte) ToKiB() int64 {
-	return b.Int64() / 1024
+func (vo Byte) ToKiB() int64 {
+	return vo.Int64() / 1024
 }
 
-func (b Byte) ToMiB() int64 {
-	return b.ToKiB() / 1024
+func (vo Byte) ToMiB() int64 {
+	return vo.ToKiB() / 1024
 }
 
-func (b Byte) ToGiB() int64 {
-	return b.ToMiB() / 1024
+func (vo Byte) ToGiB() int64 {
+	return vo.ToMiB() / 1024
 }
 
-func (b Byte) ToTiB() int64 {
-	return b.ToGiB() / 1024
+func (vo Byte) ToTiB() int64 {
+	return vo.ToGiB() / 1024
 }
 
 func (vo Byte) String() string {
