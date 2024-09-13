@@ -135,7 +135,7 @@ script DatabasesIndexLocalState() {
 	})
 }
 
-templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
+templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
 	@DatabasesIndexLocalState()
 	<div class="flex flex-col" x-data="databases">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -147,7 +147,7 @@ templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview)
 		</div>
 		<div
 			id="databases-page-content"
-			hx-get={ "/databases/?dbType=" + selectedDatabaseTypeOverview.Type.String() }
+			hx-get={ "/databases/?dbType=" + selectedDbOverview.Type.String() }
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 			hx-select="#databases-page-content"
 			hx-target="#databases-page-content"
@@ -155,18 +155,18 @@ templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview)
 			class="card w-full"
 		>
 			<div id="databases-tabs">
-				@DatabasesTabs(selectedDatabaseTypeOverview)
+				@DatabasesTabs(selectedDbOverview)
 			</div>
-			@CreateDatabaseModal(selectedDatabaseTypeOverview.Type)
+			@CreateDatabaseModal(selectedDbOverview.Type)
 			@componentStructural.DeleteModal(
 				"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()",
-				"deleteDatabaseElement('"+selectedDatabaseTypeOverview.Type.String()+"')",
+				"deleteDatabaseElement('"+selectedDbOverview.Type.String()+"')",
 				"database.name", "",
 			)
-			@CreateDatabaseUserModal(selectedDatabaseTypeOverview)
+			@CreateDatabaseUserModal(selectedDbOverview)
 			@componentStructural.DeleteModal(
 				"isDeleteDatabaseUserModalOpen", "closeDeleteDatabaseUserModal()",
-				"deleteDatabaseUserElement('"+selectedDatabaseTypeOverview.Type.String()+"')",
+				"deleteDatabaseUserElement('"+selectedDbOverview.Type.String()+"')",
 				"databaseUser.username", "",
 			)
 		</div>
@@ -174,14 +174,14 @@ templ DatabasesIndex(selectedDatabaseTypeOverview presenterDto.DatabaseOverview)
 }
 
 func getDatabasesTabHeaderItems(
-	selectedDatabaseType valueObject.DatabaseType,
+	selectedDbType valueObject.DatabaseType,
 ) []componentStructural.TabHeaderItem {
 	tabHeaderItems := []componentStructural.TabHeaderItem{
 		{Label: "MySQL/MariaDB/Percona", ComponentValue: "mariadb"},
 		{Label: "PostgreSQL", ComponentValue: "postgresql"},
 	}
 
-	selectedDbTypeStr := selectedDatabaseType.String()
+	selectedDbTypeStr := selectedDbType.String()
 	for itemIndex := range tabHeaderItems {
 		if selectedDbTypeStr != tabHeaderItems[itemIndex].ComponentValue {
 			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
@@ -205,14 +205,14 @@ templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType
 	</div>
 }
 
-templ DatabasesTabs(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
+templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 	@componentStructural.TabHeader(
-		getDatabasesTabHeaderItems(selectedDatabaseTypeOverview.Type), "changeSelectedDatabaseType",
+		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
 	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
 		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
-			if selectedDatabaseTypeOverview.IsInstalled {
+			if selectedDbOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 					<thead class="text-xs uppercase text-neutral-400">
 						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
@@ -226,7 +226,7 @@ templ DatabasesTabs(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) 
 						</tr>
 					</thead>
 					<tbody>
-						for _, database := range selectedDatabaseTypeOverview.Databases {
+						for _, database := range selectedDbOverview.Databases {
 							<tr class="bg-os-800 text-white">
 								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
 								<th scope="row" class="px-5 py-3 w-1/4 text-left">
@@ -260,15 +260,15 @@ templ DatabasesTabs(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) 
 				</table>
 				<div class="bg-os-500 p-0.5"></div>
 			} else {
-				@DatabaseServiceNotInstalledWarning(selectedDatabaseTypeOverview.Type)
+				@DatabaseServiceNotInstalledWarning(selectedDbOverview.Type)
 			}
 		</div>
 	</div>
 }
 
-templ CreateDatabaseForm(selectedDatabaseType valueObject.DatabaseType) {
+templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 	<form
-		hx-post={ "/api/v1/database/" + selectedDatabaseType.String() }
+		hx-post={ "/api/v1/database/" + selectedDbType.String() }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -282,33 +282,33 @@ templ CreateDatabaseForm(selectedDatabaseType valueObject.DatabaseType) {
 	</form>
 }
 
-templ CreateDatabaseModal(selectedDatabaseType valueObject.DatabaseType) {
+templ CreateDatabaseModal(selectedDbType valueObject.DatabaseType) {
 	@componentStructural.Modal(
 		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()", "",
 	) {
-		@CreateDatabaseForm(selectedDatabaseType)
+		@CreateDatabaseForm(selectedDbType)
 	}
 }
 
-func getOnlyDatabasesNames(selectedDatabaseTypeDatabases []entity.Database) []string {
+func getOnlyDatabasesNames(selectedDbDatabases []entity.Database) []string {
 	databasesNames := []string{}
-	for _, database := range selectedDatabaseTypeDatabases {
+	for _, database := range selectedDbDatabases {
 		databasesNames = append(databasesNames, database.Name.String())
 	}
 
 	return databasesNames
 }
 
-templ CreateDatabaseUserForm(selectedDatabaseTypeOverview presenterDto.DatabaseOverview) {
+templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 	<form
-		hx-post={ "/api/v1/database/" + selectedDatabaseTypeOverview.Type.String() + "/user" }
+		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
 		<div class="my-6 space-y-6">
 			@componentForm.SelectInput(
 				"dbName", "Database Name", "database.name",
-				getOnlyDatabasesNames(selectedDatabaseTypeOverview.Databases), false,
+				getOnlyDatabasesNames(selectedDbOverview.Databases), false,
 			)
 			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
 			<div class="space-y-2">
@@ -320,7 +320,7 @@ templ CreateDatabaseUserForm(selectedDatabaseTypeOverview presenterDto.DatabaseO
 					)
 				</div>
 			</div>
-			if selectedDatabaseTypeOverview.Type.String() == "mariadb" {
+			if selectedDbOverview.Type.String() == "mariadb" {
 				<section class="mb-6 w-full rounded-md">
 					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
 						<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
@@ -341,12 +341,12 @@ templ CreateDatabaseUserForm(selectedDatabaseTypeOverview presenterDto.DatabaseO
 }
 
 templ CreateDatabaseUserModal(
-	selectedDatabaseTypeOverview presenterDto.DatabaseOverview,
+	selectedDbOverview presenterDto.DatabaseOverview,
 ) {
 	@componentStructural.Modal(
 		"Create Database User", "isCreateDatabaseUserModalOpen",
 		"closeCreateDatabaseUserModal()", "",
 	) {
-		@CreateDatabaseUserForm(selectedDatabaseTypeOverview)
+		@CreateDatabaseUserForm(selectedDbOverview)
 	}
 }
