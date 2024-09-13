@@ -58,22 +58,6 @@ script DatabasesIndexLocalState() {
 			get shouldDisableCreateDatabaseUserSubmitButton() {
 				return this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == ''
 			},
-			generateRandomUserPassword() {
-				const passwordLength = 16;
-				const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
-
-				let passwordContent = '';
-				let passwordIterationCount = 0;
-				while (passwordIterationCount < passwordLength) {
-					const randomIndex = Math.floor(Math.random() * chars.length);
-					const indexAfterRandomIndex = randomIndex + 1;
-					passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
-
-					passwordIterationCount++;
-				}
-
-				this.databaseUser.password = passwordContent;
-			},
 
 			// Modal states
 			isCreateDatabaseModalOpen: false,
@@ -311,15 +295,7 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 				getOnlyDatabasesNames(selectedDbOverview.Databases), false,
 			)
 			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
-			<div class="space-y-2">
-				@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
-				<div class="flex justify-end">
-					@componentStructural.LabeledButton(
-						"generate random password", "ph-arrows-clockwise", "os-800", "os-200",
-						"generateRandomUserPassword()", true,
-					)
-				</div>
-			</div>
+			@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
 			if selectedDbOverview.Type.String() == "mariadb" {
 				<section class="mb-6 w-full rounded-md">
 					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
