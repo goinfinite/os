@@ -30,13 +30,20 @@ script SslsIndexLocalState() {
 			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
 				return this.sslPair.id == '' || this.sslPair.virtualHostsHostnames.length == 0
 			},
-			downloadPemFile(sslPairId, fileContent, fileExtension) {
-				const blobFile = new Blob([atob(fileContent)], { type: 'text/plain' });
+			downloadPemFile(isKeyFileContent) {
+				let pemFileContent = this.sslPair.certificate;
+				let fileExtension = 'crt';
+				if (isKeyFileContent) {
+					pemFileContent = this.sslPair.key
+					fileExtension = 'key';
+				}
+
+				const blobFile = new Blob([pemFileContent], { type: 'text/plain' });
 				const blobFileUrlObject = window.URL.createObjectURL(blobFile);
 				const downloadPemFileElement = document.createElement('a');
 
 				downloadPemFileElement.href = blobFileUrlObject;
-				downloadPemFileElement.download = `${sslPairId}.${fileExtension}`;
+				downloadPemFileElement.download = `${this.sslPair.id}.${fileExtension}`;
 				document.body.appendChild(downloadPemFileElement);
 
 				downloadPemFileElement.click();
@@ -85,6 +92,18 @@ script SslsIndexLocalState() {
 
 				this.isAddOrReplaceSslCertificateModalOpen = false;
 			},
+			isViewPemFilesModalOpen: false,
+			openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.sslPair.certificate = certificateContent;
+				this.sslPair.key = keyContent;
+				this.isViewPemFilesModalOpen = true;
+			},
+			closeViewPemFilesModal() {
+				this.isViewPemFilesModalOpen = false;
+			},
 		}))
 	})
 }
@@ -102,8 +121,8 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton(
-					"", "Add/swap SSL certificate", "ph-plus-square",
-					"speedia-500", "speedia-300",
+					"add-or-swap-ssl-certificate-button", "Add/swap SSL certificate",
+					"ph-plus-square", "duotone", "speedia-500", "speedia-300",
 					"openAddOrReplaceSslCertificateModal()", false,
 				)
 			</div>
@@ -120,6 +139,7 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			@SslsTable(sslPairs)
 		</div>
 		@AddOrReplaceSslCertificateModal(vhostsHostnames)
+		@ViewPemFilesModal()
 		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
 		@SwapToSelfSignedModal()
 	</div>
@@ -152,7 +172,8 @@ templ SslsTable(sslPairs []entity.SslPair) {
 							<th scope="row" class="px-5 py-3 w-1/4 text-right">
 								<div class="inline-flex space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-file-magnifying-glass", "blue-900", "blue-700", "",
+										"ph-file-magnifying-glass", "blue-900", "blue-700",
+										"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
 										"view PEM files", "blue-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
@@ -208,6 +229,31 @@ templ AddOrReplaceSslCertificateModal(vhostsHostnames []string) {
 	}
 }
 
+templ ViewPemFilesModal() {
+	@componentStructural.Modal(
+		"PEM files", "isViewPemFilesModalOpen",
+		"closeViewPemFilesModal()", "",
+	) {
+		<div class="space-y-6">
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate", false)
+				@componentForm.SubmitButton(
+					"download-certificate-pem-file-button", "", "ph-download-simple",
+					"bold", "cyan-900", "cyan-800", "downloadPemFile(false)", false,
+				)
+			</div>
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly("key", "Private Key", "sslPair.key", false)
+				@componentForm.SubmitButton(
+					"download-key-pem-file-button", "", "ph-download-simple",
+					"bold", "cyan-900", "cyan-800", "downloadPemFile(true)", false,
+				)
+			</div>
+		</div>
+	}
+}
+
 templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 	<form
 		id="remove-virtual-hosts-hostnames"
@@ -250,14 +296,14 @@ templ SwapToSelfSignedModal() {
 		<div class="flex space-x-5">
 			<div class="basis-2/3">
 				@componentForm.SubmitButton(
-					"", "Cancel", "", "gray-500",
+					"cancel-swap-self-signed-button", "Cancel", "", "", "gray-500",
 					"gray-400", "closeSwapToSelfSignedModal()", false,
 				)
 			</div>
 			<div class="basis-1/3">
 				@componentForm.SubmitButton(
-					"swap-to-self-signed-button", "Yes, swap ssl certificate", "", "speedia-500",
-					"speedia-300", "swapToSelfSigned()", false,
+					"swap-to-self-signed-button", "Yes, swap ssl certificate", "", "",
+					"speedia-500", "speedia-300", "swapToSelfSigned()", false,
 				)
 			</div>
 		</div>
