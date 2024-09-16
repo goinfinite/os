@@ -30,14 +30,16 @@ templ TextArea(
 	</div>
 }
 
-func getTextAreaReadOnlyClientSideState(elementId string) string {
-	return `{
-	copyToClipboard() {
-		const textInputElement = document.getElementById("` + elementId + `");
-		textInputElement.select();
-		navigator.clipboard.writeText(textInputElement.value);
-	}
-}`
+script TextAreaReadOnlyLocalState(elementId string) {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('textAreaReadOnly', () => ({
+			copyToClipboard() {
+				const textInputElement = document.getElementById(elementId);
+				textInputElement.select();
+				navigator.clipboard.writeText(textInputElement.value);
+			}
+		}))
+	})
 }
 
 templ TextAreaReadOnly(
@@ -45,7 +47,8 @@ templ TextAreaReadOnly(
 	denseMode bool,
 ) {
 	<!-- TextAreaReadOnly -->
-	<div class="relative w-full" x-data={ getTextAreaReadOnlyClientSideState(id) }>
+	@TextAreaReadOnlyLocalState(id)
+	<div class="relative w-full" x-data="textAreaReadOnly">
 		<textarea
 			id={ id }
 			name={ id }
