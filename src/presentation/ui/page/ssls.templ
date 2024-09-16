@@ -119,9 +119,9 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 		>
 			@SslsTable(sslPairs)
 		</div>
+		@AddOrReplaceSslCertificateModal(vhostsHostnames)
 		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
 		@SwapToSelfSignedModal()
-		@AddOrReplaceSslCertificateModal(vhostsHostnames)
 	</div>
 }
 
@@ -173,6 +173,39 @@ templ SslsTable(sslPairs []entity.SslPair) {
 			</table>
 		</div>
 	</div>
+}
+
+templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
+	<form
+		id="add-or-replace-ssl-certificate"
+		hx-post="/api/v1/ssl/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6">
+			@componentForm.SelectInput(
+				"virtualHosts", "Virtual Hosts Hostnames",
+				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
+			)
+		</div>
+		<div class="mb-6 space-y-6">
+			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
+			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Add/replace SSL certificate", "ph-check-fat", "closeAddOrReplaceSslCertificateModal()",
+			"shouldDisableAddOrReplaceSslCertificateSubmitButton", false,
+		)
+	</form>
+}
+
+templ AddOrReplaceSslCertificateModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Add/replace SSL certificate", "isAddOrReplaceSslCertificateModalOpen",
+		"closeAddOrReplaceSslCertificateModal()", "",
+	) {
+		@AddOrReplaceSslCertificateForm(vhostsHostnames)
+	}
 }
 
 templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
@@ -228,38 +261,5 @@ templ SwapToSelfSignedModal() {
 				)
 			</div>
 		</div>
-	}
-}
-
-templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
-	<form
-		id="add-or-replace-ssl-certificate"
-		hx-post="/api/v1/ssl/"
-		hx-indicator="#loading-overlay"
-		hx-swap="none"
-	>
-		<div class="my-6">
-			@componentForm.SelectInput(
-				"virtualHosts", "Virtual Hosts Hostnames",
-				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
-			)
-		</div>
-		<div class="mb-6 space-y-6">
-			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
-			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
-		</div>
-		@componentForm.DeactivatableSubmitButton(
-			"Add/replace SSL certificate", "ph-check-fat", "closeAddOrReplaceSslCertificateModal()",
-			"shouldDisableAddOrReplaceSslCertificateSubmitButton", false,
-		)
-	</form>
-}
-
-templ AddOrReplaceSslCertificateModal(vhostsHostnames []string) {
-	@componentStructural.Modal(
-		"Add/replace SSL certificate", "isAddOrReplaceSslCertificateModalOpen",
-		"closeAddOrReplaceSslCertificateModal()", "",
-	) {
-		@AddOrReplaceSslCertificateForm(vhostsHostnames)
 	}
 }
