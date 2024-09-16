@@ -6,6 +6,7 @@ import (
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentMappings "github.com/speedianet/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
 )
 
 script MappingsIndexLocalState() {
@@ -259,15 +260,6 @@ templ CreateVhostModal() {
 	}
 }
 
-func getVhostHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
-	vhostHostnames := []string{}
-	for _, vhostWithMappings := range vhostsWithMappings {
-		vhostHostnames = append(vhostHostnames, vhostWithMappings.Hostname.String())
-	}
-
-	return vhostHostnames
-}
-
 func getOnlyServiceNames() []string {
 	onlyServiceNames := []string{}
 	for serviceName := range valueObject.NativeSvcNamesWithAliases {
@@ -289,7 +281,7 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", getVhostHostnames(vhostsWithMappings), false)
+				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", uiHelper.GetVhostHostnames(vhostsWithMappings), false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
