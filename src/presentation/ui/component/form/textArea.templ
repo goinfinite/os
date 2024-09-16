@@ -30,12 +30,22 @@ templ TextArea(
 	</div>
 }
 
+func getTextAreaReadOnlyClientSideState(elementId string) string {
+	return `{
+	copyToClipboard() {
+		const textInputElement = document.getElementById("` + elementId + `");
+		textInputElement.select();
+		navigator.clipboard.writeText(textInputElement.value);
+	}
+}`
+}
+
 templ TextAreaReadOnly(
 	id, label, bindValuePath string,
 	denseMode bool,
 ) {
 	<!-- TextAreaReadOnly -->
-	<div class="relative w-full">
+	<div class="relative w-full" x-data={ getTextAreaReadOnlyClientSideState(id) }>
 		<textarea
 			id={ id }
 			name={ id }
@@ -50,6 +60,11 @@ templ TextAreaReadOnly(
 			}
 			readonly
 		></textarea>
+		<div class="absolute right-2 top-1">
+			<button type="button" class="bg-inherit mx-1 text-neutral-50 text-xl" @click="copyToClipboard()">
+				<i class="ph-duotone ph-copy-simple"></i>
+			</button>
+		</div>
 		if label != "" {
 			<label
 				for={ id }
