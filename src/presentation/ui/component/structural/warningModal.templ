@@ -1,0 +1,49 @@
+package componentStructural
+
+templ WarningModal(
+	isOpenState, closeFunction, declineButtonLabel, confirmFunction, confirmButtonId,
+	confirmButtonIcon, confirmButonLabel string,
+) {
+	<!-- WarningModal -->
+	<div
+		x-show={ isOpenState }
+		x-transition:enter="transition ease-out duration-500"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-150"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+		class="fixed left-0 top-0 z-50 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
+	>
+		<div class="relative mx-auto mt-20 max-w-2xl rounded-md bg-red-950 p-8 drop-shadow-xl xl:mt-24">
+			<button
+				@click={ closeFunction }
+				class="opacity-85 float-right bg-transparent hover:opacity-100 active:opacity-100"
+			>
+				<i class="ph-bold ph-x-square align-middle text-3xl"></i>
+			</button>
+			<div class="h-18 w-18 mx-auto my-4 flex items-center justify-center rounded-full bg-neutral-300 text-center text-5xl">
+				<i class="ph-duotone ph-warning text-red-950"></i>
+			</div>
+			<div class="mt-3 mb-6 px-2 text-center">
+				{ children... }
+			</div>
+			<div class="flex flex-row space-x-4">
+				<button
+					@click={ closeFunction }
+					class="w-full rounded-md border-none bg-neutral-300 p-3 text-center text-base lowercase leading-none text-neutral-950 hover:bg-neutral-400"
+				>
+					{ declineButtonLabel }
+				</button>
+				<button
+					id={ confirmButtonId }
+					type="submit"
+					@click={ confirmFunction }
+					class="w-full rounded-md border-none bg-red-800 p-3 text-center text-base font-bold lowercase leading-none text-white hover:bg-red-900"
+				>
+					<i class={ "ph-duotone " + confirmButtonIcon + " mr-1 align-middle text-xl" }></i>{ confirmButonLabel }
+				</button>
+			</div>
+		</div>
+	</div>
+}
