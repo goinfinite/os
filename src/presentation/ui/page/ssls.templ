@@ -24,7 +24,7 @@ script SslsIndexLocalState() {
 			},
 
 			// Auxiliary states
-			get shouldDisableAddOrReplaceSslCertificateSubmitButton() {
+			get shouldDisableImportSslCertificateSubmitButton() {
 				return this.sslPair.virtualHostsHostnames.length == 0 || this.sslPair.certificate == '' || this.sslPair.key == ''
 			},
 			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
@@ -80,17 +80,17 @@ script SslsIndexLocalState() {
 				);
 				this.closeSwapToSelfSignedModal();
 			},
-			isAddOrReplaceSslCertificateModalOpen: false,
-			openAddOrReplaceSslCertificateModal() {
+			isImportSslCertificateModalOpen: false,
+			openImportSslCertificateModal() {
 				this.resetPrimaryStates();
 
-				this.isAddOrReplaceSslCertificateModalOpen = true;
+				this.isImportSslCertificateModalOpen = true;
 			},
-			closeAddOrReplaceSslCertificateModal() {
+			closeImportSslCertificateModal() {
 				this.sslPair.certificate = btoa(this.sslPair.certificate);
 				this.sslPair.key = btoa(this.sslPair.key);
 
-				this.isAddOrReplaceSslCertificateModalOpen = false;
+				this.isImportSslCertificateModalOpen = false;
 			},
 			isViewPemFilesModalOpen: false,
 			openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
@@ -121,24 +121,25 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton(
-					"add-or-swap-ssl-certificate-button", "Add/swap SSL certificate",
+					"import-ssl-certificate-button", "Import SSL certificate",
 					"ph-plus-square", "speedia-500", "speedia-300",
-					"openAddOrReplaceSslCertificateModal()", false,
+					"openImportSslCertificateModal()", false,
 				)
 			</div>
 		</div>
 		<div
 			id="ssls-table"
 			hx-get="/ssls/"
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:500ms"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:1000ms"
 			hx-select="#ssls-table"
 			hx-target="#ssls-table"
+			hx-indicator="#loading-overlay"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
 			@SslsTable(sslPairs)
 		</div>
-		@AddOrReplaceSslCertificateModal(vhostsHostnames)
+		@ImportSslCertificateModal(vhostsHostnames)
 		@ViewPemFilesModal()
 		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
 		@SwapToSelfSignedModal()
@@ -182,7 +183,7 @@ templ SslsTable(sslPairs []entity.SslPair) {
 										"remove virtual hosts hostnames", "red-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-arrows-clockwise", "red-800", "red-600",
+										"ph-swap", "red-800", "red-600",
 										"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
 										"swap to self-signed", "red-500",
 									)
@@ -196,9 +197,9 @@ templ SslsTable(sslPairs []entity.SslPair) {
 	</div>
 }
 
-templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
+templ ImportSslCertificateForm(vhostsHostnames []string) {
 	<form
-		id="add-or-replace-ssl-certificate-form"
+		id="import-ssl-certificate-form"
 		hx-post="/api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -214,18 +215,18 @@ templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
 			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
-			"Add/replace SSL certificate", "ph-check-fat", "closeAddOrReplaceSslCertificateModal()",
-			"shouldDisableAddOrReplaceSslCertificateSubmitButton", false,
+			"Import SSL certificate", "ph-check-fat", "closeImportSslCertificateModal()",
+			"shouldDisableImportSslCertificateSubmitButton", false,
 		)
 	</form>
 }
 
-templ AddOrReplaceSslCertificateModal(vhostsHostnames []string) {
+templ ImportSslCertificateModal(vhostsHostnames []string) {
 	@componentStructural.Modal(
-		"Add/replace SSL certificate", "isAddOrReplaceSslCertificateModalOpen",
-		"closeAddOrReplaceSslCertificateModal()", "",
+		"Import SSL certificate", "isImportSslCertificateModalOpen",
+		"closeImportSslCertificateModal()", "",
 	) {
-		@AddOrReplaceSslCertificateForm(vhostsHostnames)
+		@ImportSslCertificateForm(vhostsHostnames)
 	}
 }
 
@@ -240,14 +241,14 @@ templ ViewPemFilesModal() {
 				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate", false)
 				@componentForm.SubmitButton(
 					"download-certificate-pem-file-button", "Download certificate", "ph-download-simple",
-					"cyan-900", "cyan-800", "downloadPemFile(false)", false,
+					"speedia-500", "speedia-300", "downloadPemFile(false)", false,
 				)
 			</div>
 			<div class="space-y-1">
 				@componentForm.TextAreaReadOnly("key", "Private Key", "sslPair.key", false)
 				@componentForm.SubmitButton(
 					"download-key-pem-file-button", "Download private key", "ph-download-simple",
-					"cyan-900", "cyan-800", "downloadPemFile(true)", false,
+					"speedia-500", "speedia-300", "downloadPemFile(true)", false,
 				)
 			</div>
 		</div>
@@ -269,7 +270,8 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 			)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
-			"Remove virtual hosts hostnames", "ph-check-fat", "closeRemoveVirtualHostsHostnamesModal()",
+			"Remove virtual hosts hostnames", "ph-network-slash",
+			"closeRemoveVirtualHostsHostnamesModal()",
 			"shouldDisableRemoveVirtualHostsHostnamesSubmitButton", false,
 		)
 	</form>
@@ -285,27 +287,14 @@ templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 }
 
 templ SwapToSelfSignedModal() {
-	@componentStructural.Modal(
-		"Swap with self-signed SSL", "isSwapToSelfSignedModalOpen",
-		"closeSwapToSelfSignedModal()", "",
+	@componentStructural.WarningModal(
+		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
+		"Cancel", "closeSwapToSelfSignedModal()", "swap-to-self-signed-button",
+		"ph-swap", "Yes, swap ssl certificate",
 	) {
-		<div class="mb-6 space-y-6 p-4 bg-os-500 rounded-md">
-			<span class="text-2xl font-bold">Are you sure you want to swap SSL certificate?</span>
-			<p class="mt-2">Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
-		</div>
-		<div class="flex space-x-5">
-			<div class="basis-2/3">
-				@componentForm.SubmitButton(
-					"cancel-swap-self-signed-button", "Cancel", "", "gray-500",
-					"gray-400", "closeSwapToSelfSignedModal()", false,
-				)
-			</div>
-			<div class="basis-1/3">
-				@componentForm.SubmitButton(
-					"swap-to-self-signed-button", "Yes, swap ssl certificate", "",
-					"speedia-500", "speedia-300", "swapToSelfSigned()", false,
-				)
-			</div>
-		</div>
+		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+			Are you sure you want to swap SSL certificate?
+		</h3>
+		<p>This process cannot be undone. Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
 	}
 }
