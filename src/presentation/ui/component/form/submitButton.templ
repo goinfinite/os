@@ -1,7 +1,7 @@
 package componentForm
 
 templ SubmitButton(
-	id, label, icon, iconStyle, color, hoverColor, onClick string,
+	id, label, icon, color, hoverColor, onClick string,
 	denseMode bool,
 ) {
 	<!-- SubmitButton -->
@@ -20,7 +20,7 @@ templ SubmitButton(
 		}
 	>
 		if icon != "" {
-			<i class={ "ph-" + iconStyle + " " + icon + " mr-1 align-middle text-xl" }></i>
+			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
 		}
 		{ label }
 	</button>
