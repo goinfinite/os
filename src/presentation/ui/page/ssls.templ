@@ -55,6 +55,24 @@ script SslsIndexLocalState() {
 			closeRemoveVirtualHostsHostnamesModal() {
 				this.isRemoveVirtualHostsHostnamesModalOpen = false;
 			},
+			isSwapToSelfSignedModalOpen: false,
+			openSwapToSelfSignedModal(sslPairId) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.isSwapToSelfSignedModalOpen = true;
+			},
+			closeSwapToSelfSignedModal() {
+				this.isSwapToSelfSignedModalOpen = false;
+			},
+			swapToSelfSigned() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/ssl/' + this.sslPair.id + '/',
+					{swap:'none'},
+				);
+				this.closeSwapToSelfSignedModal();
+			},
 			isAddOrReplaceSslCertificateModalOpen: false,
 			openAddOrReplaceSslCertificateModal() {
 				this.resetPrimaryStates();
@@ -84,7 +102,8 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton(
-					"Add/swap SSL certificate", "ph-plus-square",
+					"", "Add/swap SSL certificate", "ph-plus-square",
+					"speedia-500", "speedia-300",
 					"openAddOrReplaceSslCertificateModal()", false,
 				)
 			</div>
@@ -92,7 +111,7 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 		<div
 			id="ssls-table"
 			hx-get="/ssls/"
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:500ms"
 			hx-select="#ssls-table"
 			hx-target="#ssls-table"
 			hx-swap="outerHTML transition:true"
@@ -101,6 +120,7 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			@SslsTable(sslPairs)
 		</div>
 		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
+		@SwapToSelfSignedModal()
 		@AddOrReplaceSslCertificateModal(vhostsHostnames)
 	</div>
 }
@@ -141,7 +161,8 @@ templ SslsTable(sslPairs []entity.SslPair) {
 										"remove virtual hosts hostnames", "red-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-arrows-clockwise", "red-800", "red-600", "",
+										"ph-arrows-clockwise", "red-800", "red-600",
+										"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
 										"swap to self-signed", "red-500",
 									)
 								</div>
@@ -181,6 +202,32 @@ templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 		"closeRemoveVirtualHostsHostnamesModal()", "",
 	) {
 		@RemoveVirtualHostsHostnamesForm(vhostsHostnames)
+	}
+}
+
+templ SwapToSelfSignedModal() {
+	@componentStructural.Modal(
+		"Swap with self-signed SSL", "isSwapToSelfSignedModalOpen",
+		"closeSwapToSelfSignedModal()", "",
+	) {
+		<div class="mb-6 space-y-6 p-4 bg-os-500 rounded-md">
+			<span class="text-2xl font-bold">Are you sure you want to swap SSL certificate?</span>
+			<p class="mt-2">Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
+		</div>
+		<div class="flex space-x-5">
+			<div class="basis-2/3">
+				@componentForm.SubmitButton(
+					"", "Cancel", "", "gray-500",
+					"gray-400", "closeSwapToSelfSignedModal()", false,
+				)
+			</div>
+			<div class="basis-1/3">
+				@componentForm.SubmitButton(
+					"swap-to-self-signed-button", "Yes, swap ssl certificate", "", "speedia-500",
+					"speedia-300", "swapToSelfSigned()", false,
+				)
+			</div>
+		</div>
 	}
 }
 
