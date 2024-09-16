@@ -72,19 +72,17 @@ templ SslsIndex(sslPairs []entity.SslPair) {
 			</div>
 		</div>
 		<div
-			id="ssls-page-content"
+			id="ssls-table"
 			hx-get="/ssls/"
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
-			hx-select="#ssls-page-content"
-			hx-target="#ssls-page-content"
+			hx-select="#ssls-table"
+			hx-target="#ssls-table"
 			hx-swap="outerHTML transition:true"
-			class="flex flex-col"
+			class="card w-full"
 		>
-			<div id="ssls-table" class="card w-full">
-				@SslsTable(sslPairs)
-			</div>
-			@AddOrReplaceSslCertificateModal(uiHelper.GetVhostHostnames(sslPairs))
+			@SslsTable(sslPairs)
 		</div>
+		@AddOrReplaceSslCertificateModal(uiHelper.GetVhostHostnames(sslPairs))
 	</div>
 }
 
