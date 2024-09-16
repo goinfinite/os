@@ -177,7 +177,7 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 
 templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 	@componentStructural.Modal(
-		"Add/replace SSL certificate", "isRemoveVirtualHostsHostnamesModalOpen",
+		"Remove virtual hosts hostnames", "isRemoveVirtualHostsHostnamesModalOpen",
 		"closeRemoveVirtualHostsHostnamesModal()", "",
 	) {
 		@RemoveVirtualHostsHostnamesForm(vhostsHostnames)
