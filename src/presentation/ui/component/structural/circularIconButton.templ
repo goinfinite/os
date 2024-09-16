@@ -12,10 +12,10 @@ templ CircularIconButtonWithTooltip(
 			}
 			class={ "inline-flex items-center rounded-full bg-" + defaultColor + " p-2 text-center font-medium hover:bg-" + hoverColor }
 		>
-			<i class={ "ph-bold " + icon }></i>
+			<i class={ "ph-bold " + icon + " text-xl" }></i>
 		</button>
 		if tooltipText != "" {
-			<div class={ "absolute invisible w-max p-2 bottom-full mb-2.5 text-white text-xs rounded-md shadow-lg left-1/2 -translate-x-1/2 bg-" + tooltipColor + " group-hover:block group-hover:visible" }>
+			<div class={ "absolute invisible w-max p-2 bottom-full mb-2 text-white text-xs rounded-md shadow-lg left-1/2 -translate-x-1/2 bg-" + tooltipColor + " group-hover:block group-hover:visible" }>
 				{ tooltipText }
 			</div>
 		}
