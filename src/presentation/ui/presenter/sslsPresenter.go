@@ -35,6 +35,6 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.SslsIndex(sslPairs)
+	pageContent := page.SslsIndex(sslPairs, uiHelper.GetVhostHostnames(sslPairs))
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
