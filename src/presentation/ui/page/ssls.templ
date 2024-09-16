@@ -8,7 +8,7 @@ import (
 
 script SslsIndexLocalState() {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('ssls', () => ({})
+		Alpine.data('ssls', () => ({}))
 	})
 }
 
@@ -24,15 +24,55 @@ templ SslsIndex(sslPairs []entity.SslPair) {
 				)
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("create virtual host", "ph-plus-square", "", false)
-				@componentForm.SubmitButton("create mapping", "ph-plus-square", "", false)
+				@componentForm.SubmitButton("Add/swap SSL certificate", "ph-plus-square", "", false)
 			</div>
 		</div>
 		<div id="ssls-table" class="card w-full">
-			@SslsFormTable(sslPairs)
+			@SslsTable(sslPairs)
 		</div>
 	</div>
 }
 
-templ SslsFormTable(sslPairs []entity.SslPair) {
+templ SslsTable(sslPairs []entity.SslPair) {
+	<div class="bg-os-800 p-4 rounded-xl">
+		<div class="p-4 bg-os-500 rounded-lg space-y-3 pt-2">
+			<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+				<thead class="text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="px-5 py-3 w-1/7 text-left">Virtual Hosts Hostnames</th>
+						<th scope="col" class="px-5 py-3 w-1/7 text-left">Issued At</th>
+						<th scope="col" class="px-5 py-3 w-1/7 text-left">Expires At</th>
+						<th scope="col" class="px-5 py-3 w-1/7 text-left">Certificate Authority</th>
+						<th scope="col" class="px-5 py-3 w-1/7"></th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, sslPair := range sslPairs {
+						<tr class="bg-os-800 text-white">
+							<th scope="row" class="px-5 py-3 w-1/4 text-left space-y-2">
+								for _, vhostHostname := range sslPair.VirtualHostsHostnames {
+									@componentStructural.Tag("ph-network", "", vhostHostname.String(), "speedia-500")
+								}
+							</th>
+							<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ sslPair.Certificate.IssuedAt.GetDateOnly() }</th>
+							<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ sslPair.Certificate.ExpiresAt.GetDateOnly() }</th>
+							<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
+							<th scope="row" class="px-5 py-3 w-1/4 text-right">
+								<div class="inline-flex space-y-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-download-simple", "blue-900", "blue-700", "",
+										"download PEM files", "blue-500",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-arrows-clockwise", "red-800", "red-600", "",
+										"swap to self-signed", "red-500",
+									)
+								</div>
+							</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 }
