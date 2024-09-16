@@ -50,6 +50,9 @@ script SslsIndexLocalState() {
 				this.isAddOrReplaceSslCertificateModalOpen = true;
 			},
 			closeAddOrReplaceSslCertificateModal() {
+				this.sslPair.certificate = btoa(this.sslPair.certificate);
+				this.sslPair.key = btoa(this.sslPair.key);
+
 				this.isAddOrReplaceSslCertificateModalOpen = false;
 			},
 		}))
