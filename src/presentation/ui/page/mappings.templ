@@ -151,12 +151,12 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			</div>
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton(
-					"", "create virtual host", "ph-plus-square", "speedia-500",
-					"speedia-300", "openCreateVhostModal()", false,
+					"create-vhost-button", "create virtual host", "ph-plus-square", "duotone",
+					"speedia-500", "speedia-300", "openCreateVhostModal()", false,
 				)
 				@componentForm.SubmitButton(
-					"", "create mapping", "ph-plus-square", "speedia-500",
-					"speedia-300", "openCreateMappingModal()", false,
+					"create-mapping-button", "create mapping", "ph-plus-square", "duotone",
+					"speedia-500", "speedia-300", "openCreateMappingModal()", false,
 				)
 			</div>
 		</div>
@@ -228,7 +228,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 
 templ CreateVhostForm() {
 	<form
-		id="create-vhost"
+		id="create-vhost-form"
 		hx-post="/api/v1/vhosts/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
