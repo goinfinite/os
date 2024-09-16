@@ -8,7 +8,26 @@ import (
 
 script SslsIndexLocalState() {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('ssls', () => ({}))
+		Alpine.data('ssls', () => ({
+			// Primary states
+
+			// Auxiliary states
+			downloadPemFile(sslPairId, fileContent, fileExtension) {
+				const blobFile = new Blob([atob(fileContent)], { type: 'text/plain' });
+				const blobFileUrlObject = window.URL.createObjectURL(blobFile);
+				const downloadPemFileElement = document.createElement('a');
+
+				downloadPemFileElement.href = blobFileUrlObject;
+				downloadPemFileElement.download = `${sslPairId}.${fileExtension}`;
+				document.body.appendChild(downloadPemFileElement);
+
+				downloadPemFileElement.click();
+				window.URL.revokeObjectURL(blobFileUrlObject);
+				document.body.removeChild(downloadPemFileElement);
+			},
+
+			// Modal states
+		}))
 	})
 }
 
@@ -58,10 +77,10 @@ templ SslsTable(sslPairs []entity.SslPair) {
 							<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ sslPair.Certificate.ExpiresAt.GetDateOnly() }</th>
 							<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
 							<th scope="row" class="px-5 py-3 w-1/4 text-right">
-								<div class="inline-flex space-y-2">
+								<div class="inline-flex space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-download-simple", "blue-900", "blue-700", "",
-										"download PEM files", "blue-500",
+										"ph-file-magnifying-glass", "blue-900", "blue-700", "",
+										"view PEM files", "blue-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-arrows-clockwise", "red-800", "red-600", "",
