@@ -4,14 +4,30 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
 )
 
 script SslsIndexLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('ssls', () => ({
 			// Primary states
+			sslPair: {},
+			resetPrimaryStates() {
+				this.sslPair = {
+					sslPairId: '',
+					virtualHostsHostnames: [],
+					certificate: '',
+					key: '',
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
 
 			// Auxiliary states
+			get shouldDisableAddOrReplaceSslCertificateSubmitButton() {
+				return this.sslPair.virtualHostsHostnames.length == 0 || this.sslPair.certificate == '' || this.sslPair.key == ''
+			},
 			downloadPemFile(sslPairId, fileContent, fileExtension) {
 				const blobFile = new Blob([atob(fileContent)], { type: 'text/plain' });
 				const blobFileUrlObject = window.URL.createObjectURL(blobFile);
@@ -27,6 +43,15 @@ script SslsIndexLocalState() {
 			},
 
 			// Modal states
+			isAddOrReplaceSslCertificateModalOpen: false,
+			openAddOrReplaceSslCertificateModal() {
+				this.resetPrimaryStates();
+
+				this.isAddOrReplaceSslCertificateModalOpen = true;
+			},
+			closeAddOrReplaceSslCertificateModal() {
+				this.isAddOrReplaceSslCertificateModalOpen = false;
+			},
 		}))
 	})
 }
@@ -43,11 +68,22 @@ templ SslsIndex(sslPairs []entity.SslPair) {
 				)
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("Add/swap SSL certificate", "ph-plus-square", "", false)
+				@componentForm.SubmitButton("Add/swap SSL certificate", "ph-plus-square", "openAddOrReplaceSslCertificateModal()", false)
 			</div>
 		</div>
-		<div id="ssls-table" class="card w-full">
-			@SslsTable(sslPairs)
+		<div
+			id="ssls-page-content"
+			hx-get="/ssls/"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-select="#ssls-page-content"
+			hx-target="#ssls-page-content"
+			hx-swap="outerHTML transition:true"
+			class="flex flex-col"
+		>
+			<div id="ssls-table" class="card w-full">
+				@SslsTable(sslPairs)
+			</div>
+			@AddOrReplaceSslCertificateModal(uiHelper.GetVhostHostnames(sslPairs))
 		</div>
 	</div>
 }
@@ -94,4 +130,37 @@ templ SslsTable(sslPairs []entity.SslPair) {
 			</table>
 		</div>
 	</div>
+}
+
+templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
+	<form
+		id="add-or-replace-ssl-certificate"
+		hx-post="/api/v1/ssl/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6">
+			@componentForm.SelectInput(
+				"virtualHosts", "Virtual Hosts Hostnames",
+				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
+			)
+		</div>
+		<div class="mb-6 space-y-6">
+			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
+			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Add/replace SSL certificate", "ph-check-fat", "closeAddOrReplaceSslCertificateModal()",
+			"shouldDisableAddOrReplaceSslCertificateSubmitButton", false,
+		)
+	</form>
+}
+
+templ AddOrReplaceSslCertificateModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Add/replace SSL certificate", "isAddOrReplaceSslCertificateModalOpen",
+		"closeAddOrReplaceSslCertificateModal()", "",
+	) {
+		@AddOrReplaceSslCertificateForm(vhostsHostnames)
+	}
 }
