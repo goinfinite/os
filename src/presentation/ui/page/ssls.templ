@@ -198,7 +198,7 @@ templ SslsTable(sslPairs []entity.SslPair) {
 
 templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
 	<form
-		id="add-or-replace-ssl-certificate"
+		id="add-or-replace-ssl-certificate-form"
 		hx-post="/api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -256,7 +256,7 @@ templ ViewPemFilesModal() {
 
 templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 	<form
-		id="remove-virtual-hosts-hostnames"
+		id="remove-virtual-hosts-hostnames-form"
 		hx-put="/api/v1/ssl/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
