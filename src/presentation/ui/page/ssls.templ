@@ -4,7 +4,6 @@ import (
 	"github.com/speedianet/os/src/domain/entity"
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
-	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
 )
 
 script SslsIndexLocalState() {
@@ -14,7 +13,7 @@ script SslsIndexLocalState() {
 			sslPair: {},
 			resetPrimaryStates() {
 				this.sslPair = {
-					sslPairId: '',
+					id: '',
 					virtualHostsHostnames: [],
 					certificate: '',
 					key: '',
@@ -27,6 +26,9 @@ script SslsIndexLocalState() {
 			// Auxiliary states
 			get shouldDisableAddOrReplaceSslCertificateSubmitButton() {
 				return this.sslPair.virtualHostsHostnames.length == 0 || this.sslPair.certificate == '' || this.sslPair.key == ''
+			},
+			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
+				return this.sslPair.id == '' || this.sslPair.virtualHostsHostnames.length == 0
 			},
 			downloadPemFile(sslPairId, fileContent, fileExtension) {
 				const blobFile = new Blob([atob(fileContent)], { type: 'text/plain' });
@@ -43,6 +45,16 @@ script SslsIndexLocalState() {
 			},
 
 			// Modal states
+			isRemoveVirtualHostsHostnamesModalOpen: false,
+			openRemoveVirtualHostsHostnamesModal(sslPairId) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.isRemoveVirtualHostsHostnamesModalOpen = true;
+			},
+			closeRemoveVirtualHostsHostnamesModal() {
+				this.isRemoveVirtualHostsHostnamesModalOpen = false;
+			},
 			isAddOrReplaceSslCertificateModalOpen: false,
 			openAddOrReplaceSslCertificateModal() {
 				this.resetPrimaryStates();
@@ -59,7 +71,7 @@ script SslsIndexLocalState() {
 	})
 }
 
-templ SslsIndex(sslPairs []entity.SslPair) {
+templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 	@SslsIndexLocalState()
 	<div x-data="ssls">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -71,7 +83,10 @@ templ SslsIndex(sslPairs []entity.SslPair) {
 				)
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("Add/swap SSL certificate", "ph-plus-square", "openAddOrReplaceSslCertificateModal()", false)
+				@componentForm.SubmitButton(
+					"Add/swap SSL certificate", "ph-plus-square",
+					"openAddOrReplaceSslCertificateModal()", false,
+				)
 			</div>
 		</div>
 		<div
@@ -85,7 +100,8 @@ templ SslsIndex(sslPairs []entity.SslPair) {
 		>
 			@SslsTable(sslPairs)
 		</div>
-		@AddOrReplaceSslCertificateModal(uiHelper.GetVhostHostnames(sslPairs))
+		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
+		@AddOrReplaceSslCertificateModal(vhostsHostnames)
 	</div>
 }
 
@@ -120,6 +136,11 @@ templ SslsTable(sslPairs []entity.SslPair) {
 										"view PEM files", "blue-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-network-slash", "red-800", "red-600",
+										"openRemoveVirtualHostsHostnamesModal('"+sslPair.Id.String()+"')",
+										"remove virtual hosts hostnames", "red-500",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-arrows-clockwise", "red-800", "red-600", "",
 										"swap to self-signed", "red-500",
 									)
@@ -131,6 +152,36 @@ templ SslsTable(sslPairs []entity.SslPair) {
 			</table>
 		</div>
 	</div>
+}
+
+templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
+	<form
+		id="remove-virtual-hosts-hostnames"
+		hx-put="/api/v1/ssl/vhost/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-6">
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			@componentForm.SelectInput(
+				"virtualHosts", "Virtual Hosts Hostnames",
+				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
+			)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Remove virtual hosts hostnames", "ph-check-fat", "closeRemoveVirtualHostsHostnamesModal()",
+			"shouldDisableRemoveVirtualHostsHostnamesSubmitButton", false,
+		)
+	</form>
+}
+
+templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Add/replace SSL certificate", "isRemoveVirtualHostsHostnamesModalOpen",
+		"closeRemoveVirtualHostsHostnamesModal()", "",
+	) {
+		@RemoveVirtualHostsHostnamesForm(vhostsHostnames)
+	}
 }
 
 templ AddOrReplaceSslCertificateForm(vhostsHostnames []string) {
