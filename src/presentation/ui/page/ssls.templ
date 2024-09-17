@@ -52,6 +52,30 @@ script SslsIndexLocalState() {
 			},
 
 			// Modal states
+			isImportSslCertificateModalOpen: false,
+			openImportSslCertificateModal() {
+				this.resetPrimaryStates();
+
+				this.isImportSslCertificateModalOpen = true;
+			},
+			closeImportSslCertificateModal() {
+				this.sslPair.certificate = btoa(this.sslPair.certificate);
+				this.sslPair.key = btoa(this.sslPair.key);
+
+				this.isImportSslCertificateModalOpen = false;
+			},
+			isViewPemFilesModalOpen: false,
+			openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.sslPair.certificate = certificateContent;
+				this.sslPair.key = keyContent;
+				this.isViewPemFilesModalOpen = true;
+			},
+			closeViewPemFilesModal() {
+				this.isViewPemFilesModalOpen = false;
+			},
 			isRemoveVirtualHostsHostnamesModalOpen: false,
 			openRemoveVirtualHostsHostnamesModal(sslPairId) {
 				this.resetPrimaryStates();
@@ -79,30 +103,6 @@ script SslsIndexLocalState() {
 					{swap:'none'},
 				);
 				this.closeSwapToSelfSignedModal();
-			},
-			isImportSslCertificateModalOpen: false,
-			openImportSslCertificateModal() {
-				this.resetPrimaryStates();
-
-				this.isImportSslCertificateModalOpen = true;
-			},
-			closeImportSslCertificateModal() {
-				this.sslPair.certificate = btoa(this.sslPair.certificate);
-				this.sslPair.key = btoa(this.sslPair.key);
-
-				this.isImportSslCertificateModalOpen = false;
-			},
-			isViewPemFilesModalOpen: false,
-			openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
-				this.resetPrimaryStates();
-
-				this.sslPair.id = sslPairId;
-				this.sslPair.certificate = certificateContent;
-				this.sslPair.key = keyContent;
-				this.isViewPemFilesModalOpen = true;
-			},
-			closeViewPemFilesModal() {
-				this.isViewPemFilesModalOpen = false;
 			},
 		}))
 	})
