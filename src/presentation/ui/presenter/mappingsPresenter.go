@@ -23,6 +23,17 @@ func NewMappingsPresenter(
 	}
 }
 
+func (presenter *MappingsPresenter) getVhostsHostnames(
+	vhostsWithMappings []dto.VirtualHostWithMappings,
+) []string {
+	vhostsHostnames := []string{}
+	for _, vhostWithMappings := range vhostsWithMappings {
+		vhostsHostnames = append(vhostsHostnames, vhostWithMappings.Hostname.String())
+	}
+
+	return vhostsHostnames
+}
+
 func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	responseOutput := presenter.virtualHostService.ReadWithMappings()
 	if responseOutput.Status != service.Success {
@@ -34,6 +45,8 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.MappingsIndex(vhostsWithMappings)
+	pageContent := page.MappingsIndex(
+		vhostsWithMappings, presenter.getVhostsHostnames(vhostsWithMappings),
+	)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
