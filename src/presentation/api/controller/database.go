@@ -1,7 +1,9 @@
 package apiController
 
 import (
+	"errors"
 	"log/slog"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
@@ -88,6 +90,35 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 	)
 }
 
+func (controller *DatabaseController) parseUserPrivileges(rawPrivileges interface{}) (
+	rawPrivilegesStrSlice []string, err error,
+) {
+	rawUniquePrivilegeStr, assertOk := rawPrivileges.(string)
+	if assertOk {
+		return []string{rawUniquePrivilegeStr}, nil
+	}
+
+	rawPrivilegesStrSlice, assertOk = rawPrivileges.([]string)
+	if assertOk {
+		return rawPrivilegesStrSlice, nil
+	}
+
+	rawPrivilegesInterfaceSlice, assertOk := rawPrivileges.([]interface{})
+	if !assertOk {
+		return rawPrivilegesStrSlice, errors.New("PrivilegesMustBeStringOrStringSlice")
+	}
+	for _, rawPrivilege := range rawPrivilegesInterfaceSlice {
+		rawPrivilegeStr, assertOk := rawPrivilege.(string)
+		if !assertOk {
+			slog.Debug("InvalidPrivilegeType", slog.Any("privilege", rawPrivilege))
+			continue
+		}
+		rawPrivilegesStrSlice = append(rawPrivilegesStrSlice, rawPrivilegeStr)
+	}
+
+	return rawPrivilegesStrSlice, nil
+}
+
 // CreateDatabaseUser godoc
 // @Summary      CreateDatabaseUser
 // @Description  Create a new database user.
@@ -106,21 +137,20 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 		return err
 	}
 	requestBody["dbType"] = c.Param("dbType")
-	requestBody["dbName"] = c.Param("dbName")
+
+	rawDatabaseName := requestBody["dbName"]
+	if rawDatabaseName == "" {
+		rawDatabaseName = c.Param("dbName")
+	}
+	requestBody["dbName"] = rawDatabaseName
 
 	rawPrivilegesSlice := []string{}
 	if requestBody["privileges"] != nil {
-		for _, rawPrivilege := range requestBody["privileges"].([]interface{}) {
-			rawPrivilegeStr, assertOk := rawPrivilege.(string)
-			if !assertOk {
-				slog.Debug(
-					"InvalidDatabaseUserPrivilege",
-					slog.Any("privilege", rawPrivilege),
-				)
-				continue
-			}
-
-			rawPrivilegesSlice = append(rawPrivilegesSlice, rawPrivilegeStr)
+		rawPrivilegesSlice, err = controller.parseUserPrivileges(
+			requestBody["privileges"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
 	requestBody["privileges"] = rawPrivilegesSlice

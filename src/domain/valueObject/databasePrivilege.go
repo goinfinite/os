@@ -30,6 +30,12 @@ var validDatabasePrivileges = []string{
 	"UPDATE", "USAGE",
 }
 
+var AvailableDatabasePrivileges = []string{
+	"ALTER", "ALTER ROUTINE", "CREATE", "CREATE ROUTINE", "CREATE TEMPORARY TABLES",
+	"CREATE VIEW", "DELETE", "DROP", "EVENT", "EXECUTE", "INDEX", "INSERT",
+	"LOCK TABLES", "REFERENCES", "SELECT", "SHOW VIEW", "TRIGGER", "UPDATE",
+}
+
 func NewDatabasePrivilege(value interface{}) (
 	dbPrivilege DatabasePrivilege, err error,
 ) {
