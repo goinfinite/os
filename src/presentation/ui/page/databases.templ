@@ -183,7 +183,9 @@ templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType
 		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
 		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
 		@componentForm.SubmitButton(
-			"Schedule "+selectedDbType.String()+" service installation", "ph-caret-line-down",
+			"schedule-db-service-installation-button",
+			"Schedule "+selectedDbType.String()+" service installation",
+			"ph-caret-line-down", "speedia-500", "speedia-300",
 			"installDatabaseService('"+selectedDbType.String()+"')", true,
 		)
 	</div>
@@ -204,8 +206,14 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 							<th scope="col" class="px-5 py-3 w-2/7 text-center">User(s)</th>
 							<th scope="col" class="px-5 py-3 w-1/7 text-left">Size</th>
 							<th scope="col" class="px-5 py-3 space-x-2 flex justify-end">
-								@componentForm.SubmitButton("Create user", "ph-user-plus", "openCreateDatabaseUserModal()", true)
-								@componentForm.SubmitButton("Create database", "ph-database", "openCreateDatabaseModal()", true)
+								@componentForm.SubmitButton(
+									"create-user-button", "Create user", "ph-user-plus", "speedia-500",
+									"speedia-300", "openCreateDatabaseUserModal()", true,
+								)
+								@componentForm.SubmitButton(
+									"create-database-button", "Create database", "ph-database",
+									"speedia-500", "speedia-300", "openCreateDatabaseModal()", true,
+								)
 							</th>
 						</tr>
 					</thead>
