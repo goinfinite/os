@@ -1,0 +1,328 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentDatabases "github.com/speedianet/os/src/presentation/ui/component/databases"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
+)
+
+script DatabasesIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('databases', () => ({
+			// Primary states
+			database: {},
+			databaseUser: {},
+			resetPrimaryStates() {
+				this.database = {
+					'name': '',
+					'size': ''
+				}
+				this.databaseUser = {
+					'username': '',
+					'password': '',
+					'privileges': []
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Auxiliary states
+			changeSelectedDatabaseType(databaseType) {
+				htmx.ajax(
+					'GET',
+					'/databases/?dbType=' + databaseType,
+					{
+						select: '#databases-page-content',
+						target: '#databases-page-content',
+						swap: 'outerHTML transition:true'
+					},
+				);
+			},
+			installDatabaseService(databaseType) {
+				htmx.ajax(
+					'POST',
+					'/api/v1/services/installables/',
+					{
+						swap: 'none',
+						values: { name: databaseType },
+					},
+				);
+			},
+			get shouldDisableCreateDatabaseSubmitButton() {
+				return this.database.name == ''
+			},
+			get shouldDisableCreateDatabaseUserSubmitButton() {
+				return this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == ''
+			},
+
+			// Modal states
+			isCreateDatabaseModalOpen: false,
+			openCreateDatabaseModal() {
+				this.resetPrimaryStates();                                                                                                                                                                                                  
+
+				this.isCreateDatabaseModalOpen = true;
+			},
+			closeCreateDatabaseModal() {
+				this.isCreateDatabaseModalOpen = false;
+			},
+			isDeleteDatabaseModalOpen: false,
+			openDeleteDatabaseModal(databaseName) {
+				this.resetPrimaryStates();
+
+				this.database.name = databaseName;
+				this.isDeleteDatabaseModalOpen = true;
+			},
+			closeDeleteDatabaseModal() {
+				this.isDeleteDatabaseModalOpen = false;
+			},
+			deleteDatabaseElement(databaseType) {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/database/' + databaseType + '/' + this.database.name + '/',
+					{swap: 'none'},
+				);
+				this.closeDeleteDatabaseModal();
+			},
+			isCreateDatabaseUserModalOpen: false,
+			openCreateDatabaseUserModal() {
+				this.resetPrimaryStates();
+
+				this.isCreateDatabaseUserModalOpen = true;
+			},
+			closeCreateDatabaseUserModal() {
+				this.isCreateDatabaseUserModalOpen = false;
+			},
+			isDeleteDatabaseUserModalOpen: false,
+			openDeleteDatabaseUserModal(databaseName, databaseUsername) {
+				this.resetPrimaryStates();
+
+				this.database.name = databaseName;
+				this.databaseUser.username = databaseUsername;
+				this.isDeleteDatabaseUserModalOpen = true;
+			},
+			closeDeleteDatabaseUserModal() {
+				this.isDeleteDatabaseUserModalOpen = false;
+			},
+			deleteDatabaseUserElement(databaseType) {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/database/' + databaseType + '/' + this.database.name + '/user/' + this.databaseUser.username + '/',
+					{swap: 'none'},
+				);
+				this.closeDeleteDatabaseUserModal();
+			},
+		}))
+	})
+}
+
+templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
+	@DatabasesIndexLocalState()
+	<div class="flex flex-col" x-data="databases">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Databases",
+				"Install the database services you need and manage each service individually by adding databases and users. Control user permissions by specifying what each user can and cannot do.",
+				"ph-database",
+			)
+		</div>
+		<div
+			id="databases-page-content"
+			hx-get={ "/databases/?dbType=" + selectedDbOverview.Type.String() }
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-select="#databases-page-content"
+			hx-target="#databases-page-content"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
+			<div id="databases-tabs">
+				@DatabasesTabs(selectedDbOverview)
+			</div>
+			@CreateDatabaseModal(selectedDbOverview.Type)
+			@componentStructural.DeleteModal(
+				"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()",
+				"deleteDatabaseElement('"+selectedDbOverview.Type.String()+"')",
+				"database.name", "",
+			)
+			@CreateDatabaseUserModal(selectedDbOverview)
+			@componentStructural.DeleteModal(
+				"isDeleteDatabaseUserModalOpen", "closeDeleteDatabaseUserModal()",
+				"deleteDatabaseUserElement('"+selectedDbOverview.Type.String()+"')",
+				"databaseUser.username", "",
+			)
+		</div>
+	</div>
+}
+
+func getDatabasesTabHeaderItems(
+	selectedDbType valueObject.DatabaseType,
+) []componentStructural.TabHeaderItem {
+	tabHeaderItems := []componentStructural.TabHeaderItem{
+		{Label: "MySQL/MariaDB/Percona", ComponentValue: "mariadb"},
+		{Label: "PostgreSQL", ComponentValue: "postgresql"},
+	}
+
+	selectedDbTypeStr := selectedDbType.String()
+	for itemIndex := range tabHeaderItems {
+		if selectedDbTypeStr != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
+			continue
+		}
+
+		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
+	}
+
+	return tabHeaderItems
+}
+
+templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType) {
+	<div class="px-4 pb-4 pt-2 bg-os-500 rounded-r-lg">
+		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
+		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
+		@componentForm.SubmitButton(
+			"Schedule "+selectedDbType.String()+" service installation", "ph-caret-line-down",
+			"installDatabaseService('"+selectedDbType.String()+"')", true,
+		)
+	</div>
+}
+
+templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
+	@componentStructural.TabHeader(
+		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
+	)
+	<!-- DatabaseTabContent -->
+	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
+		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
+			if selectedDbOverview.IsInstalled {
+				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+					<thead class="text-xs uppercase text-neutral-400">
+						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+							<th scope="col" class="px-5 py-3 w-1/7 text-left">Name</th>
+							<th scope="col" class="px-5 py-3 w-2/7 text-center">User(s)</th>
+							<th scope="col" class="px-5 py-3 w-1/7 text-left">Size</th>
+							<th scope="col" class="px-5 py-3 space-x-2 flex justify-end">
+								@componentForm.SubmitButton("Create user", "ph-user-plus", "openCreateDatabaseUserModal()", true)
+								@componentForm.SubmitButton("Create database", "ph-database", "openCreateDatabaseModal()", true)
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, database := range selectedDbOverview.Databases {
+							<tr class="bg-os-800 text-white">
+								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-left">
+									<div class="bg-os-500 rounded-md px-2.5 py-1 max-h-75">
+										for _, user := range database.Users {
+											<div class="flex justify-between items-center p-3 my-1.5 bg-os-800 rounded-md">
+												<span class="font-normal">{ user.Username.String() }</span>
+												<div class="flex space-x-2">
+													@componentStructural.CircularIconButtonWithTooltip(
+														"ph-trash", "red-800", "red-600",
+														"openDeleteDatabaseUserModal('"+database.Name.String()+"', '"+user.Username.String()+"')",
+														"Delete user", "red-500",
+													)
+												</div>
+											</div>
+										}
+									</div>
+								</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Size.String() }</th>
+								<th scope="row" class="px-5 py-3 w-1/4 text-right">
+									<div class="inline-flex">
+										@componentStructural.CircularIconButtonWithTooltip(
+											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
+											"Delete database", "red-500",
+										)
+									</div>
+								</th>
+							</tr>
+						}
+					</tbody>
+				</table>
+				<div class="bg-os-500 p-0.5"></div>
+			} else {
+				@DatabaseServiceNotInstalledWarning(selectedDbOverview.Type)
+			}
+		</div>
+	</div>
+}
+
+templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
+	<form
+		hx-post={ "/api/v1/database/" + selectedDbType.String() }
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6">
+			@componentForm.InputField("text", "dbName", "Database Name", "database.name", false)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Create", "ph-check-fat", "closeCreateDatabaseModal()",
+			"shouldDisableCreateDatabaseSubmitButton", false,
+		)
+	</form>
+}
+
+templ CreateDatabaseModal(selectedDbType valueObject.DatabaseType) {
+	@componentStructural.Modal(
+		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()", "",
+	) {
+		@CreateDatabaseForm(selectedDbType)
+	}
+}
+
+func getOnlyDatabasesNames(selectedDbDatabases []entity.Database) []string {
+	databasesNames := []string{}
+	for _, database := range selectedDbDatabases {
+		databasesNames = append(databasesNames, database.Name.String())
+	}
+
+	return databasesNames
+}
+
+templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
+	<form
+		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6 space-y-6">
+			@componentForm.SelectInput(
+				"dbName", "Database Name", "database.name",
+				getOnlyDatabasesNames(selectedDbOverview.Databases), false,
+			)
+			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
+			@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
+			if selectedDbOverview.Type.String() == "mariadb" {
+				<section class="mb-6 w-full rounded-md">
+					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
+						<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
+							<i class="ph-duotone ph-user-gear mr-2 text-2xl"></i>
+							<span class="font-bold">Privileges</span>
+							<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
+						</summary>
+						@componentDatabases.DatabaseUserPrivilegesRadioInputsSwitchToggles()
+					</details>
+				</section>
+			}
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Create", "ph-check-fat", "closeCreateDatabaseUserModal()",
+			"shouldDisableCreateDatabaseUserSubmitButton", false,
+		)
+	</form>
+}
+
+templ CreateDatabaseUserModal(
+	selectedDbOverview presenterDto.DatabaseOverview,
+) {
+	@componentStructural.Modal(
+		"Create Database User", "isCreateDatabaseUserModalOpen",
+		"closeCreateDatabaseUserModal()", "",
+	) {
+		@CreateDatabaseUserForm(selectedDbOverview)
+	}
+}
