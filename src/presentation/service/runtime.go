@@ -13,7 +13,8 @@ import (
 )
 
 type RuntimeService struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
 }
 
 func NewRuntimeService(
@@ -21,6 +22,9 @@ func NewRuntimeService(
 ) *RuntimeService {
 	return &RuntimeService{
 		persistentDbSvc: persistentDbSvc,
+		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
+			persistentDbSvc,
+		),
 	}
 }
 
@@ -28,7 +32,9 @@ func (service *RuntimeService) ReadPhpConfigs(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	if !service.availabilityInspector.IsAvailable(serviceName) {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
 
 	hostname, err := valueObject.NewFqdn(input["hostname"])
 	if err != nil {
@@ -48,7 +54,9 @@ func (service *RuntimeService) UpdatePhpConfigs(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	sharedHelper.StopIfServiceUnavailable(service.persistentDbSvc, serviceName)
+	if !service.availabilityInspector.IsAvailable(serviceName) {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
 
 	requiredParams := []string{"hostname", "version"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
