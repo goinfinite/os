@@ -24,6 +24,17 @@ func NewSslsPresenter(
 	}
 }
 
+func (presenter *SslsPresenter) getVhostsHostnames(sslPairs []entity.SslPair) []string {
+	vhostHostnames := []string{}
+	for _, sslPair := range sslPairs {
+		for _, vhostHostname := range sslPair.VirtualHostsHostnames {
+			vhostHostnames = append(vhostHostnames, vhostHostname.String())
+		}
+	}
+
+	return vhostHostnames
+}
+
 func (presenter *SslsPresenter) Handler(c echo.Context) error {
 	responseOutput := presenter.sslService.Read()
 	if responseOutput.Status != service.Success {
@@ -35,6 +46,6 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.SslsIndex(sslPairs, uiHelper.GetVhostHostnames(sslPairs))
+	pageContent := page.SslsIndex(sslPairs, presenter.getVhostsHostnames(sslPairs))
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
