@@ -19,7 +19,7 @@ import (
 
 const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /speedia/supervisord.conf"
 
-var defaultDirectories []string = []string{"conf", "logs"}
+var defaultServiceDirectories []string = []string{"conf", "logs"}
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -241,9 +241,8 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 func (repo *ServicesCmdRepo) createDefaultDirectories(
 	serviceName valueObject.ServiceName,
 ) error {
-	for _, defaultDir := range defaultDirectories {
-		nameStr := serviceName.String()
-		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+	for _, defaultDir := range defaultServiceDirectories {
+		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		err := infraHelper.MakeDir(defaultDirPath)
 		if err != nil {
@@ -251,6 +250,10 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 		}
 
 		deletionWarningFilePath := defaultDirPath + "/DONOTDELETE"
+		if infraHelper.FileExists(deletionWarningFilePath) {
+			continue
+		}
+
 		_, err = os.Create(deletionWarningFilePath)
 		if err != nil {
 			return errors.New("CreateDeletionWarningFileError: " + err.Error())
@@ -269,9 +272,8 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 		return errors.New("EnsureExecUserExistenceError: " + err.Error())
 	}
 
-	for _, defaultDir := range defaultDirectories {
-		nameStr := serviceName.String()
-		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+	for _, defaultDir := range defaultServiceDirectories {
+		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
 		if err != nil {
