@@ -30,10 +30,10 @@ templ TextArea(
 	</div>
 }
 
-script TextAreaReadOnlyLocalState(elementId string) {
+script TextAreaReadOnlyLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('textAreaReadOnly', () => ({
-			copyToClipboard() {
+			copyToClipboard(elementId) {
 				const textInputElement = document.getElementById(elementId);
 				textInputElement.select();
 				navigator.clipboard.writeText(textInputElement.value);
@@ -47,7 +47,7 @@ templ TextAreaReadOnly(
 	denseMode bool,
 ) {
 	<!-- TextAreaReadOnly -->
-	@TextAreaReadOnlyLocalState(id)
+	@TextAreaReadOnlyLocalState()
 	<div class="relative w-full" x-data="textAreaReadOnly">
 		<textarea
 			id={ id }
@@ -64,7 +64,7 @@ templ TextAreaReadOnly(
 			readonly
 		></textarea>
 		<div class="absolute right-2 top-1">
-			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click="copyToClipboard()">
+			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "copyToClipboard('" + id + "')" }>
 				<i class="ph-duotone ph-copy-simple"></i>
 			</button>
 		</div>
