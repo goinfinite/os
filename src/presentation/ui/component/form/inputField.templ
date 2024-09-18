@@ -16,9 +16,9 @@ templ InputField(
 			autocomplete="off"
 			placeholder={ label }
 			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full rounded-md border px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px]"
 			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border text-neutral-100 placeholder-transparent outline-none transition-all h-10 px-3 text-sm"
 			}
 		/>
 		if label != "" {
@@ -50,9 +50,9 @@ templ InputFieldWithPrefix(
 				autocomplete="off"
 				placeholder={ label }
 				if denseMode {
-					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full rounded-r-md px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
+					class="bg-os-300 autofill:bg-os-300 peer relative w-full rounded-r-md text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px]"
 				} else {
-					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+					class="bg-os-300 autofill:bg-os-300 peer relative w-full rounded-r-md text-neutral-100 placeholder-transparent outline-none transition-all h-10 pl-2 pr-3 text-sm"
 				}
 			/>
 		</div>
@@ -79,9 +79,9 @@ templ InputFieldReadOnly(
 			name={ id }
 			x-model:value={ bindValuePath }
 			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full rounded-md border px-1.5 text-[13px] placeholder-transparent outline-none transition-all cursor-default text-slate-400"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 h-7.5 px-1.5 text-[13px]"
 			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm placeholder-transparent outline-none transition-all cursor-default text-slate-400"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 h-10 px-3 text-sm"
 			}
 			readonly
 		/>
