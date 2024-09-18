@@ -27,6 +27,7 @@ script SslsIndexLocalState() {
 			get shouldDisableImportSslCertificateSubmitButton() {
 				return this.sslPair.virtualHostsHostnames.length == 0 || this.sslPair.certificate == '' || this.sslPair.key == ''
 			},
+			shouldImportSslCertificateAsFile: false,
 			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
 				return this.sslPair.id == '' || this.sslPair.virtualHostsHostnames.length == 0
 			},
@@ -128,21 +129,23 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			</div>
 		</div>
 		<div
-			id="ssls-table"
+			id="ssls-page-content"
 			hx-get="/ssls/"
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:1000ms"
-			hx-select="#ssls-table"
-			hx-target="#ssls-table"
+			hx-select="#ssls-page-content"
+			hx-target="#ssls-page-content"
 			hx-indicator="#loading-overlay"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
-			@SslsTable(sslPairs)
+			<div id="ssls-table">
+				@SslsTable(sslPairs)
+			</div>
+			@ImportSslCertificateModal(vhostsHostnames)
+			@ViewPemFilesModal()
+			@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
+			@SwapToSelfSignedModal()
 		</div>
-		@ImportSslCertificateModal(vhostsHostnames)
-		@ViewPemFilesModal()
-		@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
-		@SwapToSelfSignedModal()
 	</div>
 }
 
@@ -206,9 +209,25 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
 			)
 		</div>
-		<div class="mb-6 space-y-6">
+		<div class="mb-6 space-y-6" x-show="!shouldImportSslCertificateAsFile">
 			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
 			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
+		</div>
+		<div class="mb-6 space-y-6" x-show="shouldImportSslCertificateAsFile">
+			@componentForm.FileContentInput(
+				"certificate", "Certificate", "sslPair.certificate",
+				[]string{".crt"}, false,
+			)
+			@componentForm.FileContentInput(
+				"key", "Private Key", "sslPair.key",
+				[]string{".key"}, false,
+			)
+		</div>
+		<div class="mb-6">
+			@componentForm.RadioInputSwitchToggle(
+				"change-import-ssl-certificate-form-radio-input", "OR upload files (.crt/.key - pem format)",
+				"true", "shouldImportSslCertificateAsFile",
+			)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
 			"Import SSL certificate", "ph-check-fat", "closeImportSslCertificateModal()",
