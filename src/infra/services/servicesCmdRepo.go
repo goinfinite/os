@@ -250,8 +250,12 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 		}
 
 		deletionWarningFilePath := defaultDirPath + "/DONOTDELETE"
+		if infraHelper.FileExists(deletionWarningFilePath) {
+			continue
+		}
+
 		_, err = os.Create(deletionWarningFilePath)
-		if err != nil && !os.IsExist(err) {
+		if err != nil {
 			return errors.New("CreateDeletionWarningFileError: " + err.Error())
 		}
 	}
