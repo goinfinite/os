@@ -17,7 +17,9 @@ templ TabHeader(
 				<button
 					type="button"
 					class={ "inline-block py-4 px-5 rounded-t-md bg-inherit " + item.AdditionalClasses }
-					@click={ onClick + "('" + item.ComponentValue + "')" }
+					if onClick != "" {
+						@click={ onClick + "('" + item.ComponentValue + "')" }
+					}
 				>
 					<i class="ph-duotone ph-database align-middle text-2xl mr-3"></i>
 					{ item.Label }
