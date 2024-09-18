@@ -16,7 +16,7 @@ script FileInputToTextLocalState() {
 			init() {
 				this.uploadedFileName = '';
 			},
-			handleFileSelection(event) {
+			handleFileUpload(event) {
 				const inputFiles = Array.from(event.target.files);
 				if (inputFiles.length == 0) {
 					return;
@@ -48,7 +48,7 @@ templ FileInputToText(
 			type="file"
 			accept={ strings.Join(acceptableFileExtensions[:], ",") }
 			class="hidden"
-			@change="handleFileSelection"
+			@change="handleFileUpload"
 			@file-content-readed={ bindValuePath + " = $event.detail" }
 		/>
 		<div
