@@ -14,9 +14,9 @@ templ SubmitButton(
 			@click={ onClick }
 		}
 		if denseMode {
-			class={ "bg-" + color + " hover:bg-" + hoverColor + " rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white" }
+			class={ "bg-" + color + " hover:bg-" + hoverColor + " rounded-md border-none text-center font-bold lowercase text-white px-2 py-1 text-sm" }
 		} else {
-			class={ "bg-" + color + " hover:bg-" + hoverColor + " w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white" }
+			class={ "bg-" + color + " hover:bg-" + hoverColor + " rounded-md border-none text-center font-bold lowercase text-white w-full p-3 text-base leading-none" }
 		}
 	>
 		if icon != "" {
