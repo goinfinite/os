@@ -154,11 +154,11 @@ templ MappingsIndex(
 			<div class="my-4 flex space-x-5">
 				@componentForm.SubmitButton(
 					"create-vhost-button", "create virtual host", "ph-plus-square",
-					"speedia-500", "speedia-300", "openCreateVhostModal()", false,
+					"openCreateVhostModal()", false,
 				)
 				@componentForm.SubmitButton(
 					"create-mapping-button", "create mapping", "ph-plus-square",
-					"speedia-500", "speedia-300", "openCreateMappingModal()", false,
+					"openCreateMappingModal()", false,
 				)
 			</div>
 		</div>
@@ -193,12 +193,12 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<table
 		class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out"
 	>
-		<div class="bg-os-800 p-4 rounded-md">
+		<div class="bg-os-800 rounded-md p-4">
 			for _, vhostWithMappings := range vhostsWithMappings {
-				<div class="flex bg-os-500 mb-4 p-4 rounded">
+				<div class="bg-os-500 mb-4 flex rounded p-4">
 					<!-- Vhosts Column -->
-					<div class="flex bg-os-800 p-4 w-3/8 min-h-56 flex-col rounded">
-						<div class="flex justify-between items-center">
+					<div class="bg-os-800 w-3/8 min-h-56 flex flex-col rounded p-4">
+						<div class="flex items-center justify-between">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
 								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "create mapping", "os-200")
@@ -207,14 +207,14 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 								}
 							</div>
 						</div>
-						<div class="flex space-x-3 mt-4">
+						<div class="mt-4 flex space-x-3">
 							@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "speedia-300")
 							@componentStructural.Tag("ph-file-text", "", vhostWithMappings.Type.String(), "speedia-300")
 						</div>
 					</div>
 					<div class="w-4"></div>
 					<!-- Mappings Column -->
-					<div class="bg-os-800 p-4 flex-col rounded w-1/1">
+					<div class="bg-os-800 w-1/1 flex-col rounded p-4">
 						for _, mapping := range vhostWithMappings.Mappings {
 							@componentMappings.VhostMappingsList(
 								mapping, vhostWithMappings.RootDirectory,
@@ -283,7 +283,7 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="-mt-4 my-6 space-y-6">
+		<div class="my-6 -mt-4 space-y-6">
 			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
 			<template x-if="isCreateMappingFromVhost">
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)

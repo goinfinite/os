@@ -1,7 +1,7 @@
 package componentForm
 
 templ SubmitButton(
-	id, label, icon, color, hoverColor, onClick string,
+	id, label, icon, onClick string,
 	denseMode bool,
 ) {
 	<!-- SubmitButton -->
@@ -14,9 +14,9 @@ templ SubmitButton(
 			@click={ onClick }
 		}
 		if denseMode {
-			class={ "bg-" + color + " hover:bg-" + hoverColor + " rounded-md border-none text-center font-bold lowercase text-white px-2 py-1 text-sm" }
+			class={ "bg-speedia-500 hover:bg-speedia-300 rounded-md border-none text-center font-bold lowercase text-white px-2 py-1 text-sm" }
 		} else {
-			class={ "bg-" + color + " hover:bg-" + hoverColor + " rounded-md border-none text-center font-bold lowercase text-white w-full p-3 text-base leading-none" }
+			class={ "bg-speedia-500 hover:bg-speedia-300 rounded-md border-none text-center font-bold lowercase text-white w-full p-3 text-base leading-none" }
 		}
 	>
 		if icon != "" {
