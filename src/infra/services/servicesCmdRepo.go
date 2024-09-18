@@ -251,7 +251,7 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 
 		deletionWarningFilePath := defaultDirPath + "/DONOTDELETE"
 		_, err = os.Create(deletionWarningFilePath)
-		if err != nil {
+		if err != nil && !os.IsExist(err) {
 			return errors.New("CreateDeletionWarningFileError: " + err.Error())
 		}
 	}
