@@ -19,7 +19,7 @@ import (
 
 const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /speedia/supervisord.conf"
 
-var defaultDirectories []string = []string{"conf", "logs"}
+var defaultServiceDirectories []string = []string{"conf", "logs"}
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -241,7 +241,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 func (repo *ServicesCmdRepo) createDefaultDirectories(
 	serviceName valueObject.ServiceName,
 ) error {
-	for _, defaultDir := range defaultDirectories {
+	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		err := infraHelper.MakeDir(defaultDirPath)
@@ -268,7 +268,7 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 		return errors.New("EnsureExecUserExistenceError: " + err.Error())
 	}
 
-	for _, defaultDir := range defaultDirectories {
+	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
