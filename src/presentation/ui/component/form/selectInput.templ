@@ -149,9 +149,9 @@ templ MultipleSelectInput(
 				x-bind:id="'multi-select-input-' + randomComplementaryNumericElementId"
 				placeholder={ label }
 				if denseMode {
-					class="bg-os-300 autofill:bg-os-300 peer relative w-full appearance-none rounded-md text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px] leading-normal"
+					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full appearance-none rounded-md px-1.5 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
 				} else {
-					class="bg-os-300 autofill:bg-os-300 peer relative w-full appearance-none rounded-md text-neutral-100 placeholder-transparent outline-none transition-all h-10 px-3 text-sm"
+					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full appearance-none rounded-md px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 				}
 			>
 				<option
@@ -159,12 +159,12 @@ templ MultipleSelectInput(
 					x-text={ bindModelPath + ".length == 0 ? '--' : " + bindModelPath + ".join(', ')" }
 				></option>
 			</select>
-			<div x-bind:id="'multiple-select-input-overlap-' + randomComplementaryNumericElementId" class="absolute inset-x-0 inset-y-0 border border-os-200 hover:border-os-100 rounded-md"></div>
+			<div x-bind:id="'multiple-select-input-overlap-' + randomComplementaryNumericElementId" class="border-os-200 hover:border-os-100 absolute inset-x-0 inset-y-0 rounded-md border"></div>
 		</div>
-		<div x-bind:id="'multiple-select-input-options-' + randomComplementaryNumericElementId" class="hidden bg-os-500 border border-os-200">
+		<div x-bind:id="'multiple-select-input-options-' + randomComplementaryNumericElementId" class="bg-os-500 border-os-200 hidden border">
 			for _, option := range options {
 				<div class="px-3 py-1">
-					<label class="inline-flex items-center w-full cursor-pointer">
+					<label class="inline-flex w-full cursor-pointer items-center">
 						<span class="text-sm text-neutral-50">{ option }</span>
 						<input
 							type="checkbox"
@@ -172,9 +172,9 @@ templ MultipleSelectInput(
 							name={ id }
 							value={ option }
 							x-model={ bindModelPath }
-							class="sr-only peer"
+							class="peer sr-only"
 						/>
-						<div class="relative ml-auto w-8 h-4.5 bg-gray-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:border after:transition-all peer-checked:bg-speedia-500"></div>
+						<div class="h-4.5 peer-checked:bg-speedia-500 peer relative ml-auto w-8 rounded-full bg-gray-400 after:absolute after:start-[2px] after:top-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
 					</label>
 				</div>
 			}

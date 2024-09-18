@@ -16,9 +16,9 @@ templ InputField(
 			autocomplete="off"
 			placeholder={ label }
 			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px]"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full rounded-md border px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
 			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border text-neutral-100 placeholder-transparent outline-none transition-all h-10 px-3 text-sm"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 			}
 		/>
 		if label != "" {
@@ -38,8 +38,8 @@ templ InputFieldWithPrefix(
 ) {
 	<!-- InputFieldWithPrefix -->
 	<div class="relative w-full">
-		<div class="flex items-center border-os-200 border rounded-md hover:border-os-100 focus:border-os-50">
-			<span class="bg-os-200 h-10 px-3 border-r border-os-200 rounded-s-md pt-2.7 text-slate-400 text-sm relative cursor-default" x-text={ prefix }></span>
+		<div class="border-os-200 hover:border-os-100 focus:border-os-50 flex items-center rounded-md border">
+			<span class="bg-os-200 border-os-200 pt-2.7 relative h-10 cursor-default rounded-s-md border-r px-3 text-sm text-slate-400" x-text={ prefix }></span>
 			<input
 				type={ inputType }
 				id={ id }
@@ -50,9 +50,9 @@ templ InputFieldWithPrefix(
 				autocomplete="off"
 				placeholder={ label }
 				if denseMode {
-					class="bg-os-300 autofill:bg-os-300 peer relative w-full rounded-r-md text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px]"
+					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full rounded-r-md px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
 				} else {
-					class="bg-os-300 autofill:bg-os-300 peer relative w-full rounded-r-md text-neutral-100 placeholder-transparent outline-none transition-all h-10 pl-2 pr-3 text-sm"
+					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 				}
 			/>
 		</div>
@@ -79,9 +79,9 @@ templ InputFieldReadOnly(
 			name={ id }
 			x-model:value={ bindValuePath }
 			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 h-7.5 px-1.5 text-[13px]"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full cursor-default rounded-md border px-1.5 text-[13px] text-slate-400 placeholder-transparent outline-none transition-all"
 			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 h-10 px-3 text-sm"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default rounded-md border px-3 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
 			}
 			readonly
 		/>

@@ -69,7 +69,7 @@ templ Sidebar(currentUrl string) {
 	}
 	</script>
 	<!-- Sidebar HTML -->
-	<sidebar id="sidebar" class="bg-os-900 flex h-screen w-30 flex-col items-center">
+	<sidebar id="sidebar" class="bg-os-900 w-30 flex h-screen flex-col items-center">
 		<div class="my-7">
 			<a
 				href="/_/#/overview"
@@ -93,11 +93,11 @@ templ Sidebar(currentUrl string) {
 		<button
 			id="scrollButton"
 			onclick="scrollToTop()"
-			class="hidden rounded-full border border-neutral-500 bg-transparent transition-all hover:border-transparent hover:bg-speedia-500 p-2 mt-2"
+			class="hover:bg-speedia-500 mt-2 hidden rounded-full border border-neutral-500 bg-transparent p-2 transition-all hover:border-transparent"
 		>
 			<i class="ph-duotone ph-arrow-fat-up block"></i>
 		</button>
-		<div id="sidebarMenu" onscroll="toggleScrollButtonDisplay()" class="mt-2 flex-1 w-full overflow-y-auto scrollbar-hide hover:scrollbar-show">
+		<div id="sidebarMenu" onscroll="toggleScrollButtonDisplay()" class="scrollbar-hide hover:scrollbar-show mt-2 w-full flex-1 overflow-y-auto">
 			<ul>
 				for _, item := range sidebarItemsGetter(currentUrl) {
 					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>

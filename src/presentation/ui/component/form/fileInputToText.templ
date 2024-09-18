@@ -54,9 +54,9 @@ templ FileInputToText(
 		<div
 			@click={ "document.getElementById('" + id + "-file-input').click()" }
 			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 cursor-pointer pt-2 h-7.5 px-1.5 text-[13px]"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full cursor-default cursor-pointer rounded-md border px-1.5 pt-2 text-[13px] text-slate-400 placeholder-transparent outline-none transition-all"
 			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 cursor-pointer pt-2 h-10 px-3 text-sm"
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
 			}
 		>
 			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>
