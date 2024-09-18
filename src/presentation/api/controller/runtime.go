@@ -46,7 +46,9 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 	)
 }
 
-func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
+func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) (
+	[]entity.PhpModule, error,
+) {
 	modules := []entity.PhpModule{}
 
 	rawModulesSlice, assertOk := rawPhpModules.([]interface{})
@@ -83,7 +85,9 @@ func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
 	return modules, nil
 }
 
-func parsePhpSettings(rawPhpSettings interface{}) ([]entity.PhpSetting, error) {
+func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}) (
+	[]entity.PhpSetting, error,
+) {
 	settings := []entity.PhpSetting{}
 
 	rawSettingsSlice, assertOk := rawPhpSettings.([]interface{})
@@ -147,13 +151,13 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	}
 	requestBody["hostname"] = c.Param("hostname")
 
-	phpModules, err := parsePhpModules(requestBody["modules"])
+	phpModules, err := controller.parsePhpModules(requestBody["modules"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
 	requestBody["modules"] = phpModules
 
-	phpSettings, err := parsePhpSettings(requestBody["settings"])
+	phpSettings, err := controller.parsePhpSettings(requestBody["settings"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
