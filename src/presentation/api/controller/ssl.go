@@ -61,7 +61,6 @@ func (controller *SslController) parseRawVhosts(rawVhostsInput interface{}) (raw
 		return append(rawVhosts, rawVhostUniqueStr), err
 	}
 
-	rawVhostsStrSlice = []string{}
 	for _, rawVhost := range rawVhostsInterfaceSlice {
 		rawVhostStr, err := voHelper.InterfaceToString(rawVhost)
 		if err != nil {
