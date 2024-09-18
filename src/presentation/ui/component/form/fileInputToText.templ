@@ -22,14 +22,14 @@ script FileInputToTextLocalState() {
 					return;
 				}
 
-				const selectedFile = inputFiles[0];
-				this.uploadedFileName = selectedFile.name;
+				const uploadedFile = inputFiles[0];
+				this.uploadedFileName = uploadedFile.name;
 
 				const reader = new FileReader();
 				reader.onload = (event) => {
 					this.$dispatch('file-content-readed', event.target.result);
 				};
-				reader.readAsText(selectedFile);
+				reader.readAsText(uploadedFile);
 			}
 		}));
 	});
