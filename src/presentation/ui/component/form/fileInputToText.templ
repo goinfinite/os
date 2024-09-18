@@ -5,16 +5,16 @@ import "strings"
 script FileInputToTextLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('fileInputToText', () => ({
-			selectedFileName: '',
-			get selectedFileNameLabel() {
-				if (this.selectedFileName == '') {
+			uploadedFileName: '',
+			get uploadedFileNameLabel() {
+				if (this.uploadedFileName == '') {
 					return 'No file chosen';
 				}
 
-				return this.selectedFileName;
+				return this.uploadedFileName;
 			},
 			init() {
-				this.selectedFileName = '';
+				this.uploadedFileName = '';
 			},
 			handleFileSelection(event) {
 				const inputFiles = Array.from(event.target.files);
@@ -23,7 +23,7 @@ script FileInputToTextLocalState() {
 				}
 
 				const selectedFile = inputFiles[0];
-				this.selectedFileName = selectedFile.name;
+				this.uploadedFileName = selectedFile.name;
 
 				const reader = new FileReader();
 				reader.onload = (event) => {
@@ -59,7 +59,7 @@ templ FileInputToText(
 				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 cursor-pointer pt-2 h-10 px-3 text-sm"
 			}
 		>
-			<label class="cursor-pointer" x-text="selectedFileNameLabel"></label>
+			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>
 		</div>
 		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
 			{ label }
