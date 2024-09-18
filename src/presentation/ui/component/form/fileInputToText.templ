@@ -2,9 +2,9 @@ package componentForm
 
 import "strings"
 
-script FileContentInputLocalState() {
+script FileInputToTextLocalState() {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('fileContentInput', () => ({
+		Alpine.data('fileInputToText', () => ({
 			selectedFileName: '',
 			get selectedFileNameLabel() {
 				if (this.selectedFileName == '') {
@@ -35,14 +35,14 @@ script FileContentInputLocalState() {
 	});
 }
 
-templ FileContentInput(
+templ FileInputToText(
 	id, label, bindValuePath string,
 	acceptableFileExtensions []string,
 	denseMode bool,
 ) {
-	<!-- FileInput -->
-	@FileContentInputLocalState()
-	<div class="relative w-full" x-data="fileContentInput">
+	<!-- FileInputToText -->
+	@FileInputToTextLocalState()
+	<div class="relative w-full" x-data="fileInputToText">
 		<input
 			id={ id + "-file-input" }
 			type="file"
