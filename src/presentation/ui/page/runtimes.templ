@@ -1,0 +1,102 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
+script RuntimesIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('runtimes', () => ({
+			// Primary states
+			phpConfigs: {},
+			resetPrimaryStates() {
+				this.phpConfigs = {
+					'hostname': '',
+					'version': ''
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Auxiliary states
+			installPhpService() {
+				htmx.ajax(
+					'POST',
+					'/api/v1/services/installables/',
+					{
+						swap: 'none',
+						values: { name: 'php' },
+					},
+				);
+			}
+
+			// Modal states
+		}))
+	})
+}
+
+templ RuntimesIndex(
+	selectedVhostHostname valueObject.Fqdn,
+	isPhpInstalled bool,
+	phpConfigs entity.PhpConfigs,
+) {
+	@RuntimesIndexLocalState()
+	<div class="flex flex-col" x-data="runtimes">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Runtimes",
+				"",
+				"ph-code",
+			)
+		</div>
+		<div
+			id="runtimes-page-content"
+			hx-get={ "/runtimes/?vhostHostname=" + selectedVhostHostname.String() }
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-select="#runtimes-page-content"
+			hx-target="#runtimes-page-content"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
+			<div id="runtimes-tabs">
+				@RuntimesTabs(isPhpInstalled, phpConfigs)
+			</div>
+		</div>
+	</div>
+}
+
+templ PhpServiceNotInstalledWarning() {
+	<div class="px-4 pb-4 pt-2 bg-os-500 rounded-r-lg">
+		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
+		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">php</p>service is not installed yet.</span>
+		@componentForm.SubmitButton(
+			"Schedule php service installation", "ph-caret-line-down",
+			"installPhpService()", true,
+		)
+	</div>
+}
+
+templ RuntimesTabs(
+	isPhpInstalled bool,
+	phpConfigs entity.PhpConfigs,
+) {
+	@componentStructural.TabHeader(
+		[]componentStructural.TabHeaderItem{
+			{Label: "PHP", ComponentValue: "php", AdditionalClasses: "bg-os-500 text-neutral-50"},
+		}, "",
+	)
+	<!-- RuntimeTabContent -->
+	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
+		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
+			if isPhpInstalled {
+				<p>Already installed</p>
+			} else {
+				@PhpServiceNotInstalledWarning()
+			}
+		</div>
+	</div>
+}

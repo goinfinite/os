@@ -65,6 +65,13 @@ func (router *Router) mappingsRoutes() {
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
 }
 
+func (router *Router) runtimesRoutes() {
+	runtimesGroup := router.baseRoute.Group("/runtimes")
+
+	runtimesPresenter := presenter.NewRuntimesPresenter(router.persistentDbSvc)
+	runtimesGroup.GET("/", runtimesPresenter.Handler)
+}
+
 func (router *Router) devRoutes() {
 	devGroup := router.baseRoute.Group("/dev")
 	devGroup.GET("/hot-reload", func(c echo.Context) error {
@@ -105,6 +112,7 @@ func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
 	router.databasesRoutes()
 	router.mappingsRoutes()
+	router.runtimesRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 		router.devRoutes()
