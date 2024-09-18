@@ -1,0 +1,69 @@
+package componentForm
+
+import "strings"
+
+script FileContentInputLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('fileContentInput', () => ({
+			selectedFileName: '',
+			get selectedFileNameLabel() {
+				if (this.selectedFileName == '') {
+					return 'No file chosen';
+				}
+
+				return this.selectedFileName;
+			},
+			init() {
+				this.selectedFileName = '';
+			},
+			handleFileSelection(event) {
+				const inputFiles = Array.from(event.target.files);
+				if (inputFiles.length == 0) {
+					return;
+				}
+
+				const selectedFile = inputFiles[0];
+				this.selectedFileName = selectedFile.name;
+
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					this.$dispatch('file-content-readed', event.target.result);
+				};
+				reader.readAsText(selectedFile);
+			}
+		}));
+	});
+}
+
+templ FileContentInput(
+	id, label, bindValuePath string,
+	acceptableFileExtensions []string,
+	denseMode bool,
+) {
+	<!-- FileInput -->
+	@FileContentInputLocalState()
+	<div class="relative w-full" x-data="fileContentInput">
+		<input
+			id={ id + "-file-input" }
+			name={ id + "-file-input" }
+			type="file"
+			accept={ strings.Join(acceptableFileExtensions[:], ",") }
+			class="hidden"
+			@change="handleFileSelection"
+			@file-content-readed={ bindValuePath + " = $event.detail" }
+		/>
+		<div
+			@click={ "document.getElementById('" + id + "-file-input').click()" }
+			if denseMode {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 cursor-pointer pt-2 h-7.5 px-1.5 text-[13px]"
+			} else {
+				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative w-full rounded-md border placeholder-transparent outline-none transition-all cursor-default text-slate-400 cursor-pointer pt-2 h-10 px-3 text-sm"
+			}
+		>
+			<label class="cursor-pointer" x-text="selectedFileNameLabel"></label>
+		</div>
+		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
+			{ label }
+		</label>
+	</div>
+}
