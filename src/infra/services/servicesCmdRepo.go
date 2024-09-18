@@ -242,8 +242,7 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 	serviceName valueObject.ServiceName,
 ) error {
 	for _, defaultDir := range defaultDirectories {
-		nameStr := serviceName.String()
-		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		err := infraHelper.MakeDir(defaultDirPath)
 		if err != nil {
@@ -270,8 +269,7 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	}
 
 	for _, defaultDir := range defaultDirectories {
-		nameStr := serviceName.String()
-		defaultDirPath := "/app/" + defaultDir + "/" + nameStr
+		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
 		_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
 		if err != nil {
