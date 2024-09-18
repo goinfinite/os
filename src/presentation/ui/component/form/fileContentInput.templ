@@ -45,7 +45,6 @@ templ FileContentInput(
 	<div class="relative w-full" x-data="fileContentInput">
 		<input
 			id={ id + "-file-input" }
-			name={ id + "-file-input" }
 			type="file"
 			accept={ strings.Join(acceptableFileExtensions[:], ",") }
 			class="hidden"
