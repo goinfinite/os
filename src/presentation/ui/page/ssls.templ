@@ -209,11 +209,11 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
 			)
 		</div>
-		<div class="mb-6 space-y-6" x-show="!shouldImportSslCertificateAsFile">
+		<div class="mb-4 space-y-6" x-show="!shouldImportSslCertificateAsFile">
 			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
 			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
 		</div>
-		<div class="mb-6 space-y-6" x-show="shouldImportSslCertificateAsFile">
+		<div class="mb-4 space-y-6" x-show="shouldImportSslCertificateAsFile">
 			@componentForm.FileContentInput(
 				"certificate", "Certificate", "sslPair.certificate",
 				[]string{".crt"}, false,
@@ -223,7 +223,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				[]string{".key"}, false,
 			)
 		</div>
-		<div class="mb-6">
+		<div class="flex justify-end mb-6">
 			@componentForm.RadioInputSwitchToggle(
 				"change-import-ssl-certificate-form-radio-input", "OR upload files (.crt/.key - pem format)",
 				"true", "shouldImportSslCertificateAsFile",
