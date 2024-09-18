@@ -92,14 +92,18 @@ templ SelectInputWithLabelValuePair(
 script MultipleSelectInputLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('multipleSelectInput', () => ({
+			randomComplementaryNumericElementId: 0,
+			init() {
+				this.randomComplementaryNumericElementId = Math.floor(Math.random() * 100);
+			},
 			isOptionsExpanded: false,
 			restylingElementsBasedOnExpansionStatus() {
-				const selectInputElement = document.getElementById('multi-select-input');
+				const selectInputElement = document.getElementById('multi-select-input-' + this.randomComplementaryNumericElementId);
 
-				const selectInputOverlapElement = document.getElementById('multiple-select-input-overlap');
+				const selectInputOverlapElement = document.getElementById('multiple-select-input-overlap-' + this.randomComplementaryNumericElementId);
 				const defaultOverlapElementClasses = 'absolute inset-x-0 inset-y-0 border-os-200 hover:border-os-100';
 
-				const selectInputOptionsElement = document.getElementById('multiple-select-input-options');
+				const selectInputOptionsElement = document.getElementById('multiple-select-input-options-' + this.randomComplementaryNumericElementId);
 				const defaultOptionsElementClasses = 'bg-os-500 border border-os-200';
 
 				if (this.isOptionsExpanded) {
@@ -142,7 +146,7 @@ templ MultipleSelectInput(
 	<div class="relative w-full" x-data="multipleSelectInput" @click.away="closeOptions()">
 		<div class="relative" @click="toggleOptionsDisplay()">
 			<select
-				id="multi-select-input"
+				x-bind:id="'multi-select-input-' + randomComplementaryNumericElementId"
 				placeholder={ label }
 				if denseMode {
 					class="bg-os-300 autofill:bg-os-300 peer relative w-full appearance-none rounded-md text-neutral-100 placeholder-transparent outline-none transition-all h-7.5 px-1.5 text-[13px] leading-normal"
@@ -155,9 +159,9 @@ templ MultipleSelectInput(
 					x-text={ bindModelPath + ".length == 0 ? '--' : " + bindModelPath + ".join(', ')" }
 				></option>
 			</select>
-			<div id="multiple-select-input-overlap" class="absolute inset-x-0 inset-y-0 border border-os-200 hover:border-os-100 rounded-md"></div>
+			<div x-bind:id="'multiple-select-input-overlap-' + randomComplementaryNumericElementId" class="absolute inset-x-0 inset-y-0 border border-os-200 hover:border-os-100 rounded-md"></div>
 		</div>
-		<div id="multiple-select-input-options" class="hidden bg-os-500 border border-os-200">
+		<div x-bind:id="'multiple-select-input-options-' + randomComplementaryNumericElementId" class="hidden bg-os-500 border border-os-200">
 			for _, option := range options {
 				<div class="px-3 py-1">
 					<label class="inline-flex items-center w-full cursor-pointer">
