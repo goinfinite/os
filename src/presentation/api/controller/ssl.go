@@ -46,7 +46,9 @@ func (controller *SslController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
 }
 
-func (controller *SslController) parseRawVhosts(rawVhostsInput interface{}) (rawVhosts []string, err error) {
+func (controller *SslController) parseRawVhosts(
+	rawVhostsInput interface{},
+) ([]string, error) {
 	rawVhostsStrSlice, assertOk := rawVhostsInput.([]string)
 	if assertOk {
 		return rawVhostsStrSlice, nil
@@ -56,9 +58,9 @@ func (controller *SslController) parseRawVhosts(rawVhostsInput interface{}) (raw
 	if !assertOk {
 		rawVhostUniqueStr, err := voHelper.InterfaceToString(rawVhostsInput)
 		if err != nil {
-			return rawVhosts, errors.New("VirtualHostsMustBeStringOrStringSlice")
+			return rawVhostsStrSlice, errors.New("VirtualHostsMustBeStringOrStringSlice")
 		}
-		return append(rawVhosts, rawVhostUniqueStr), err
+		return append(rawVhostsStrSlice, rawVhostUniqueStr), err
 	}
 
 	for _, rawVhost := range rawVhostsInterfaceSlice {
@@ -70,7 +72,7 @@ func (controller *SslController) parseRawVhosts(rawVhostsInput interface{}) (raw
 		rawVhostsStrSlice = append(rawVhostsStrSlice, rawVhostStr)
 	}
 
-	return rawVhostsStrSlice, err
+	return rawVhostsStrSlice, nil
 }
 
 // CreateSslPair    	 godoc
