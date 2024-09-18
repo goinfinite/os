@@ -46,9 +46,15 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 		}
 
 		for formKey, keyValues := range formData {
-			if len(keyValues) != 1 {
+			if len(keyValues) == 0 {
 				continue
 			}
+
+			if len(keyValues) > 1 {
+				requestBody[formKey] = keyValues
+				continue
+			}
+
 			keyValue := keyValues[0]
 			if keyValue == "" {
 				continue
