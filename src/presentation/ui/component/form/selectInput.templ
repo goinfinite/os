@@ -92,18 +92,18 @@ templ SelectInputWithLabelValuePair(
 script MultipleSelectInputLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('multipleSelectInput', () => ({
-			randomComplementaryNumericElementId: 0,
+			randomNumericElementComplementaryId: 0,
 			init() {
-				this.randomComplementaryNumericElementId = Math.floor(Math.random() * 100);
+				this.randomNumericElementComplementaryId = Math.floor(Math.random() * 100);
 			},
 			isOptionsExpanded: false,
-			restylingElementsBasedOnExpansionStatus() {
-				const selectInputElement = document.getElementById('multi-select-input-' + this.randomComplementaryNumericElementId);
+			restylingElementsBasedOnOptionsExpansionStatus() {
+				const selectInputElement = document.getElementById('multi-select-input-' + this.randomNumericElementComplementaryId);
 
-				const selectInputOverlapElement = document.getElementById('multiple-select-input-overlap-' + this.randomComplementaryNumericElementId);
+				const selectInputOverlapElement = document.getElementById('multiple-select-input-overlap-' + this.randomNumericElementComplementaryId);
 				const defaultOverlapElementClasses = 'absolute inset-x-0 inset-y-0 border-os-200 hover:border-os-100';
 
-				const selectInputOptionsElement = document.getElementById('multiple-select-input-options-' + this.randomComplementaryNumericElementId);
+				const selectInputOptionsElement = document.getElementById('multiple-select-input-options-' + this.randomNumericElementComplementaryId);
 				const defaultOptionsElementClasses = 'bg-os-500 border border-os-200';
 
 				if (this.isOptionsExpanded) {
@@ -126,11 +126,11 @@ script MultipleSelectInputLocalState() {
 				}
 
 				this.isOptionsExpanded = true;
-				this.restylingElementsBasedOnExpansionStatus();
+				this.restylingElementsBasedOnOptionsExpansionStatus();
 			},
 			closeOptions() {
 				this.isOptionsExpanded = false;
-				this.restylingElementsBasedOnExpansionStatus();
+				this.restylingElementsBasedOnOptionsExpansionStatus();
 			}
 		}));
 	});
@@ -146,7 +146,7 @@ templ MultipleSelectInput(
 	<div class="relative w-full" x-data="multipleSelectInput" @click.away="closeOptions()">
 		<div class="relative" @click="toggleOptionsDisplay()">
 			<select
-				x-bind:id="'multi-select-input-' + randomComplementaryNumericElementId"
+				x-bind:id="'multi-select-input-' + randomNumericElementComplementaryId"
 				placeholder={ label }
 				if denseMode {
 					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full appearance-none rounded-md px-1.5 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
@@ -159,9 +159,9 @@ templ MultipleSelectInput(
 					x-text={ bindModelPath + ".length == 0 ? '--' : " + bindModelPath + ".join(', ')" }
 				></option>
 			</select>
-			<div x-bind:id="'multiple-select-input-overlap-' + randomComplementaryNumericElementId" class="border-os-200 hover:border-os-100 absolute inset-x-0 inset-y-0 rounded-md border"></div>
+			<div x-bind:id="'multiple-select-input-overlap-' + randomNumericElementComplementaryId" class="border-os-200 hover:border-os-100 absolute inset-x-0 inset-y-0 rounded-md border"></div>
 		</div>
-		<div x-bind:id="'multiple-select-input-options-' + randomComplementaryNumericElementId" class="bg-os-500 border-os-200 hidden border">
+		<div x-bind:id="'multiple-select-input-options-' + randomNumericElementComplementaryId" class="bg-os-500 border-os-200 hidden border">
 			for _, option := range options {
 				<div class="px-3 py-1">
 					<label class="inline-flex w-full cursor-pointer items-center">
