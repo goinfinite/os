@@ -298,15 +298,19 @@ templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 	}
 }
 
+templ SwapToSelfSignedWarningContent() {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Are you sure you want to swap SSL certificate?
+	</h3>
+	<p>This process cannot be undone. Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
+}
+
 templ SwapToSelfSignedModal() {
 	@componentStructural.WarningModal(
 		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
 		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
 		"ph-swap", "Yes, swap ssl certificate",
 	) {
-		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
-			Are you sure you want to swap SSL certificate?
-		</h3>
-		<p>This process cannot be undone. Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
+		@SwapToSelfSignedWarningContent()
 	}
 }
