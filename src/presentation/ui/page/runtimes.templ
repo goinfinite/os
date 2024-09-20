@@ -23,6 +23,10 @@ script RuntimesIndexLocalState() {
 			},
 
 			// Auxiliary states
+			selectedConfigType: 'modules',
+			setSelectedConfigType(configType) {
+				this.selectedConfigType = configType;
+			},
 			installPhpService() {
 				htmx.ajax(
 					'POST',
@@ -63,16 +67,16 @@ templ RuntimesIndex(
 			class="card w-full"
 		>
 			<div id="runtimes-tabs">
-				@RuntimesTabs(isPhpInstalled, phpConfigs)
+				@RuntimesTabs(selectedVhostHostname, isPhpInstalled, phpConfigs)
 			</div>
 		</div>
 	</div>
 }
 
 templ PhpServiceNotInstalledWarning() {
-	<div class="px-4 pb-4 pt-2 bg-os-500 rounded-r-lg">
-		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
-		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">php</p>service is not installed yet.</span>
+	<div class="bg-os-500 rounded-r-lg px-4 pb-4 pt-2">
+		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
+		<span class="mr-3">The<p class="text-speedia-300 mx-1 inline-flex font-bold">php</p>service is not installed yet.</span>
 		@componentForm.SubmitButton(
 			"Schedule php service installation", "ph-caret-line-down",
 			"installPhpService()", true,
@@ -80,7 +84,24 @@ templ PhpServiceNotInstalledWarning() {
 	</div>
 }
 
+templ RuntimeModulesForm(phpModules []entity.PhpModule) {
+	<template x-if="selectedConfigType == 'modules'">
+		<div>
+			<p>Modules content here!</p>
+		</div>
+	</template>
+}
+
+templ RuntimeSettingsForm(phpSettings []entity.PhpSetting) {
+	<template x-if="selectedConfigType == 'settings'">
+		<div>
+			<p>Settings content here!</p>
+		</div>
+	</template>
+}
+
 templ RuntimesTabs(
+	selectedVhostHostname valueObject.Fqdn,
 	isPhpInstalled bool,
 	phpConfigs entity.PhpConfigs,
 ) {
@@ -90,10 +111,19 @@ templ RuntimesTabs(
 		}, "",
 	)
 	<!-- RuntimeTabContent -->
-	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
-		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
-			if isPhpInstalled {
-				<p>Already installed</p>
+	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
+		<div class="bg-os-500 flex space-y-3 rounded-b-lg rounded-r-lg px-4 py-10">
+			if !isPhpInstalled {
+				@componentStructural.SidebarMenu(
+					[]componentStructural.SidebarMenuItem{
+						{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
+						{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
+					}, "setSelectedConfigType",
+				)
+				<div class="px-10 py-4">
+					@RuntimeModulesForm(phpConfigs.Modules)
+					@RuntimeSettingsForm(phpConfigs.Settings)
+				</div>
 			} else {
 				@PhpServiceNotInstalledWarning()
 			}
