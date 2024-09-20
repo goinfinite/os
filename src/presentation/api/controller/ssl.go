@@ -48,8 +48,10 @@ func (controller *SslController) Read(c echo.Context) error {
 
 func (controller *SslController) parseRawVhosts(
 	rawVhostsInput interface{},
-) ([]string, error) {
-	rawVhostsStrSlice, assertOk := rawVhostsInput.([]string)
+) (rawVhostsStrSlice []string, err error) {
+	var assertOk bool
+
+	rawVhostsStrSlice, assertOk = rawVhostsInput.([]string)
 	if assertOk {
 		return rawVhostsStrSlice, nil
 	}
