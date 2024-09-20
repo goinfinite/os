@@ -19,8 +19,8 @@ templ DatabaseUserPrivilegesCheckboxInputsSwitchToggles() {
 		for _, databaseUserPrivilege := range valueObject.AvailableDatabasePrivileges {
 			@componentForm.CheckboxInputSwitchToggle(
 				"privileges", databaseUserPrivilege,
-				transformDbUserPrivilegeIntoComponentValueFormat(databaseUserPrivilege),
 				"databaseUser.privileges",
+				transformDbUserPrivilegeIntoComponentValueFormat(databaseUserPrivilege),
 			)
 		}
 	</div>
