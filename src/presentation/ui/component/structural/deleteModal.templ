@@ -1,5 +1,20 @@
 package componentStructural
 
+templ DeleteWarningContent(elNameStatePath, elIdStatePath string) {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Are you sure you want to delete
+		<strong
+			x-show={ elNameStatePath + " !== ''" }
+			x-text={ elNameStatePath }
+			class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
+		></strong>
+		<span x-show={ elIdStatePath + " !== ''" }>
+			#<strong x-text={ elIdStatePath }></strong>
+		</span>?
+	</h3>
+	<p>This process cannot be undone. This will permanently delete the element.</p>
+}
+
 templ DeleteModal(
 	isOpenState, closeFunction, deleteFunction, elNameStatePath, elIdStatePath string,
 ) {
@@ -8,17 +23,6 @@ templ DeleteModal(
 		isOpenState, closeFunction, "No, Keep it.", deleteFunction,
 		"delete-element", "ph-trash", "Yes, Delete!",
 	) {
-		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
-			Are you sure you want to delete
-			<strong
-				x-show={ elNameStatePath + " !== ''" }
-				x-text={ elNameStatePath }
-				class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
-			></strong>
-			<span x-show={ elIdStatePath + " !== ''" }>
-				#<strong x-text={ elIdStatePath }></strong>
-			</span>?
-		</h3>
-		<p>This process cannot be undone. This will permanently delete the element.</p>
+		@DeleteWarningContent(elNameStatePath, elIdStatePath)
 	}
 }
