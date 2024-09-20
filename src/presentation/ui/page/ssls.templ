@@ -213,13 +213,11 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
 		</div>
 		<div class="mb-4 space-y-6" x-show="shouldImportSslCertificateAsFile">
-			@componentForm.FileInputToText(
-				"certificate", "Certificate", "sslPair.certificate",
-				[]string{".crt"}, false,
+			@componentForm.FileUploadTextInputFileContentReader(
+				"certificate", "Certificate", "sslPair.certificate", ".crt", false,
 			)
-			@componentForm.FileInputToText(
-				"key", "Private Key", "sslPair.key",
-				[]string{".key"}, false,
+			@componentForm.FileUploadTextInputFileContentReader(
+				"key", "Private Key", "sslPair.key", ".key", false,
 			)
 		</div>
 		<div class="mb-6 flex justify-end">

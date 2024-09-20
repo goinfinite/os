@@ -1,10 +1,8 @@
 package componentForm
 
-import "strings"
-
-script FileInputToTextLocalState() {
+script FileUploadTextInputFileContentReaderLocalState() {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('fileInputToText', () => ({
+		Alpine.data('fileUploadTextInputFileContentReader', () => ({
 			uploadedFileName: '',
 			get uploadedFileNameLabel() {
 				if (this.uploadedFileName == '') {
@@ -35,24 +33,23 @@ script FileInputToTextLocalState() {
 	});
 }
 
-templ FileInputToText(
-	id, label, bindValuePath string,
-	acceptableFileExtensions []string,
+templ FileUploadTextInputFileContentReader(
+	id, label, bindValuePath, acceptAttr string,
 	denseMode bool,
 ) {
-	<!-- FileInputToText -->
-	@FileInputToTextLocalState()
-	<div class="relative w-full" x-data="fileInputToText">
+	<!-- FileUploadTextInputFileContentReader -->
+	@FileUploadTextInputFileContentReaderLocalState()
+	<div class="relative w-full" x-data="fileUploadTextInputFileContentReader">
 		<input
-			id={ id + "-file-input" }
+			x-ref={ id + "fileInput" }
 			type="file"
-			accept={ strings.Join(acceptableFileExtensions[:], ",") }
+			accept={ acceptAttr }
 			class="hidden"
 			@change="handleFileUpload"
 			@file-content-readed={ bindValuePath + " = $event.detail" }
 		/>
 		<div
-			@click={ "document.getElementById('" + id + "-file-input').click()" }
+			@click={ "$refs." + id + "fileInput.click()" }
 			if denseMode {
 				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full cursor-default cursor-pointer rounded-md border px-1.5 pt-2 text-[13px] text-slate-400 placeholder-transparent outline-none transition-all"
 			} else {
