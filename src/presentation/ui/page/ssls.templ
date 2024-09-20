@@ -224,9 +224,9 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 			)
 		</div>
 		<div class="mb-6 flex justify-end">
-			@componentForm.RadioInputSwitchToggle(
+			@componentForm.CheckboxInputSwitchToggle(
 				"change-import-ssl-certificate-form-radio-input", "OR upload files (.crt/.key - pem format)",
-				"true", "shouldImportSslCertificateAsFile",
+				"", "shouldImportSslCertificateAsFile",
 			)
 		</div>
 		@componentForm.DeactivatableSubmitButton(

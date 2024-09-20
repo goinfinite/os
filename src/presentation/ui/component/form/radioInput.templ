@@ -18,18 +18,3 @@ templ RadioInput(id, label, bindValue, bindModelPath string) {
 		<label class="ml-1 text-sm font-medium text-neutral-100">{ label }</label>
 	</div>
 }
-
-templ RadioInputSwitchToggle(id, label, bindValue, bindModelPath string) {
-	<!-- RadioInputSwitchToggle -->
-	<label class="inline-flex cursor-pointer items-center">
-		<input
-			type="checkbox"
-			name={ id }
-			value={ bindValue }
-			x-model={ bindModelPath }
-			class="peer sr-only"
-		/>
-		<div class="peer-checked:bg-speedia-500 peer relative h-6 w-11 rounded-full bg-gray-400 after:absolute after:start-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-		<span class="ml-2 text-sm text-neutral-50">{ label }</span>
-	</label>
-}
