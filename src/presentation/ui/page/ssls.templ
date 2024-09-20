@@ -31,6 +31,9 @@ script SslsIndexLocalState() {
 			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
 				return this.sslPair.id == '' || this.sslPair.virtualHostsHostnames.length == 0
 			},
+			// JavaScript doesn't provide any API capable of directly downloading a blob
+			// file, so it's necessary to create an invisible anchor element and artificially
+			// trigger a click on it to emulate this process.
 			downloadPemFile(isKeyFileContent) {
 				let pemFileContent = this.sslPair.certificate;
 				let fileExtension = 'crt';
