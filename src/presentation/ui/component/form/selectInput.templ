@@ -92,46 +92,31 @@ templ SelectInputWithLabelValuePair(
 script MultipleSelectInputLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('multipleSelectInput', () => ({
-			randomNumericElementComplementaryId: 0,
-			init() {
-				this.randomNumericElementComplementaryId = Math.floor(Math.random() * 100);
+			getFormattedSelectedItems(bindSelectedItemsPath) {
+				if (bindSelectedItemsPath.length == 0) {
+					return '--';
+				}
+
+				let formattedSelectedItems = bindSelectedItemsPath.join(', ');
+				if (formattedSelectedItems.length > 80) {
+					return formattedSelectedItems.substr(0, 80) + '...';
+				}
+				return formattedSelectedItems;
 			},
 			isOptionsExpanded: false,
-			restylingElementsBasedOnOptionsExpansionStatus() {
-				const selectInputElement = document.getElementById('multi-select-input-' + this.randomNumericElementComplementaryId);
-
-				const selectInputOverlapElement = document.getElementById('multiple-select-input-overlap-' + this.randomNumericElementComplementaryId);
-				const defaultOverlapElementClasses = 'absolute inset-x-0 inset-y-0 border-os-200 hover:border-os-100';
-
-				const selectInputOptionsElement = document.getElementById('multiple-select-input-options-' + this.randomNumericElementComplementaryId);
-				const defaultOptionsElementClasses = 'bg-os-500 border border-os-200';
-
-				if (this.isOptionsExpanded) {
-					selectInputElement.className = selectInputElement.className.replace(/rounded-md/i, 'rounded-t-md');
-					selectInputOverlapElement.className = defaultOverlapElementClasses + ' border-t border-r border-l rounded-t-md';
-					selectInputOptionsElement.className = defaultOptionsElementClasses + ' block';
-
-					return;
-				}
-
-				selectInputElement.className = selectInputElement.className.replace(/rounded-t-md/i, 'rounded-md');
-				selectInputOverlapElement.className = defaultOverlapElementClasses + ' border rounded-md';
-				selectInputOptionsElement.className = defaultOptionsElementClasses + ' hidden rounded-b-md';
-			},
-			toggleOptionsDisplay() {
-				if (this.isOptionsExpanded) {
-					this.closeOptions();
-
-					return;
-				}
-
-				this.isOptionsExpanded = true;
-				this.restylingElementsBasedOnOptionsExpansionStatus();
-			},
-			closeOptions() {
+			closeDropdown() {
+				this.$refs.multipleSelectInputOptions.classList.add('hidden');
 				this.isOptionsExpanded = false;
-				this.restylingElementsBasedOnOptionsExpansionStatus();
-			}
+			},
+			toggleDropdownDisplay() {
+				if (this.isOptionsExpanded) {
+					this.closeDropdown();
+					return;
+				}
+
+				this.$refs.multipleSelectInputOptions.classList.remove('hidden');
+				this.isOptionsExpanded = true;
+			},
 		}));
 	});
 }
@@ -139,31 +124,30 @@ script MultipleSelectInputLocalState() {
 templ MultipleSelectInput(
 	id, label, bindModelPath string,
 	options []string,
-	denseMode bool,
 ) {
 	<!-- MultipleSelectInput -->
 	@MultipleSelectInputLocalState()
-	<div class="relative w-full" x-data="multipleSelectInput" @click.away="closeOptions()">
-		<div class="relative" @click="toggleOptionsDisplay()">
-			<select
-				x-bind:id="'multi-select-input-' + randomNumericElementComplementaryId"
-				placeholder={ label }
-				if denseMode {
-					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full appearance-none rounded-md px-1.5 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
-				} else {
-					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full appearance-none rounded-md px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
-				}
-			>
-				<option
-					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
-					x-text={ bindModelPath + ".length == 0 ? '--' : " + bindModelPath + ".join(', ')" }
-				></option>
-			</select>
-			<div x-bind:id="'multiple-select-input-overlap-' + randomNumericElementComplementaryId" class="border-os-200 hover:border-os-100 absolute inset-x-0 inset-y-0 rounded-md border"></div>
+	<div
+		class="relative w-full"
+		x-data="multipleSelectInput"
+		@click.away="closeDropdown()"
+	>
+		<div
+			@click="toggleDropdownDisplay()"
+			class="border-os-200 hover:border-os-100 bg-os-300 autofill:bg-os-300 pt-2.3 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		>
+			<label
+				class="cursor-pointer text-neutral-100"
+				x-text={ "getFormattedSelectedItems(" + bindModelPath + ")" }
+			></label>
 		</div>
-		<div x-bind:id="'multiple-select-input-options-' + randomNumericElementComplementaryId" class="bg-os-500 border-os-200 hidden border">
+		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
+			{ label }
+		</label>
+		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
+		<div x-ref="multipleSelectInputOptions" class="bg-os-500 border-os-200 hidden rounded-b-md border">
 			for _, option := range options {
-				<div class="px-3 py-1">
+				<div class="px-3 pb-1.5 pt-1">
 					<label class="inline-flex w-full cursor-pointer items-center">
 						<span class="text-sm text-neutral-50">{ option }</span>
 						<input
@@ -179,9 +163,5 @@ templ MultipleSelectInput(
 				</div>
 			}
 		</div>
-		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
-			{ label }
-		</label>
-		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
 	</div>
 }

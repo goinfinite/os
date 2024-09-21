@@ -208,7 +208,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		<div class="my-6">
 			@componentForm.MultipleSelectInput(
 				"virtualHosts", "Virtual Hosts Hostnames",
-				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
+				"sslPair.virtualHostsHostnames", vhostsHostnames,
 			)
 		</div>
 		<div class="mb-4 space-y-6" x-show="!shouldImportSslCertificateAsFile">
@@ -281,7 +281,7 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
 			@componentForm.MultipleSelectInput(
 				"virtualHosts", "Virtual Hosts Hostnames",
-				"sslPair.virtualHostsHostnames", vhostsHostnames, false,
+				"sslPair.virtualHostsHostnames", vhostsHostnames,
 			)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
