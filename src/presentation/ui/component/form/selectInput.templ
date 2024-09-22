@@ -89,9 +89,9 @@ templ SelectInputWithLabelValuePair(
 	</div>
 }
 
-script MultipleSelectInputLocalState() {
+script MultiSelectInputLocalState() {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('multipleSelectInput', () => ({
+		Alpine.data('multiSelectInput', () => ({
 			getFormattedSelectedItems(bindSelectedItemsPath) {
 				if (bindSelectedItemsPath.length == 0) {
 					return '--';
@@ -105,7 +105,7 @@ script MultipleSelectInputLocalState() {
 			},
 			isOptionsExpanded: false,
 			closeDropdown() {
-				this.$refs.multipleSelectInputOptions.classList.add('hidden');
+				this.$refs.multiSelectInputOptions.classList.add('hidden');
 				this.isOptionsExpanded = false;
 			},
 			toggleDropdownDisplay() {
@@ -114,22 +114,22 @@ script MultipleSelectInputLocalState() {
 					return;
 				}
 
-				this.$refs.multipleSelectInputOptions.classList.remove('hidden');
+				this.$refs.multiSelectInputOptions.classList.remove('hidden');
 				this.isOptionsExpanded = true;
 			},
 		}));
 	});
 }
 
-templ MultipleSelectInput(
+templ MultiSelectInput(
 	id, label, bindModelPath string,
 	options []string,
 ) {
-	<!-- MultipleSelectInput -->
-	@MultipleSelectInputLocalState()
+	<!-- MultiSelectInput -->
+	@MultiSelectInputLocalState()
 	<div
 		class="relative w-full"
-		x-data="multipleSelectInput"
+		x-data="multiSelectInput"
 		@click.away="closeDropdown()"
 	>
 		<div
@@ -145,7 +145,7 @@ templ MultipleSelectInput(
 			{ label }
 		</label>
 		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
-		<div x-ref="multipleSelectInputOptions" class="bg-os-500 border-os-200 hidden rounded-b-md border">
+		<div x-ref="multiSelectInputOptions" class="bg-os-500 border-os-200 hidden rounded-b-md border">
 			for _, option := range options {
 				<div class="px-3 pb-1.5 pt-1">
 					<label class="inline-flex w-full cursor-pointer items-center">
