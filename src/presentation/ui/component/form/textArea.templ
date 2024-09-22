@@ -30,36 +30,24 @@ templ TextArea(
 	</div>
 }
 
-script TextAreaReadOnlyLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('textAreaReadOnly', () => ({
-			copyToClipboard(elementId) {
-				const textInputElement = document.getElementById(elementId);
-				textInputElement.select();
-				navigator.clipboard.writeText(textInputElement.value);
-			}
-		}))
-	})
-}
-
 templ TextAreaReadOnly(
 	id, label, bindValuePath string,
 ) {
 	<!-- TextAreaReadOnly -->
-	@TextAreaReadOnlyLocalState()
-	<div class="relative w-full" x-data="textAreaReadOnly">
+	<div class="relative w-full">
 		<textarea
 			id={ id }
 			name={ id }
 			if bindValuePath != "" {
 				x-model:value={ bindValuePath }
 			}
+			x-ref="textAreaReadOnly"
 			placeholder={ label }
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border px-3 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
 			readonly
 		></textarea>
 		<div class="absolute right-2 top-1">
-			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "copyToClipboard('" + id + "')" }>
+			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "navigator.clipboard.writeText($refs.textAreaReadOnly.value)" }>
 				<i class="ph-duotone ph-copy-simple"></i>
 			</button>
 		</div>
