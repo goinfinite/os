@@ -44,7 +44,6 @@ script TextAreaReadOnlyLocalState() {
 
 templ TextAreaReadOnly(
 	id, label, bindValuePath string,
-	denseMode bool,
 ) {
 	<!-- TextAreaReadOnly -->
 	@TextAreaReadOnlyLocalState()
@@ -56,11 +55,7 @@ templ TextAreaReadOnly(
 				x-model:value={ bindValuePath }
 			}
 			placeholder={ label }
-			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default rounded-md border px-1.5 pt-1.5 text-[13px] text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
-			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border px-3 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
-			}
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border px-3 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
 			readonly
 		></textarea>
 		<div class="absolute right-2 top-1">

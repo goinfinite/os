@@ -253,14 +253,14 @@ templ ViewPemFilesModal() {
 		<div class="space-y-6">
 			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
 			<div class="space-y-1">
-				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate", false)
+				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate")
 				@componentForm.SubmitButton(
 					"download-certificate-pem-file-button", "Download certificate",
 					"ph-download-simple", "downloadPemFile(false)", false,
 				)
 			</div>
 			<div class="space-y-1">
-				@componentForm.TextAreaReadOnly("key", "Private Key", "sslPair.key", false)
+				@componentForm.TextAreaReadOnly("key", "Private Key", "sslPair.key")
 				@componentForm.SubmitButton(
 					"download-key-pem-file-button", "Download private key",
 					"ph-download-simple", "downloadPemFile(true)", false,
