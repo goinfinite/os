@@ -35,7 +35,6 @@ script FileUploadTextInputFileContentReaderLocalState() {
 
 templ FileUploadTextInputFileContentReader(
 	id, label, bindValuePath, acceptAttr string,
-	denseMode bool,
 ) {
 	<!-- FileUploadTextInputFileContentReader -->
 	@FileUploadTextInputFileContentReaderLocalState()
@@ -50,11 +49,7 @@ templ FileUploadTextInputFileContentReader(
 		/>
 		<div
 			@click={ "$refs." + id + "fileInput.click()" }
-			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full cursor-default cursor-pointer rounded-md border px-1.5 pt-2 text-[13px] text-slate-400 placeholder-transparent outline-none transition-all"
-			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
-			}
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
 		>
 			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>
 		</div>
