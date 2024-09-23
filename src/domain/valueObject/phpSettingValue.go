@@ -16,7 +16,6 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 		return settingValue, errors.New("PhpSettingValueMustBeString")
 	}
 	stringValue = strings.Trim(stringValue, "\"")
-	stringValue = strings.ToLower(stringValue)
 
 	if len(stringValue) == 0 {
 		return settingValue, errors.New("EmptyPhpSettingValue")
@@ -26,7 +25,7 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 		return settingValue, errors.New("PhpSettingValueTooLong")
 	}
 
-	switch stringValue {
+	switch strings.ToLower(stringValue) {
 	case "on":
 	case "true":
 		stringValue = "On"
