@@ -151,17 +151,21 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	}
 	requestBody["hostname"] = c.Param("hostname")
 
-	phpModules, err := controller.parsePhpModules(requestBody["modules"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	if _, exists := requestBody["modules"]; exists {
+		phpModules, err := controller.parsePhpModules(requestBody["modules"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		requestBody["modules"] = phpModules
 	}
-	requestBody["modules"] = phpModules
 
-	phpSettings, err := controller.parsePhpSettings(requestBody["settings"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	if _, exists := requestBody["settings"]; exists {
+		phpSettings, err := controller.parsePhpSettings(requestBody["settings"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		requestBody["settings"] = phpSettings
 	}
-	requestBody["settings"] = phpSettings
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.runtimeService.UpdatePhpConfigs(requestBody),
