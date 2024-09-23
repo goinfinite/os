@@ -1,6 +1,8 @@
 package presenter
 
 import (
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,15 +16,40 @@ import (
 )
 
 type RuntimesPresenter struct {
-	runtimeService *service.RuntimeService
+	runtimeService     *service.RuntimeService
+	virtualHostService *service.VirtualHostService
 }
 
 func NewRuntimesPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *RuntimesPresenter {
 	return &RuntimesPresenter{
-		runtimeService: service.NewRuntimeService(persistentDbSvc),
+		runtimeService:     service.NewRuntimeService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
+}
+
+func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
+	vhostsHostnames := []string{}
+
+	responseOutput := presenter.virtualHostService.Read()
+	if responseOutput.Status != service.Success {
+		responseBodyErrorStr := responseOutput.Body.(string)
+		return vhostsHostnames, errors.New(responseBodyErrorStr)
+	}
+
+	existentVhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
+	if !assertOk {
+		return vhostsHostnames, errors.New(
+			"UnableToAssertExistentVirtualHostsHostnamesStructure",
+		)
+	}
+
+	for _, existentVhost := range existentVhosts {
+		vhostsHostnames = append(vhostsHostnames, existentVhost.Hostname.String())
+	}
+
+	return vhostsHostnames, nil
 }
 
 func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
@@ -48,6 +75,14 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		isPhpInstalled = false
 	}
 
-	pageContent := page.RuntimesIndex(selectedVhostHostname, isPhpInstalled, phpConfigs)
+	existentVhostsHostnames, err := presenter.getVhostsHostnames()
+	if err != nil {
+		slog.Error("GetExistentVirtualHostsHostnames", slog.Any("err", err))
+		return nil
+	}
+
+	pageContent := page.RuntimesIndex(
+		isPhpInstalled, phpConfigs, existentVhostsHostnames,
+	)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
