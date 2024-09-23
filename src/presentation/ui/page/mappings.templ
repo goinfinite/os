@@ -137,7 +137,10 @@ script MappingsIndexLocalState() {
 	})
 }
 
-templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ MappingsIndex(
+	vhostsWithMappings []dto.VirtualHostWithMappings,
+	vhostsHostnames []string,
+) {
 	@MappingsIndexLocalState()
 	<div x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -149,8 +152,14 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				)
 			</div>
 			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton("create virtual host", "ph-plus-square", "openCreateVhostModal()", false)
-				@componentForm.SubmitButton("create mapping", "ph-plus-square", "openCreateMappingModal()", false)
+				@componentForm.SubmitButton(
+					"create-vhost-button", "create virtual host", "ph-plus-square",
+					"openCreateVhostModal()", false,
+				)
+				@componentForm.SubmitButton(
+					"create-mapping-button", "create mapping", "ph-plus-square",
+					"openCreateMappingModal()", false,
+				)
 			</div>
 		</div>
 		<div
@@ -170,8 +179,8 @@ templ MappingsIndex(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
 				"virtualHost.hostname", "virtualHost.hostname",
 			)
-			@CreateMappingModal(vhostsWithMappings)
-			@CreateMappingFromVhostModal(vhostsWithMappings)
+			@CreateMappingModal(vhostsHostnames)
+			@CreateMappingFromVhostModal(vhostsHostnames)
 			@componentStructural.DeleteModal(
 				"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 				"mapping.path", "mapping.id",
@@ -184,12 +193,12 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<table
 		class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out"
 	>
-		<div class="bg-os-800 p-4 rounded-md">
+		<div class="bg-os-800 rounded-md p-4">
 			for _, vhostWithMappings := range vhostsWithMappings {
-				<div class="flex bg-os-500 mb-4 p-4 rounded">
+				<div class="bg-os-500 mb-4 flex rounded p-4">
 					<!-- Vhosts Column -->
-					<div class="flex bg-os-800 p-4 w-3/8 min-h-56 flex-col rounded">
-						<div class="flex justify-between items-center">
+					<div class="bg-os-800 w-3/8 min-h-56 flex flex-col rounded p-4">
+						<div class="flex items-center justify-between">
 							<span class="text-xl">{ vhostWithMappings.Hostname.String() }</span>
 							<div class="flex space-x-2">
 								@componentStructural.CircularIconButtonWithTooltip("ph-plus", "speedia-500", "speedia-300", "openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')", "create mapping", "os-200")
@@ -198,14 +207,14 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 								}
 							</div>
 						</div>
-						<div class="flex space-x-3 mt-4">
+						<div class="mt-4 flex space-x-3">
 							@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "speedia-300")
 							@componentStructural.Tag("ph-file-text", "", vhostWithMappings.Type.String(), "speedia-300")
 						</div>
 					</div>
 					<div class="w-4"></div>
 					<!-- Mappings Column -->
-					<div class="bg-os-800 p-4 flex-col rounded w-1/1">
+					<div class="bg-os-800 w-1/1 flex-col rounded p-4">
 						for _, mapping := range vhostWithMappings.Mappings {
 							@componentMappings.VhostMappingsList(
 								mapping, vhostWithMappings.RootDirectory,
@@ -221,7 +230,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 
 templ CreateVhostForm() {
 	<form
-		id="create-vhost"
+		id="create-vhost-form"
 		hx-post="/api/v1/vhosts/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -259,15 +268,6 @@ templ CreateVhostModal() {
 	}
 }
 
-func getVhostHostnames(vhostsWithMappings []dto.VirtualHostWithMappings) []string {
-	vhostHostnames := []string{}
-	for _, vhostWithMappings := range vhostsWithMappings {
-		vhostHostnames = append(vhostHostnames, vhostWithMappings.Hostname.String())
-	}
-
-	return vhostHostnames
-}
-
 func getOnlyServiceNames() []string {
 	onlyServiceNames := []string{}
 	for serviceName := range valueObject.NativeSvcNamesWithAliases {
@@ -277,19 +277,19 @@ func getOnlyServiceNames() []string {
 	return onlyServiceNames
 }
 
-templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingForm(vhostsHostnames []string) {
 	<form
 		hx-post="/api/v1/vhosts/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="-mt-4 my-6 space-y-6">
+		<div class="my-6 -mt-4 space-y-6">
 			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
 			<template x-if="isCreateMappingFromVhost">
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", getVhostHostnames(vhostsWithMappings), false)
+				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", vhostsHostnames, false)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
@@ -330,20 +330,20 @@ templ CreateMappingForm(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	</form>
 }
 
-templ CreateMappingModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingModal(vhostsHostnames []string) {
 	@componentStructural.Modal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsWithMappings)
+		@CreateMappingForm(vhostsHostnames)
 	}
 }
 
-templ CreateMappingFromVhostModal(vhostsWithMappings []dto.VirtualHostWithMappings) {
+templ CreateMappingFromVhostModal(vhostsHostnames []string) {
 	@componentStructural.Modal(
 		"Create Mapping", "isCreateMappingFromVhostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsWithMappings)
+		@CreateMappingForm(vhostsHostnames)
 	}
 }

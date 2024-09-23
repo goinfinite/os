@@ -2,9 +2,9 @@ package componentStructural
 
 templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 	<!-- Tag -->
-	<div class={ "flex rounded-md border-solid border-2 border-" + tagColor + " text-sm" }>
-		<div class={ "bg-" + tagColor + " h-full" }>
-			<div class="flex items-center mx-2 space-x-1">
+	<div class={ "flex rounded-md border-solid border-2 border-" + tagColor + " text-sm w-fit" }>
+		<div class={ "bg-" + tagColor }>
+			<div class="mx-2 flex items-center space-x-1">
 				if highlightedIcon != "" {
 					<i class={ "ph-duotone " + highlightedIcon + " text-lg" }></i>
 				}
@@ -13,8 +13,8 @@ templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 				}
 			</div>
 		</div>
-		<div class="flex items-center h-full">
-			<span class="mx-2 mb-0.2">{ tagValue }</span>
+		<div class="flex items-center">
+			<span class="mb-0.2 mx-2">{ tagValue }</span>
 		</div>
 	</div>
 }

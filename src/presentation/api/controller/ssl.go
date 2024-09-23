@@ -46,27 +46,35 @@ func (controller *SslController) Read(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
 }
 
-func parseRawVhosts(rawVhostsInput interface{}) (rawVhosts []string, err error) {
-	rawVhostsSlice, assertOk := rawVhostsInput.([]interface{})
+func (controller *SslController) parseRawVhosts(
+	rawVhostsInput interface{},
+) (rawVhostsStrSlice []string, err error) {
+	var assertOk bool
+
+	rawVhostsStrSlice, assertOk = rawVhostsInput.([]string)
+	if assertOk {
+		return rawVhostsStrSlice, nil
+	}
+
+	rawVhostsInterfaceSlice, assertOk := rawVhostsInput.([]interface{})
 	if !assertOk {
 		rawVhostUniqueStr, err := voHelper.InterfaceToString(rawVhostsInput)
 		if err != nil {
-			return rawVhosts, errors.New("VirtualHostsMustBeStringOrStringSlice")
+			return rawVhostsStrSlice, errors.New("VirtualHostsMustBeStringOrStringSlice")
 		}
-		return append(rawVhosts, rawVhostUniqueStr), err
+		return append(rawVhostsStrSlice, rawVhostUniqueStr), err
 	}
 
-	rawVhosts = []string{}
-	for _, rawVhost := range rawVhostsSlice {
+	for _, rawVhost := range rawVhostsInterfaceSlice {
 		rawVhostStr, err := voHelper.InterfaceToString(rawVhost)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("vhost", rawVhost))
 			continue
 		}
-		rawVhosts = append(rawVhosts, rawVhostStr)
+		rawVhostsStrSlice = append(rawVhostsStrSlice, rawVhostStr)
 	}
 
-	return rawVhosts, err
+	return rawVhostsStrSlice, nil
 }
 
 // CreateSslPair    	 godoc
@@ -85,7 +93,7 @@ func (controller *SslController) Create(c echo.Context) error {
 		return err
 	}
 
-	rawVhosts, err := parseRawVhosts(requestBody["virtualHosts"])
+	rawVhosts, err := controller.parseRawVhosts(requestBody["virtualHosts"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -166,7 +174,7 @@ func (controller *SslController) DeleteVhosts(c echo.Context) error {
 		return err
 	}
 
-	rawVhosts, err := parseRawVhosts(requestBody["virtualHosts"])
+	rawVhosts, err := controller.parseRawVhosts(requestBody["virtualHosts"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}

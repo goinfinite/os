@@ -179,12 +179,13 @@ func getDatabasesTabHeaderItems(
 }
 
 templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType) {
-	<div class="px-4 pb-4 pt-2 bg-os-500 rounded-r-lg">
-		<i class="ph-duotone ph-warning align-middle text-xl text-yellow mr-3"></i>
-		<span class="mr-3">The<p class="inline-flex mx-1 text-speedia-300 font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
+	<div class="bg-os-500 rounded-r-lg px-4 pb-4 pt-2">
+		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
+		<span class="mr-3">The<p class="text-speedia-300 mx-1 inline-flex font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
 		@componentForm.SubmitButton(
-			"Schedule "+selectedDbType.String()+" service installation", "ph-caret-line-down",
-			"installDatabaseService('"+selectedDbType.String()+"')", true,
+			"schedule-db-service-installation-button",
+			"Schedule "+selectedDbType.String()+" service installation",
+			"ph-caret-line-down", "installDatabaseService('"+selectedDbType.String()+"')", true,
 		)
 	</div>
 }
@@ -194,29 +195,35 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
-	<div class="bg-os-800 p-4 -mt-4 rounded-b-xl rounded-r-xl">
-		<div class="px-4 bg-os-500 rounded-b-lg rounded-r-lg space-y-3 pt-2">
+	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
+		<div class="bg-os-500 space-y-3 rounded-b-lg rounded-r-lg px-4 pt-2">
 			if selectedDbOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 					<thead class="text-xs uppercase text-neutral-400">
 						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-							<th scope="col" class="px-5 py-3 w-1/7 text-left">Name</th>
-							<th scope="col" class="px-5 py-3 w-2/7 text-center">User(s)</th>
-							<th scope="col" class="px-5 py-3 w-1/7 text-left">Size</th>
-							<th scope="col" class="px-5 py-3 space-x-2 flex justify-end">
-								@componentForm.SubmitButton("Create user", "ph-user-plus", "openCreateDatabaseUserModal()", true)
-								@componentForm.SubmitButton("Create database", "ph-database", "openCreateDatabaseModal()", true)
+							<th scope="col" class="w-1/7 px-5 py-3 text-left">Name</th>
+							<th scope="col" class="w-2/7 px-5 py-3 text-center">User(s)</th>
+							<th scope="col" class="w-1/7 px-5 py-3 text-left">Size</th>
+							<th scope="col" class="flex justify-end space-x-2 px-5 py-3">
+								@componentForm.SubmitButton(
+									"create-user-button", "Create user", "ph-user-plus",
+									"openCreateDatabaseUserModal()", true,
+								)
+								@componentForm.SubmitButton(
+									"create-database-button", "Create database", "ph-database",
+									"openCreateDatabaseModal()", true,
+								)
 							</th>
 						</tr>
 					</thead>
 					<tbody>
 						for _, database := range selectedDbOverview.Databases {
 							<tr class="bg-os-800 text-white">
-								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Name.String() }</th>
-								<th scope="row" class="px-5 py-3 w-1/4 text-left">
-									<div class="bg-os-500 rounded-md px-2.5 py-1 max-h-75">
+								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
+								<th scope="row" class="w-1/4 px-5 py-3 text-left">
+									<div class="bg-os-500 max-h-75 rounded-md px-2.5 py-1">
 										for _, user := range database.Users {
-											<div class="flex justify-between items-center p-3 my-1.5 bg-os-800 rounded-md">
+											<div class="bg-os-800 my-1.5 flex items-center justify-between rounded-md p-3">
 												<span class="font-normal">{ user.Username.String() }</span>
 												<div class="flex space-x-2">
 													@componentStructural.CircularIconButtonWithTooltip(
@@ -229,8 +236,8 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 										}
 									</div>
 								</th>
-								<th scope="row" class="px-5 py-3 w-1/4 text-left font-normal">{ database.Size.String() }</th>
-								<th scope="row" class="px-5 py-3 w-1/4 text-right">
+								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Size.String() }</th>
+								<th scope="row" class="w-1/4 px-5 py-3 text-right">
 									<div class="inline-flex">
 										@componentStructural.CircularIconButtonWithTooltip(
 											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
@@ -304,7 +311,7 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 							<span class="font-bold">Privileges</span>
 							<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
 						</summary>
-						@componentDatabases.DatabaseUserPrivilegesRadioInputsSwitchToggles()
+						@componentDatabases.DatabaseUserPrivilegesCheckboxInputsSwitchToggles()
 					</details>
 				</section>
 			}

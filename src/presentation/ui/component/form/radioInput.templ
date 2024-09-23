@@ -3,33 +3,18 @@ package componentForm
 templ RadioInput(id, label, bindValue, bindModelPath string) {
 	<!-- RadioInput -->
 	<div class="inline-flex items-center">
-		<label class="relative flex items-center p-3 -mr-2 rounded-full cursor-pointer">
+		<label class="relative -mr-2 flex cursor-pointer items-center rounded-full p-3">
 			<input
 				type="radio"
 				name={ id }
 				value={ bindValue }
 				x-model={ bindModelPath }
-				class="peer relative h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border border-speedia-500 bg-inherit transition-all checked:h-4 checked:w-4 checked:border-inherit checked:bg-speedia-500"
+				class="border-speedia-500 checked:bg-speedia-500 peer relative h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border bg-inherit transition-all checked:h-4 checked:w-4 checked:border-inherit"
 			/>
-			<span class="absolute text-white transition-opacity opacity-0 peer-checked:opacity-100 text-xs mx-0.5 mt-0.5">
-				<i class="ph-duotone ph-check-fat w-full h-full"></i>
+			<span class="absolute mx-0.5 mt-0.5 text-xs text-white opacity-0 transition-opacity peer-checked:opacity-100">
+				<i class="ph-duotone ph-check-fat h-full w-full"></i>
 			</span>
 		</label>
 		<label class="ml-1 text-sm font-medium text-neutral-100">{ label }</label>
 	</div>
-}
-
-templ RadioInputSwitchToggle(id, label, bindValue, bindModelPath string) {
-	<!-- RadioInputSwitchToggle -->
-	<label class="inline-flex items-center cursor-pointer">
-		<input
-			type="checkbox"
-			name={ id }
-			value={ bindValue }
-			x-model={ bindModelPath }
-			class="sr-only peer"
-		/>
-		<div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:border after:transition-all peer-checked:bg-speedia-500"></div>
-		<span class="ml-2 text-sm text-neutral-50">{ label }</span>
-	</label>
 }
