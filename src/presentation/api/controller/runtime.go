@@ -53,11 +53,11 @@ func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) 
 
 	rawModulesSlice, assertOk := rawPhpModules.([]interface{})
 	if !assertOk {
-		rawModuleUnit, assertOk := rawPhpModules.(map[string]interface{})
+		rawUniqueModule, assertOk := rawPhpModules.(map[string]interface{})
 		if !assertOk {
 			return modules, errors.New("InvalidPhpModulesStructure")
 		}
-		rawModulesSlice = []interface{}{rawModuleUnit}
+		rawModulesSlice = []interface{}{rawUniqueModule}
 	}
 
 	for _, rawModule := range rawModulesSlice {
@@ -92,11 +92,11 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}
 
 	rawSettingsSlice, assertOk := rawPhpSettings.([]interface{})
 	if !assertOk {
-		rawSettingUnit, assertOk := rawPhpSettings.(map[string]interface{})
+		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]interface{})
 		if !assertOk {
 			return settings, errors.New("InvalidPhpSettingsStructure")
 		}
-		rawPhpSettings = []interface{}{rawSettingUnit}
+		rawSettingsSlice = []interface{}{rawUniqueSetting}
 	}
 
 	for _, rawSetting := range rawSettingsSlice {
