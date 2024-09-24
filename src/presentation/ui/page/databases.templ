@@ -42,16 +42,6 @@ script DatabasesIndexLocalState() {
 					},
 				);
 			},
-			installDatabaseService(databaseType) {
-				htmx.ajax(
-					'POST',
-					'/api/v1/services/installables/',
-					{
-						swap: 'none',
-						values: { name: databaseType },
-					},
-				);
-			},
 			get shouldDisableCreateDatabaseSubmitButton() {
 				return this.database.name == ''
 			},
@@ -178,18 +168,6 @@ func getDatabasesTabHeaderItems(
 	return tabHeaderItems
 }
 
-templ DatabaseServiceNotInstalledWarning(selectedDbType valueObject.DatabaseType) {
-	<div class="bg-os-500 rounded-r-lg px-4 pb-4 pt-2">
-		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
-		<span class="mr-3">The<p class="text-speedia-300 mx-1 inline-flex font-bold">{ selectedDbType.String() }</p>service is not installed yet.</span>
-		@componentForm.SubmitButton(
-			"schedule-db-service-installation-button",
-			"Schedule "+selectedDbType.String()+" service installation",
-			"ph-caret-line-down", "installDatabaseService('"+selectedDbType.String()+"')", true,
-		)
-	</div>
-}
-
 templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 	@componentStructural.TabHeader(
 		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
@@ -251,7 +229,7 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 				</table>
 				<div class="bg-os-500 p-0.5"></div>
 			} else {
-				@DatabaseServiceNotInstalledWarning(selectedDbOverview.Type)
+				@componentStructural.ServiceNotInstalledWarningForm(selectedDbOverview.Type.String())
 			}
 		</div>
 	</div>
@@ -259,6 +237,7 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 
 templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 	<form
+		id="create-database-form"
 		hx-post={ "/api/v1/database/" + selectedDbType.String() }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -292,6 +271,7 @@ func getOnlyDatabasesNames(selectedDbDatabases []entity.Database) []string {
 
 templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 	<form
+		id="create-database-user-form"
 		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
