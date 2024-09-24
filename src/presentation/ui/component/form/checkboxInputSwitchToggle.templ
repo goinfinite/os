@@ -12,7 +12,9 @@ templ CheckboxInputSwitchToggle(
 		<input
 			type="checkbox"
 			name={ id }
-			x-model={ bindModelPath }
+			if bindModelPath != "" {
+				x-model={ bindModelPath }
+			}
 			if customValue != "" {
 				value={ customValue }
 			}
