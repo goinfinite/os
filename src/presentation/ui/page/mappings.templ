@@ -286,7 +286,7 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		<div class="my-6 -mt-4 space-y-6">
 			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
 			<template x-if="isCreateMappingFromVhost">
-				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", false)
+				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", "")
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
 				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", vhostsHostnames, false)
