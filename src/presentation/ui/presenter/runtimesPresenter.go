@@ -13,6 +13,7 @@ import (
 	"github.com/speedianet/os/src/presentation/service"
 	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
 	"github.com/speedianet/os/src/presentation/ui/page"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
 type RuntimesPresenter struct {
@@ -41,7 +42,7 @@ func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
 	existentVhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
 	if !assertOk {
 		return vhostsHostnames, errors.New(
-			"UnableToAssertExistentVirtualHostsHostnamesStructure",
+			"InvalidExistentVirtualHostsHostnamesStructure",
 		)
 	}
 
@@ -52,7 +53,44 @@ func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
 	return vhostsHostnames, nil
 }
 
+func (presenter *RuntimesPresenter) getRuntimeOverview(
+	rawRuntimeType string,
+	selectedVhostHostname valueObject.Fqdn,
+) (runtimeOverview presenterDto.RuntimeOverview, err error) {
+	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
+	if err != nil {
+		return runtimeOverview, err
+	}
+
+	isPhpInstalled := true
+	isMappingAlreadyCreated := true
+
+	requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
+	responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
+	if responseOutput.Status != service.Success {
+		isPhpInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
+		isMappingAlreadyCreated = false
+	}
+
+	var phpConfigs *entity.PhpConfigs
+	if isPhpInstalled {
+		typedResponseBody, assertOk := responseOutput.Body.(entity.PhpConfigs)
+		if assertOk {
+			phpConfigs = &typedResponseBody
+		}
+	}
+
+	return presenterDto.NewRuntimeOverview(
+		runtimeType, isPhpInstalled, isMappingAlreadyCreated, phpConfigs,
+	), nil
+}
+
 func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
+	rawRuntimeType := "php"
+	if c.QueryParam("runtimeType") != "" {
+		rawRuntimeType = c.QueryParam("runtimeType")
+	}
+
 	selectedVhostHostname, err := valueObject.NewFqdn(c.QueryParam("vhostHostname"))
 	if err != nil {
 		primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
@@ -62,17 +100,12 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		selectedVhostHostname = primaryVhostHostname
 	}
 
-	isPhpInstalled := false
-
-	requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
-	responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
-	if responseOutput.Status == service.Success {
-		isPhpInstalled = true
-	}
-
-	phpConfigs, assertOk := responseOutput.Body.(entity.PhpConfigs)
-	if !assertOk {
-		isPhpInstalled = false
+	runtimeOverview, err := presenter.getRuntimeOverview(
+		rawRuntimeType, selectedVhostHostname,
+	)
+	if err != nil {
+		slog.Error("GetRuntimeOverviewError", slog.Any("err", err))
+		return nil
 	}
 
 	existentVhostsHostnames, err := presenter.getVhostsHostnames()
@@ -81,8 +114,6 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.RuntimesIndex(
-		isPhpInstalled, phpConfigs, existentVhostsHostnames,
-	)
+	pageContent := page.RuntimesIndex(runtimeOverview, existentVhostsHostnames)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
