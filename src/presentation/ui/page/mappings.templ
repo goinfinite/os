@@ -236,7 +236,10 @@ templ CreateVhostForm() {
 		hx-swap="none"
 	>
 		<div class="my-6">
-			@componentForm.SelectInput("type", "Type", "virtualHost.type", valueObject.AvailableVirtualHostsTypes, false)
+			@componentForm.SelectInput(
+				"type", "Type", "virtualHost.type", "", "",
+				valueObject.AvailableVirtualHostsTypes, true,
+			)
 		</div>
 		<template x-if="virtualHost.type == 'top-level'">
 			<div class="mb-6">
@@ -289,13 +292,19 @@ templ CreateMappingForm(vhostsHostnames []string) {
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", "")
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
-				@componentForm.SelectInput("hostname", "Hostname", "virtualHost.hostname", vhostsHostnames, false)
+				@componentForm.SelectInput(
+					"hostname", "Hostname", "virtualHost.hostname", "", "",
+					vhostsHostnames, true,
+				)
 			</template>
 			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
-				@componentForm.SelectInput("targetValue", "Service Name", "mapping.targetValue", getOnlyServiceNames(), false)
+				@componentForm.SelectInput(
+					"targetValue", "Service Name", "mapping.targetValue", "", "",
+					getOnlyServiceNames(), true,
+				)
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'url'">

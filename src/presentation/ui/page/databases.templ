@@ -278,7 +278,7 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 	>
 		<div class="my-6 space-y-6">
 			@componentForm.SelectInput(
-				"dbName", "Database Name", "database.name",
+				"dbName", "Database Name", "database.name", "", "",
 				getOnlyDatabasesNames(selectedDbOverview.Databases), false,
 			)
 			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
