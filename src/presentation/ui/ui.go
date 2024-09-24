@@ -9,12 +9,13 @@ import (
 func UiInit(
 	e *echo.Echo,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) {
 	basePath := ""
 	baseRoute := e.Group(basePath)
 
 	e.Use(uiMiddleware.Authentication())
 
-	router := NewRouter(baseRoute, persistentDbSvc)
+	router := NewRouter(baseRoute, persistentDbSvc, transientDbSvc)
 	router.RegisterRoutes()
 }

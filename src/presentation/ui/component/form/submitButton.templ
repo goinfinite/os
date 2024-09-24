@@ -1,19 +1,22 @@
 package componentForm
 
 templ SubmitButton(
-	label, icon, onClick string,
+	id, label, icon, onClick string,
 	denseMode bool,
 ) {
 	<!-- SubmitButton -->
 	<button
+		if id != "" {
+			id={ id }
+		}
 		type="submit"
 		if onClick != "" {
 			@click={ onClick }
 		}
 		if denseMode {
-			class="bg-speedia-500 hover:bg-speedia-300 rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
+			class={ "bg-speedia-500 hover:bg-speedia-300 rounded-md border-none text-center font-bold lowercase text-white px-2 py-1 text-sm" }
 		} else {
-			class="bg-speedia-500 hover:bg-speedia-300 w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
+			class={ "bg-speedia-500 hover:bg-speedia-300 rounded-md border-none text-center font-bold lowercase text-white w-full p-3 text-base leading-none" }
 		}
 	>
 		if icon != "" {

@@ -1,0 +1,60 @@
+package componentForm
+
+script FileUploadTextInputFileContentReaderLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('fileUploadTextInputFileContentReader', () => ({
+			uploadedFileName: '',
+			get uploadedFileNameLabel() {
+				if (this.uploadedFileName == '') {
+					return 'No file chosen';
+				}
+
+				return this.uploadedFileName;
+			},
+			init() {
+				this.uploadedFileName = '';
+			},
+			handleFileUpload(event) {
+				const inputFiles = Array.from(event.target.files);
+				if (inputFiles.length == 0) {
+					return;
+				}
+
+				const uploadedFile = inputFiles[0];
+				this.uploadedFileName = uploadedFile.name;
+
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					this.$dispatch('file-content-readed', event.target.result);
+				};
+				reader.readAsText(uploadedFile);
+			}
+		}));
+	});
+}
+
+templ FileUploadTextInputFileContentReader(
+	id, label, bindValuePath, acceptAttr string,
+) {
+	<!-- FileUploadTextInputFileContentReader -->
+	@FileUploadTextInputFileContentReaderLocalState()
+	<div class="relative w-full" x-data="fileUploadTextInputFileContentReader">
+		<input
+			x-ref={ id + "FileInput" }
+			type="file"
+			accept={ acceptAttr }
+			class="hidden"
+			@change="handleFileUpload"
+			@file-content-readed={ bindValuePath + " = $event.detail" }
+		/>
+		<div
+			@click={ "$refs." + id + "fileInput.click()" }
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
+		>
+			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>
+		</div>
+		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
+			{ label }
+		</label>
+	</div>
+}

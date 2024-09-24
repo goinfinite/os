@@ -19,15 +19,18 @@ import (
 type Router struct {
 	baseRoute       *echo.Group
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	transientDbSvc  *internalDbInfra.TransientDatabaseService
 }
 
 func NewRouter(
 	baseRoute *echo.Group,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *Router {
 	return &Router{
 		baseRoute:       baseRoute,
 		persistentDbSvc: persistentDbSvc,
+		transientDbSvc:  transientDbSvc,
 	}
 }
 
@@ -72,6 +75,15 @@ func (router *Router) runtimesRoutes() {
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
 }
 
+func (router *Router) sslsRoutes() {
+	sslsGroup := router.baseRoute.Group("/ssls")
+
+	sslsPresenter := presenter.NewSslsPresenter(
+		router.persistentDbSvc, router.transientDbSvc,
+	)
+	sslsGroup.GET("/", sslsPresenter.Handler)
+}
+
 func (router *Router) devRoutes() {
 	devGroup := router.baseRoute.Group("/dev")
 	devGroup.GET("/hot-reload", func(c echo.Context) error {
@@ -113,6 +125,7 @@ func (router *Router) RegisterRoutes() {
 	router.databasesRoutes()
 	router.mappingsRoutes()
 	router.runtimesRoutes()
+	router.sslsRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 		router.devRoutes()
