@@ -226,7 +226,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		<div class="mb-6 flex justify-end">
 			@componentForm.CheckboxInputSwitchToggle(
 				"change-import-ssl-certificate-form-radio-input", "OR upload files (.crt/.key - pem format)",
-				"shouldImportSslCertificateAsFile", "",
+				"shouldImportSslCertificateAsFile", "", "", false,
 			)
 		</div>
 		@componentForm.DeactivatableSubmitButton(
@@ -251,7 +251,7 @@ templ ViewPemFilesModal() {
 		"closeViewPemFilesModal()", "",
 	) {
 		<div class="space-y-6">
-			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
 			<div class="space-y-1">
 				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate")
 				@componentForm.SubmitButton(
