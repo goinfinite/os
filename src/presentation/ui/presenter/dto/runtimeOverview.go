@@ -7,7 +7,7 @@ import (
 
 type RuntimeOverview struct {
 	VirtualHostHostname     valueObject.Fqdn        `json:"vhostHostname"`
-	RuntimeType             valueObject.RuntimeType `json:"type"`
+	Type                    valueObject.RuntimeType `json:"type"`
 	IsInstalled             bool                    `json:"-"`
 	IsMappingAlreadyCreated bool                    `json:"-"`
 	PhpConfigs              *entity.PhpConfigs      `json:"phpConfigs"`
@@ -21,7 +21,7 @@ func NewRuntimeOverview(
 ) RuntimeOverview {
 	return RuntimeOverview{
 		VirtualHostHostname:     virtualHostHostname,
-		RuntimeType:             runtimeType,
+		Type:                    runtimeType,
 		IsInstalled:             isInstalled,
 		IsMappingAlreadyCreated: isMappingAlreadyCreated,
 		PhpConfigs:              phpConfigs,
