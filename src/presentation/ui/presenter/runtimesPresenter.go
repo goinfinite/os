@@ -81,7 +81,8 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	}
 
 	return presenterDto.NewRuntimeOverview(
-		runtimeType, isPhpInstalled, isMappingAlreadyCreated, phpConfigs,
+		selectedVhostHostname, runtimeType, isPhpInstalled, isMappingAlreadyCreated,
+		phpConfigs,
 	), nil
 }
 
