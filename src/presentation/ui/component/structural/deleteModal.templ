@@ -33,7 +33,7 @@ templ DeleteModal(
 					></strong>
 				}
 				if elIdStatePath != "" {
-					<strong x-text={ "'#'" + elIdStatePath }></strong>
+					<strong>#<span x-text={ elIdStatePath }></span></strong>
 				}
 				?
 			</h3>
