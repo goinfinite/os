@@ -26,11 +26,9 @@ func NewPhpSettingValue(value interface{}) (settingValue PhpSettingValue, err er
 	}
 
 	switch strings.ToLower(stringValue) {
-	case "on":
-	case "true":
+	case "on", "true":
 		stringValue = "On"
-	case "off":
-	case "false":
+	case "off", "false":
 		stringValue = "Off"
 	}
 
