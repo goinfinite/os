@@ -1,59 +1,28 @@
 package componentStructural
 
+templ DeleteWarningContent(elNameStatePath, elIdStatePath string) {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Are you sure you want to delete
+		<strong
+			x-show={ elNameStatePath + " !== ''" }
+			x-text={ elNameStatePath }
+			class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
+		></strong>
+		<span x-show={ elIdStatePath + " !== ''" }>
+			#<strong x-text={ elIdStatePath }></strong>
+		</span>?
+	</h3>
+	<p>This process cannot be undone. This will permanently delete the element.</p>
+}
+
 templ DeleteModal(
 	isOpenState, closeFunction, deleteFunction, elNameStatePath, elIdStatePath string,
 ) {
 	<!-- DeleteModal -->
-	<div
-		x-show={ isOpenState }
-		x-transition:enter="transition ease-out duration-500"
-		x-transition:enter-start="opacity-0"
-		x-transition:enter-end="opacity-100"
-		x-transition:leave="transition ease-in duration-150"
-		x-transition:leave-start="opacity-100"
-		x-transition:leave-end="opacity-0"
-		class="fixed left-0 top-0 z-50 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
-	>
-		<div class="relative mx-auto mt-20 max-w-2xl rounded-md bg-red-950 p-8 drop-shadow-xl xl:mt-24">
-			<button
-				@click={ closeFunction }
-				class="opacity-85 float-right bg-transparent hover:opacity-100 active:opacity-100"
-			>
-				<i class="ph-bold ph-x-square align-middle text-3xl"></i>
-			</button>
-			<div class="h-18 w-18 mx-auto my-4 flex items-center justify-center rounded-full bg-neutral-300 text-center text-5xl">
-				<i class="ph-duotone ph-warning text-red-950"></i>
-			</div>
-			<h3 class="text-pretty my-3 px-2 text-center text-xl font-bold leading-relaxed">
-				Are you sure you want to delete
-				if elNameStatePath != "" {
-					<strong
-						x-text={ elNameStatePath }
-						class="rounded-md border-2 border-dashed border-red-900 px-2 py-1"
-					></strong>
-				}
-				if elIdStatePath != "" {
-					<strong x-text={ "'#'" + elIdStatePath }></strong>
-				}
-				?
-			</h3>
-			<p class="mb-6 text-center">This process cannot be undone. This will permanently delete the element.</p>
-			<div class="flex flex-row space-x-4">
-				<button
-					@click={ closeFunction }
-					class="w-full rounded-md border-none bg-neutral-300 p-3 text-center text-base lowercase leading-none text-neutral-950 hover:bg-neutral-400"
-				>
-					No, Keep it.
-				</button>
-				<button
-					id="delete-element"
-					type="submit"
-					@click={ deleteFunction }
-					class="w-full rounded-md border-none bg-red-800 p-3 text-center text-base font-bold lowercase leading-none text-white hover:bg-red-900"
-				>
-					<i class={ "ph-duotone ph-trash mr-1 align-middle text-xl" }></i>Yes, Delete!
-				</button>
-			</div>
-		</div>
-	</div>
+	@WarningModal(
+		isOpenState, closeFunction, "No, Keep it.", deleteFunction,
+		"delete-element", "ph-trash", "Yes, Delete!",
+	) {
+		@DeleteWarningContent(elNameStatePath, elIdStatePath)
+	}
 }

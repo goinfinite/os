@@ -1,0 +1,319 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
+script SslsIndexLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('ssls', () => ({
+			// Primary states
+			sslPair: {},
+			resetPrimaryStates() {
+				this.sslPair = {
+					id: '',
+					virtualHostsHostnames: [],
+					certificate: '',
+					key: '',
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Auxiliary states
+			get shouldDisableImportSslCertificateSubmitButton() {
+				return this.sslPair.virtualHostsHostnames.length == 0 || this.sslPair.certificate == '' || this.sslPair.key == ''
+			},
+			shouldImportSslCertificateAsFile: false,
+			get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
+				return this.sslPair.id == '' || this.sslPair.virtualHostsHostnames.length == 0
+			},
+			// JavaScript doesn't provide any API capable of directly downloading a blob
+			// file, so it's necessary to create an invisible anchor element and artificially
+			// trigger a click on it to emulate this process.
+			downloadPemFile(isKeyFileContent) {
+				let pemFileContent = this.sslPair.certificate;
+				let fileExtension = 'crt';
+				if (isKeyFileContent) {
+					pemFileContent = this.sslPair.key
+					fileExtension = 'key';
+				}
+
+				const blobFile = new Blob([pemFileContent], { type: 'text/plain' });
+				const blobFileUrlObject = window.URL.createObjectURL(blobFile);
+				const downloadPemFileElement = document.createElement('a');
+
+				downloadPemFileElement.href = blobFileUrlObject;
+				downloadPemFileElement.download = `${this.sslPair.id}.${fileExtension}`;
+				document.body.appendChild(downloadPemFileElement);
+
+				downloadPemFileElement.click();
+				window.URL.revokeObjectURL(blobFileUrlObject);
+				document.body.removeChild(downloadPemFileElement);
+			},
+
+			// Modal states
+			isImportSslCertificateModalOpen: false,
+			openImportSslCertificateModal() {
+				this.resetPrimaryStates();
+
+				this.isImportSslCertificateModalOpen = true;
+			},
+			closeImportSslCertificateModal() {
+				this.sslPair.certificate = btoa(this.sslPair.certificate);
+				this.sslPair.key = btoa(this.sslPair.key);
+
+				this.isImportSslCertificateModalOpen = false;
+			},
+			isViewPemFilesModalOpen: false,
+			openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.sslPair.certificate = certificateContent;
+				this.sslPair.key = keyContent;
+				this.isViewPemFilesModalOpen = true;
+			},
+			closeViewPemFilesModal() {
+				this.isViewPemFilesModalOpen = false;
+			},
+			isRemoveVirtualHostsHostnamesModalOpen: false,
+			openRemoveVirtualHostsHostnamesModal(sslPairId) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.isRemoveVirtualHostsHostnamesModalOpen = true;
+			},
+			closeRemoveVirtualHostsHostnamesModal() {
+				this.isRemoveVirtualHostsHostnamesModalOpen = false;
+			},
+			isSwapToSelfSignedModalOpen: false,
+			openSwapToSelfSignedModal(sslPairId) {
+				this.resetPrimaryStates();
+
+				this.sslPair.id = sslPairId;
+				this.isSwapToSelfSignedModalOpen = true;
+			},
+			closeSwapToSelfSignedModal() {
+				this.isSwapToSelfSignedModalOpen = false;
+			},
+			swapToSelfSigned() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/ssl/' + this.sslPair.id + '/',
+					{swap:'none'},
+				);
+				this.closeSwapToSelfSignedModal();
+			},
+		}))
+	})
+}
+
+templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
+	@SslsIndexLocalState()
+	<div x-data="ssls">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"SSL Certificate",
+					"Manage your SSL certificates with ease, adding new ones, replacing existing ones, viewing information about current certificates, and substituting them with self-signed certificates to secure your virtual hosts.",
+					"ph-lock",
+				)
+			</div>
+			<div class="my-4 flex space-x-5">
+				@componentForm.SubmitButton(
+					"import-ssl-certificate-button", "Import SSL certificate",
+					"ph-plus-square", "openImportSslCertificateModal()", false,
+				)
+			</div>
+		</div>
+		<div
+			id="ssls-page-content"
+			hx-get="/ssls/"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:1000ms"
+			hx-select="#ssls-page-content"
+			hx-target="#ssls-page-content"
+			hx-indicator="#loading-overlay"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
+			<div id="ssls-table">
+				@SslsTable(sslPairs)
+			</div>
+			@ImportSslCertificateModal(vhostsHostnames)
+			@ViewPemFilesModal()
+			@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
+			@SwapToSelfSignedModal()
+		</div>
+	</div>
+}
+
+templ SslsTable(sslPairs []entity.SslPair) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-1/7 px-5 py-3 text-left">Virtual Hosts Hostnames</th>
+				<th scope="col" class="w-1/7 px-5 py-3 text-left">Issued At</th>
+				<th scope="col" class="w-1/7 px-5 py-3 text-left">Expires At</th>
+				<th scope="col" class="w-1/7 px-5 py-3 text-left">Certificate Authority</th>
+				<th scope="col" class="w-1/7 px-5 py-3"></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, sslPair := range sslPairs {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-1/4 space-y-2 px-5 py-3 text-left">
+						for _, vhostHostname := range sslPair.VirtualHostsHostnames {
+							@componentStructural.Tag("ph-network", "", vhostHostname.String(), "speedia-500")
+						}
+					</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.IssuedAt.GetDateOnly() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.ExpiresAt.GetDateOnly() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-right">
+						<div class="inline-flex space-x-2">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-file-magnifying-glass", "blue-900", "blue-700",
+								"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
+								"view PEM files", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-network-slash", "red-800", "red-600",
+								"openRemoveVirtualHostsHostnamesModal('"+sslPair.Id.String()+"')",
+								"remove virtual hosts hostnames", "red-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-swap", "red-800", "red-600",
+								"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
+								"swap to self-signed", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+templ ImportSslCertificateForm(vhostsHostnames []string) {
+	<form
+		id="import-ssl-certificate-form"
+		hx-post="/api/v1/ssl/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="my-6">
+			@componentForm.MultiSelectInput(
+				"virtualHosts", "Virtual Hosts Hostnames",
+				"sslPair.virtualHostsHostnames", vhostsHostnames,
+			)
+		</div>
+		<div class="mb-4 space-y-6" x-show="!shouldImportSslCertificateAsFile">
+			@componentForm.TextArea("certificate", "Certificate", "sslPair.certificate", false)
+			@componentForm.TextArea("key", "Private Key", "sslPair.key", false)
+		</div>
+		<div class="mb-4 space-y-6" x-show="shouldImportSslCertificateAsFile">
+			@componentForm.FileUploadTextInputFileContentReader(
+				"certificate", "Certificate", "sslPair.certificate", ".crt",
+			)
+			@componentForm.FileUploadTextInputFileContentReader(
+				"key", "Private Key", "sslPair.key", ".key",
+			)
+		</div>
+		<div class="mb-6 flex justify-end">
+			@componentForm.CheckboxInputSwitchToggle(
+				"change-import-ssl-certificate-form-radio-input", "OR upload files (.crt/.key - pem format)",
+				"shouldImportSslCertificateAsFile", "",
+			)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Import SSL certificate", "ph-check-fat", "closeImportSslCertificateModal()",
+			"shouldDisableImportSslCertificateSubmitButton", false,
+		)
+	</form>
+}
+
+templ ImportSslCertificateModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Import SSL certificate", "isImportSslCertificateModalOpen",
+		"closeImportSslCertificateModal()", "",
+	) {
+		@ImportSslCertificateForm(vhostsHostnames)
+	}
+}
+
+templ ViewPemFilesModal() {
+	@componentStructural.Modal(
+		"PEM files", "isViewPemFilesModalOpen",
+		"closeViewPemFilesModal()", "",
+	) {
+		<div class="space-y-6">
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate")
+				@componentForm.SubmitButton(
+					"download-certificate-pem-file-button", "Download certificate",
+					"ph-download-simple", "downloadPemFile(false)", false,
+				)
+			</div>
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly("key", "Private Key", "sslPair.key")
+				@componentForm.SubmitButton(
+					"download-key-pem-file-button", "Download private key",
+					"ph-download-simple", "downloadPemFile(true)", false,
+				)
+			</div>
+		</div>
+	}
+}
+
+templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
+	<form
+		id="remove-virtual-hosts-hostnames-form"
+		hx-put="/api/v1/ssl/vhost/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-6">
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			@componentForm.MultiSelectInput(
+				"virtualHosts", "Virtual Hosts Hostnames",
+				"sslPair.virtualHostsHostnames", vhostsHostnames,
+			)
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Remove virtual hosts hostnames", "ph-network-slash",
+			"closeRemoveVirtualHostsHostnamesModal()",
+			"shouldDisableRemoveVirtualHostsHostnamesSubmitButton", false,
+		)
+	</form>
+}
+
+templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Remove virtual hosts hostnames", "isRemoveVirtualHostsHostnamesModalOpen",
+		"closeRemoveVirtualHostsHostnamesModal()", "",
+	) {
+		@RemoveVirtualHostsHostnamesForm(vhostsHostnames)
+	}
+}
+
+templ SwapToSelfSignedWarningContent() {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Are you sure you want to swap SSL certificate?
+	</h3>
+	<p>This process cannot be undone. Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
+}
+
+templ SwapToSelfSignedModal() {
+	@componentStructural.WarningModal(
+		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
+		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
+		"ph-swap", "Yes, swap ssl certificate",
+	) {
+		@SwapToSelfSignedWarningContent()
+	}
+}
