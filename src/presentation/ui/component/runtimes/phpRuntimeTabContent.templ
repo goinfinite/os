@@ -1,0 +1,264 @@
+package componentRuntimes
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
+	"strconv"
+)
+
+script PhpRuntimeTabContentLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('php', () => ({
+			// Primary states
+			selectedVersion: '',
+
+			// Auxiliary states
+			selectedConfigType: 'modules',
+			setSelectedConfigType(configType) {
+				this.selectedConfigType = configType;
+			},
+			updateModuleStatus(vhostHostname, version, moduleName, moduleStatus) {
+				htmx.ajax(
+					'PUT',
+					'/api/v1/runtime/php/' + vhostHostname + '/',
+					{
+						swap: 'none',
+						values: {
+							version: version,
+							'modules.name': moduleName,
+							'modules.status': moduleStatus
+						},
+					},
+				);
+			},
+			updateSettingValue(vhostHostname, version, settingName, settingValue) {
+				htmx.ajax(
+					'PUT',
+					'/api/v1/runtime/php/' + vhostHostname + '/',
+					{
+						swap: 'none',
+						values: {
+							version: version,
+							'settings.name': settingName,
+							'settings.value': settingValue
+						},
+					},
+				);
+			},
+
+			// Modal states
+			isUpdateVersionModalOpen: false,
+			openUpdateVersionModal(version) {
+				this.selectedVersion = version;
+				this.isUpdateVersionModalOpen = true;
+			},
+			closeUpdateVersionModal() {
+				this.selectedVersion = '';
+				this.isUpdateVersionModalOpen = false;
+			},
+			updateVersion(vhostHostname) {
+				htmx.ajax(
+					'PUT',
+					'/api/v1/runtime/php/' + vhostHostname + '/',
+					{
+						swap: 'none',
+						values: { version: this.selectedVersion },
+					},
+				);
+				this.closeUpdateVersionModal();
+			},
+		}));
+	});
+}
+
+templ PhpRuntimeTabContent(
+	runtimeOverview presenterDto.RuntimeOverview,
+	existentVhostsHostnames []string,
+) {
+	<!-- PhpTabContent -->
+	@PhpRuntimeTabContentLocalState()
+	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
+		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
+			if runtimeOverview.IsInstalled {
+				<div class="p-4">
+					<div class="float-left w-1/5">
+						@componentForm.SelectInput(
+							"virtualHost", "Virtual Host Hostname",
+							"", runtimeOverview.VirtualHostHostname.String(),
+							"changeSelectedVhostHostname($event.target.value)",
+							existentVhostsHostnames, false,
+						)
+					</div>
+					if runtimeOverview.IsMappingAlreadyCreated {
+						<div class="w-1/7 flex pl-5">
+							@componentForm.SelectInput(
+								"version", "Version", "",
+								runtimeOverview.PhpConfigs.Version.Value.String(),
+								"openUpdateVersionModal($event.target.value)",
+								transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
+								false,
+							)
+						</div>
+						<div class="mt-6 flex">
+							@componentStructural.SidebarMenu(
+								[]componentStructural.SidebarMenuItem{
+									{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
+									{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
+								}, "setSelectedConfigType",
+							)
+							<div class="px-10 py-4">
+								@PhpModulesCheckboxInputsSwitchToggles(
+									runtimeOverview.VirtualHostHostname,
+									runtimeOverview.PhpConfigs.Version,
+									runtimeOverview.PhpConfigs.Modules,
+								)
+								@PhpSettingsSelectInputs(
+									runtimeOverview.VirtualHostHostname,
+									runtimeOverview.PhpConfigs.Version,
+									runtimeOverview.PhpConfigs.Settings,
+								)
+							</div>
+						</div>
+					} else {
+						<div class="mb-6 flex w-full"></div>
+						@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
+					}
+				</div>
+			} else {
+				@componentStructural.ServiceNotInstalledWarningForm("php")
+			}
+		</div>
+		@UpdateVersionModal(runtimeOverview.VirtualHostHostname)
+	</div>
+}
+
+func transformPhpVersionOptionsIntoStringSlice(
+	versionOptions []valueObject.PhpVersion,
+) []string {
+	versionOptionsStrSlice := []string{}
+	for _, versionOption := range versionOptions {
+		versionOptionsStrSlice = append(versionOptionsStrSlice, versionOption.String())
+	}
+
+	return versionOptionsStrSlice
+}
+
+templ PhpModulesCheckboxInputsSwitchToggles(
+	selectedVhostHostname valueObject.Fqdn,
+	selectedVersion entity.PhpVersion,
+	modules []entity.PhpModule,
+) {
+	<div
+		x-show="selectedConfigType == 'modules'"
+		class="grid grid-cols-9 gap-10"
+	>
+		for _, module := range modules {
+			@componentForm.CheckboxInputSwitchToggle(
+				module.Name.String(), module.Name.String(), "", "",
+				"updateModuleStatus('"+selectedVhostHostname.String()+"', '"+selectedVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
+				module.Status,
+			)
+		}
+	</div>
+}
+
+func transformPhpSettingsOptionsIntoStringSlice(
+	options []valueObject.PhpSettingOption,
+) []string {
+	optionsStrSlice := []string{}
+	for _, phpOption := range options {
+		optionsStrSlice = append(optionsStrSlice, phpOption.String())
+	}
+
+	return optionsStrSlice
+}
+
+templ PhpSettingsSelectInputs(
+	selectedVhostHostname valueObject.Fqdn,
+	selectedVersion entity.PhpVersion,
+	settings []entity.PhpSetting,
+) {
+	<div
+		x-show="selectedConfigType == 'settings'"
+		class="grid grid-cols-4 gap-7"
+	>
+		for _, setting := range settings {
+			if len(setting.Options) == 0 {
+				@componentForm.InputFieldReadOnly(
+					setting.Value.GetType(), setting.Name.String(),
+					setting.Name.String(), "", setting.Value.String(),
+				)
+			} else {
+				@componentForm.SelectInput(
+					setting.Name.String(), setting.Name.String(), "", setting.Value.String(),
+					"updateSettingValue('"+selectedVhostHostname.String()+"', '"+selectedVersion.Value.String()+"', '"+setting.Name.String()+"', $event.target.value)",
+					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
+					false,
+				)
+			}
+		}
+	</div>
+}
+
+templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
+	<form
+		id="create-php-mapping-form"
+		hx-post="/api/v1/vhosts/mapping/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<h1 class="flex text-3xl">The Selected Virtual Host Doesn't Map to PHP Yet</h1>
+		<p class="mt-2 text-justify">
+			In order to control PHP settings and modules, the selected virtual host needs to proxy traffic to the PHP Web Server.
+			<br/>
+			Just click on "Create Mapping" and the system will do this for you. If you want to map a specific sub-directory of your virtual host to the PHP Web Server, go to the Advanced Settings and change the Sub-directory from "/" (root) to the desired location.
+		</p>
+		<section class="w-full rounded-md">
+			<details class="bg-os-800 group mt-5 rounded-md p-4">
+				<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
+					<i class="ph-duotone ph-gear mr-2 text-2xl"></i>
+					<span class="font-bold">Advanced Settings</span>
+					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
+				</summary>
+				<div class="flex space-x-10 mt-3 py-2 items-center">
+					<div class="w-1/3">
+						@componentForm.InputField("text", "path", "Subdirectory", "/", false)
+					</div>
+					<p>Subdirectories are used to access different applications within the same domain. For example, if you have a website at <strong>{ selectedVhostHostname.String() }</strong> and want to create a blog, you can create a subdirectory called blog and access it at <strong>{ selectedVhostHostname.String() }</strong>/blog.</p>
+				</div>
+			</details>
+		</section>
+		<div class="mt-5 flex w-full justify-end">
+			<input type="hidden" name="hostname" value={ selectedVhostHostname.String() }/>
+			<input type="hidden" name="targetType" value="service"/>
+			<input type="hidden" name="targetValue" value="php"/>
+			<div class="w-1/5">
+				@componentForm.SubmitButton(
+					"create-php-mapping-button", "create mapping", "ph-plus-square",
+					"", false,
+				)
+			</div>
+		</div>
+	</form>
+}
+
+templ UpdateVersionWarningContent() {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Do you really want to change the PHP version?
+	</h3>
+	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="selectedVersion"></span>.</strong>
+	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
+}
+
+templ UpdateVersionModal(selectVhostHostname valueObject.Fqdn) {
+	@componentStructural.WarningModal(
+		"isUpdateVersionModalOpen", "closeUpdateVersionModal()",
+		"Cancel", "updateVersion('"+selectVhostHostname.String()+"')",
+		"update-version-button", "ph-swap", "Yes, change version",
+	) {
+		@UpdateVersionWarningContent()
+	}
+}
