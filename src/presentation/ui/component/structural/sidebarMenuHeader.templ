@@ -1,14 +1,14 @@
 package componentStructural
 
-type SidebarMenuItem struct {
+type SidebarMenuHeaderItem struct {
 	Label          string
 	Icon           string
 	ComponentValue string
 }
 
-script SidebarMenuLocalState(firstMenuItem string) {
+script SidebarMenuHeaderLocalState(firstMenuItem string) {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('sidebarMenu', () => ({
+		Alpine.data('sidebarMenuHeader', () => ({
 			selectedMenuItem: '',
 			init() {
 				this.selectedMenuItem = firstMenuItem;
@@ -28,16 +28,16 @@ script SidebarMenuLocalState(firstMenuItem string) {
 	});
 }
 
-templ SidebarMenu(
-	sidebarMenuItems []SidebarMenuItem,
+templ SidebarMenuHeader(
+	sidebarMenuHeaderItems []SidebarMenuHeaderItem,
 	onClick string,
 ) {
-	<!-- SidebarMenu -->
-	@SidebarMenuLocalState(sidebarMenuItems[0].ComponentValue)
-	<sidebar class="w-25 flex h-full" x-data="sidebarMenu">
+	<!-- SidebarMenuHeader -->
+	@SidebarMenuHeaderLocalState(sidebarMenuHeaderItems[0].ComponentValue)
+	<sidebar class="w-25 flex h-full" x-data="sidebarMenuHeader">
 		<div class="w-full">
 			<ul>
-				for _, item := range sidebarMenuItems {
+				for _, item := range sidebarMenuHeaderItems {
 					<li>
 						<button
 							x-bind:class={ "getButtonClassesByItemValue('" + item.ComponentValue + "')" }
