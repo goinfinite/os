@@ -62,27 +62,31 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		return runtimeOverview, err
 	}
 
-	isPhpInstalled := true
-	isServiceMappingAlreadyCreated := true
+	isRuntimeInstalled := false
+	isRuntimeMappingAlreadyCreated := false
 
-	requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
-	responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
-	if responseOutput.Status != service.Success {
-		isPhpInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
-		isServiceMappingAlreadyCreated = false
-	}
+	var phpConfigsPtr *entity.PhpConfigs
+	if runtimeType.String() == "php-webserver " {
+		isRuntimeMappingAlreadyCreated = true
 
-	var phpConfigs *entity.PhpConfigs
-	if isPhpInstalled {
-		typedResponseBody, assertOk := responseOutput.Body.(entity.PhpConfigs)
-		if assertOk {
-			phpConfigs = &typedResponseBody
+		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
+		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
+		if responseOutput.Status != service.Success {
+			isRuntimeInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
+			isRuntimeMappingAlreadyCreated = false
+		}
+
+		if isRuntimeInstalled {
+			phpConfigs, assertOk := responseOutput.Body.(entity.PhpConfigs)
+			if assertOk {
+				phpConfigsPtr = &phpConfigs
+			}
 		}
 	}
 
 	return presenterDto.NewRuntimeOverview(
-		selectedVhostHostname, runtimeType, isPhpInstalled, isServiceMappingAlreadyCreated,
-		phpConfigs,
+		selectedVhostHostname, runtimeType, isRuntimeInstalled,
+		isRuntimeMappingAlreadyCreated, phpConfigsPtr,
 	), nil
 }
 
