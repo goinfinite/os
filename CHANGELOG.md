@@ -1,10 +1,15 @@
 # Changelog
 
 ```log
-0.0.7 - 2024/XX/XX
-feat: opensearch and java support
-feat: add OpenMage & Adobe Commerce to marketplace
-fix: combine install url with mappings path properly
+0.0.9 - 2024/XX/XX
+refactor(front): accounts page with HTMX+Alpine.js
+refactor(front): runtime page with HTMX+Alpine.js
+refactor(front): ssls page with HTMX+Alpine.js
+feat: chown default dirs after service install/add
+
+0.0.7 - 2024/09/23
+refactor(front): databases page with HTMX+Alpine.js
+refactor(front): mappings page with HTMX+Alpine.js
 
 0.0.6 - 2024/08/22
 feat: activity records
