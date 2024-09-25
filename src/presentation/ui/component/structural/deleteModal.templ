@@ -1,6 +1,6 @@
 package componentStructural
 
-templ DeleteWarningContent(elNameStatePath, elIdStatePath string) {
+templ DeleteCriticalWarningContent(elNameStatePath, elIdStatePath string) {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Are you sure you want to delete
 		if elNameStatePath != "" {
@@ -23,10 +23,10 @@ templ DeleteModal(
 	isOpenState, closeFunction, deleteFunction, elNameStatePath, elIdStatePath string,
 ) {
 	<!-- DeleteModal -->
-	@WarningModal(
+	@CriticalWarningModal(
 		isOpenState, closeFunction, "No, Keep it.", deleteFunction,
 		"delete-element", "ph-trash", "Yes, Delete!",
 	) {
-		@DeleteWarningContent(elNameStatePath, elIdStatePath)
+		@DeleteCriticalWarningContent(elNameStatePath, elIdStatePath)
 	}
 }
