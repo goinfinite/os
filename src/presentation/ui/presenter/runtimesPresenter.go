@@ -63,13 +63,13 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	}
 
 	isPhpInstalled := true
-	isMappingAlreadyCreated := true
+	isServiceMappingAlreadyCreated := true
 
 	requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
 	responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
 	if responseOutput.Status != service.Success {
 		isPhpInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
-		isMappingAlreadyCreated = false
+		isServiceMappingAlreadyCreated = false
 	}
 
 	var phpConfigs *entity.PhpConfigs
@@ -81,7 +81,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	}
 
 	return presenterDto.NewRuntimeOverview(
-		selectedVhostHostname, runtimeType, isPhpInstalled, isMappingAlreadyCreated,
+		selectedVhostHostname, runtimeType, isPhpInstalled, isServiceMappingAlreadyCreated,
 		phpConfigs,
 	), nil
 }

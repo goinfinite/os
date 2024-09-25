@@ -92,7 +92,7 @@ templ PhpRuntimeTabContent(
 							existentVhostsHostnames, false,
 						)
 					</div>
-					if runtimeOverview.IsMappingAlreadyCreated {
+					if runtimeOverview.IsServiceMappingAlreadyCreated {
 						<div class="w-1/7 flex pl-5">
 							@componentForm.SelectInput(
 								"version", "Version", "",
