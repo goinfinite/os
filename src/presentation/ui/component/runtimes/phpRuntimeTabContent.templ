@@ -225,7 +225,7 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 				</summary>
 				<div class="flex space-x-10 mt-3 py-2 items-center">
 					<div class="w-1/3">
-						@componentForm.InputField("text", "path", "Subdirectory", "/", false)
+						@componentForm.InputField("text", "path", "Subdirectory", "", false)
 					</div>
 					<p>Subdirectories are used to access different applications within the same domain. For example, if you have a website at <strong>{ selectedVhostHostname.String() }</strong> and want to create a blog, you can create a subdirectory called blog and access it at <strong>{ selectedVhostHostname.String() }</strong>/blog.</p>
 				</div>
