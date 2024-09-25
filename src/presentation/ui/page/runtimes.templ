@@ -7,13 +7,13 @@ import (
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
-script RuntimesIndexLocalState(vhostHostname, runtimeType string) {
+script RuntimesIndexLocalState(defaultVhostHostname, defaultRuntimeType string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('runtimes', () => ({
-			reloadPage(vhostHostname, runtimeType) {
+			reloadPage(selectedVhostHostname, selectedRuntimeType) {
 				htmx.ajax(
 					'GET',
-					'/runtimes/?vhostHostname=' + vhostHostname + '&runtimeType=' + runtimeType,
+					'/runtimes/?vhostHostname=' + selectedVhostHostname + '&runtimeType=' + selectedRuntimeType,
 					{
 						select: '#runtimes-page-content',
 						target: '#runtimes-page-content',
@@ -23,10 +23,10 @@ script RuntimesIndexLocalState(vhostHostname, runtimeType string) {
 				);
 			},
 			changeSelectedVhostHostname(selectedVhostHostname) {
-				this.reloadPage(selectedVhostHostname, runtimeType);
+				this.reloadPage(selectedVhostHostname, defaultRuntimeType);
 			},
 			changeSelectedRuntimeType(selectedRuntimeType) {
-				this.reloadPage(vhostHostname, selectedRuntimeType);
+				this.reloadPage(defaultVhostHostname, selectedRuntimeType);
 			},
 		}));
 	});
