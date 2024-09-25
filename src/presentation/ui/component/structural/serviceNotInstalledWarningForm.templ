@@ -7,11 +7,11 @@ templ ServiceNotInstalledWarningForm(serviceName string) {
 		hx-post="/api/v1/services/installables/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		class="bg-os-500 rounded-r-lg p-4"
+		class="p-4"
 	>
 		<input type="hidden" name="name" value={ serviceName }/>
 		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
-		<span class="mr-3">The<p class="text-speedia-300 mx-1 inline-flex font-bold">{ serviceName }</p>service is not installed yet.</span>
+		<span class="mr-3">The <span class="text-speedia-300 font-bold">{ serviceName }</span> service is not installed yet.</span>
 		@componentForm.SubmitButton(
 			"schedule-service-installation",
 			"Schedule "+serviceName+" service installation", "ph-caret-line-down",
