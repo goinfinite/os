@@ -101,6 +101,10 @@ podman run --name sos --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it so
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
 
+### Web UIs
+
+This project has two web UIs, the previous Vue.js frontend and the new HTMX frontend. The Vue.js frontend is deprecated and will be removed in the future. It's available at `/_/` and the HTMX frontend is available at `/`.
+
 ### VSCode Extensions
 
 The following extensions are highly encouraged to be used during development:
