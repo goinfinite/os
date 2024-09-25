@@ -1,54 +1,41 @@
 package page
 
 import (
-	"github.com/speedianet/os/src/domain/entity"
 	"github.com/speedianet/os/src/domain/valueObject"
-	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+	componentRuntimes "github.com/speedianet/os/src/presentation/ui/component/runtimes"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
-script RuntimesIndexLocalState() {
+script RuntimesIndexLocalState(vhostHostname, runtimeType string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('runtimes', () => ({
-			// Primary states
-			phpConfigs: {},
-			resetPrimaryStates() {
-				this.phpConfigs = {
-					'hostname': '',
-					'version': ''
-				}
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-
-			// Auxiliary states
-			selectedConfigType: 'modules',
-			setSelectedConfigType(configType) {
-				this.selectedConfigType = configType;
-			},
-			installPhpService() {
+			reloadPage(vhostHostname, runtimeType) {
 				htmx.ajax(
-					'POST',
-					'/api/v1/services/installables/',
+					'GET',
+					'/runtimes/?vhostHostname=' + vhostHostname + '&runtimeType=' + runtimeType,
 					{
-						swap: 'none',
-						values: { name: 'php' },
+						select: '#runtimes-page-content',
+						target: '#runtimes-page-content',
+						indicator: '#loading-overlay',
+						swap: 'outerHTML transition:true'
 					},
 				);
-			}
-
-			// Modal states
-		}))
-	})
+			},
+			changeSelectedVhostHostname(selectedVhostHostname) {
+				this.reloadPage(selectedVhostHostname, runtimeType);
+			},
+			changeSelectedRuntimeType(selectedRuntimeType) {
+				this.reloadPage(vhostHostname, selectedRuntimeType);
+			},
+		}));
+	});
 }
 
 templ RuntimesIndex(
-	selectedVhostHostname valueObject.Fqdn,
-	isPhpInstalled bool,
-	phpConfigs entity.PhpConfigs,
+	runtimeOverview presenterDto.RuntimeOverview,
+	existentVhostsHostnames []string,
 ) {
-	@RuntimesIndexLocalState()
 	<div class="flex flex-col" x-data="runtimes">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
@@ -59,74 +46,53 @@ templ RuntimesIndex(
 		</div>
 		<div
 			id="runtimes-page-content"
-			hx-get={ "/runtimes/?vhostHostname=" + selectedVhostHostname.String() }
+			hx-get={ "/runtimes/?vhostHostname=" + runtimeOverview.VirtualHostHostname.String() + "&runtimeType=" + runtimeOverview.Type.String() }
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 			hx-select="#runtimes-page-content"
 			hx-target="#runtimes-page-content"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
+			@RuntimesIndexLocalState(
+				runtimeOverview.VirtualHostHostname.String(),
+				runtimeOverview.Type.String(),
+			)
 			<div id="runtimes-tabs">
-				@RuntimesTabs(selectedVhostHostname, isPhpInstalled, phpConfigs)
+				@RuntimesTabs(runtimeOverview, existentVhostsHostnames)
 			</div>
 		</div>
 	</div>
 }
 
-templ PhpServiceNotInstalledWarning() {
-	<div class="bg-os-500 rounded-r-lg px-4 pb-4 pt-2">
-		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
-		<span class="mr-3">The<p class="text-speedia-300 mx-1 inline-flex font-bold">php</p>service is not installed yet.</span>
-		@componentForm.SubmitButton(
-			"Schedule php service installation", "ph-caret-line-down",
-			"installPhpService()", true,
-		)
-	</div>
-}
+func getRuntimesTabHeaderItems(
+	selectedRuntimeType valueObject.RuntimeType,
+) []componentStructural.TabHeaderItem {
+	tabHeaderItems := []componentStructural.TabHeaderItem{
+		{Label: "PHP", ComponentValue: "php-webserver"},
+	}
 
-templ RuntimeModulesForm(phpModules []entity.PhpModule) {
-	<template x-if="selectedConfigType == 'modules'">
-		<div>
-			<p>Modules content here!</p>
-		</div>
-	</template>
-}
+	selectedRuntimeTypeStr := selectedRuntimeType.String()
+	for itemIndex := range tabHeaderItems {
+		if selectedRuntimeTypeStr != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
+			continue
+		}
 
-templ RuntimeSettingsForm(phpSettings []entity.PhpSetting) {
-	<template x-if="selectedConfigType == 'settings'">
-		<div>
-			<p>Settings content here!</p>
-		</div>
-	</template>
+		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
+	}
+
+	return tabHeaderItems
 }
 
 templ RuntimesTabs(
-	selectedVhostHostname valueObject.Fqdn,
-	isPhpInstalled bool,
-	phpConfigs entity.PhpConfigs,
+	runtimeOverview presenterDto.RuntimeOverview,
+	existentVhostsHostnames []string,
 ) {
 	@componentStructural.TabHeader(
-		[]componentStructural.TabHeaderItem{
-			{Label: "PHP", ComponentValue: "php", AdditionalClasses: "bg-os-500 text-neutral-50"},
-		}, "",
+		getRuntimesTabHeaderItems(runtimeOverview.Type),
+		"changeSelectedRuntimeType",
 	)
-	<!-- RuntimeTabContent -->
-	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
-		<div class="bg-os-500 flex space-y-3 rounded-b-lg rounded-r-lg px-4 py-10">
-			if !isPhpInstalled {
-				@componentStructural.SidebarMenu(
-					[]componentStructural.SidebarMenuItem{
-						{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
-						{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
-					}, "setSelectedConfigType",
-				)
-				<div class="px-10 py-4">
-					@RuntimeModulesForm(phpConfigs.Modules)
-					@RuntimeSettingsForm(phpConfigs.Settings)
-				</div>
-			} else {
-				@PhpServiceNotInstalledWarning()
-			}
-		</div>
-	</div>
+	if runtimeOverview.Type.String() == "php-webserver" {
+		@componentRuntimes.PhpRuntimeTabContent(runtimeOverview, existentVhostsHostnames)
+	}
 }
