@@ -35,8 +35,7 @@ func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
 
 	responseOutput := presenter.virtualHostService.Read()
 	if responseOutput.Status != service.Success {
-		responseBodyErrorStr := responseOutput.Body.(string)
-		return vhostsHostnames, errors.New(responseBodyErrorStr)
+		return vhostsHostnames, errors.New("GetVirtualHostsHostnamesError")
 	}
 
 	existentVhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
