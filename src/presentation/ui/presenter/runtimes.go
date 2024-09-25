@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -62,7 +63,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		return runtimeOverview, err
 	}
 
-	isInstalledInstalled := false
+	isInstalled := false
 	isMappingAlreadyCreated := false
 
 	var phpConfigsPtr *entity.PhpConfigs
@@ -73,10 +74,10 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		isMappingAlreadyCreated = true
 		if responseOutput.Status != service.Success {
 			isMappingAlreadyCreated = false
-			isInstalledInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
+			isInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
 		}
 
-		if isInstalledInstalled {
+		if isInstalled {
 			phpConfigs, assertOk := responseOutput.Body.(entity.PhpConfigs)
 			if assertOk {
 				phpConfigsPtr = &phpConfigs
@@ -85,7 +86,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	}
 
 	return presenterDto.NewRuntimeOverview(
-		selectedVhostHostname, runtimeType, isInstalledInstalled,
+		selectedVhostHostname, runtimeType, isInstalled,
 		isMappingAlreadyCreated, phpConfigsPtr,
 	), nil
 }
@@ -112,6 +113,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		slog.Error("GetRuntimeOverviewError", slog.Any("err", err))
 		return nil
 	}
+	log.Printf("RuntimeOverview: %+v", runtimeOverview)
 
 	existentVhostsHostnames, err := presenter.getVhostsHostnames()
 	if err != nil {
