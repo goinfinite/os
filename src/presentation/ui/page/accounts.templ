@@ -1,0 +1,46 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/entity"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+)
+
+script AccountsIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('accounts', () => ({
+			// Primary states
+			resetPrimaryStates() {},
+			init() {},
+
+			// Auxiliary states
+
+			// Modal states
+		}))
+	})
+}
+
+templ AccountsIndex(accounts []entity.Account) {
+	@AccountsIndexLocalState()
+	<div x-data="accounts">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"Accounts",
+					"",
+					"ph-users-three",
+				)
+			</div>
+		</div>
+		<div
+			id="accounts-page-content"
+			hx-get="/accounts/"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-select="#accounts-page-content"
+			hx-target="#accounts-page-content"
+			hx-swap="outerHTML transition:true"
+			class="flex flex-col"
+		>
+			<div id="accounts" class="card w-full"></div>
+		</div>
+	</div>
+}
