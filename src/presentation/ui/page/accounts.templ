@@ -2,6 +2,7 @@ package page
 
 import (
 	"github.com/speedianet/os/src/domain/entity"
+	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 )
 
@@ -13,6 +14,15 @@ script AccountsIndexLocalState() {
 			init() {},
 
 			// Auxiliary states
+			updatePassword() {
+				console.log('Update password');
+			},
+			updateApiKey() {
+				console.log('Update API key');
+			},
+			deleteAccount() {
+				console.log('Delete account');
+			},
 
 			// Modal states
 		}))
@@ -40,7 +50,52 @@ templ AccountsIndex(accounts []entity.Account) {
 			hx-swap="outerHTML transition:true"
 			class="flex flex-col"
 		>
-			<div id="accounts" class="card w-full"></div>
+			<div id="accounts-table" class="card w-full">
+				@AccountsTable(accounts)
+			</div>
 		</div>
 	</div>
+}
+
+templ AccountsTable(accounts []entity.Account) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-2/7 px-5 py-3 text-left">Username(s)</th>
+				<th scope="col" class="w-2/7 px-5 py-3 text-center">UserId(s)/GroupId(s)</th>
+				<th scope="col" class="flex justify-end py-3">
+					<div class="w-3/7">
+						@componentForm.SubmitButton(
+							"create-account-button", "Create account", "ph-user-plus",
+							"", false,
+						)
+					</div>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, account := range accounts {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-right">
+						<div class="inline-flex space-x-2">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-lock-key", "blue-900", "blue-700", "updatePassword()",
+								"update password", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-key", "blue-900", "blue-700", "updateApiKey()",
+								"update API key", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600", "deleteAccount()",
+								"delete account", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
