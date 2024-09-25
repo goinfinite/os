@@ -40,7 +40,6 @@ templ SidebarMenuHeader(
 				for _, item := range sidebarMenuHeaderItems {
 					<li>
 						<button
-							x-ref={ item.ComponentValue + "MenuItem" }
 							x-bind:class={ "getButtonClasses('" + item.ComponentValue + "')" }
 							@click={ onClick + "('" + item.ComponentValue + "'); selectedMenuItem = '" + item.ComponentValue + "'" }
 						>
