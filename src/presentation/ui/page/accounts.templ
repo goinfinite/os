@@ -10,7 +10,15 @@ script AccountsIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('accounts', () => ({
 			// Primary states
-			resetPrimaryStates() {},
+			account: {},
+			resetPrimaryStates() {
+				this.account = {
+					id: '',
+					groupId: '',
+					username: '',
+					password: '',
+				}
+			},
 			init() {},
 
 			// Auxiliary states
