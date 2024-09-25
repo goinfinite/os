@@ -67,13 +67,13 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 
 	var phpConfigsPtr *entity.PhpConfigs
 	if runtimeType.String() == "php-webserver" {
-		isRuntimeMappingAlreadyCreated = true
-
 		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
 		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
+
+		isRuntimeMappingAlreadyCreated = true
 		if responseOutput.Status != service.Success {
-			isRuntimeInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
 			isRuntimeMappingAlreadyCreated = false
+			isRuntimeInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
 		}
 
 		if isRuntimeInstalled {
