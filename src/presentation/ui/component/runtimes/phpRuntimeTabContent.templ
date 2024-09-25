@@ -50,14 +50,14 @@ script PhpRuntimeTabContentLocalState() {
 			},
 
 			// Modal states
-			isUpdateVersionModalOpen: false,
-			openUpdateVersionModal(version) {
+			isUpdatePhpVersionModalOpen: false,
+			openUpdatePhpVersionModal(version) {
 				this.selectedVersion = version;
-				this.isUpdateVersionModalOpen = true;
+				this.isUpdatePhpVersionModalOpen = true;
 			},
-			closeUpdateVersionModal() {
+			closeUpdatePhpVersionModal() {
 				this.selectedVersion = '';
-				this.isUpdateVersionModalOpen = false;
+				this.isUpdatePhpVersionModalOpen = false;
 			},
 			updateVersion(vhostHostname) {
 				htmx.ajax(
@@ -68,7 +68,7 @@ script PhpRuntimeTabContentLocalState() {
 						values: { version: this.selectedVersion },
 					},
 				);
-				this.closeUpdateVersionModal();
+				this.closeUpdatePhpVersionModal();
 			},
 		}));
 	});
@@ -78,7 +78,7 @@ templ PhpRuntimeTabContent(
 	runtimeOverview presenterDto.RuntimeOverview,
 	existentVhostsHostnames []string,
 ) {
-	<!-- PhpTabContent -->
+	<!-- PhpRuntimeTabContent -->
 	@PhpRuntimeTabContentLocalState()
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
@@ -97,7 +97,7 @@ templ PhpRuntimeTabContent(
 							@componentForm.SelectInput(
 								"version", "Version", "",
 								runtimeOverview.PhpConfigs.Version.Value.String(),
-								"openUpdateVersionModal($event.target.value)",
+								"openUpdatePhpVersionModal($event.target.value)",
 								transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
 								false,
 							)
@@ -131,7 +131,7 @@ templ PhpRuntimeTabContent(
 				@componentStructural.ServiceNotInstalledWarningForm("php")
 			}
 		</div>
-		@UpdateVersionModal(runtimeOverview.VirtualHostHostname)
+		@UpdatePhpVersionModal(runtimeOverview.VirtualHostHostname)
 	</div>
 }
 
@@ -151,6 +151,7 @@ templ PhpModulesCheckboxInputsSwitchToggles(
 	selectedVersion entity.PhpVersion,
 	modules []entity.PhpModule,
 ) {
+	<!-- PhpModulesCHeckboxInputsSwitchToggles -->
 	<div
 		x-show="selectedConfigType == 'modules'"
 		class="grid grid-cols-9 gap-10"
@@ -181,6 +182,7 @@ templ PhpSettingsSelectInputs(
 	selectedVersion entity.PhpVersion,
 	settings []entity.PhpSetting,
 ) {
+	<!-- PhpSettingsSelectInputs -->
 	<div
 		x-show="selectedConfigType == 'settings'"
 		class="grid grid-cols-4 gap-7"
@@ -204,6 +206,7 @@ templ PhpSettingsSelectInputs(
 }
 
 templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
+	<!-- CreatePhpMappingForm -->
 	<form
 		id="create-php-mapping-form"
 		hx-post="/api/v1/vhosts/mapping/"
@@ -245,7 +248,7 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 	</form>
 }
 
-templ UpdateVersionWarningContent() {
+templ UpdatePhpVersionWarningContent() {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Do you really want to change the PHP version?
 	</h3>
@@ -253,12 +256,13 @@ templ UpdateVersionWarningContent() {
 	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
 }
 
-templ UpdateVersionModal(selectVhostHostname valueObject.Fqdn) {
+templ UpdatePhpVersionModal(selectVhostHostname valueObject.Fqdn) {
+	<!-- UpdatePhpVersionModal -->
 	@componentStructural.WarningModal(
-		"isUpdateVersionModalOpen", "closeUpdateVersionModal()",
+		"isUpdatePhpVersionModalOpen", "closeUpdatePhpVersionModal()",
 		"Cancel", "updateVersion('"+selectVhostHostname.String()+"')",
 		"update-version-button", "ph-swap", "Yes, change version",
 	) {
-		@UpdateVersionWarningContent()
+		@UpdatePhpVersionWarningContent()
 	}
 }
