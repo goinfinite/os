@@ -67,21 +67,21 @@ templ InputFieldWithPrefix(
 	</div>
 }
 
-// Note: normally, the read only value comes from "bindValuePath". The "customValue"
-// is simply a way to inject a value directly from the parameter instead of the
-// Alpine state. If "bindValuePath" is provided, "customValue" will be ignored.
-templ InputFieldReadOnly(inputType, id, label, bindValuePath, customValue string) {
+// Note: if "clientSideValuePath" is provided, "serverSideValue" will be ignored.
+templ InputFieldReadOnly(
+	inputType, id, label, clientSideValuePath, serverSideValue string,
+) {
 	<!-- InputFieldReadOnly -->
 	<div class="relative w-full">
 		<input
 			type={ inputType }
 			id={ id }
 			name={ id }
-			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+			if clientSideValuePath != "" {
+				x-model:value={ clientSideValuePath }
 			}
-			if customValue != "" {
-				value={ customValue }
+			if serverSideValue != "" {
+				value={ serverSideValue }
 			}
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all cursor-default text-slate-400"
 			readonly
