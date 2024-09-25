@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -71,10 +70,10 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
 		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
 
+		isInstalled = true
 		isMappingAlreadyCreated = true
 		if responseOutput.Status != service.Success {
 			isMappingAlreadyCreated = false
-
 			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
 			if assertOk {
 				isInstalled = responseOutputBodyStr != "ServiceUnavailable"
@@ -117,7 +116,6 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		slog.Error("GetRuntimeOverviewError", slog.Any("err", err))
 		return nil
 	}
-	log.Printf("RuntimeOverview: %+v", runtimeOverview)
 
 	existentVhostsHostnames, err := presenter.getVhostsHostnames()
 	if err != nil {
