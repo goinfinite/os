@@ -74,7 +74,11 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		isMappingAlreadyCreated = true
 		if responseOutput.Status != service.Success {
 			isMappingAlreadyCreated = false
-			isInstalled = responseOutput.Body.(string) != "ServiceUnavailable"
+
+			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
+			if assertOk {
+				isInstalled = responseOutputBodyStr != "ServiceUnavailable"
+			}
 		}
 
 		if isInstalled {
