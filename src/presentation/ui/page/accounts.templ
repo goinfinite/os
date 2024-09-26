@@ -19,11 +19,17 @@ script AccountsIndexLocalState() {
 					password: '',
 				}
 			},
-			init() {},
+			init() {
+				this.resetPrimaryStates();
+			},
 
 			// Auxiliary states
-			updatePassword() {
-				console.log('Update password');
+			get shouldDisableUpdatePasswordSubmitButton() {
+				if (this.account.password == "") {
+					return true;
+				}
+
+				return this.account.password.length < 6 || this.account.password.length > 64;
 			},
 			updateApiKey() {
 				console.log('Update API key');
@@ -33,6 +39,16 @@ script AccountsIndexLocalState() {
 			},
 
 			// Modal states
+			isUpdatePasswordModalOpen: false,
+			openUpdatePasswordModal(id) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.isUpdatePasswordModalOpen = true;
+			},
+			closeUpdatePasswordModal() {
+				this.isUpdatePasswordModalOpen = false;
+			},
 		}))
 	})
 }
@@ -62,6 +78,7 @@ templ AccountsIndex(accounts []entity.Account) {
 				@AccountsTable(accounts)
 			</div>
 		</div>
+		@UpdatePasswordModal()
 	</div>
 }
 
@@ -85,11 +102,12 @@ templ AccountsTable(accounts []entity.Account) {
 			for _, account := range accounts {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-right">
 						<div class="inline-flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-lock-key", "blue-900", "blue-700", "updatePassword()",
+								"ph-lock-key", "blue-900", "blue-700",
+								"openUpdatePasswordModal("+account.Id.String()+")",
 								"update password", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
@@ -106,4 +124,31 @@ templ AccountsTable(accounts []entity.Account) {
 			}
 		</tbody>
 	</table>
+}
+
+templ UpdatePasswordForm() {
+	<form
+		hx-put="/api/v1/account/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input type="hidden" name="id" x-bind:value="account.id"/>
+			@componentForm.PasswordInput("password", "Password", "account.password", false)
+			<p class="bg-os-800 px-4 py-3 mt-2 rounded-md text-sm">Must be at least 6 characters long and no more than 64.</p>
+		</div>
+		@componentForm.DeactivatableSubmitButton(
+			"Create", "ph-key", "closeUpdatePasswordModal()",
+			"shouldDisableUpdatePasswordSubmitButton", false,
+		)
+	</form>
+}
+
+templ UpdatePasswordModal() {
+	@componentStructural.Modal(
+		"Update Password", "isUpdatePasswordModalOpen", "closeUpdatePasswordModal()",
+		"account.id",
+	) {
+		@UpdatePasswordForm()
+	}
 }
