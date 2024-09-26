@@ -68,7 +68,7 @@ func getRuntimesTabHeaderItems(
 	selectedRuntimeType valueObject.RuntimeType,
 ) []componentStructural.TabHeaderItem {
 	tabHeaderItems := []componentStructural.TabHeaderItem{
-		{Label: "PHP", ComponentValue: "php-webserver"},
+		{Label: "PHP", ComponentValue: "php"},
 	}
 
 	selectedRuntimeTypeStr := selectedRuntimeType.String()
@@ -92,7 +92,7 @@ templ RuntimesTabs(
 		getRuntimesTabHeaderItems(runtimeOverview.Type),
 		"changeSelectedRuntimeType",
 	)
-	if runtimeOverview.Type.String() == "php-webserver" {
+	if runtimeOverview.Type.String() == "php" {
 		@componentRuntimes.PhpRuntimeTabContent(runtimeOverview, existentVhostsHostnames)
 	}
 }

@@ -6,16 +6,11 @@ import (
 	"strings"
 
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	"golang.org/x/exp/maps"
 )
 
 type RuntimeType string
 
-var runtimeTypesWithAliases = map[string][]string{
-	"php-webserver": {
-		"php", "php-ws", "lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed",
-	},
-}
+var runtimeTypes = []string{"php"}
 
 func NewRuntimeType(value interface{}) (runtimeType RuntimeType, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
@@ -24,29 +19,11 @@ func NewRuntimeType(value interface{}) (runtimeType RuntimeType, err error) {
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	stringValue, err = runtimeTypeAdapter(stringValue)
-	if err != nil {
+	if !slices.Contains(runtimeTypes, stringValue) {
 		return runtimeType, errors.New("InvalidRuntimeType")
 	}
 
 	return RuntimeType(stringValue), nil
-}
-
-func runtimeTypeAdapter(value string) (string, error) {
-	runtimeTypes := maps.Keys(runtimeTypesWithAliases)
-	if slices.Contains(runtimeTypes, value) {
-		return value, nil
-	}
-
-	for _, runtimeType := range runtimeTypes {
-		if !slices.Contains(runtimeTypesWithAliases[runtimeType], value) {
-			continue
-		}
-
-		return runtimeType, nil
-	}
-
-	return "", errors.New("InvalidRuntimeType")
 }
 
 func (vo RuntimeType) String() string {

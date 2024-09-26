@@ -66,7 +66,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	isMappingAlreadyCreated := false
 
 	var phpConfigsPtr *entity.PhpConfigs
-	if runtimeType.String() == "php-webserver" {
+	if runtimeType.String() == "php" {
 		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
 		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
 

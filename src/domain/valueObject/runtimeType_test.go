@@ -5,7 +5,7 @@ import "testing"
 func TestRuntimeType(t *testing.T) {
 	t.Run("ValidRuntimeType", func(t *testing.T) {
 		validRuntimeTypes := []interface{}{
-			"php-webserver", "php-ws", "php", "lsphp",
+			"php",
 		}
 
 		for _, runtimeType := range validRuntimeTypes {
@@ -18,7 +18,7 @@ func TestRuntimeType(t *testing.T) {
 
 	t.Run("InvalidRuntimeType", func(t *testing.T) {
 		invalidRuntimeTypes := []interface{}{
-			"tomcat", "python", "cosmosdb",
+			"jre", "nodejs",
 		}
 
 		for _, runtimeType := range invalidRuntimeTypes {
