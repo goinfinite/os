@@ -13,35 +13,35 @@ script PhpRuntimeTabContentLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('php', () => ({
 			// Primary states
-			selectedVersion: '',
+			selectedPhpVersion: '',
 
 			// Auxiliary states
 			selectedConfigTab: 'modules',
 			changeSelectedConfigTab(tabName) {
 				this.selectedConfigTab = tabName;
 			},
-			updateModuleStatus(vhostHostname, version, moduleName, moduleStatus) {
+			updateModuleStatus(vhostHostname, phpVersion, moduleName, moduleStatus) {
 				htmx.ajax(
 					'PUT',
 					'/api/v1/runtime/php/' + vhostHostname + '/',
 					{
 						swap: 'none',
 						values: {
-							version: version,
+							version: phpVersion,
 							'modules.name': moduleName,
 							'modules.status': moduleStatus
 						},
 					},
 				);
 			},
-			updateSettingValue(vhostHostname, version, settingName, settingValue) {
+			updateSettingValue(vhostHostname, phpVersion, settingName, settingValue) {
 				htmx.ajax(
 					'PUT',
 					'/api/v1/runtime/php/' + vhostHostname + '/',
 					{
 						swap: 'none',
 						values: {
-							version: version,
+							version: phpVersion,
 							'settings.name': settingName,
 							'settings.value': settingValue
 						},
@@ -51,12 +51,12 @@ script PhpRuntimeTabContentLocalState() {
 
 			// Modal states
 			isUpdatePhpVersionModalOpen: false,
-			openUpdatePhpVersionModal(version) {
-				this.selectedVersion = version;
+			openUpdatePhpVersionModal(phpVersion) {
+				this.selectedPhpVersion = phpVersion;
 				this.isUpdatePhpVersionModalOpen = true;
 			},
 			closeUpdatePhpVersionModal() {
-				this.selectedVersion = '';
+				this.selectedPhpVersion = '';
 				this.isUpdatePhpVersionModalOpen = false;
 			},
 			updateVersion(vhostHostname) {
@@ -65,7 +65,7 @@ script PhpRuntimeTabContentLocalState() {
 					'/api/v1/runtime/php/' + vhostHostname + '/',
 					{
 						swap: 'none',
-						values: { version: this.selectedVersion },
+						values: { version: this.selectedPhpVersion },
 					},
 				);
 				this.closeUpdatePhpVersionModal();
@@ -148,7 +148,7 @@ func transformPhpVersionOptionsIntoStringSlice(
 
 templ PhpModulesCheckboxInputsSwitchToggles(
 	selectedVhostHostname valueObject.Fqdn,
-	selectedVersion entity.PhpVersion,
+	selectedPhpVersion entity.PhpVersion,
 	modules []entity.PhpModule,
 ) {
 	<!-- PhpModulesCHeckboxInputsSwitchToggles -->
@@ -159,7 +159,7 @@ templ PhpModulesCheckboxInputsSwitchToggles(
 		for _, module := range modules {
 			@componentForm.CheckboxInputSwitchToggle(
 				module.Name.String(), module.Name.String(), "", "",
-				"updateModuleStatus('"+selectedVhostHostname.String()+"', '"+selectedVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
+				"updateModuleStatus('"+selectedVhostHostname.String()+"', '"+selectedPhpVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
 				module.Status,
 			)
 		}
@@ -179,7 +179,7 @@ func transformPhpSettingsOptionsIntoStringSlice(
 
 templ PhpSettingsSelectInputs(
 	selectedVhostHostname valueObject.Fqdn,
-	selectedVersion entity.PhpVersion,
+	selectedPhpVersion entity.PhpVersion,
 	settings []entity.PhpSetting,
 ) {
 	<!-- PhpSettingsSelectInputs -->
@@ -196,7 +196,7 @@ templ PhpSettingsSelectInputs(
 			} else {
 				@componentForm.SelectInput(
 					setting.Name.String(), setting.Name.String(), "", setting.Value.String(),
-					"updateSettingValue('"+selectedVhostHostname.String()+"', '"+selectedVersion.Value.String()+"', '"+setting.Name.String()+"', $event.target.value)",
+					"updateSettingValue('"+selectedVhostHostname.String()+"', '"+selectedPhpVersion.Value.String()+"', '"+setting.Name.String()+"', $event.target.value)",
 					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
 					false,
 				)
@@ -252,7 +252,7 @@ templ UpdatePhpVersionWarningContent() {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Do you really want to change the PHP version?
 	</h3>
-	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="selectedVersion"></span>.</strong>
+	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="selectedPhpVersion"></span>.</strong>
 	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
 }
 
