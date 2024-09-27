@@ -74,67 +74,6 @@ script PhpRuntimeTabContentLocalState() {
 	});
 }
 
-templ PhpRuntimeTabContent(
-	runtimeOverview presenterDto.RuntimeOverview,
-	existentVhostsHostnames []string,
-) {
-	<!-- PhpRuntimeTabContent -->
-	@PhpRuntimeTabContentLocalState()
-	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
-		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
-			if runtimeOverview.IsInstalled {
-				<div class="p-4">
-					<div class="float-left w-1/5">
-						@componentForm.SelectInput(
-							"virtualHost", "Virtual Host Hostname",
-							"", runtimeOverview.VirtualHostHostname.String(),
-							"changeSelectedVhostHostname($event.target.value)",
-							existentVhostsHostnames, false,
-						)
-					</div>
-					if runtimeOverview.IsMappingAlreadyCreated {
-						<div class="w-1/7 flex pl-5">
-							@componentForm.SelectInput(
-								"version", "Version", "",
-								runtimeOverview.PhpConfigs.Version.Value.String(),
-								"openUpdatePhpVersionModal($event.target.value)",
-								transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
-								false,
-							)
-						</div>
-						<div class="mt-6 flex">
-							@componentStructural.VerticalTabHeader(
-								[]componentStructural.VerticalTabHeaderItem{
-									{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
-									{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
-								}, "changeSelectedConfigTab",
-							)
-							<div class="px-10 py-4">
-								@PhpModulesCheckboxInputsSwitchToggles(
-									runtimeOverview.VirtualHostHostname,
-									runtimeOverview.PhpConfigs.Version,
-									runtimeOverview.PhpConfigs.Modules,
-								)
-								@PhpSettingsSelectInputs(
-									runtimeOverview.VirtualHostHostname,
-									runtimeOverview.PhpConfigs.Version,
-									runtimeOverview.PhpConfigs.Settings,
-								)
-							</div>
-						</div>
-					} else {
-						<div class="mb-6 flex w-full"></div>
-						@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
-					}
-				</div>
-			} else {
-				@componentStructural.ServiceNotInstalledWarningForm("php")
-			}
-		</div>
-		@UpdatePhpVersionModal(runtimeOverview.VirtualHostHostname)
-	</div>
-}
-
 func transformPhpVersionOptionsIntoStringSlice(
 	versionOptions []valueObject.PhpVersion,
 ) []string {
@@ -151,7 +90,6 @@ templ PhpModulesCheckboxInputsSwitchToggles(
 	selectedPhpVersion entity.PhpVersion,
 	modules []entity.PhpModule,
 ) {
-	<!-- PhpModulesCHeckboxInputsSwitchToggles -->
 	<div
 		x-show="selectedConfigTab == 'modules'"
 		class="grid grid-cols-9 gap-10"
@@ -182,7 +120,6 @@ templ PhpSettingsSelectInputs(
 	selectedPhpVersion entity.PhpVersion,
 	settings []entity.PhpSetting,
 ) {
-	<!-- PhpSettingsSelectInputs -->
 	<div
 		x-show="selectedConfigTab == 'settings'"
 		class="grid grid-cols-4 gap-7"
@@ -265,4 +202,65 @@ templ UpdatePhpVersionModal(selectVhostHostname valueObject.Fqdn) {
 	) {
 		@UpdatePhpVersionWarningContent()
 	}
+}
+
+templ PhpRuntimeTabContent(
+	runtimeOverview presenterDto.RuntimeOverview,
+	existentVhostsHostnames []string,
+) {
+	<!-- PhpRuntimeTabContent -->
+	@PhpRuntimeTabContentLocalState()
+	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
+		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
+			if runtimeOverview.IsInstalled {
+				<div class="p-4">
+					<div class="float-left w-1/5">
+						@componentForm.SelectInput(
+							"virtualHost", "Virtual Host Hostname",
+							"", runtimeOverview.VirtualHostHostname.String(),
+							"changeSelectedVhostHostname($event.target.value)",
+							existentVhostsHostnames, false,
+						)
+					</div>
+					if runtimeOverview.IsMappingAlreadyCreated {
+						<div class="w-1/7 flex pl-5">
+							@componentForm.SelectInput(
+								"version", "Version", "",
+								runtimeOverview.PhpConfigs.Version.Value.String(),
+								"openUpdatePhpVersionModal($event.target.value)",
+								transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
+								false,
+							)
+						</div>
+						<div class="mt-6 flex">
+							@componentStructural.VerticalTabHeader(
+								[]componentStructural.VerticalTabHeaderItem{
+									{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
+									{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
+								}, "changeSelectedConfigTab",
+							)
+							<div class="px-10 py-4">
+								@PhpModulesCheckboxInputsSwitchToggles(
+									runtimeOverview.VirtualHostHostname,
+									runtimeOverview.PhpConfigs.Version,
+									runtimeOverview.PhpConfigs.Modules,
+								)
+								@PhpSettingsSelectInputs(
+									runtimeOverview.VirtualHostHostname,
+									runtimeOverview.PhpConfigs.Version,
+									runtimeOverview.PhpConfigs.Settings,
+								)
+							</div>
+						</div>
+					} else {
+						<div class="mb-6 flex w-full"></div>
+						@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
+					}
+				</div>
+			} else {
+				@componentStructural.ServiceNotInstalledWarningForm("php")
+			}
+		</div>
+		@UpdatePhpVersionModal(runtimeOverview.VirtualHostHostname)
+	</div>
 }
