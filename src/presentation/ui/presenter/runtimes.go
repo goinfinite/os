@@ -63,7 +63,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 	}
 
 	isInstalled := false
-	isMappingAlreadyCreated := false
+	canVirtualHostHostnameAccessRuntime := false
 
 	var phpConfigsPtr *entity.PhpConfigs
 	if runtimeType.String() == "php" {
@@ -71,9 +71,9 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
 
 		isInstalled = true
-		isMappingAlreadyCreated = true
+		canVirtualHostHostnameAccessRuntime = true
 		if responseOutput.Status != service.Success {
-			isMappingAlreadyCreated = false
+			canVirtualHostHostnameAccessRuntime = false
 			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
 			if assertOk {
 				isInstalled = responseOutputBodyStr != "ServiceUnavailable"
@@ -90,7 +90,7 @@ func (presenter *RuntimesPresenter) getRuntimeOverview(
 
 	return presenterDto.NewRuntimeOverview(
 		selectedVhostHostname, runtimeType, isInstalled,
-		isMappingAlreadyCreated, phpConfigsPtr,
+		canVirtualHostHostnameAccessRuntime, phpConfigsPtr,
 	), nil
 }
 
