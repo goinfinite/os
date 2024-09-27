@@ -66,8 +66,8 @@ templ RuntimesIndex(
 
 func getRuntimesTabHeaderItems(
 	selectedRuntimeType valueObject.RuntimeType,
-) []componentStructural.TabHeaderItem {
-	tabHeaderItems := []componentStructural.TabHeaderItem{
+) []componentStructural.HorizontalTabHeaderItem {
+	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
 		{Label: "PHP", ComponentValue: "php"},
 	}
 
@@ -88,7 +88,7 @@ templ RuntimesTabs(
 	runtimeOverview presenterDto.RuntimeOverview,
 	existentVhostsHostnames []string,
 ) {
-	@componentStructural.TabHeader(
+	@componentStructural.HorizontalTabHeader(
 		getRuntimesTabHeaderItems(runtimeOverview.Type),
 		"changeSelectedRuntimeType",
 	)

@@ -149,8 +149,8 @@ templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
 
 func getDatabasesTabHeaderItems(
 	selectedDbType valueObject.DatabaseType,
-) []componentStructural.TabHeaderItem {
-	tabHeaderItems := []componentStructural.TabHeaderItem{
+) []componentStructural.HorizontalTabHeaderItem {
+	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
 		{Label: "MySQL/MariaDB/Percona", Icon: "ph-database", ComponentValue: "mariadb"},
 		{Label: "PostgreSQL", Icon: "ph-database", ComponentValue: "postgresql"},
 	}
@@ -169,7 +169,7 @@ func getDatabasesTabHeaderItems(
 }
 
 templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
-	@componentStructural.TabHeader(
+	@componentStructural.HorizontalTabHeader(
 		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
