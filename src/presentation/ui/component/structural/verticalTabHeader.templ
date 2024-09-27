@@ -1,19 +1,19 @@
 package componentStructural
 
-type SidebarMenuHeaderItem struct {
+type VerticalTabHeaderItem struct {
 	Label          string
 	Icon           string
 	ComponentValue string
 }
 
-script SidebarMenuHeaderLocalState(firstMenuItem string) {
+script VerticalTabHeaderLocalState(firstMenuItem string) {
 	document.addEventListener('alpine:init', () => {
-		Alpine.data('sidebarMenuHeader', () => ({
+		Alpine.data('verticalTabHeader', () => ({
 			selectedMenuItem: '',
 			init() {
 				this.selectedMenuItem = firstMenuItem;
 			},
-			getButtonClasses(itemValue) {
+			getTabLayoutClasses(itemValue) {
 				const defaultClasses = 'hover:bg-os-300 border-r-3 w-full bg-inherit py-2 px-6 text-neutral-50 transition-all';
 				if (itemValue == this.selectedMenuItem) {
 					return defaultClasses + ' border-speedia-500';
@@ -21,30 +21,30 @@ script SidebarMenuHeaderLocalState(firstMenuItem string) {
 
 				return defaultClasses + ' border-os-400';
 			},
-			getLabelWithIconClasses(itemValue) {
+			getTabTitleWithIconClasses(itemValue) {
 				return itemValue == this.selectedMenuItem ? 'text-speedia-500' : '';
 			}
 		}));
 	});
 }
 
-templ SidebarMenuHeader(
-	sidebarMenuHeaderItems []SidebarMenuHeaderItem,
+templ VerticalTabHeader(
+	verticalTabHeaderItems []VerticalTabHeaderItem,
 	onClick string,
 ) {
-	<!-- SidebarMenuHeader -->
-	@SidebarMenuHeaderLocalState(sidebarMenuHeaderItems[0].ComponentValue)
-	<sidebar class="w-25 flex h-full" x-data="sidebarMenuHeader">
+	<!-- VerticalTabHeader -->
+	@VerticalTabHeaderLocalState(verticalTabHeaderItems[0].ComponentValue)
+	<sidebar class="w-25 flex h-full" x-data="verticalTabHeader">
 		<div class="w-full">
 			<ul>
-				for _, item := range sidebarMenuHeaderItems {
+				for _, item := range verticalTabHeaderItems {
 					<li>
 						<button
-							x-bind:class={ "getButtonClasses('" + item.ComponentValue + "')" }
+							x-bind:class={ "getTabLayoutClasses('" + item.ComponentValue + "')" }
 							@click={ onClick + "('" + item.ComponentValue + "'); selectedMenuItem = '" + item.ComponentValue + "'" }
 						>
 							<div
-								x-bind:class={ "getLabelWithIconClasses('" + item.ComponentValue + "')" }
+								x-bind:class={ "getTabTitleWithIconClasses('" + item.ComponentValue + "')" }
 							>
 								if item.Icon != "" {
 									<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">

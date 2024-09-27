@@ -103,8 +103,8 @@ templ PhpRuntimeTabContent(
 							)
 						</div>
 						<div class="mt-6 flex">
-							@componentStructural.SidebarMenuHeader(
-								[]componentStructural.SidebarMenuHeaderItem{
+							@componentStructural.VerticalTabHeader(
+								[]componentStructural.VerticalTabHeaderItem{
 									{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
 									{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
 								}, "changeSelectedConfigTab",
