@@ -30,7 +30,7 @@ func NewRuntimesPresenter(
 	}
 }
 
-func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
+func (presenter *RuntimesPresenter) readVhostsHostnames() ([]string, error) {
 	vhostsHostnames := []string{}
 
 	responseOutput := presenter.virtualHostService.Read()
@@ -42,7 +42,7 @@ func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
 	existentVhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
 	if !assertOk {
 		return vhostsHostnames, errors.New(
-			"InvalidExistentVirtualHostsHostnamesStructure",
+			"InvalidVirtualHostsHostnamesStructure",
 		)
 	}
 
@@ -53,15 +53,10 @@ func (presenter *RuntimesPresenter) getVhostsHostnames() ([]string, error) {
 	return vhostsHostnames, nil
 }
 
-func (presenter *RuntimesPresenter) getRuntimeOverview(
-	rawRuntimeType string,
+func (presenter *RuntimesPresenter) runtimeOverviewFactory(
+	runtimeType valueObject.RuntimeType,
 	selectedVhostHostname valueObject.Fqdn,
 ) (runtimeOverview presenterDto.RuntimeOverview, err error) {
-	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
-	if err != nil {
-		return runtimeOverview, err
-	}
-
 	isInstalled := false
 	canVirtualHostHostnameAccessRuntime := false
 
@@ -99,6 +94,10 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 	if c.QueryParam("runtimeType") != "" {
 		rawRuntimeType = c.QueryParam("runtimeType")
 	}
+	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
+	if err != nil {
+		return nil
+	}
 
 	selectedVhostHostname, err := valueObject.NewFqdn(c.QueryParam("vhostHostname"))
 	if err != nil {
@@ -109,20 +108,20 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		selectedVhostHostname = primaryVhostHostname
 	}
 
-	runtimeOverview, err := presenter.getRuntimeOverview(
-		rawRuntimeType, selectedVhostHostname,
+	runtimeOverview, err := presenter.runtimeOverviewFactory(
+		runtimeType, selectedVhostHostname,
 	)
 	if err != nil {
-		slog.Error("GetRuntimeOverviewError", slog.Any("err", err))
+		slog.Error("RuntimeOverviewFactoryError", slog.Any("err", err))
 		return nil
 	}
 
-	existentVhostsHostnames, err := presenter.getVhostsHostnames()
+	vhostsHostnames, err := presenter.readVhostsHostnames()
 	if err != nil {
-		slog.Error("GetExistentVirtualHostsHostnames", slog.Any("err", err))
+		slog.Error("ReadVirtualHostsHostnames", slog.Any("err", err))
 		return nil
 	}
 
-	pageContent := page.RuntimesIndex(runtimeOverview, existentVhostsHostnames)
+	pageContent := page.RuntimesIndex(runtimeOverview, vhostsHostnames)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
