@@ -9,10 +9,11 @@ import (
 	"strconv"
 )
 
-script PhpRuntimeTabContentLocalState() {
+script PhpRuntimeTabContentLocalState(defaultVhostHostname string) {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('php', () => ({
 			// Primary states
+			selectedVhostHostname: defaultVhostHostname,
 			selectedPhpVersion: '',
 
 			// Auxiliary states
@@ -20,10 +21,10 @@ script PhpRuntimeTabContentLocalState() {
 			changeSelectedPhpVerticalTab(tabName) {
 				this.selectedPhpVerticalTab = tabName;
 			},
-			updateModuleStatus(vhostHostname, phpVersion, moduleName, moduleStatus) {
+			updateModuleStatus(phpVersion, moduleName, moduleStatus) {
 				htmx.ajax(
 					'PUT',
-					'/api/v1/runtime/php/' + vhostHostname + '/',
+					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
 					{
 						swap: 'none',
 						values: {
@@ -34,10 +35,10 @@ script PhpRuntimeTabContentLocalState() {
 					},
 				);
 			},
-			updateSettingValue(vhostHostname, phpVersion, settingName, settingValue) {
+			updateSettingValue(phpVersion, settingName, settingValue) {
 				htmx.ajax(
 					'PUT',
-					'/api/v1/runtime/php/' + vhostHostname + '/',
+					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
 					{
 						swap: 'none',
 						values: {
@@ -59,10 +60,10 @@ script PhpRuntimeTabContentLocalState() {
 				this.selectedPhpVersion = '';
 				this.isUpdatePhpVersionModalOpen = false;
 			},
-			updateVersion(vhostHostname) {
+			updateVersion() {
 				htmx.ajax(
 					'PUT',
-					'/api/v1/runtime/php/' + vhostHostname + '/',
+					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
 					{
 						swap: 'none',
 						values: { version: this.selectedPhpVersion },
@@ -86,7 +87,6 @@ func transformPhpVersionOptionsIntoStringSlice(
 }
 
 templ PhpModulesCheckboxInputsSwitchToggles(
-	selectedVhostHostname valueObject.Fqdn,
 	selectedPhpVersion entity.PhpVersion,
 	modules []entity.PhpModule,
 ) {
@@ -97,7 +97,7 @@ templ PhpModulesCheckboxInputsSwitchToggles(
 		for _, module := range modules {
 			@componentForm.CheckboxInputSwitchToggle(
 				module.Name.String(), module.Name.String(), "", "",
-				"updateModuleStatus('"+selectedVhostHostname.String()+"', '"+selectedPhpVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
+				"updateModuleStatus('"+selectedPhpVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
 				module.Status,
 			)
 		}
@@ -116,7 +116,6 @@ func transformPhpSettingsOptionsIntoStringSlice(
 }
 
 templ PhpSettingsSelectInputs(
-	selectedVhostHostname valueObject.Fqdn,
 	selectedPhpVersion entity.PhpVersion,
 	settings []entity.PhpSetting,
 ) {
@@ -133,7 +132,7 @@ templ PhpSettingsSelectInputs(
 			} else {
 				@componentForm.SelectInput(
 					setting.Name.String(), setting.Name.String(), "", setting.Value.String(),
-					"updateSettingValue('"+selectedVhostHostname.String()+"', '"+selectedPhpVersion.Value.String()+"', '"+setting.Name.String()+"', $event.target.value)",
+					"const settingValue = $event.target.value; updateSettingValue('"+selectedPhpVersion.Value.String()+"', '"+setting.Name.String()+"', settingValue)",
 					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
 					false,
 				)
@@ -193,12 +192,12 @@ templ UpdatePhpVersionWarningContent() {
 	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
 }
 
-templ UpdatePhpVersionModal(selectVhostHostname valueObject.Fqdn) {
+templ UpdatePhpVersionModal() {
 	<!-- UpdatePhpVersionModal -->
 	@componentStructural.WarningModal(
 		"isUpdatePhpVersionModalOpen", "closeUpdatePhpVersionModal()",
-		"Cancel", "updateVersion('"+selectVhostHostname.String()+"')",
-		"update-version-button", "ph-swap", "Yes, change version",
+		"Cancel", "updateVersion()", "update-version-button", "ph-swap",
+		"Yes, change version",
 	) {
 		@UpdatePhpVersionWarningContent()
 	}
@@ -209,7 +208,7 @@ templ PhpRuntimeTabContent(
 	existentVhostsHostnames []string,
 ) {
 	<!-- PhpRuntimeTabContent -->
-	@PhpRuntimeTabContentLocalState()
+	@PhpRuntimeTabContentLocalState(runtimeOverview.VirtualHostHostname.String())
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
 			if runtimeOverview.IsInstalled {
@@ -217,8 +216,8 @@ templ PhpRuntimeTabContent(
 					<div class="float-left w-1/5">
 						@componentForm.SelectInput(
 							"virtualHost", "Virtual Host Hostname",
-							"", runtimeOverview.VirtualHostHostname.String(),
-							"changeSelectedVhostHostname($event.target.value)",
+							"selectedVhostHostname", "",
+							"const vhostHostname = $event.target.value; changeSelectedVhostHostname(vhostHostname)",
 							existentVhostsHostnames, false,
 						)
 					</div>
@@ -227,7 +226,7 @@ templ PhpRuntimeTabContent(
 							@componentForm.SelectInput(
 								"version", "Version", "",
 								runtimeOverview.PhpConfigs.Version.Value.String(),
-								"openUpdatePhpVersionModal($event.target.value)",
+								"const phpVersion = $event.target.value; openUpdatePhpVersionModal(phpVersion)",
 								transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
 								false,
 							)
@@ -241,12 +240,10 @@ templ PhpRuntimeTabContent(
 							)
 							<div class="px-10 py-4">
 								@PhpModulesCheckboxInputsSwitchToggles(
-									runtimeOverview.VirtualHostHostname,
 									runtimeOverview.PhpConfigs.Version,
 									runtimeOverview.PhpConfigs.Modules,
 								)
 								@PhpSettingsSelectInputs(
-									runtimeOverview.VirtualHostHostname,
 									runtimeOverview.PhpConfigs.Version,
 									runtimeOverview.PhpConfigs.Settings,
 								)
