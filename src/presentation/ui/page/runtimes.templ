@@ -2,8 +2,8 @@ package page
 
 import (
 	"github.com/speedianet/os/src/domain/valueObject"
-	componentRuntimes "github.com/speedianet/os/src/presentation/ui/component/runtimes"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	pageRuntimes "github.com/speedianet/os/src/presentation/ui/page/runtimes"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
@@ -89,10 +89,9 @@ templ RuntimesTabs(
 	existentVhostsHostnames []string,
 ) {
 	@componentStructural.HorizontalTabHeader(
-		readRuntimesTabHeaderItems(runtimeOverview.Type),
-		"changeSelectedRuntimeType",
+		readRuntimesTabHeaderItems(runtimeOverview.Type), "changeSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
-		@componentRuntimes.PhpRuntimeTabContent(runtimeOverview, existentVhostsHostnames)
+		@pageRuntimes.PhpRuntimePageFragment(runtimeOverview, existentVhostsHostnames)
 	}
 }
