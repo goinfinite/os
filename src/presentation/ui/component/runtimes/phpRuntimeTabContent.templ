@@ -16,9 +16,9 @@ script PhpRuntimeTabContentLocalState() {
 			selectedPhpVersion: '',
 
 			// Auxiliary states
-			selectedPhpVerticalPhp: 'modules',
-			changeSelectedPhpVerticalPhp(tabName) {
-				this.selectedPhpVerticalPhp = tabName;
+			selectedPhpVerticalTab: 'modules',
+			changeSelectedPhpVerticalTab(tabName) {
+				this.selectedPhpVerticalTab = tabName;
 			},
 			updateModuleStatus(vhostHostname, phpVersion, moduleName, moduleStatus) {
 				htmx.ajax(
@@ -91,7 +91,7 @@ templ PhpModulesCheckboxInputsSwitchToggles(
 	modules []entity.PhpModule,
 ) {
 	<div
-		x-show="selectedPhpVerticalPhp == 'modules'"
+		x-show="selectedPhpVerticalTab == 'modules'"
 		class="grid grid-cols-9 gap-10"
 	>
 		for _, module := range modules {
@@ -121,7 +121,7 @@ templ PhpSettingsSelectInputs(
 	settings []entity.PhpSetting,
 ) {
 	<div
-		x-show="selectedPhpVerticalPhp == 'settings'"
+		x-show="selectedPhpVerticalTab == 'settings'"
 		class="grid grid-cols-4 gap-7"
 	>
 		for _, setting := range settings {
@@ -237,7 +237,7 @@ templ PhpRuntimeTabContent(
 								[]componentStructural.VerticalTabHeaderItem{
 									{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
 									{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
-								}, "changeSelectedPhpVerticalPhp",
+								}, "changeSelectedPhpVerticalTab",
 							)
 							<div class="px-10 py-4">
 								@PhpModulesCheckboxInputsSwitchToggles(
