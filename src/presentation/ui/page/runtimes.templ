@@ -34,7 +34,7 @@ script RuntimesIndexLocalState(defaultVhostHostname, defaultRuntimeType string) 
 
 templ RuntimesIndex(
 	runtimeOverview presenterDto.RuntimeOverview,
-	existentVhostsHostnames []string,
+	vhostsHostnames []string,
 ) {
 	<div class="flex flex-col" x-data="runtimes">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -58,7 +58,7 @@ templ RuntimesIndex(
 				runtimeOverview.Type.String(),
 			)
 			<div id="runtimes-tabs">
-				@RuntimesTabs(runtimeOverview, existentVhostsHostnames)
+				@RuntimesTabs(runtimeOverview, vhostsHostnames)
 			</div>
 		</div>
 	</div>
@@ -86,12 +86,12 @@ func readRuntimesTabHeaderItems(
 
 templ RuntimesTabs(
 	runtimeOverview presenterDto.RuntimeOverview,
-	existentVhostsHostnames []string,
+	vhostsHostnames []string,
 ) {
 	@componentStructural.HorizontalTabHeader(
 		readRuntimesTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
-		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, existentVhostsHostnames)
+		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
 	}
 }

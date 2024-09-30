@@ -209,7 +209,7 @@ templ UpdatePhpVersionModal() {
 
 templ InstalledPhpRuntimeContent(
 	runtimeOverview presenterDto.RuntimeOverview,
-	existentVhostsHostnames []string,
+	vhostsHostnames []string,
 ) {
 	<div class="p-4">
 		<div class="float-left w-1/5">
@@ -217,7 +217,7 @@ templ InstalledPhpRuntimeContent(
 				"virtualHost", "Virtual Host Hostname",
 				"", runtimeOverview.VirtualHostHostname.String(),
 				"const vhostHostname = $event.target.value; updateSelectedVhostHostname(vhostHostname)",
-				existentVhostsHostnames, false,
+				vhostsHostnames, false,
 			)
 		</div>
 		if runtimeOverview.CanVirtualHostHostnameAccessRuntime {
@@ -257,14 +257,14 @@ templ InstalledPhpRuntimeContent(
 
 templ PhpRuntimeHorizontalTabContent(
 	runtimeOverview presenterDto.RuntimeOverview,
-	existentVhostsHostnames []string,
+	vhostsHostnames []string,
 ) {
 	<!-- PhpRuntimeHorizontalTabContent -->
 	@PhpRuntimeHorizontalTabContentLocalState(runtimeOverview.VirtualHostHostname.String())
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
 			if runtimeOverview.IsInstalled {
-				@InstalledPhpRuntimeContent(runtimeOverview, existentVhostsHostnames)
+				@InstalledPhpRuntimeContent(runtimeOverview, vhostsHostnames)
 			} else {
 				@componentStructural.ServiceNotInstalledWarningForm("php")
 			}
