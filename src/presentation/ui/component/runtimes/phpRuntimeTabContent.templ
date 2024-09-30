@@ -196,8 +196,8 @@ templ UpdatePhpVersionModal() {
 	<!-- UpdatePhpVersionModal -->
 	@componentStructural.WarningModal(
 		"isUpdatePhpVersionModalOpen", "closeUpdatePhpVersionModal()",
-		"Cancel", "updateVersion()", "update-version-button", "ph-swap",
-		"Yes, change version",
+		"Cancel", "updateVersion()",
+		"update-version-button", "ph-swap", "Yes, change version",
 	) {
 		@UpdatePhpVersionWarningContent()
 	}
@@ -216,7 +216,7 @@ templ PhpRuntimeTabContent(
 					<div class="float-left w-1/5">
 						@componentForm.SelectInput(
 							"virtualHost", "Virtual Host Hostname",
-							"selectedVhostHostname", "",
+							"", runtimeOverview.VirtualHostHostname.String(),
 							"const vhostHostname = $event.target.value; changeSelectedVhostHostname(vhostHostname)",
 							existentVhostsHostnames, false,
 						)
@@ -258,6 +258,6 @@ templ PhpRuntimeTabContent(
 				@componentStructural.ServiceNotInstalledWarningForm("php")
 			}
 		</div>
-		@UpdatePhpVersionModal(runtimeOverview.VirtualHostHostname)
+		@UpdatePhpVersionModal()
 	</div>
 }
