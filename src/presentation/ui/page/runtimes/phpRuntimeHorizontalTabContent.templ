@@ -221,7 +221,7 @@ templ PhpRuntimeHorizontalTabContent(
 						@componentForm.SelectInput(
 							"virtualHost", "Virtual Host Hostname",
 							"", runtimeOverview.VirtualHostHostname.String(),
-							"const vhostHostname = $event.target.value; changeSelectedVhostHostname(vhostHostname)",
+							"const vhostHostname = $event.target.value; updateSelectedVhostHostname(vhostHostname)",
 							existentVhostsHostnames, false,
 						)
 					</div>

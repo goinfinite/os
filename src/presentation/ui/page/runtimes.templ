@@ -10,7 +10,7 @@ import (
 script RuntimesIndexLocalState(defaultVhostHostname, defaultRuntimeType string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('runtimes', () => ({
-			reloadPage(vhostHostname, runtimeType) {
+			reloadRuntimePageContent(vhostHostname, runtimeType) {
 				htmx.ajax(
 					'GET',
 					'/runtimes/?vhostHostname=' + vhostHostname + '&runtimeType=' + runtimeType,
@@ -22,11 +22,11 @@ script RuntimesIndexLocalState(defaultVhostHostname, defaultRuntimeType string) 
 					},
 				);
 			},
-			changeSelectedVhostHostname(selectedVhostHostname) {
-				this.reloadPage(selectedVhostHostname, defaultRuntimeType);
+			updateSelectedVhostHostname(selectedVhostHostname) {
+				this.reloadRuntimePageContent(selectedVhostHostname, defaultRuntimeType);
 			},
-			changeSelectedRuntimeType(selectedRuntimeType) {
-				this.reloadPage(defaultVhostHostname, selectedRuntimeType);
+			updateSelectedRuntimeType(selectedRuntimeType) {
+				this.reloadRuntimePageContent(defaultVhostHostname, selectedRuntimeType);
 			},
 		}));
 	});
@@ -89,7 +89,7 @@ templ RuntimesTabs(
 	existentVhostsHostnames []string,
 ) {
 	@componentStructural.HorizontalTabHeader(
-		readRuntimesTabHeaderItems(runtimeOverview.Type), "changeSelectedRuntimeType",
+		readRuntimesTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
 		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, existentVhostsHostnames)
