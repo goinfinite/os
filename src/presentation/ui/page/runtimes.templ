@@ -92,6 +92,6 @@ templ RuntimesTabs(
 		readRuntimesTabHeaderItems(runtimeOverview.Type), "changeSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
-		@pageRuntimes.PhpRuntimePageFragment(runtimeOverview, existentVhostsHostnames)
+		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, existentVhostsHostnames)
 	}
 }
