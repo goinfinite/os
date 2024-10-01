@@ -122,10 +122,12 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}
 			continue
 		}
 
+		settingType, _ := valueObject.NewPhpSettingType("text")
+
 		settings = append(
 			settings,
 			entity.NewPhpSetting(
-				settingName, settingValue, []valueObject.PhpSettingOption{},
+				settingName, settingType, settingValue, []valueObject.PhpSettingOption{},
 			),
 		)
 	}
