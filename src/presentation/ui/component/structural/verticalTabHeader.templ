@@ -40,6 +40,7 @@ templ VerticalTabHeader(
 				for _, item := range verticalTabHeaderItems {
 					<li>
 						<button
+							type="button"
 							x-bind:class={ "getTabLayoutClasses('" + item.ComponentValue + "')" }
 							@click={ onClick + "('" + item.ComponentValue + "'); selectedMenuItem = '" + item.ComponentValue + "'" }
 						>
