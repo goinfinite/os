@@ -83,5 +83,6 @@
     "webserver",
     "zerolog",
     "Zerolog"
-  ]
+  ],
+  "editor.formatOnSave": true
 }
