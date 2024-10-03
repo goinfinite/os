@@ -47,7 +47,7 @@ templ RuntimesIndex(
 		<div
 			id="runtimes-page-content"
 			hx-get={ "/runtimes/?vhostHostname=" + runtimeOverview.VirtualHostHostname.String() + "&runtimeType=" + runtimeOverview.Type.String() }
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-trigger="submit from:form delay:500ms"
 			hx-select="#runtimes-page-content"
 			hx-target="#runtimes-page-content"
 			hx-swap="outerHTML transition:true"
