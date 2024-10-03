@@ -96,16 +96,22 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 	}
 	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
 	if err != nil {
+		slog.Error("InvalidRuntimeType", slog.Any("err", err))
 		return nil
 	}
 
-	selectedVhostHostname, err := valueObject.NewFqdn(c.QueryParam("vhostHostname"))
+	primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
+		slog.Error("ReadPrimaryVirtualHost", slog.Any("err", err))
+		return nil
+	}
+	selectedVhostHostname := primaryVhostHostname
+	if c.QueryParam("vhostHostname") != "" {
+		selectedVhostHostname, err = valueObject.NewFqdn(c.QueryParam("vhostHostname"))
 		if err != nil {
+			slog.Error("InvalidVhostHostname", slog.Any("err", err))
 			return nil
 		}
-		selectedVhostHostname = primaryVhostHostname
 	}
 
 	runtimeOverview, err := presenter.runtimeOverviewFactory(
