@@ -64,7 +64,7 @@ templ RuntimesIndex(
 	</div>
 }
 
-func readRuntimesTabHeaderItems(
+func transformRuntimeTypesIntoTabHeaderItems(
 	selectedRuntimeType valueObject.RuntimeType,
 ) []componentStructural.HorizontalTabHeaderItem {
 	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
@@ -89,7 +89,7 @@ templ RuntimesTabs(
 	vhostsHostnames []string,
 ) {
 	@componentStructural.HorizontalTabHeader(
-		readRuntimesTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
+		transformRuntimeTypesIntoTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
 		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
