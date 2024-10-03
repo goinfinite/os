@@ -4,6 +4,7 @@ import (
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	accountInfra "github.com/speedianet/os/src/infra/account"
 	filesInfra "github.com/speedianet/os/src/infra/files"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
@@ -90,7 +91,10 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 
 	var shouldUpdateApiKeyPtr *bool
 	if input["shouldUpdateApiKey"] != nil {
-		shouldUpdateApiKey := input["shouldUpdateApiKey"].(bool)
+		shouldUpdateApiKey, err := voHelper.InterfaceToBool(input["shouldUpdateApiKey"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 		shouldUpdateApiKeyPtr = &shouldUpdateApiKey
 	}
 
