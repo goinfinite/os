@@ -6,61 +6,32 @@ import (
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
+	"strconv"
 )
 
-script PhpRuntimeHorizontalTabContentLocalState(selectedVirtualHostHostname string) {
+script PhpRuntimeHorizontalTabContentLocalState() {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('php', () => ({
 			// Primary States
 			phpConfigs: {},
 			resetPrimaryStates() {
-				this.phpConfigs = {
-					hostname: selectedVirtualHostHostname,
-					version: document.getElementById('phpVersion').textContent,
-					modules: Object.fromEntries(
-						JSON.parse(
-							document.getElementById('phpModulesCheckInputsSwitchToggles').textContent
-						).map(item => [item.name, item.status])
-					),
-					settings: Object.fromEntries(
-						JSON.parse(
-							document.getElementById('phpSettingsInputs').textContent
-						).map(item => [item.name, item.value])
-					),
-				};
+				phpConfigsElement = document.getElementById('phpConfigs');
+				if (!phpConfigsElement) {
+					return;
+				}
+				this.phpConfigs = JSON.parse(phpConfigsElement.textContent);
 			},
 			init() {
 				this.resetPrimaryStates();
 			},
 
-			get phpModulesAsApiFormat() {
-				const modulesAsObjectsArray = []
-				for (const moduleName of Object.keys(this.phpConfigs.modules)) {
-					modulesAsObjectsArray.push({
-						name: moduleName,
-						status: this.phpConfigs.modules[moduleName]
-					});
-				}
-				return modulesAsObjectsArray;
-			},
-			get phpSettingsAsApiFormat() {
-				const settingsAsObjectsArray = []
-				for (const settingName of Object.keys(this.phpConfigs.settings)) {
-					settingsAsObjectsArray.push({
-						name: settingName,
-						value: this.phpConfigs.settings[settingName]
-					});
-				}
-				return settingsAsObjectsArray;
-			},
-
-			// Auxiliary states
+			// Auxiliary States
 			selectedPhpVerticalTab: 'modules',
 			updateSelectedPhpVerticalTab(tabName) {
 				this.selectedPhpVerticalTab = tabName;
 			},
 
-			// Modal states
+			// Modal States
 			isUpdatePhpVersionModalOpen: false,
 			openUpdatePhpVersionModal() {
 				this.isUpdatePhpVersionModalOpen = true;
@@ -70,8 +41,7 @@ script PhpRuntimeHorizontalTabContentLocalState(selectedVirtualHostHostname stri
 			},
 			updatePhpVersion() {
 				htmx.ajax(
-					'PUT',
-					'/api/v1/runtime/php/' + this.phpConfigs.hostname + '/',
+					'PUT', '/api/v1/runtime/php/' + this.phpConfigs.hostname + '/',
 					{
 						swap: 'none',
 						values: { version: this.phpConfigs.version },
@@ -88,9 +58,7 @@ templ PhpRuntimeHorizontalTabContent(
 	vhostsHostnames []string,
 ) {
 	<!-- PhpRuntimeHorizontalTabContent JavaScript -->
-	@PhpRuntimeHorizontalTabContentLocalState(
-		runtimeOverview.VirtualHostHostname.String(),
-	)
+	@PhpRuntimeHorizontalTabContentLocalState()
 	<!-- PhpRuntimeHorizontalTabContent HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
@@ -109,21 +77,23 @@ templ PhpRuntimeHorizontalTabContent(
 }
 
 templ PhpModulesCheckboxInputsSwitchToggles(phpConfigs *entity.PhpConfigs) {
-	<!-- PhpModulesCheckboxInputsSwitchToggles JavaScript -->
-	@templ.JSONScript("phpModulesCheckInputsSwitchToggles", phpConfigs.Modules)
-	<!-- PhpModulesCheckboxInputsSwitchToggles HTML -->
+	<!-- PhpModulesCheckboxInputsSwitchToggles -->
 	<div
 		x-show="selectedPhpVerticalTab == 'modules'"
-		class="grid grid-cols-9 gap-10"
+		class="gap-7.5 grid grid-cols-5 lg:grid-cols-6"
 	>
-		for _, module := range phpConfigs.Modules {
+	// Using the index as the key is not recommended, but in this case, the entities
+	// list used here is the exact same as the one that will be on Alpine.js, so
+	// the position of the entities will also be the same. Since we need Alpine to
+	// control the state of the checkboxes, we have to use the index as the key.
+		for moduleIndex, moduleEntity := range phpConfigs.Modules {
 			@componentForm.CheckboxInputSwitchToggle(
-				"", module.Name.String(),
-				"phpConfigs.modules['"+module.Name.String()+"']", "",
+				"", moduleEntity.Name.String(),
+				"phpConfigs.modules["+strconv.FormatInt(int64(moduleIndex), 10)+"].status",
+				"",
 			)
 		}
 	</div>
-	<input name="modules" type="hidden" x-bind:value="phpModulesAsApiFormat"/>
 }
 
 func transformPhpSettingsOptionsIntoStringSlice(
@@ -138,31 +108,27 @@ func transformPhpSettingsOptionsIntoStringSlice(
 }
 
 templ PhpSettingsInputs(phpConfigs *entity.PhpConfigs) {
-	<!-- PhpSettingsInputs JavaScript -->
-	@templ.JSONScript("phpSettingsInputs", phpConfigs.Settings)
-	<!-- PhpSettingsInputs HTML -->
+	<!-- PhpSettingsInputs -->
 	<div
 		x-show="selectedPhpVerticalTab == 'settings'"
-		class="grid grid-cols-4 gap-7"
+		class="grid grid-cols-3 gap-7"
 	>
-		for _, setting := range phpConfigs.Settings {
-			if setting.Type.String() == "text" {
+		for settingIndex, settingEntity := range phpConfigs.Settings {
+			if settingEntity.Type.String() == "text" {
 				@componentForm.InputField(
-					setting.Value.GetType(), "", setting.Name.String(),
-					"phpConfigs.settings['"+setting.Name.String()+"']",
+					settingEntity.Value.GetType(), "", settingEntity.Name.String(),
+					"phpConfigs.settings["+strconv.FormatInt(int64(settingIndex), 10)+"].value",
 					false,
 				)
 			} else {
 				@componentForm.SelectInput(
-					"", setting.Name.String(),
-					"phpConfigs.settings['"+setting.Name.String()+"']", "",
-					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
-					false,
+					"", settingEntity.Name.String(),
+					"phpConfigs.settings["+strconv.FormatInt(int64(settingIndex), 10)+"].value",
+					"", transformPhpSettingsOptionsIntoStringSlice(settingEntity.Options), false,
 				)
 			}
 		}
 	</div>
-	<input name="settings" type="hidden" x-bind:value="phpSettingsAsApiFormat"/>
 }
 
 func transformPhpVersionOptionsIntoStringSlice(
@@ -199,9 +165,8 @@ templ FunctionalPhpRuntimeContent(
 			hx-swap="none"
 		>
 			<div class="w-1/7 flex pl-5">
-				<p id="phpVersion" class="hidden">{ runtimeOverview.PhpConfigs.Version.Value.String() }</p>
 				@componentForm.SelectInput(
-					"version", "Version", "phpConfigs.version",
+					"version", "Version", "phpConfigs.version.value",
 					"openUpdatePhpVersionModal()",
 					transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
 					false,
