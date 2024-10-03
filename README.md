@@ -101,6 +101,22 @@ podman run --name sos --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it so
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
 
+### Web UIs
+
+This project has two web UIs, the previous Vue.js frontend and the new [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend. The Vue.js frontend is deprecated and will be removed in the future. It's available at `/_/` and the [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend is available at `/`.
+
+The new frontend based on the [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) combo mentioned was developed as a proof of concept to create an interface without needing to leave Go. To understand the entire conceptual and theoretical foundation behind using these technologies to create a new architecture, [access this article](https://ntorga.com/full-stack-go-app-with-htmx-and-alpinejs/). However, to grasp the practical basis of how to apply this new architecture, [refer to the proof of concept](https://github.com/ntorga/clean-ddd-full-stack-go-poc) used to develop it.
+
+For the interface code to be read and rendered by Go, we need to convert all `.templ` files into `.go` files. To do this, run the following command at the root of the application:
+
+```
+templ generate -path src/presentation/api
+```
+
+With this, Go will be able to provide the entire application interface at the previously indicated route (`/`).
+
+**NOTE:** It is important that this is done before using Air to create the binary; otherwise, the Web UI will not be embedded, and you will not be able to use it.
+
 ### VSCode Extensions
 
 The following extensions are highly encouraged to be used during development:
