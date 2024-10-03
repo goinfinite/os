@@ -42,12 +42,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 				rel="stylesheet"
 				href="/assets/additional.css"
 			/>
-			<style>
-                ::-webkit-scrollbar {
-                    width: 0;
-                    height: 0;
-                }
-            </style>
+			<style>::-webkit-scrollbar {width: 0;height: 0;}</style>
 			<script type="text/javascript">
 				window.__unocss = {
 					theme: {
@@ -97,7 +92,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 						xhr.overrideMimeType('text/json');
 						return (JSON.stringify(requestParams));
 					}
-				})
+				});
 			</script>
 			if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 				@DevWsHotReload()
@@ -107,7 +102,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->
-			<div class="w-full overflow-x-hidden h-screen overflow-h-auto p-6">
+			<div class="overflow-h-auto h-screen w-full overflow-x-hidden p-6">
 				@pageContent
 			</div>
 			@componentUtil.Toast()
