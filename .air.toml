@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
 bin = "bin/os"
-cmd = "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/os ./os.go"
+cmd = "make build"
 delay = 1000
 exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
 exclude_regex = [".*_templ.go"]
