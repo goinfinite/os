@@ -237,7 +237,7 @@ templ CreateVhostForm() {
 	>
 		<div class="my-6">
 			@componentForm.SelectInput(
-				"type", "Type", "virtualHost.type", "", "",
+				"type", "Type", "virtualHost.type", "",
 				valueObject.AvailableVirtualHostsTypes, true,
 			)
 		</div>
@@ -293,7 +293,7 @@ templ CreateMappingForm(vhostsHostnames []string) {
 			</template>
 			<template x-if="!isCreateMappingFromVhost">
 				@componentForm.SelectInput(
-					"hostname", "Hostname", "virtualHost.hostname", "", "",
+					"hostname", "Hostname", "virtualHost.hostname", "",
 					vhostsHostnames, true,
 				)
 			</template>
@@ -302,7 +302,7 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
 				@componentForm.SelectInput(
-					"targetValue", "Service Name", "mapping.targetValue", "", "",
+					"targetValue", "Service Name", "mapping.targetValue", "",
 					getOnlyServiceNames(), true,
 				)
 			</div>

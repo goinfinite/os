@@ -8,8 +8,10 @@ templ InputField(
 	<div class="relative w-full">
 		<input
 			type={ inputType }
-			id={ id }
-			name={ id }
+			if id != "" {
+				id={ id }
+				name={ id }
+			}
 			if bindValuePath != "" {
 				x-model:value={ bindValuePath }
 			}
