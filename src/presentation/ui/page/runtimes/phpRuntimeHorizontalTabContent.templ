@@ -40,14 +40,16 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 				this.isUpdatePhpVersionModalOpen = false;
 			},
 			updatePhpVersion() {
+				this.closeUpdatePhpVersionModal();
 				htmx.ajax(
 					'PUT', '/api/v1/runtime/php/' + this.phpConfigs.hostname + '/',
 					{
 						swap: 'none',
-						values: { version: this.phpConfigs.version },
+						values: { version: this.phpConfigs.version.value },
 					},
-				);
-				this.closeUpdatePhpVersionModal();
+				).then(() => {
+					this.$dispatch('refresh:runtimes-page-content');
+				});
 			},
 		}));
 	});
@@ -241,8 +243,8 @@ templ UpdatePhpVersionWarningContent() {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Do you really want to change the PHP version?
 	</h3>
-	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="phpConfigs.version"></span>.</strong>
-	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
+	<p class="font-bold">Make sure your application is compatible with PHP <span x-text="phpConfigs.version.value"></span> before proceeding.</p>
+	<p class="mt-4 text-sm">You must also remember to enable/disable any modules and adjust the settings in the new version, as the modules/settings of the previous version will not be automatically transferred.</p>
 }
 
 templ UpdatePhpVersionModal() {
