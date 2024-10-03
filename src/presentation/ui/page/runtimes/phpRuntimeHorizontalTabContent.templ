@@ -8,11 +8,31 @@ import (
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
 )
 
-script PhpRuntimeHorizontalTabContentLocalState(defaultVhostHostname string) {
+script PhpRuntimeHorizontalTabContentLocalState(selectedVirtualHostHostname string) {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('php', () => ({
-			// Primary states
+			// Primary States
 			phpConfigs: {},
+			resetPrimaryStates() {
+				this.phpConfigs = {
+					hostname: selectedVirtualHostHostname,
+					version: document.getElementById('phpVersion').textContent,
+					modules: Object.fromEntries(
+						JSON.parse(
+							document.getElementById('phpModulesCheckInputsSwitchToggles').textContent
+						).map(item => [item.name, item.status])
+					),
+					settings: Object.fromEntries(
+						JSON.parse(
+							document.getElementById('phpSettingsInputs').textContent
+						).map(item => [item.name, item.value])
+					),
+				};
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
 			get phpModulesAsApiFormat() {
 				const modulesAsObjectsArray = []
 				for (const moduleName of Object.keys(this.phpConfigs.modules)) {
@@ -33,22 +53,6 @@ script PhpRuntimeHorizontalTabContentLocalState(defaultVhostHostname string) {
 				}
 				return settingsAsObjectsArray;
 			},
-			init() {
-				this.phpConfigs = {
-					vhostHostname: defaultVhostHostname,
-					version: document.getElementById('phpVersion').textContent,
-					modules: Object.fromEntries(
-						JSON.parse(
-							document.getElementById('phpModulesCheckInputsSwitchToggles').textContent
-						).map(item => [item.name, item.status])
-					),
-					settings: Object.fromEntries(
-						JSON.parse(
-							document.getElementById('phpSettingsInputs').textContent
-						).map(item => [item.name, item.value])
-					),
-				};
-			},
 
 			// Auxiliary states
 			selectedPhpVerticalTab: 'modules',
@@ -65,10 +69,10 @@ script PhpRuntimeHorizontalTabContentLocalState(defaultVhostHostname string) {
 			closeUpdatePhpVersionModal() {
 				this.isUpdatePhpVersionModalOpen = false;
 			},
-			updateVersion() {
+			updatePhpVersion() {
 				htmx.ajax(
 					'PUT',
-					'/api/v1/runtime/php/' + this.phpConfigs.vhostHostname + '/',
+					'/api/v1/runtime/php/' + this.phpConfigs.hostname + '/',
 					{
 						swap: 'none',
 						values: { version: this.phpConfigs.version },
@@ -90,7 +94,7 @@ templ PhpRuntimeHorizontalTabContent(
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
 			if runtimeOverview.IsInstalled {
-				if runtimeOverview.CanVirtualHostHostnameAccessRuntime {
+				if runtimeOverview.IsVirtualHostUsingRuntime {
 					@FunctionalPhpRuntimeContent(runtimeOverview, vhostsHostnames)
 				} else {
 					@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
@@ -179,7 +183,7 @@ templ FunctionalPhpRuntimeContent(
 		<div class="float-left w-1/5">
 			@componentForm.SelectInput(
 				"virtualHost", "Virtual Host Hostname",
-				"phpConfigs.vhostHostname",
+				"phpConfigs.hostname",
 				"const vhostHostname = $event.target.value; updateSelectedVhostHostname(vhostHostname)",
 				vhostsHostnames, false,
 			)
@@ -278,7 +282,7 @@ templ UpdatePhpVersionModal() {
 	<!-- UpdatePhpVersionModal -->
 	@componentStructural.WarningModal(
 		"isUpdatePhpVersionModalOpen", "closeUpdatePhpVersionModal()",
-		"Cancel", "updateVersion()",
+		"Cancel", "updatePhpVersion()",
 		"update-version-button", "ph-swap", "Yes, change version",
 	) {
 		@UpdatePhpVersionWarningContent()
