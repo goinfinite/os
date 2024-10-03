@@ -62,8 +62,7 @@ script PhpRuntimeHorizontalTabContentLocalState(selectedVirtualHostHostname stri
 
 			// Modal states
 			isUpdatePhpVersionModalOpen: false,
-			openUpdatePhpVersionModal(phpVersion) {
-				this.phpConfigs.version = phpVersion;
+			openUpdatePhpVersionModal() {
 				this.isUpdatePhpVersionModalOpen = true;
 			},
 			closeUpdatePhpVersionModal() {
@@ -89,7 +88,9 @@ templ PhpRuntimeHorizontalTabContent(
 	vhostsHostnames []string,
 ) {
 	<!-- PhpRuntimeHorizontalTabContent JavaScript -->
-	@PhpRuntimeHorizontalTabContentLocalState(runtimeOverview.VirtualHostHostname.String())
+	@PhpRuntimeHorizontalTabContentLocalState(
+		runtimeOverview.VirtualHostHostname.String(),
+	)
 	<!-- PhpRuntimeHorizontalTabContent HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
@@ -179,6 +180,9 @@ templ FunctionalPhpRuntimeContent(
 	runtimeOverview presenterDto.RuntimeOverview,
 	vhostsHostnames []string,
 ) {
+	<!-- FunctionalPhpRuntimeContent JavaScript -->
+	@templ.JSONScript("phpConfigs", runtimeOverview.PhpConfigs)
+	<!-- FunctionalPhpRuntimeContent HTML -->
 	<div class="p-4">
 		<div class="float-left w-1/5">
 			@componentForm.SelectInput(
@@ -198,7 +202,7 @@ templ FunctionalPhpRuntimeContent(
 				<p id="phpVersion" class="hidden">{ runtimeOverview.PhpConfigs.Version.Value.String() }</p>
 				@componentForm.SelectInput(
 					"version", "Version", "phpConfigs.version",
-					"const phpVersion = $event.target.value; openUpdatePhpVersionModal(phpVersion)",
+					"openUpdatePhpVersionModal()",
 					transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
 					false,
 				)
