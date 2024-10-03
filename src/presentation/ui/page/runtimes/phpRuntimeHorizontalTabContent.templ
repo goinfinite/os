@@ -6,143 +6,78 @@ import (
 	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
 	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
-	"strconv"
 )
 
 script PhpRuntimeHorizontalTabContentLocalState(defaultVhostHostname string) {
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('php', () => ({
 			// Primary states
-			selectedVhostHostname: defaultVhostHostname,
-			selectedPhpVersion: '',
+			phpConfigs: {},
+			get phpModulesAsApiFormat() {
+				const modulesAsObjectsArray = []
+				for (const moduleName of Object.keys(this.phpConfigs.modules)) {
+					modulesAsObjectsArray.push({
+						name: moduleName,
+						status: this.phpConfigs.modules[moduleName]
+					});
+				}
+				return modulesAsObjectsArray;
+			},
+			get phpSettingsAsApiFormat() {
+				const settingsAsObjectsArray = []
+				for (const settingName of Object.keys(this.phpConfigs.settings)) {
+					settingsAsObjectsArray.push({
+						name: settingName,
+						value: this.phpConfigs.settings[settingName]
+					});
+				}
+				return settingsAsObjectsArray;
+			},
+			init() {
+				this.phpConfigs = {
+					vhostHostname: defaultVhostHostname,
+					version: document.getElementById('phpVersion').textContent,
+					modules: Object.fromEntries(
+						JSON.parse(
+							document.getElementById('phpModulesCheckInputsSwitchToggles').textContent
+						).map(item => [item.name, item.status])
+					),
+					settings: Object.fromEntries(
+						JSON.parse(
+							document.getElementById('phpSettingsInputs').textContent
+						).map(item => [item.name, item.value])
+					),
+				};
+			},
 
 			// Auxiliary states
 			selectedPhpVerticalTab: 'modules',
-			changeSelectedPhpVerticalTab(tabName) {
+			updateSelectedPhpVerticalTab(tabName) {
 				this.selectedPhpVerticalTab = tabName;
-			},
-			updateModuleStatus(phpVersion, moduleName, moduleStatus) {
-				htmx.ajax(
-					'PUT',
-					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
-					{
-						swap: 'none',
-						values: {
-							version: phpVersion,
-							'modules.name': moduleName,
-							'modules.status': moduleStatus
-						},
-					},
-				);
-			},
-			updateSettingValue(phpVersion, settingName, settingValue) {
-				htmx.ajax(
-					'PUT',
-					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
-					{
-						swap: 'none',
-						headers: {
-							"Content-Type": "application/json",
-						},
-						values: JSON.stringify({
-							version: phpVersion,
-							settings: [
-								{ name: settingName, value: settingValue }
-							],
-						}),
-					},
-				);
 			},
 
 			// Modal states
 			isUpdatePhpVersionModalOpen: false,
 			openUpdatePhpVersionModal(phpVersion) {
-				this.selectedPhpVersion = phpVersion;
+				this.phpConfigs.version = phpVersion;
 				this.isUpdatePhpVersionModalOpen = true;
 			},
 			closeUpdatePhpVersionModal() {
-				this.selectedPhpVersion = '';
 				this.isUpdatePhpVersionModalOpen = false;
 			},
 			updateVersion() {
 				htmx.ajax(
 					'PUT',
-					'/api/v1/runtime/php/' + this.selectedVhostHostname + '/',
+					'/api/v1/runtime/php/' + this.phpConfigs.vhostHostname + '/',
 					{
 						swap: 'none',
-						values: { version: this.selectedPhpVersion },
+						values: { version: this.phpConfigs.version },
 					},
 				);
 				this.closeUpdatePhpVersionModal();
 			},
 		}));
 	});
-}
-
-func transformPhpVersionOptionsIntoStringSlice(
-	versionOptions []valueObject.PhpVersion,
-) []string {
-	versionOptionsStrSlice := []string{}
-	for _, versionOption := range versionOptions {
-		versionOptionsStrSlice = append(versionOptionsStrSlice, versionOption.String())
-	}
-
-	return versionOptionsStrSlice
-}
-
-templ PhpModulesCheckboxInputsSwitchToggles(
-	selectedPhpVersion entity.PhpVersion,
-	modules []entity.PhpModule,
-) {
-	<div
-		x-show="selectedPhpVerticalTab == 'modules'"
-		class="grid grid-cols-9 gap-10"
-	>
-		for _, module := range modules {
-			@componentForm.CheckboxInputSwitchToggle(
-				module.Name.String(), module.Name.String(), "", "",
-				"updateModuleStatus('"+selectedPhpVersion.Value.String()+"', '"+module.Name.String()+"', '"+strconv.FormatBool(!module.Status)+"')",
-				module.Status,
-			)
-		}
-	</div>
-}
-
-func transformPhpSettingsOptionsIntoStringSlice(
-	options []valueObject.PhpSettingOption,
-) []string {
-	optionsStrSlice := []string{}
-	for _, phpOption := range options {
-		optionsStrSlice = append(optionsStrSlice, phpOption.String())
-	}
-
-	return optionsStrSlice
-}
-
-templ PhpSettingsSelectInputs(
-	selectedPhpVersion entity.PhpVersion,
-	settings []entity.PhpSetting,
-) {
-	<div
-		x-show="selectedPhpVerticalTab == 'settings'"
-		class="grid grid-cols-4 gap-7"
-	>
-		for _, setting := range settings {
-			if len(setting.Options) == 0 {
-				@componentForm.InputFieldReadOnly(
-					setting.Value.GetType(), setting.Name.String(),
-					setting.Name.String(), "", setting.Value.String(),
-				)
-			} else {
-				@componentForm.SelectInput(
-					setting.Name.String(), setting.Name.String(), "", setting.Value.String(),
-					"const settingValue = $event.target.value; updateSettingValue('"+selectedPhpVersion.Value.String()+"', '"+setting.Name.String()+"', settingValue)",
-					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
-					false,
-				)
-			}
-		}
-	</div>
 }
 
 templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
@@ -166,7 +101,7 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 					<span class="font-bold">Advanced Settings</span>
 					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
 				</summary>
-				<div class="flex space-x-10 mt-3 py-2 items-center">
+				<div class="mt-3 flex items-center space-x-10 py-2">
 					<div class="w-1/3">
 						@componentForm.InputField("text", "path", "Subdirectory", "", false)
 					</div>
@@ -188,11 +123,86 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 	</form>
 }
 
+func transformPhpVersionOptionsIntoStringSlice(
+	versionOptions []valueObject.PhpVersion,
+) []string {
+	versionOptionsStrSlice := []string{}
+	for _, versionOption := range versionOptions {
+		versionOptionsStrSlice = append(versionOptionsStrSlice, versionOption.String())
+	}
+
+	return versionOptionsStrSlice
+}
+
+templ PhpModulesCheckboxInputsSwitchToggles(
+	selectedPhpVersion entity.PhpVersion,
+	modules []entity.PhpModule,
+) {
+	<!-- PhpModulesCheckboxInputsSwitchToggles JavaScript -->
+	@templ.JSONScript("phpModulesCheckInputsSwitchToggles", modules)
+	<!-- PhpModulesCheckboxInputsSwitchToggles HTML -->
+	<div
+		x-show="selectedPhpVerticalTab == 'modules'"
+		class="grid grid-cols-9 gap-10"
+	>
+		for _, module := range modules {
+			@componentForm.CheckboxInputSwitchToggle(
+				"", module.Name.String(),
+				"phpConfigs.modules['"+module.Name.String()+"']", "",
+			)
+		}
+	</div>
+	<input name="modules" type="hidden" x-bind:value="phpModulesAsApiFormat"/>
+}
+
+func transformPhpSettingsOptionsIntoStringSlice(
+	options []valueObject.PhpSettingOption,
+) []string {
+	optionsStrSlice := []string{}
+	for _, phpOption := range options {
+		optionsStrSlice = append(optionsStrSlice, phpOption.String())
+	}
+
+	return optionsStrSlice
+}
+
+templ PhpSettingsInputs(
+	selectedPhpVersion entity.PhpVersion,
+	settings []entity.PhpSetting,
+) {
+	<!-- PhpSettingsInputs JavaScript -->
+	@templ.JSONScript("phpSettingsInputs", settings)
+	<!-- PhpSettingsInputs HTML -->
+	<div
+		x-show="selectedPhpVerticalTab == 'settings'"
+		class="grid grid-cols-4 gap-7"
+	>
+		for _, setting := range settings {
+			if setting.Type.String() == "text" {
+				@componentForm.InputField(
+					setting.Value.GetType(), "",
+					setting.Name.String(),
+					"phpConfigs.settings['"+setting.Name.String()+"']",
+					false,
+				)
+			} else {
+				@componentForm.SelectInput(
+					"", setting.Name.String(),
+					"phpConfigs.settings['"+setting.Name.String()+"']", "",
+					transformPhpSettingsOptionsIntoStringSlice(setting.Options),
+					false,
+				)
+			}
+		}
+	</div>
+	<input name="settings" type="hidden" x-bind:value="phpSettingsAsApiFormat"/>
+}
+
 templ UpdatePhpVersionWarningContent() {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Do you really want to change the PHP version?
 	</h3>
-	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="selectedPhpVersion"></span>.</strong>
+	<strong>Before changing, make sure your application is compatible with PHP version <span x-text="phpConfigs.version"></span>.</strong>
 	<p>Remember to then enable/disable the desired modules and adjust the settings in the new version, since the modules/settings of the previous version may be different.</p>
 }
 
@@ -215,39 +225,54 @@ templ InstalledPhpRuntimeContent(
 		<div class="float-left w-1/5">
 			@componentForm.SelectInput(
 				"virtualHost", "Virtual Host Hostname",
-				"", runtimeOverview.VirtualHostHostname.String(),
+				"phpConfigs.vhostHostname",
 				"const vhostHostname = $event.target.value; updateSelectedVhostHostname(vhostHostname)",
 				vhostsHostnames, false,
 			)
 		</div>
 		if runtimeOverview.CanVirtualHostHostnameAccessRuntime {
-			<div class="w-1/7 flex pl-5">
-				@componentForm.SelectInput(
-					"version", "Version", "",
-					runtimeOverview.PhpConfigs.Version.Value.String(),
-					"const phpVersion = $event.target.value; openUpdatePhpVersionModal(phpVersion)",
-					transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
-					false,
-				)
-			</div>
-			<div class="mt-6 flex">
-				@componentStructural.VerticalTabHeader(
-					[]componentStructural.VerticalTabHeaderItem{
-						{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
-						{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
-					}, "changeSelectedPhpVerticalTab",
-				)
-				<div class="px-10 py-4">
-					@PhpModulesCheckboxInputsSwitchToggles(
-						runtimeOverview.PhpConfigs.Version,
-						runtimeOverview.PhpConfigs.Modules,
-					)
-					@PhpSettingsSelectInputs(
-						runtimeOverview.PhpConfigs.Version,
-						runtimeOverview.PhpConfigs.Settings,
+			<form
+				id="update-php-runtime-configs-form"
+				hx-put={ "/api/v1/runtime/php/" + runtimeOverview.VirtualHostHostname.String() + "/" }
+				hx-ext="encoding-request-as-json"
+				hx-swap="none"
+			>
+				<div class="w-1/7 flex pl-5">
+					<p id="phpVersion" class="hidden">{ runtimeOverview.PhpConfigs.Version.Value.String() }</p>
+					@componentForm.SelectInput(
+						"version", "Version", "phpConfigs.version",
+						"const phpVersion = $event.target.value; openUpdatePhpVersionModal(phpVersion)",
+						transformPhpVersionOptionsIntoStringSlice(runtimeOverview.PhpConfigs.Version.Options),
+						false,
 					)
 				</div>
-			</div>
+				<div class="mt-6 flex">
+					@componentStructural.VerticalTabHeader(
+						[]componentStructural.VerticalTabHeaderItem{
+							{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
+							{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
+						}, "updateSelectedPhpVerticalTab",
+					)
+					<div class="px-10 py-4">
+						@PhpModulesCheckboxInputsSwitchToggles(
+							runtimeOverview.PhpConfigs.Version,
+							runtimeOverview.PhpConfigs.Modules,
+						)
+						@PhpSettingsInputs(
+							runtimeOverview.PhpConfigs.Version,
+							runtimeOverview.PhpConfigs.Settings,
+						)
+					</div>
+				</div>
+				<div class="mt-5 flex justify-end">
+					<div class="w-1/4">
+						@componentForm.SubmitButton(
+							"apply-php-runtime-configs-changes", "Apply changes",
+							"ph-check-fat", "", false,
+						)
+					</div>
+				</div>
+			</form>
 		} else {
 			<div class="mb-6 flex w-full"></div>
 			@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
