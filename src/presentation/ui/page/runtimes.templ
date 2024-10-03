@@ -10,7 +10,7 @@ import (
 script RuntimesIndexLocalState(selectedVhostHostname, selectedRuntimeType string) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('runtimes', () => ({
-			runtimeVhostHostname: selectedVhostHostname,
+			vhostHostname: selectedVhostHostname,
 			reloadRuntimePageContent(vhostHostname, runtimeType) {
 				htmx.ajax(
 					'GET',

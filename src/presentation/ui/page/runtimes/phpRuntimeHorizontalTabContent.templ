@@ -42,7 +42,7 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 			updatePhpVersion() {
 				this.closeUpdatePhpVersionModal();
 				htmx.ajax(
-					'PUT', '/api/v1/runtime/php/' + this.runtimeVhostHostname + '/',
+					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
 					{
 						swap: 'none',
 						values: { version: this.phpConfigs.version.value },
@@ -67,8 +67,8 @@ templ PhpRuntimeHorizontalTabContent(
 			if runtimeOverview.IsInstalled {
 				<div class="lg:max-w-1/3">
 					@componentForm.SelectInput(
-						"virtualHost", "Virtual Host Hostname", "runtimeVhostHostname",
-						"updateSelectedVhostHostname(runtimeVhostHostname)",
+						"virtualHost", "Virtual Host Hostname", "vhostHostname",
+						"updateSelectedVhostHostname(vhostHostname)",
 						vhostsHostnames, false,
 					)
 				</div>
