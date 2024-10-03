@@ -48,7 +48,7 @@ templ FileUploadTextInputFileContentReader(
 			@file-content-readed={ bindValuePath + " = $event.detail" }
 		/>
 		<div
-			@click={ "$refs." + id + "fileInput.click()" }
+			@click={ "$refs." + id + "FileInput.click()" }
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
 		>
 			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>

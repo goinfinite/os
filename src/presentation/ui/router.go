@@ -75,6 +75,13 @@ func (router *Router) mappingsRoutes() {
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
 }
 
+func (router *Router) runtimesRoutes() {
+	runtimesGroup := router.baseRoute.Group("/runtimes")
+
+	runtimesPresenter := presenter.NewRuntimesPresenter(router.persistentDbSvc)
+	runtimesGroup.GET("/", runtimesPresenter.Handler)
+}
+
 func (router *Router) sslsRoutes() {
 	sslsGroup := router.baseRoute.Group("/ssls")
 
@@ -125,6 +132,7 @@ func (router *Router) RegisterRoutes() {
 	router.accountsRoutes()
 	router.databasesRoutes()
 	router.mappingsRoutes()
+	router.runtimesRoutes()
 	router.sslsRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {

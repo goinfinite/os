@@ -1,10 +1,10 @@
 package componentStructural
 
-templ WarningModal(
+templ CriticalModal(
 	isOpenState, closeFunction, declineButtonLabel, confirmFunction, confirmButtonId,
 	confirmButtonIcon, confirmButonLabel string,
 ) {
-	<!-- WarningModal -->
+	<!-- CriticalModal -->
 	<div
 		x-show={ isOpenState }
 		x-transition:enter="transition ease-out duration-500"
@@ -15,7 +15,7 @@ templ WarningModal(
 		x-transition:leave-end="opacity-0"
 		class="fixed left-0 top-0 z-50 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
 	>
-		<div class="bg-os-500 relative mx-auto mt-20 max-w-2xl rounded-md p-6 drop-shadow-xl xl:mt-24">
+		<div class="relative mx-auto mt-20 max-w-2xl rounded-md bg-red-950 p-6 drop-shadow-xl xl:mt-24">
 			<div class="flex justify-end">
 				<button
 					@click={ closeFunction }
@@ -24,8 +24,8 @@ templ WarningModal(
 					<i class="ph-bold ph-x-square align-middle text-3xl"></i>
 				</button>
 			</div>
-			<div class="h-18 w-18 mx-auto -mt-2 mb-4 flex items-center justify-center rounded-full bg-amber-600 text-center text-5xl">
-				<i class="ph-duotone ph-warning-circle"></i>
+			<div class="h-18 w-18 mx-auto -mt-2 mb-4 flex items-center justify-center rounded-full bg-neutral-300 text-center text-5xl">
+				<i class="ph-duotone ph-warning text-red-950"></i>
 			</div>
 			<div class="mb-6 mt-3 px-2 text-center">
 				{ children... }
@@ -41,7 +41,7 @@ templ WarningModal(
 					id={ confirmButtonId }
 					type="submit"
 					@click={ confirmFunction }
-					class="w-full rounded-md border-none bg-amber-600 p-3 text-center text-base font-bold lowercase leading-none text-white hover:bg-amber-500"
+					class="w-full rounded-md border-none bg-red-800 p-3 text-center text-base font-bold lowercase leading-none text-white hover:bg-red-900"
 				>
 					<i class={ "ph-duotone " + confirmButtonIcon + " mr-1 align-middle text-xl" }></i>{ confirmButonLabel }
 				</button>

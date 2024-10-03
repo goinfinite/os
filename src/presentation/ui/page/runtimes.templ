@@ -1,0 +1,97 @@
+package page
+
+import (
+	"github.com/speedianet/os/src/domain/valueObject"
+	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	pageRuntimes "github.com/speedianet/os/src/presentation/ui/page/runtimes"
+	presenterDto "github.com/speedianet/os/src/presentation/ui/presenter/dto"
+)
+
+script RuntimesIndexLocalState(defaultVhostHostname, defaultRuntimeType string) {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('runtimes', () => ({
+			reloadRuntimePageContent(vhostHostname, runtimeType) {
+				htmx.ajax(
+					'GET',
+					'/runtimes/?vhostHostname=' + vhostHostname + '&runtimeType=' + runtimeType,
+					{
+						select: '#runtimes-page-content',
+						target: '#runtimes-page-content',
+						indicator: '#loading-overlay',
+						swap: 'outerHTML transition:true'
+					},
+				);
+			},
+			updateSelectedVhostHostname(selectedVhostHostname) {
+				this.reloadRuntimePageContent(selectedVhostHostname, defaultRuntimeType);
+			},
+			updateSelectedRuntimeType(selectedRuntimeType) {
+				this.reloadRuntimePageContent(defaultVhostHostname, selectedRuntimeType);
+			},
+		}));
+	});
+}
+
+templ RuntimesIndex(
+	runtimeOverview presenterDto.RuntimeOverview,
+	vhostsHostnames []string,
+) {
+	<div class="flex flex-col" x-data="runtimes">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Runtimes",
+				"Install the runtime services you want and manage each service by configuring the intrinsic aspects of each runtime as you see fit. Install only once and propagate to all the virtual hosts hostnames you need, configuring each one individually. This is an advanced section, so keep in mind that any changes made without knowledge of the configurations or modules may cause undesired effects.",
+				"ph-code",
+			)
+		</div>
+		<div
+			id="runtimes-page-content"
+			hx-get={ "/runtimes/?vhostHostname=" + runtimeOverview.VirtualHostHostname.String() + "&runtimeType=" + runtimeOverview.Type.String() }
+			hx-trigger="submit from:form delay:500ms"
+			hx-select="#runtimes-page-content"
+			hx-target="#runtimes-page-content"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
+			@RuntimesIndexLocalState(
+				runtimeOverview.VirtualHostHostname.String(),
+				runtimeOverview.Type.String(),
+			)
+			<div id="runtimes-tabs">
+				@RuntimesTabs(runtimeOverview, vhostsHostnames)
+			</div>
+		</div>
+	</div>
+}
+
+func readRuntimesTabHeaderItems(
+	selectedRuntimeType valueObject.RuntimeType,
+) []componentStructural.HorizontalTabHeaderItem {
+	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
+		{Label: "PHP", ComponentValue: "php"},
+	}
+
+	selectedRuntimeTypeStr := selectedRuntimeType.String()
+	for itemIndex := range tabHeaderItems {
+		if selectedRuntimeTypeStr != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
+			continue
+		}
+
+		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
+	}
+
+	return tabHeaderItems
+}
+
+templ RuntimesTabs(
+	runtimeOverview presenterDto.RuntimeOverview,
+	vhostsHostnames []string,
+) {
+	@componentStructural.HorizontalTabHeader(
+		readRuntimesTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
+	)
+	if runtimeOverview.Type.String() == "php" {
+		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
+	}
+}

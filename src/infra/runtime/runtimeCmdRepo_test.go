@@ -28,12 +28,15 @@ func TestRuntimeCmdRepo(t *testing.T) {
 
 	t.Run("UpdatePhpSettings", func(t *testing.T) {
 		phpSettingName, _ := valueObject.NewPhpSettingName("display_errors")
+		phpSettingType, _ := valueObject.NewPhpSettingType("select")
 		phpSettingValue, _ := valueObject.NewPhpSettingValue("Off")
 
 		err := runtimeCmdRepo.UpdatePhpSettings(
 			primaryVhost,
 			[]entity.PhpSetting{
-				entity.NewPhpSetting(phpSettingName, phpSettingValue, nil),
+				entity.NewPhpSetting(
+					phpSettingName, phpSettingType, phpSettingValue, nil,
+				),
 			},
 		)
 		if err != nil {
