@@ -251,7 +251,7 @@ templ ViewPemFilesModal() {
 		"closeViewPemFilesModal()", "",
 	) {
 		<div class="space-y-6">
-			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
 			<div class="space-y-1">
 				@componentForm.TextAreaReadOnly("certificate", "Certificate", "sslPair.certificate")
 				@componentForm.SubmitButton(
@@ -278,7 +278,7 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 		hx-swap="none"
 	>
 		<div class="mb-6 space-y-6">
-			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", false)
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
 			@componentForm.MultiSelectInput(
 				"virtualHosts", "Virtual Hosts Hostnames",
 				"sslPair.virtualHostsHostnames", vhostsHostnames,
@@ -301,7 +301,7 @@ templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 	}
 }
 
-templ SwapToSelfSignedWarningContent() {
+templ SwapToSelfSignedCriticalWarningContent() {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Are you sure you want to swap SSL certificate?
 	</h3>
@@ -309,11 +309,11 @@ templ SwapToSelfSignedWarningContent() {
 }
 
 templ SwapToSelfSignedModal() {
-	@componentStructural.WarningModal(
+	@componentStructural.CriticalModal(
 		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
 		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
 		"ph-swap", "Yes, swap ssl certificate",
 	) {
-		@SwapToSelfSignedWarningContent()
+		@SwapToSelfSignedCriticalWarningContent()
 	}
 }

@@ -192,7 +192,15 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 		}
 	}
 
-	return entity.NewPhpSetting(settingName, settingValue, settingOptions), nil
+	settingTypeStr := "text"
+	if len(settingOptions) > 0 {
+		settingTypeStr = "select"
+	}
+	settingType, _ := valueObject.NewPhpSettingType(settingTypeStr)
+
+	return entity.NewPhpSetting(
+		settingName, settingType, settingValue, settingOptions,
+	), nil
 }
 
 func (repo RuntimeQueryRepo) ReadPhpSettings(

@@ -8,8 +8,10 @@ templ InputField(
 	<div class="relative w-full">
 		<input
 			type={ inputType }
-			id={ id }
-			name={ id }
+			if id != "" {
+				id={ id }
+				name={ id }
+			}
 			if bindValuePath != "" {
 				x-model:value={ bindValuePath }
 			}
@@ -68,8 +70,7 @@ templ InputFieldWithPrefix(
 }
 
 templ InputFieldReadOnly(
-	inputType, id, label, bindValuePath string,
-	denseMode bool,
+	inputType, id, label, clientSideValuePath, serverSideValue string,
 ) {
 	<!-- InputFieldReadOnly -->
 	<div class="relative w-full">
@@ -77,12 +78,13 @@ templ InputFieldReadOnly(
 			type={ inputType }
 			id={ id }
 			name={ id }
-			x-model:value={ bindValuePath }
-			if denseMode {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full cursor-default rounded-md border px-1.5 text-[13px] text-slate-400 placeholder-transparent outline-none transition-all"
-			} else {
-				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default rounded-md border px-3 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
+			if clientSideValuePath != "" {
+				x-model:value={ clientSideValuePath }
 			}
+			if serverSideValue != "" {
+				value={ serverSideValue }
+			}
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all cursor-default text-slate-400"
 			readonly
 		/>
 		if label != "" {

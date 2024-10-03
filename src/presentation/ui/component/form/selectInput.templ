@@ -1,26 +1,25 @@
 package componentForm
 
 templ SelectInput(
-	id, label, bindValuePath string,
+	id, label, bindModelPath, onSelect string,
 	options []string,
-	denseMode bool,
+	shouldIncludeBlankOption bool,
 ) {
 	<!-- SelectInput -->
 	<div class="relative w-full">
 		<select
-			id={ id }
-			name={ id }
-			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+			if id != "" {
+				id={ id }
+				name={ id }
 			}
+			x-model={ bindModelPath }
+			x-on:change={ onSelect }
 			placeholder={ label }
-			if denseMode {
-				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full appearance-none rounded-md border px-1.5 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
-			} else {
-				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
-			}
+			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
-			<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+			if shouldIncludeBlankOption {
+				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+			}
 			for _, option := range options {
 				<option
 					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
@@ -48,26 +47,24 @@ type SelectLabelValuePair struct {
 }
 
 templ SelectInputWithLabelValuePair(
-	id, label, bindValuePath string,
+	id, label, bindModelPath string,
 	options []SelectLabelValuePair,
-	denseMode bool,
+	shouldIncludeBlankOption bool,
 ) {
 	<!-- SelectInputWithLabelValuePair -->
 	<div class="relative w-full">
 		<select
 			id={ id }
 			name={ id }
-			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+			if bindModelPath != "" {
+				x-model={ bindModelPath }
 			}
 			placeholder={ label }
-			if denseMode {
-				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full appearance-none rounded-md border px-1.5 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
-			} else {
-				class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
-			}
+			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
-			<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+			if shouldIncludeBlankOption {
+				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+			}
 			for _, option := range options {
 				<option
 					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"

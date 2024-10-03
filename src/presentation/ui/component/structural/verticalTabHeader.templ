@@ -1,0 +1,65 @@
+package componentStructural
+
+type VerticalTabHeaderItem struct {
+	Label          string
+	Icon           string
+	ComponentValue string
+}
+
+script VerticalTabHeaderLocalState(firstMenuItem string) {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('verticalTabHeader', () => ({
+			selectedMenuItem: '',
+			init() {
+				this.selectedMenuItem = firstMenuItem;
+			},
+			getTabLayoutClasses(itemValue) {
+				const defaultClasses = 'hover:bg-os-300 border-r-3 w-full bg-inherit py-2 px-6 text-neutral-50 transition-all';
+				if (itemValue == this.selectedMenuItem) {
+					return defaultClasses + ' border-speedia-500';
+				}
+
+				return defaultClasses + ' border-os-400';
+			},
+			getTabTitleWithIconClasses(itemValue) {
+				return itemValue == this.selectedMenuItem ? 'text-speedia-500' : '';
+			}
+		}));
+	});
+}
+
+templ VerticalTabHeader(
+	verticalTabHeaderItems []VerticalTabHeaderItem,
+	onClick string,
+) {
+	<!-- VerticalTabHeader -->
+	@VerticalTabHeaderLocalState(verticalTabHeaderItems[0].ComponentValue)
+	<sidebar class="w-25 flex h-full" x-data="verticalTabHeader">
+		<div class="w-full">
+			<ul>
+				for _, item := range verticalTabHeaderItems {
+					<li>
+						<button
+							type="button"
+							x-bind:class={ "getTabLayoutClasses('" + item.ComponentValue + "')" }
+							@click={ onClick + "('" + item.ComponentValue + "'); selectedMenuItem = '" + item.ComponentValue + "'" }
+						>
+							<div
+								x-bind:class={ "getTabTitleWithIconClasses('" + item.ComponentValue + "')" }
+							>
+								if item.Icon != "" {
+									<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
+										<i class={ "ph-duotone " + item.Icon + " block text-xl" }></i>
+									</div>
+								}
+								<div class="text-center text-sm">
+									{ item.Label }
+								</div>
+							</div>
+						</button>
+					</li>
+				}
+			</ul>
+		</div>
+	</sidebar>
+}

@@ -46,16 +46,18 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 	)
 }
 
-func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
+func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) (
+	[]entity.PhpModule, error,
+) {
 	modules := []entity.PhpModule{}
 
 	rawModulesSlice, assertOk := rawPhpModules.([]interface{})
 	if !assertOk {
-		rawModuleUnit, assertOk := rawPhpModules.(map[string]interface{})
+		rawUniqueModule, assertOk := rawPhpModules.(map[string]interface{})
 		if !assertOk {
 			return modules, errors.New("InvalidPhpModulesStructure")
 		}
-		rawModulesSlice = []interface{}{rawModuleUnit}
+		rawModulesSlice = []interface{}{rawUniqueModule}
 	}
 
 	for _, rawModule := range rawModulesSlice {
@@ -83,16 +85,18 @@ func parsePhpModules(rawPhpModules interface{}) ([]entity.PhpModule, error) {
 	return modules, nil
 }
 
-func parsePhpSettings(rawPhpSettings interface{}) ([]entity.PhpSetting, error) {
+func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}) (
+	[]entity.PhpSetting, error,
+) {
 	settings := []entity.PhpSetting{}
 
 	rawSettingsSlice, assertOk := rawPhpSettings.([]interface{})
 	if !assertOk {
-		rawSettingUnit, assertOk := rawPhpSettings.(map[string]interface{})
+		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]interface{})
 		if !assertOk {
 			return settings, errors.New("InvalidPhpSettingsStructure")
 		}
-		rawPhpSettings = []interface{}{rawSettingUnit}
+		rawSettingsSlice = []interface{}{rawUniqueSetting}
 	}
 
 	for _, rawSetting := range rawSettingsSlice {
@@ -118,10 +122,12 @@ func parsePhpSettings(rawPhpSettings interface{}) ([]entity.PhpSetting, error) {
 			continue
 		}
 
+		settingType, _ := valueObject.NewPhpSettingType("text")
+
 		settings = append(
 			settings,
 			entity.NewPhpSetting(
-				settingName, settingValue, []valueObject.PhpSettingOption{},
+				settingName, settingType, settingValue, []valueObject.PhpSettingOption{},
 			),
 		)
 	}
@@ -147,17 +153,21 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 	}
 	requestBody["hostname"] = c.Param("hostname")
 
-	phpModules, err := parsePhpModules(requestBody["modules"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	if _, exists := requestBody["modules"]; exists {
+		phpModules, err := controller.parsePhpModules(requestBody["modules"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		requestBody["modules"] = phpModules
 	}
-	requestBody["modules"] = phpModules
 
-	phpSettings, err := parsePhpSettings(requestBody["settings"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	if _, exists := requestBody["settings"]; exists {
+		phpSettings, err := controller.parsePhpSettings(requestBody["settings"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		}
+		requestBody["settings"] = phpSettings
 	}
-	requestBody["settings"] = phpSettings
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.runtimeService.UpdatePhpConfigs(requestBody),

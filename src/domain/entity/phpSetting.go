@@ -9,23 +9,26 @@ import (
 
 type PhpSetting struct {
 	Name    valueObject.PhpSettingName     `json:"name"`
+	Type    valueObject.PhpSettingType     `json:"type"`
 	Value   valueObject.PhpSettingValue    `json:"value"`
 	Options []valueObject.PhpSettingOption `json:"options"`
 }
 
 func NewPhpSetting(
 	name valueObject.PhpSettingName,
+	settingType valueObject.PhpSettingType,
 	value valueObject.PhpSettingValue,
 	options []valueObject.PhpSettingOption,
 ) PhpSetting {
 	return PhpSetting{
 		Name:    name,
+		Type:    settingType,
 		Value:   value,
 		Options: options,
 	}
 }
 
-// format: name:value:suggestedValue1,suggestedValue2,suggestedValue3
+// format: name:value:type:suggestedValue1,suggestedValue2,suggestedValue3
 func NewPhpSettingFromString(stringValue string) (setting PhpSetting, err error) {
 	stringValueParts := strings.Split(stringValue, ":")
 	if len(stringValueParts) == 0 {
@@ -46,10 +49,11 @@ func NewPhpSettingFromString(stringValue string) (setting PhpSetting, err error)
 		return setting, err
 	}
 
+	settingType, _ := valueObject.NewPhpSettingType("text")
 	options := []valueObject.PhpSettingOption{}
 
 	if len(stringValueParts) == 2 {
-		return NewPhpSetting(name, value, options), nil
+		return NewPhpSetting(name, settingType, value, options), nil
 	}
 
 	optionsParts := strings.Split(stringValueParts[2], ",")
@@ -63,5 +67,6 @@ func NewPhpSettingFromString(stringValue string) (setting PhpSetting, err error)
 		}
 	}
 
-	return NewPhpSetting(name, value, options), nil
+	settingType, _ = valueObject.NewPhpSettingType("select")
+	return NewPhpSetting(name, settingType, value, options), nil
 }
