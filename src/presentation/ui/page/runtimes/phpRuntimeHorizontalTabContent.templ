@@ -42,7 +42,7 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 			updatePhpVersion() {
 				this.closeUpdatePhpVersionModal();
 				htmx.ajax(
-					'PUT', '/api/v1/runtime/php/' + this.phpConfigs.hostname + '/',
+					'PUT', '/api/v1/runtime/php/' + this.runtimeVhostHostname + '/',
 					{
 						swap: 'none',
 						values: { version: this.phpConfigs.version.value },
@@ -63,10 +63,18 @@ templ PhpRuntimeHorizontalTabContent(
 	@PhpRuntimeHorizontalTabContentLocalState()
 	<!-- PhpRuntimeHorizontalTabContent HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
-		<div class="bg-os-500 rounded-b-lg rounded-r-lg px-4 py-2">
+		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">
 			if runtimeOverview.IsInstalled {
+				<div class="lg:max-w-1/3">
+					@componentForm.SelectInput(
+						"virtualHost", "Virtual Host Hostname", "runtimeVhostHostname",
+						"updateSelectedVhostHostname(runtimeVhostHostname)",
+						vhostsHostnames, false,
+					)
+				</div>
 				if runtimeOverview.IsVirtualHostUsingRuntime {
 					@FunctionalPhpRuntimeContent(runtimeOverview, vhostsHostnames)
+					@UpdatePhpVersionModal()
 				} else {
 					@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
 				}
@@ -74,7 +82,6 @@ templ PhpRuntimeHorizontalTabContent(
 				@componentStructural.ServiceNotInstalledWarningForm("php")
 			}
 		</div>
-		@UpdatePhpVersionModal()
 	</div>
 }
 
@@ -151,14 +158,8 @@ templ FunctionalPhpRuntimeContent(
 	<!-- FunctionalPhpRuntimeContent JavaScript -->
 	@templ.JSONScript("phpConfigs", runtimeOverview.PhpConfigs)
 	<!-- FunctionalPhpRuntimeContent HTML -->
-	<div class="p-4">
-		<div class="lg:max-w-1/2 flex flex-row space-x-5">
-			@componentForm.SelectInput(
-				"virtualHost", "Virtual Host Hostname",
-				"phpConfigs.hostname",
-				"const vhostHostname = $event.target.value; updateSelectedVhostHostname(vhostHostname)",
-				vhostsHostnames, false,
-			)
+	<div class="mt-6">
+		<div class="lg:max-w-1/3">
 			@componentForm.SelectInput(
 				"version", "Version", "phpConfigs.version.value",
 				"openUpdatePhpVersionModal()",
@@ -172,14 +173,14 @@ templ FunctionalPhpRuntimeContent(
 			hx-ext="encoding-request-as-json"
 			hx-swap="none"
 		>
-			<div class="mt-6 flex">
+			<div class="mt-6 flex justify-stretch">
 				@componentStructural.VerticalTabHeader(
 					[]componentStructural.VerticalTabHeaderItem{
 						{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
 						{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
 					}, "updateSelectedPhpVerticalTab",
 				)
-				<div id="php-vertical-tab-content" class="px-10 py-4">
+				<div id="php-vertical-tab-content" class="w-full p-8">
 					@PhpModulesCheckboxInputsSwitchToggles(runtimeOverview.PhpConfigs)
 					@PhpSettingsInputs(runtimeOverview.PhpConfigs)
 				</div>
@@ -203,6 +204,7 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 		hx-post="/api/v1/vhosts/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		class="mt-4 p-4"
 	>
 		<h1 class="flex text-3xl">The Selected Virtual Host Doesn't Map to PHP Yet</h1>
 		<p class="mt-2 text-justify">
