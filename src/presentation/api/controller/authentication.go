@@ -36,7 +36,7 @@ func (controller *AuthController) GenerateJwtWithCredentials(c echo.Context) err
 	}
 	requestBody["ipAddress"] = c.RealIP()
 
-	return apiHelper.ServiceResponseWrapper(
+	return apiHelper.ServiceTokenResponseWrapper(
 		c, controller.authService.GenerateJwtWithCredentials(requestBody),
 	)
 }
