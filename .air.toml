@@ -11,3 +11,9 @@ exclude_regex = [".*_templ.go"]
 follow_symlink = false
 ignore = ["*_test.go", "testHelpers.go"]
 include_ext = ["go", "tpl", "tmpl", "templ", "html", "js", "css"]
+
+[log]
+main_only = true
+
+[screen]
+clear_on_rebuild = true
