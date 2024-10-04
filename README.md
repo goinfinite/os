@@ -121,7 +121,10 @@ If you look closely at the script, you'll see that it mounts the project's `bin`
 
 With this approach you don't need to rebuild the container every time you change the code. Although sometimes you may want to restart the container to apply some changes, specially when changing the dependencies or system configurations. In this case, just hit CTRL+C to stop the container and run the script again.
 
-Note: you must run the script from the project's root directory.
+**Notes:**
+
+1. You must run the script from the project's root directory;
+2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
 
 ### Web UIs
 

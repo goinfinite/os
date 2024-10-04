@@ -19,8 +19,9 @@ esac
 echo "=> Building the container..."
 make build
 podman build -t os:latest .
+# TODO: Re-add --env 'DEV_MODE=true' after Echo v4.13.0 release.
 podman run --name os -d \
-  --env 'LOG_LEVEL=debug' --env 'DEV_MODE=true' --env 'PRIMARY_VHOST=speedia.cloud' \
+  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=speedia.cloud' \
   --hostname=speedia.cloud --cpus=2 --memory=2g --rm \
   --volume "$(pwd)/bin:/speedia/bin:Z,ro,bind,slave" \
   "${ports[@]}" -it os:latest
