@@ -6,7 +6,7 @@ script ToastGlobalState() {
 			toastVisible: false,
 			toastMessage: '',
 			toastType: 'danger',
-			
+
 			displayToast(message, type) {
 				this.toastVisible = true;
 				this.toastMessage = message;
@@ -22,6 +22,11 @@ script ToastGlobalState() {
 	});
 
 	document.addEventListener('htmx:afterRequest', (event) => {
+		const isTokenResponse = event.detail.xhr.getResponseHeader("X-Is-Token-Response");
+		if (isTokenResponse === 'true') {
+			return;
+		}
+
 		const contentType = event.detail.xhr.getResponseHeader("Content-Type");
 		if (contentType !== 'application/json') {
 			return;
