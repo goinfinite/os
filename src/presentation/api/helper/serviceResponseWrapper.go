@@ -34,3 +34,12 @@ func ServiceResponseWrapper(
 	}
 	return c.JSON(responseStatus, formattedResponse)
 }
+
+func ServiceTokenResponseWrapper(
+	c echo.Context,
+	serviceOutput service.ServiceOutput,
+) error {
+	c.Response().Header().Set("X-Is-Token-Response", "true")
+
+	return ServiceResponseWrapper(c, serviceOutput)
+}
