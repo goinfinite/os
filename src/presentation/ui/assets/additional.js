@@ -1,8 +1,8 @@
 "use strict";
 
-document.addEventListener("alpine:initializing", () => {
-  async function jsonAjax(method, url, data) {
-    loadingOverlayElement = document.getElementById("loading-overlay");
+document.addEventListener("alpine:init", () => {
+  async function jsonAjax(method, url, payload) {
+    const loadingOverlayElement = document.getElementById("loading-overlay");
     loadingOverlayElement.classList.add("htmx-request");
 
     await fetch(url, {
@@ -11,7 +11,7 @@ document.addEventListener("alpine:initializing", () => {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     })
       .then((response) => {
         loadingOverlayElement.classList.remove("htmx-request");
