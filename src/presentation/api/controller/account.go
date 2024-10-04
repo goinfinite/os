@@ -2,6 +2,7 @@ package apiController
 
 import (
 	"github.com/labstack/echo/v4"
+	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
 )
@@ -64,6 +65,15 @@ func (controller *AccountController) Update(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
+	}
+
+	shouldUpdateApiKey, err := voHelper.InterfaceToBool(
+		requestBody["shouldUpdateApiKey"],
+	)
+	if err == nil && shouldUpdateApiKey {
+		return apiHelper.ServiceTokenResponseWrapper(
+			c, controller.accountService.Update(requestBody),
+		)
 	}
 
 	return apiHelper.ServiceResponseWrapper(
