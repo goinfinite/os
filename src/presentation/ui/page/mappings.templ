@@ -20,14 +20,14 @@ script MappingsIndexLocalState() {
 			resetPrimaryStates() {
 				this.virtualHost = {
 					'hostname': '',
-					'type': '',
+					'type': 'top-level',
 					'rootDirectory': '',
 					'parentHostname': ''
 				}
 				this.mapping = {
 					'id': 0,
 					'path': '',
-					'matchPattern': '',
+					'matchPattern': 'begins-with',
 					'targetType': 'url',
 					'targetValue': '',
 					'targetHttpResponseCode': ''
@@ -238,7 +238,7 @@ templ CreateVhostForm() {
 		<div class="my-6">
 			@componentForm.SelectInput(
 				"type", "Type", "virtualHost.type", "",
-				valueObject.AvailableVirtualHostsTypes, true,
+				valueObject.AvailableVirtualHostsTypes, false,
 			)
 		</div>
 		<template x-if="virtualHost.type == 'top-level'">
@@ -331,7 +331,9 @@ templ CreateMappingForm(vhostsHostnames []string) {
 					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
 				</summary>
 				<div class="mt-5 py-2">
-					@componentMappings.MatchPatternSelectInput("matchPattern", "Match Pattern", "mapping.matchPattern")
+					@componentMappings.MatchPatternSelectInput(
+						"matchPattern", "Match Pattern", "mapping.matchPattern",
+					)
 				</div>
 			</details>
 		</section>
