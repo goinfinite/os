@@ -25,7 +25,7 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 				this.resetPrimaryStates();
 			},
 			async updatePhpConfigs() {
-				await window.jsonAjax(
+				await jsonAjax(
 					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
 					{
 						version: this.phpConfigs.version.value,
