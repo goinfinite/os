@@ -31,6 +31,9 @@ sleep 5
 echo "=> Replacing the standard binary with the development binary..."
 podman exec os /bin/bash -c 'rm -f os && ln -s bin/os os && supervisorctl restart os-api'
 
+echo "=> Creating a development account..."
+podman exec os /bin/bash -c 'os account create -u dev -p 123456'
+
 echo
 echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
