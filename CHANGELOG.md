@@ -1,10 +1,15 @@
 # Changelog
 
 ```log
-0.0.9 - 2024/XX/XX
+0.0.9 - 2024/10/04
 refactor(front): runtime page with HTMX+Alpine.js
 refactor(front): ssls page with HTMX+Alpine.js
 feat: chown default dirs after service install/add
+feat: add jsonAjax helper
+feat: add dev-build.sh script and make file
+fix: adjust mapping layout for lower resolutions
+fix: bug on match pattern on mappings
+fix: bug on error level and error log php update
 
 0.0.8 - 2024/09/23
 refactor(front): databases page with HTMX+Alpine.js
