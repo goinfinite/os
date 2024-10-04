@@ -66,8 +66,8 @@ When running in production, the `/speedia/.env` file is only used if the environ
 Speedia OS commands can harm your system, so it's important to run the unit tests in a proper container:
 
 ```
-podman build -t sos-unit-test:latest -f Containerfile.test .
-podman run --rm -it sos-unit-test:latest
+podman build -t os-unit-test:latest -f Containerfile.test .
+podman run --rm -it os-unit-test:latest
 ```
 
 Make sure you have the `.env` file in the root of the git directory before running the tests.
@@ -87,19 +87,73 @@ For instance there you'll find a `testHelpers.go` file that is used to read the 
 
 ### Building
 
+#### Simple Build
+
 To build the project, run the command below. It takes two minutes to build the project at first. After that, it takes less than 10 seconds to build.
 
 ```
-podman build -t sos:latest .
+podman build -t os:latest .
 ```
 
 To run the project you may use the following command:
 
 ```
-podman run --name sos --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it sos:latest
+podman run --name os --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it os:latest
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
+
+#### Development Build
+
+When developing the project, you may want to use the following steps for the best experience:
+
+1. Add this to your `.bashrc` (or equivalent) file if you don't have it yet:
+
+```bash
+function os-build() {
+    ports=(-p 1618:1618 -p 7080:7080)
+    case ${1} in
+    http)
+        sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+        ports+=(-p 80:80 -p 443:443)
+        ;;
+    no-cache)
+        podman image prune -a
+        podman rmi localhost/os -f
+        ;;
+    esac
+
+    make build
+    podman build -t os:latest .
+    podman run --name os \
+        --env 'LOG_LEVEL=debug' --env 'DEV_MODE=true' --env 'PRIMARY_VHOST=speedia.cloud' \
+        --hostname=speedia.cloud --cpus=2 --memory=2g --rm \
+        --volume "$(pwd)/bin:/speedia/bin:Z,ro,bind,slave" \
+        "${ports[@]}" -it os:latest
+}
+```
+
+Read the script above and understand what it does. The `os-build` function will build the project, run the container, and expose the ports 1618 and 7080.
+
+If you pass the `http` argument, it will also expose the ports 80 and 443 to the host. If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch.
+
+Port 1618 is used for the dashboard and port 7080 is used for the OpenLiteSpeed admin panel which may come in handy during development related to the PHP features, but isn't necessary, so you can remove it if you want.
+
+2. Run `source ~/.bashrc` (or equivalent) to reload the terminal or close and open the terminal;
+
+3. Open a new terminal and run `os-build` to build and run the container on that window. You could add the `-d` flag to run the container in the background on the `os-build` script, but to easily stop the container with CTRL+C instead of using `podman stop os`, it's better to run in a second terminal, but you can do it as you prefer;
+
+4. Back on the first terminal, run `air` to monitor any changes in the project and recompile it automatically. Since we're using the `DEV_MODE=true` environment variable, the frontend will also automatically reload when the `os-api` service is restarted by Air (check the Makefile to understand how it works);
+
+5. On the very first time you build the container, you must run the following command to symlink the binary Air will generate to the one used by the container entrypoint:
+
+```
+podman exec os /bin/bash -c 'rm -f os && ln -s bin/os os && supervisorctl restart os-api'
+```
+
+If you look closely at the `os-build` function, you'll see that it mounts the `bin` directory to the container. This is necessary because Air will generate the binary in the `bin` directory and the container will look for the binary in the root of the container. The symlink command above will make sure the container is using the binary you're altering during development.
+
+Note: all the commands above are meant to be run in the root of the project (before src/).
 
 ### Web UIs
 
