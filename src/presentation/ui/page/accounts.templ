@@ -78,6 +78,26 @@ script AccountsIndexLocalState() {
 					},
 				);
 			},
+			isDeleteAccountModalOpen: false,
+			openDeleteAccountModal(id, username) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.account.username = username;
+				this.isDeleteAccountModalOpen = true;
+			},
+			closeDeleteAccountModal() {
+				this.isDeleteAccountModalOpen = false;
+			},
+			deleteAccount() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/account/' + this.account.id + '/',
+					{swap: 'none'},
+				);
+				this.$dispatch('delete:account');
+				this.closeDeleteAccountModal();
+			},
 		}));
 	});
 }
@@ -97,7 +117,7 @@ templ AccountsIndex(accounts []entity.Account) {
 		<div
 			id="accounts-page-content"
 			hx-get="/accounts/"
-			hx-trigger="submit from:form delay:500ms"
+			hx-trigger="submit from:form delay:500ms, delete:account from:window delay:250ms"
 			hx-select="#accounts-page-content"
 			hx-target="#accounts-page-content"
 			hx-swap="outerHTML transition:true"
@@ -109,6 +129,10 @@ templ AccountsIndex(accounts []entity.Account) {
 		</div>
 		@UpdatePasswordModal()
 		@UpdateApiKeyModal()
+		@componentStructural.DeleteModal(
+			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
+			"account.username", "account.id",
+		)
 	</div>
 }
 
@@ -146,7 +170,8 @@ templ AccountsTable(accounts []entity.Account) {
 								"update api key", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600", "deleteAccount()",
+								"ph-trash", "red-800", "red-600",
+								"openDeleteAccountModal("+account.Id.String()+", '"+account.Username.String()+"')",
 								"delete account", "red-500",
 							)
 						</div>
