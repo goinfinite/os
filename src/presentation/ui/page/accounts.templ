@@ -17,6 +17,7 @@ script AccountsIndexLocalState() {
 					groupId: '',
 					username: '',
 					password: '',
+					apiKey: '',
 				}
 			},
 			init() {
@@ -30,9 +31,6 @@ script AccountsIndexLocalState() {
 				}
 
 				return this.account.password.length < 6 || this.account.password.length > 64;
-			},
-			updateApiKey() {
-				console.log('Update API key');
 			},
 			deleteAccount() {
 				console.log('Delete account');
@@ -49,8 +47,39 @@ script AccountsIndexLocalState() {
 			closeUpdatePasswordModal() {
 				this.isUpdatePasswordModalOpen = false;
 			},
-		}))
-	})
+			isUpdateApiKeyModalOpen: false,
+			openUpdateApiKeyModal(id, username) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.account.username = username;
+				this.isUpdateApiKeyModalOpen = true;
+			},
+			closeUpdateApiKeyModal() {
+				this.isUpdateApiKeyModalOpen = false;
+				this.account.apiKey = '';
+			},
+			updateApiKey() {
+				htmx.ajax(
+					'PUT',
+					'/api/v1/account/',
+					{
+						swap: 'none',
+						values: { id: this.account.id, shouldUpdateApiKey: true },
+						handler: (_, responseEvent) => {
+							const httpResponseObject = responseEvent.xhr;
+							if (httpResponseObject.status !== 200) {
+								return;
+							}
+
+							const responseData = JSON.parse(httpResponseObject.response);
+							this.account.apiKey = responseData.body;
+						}
+					},
+				);
+			},
+		}));
+	});
 }
 
 templ AccountsIndex(accounts []entity.Account) {
@@ -79,6 +108,7 @@ templ AccountsIndex(accounts []entity.Account) {
 			</div>
 		</div>
 		@UpdatePasswordModal()
+		@UpdateApiKeyModal()
 	</div>
 }
 
@@ -111,8 +141,9 @@ templ AccountsTable(accounts []entity.Account) {
 								"update password", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-key", "blue-900", "blue-700", "updateApiKey()",
-								"update API key", "blue-500",
+								"ph-key", "blue-900", "blue-700",
+								"openUpdateApiKeyModal("+account.Id.String()+", '"+account.Username.String()+"')",
+								"update api key", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600", "deleteAccount()",
@@ -135,7 +166,6 @@ templ UpdatePasswordForm() {
 		<div class="mb-6">
 			<input type="hidden" name="id" x-bind:value="account.id"/>
 			@componentForm.PasswordInput("password", "Password", "account.password", false)
-			<p class="bg-os-800 px-4 py-3 mt-2 rounded-md text-sm">Must be at least 6 characters long and no more than 64.</p>
 		</div>
 		@componentForm.DeactivatableSubmitButton(
 			"Create", "ph-key", "closeUpdatePasswordModal()",
@@ -150,5 +180,24 @@ templ UpdatePasswordModal() {
 		"account.id",
 	) {
 		@UpdatePasswordForm()
+	}
+}
+
+templ UpdateApiKeyContent() {
+	<div class="mb-6">
+		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
+	</div>
+	@componentForm.SubmitButton(
+		"generate-new-api-key", "Generate new api key", "ph-key", "updateApiKey()",
+		false,
+	)
+}
+
+templ UpdateApiKeyModal() {
+	@componentStructural.Modal(
+		"Update Api Key", "isUpdateApiKeyModalOpen", "closeUpdateApiKeyModal()",
+		"account.username",
+	) {
+		@UpdateApiKeyContent()
 	}
 }
