@@ -58,7 +58,7 @@ func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 	selectedVhostHostname valueObject.Fqdn,
 ) (runtimeOverview presenterDto.RuntimeOverview, err error) {
 	isInstalled := false
-	canVirtualHostHostnameAccessRuntime := false
+	isVirtualHostUsingRuntime := false
 
 	var phpConfigsPtr *entity.PhpConfigs
 	if runtimeType.String() == "php" {
@@ -66,9 +66,9 @@ func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
 
 		isInstalled = true
-		canVirtualHostHostnameAccessRuntime = true
+		isVirtualHostUsingRuntime = true
 		if responseOutput.Status != service.Success {
-			canVirtualHostHostnameAccessRuntime = false
+			isVirtualHostUsingRuntime = false
 			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
 			if assertOk {
 				isInstalled = responseOutputBodyStr != "ServiceUnavailable"
@@ -85,7 +85,7 @@ func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 
 	return presenterDto.NewRuntimeOverview(
 		selectedVhostHostname, runtimeType, isInstalled,
-		canVirtualHostHostnameAccessRuntime, phpConfigsPtr,
+		isVirtualHostUsingRuntime, phpConfigsPtr,
 	), nil
 }
 
@@ -96,16 +96,22 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 	}
 	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
 	if err != nil {
+		slog.Error("InvalidRuntimeType", slog.Any("err", err))
 		return nil
 	}
 
-	selectedVhostHostname, err := valueObject.NewFqdn(c.QueryParam("vhostHostname"))
+	primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
+		slog.Error("ReadPrimaryVirtualHost", slog.Any("err", err))
+		return nil
+	}
+	selectedVhostHostname := primaryVhostHostname
+	if c.QueryParam("vhostHostname") != "" {
+		selectedVhostHostname, err = valueObject.NewFqdn(c.QueryParam("vhostHostname"))
 		if err != nil {
+			slog.Error("InvalidVhostHostname", slog.Any("err", err))
 			return nil
 		}
-		selectedVhostHostname = primaryVhostHostname
 	}
 
 	runtimeOverview, err := presenter.runtimeOverviewFactory(

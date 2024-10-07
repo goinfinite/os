@@ -24,6 +24,7 @@
     "grpcs",
     "gsub",
     "Hostnames",
+    "htmx",
     "installables",
     "Installables",
     "ioncube",
@@ -83,5 +84,6 @@
     "webserver",
     "zerolog",
     "Zerolog"
-  ]
+  ],
+  "editor.formatOnSave": true
 }

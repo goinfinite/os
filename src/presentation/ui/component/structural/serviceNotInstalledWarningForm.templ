@@ -14,7 +14,7 @@ templ ServiceNotInstalledWarningForm(serviceName string) {
 		<span class="mr-3">The <span class="text-speedia-300 font-bold">{ serviceName }</span> service is not installed yet.</span>
 		@componentForm.SubmitButton(
 			"schedule-service-installation",
-			"Schedule "+serviceName+" service installation", "ph-caret-line-down",
+			"Schedule "+serviceName+" service installation", "ph-queue",
 			"", true,
 		)
 	</form>

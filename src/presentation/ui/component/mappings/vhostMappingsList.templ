@@ -12,9 +12,9 @@ templ VhostMappingsList(
 	deleteOnClick string,
 ) {
 	<!-- VhostMappingsList -->
-	<div class="bg-os-500 p-4 flex-col rounded mb-1.5">
-		<div class="flex justify-between items-center">
-			<div class="flex space-x-3">
+	<div class="bg-os-500 flex-col rounded-md p-3">
+		<div class="flex items-center justify-between">
+			<div class="flex gap-4">
 				<span>{ mapping.Path.String() }</span>
 				switch mapping.TargetType.String() {
 					case "service":
