@@ -47,7 +47,7 @@ func HttpServerInit(
 			os.Exit(1)
 		}
 
-		aliases := []string{}
+		aliases := []string{"localhost", "127.0.0.1"}
 		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", aliases)
 		if err != nil {
 			slog.Error("GenerateSelfSignedCertFailed", slog.Any("error", err))

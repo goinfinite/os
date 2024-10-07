@@ -2,19 +2,19 @@ package componentStructural
 
 templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 	<!-- Tag -->
-	<div class={ "flex rounded-md border-solid border-2 border-" + tagColor + " text-sm w-fit" }>
-		<div class={ "bg-" + tagColor }>
-			<div class="mx-2 flex items-center space-x-1">
+	<div class={ "flex rounded-md border-solid border-2.5 border-" + tagColor + " text-sm" }>
+		<div class={ "bg-" + tagColor + " flex items-center" }>
+			<div class="flex items-center px-1">
 				if highlightedIcon != "" {
 					<i class={ "ph-duotone " + highlightedIcon + " text-lg" }></i>
 				}
 				if highlightedLabel != "" {
-					<span class="mb-0.3 text-neutral-50">{ highlightedLabel }</span>
+					<span class="max-w-64 truncate">{ highlightedLabel }</span>
 				}
 			</div>
 		</div>
-		<div class="flex items-center">
-			<span class="mb-0.2 mx-2">{ tagValue }</span>
-		</div>
+		<span class={ "leading-normal ring-" + tagColor + " ring-offset-" + tagColor + " rounded-md px-1 py-0.5 ring-1 ring-offset-1 max-w-64 truncate" }>
+			@templ.Raw(tagValue)
+		</span>
 	</div>
 }

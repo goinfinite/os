@@ -2,7 +2,7 @@ package runtimeInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -76,19 +76,26 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 	if err != nil {
 		return err
 	}
+	phpConfigFilePathStr := phpConfFilePath.String()
 
 	for _, setting := range settings {
-		name := setting.Name.String()
-		value := setting.Value.String()
+		settingName := setting.Name.String()
+		settingValue := setting.Value.String()
 		if setting.Value.GetType() == "string" {
-			value = "\"" + value + "\""
+			settingValue = "\"" + settingValue + "\""
+			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
 		}
 
 		_, err := infraHelper.RunCmd(
-			"sed", "-i", "s/"+name+" .*/"+name+" "+value+"/g", phpConfFilePath.String(),
+			"sed", "-i", "s|"+settingName+" .*|"+settingName+" "+settingValue+"|g", phpConfigFilePathStr,
 		)
 		if err != nil {
-			log.Printf("(%s) UpdatePhpSettingFailed: %s", name, err.Error())
+			slog.Debug(
+				"UpdatePhpSettingFailed",
+				slog.String("settingName", settingName),
+				slog.String("settingValue", settingValue),
+				slog.Any("error", err),
+			)
 			continue
 		}
 	}
