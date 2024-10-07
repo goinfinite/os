@@ -97,7 +97,7 @@ templ AccountsIndex(accounts []entity.Account) {
 		<div
 			id="accounts-page-content"
 			hx-get="/accounts/"
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-trigger="submit from:form delay:500ms"
 			hx-select="#accounts-page-content"
 			hx-target="#accounts-page-content"
 			hx-swap="outerHTML transition:true"
