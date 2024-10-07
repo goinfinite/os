@@ -13,8 +13,8 @@ type ActivityRecord struct {
 	Code              *string
 	Message           *string
 	IpAddress         *string
-	OperatorAccountId *uint
-	TargetAccountId   *uint
+	OperatorAccountId *uint64
+	TargetAccountId   *uint64
 	Username          *string
 	MappingId         *uint64
 	CreatedAt         time.Time `gorm:"not null"`
@@ -28,7 +28,7 @@ func NewActivityRecord(
 	id uint64,
 	level string,
 	code, message, ipAddress *string,
-	operatorAccountId, targetAccountId *uint,
+	operatorAccountId, targetAccountId *uint64,
 	username *string,
 	mappingId *uint64,
 ) ActivityRecord {

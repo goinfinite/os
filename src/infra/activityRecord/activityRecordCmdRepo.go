@@ -35,15 +35,15 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 		ipAddressPtr = &ipAddress
 	}
 
-	var operatorAccountIdPtr *uint
+	var operatorAccountIdPtr *uint64
 	if createDto.OperatorAccountId != nil {
-		operatorAccountId := createDto.OperatorAccountId.Uint()
+		operatorAccountId := createDto.OperatorAccountId.Uint64()
 		operatorAccountIdPtr = &operatorAccountId
 	}
 
-	var targetAccountIdPtr *uint
+	var targetAccountIdPtr *uint64
 	if createDto.TargetAccountId != nil {
-		targetAccountId := createDto.TargetAccountId.Uint()
+		targetAccountId := createDto.TargetAccountId.Uint64()
 		targetAccountIdPtr = &targetAccountId
 	}
 
@@ -93,12 +93,12 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecords) e
 	}
 
 	if deleteDto.OperatorAccountId != nil {
-		operatorAccountId := deleteDto.OperatorAccountId.Uint()
+		operatorAccountId := deleteDto.OperatorAccountId.Uint64()
 		deleteModel.OperatorAccountId = &operatorAccountId
 	}
 
 	if deleteDto.TargetAccountId != nil {
-		targetAccountId := deleteDto.TargetAccountId.Uint()
+		targetAccountId := deleteDto.TargetAccountId.Uint64()
 		deleteModel.TargetAccountId = &targetAccountId
 	}
 

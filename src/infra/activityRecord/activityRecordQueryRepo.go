@@ -48,12 +48,12 @@ func (repo *ActivityRecordQueryRepo) Read(
 	}
 
 	if readDto.OperatorAccountId != nil {
-		operatorAccountId := readDto.OperatorAccountId.Uint()
+		operatorAccountId := readDto.OperatorAccountId.Uint64()
 		readModel.OperatorAccountId = &operatorAccountId
 	}
 
 	if readDto.TargetAccountId != nil {
-		targetAccountId := readDto.TargetAccountId.Uint()
+		targetAccountId := readDto.TargetAccountId.Uint64()
 		readModel.TargetAccountId = &targetAccountId
 	}
 

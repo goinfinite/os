@@ -35,7 +35,7 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
-		"accountId":  accountId.Uint(),
+		"accountId":  accountId.Uint64(),
 		"originalIp": ipAddress.String(),
 	}
 
