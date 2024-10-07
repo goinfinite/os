@@ -1,8 +1,10 @@
 # Changelog
 
 ```log
-0.0.9 - 2024/10/04
+0.1.0 - 2024/X/X
 refactor(front): accounts page with HTMX+Alpine.js
+
+0.0.9 - 2024/10/04
 refactor(front): runtime page with HTMX+Alpine.js
 refactor(front): ssls page with HTMX+Alpine.js
 feat: chown default dirs after service install/add
