@@ -32,12 +32,18 @@ func NewO11yQueryRepo(
 }
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
-	sysinfo := &syscall.Sysinfo_t{}
-	if err := syscall.Sysinfo(sysinfo); err != nil {
-		return 0, err
+	nowEpoch := valueObject.NewUnixTimeNow()
+	rawFirstPidEpoch, err := infraHelper.RunCmdWithSubShell("stat -c '%Y' /proc/1")
+	if err != nil {
+		return 0, errors.New("ReadFirstPidEpochFailed")
+	}
+	firstPidEpoch, err := valueObject.NewUnixTime(rawFirstPidEpoch)
+	if err != nil {
+		return 0, errors.New("ParseFirstPidEpochFailed")
 	}
 
-	return uint64(sysinfo.Uptime), nil
+	uptimeSecs := nowEpoch.Int64() - firstPidEpoch.Int64()
+	return uint64(uptimeSecs), nil
 }
 
 func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
