@@ -8,9 +8,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
 
 type FilesCmdRepo struct{}

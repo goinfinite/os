@@ -2,21 +2,21 @@
 This project is under active development and is not ready for production use.
 ```
 
-# [Speedia OS](https://speedia.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/speedianet/projects/1) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.speedia.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/speedianet/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/speedianet/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/speedianet/os/blob/main/LICENSE.md)
+# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/1) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
 
-Speedia OS is a container operating system designed so you never have to write a Dockerfile again. It comes with a user-friendly dashboard, REST API and CLI for seamless container management.
+Infinite OS is a container operating system designed so you never have to write a Dockerfile again. It comes with a user-friendly dashboard, REST API and CLI for seamless container management.
 
-A read-only demo of the dashboard is available at [https://os.demo.speedia.net:1618/\_/](https://os.demo.speedia.net:1618/_/). The default credentials are `demo` and `abc123`.
+A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/\_/](https://os.demo.goinfinite.net:1618/_/). The default credentials are `demo` and `abc123`.
 
 ## Running
 
-To run Speedia OS, you can pull the image from DockerHub and use the following command:
+To run Infinite OS, you can pull the image from DockerHub and use the following command:
 
 ```
 docker run --rm --name myapp-container \
   --env 'PRIMARY_VHOST=myapp.net' \
   -p 8080:80 -p 8443:443 -p 1618:1618 \
-  -it docker.io/speedianet/os:latest
+  -it docker.io/goinfinite/os:latest
 ```
 
 In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic.
@@ -43,11 +43,11 @@ os mktplace install -s wp \
 
 The API Swagger documentation is available at `https://localhost:1618/api/swagger/`.
 
-Speedia OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
+Infinite OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
 
 ## Development
 
-The public roadmap for Speedia OS is available [here](https://github.com/orgs/speedianet/projects/1). You may create issues or pull requests to contribute to the project.
+The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/1). You may create issues or pull requests to contribute to the project.
 
 In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
 
@@ -59,11 +59,11 @@ You must have an `.env` file in the root of the git directory **during developme
 
 If you add a new env var that is required to run the apis, please add it to the `src/presentation/cli/checkEnvs.go` file.
 
-When running in production, the `/speedia/.env` file is only used if the environment variables weren't set in the system.
+When running in production, the `/infinite/.env` file is only used if the environment variables weren't set in the system.
 
 ### Unit Testing
 
-Speedia OS commands can harm your system, so it's important to run the unit tests in a proper container:
+Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
 
 ```
 podman build -t os-unit-test:latest -f Containerfile.test .
@@ -72,11 +72,11 @@ podman run --rm -it os-unit-test:latest
 
 Make sure you have the `.env` file in the root of the git directory before running the tests.
 
-Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/speedia/` directory before running the tests:
+Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
 
 ```
-sudo mkdir /speedia
-sudo chown $(whoami):$(whoami) /speedia
+sudo mkdir /infinite
+sudo chown $(whoami):$(whoami) /infinite
 ```
 
 ### Dev Utils
@@ -98,7 +98,7 @@ podman build -t os:latest .
 To run the project you may use the following command:
 
 ```
-podman run --name os --env 'PRIMARY_VHOST=speedia.net' --rm -p 1618:1618 -it os:latest
+podman run --name os --env 'PRIMARY_VHOST=goinfinite.net' --rm -p 1618:1618 -it os:latest
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
@@ -117,7 +117,7 @@ The script will also create a `dev` account with the password `123456` so you ca
 
 When you need to stop the container, just CTRL+C to stop and remove it. If you don't want to remove it, just ditch the `--rm` flag from the `podman run` command in the script.
 
-If you look closely at the script, you'll see that it mounts the project's `bin` directory to the container `/speedia/bin` path. This is done to allow the container to access the binary file generated by Air on the host. The script then replace the binary file that comes with the container with the one on the `/bin` directory.
+If you look closely at the script, you'll see that it mounts the project's `bin` directory to the container `/infinite/bin` path. This is done to allow the container to access the binary file generated by Air on the host. The script then replace the binary file that comes with the container with the one on the `/bin` directory.
 
 With this approach you don't need to rebuild the container every time you change the code. Although sometimes you may want to restart the container to apply some changes, specially when changing the dependencies or system configurations. In this case, just hit CTRL+C to stop the container and run the script again.
 

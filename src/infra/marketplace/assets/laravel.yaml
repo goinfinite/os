@@ -1,6 +1,6 @@
 id: 4
 slugs:
- - laravel
+  - laravel
 name: laravel
 type: framework
 description: Laravel is a web application framework with expressive, elegant syntax. We've already laid the foundation — freeing you to create without sweating the small things.
@@ -38,4 +38,4 @@ uninstallFileNames:
   - index.php
   - robots.txt
 estimatedSizeBytes: 55000000
-avatarUrl: https://speedia.net/assets/os/marketplace/laravel/laravel-avatar.jpg
+avatarUrl: https://goinfinite.net/assets/os/marketplace/laravel/laravel-avatar.jpg

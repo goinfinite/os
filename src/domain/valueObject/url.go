@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const urlRegexExpression string = `^(?P<schema>https?:\/\/)(?P<hostname>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9])*)(:(?P<port>\d{1,6}))?(?P<path>\/[A-Za-z0-9\/\_\.\-]*)?(?P<query>\?[\w\/#=&%\-]*)?$`

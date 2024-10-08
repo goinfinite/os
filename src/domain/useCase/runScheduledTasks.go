@@ -3,8 +3,8 @@ package useCase
 import (
 	"log"
 
-	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 const ScheduledTasksRunIntervalSecs uint = 120

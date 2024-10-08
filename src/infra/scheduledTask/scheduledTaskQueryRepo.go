@@ -3,10 +3,10 @@ package scheduledTaskInfra
 import (
 	"log"
 
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
 type ScheduledTaskQueryRepo struct {

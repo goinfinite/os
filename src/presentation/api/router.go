@@ -3,12 +3,12 @@ package api
 import (
 	_ "embed"
 
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	apiController "github.com/goinfinite/os/src/presentation/api/controller"
 	"github.com/labstack/echo/v4"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	apiController "github.com/speedianet/os/src/presentation/api/controller"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
-	_ "github.com/speedianet/os/src/presentation/api/docs"
+	_ "github.com/goinfinite/os/src/presentation/api/docs"
 )
 
 type Router struct {

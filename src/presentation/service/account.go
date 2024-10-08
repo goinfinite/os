@@ -1,12 +1,12 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	accountInfra "github.com/speedianet/os/src/infra/account"
-	filesInfra "github.com/speedianet/os/src/infra/files"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
+	filesInfra "github.com/goinfinite/os/src/infra/files"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type AccountService struct {

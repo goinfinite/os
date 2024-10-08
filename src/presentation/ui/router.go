@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/api"
+	"github.com/goinfinite/os/src/presentation/ui/presenter"
 	"github.com/labstack/echo/v4"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	"github.com/speedianet/os/src/presentation/api"
-	"github.com/speedianet/os/src/presentation/ui/presenter"
 	"golang.org/x/net/websocket"
 )
 

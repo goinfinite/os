@@ -3,7 +3,7 @@ package entity
 import (
 	"time"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 const EarlyRenewalThresholdHours int64 = 48

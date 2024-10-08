@@ -35,7 +35,7 @@
   ],
   "installCmdSteps": [
     "if [[ $(echo -n \"%adminPassword%\" | wc -m) -lt 12 ]]; then echo -n AdminPasswordTooShort >&2; exit 1; fi",
-    "curl -skL -o %installTempDir%/joomla.zip https://speedia.net/assets/os/marketplace/joomla/joomla.zip",
+    "curl -skL -o %installTempDir%/joomla.zip https://goinfinite.net/assets/os/marketplace/joomla/joomla.zip",
     "unzip -o %installTempDir%/joomla.zip -d %installDirectory%",
     "os db create -n joomlaDb_%installUuid% -t mysql",
     "os db create-user -n joomlaDb_%installUuid% -t mysql -u joomlaUser_%installUuid% -p %installRandomPassword% -r all",
@@ -73,10 +73,10 @@
     "robots.txt"
   ],
   "estimatedSizeBytes": 100000000,
-  "avatarUrl": "https://speedia.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
+  "avatarUrl": "https://goinfinite.net/assets/os/marketplace/joomla/joomla-avatar.jpg",
   "screenshotUrls": [
-    "https://speedia.net/assets/os/marketplace/joomla/joomla-1.jpg",
-    "https://speedia.net/assets/os/marketplace/joomla/joomla-2.jpg",
-    "https://speedia.net/assets/os/marketplace/joomla/joomla-3.jpg"
+    "https://goinfinite.net/assets/os/marketplace/joomla/joomla-1.jpg",
+    "https://goinfinite.net/assets/os/marketplace/joomla/joomla-2.jpg",
+    "https://goinfinite.net/assets/os/marketplace/joomla/joomla-3.jpg"
   ]
 }

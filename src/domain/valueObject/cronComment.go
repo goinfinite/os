@@ -3,7 +3,7 @@ package valueObject
 import (
 	"errors"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 type CronComment string

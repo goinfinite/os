@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"os"
 
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	wsInfra "github.com/goinfinite/os/src/infra/webServer"
+	"github.com/goinfinite/os/src/presentation/api"
+	"github.com/goinfinite/os/src/presentation/ui"
 	"github.com/labstack/echo/v4"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	wsInfra "github.com/speedianet/os/src/infra/webServer"
-	"github.com/speedianet/os/src/presentation/api"
-	"github.com/speedianet/os/src/presentation/ui"
 )
 
 func webServerSetup(
@@ -37,7 +37,7 @@ func HttpServerInit(
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 
-	pkiDir := "/speedia/pki"
+	pkiDir := "/infinite/pki"
 	certFile := pkiDir + "/os.crt"
 	keyFile := pkiDir + "/os.key"
 	if !infraHelper.FileExists(certFile) {

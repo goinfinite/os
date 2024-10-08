@@ -6,7 +6,7 @@ templ IconToggle(
 	<!-- IconToggle -->
 	<label class="relative flex cursor-pointer flex-wrap items-center gap-2">
 		<input
-			class="checked:bg-speedia-500 checked:ring-speedia-500 hover:bg-os-300 checked:hover:bg-speedia-800 peer relative h-8 w-16 cursor-pointer appearance-none rounded-lg ring-2 ring-inset ring-neutral-50 ring-opacity-50 transition-colors focus-visible:outline-none"
+			class="checked:bg-infinite-500 checked:ring-infinite-500 hover:bg-os-300 checked:hover:bg-infinite-800 peer relative h-8 w-16 cursor-pointer appearance-none rounded-lg ring-2 ring-inset ring-neutral-50 ring-opacity-50 transition-colors focus-visible:outline-none"
 			type="checkbox"
 			x-model={ bindValuePath }
 		/>
@@ -21,12 +21,12 @@ templ IconToggle(
 				</span>
 			}
 		</div>
-		<div class="text-speedia-500 ring-speedia-500 group absolute left-8 flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-50 opacity-0 ring-2 transition-opacity hover:overflow-visible peer-checked:opacity-100">
+		<div class="text-infinite-500 ring-infinite-500 group absolute left-8 flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-50 opacity-0 ring-2 transition-opacity hover:overflow-visible peer-checked:opacity-100">
 			<i class={ "ph-duotone " + checkedIcon + " text-2xl" }></i>
 			if checkedTooltipMessage != "" {
 				<span
 					role="tooltip"
-					class="bg-speedia-500 before:border-b-speedia-500 text-nowrap invisible absolute left-1/2 top-full z-10 mt-2 w-auto -translate-x-1/2 rounded p-2 text-center text-xs text-neutral-50 opacity-0 transition-all before:invisible before:absolute before:bottom-full before:left-1/2 before:z-10 before:-ml-2 before:mt-2 before:border-x-8 before:border-b-8 before:border-x-transparent before:opacity-0 before:transition-all before:content-[''] group-hover:visible group-hover:block group-hover:opacity-100 group-hover:before:visible group-hover:before:opacity-100"
+					class="bg-infinite-500 before:border-b-infinite-500 text-nowrap invisible absolute left-1/2 top-full z-10 mt-2 w-auto -translate-x-1/2 rounded p-2 text-center text-xs text-neutral-50 opacity-0 transition-all before:invisible before:absolute before:bottom-full before:left-1/2 before:z-10 before:-ml-2 before:mt-2 before:border-x-8 before:border-b-8 before:border-x-transparent before:opacity-0 before:transition-all before:content-[''] group-hover:visible group-hover:block group-hover:opacity-100 group-hover:before:visible group-hover:before:opacity-100"
 				>
 					{ checkedTooltipMessage }
 				</span>

@@ -1,4 +1,4 @@
-module github.com/speedianet/os
+module github.com/goinfinite/os
 
 go 1.23
 

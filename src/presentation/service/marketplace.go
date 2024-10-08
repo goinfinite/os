@@ -4,17 +4,17 @@ import (
 	"strings"
 
 	"github.com/alessio/shellescape"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	marketplaceInfra "github.com/speedianet/os/src/infra/marketplace"
-	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
+	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type MarketplaceService struct {
@@ -92,7 +92,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 	}
 
 	if shouldSchedule {
-		cliCmd := infraEnvs.SpeediaOsBinary + " mktplace install"
+		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace install"
 		installParams := []string{
 			"--hostname", hostname.String(),
 		}

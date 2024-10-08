@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/useCase"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	o11yInfra "github.com/speedianet/os/src/infra/o11y"
+	"github.com/goinfinite/os/src/domain/useCase"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 )
 
 type O11yService struct {

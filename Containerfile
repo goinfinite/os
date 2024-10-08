@@ -1,6 +1,6 @@
 FROM docker.io/bitnami/minideb:bullseye-amd64
 
-WORKDIR /speedia
+WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
     && install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
@@ -22,13 +22,13 @@ COPY /container/nginx/root/* /etc/nginx/
 
 COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
-COPY /container/supervisord.conf /speedia/supervisord.conf
+COPY /container/supervisord.conf /infinite/supervisord.conf
 
-COPY /bin/os /speedia/os
+COPY /bin/os /infinite/os
 
-RUN chmod +x /speedia/os \
-    && ln -s /speedia/os /usr/bin/os
+RUN chmod +x /infinite/os \
+    && ln -s /infinite/os /usr/bin/os
 
 EXPOSE 22/tcp 80/tcp 443/tcp 3306/tcp 5432/tcp 6379/tcp 1618/tcp
 
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/speedia/supervisord.conf"]
+ENTRYPOINT ["/usr/bin/supervisord", "-c", "/infinite/supervisord.conf"]

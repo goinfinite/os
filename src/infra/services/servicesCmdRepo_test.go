@@ -3,10 +3,10 @@ package servicesInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 func TestServiceCmdRepo(t *testing.T) {

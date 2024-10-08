@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import "github.com/goinfinite/os/src/domain/valueObject"
 
 type ScheduledTask struct {
 	Id          valueObject.ScheduledTaskId      `json:"id"`

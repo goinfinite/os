@@ -6,9 +6,9 @@ func TestNewMappingTargetValue(t *testing.T) {
 	t.Run("ValidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
 		validMappingTargetUrlValues := []interface{}{
-			"localhost", "localhost:8080", "speedia.net", "http://speedia.net/",
-			"http://www.speedia.net", "https://speedia.net/",
-			"https://www.speedia.net/",
+			"localhost", "localhost:8080", "goinfinite.net", "http://goinfinite.net/",
+			"http://www.goinfinite.net", "https://goinfinite.net/",
+			"https://www.goinfinite.net/",
 			"http://localhost:8080/v1/ticket/253/attachment/b8680d5cc332672c649f4ff8d9e3b77f.svg",
 			"https://www.cnn.com/politics/live-news/house-speaker-vote-10-20-23/index.html",
 			"https://blog.goinfinite.net/2023/10/vulnerabilidades-top-10-da-owasp-parte-1/",

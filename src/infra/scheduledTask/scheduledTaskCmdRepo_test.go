@@ -3,10 +3,10 @@ package scheduledTaskInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
 
 func TestScheduledTaskCmdRepo(t *testing.T) {
@@ -18,7 +18,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 	t.Run("CreateScheduledTask", func(t *testing.T) {
 		name, _ := valueObject.NewScheduledTaskName("test")
 		command, _ := valueObject.NewUnixCommand(
-			infraEnvs.SpeediaOsBinary + " account get",
+			infraEnvs.InfiniteOsBinary + " account get",
 		)
 		tag, _ := valueObject.NewScheduledTaskTag("account")
 		tags := []valueObject.ScheduledTaskTag{tag}

@@ -1,6 +1,6 @@
 FROM docker.io/bitnami/minideb:bullseye-amd64
 
-WORKDIR /speedia
+WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
     && install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
@@ -24,7 +24,7 @@ COPY /container/nginx/root/* /etc/nginx/
 
 COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
-COPY /container/supervisord.conf /speedia/supervisord.conf
+COPY /container/supervisord.conf /infinite/supervisord.conf
 
 RUN wget -qO go.tar.gz "https://go.dev/dl/go1.22.5.linux-amd64.tar.gz" \
     && tar -C /usr/local -xzf go.tar.gz

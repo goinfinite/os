@@ -13,9 +13,9 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/google/uuid"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/sha3"
 )

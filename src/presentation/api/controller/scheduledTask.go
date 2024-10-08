@@ -3,12 +3,12 @@ package apiController
 import (
 	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/useCase"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	"github.com/speedianet/os/src/presentation/service"
 )
 
 type ScheduledTaskController struct {

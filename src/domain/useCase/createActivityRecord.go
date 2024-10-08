@@ -1,9 +1,9 @@
 package useCase
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func CreateSecurityActivityRecord(

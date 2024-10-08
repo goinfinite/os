@@ -1,8 +1,8 @@
 package layout
 
 import (
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	componentUtil "github.com/speedianet/os/src/presentation/ui/component/util"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 	"os"
 )
 
@@ -17,7 +17,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 	<!DOCTYPE html>
 	<html>
 		<head>
-			<title>Speedia OS</title>
+			<title>Infinite OS</title>
 			<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
 			<link
 				rel="stylesheet"
@@ -47,7 +47,7 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 				window.__unocss = {
 					theme: {
 						colors: {
-							'speedia': {
+							'infinite': {
 								'50': '#dea893',
 								'100': '#d89a81',
 								'200': '#d38b6f',

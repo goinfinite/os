@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const serviceEnvRegex string = `^\w{1,1000}=.{1,1000}$`

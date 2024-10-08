@@ -4,7 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"gopkg.in/yaml.v3"
 )
 

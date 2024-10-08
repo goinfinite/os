@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`

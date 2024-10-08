@@ -1,9 +1,9 @@
 package apiController
 
 import (
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	"github.com/speedianet/os/src/presentation/service"
 )
 
 type CronController struct {

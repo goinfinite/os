@@ -5,11 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	"github.com/speedianet/os/src/presentation/service"
 )
 
 type ServicesController struct {
