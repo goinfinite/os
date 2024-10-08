@@ -7,6 +7,7 @@ import (
 type O11yOverview struct {
 	Hostname             valueObject.Fqdn                 `json:"hostname"`
 	UptimeSecs           uint64                           `json:"uptimeSecs"`
+	UptimeRelative       valueObject.RelativeTime         `json:"uptimeRelative"`
 	PublicIpAddress      valueObject.IpAddress            `json:"publicIp"`
 	HardwareSpecs        valueObject.HardwareSpecs        `json:"specs"`
 	CurrentResourceUsage valueObject.CurrentResourceUsage `json:"currentUsage"`
@@ -14,14 +15,16 @@ type O11yOverview struct {
 
 func NewO11yOverview(
 	hostname valueObject.Fqdn,
-	uptime uint64,
+	uptimeSecs uint64,
+	uptimeRelative valueObject.RelativeTime,
 	publicIpAddress valueObject.IpAddress,
 	hardwareSpecs valueObject.HardwareSpecs,
 	currentResourceUsage valueObject.CurrentResourceUsage,
 ) O11yOverview {
 	return O11yOverview{
 		Hostname:             hostname,
-		UptimeSecs:           uptime,
+		UptimeSecs:           uptimeSecs,
+		UptimeRelative:       uptimeRelative,
 		PublicIpAddress:      publicIpAddress,
 		HardwareSpecs:        hardwareSpecs,
 		CurrentResourceUsage: currentResourceUsage,

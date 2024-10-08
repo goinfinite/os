@@ -3,6 +3,7 @@ package o11yInfra
 import (
 	"errors"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"runtime"
@@ -11,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -345,9 +347,7 @@ func (repo *O11yQueryRepo) getCurrentResourceUsage() (
 	), nil
 }
 
-func (repo *O11yQueryRepo) ReadOverview() (entity.O11yOverview, error) {
-	var o11yOverview entity.O11yOverview
-
+func (repo *O11yQueryRepo) ReadOverview() (o11yOverview entity.O11yOverview, err error) {
 	hostnameStr, err := os.Hostname()
 	if err != nil {
 		hostnameStr = "localhost"
@@ -363,32 +363,35 @@ func (repo *O11yQueryRepo) ReadOverview() (entity.O11yOverview, error) {
 		return o11yOverview, errors.New("GetHostnameFailed")
 	}
 
-	uptime, err := repo.getUptime()
+	uptimeSecs, err := repo.getUptime()
 	if err != nil {
-		uptime = 0
+		uptimeSecs = 0
+	}
+
+	uptimeSecsDuration := time.Duration(uptimeSecs) * time.Second
+	humanizedUptime := humanize.Time(time.Now().Add(-uptimeSecsDuration))
+	uptimeRelative, err := valueObject.NewRelativeTime(humanizedUptime)
+	if err != nil {
+		uptimeRelative, _ = valueObject.NewRelativeTime("0 seconds ago")
 	}
 
 	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
-		log.Printf("ReadServerPublicIpAddressError: %s", err.Error())
+		slog.Debug("ReadServerPublicIpAddressError", slog.Any("error", err))
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 
 	hardwareSpecs, err := repo.getHardwareSpecs()
 	if err != nil {
-		return o11yOverview, errors.New("GetHardwareSpecsFailed: " + err.Error())
+		return o11yOverview, errors.New("ReadHardwareSpecsFailed: " + err.Error())
 	}
 
 	currentResourceUsage, err := repo.getCurrentResourceUsage()
 	if err != nil {
-		return o11yOverview, errors.New("GetCurrentResourceUsageFailed: " + err.Error())
+		return o11yOverview, errors.New("ReadCurrentResourceUsageFailed: " + err.Error())
 	}
 
 	return entity.NewO11yOverview(
-		hostname,
-		uptime,
-		publicIpAddress,
-		hardwareSpecs,
-		currentResourceUsage,
+		hostname, uptimeSecs, uptimeRelative, publicIpAddress, hardwareSpecs, currentResourceUsage,
 	), nil
 }
