@@ -1,12 +1,15 @@
 package scheduledTaskInfra
 
 import (
-	"log"
+	"errors"
+	"log/slog"
+	"math"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	"github.com/iancoleman/strcase"
 )
 
 type ScheduledTaskQueryRepo struct {
@@ -19,63 +22,114 @@ func NewScheduledTaskQueryRepo(
 	return &ScheduledTaskQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo *ScheduledTaskQueryRepo) Read() ([]entity.ScheduledTask, error) {
-	scheduledTasks := []entity.ScheduledTask{}
+func (repo *ScheduledTaskQueryRepo) Read(
+	readDto dto.ReadScheduledTasksRequest,
+) (responseDto dto.ReadScheduledTasksResponse, err error) {
+	scheduledTaskEntities := []entity.ScheduledTask{}
+
+	scheduledTaskModel := dbModel.ScheduledTask{}
+	if readDto.TaskId != nil {
+		scheduledTaskModel.ID = readDto.TaskId.Uint64()
+	}
+	if readDto.TaskName != nil {
+		scheduledTaskModel.Name = readDto.TaskName.String()
+	}
+	if readDto.TaskStatus != nil {
+		scheduledTaskModel.Status = readDto.TaskStatus.String()
+	}
+
+	dbQuery := repo.persistentDbSvc.Handler.Where(&scheduledTaskModel)
+	if len(readDto.TaskTags) == 0 {
+		dbQuery = dbQuery.Preload("Tags")
+	} else {
+		tagsStrSlice := []string{}
+		for _, taskTag := range readDto.TaskTags {
+			tagsStrSlice = append(tagsStrSlice, taskTag.String())
+		}
+		dbQuery = dbQuery.
+			Joins("JOIN scheduled_tasks_tags ON scheduled_tasks_tags.scheduled_task_id = scheduled_tasks.id").
+			Where("scheduled_tasks_tags.tag IN (?)", tagsStrSlice)
+	}
+	if readDto.StartedBeforeAt != nil {
+		dbQuery = dbQuery.Where("started_at < ?", readDto.StartedBeforeAt.GetAsGoTime())
+	}
+	if readDto.StartedAfterAt != nil {
+		dbQuery = dbQuery.Where("started_at > ?", readDto.StartedAfterAt.GetAsGoTime())
+	}
+	if readDto.FinishedBeforeAt != nil {
+		dbQuery = dbQuery.Where("finished_at < ?", readDto.FinishedBeforeAt.GetAsGoTime())
+	}
+	if readDto.FinishedAfterAt != nil {
+		dbQuery = dbQuery.Where("finished_at > ?", readDto.FinishedAfterAt.GetAsGoTime())
+	}
+	if readDto.CreatedBeforeAt != nil {
+		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.GetAsGoTime())
+	}
+	if readDto.CreatedAfterAt != nil {
+		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.GetAsGoTime())
+	}
+
+	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
+	if readDto.Pagination.LastSeenId == nil {
+		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
+		dbQuery = dbQuery.Offset(offset)
+	} else {
+		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
+	}
+	if readDto.Pagination.SortBy != nil {
+		orderStatement := readDto.Pagination.SortBy.String()
+		orderStatement = strcase.ToSnake(orderStatement)
+		if orderStatement == "id" {
+			orderStatement = "ID"
+		}
+
+		if readDto.Pagination.SortDirection != nil {
+			orderStatement += " " + readDto.Pagination.SortDirection.String()
+		}
+
+		dbQuery = dbQuery.Order(orderStatement)
+	}
 
 	scheduledTaskModels := []dbModel.ScheduledTask{}
-	err := repo.persistentDbSvc.Handler.
-		Find(&scheduledTaskModels).Error
+	err = dbQuery.Find(&scheduledTaskModels).Error
 	if err != nil {
-		return scheduledTasks, err
+		return responseDto, errors.New("FindScheduledTasksError: " + err.Error())
+	}
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return responseDto, errors.New("CountItemsTotalError: " + err.Error())
 	}
 
 	for _, scheduledTaskModel := range scheduledTaskModels {
 		scheduledTaskEntity, err := scheduledTaskModel.ToEntity()
 		if err != nil {
-			log.Printf("[%d] %s", scheduledTaskModel.ID, err.Error())
+			slog.Debug(
+				"ModelToEntityError",
+				slog.Uint64("id", scheduledTaskModel.ID),
+				slog.Any("error", err),
+			)
 			continue
 		}
-		scheduledTasks = append(scheduledTasks, scheduledTaskEntity)
+		scheduledTaskEntities = append(scheduledTaskEntities, scheduledTaskEntity)
 	}
 
-	return scheduledTasks, nil
-}
-
-func (repo *ScheduledTaskQueryRepo) ReadById(
-	id valueObject.ScheduledTaskId,
-) (taskEntity entity.ScheduledTask, err error) {
-	var scheduledTaskModel dbModel.ScheduledTask
-	err = repo.persistentDbSvc.Handler.
-		Where("id = ?", id).
-		First(&scheduledTaskModel).Error
-	if err != nil {
-		return taskEntity, err
+	itemsTotalUint := uint64(itemsTotal)
+	pagesTotal := uint32(
+		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
+	)
+	responsePagination := dto.Pagination{
+		PageNumber:    readDto.Pagination.PageNumber,
+		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
+		SortBy:        readDto.Pagination.SortBy,
+		SortDirection: readDto.Pagination.SortDirection,
+		PagesTotal:    &pagesTotal,
+		ItemsTotal:    &itemsTotalUint,
 	}
 
-	return scheduledTaskModel.ToEntity()
-}
-
-func (repo *ScheduledTaskQueryRepo) ReadByStatus(
-	status valueObject.ScheduledTaskStatus,
-) ([]entity.ScheduledTask, error) {
-	scheduledTasks := []entity.ScheduledTask{}
-
-	scheduledTaskModels := []dbModel.ScheduledTask{}
-	err := repo.persistentDbSvc.Handler.
-		Where("status = ?", status.String()).
-		Find(&scheduledTaskModels).Error
-	if err != nil {
-		return scheduledTasks, err
-	}
-
-	for _, scheduledTaskModel := range scheduledTaskModels {
-		scheduledTaskEntity, err := scheduledTaskModel.ToEntity()
-		if err != nil {
-			log.Printf("[%d] ModelToEntityError: %s", scheduledTaskModel.ID, err.Error())
-			continue
-		}
-		scheduledTasks = append(scheduledTasks, scheduledTaskEntity)
-	}
-
-	return scheduledTasks, nil
+	return dto.ReadScheduledTasksResponse{
+		Pagination: responsePagination,
+		Tasks:      scheduledTaskEntities,
+	}, nil
 }

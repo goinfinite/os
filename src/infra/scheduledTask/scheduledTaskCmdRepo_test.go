@@ -5,6 +5,7 @@ import (
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
@@ -22,7 +23,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 		)
 		tag, _ := valueObject.NewScheduledTaskTag("account")
 		tags := []valueObject.ScheduledTaskTag{tag}
-		timeoutSecs := uint(60)
+		timeoutSecs := uint16(60)
 		runAt := valueObject.NewUnixTimeNow()
 
 		createDto := dto.NewCreateScheduledTask(
@@ -36,7 +37,7 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateScheduledTask", func(t *testing.T) {
-		scheduledTasks, err := getScheduledTasks()
+		scheduledTasks, err := readScheduledTasks()
 		if err != nil {
 			t.Error(err)
 			return
@@ -53,27 +54,46 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 	t.Run("RunScheduledTasks", func(t *testing.T) {
 		pendingStatus, _ := valueObject.NewScheduledTaskStatus("pending")
-		pendingTasks, err := scheduledTaskQueryRepo.ReadByStatus(pendingStatus)
+		readDto := dto.ReadScheduledTasksRequest{
+			Pagination: useCase.ScheduledTasksDefaultPagination,
+			TaskStatus: &pendingStatus,
+		}
+
+		responseDto, err := scheduledTaskQueryRepo.Read(readDto)
 		if err != nil {
 			t.Error(err)
 			return
 		}
+		if len(responseDto.Tasks) == 0 {
+			t.Error("NoPendingTasksFound")
+			return
+		}
 
-		err = scheduledTaskCmdRepo.Run(pendingTasks[0])
+		err = scheduledTaskCmdRepo.Run(responseDto.Tasks[0])
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
-			return
 		}
 
-		completedTask, err := scheduledTaskQueryRepo.ReadById(pendingTasks[0].Id)
+		readDto = dto.ReadScheduledTasksRequest{
+			Pagination: useCase.ScheduledTasksDefaultPagination,
+			TaskId:     &responseDto.Tasks[0].Id,
+		}
+
+		responseDto, err = scheduledTaskQueryRepo.Read(readDto)
 		if err != nil {
 			t.Error(err)
 			return
 		}
+
+		if len(responseDto.Tasks) == 0 {
+			t.Error("NoTaskFound")
+			return
+		}
+
+		completedTask := responseDto.Tasks[0]
 
 		if completedTask.Status.String() != "completed" {
 			t.Errorf("ExpectedCompletedButGot: %v", completedTask.Status.String())
-			return
 		}
 
 		err = scheduledTaskCmdRepo.Delete(completedTask.Id)

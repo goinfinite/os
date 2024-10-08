@@ -20,6 +20,10 @@ func NewScheduledTaskId(value interface{}) (
 	return ScheduledTaskId(uintValue), nil
 }
 
+func (vo ScheduledTaskId) Uint64() uint64 {
+	return uint64(vo)
+}
+
 func (vo ScheduledTaskId) String() string {
 	return strconv.FormatUint(uint64(vo), 10)
 }
