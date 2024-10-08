@@ -9,17 +9,18 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func createDummyUser() error {
+func addDummyUser() error {
 	username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 	password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
 
-	createUser := dto.CreateAccount{
-		Username: username,
-		Password: password,
-	}
+	ipAddress := valueObject.NewLocalhostIpAddress()
+	operatorAccountId, _ := valueObject.NewAccountId(0)
+	createDto := dto.NewCreateAccount(
+		username, password, operatorAccountId, ipAddress,
+	)
 
-	accCmdRepo := AccCmdRepo{}
-	err := accCmdRepo.Create(createUser)
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	_, err := accountCmdRepo.Create(createDto)
 	if err != nil {
 		return err
 	}
@@ -29,9 +30,8 @@ func createDummyUser() error {
 
 func deleteDummyUser() error {
 	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
-
-	accCmdRepo := AccCmdRepo{}
-	err := accCmdRepo.Delete(accountId)
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	err := accountCmdRepo.Delete(accountId)
 	if err != nil {
 		return err
 	}
@@ -40,48 +40,43 @@ func deleteDummyUser() error {
 }
 
 func resetDummyUser() {
-	_ = createDummyUser()
+	_ = addDummyUser()
 	_ = deleteDummyUser()
-	_ = createDummyUser()
+	_ = addDummyUser()
 }
 
-func TestAccCmdRepo(t *testing.T) {
+func TestAccountCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
 	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
-	t.Run("CreateValidAccount", func(t *testing.T) {
-		err := createDummyUser()
+	t.Run("AddValidAccount", func(t *testing.T) {
+		err := addDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
 	})
 
-	t.Run("CreateInvalidAccount", func(t *testing.T) {
+	t.Run("AddInvalidAccount", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("root")
 		password, _ := valueObject.NewPassword("invalid")
+		ipAddress := valueObject.NewLocalhostIpAddress()
+		operatorAccountId, _ := valueObject.NewAccountId(0)
+		createDto := dto.NewCreateAccount(
+			username, password, operatorAccountId, ipAddress,
+		)
 
-		createUser := dto.CreateAccount{
-			Username: username,
-			Password: password,
-		}
-
-		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.Create(createUser)
+		_, err := accountCmdRepo.Create(createDto)
 		if err == nil {
-			t.Error("ExpectingError")
+			t.Error("AccountShouldNotBeAdded")
 		}
 	})
 
 	t.Run("DeleteValidAccount", func(t *testing.T) {
-		_ = createDummyUser()
-
 		err := deleteDummyUser()
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
-
-		_ = createDummyUser()
 	})
 
 	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
@@ -89,24 +84,18 @@ func TestAccCmdRepo(t *testing.T) {
 
 		newPassword, _ := valueObject.NewPassword("newPassword")
 
-		accCmdRepo := AccCmdRepo{}
-		err := accCmdRepo.UpdatePassword(accountId, newPassword)
+		err := accountCmdRepo.UpdatePassword(accountId, newPassword)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
-
-		resetDummyUser()
 	})
 
 	t.Run("UpdateApiKeyValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		accCmdRepo := AccCmdRepo{}
-		_, err := accCmdRepo.UpdateApiKey(accountId)
+		_, err := accountCmdRepo.UpdateApiKey(accountId)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
-
-		resetDummyUser()
 	})
 }
