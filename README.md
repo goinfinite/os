@@ -2,9 +2,9 @@
 This project is under active development and is not ready for production use.
 ```
 
-# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/1) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
+# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
 
-Infinite OS is a container operating system designed so you never have to write a Dockerfile again. It comes with a user-friendly dashboard, REST API and CLI for seamless container management.
+Infinite OS is a container operating system designed to allow you to deploy applications knowing little to nothing about containers. It comes with a user-friendly dashboard, REST API, and CLI for seamless container management.
 
 A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/\_/](https://os.demo.goinfinite.net:1618/_/). The default credentials are `demo` and `abc123`.
 
@@ -47,7 +47,7 @@ Infinite OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes
 
 ## Development
 
-The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/1). You may create issues or pull requests to contribute to the project.
+The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/9). You may create issues or pull requests to contribute to the project.
 
 In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
 
