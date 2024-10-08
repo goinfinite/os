@@ -43,7 +43,9 @@ func (router Router) accountRoutes() {
 	}
 	rootCmd.AddCommand(accountCmd)
 
-	accountController := cliController.NewAccountController()
+	accountController := cliController.NewAccountController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 
 	accountCmd.AddCommand(accountController.Read())
 	accountCmd.AddCommand(accountController.Create())
@@ -58,7 +60,9 @@ func (router Router) authenticationRoutes() {
 	}
 	rootCmd.AddCommand(authCmd)
 
-	authenticationController := cliController.NewAuthController(router.trailDbSvc)
+	authenticationController := cliController.NewAuthController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	authCmd.AddCommand(authenticationController.Login())
 }
 

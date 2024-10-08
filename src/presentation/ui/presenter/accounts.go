@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/speedianet/os/src/domain/entity"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	"github.com/speedianet/os/src/presentation/service"
 	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
 	"github.com/speedianet/os/src/presentation/ui/page"
@@ -14,9 +15,12 @@ type AccountsPresenter struct {
 	accountService *service.AccountService
 }
 
-func NewAccountsPresenter() *AccountsPresenter {
+func NewAccountsPresenter(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountsPresenter {
 	return &AccountsPresenter{
-		accountService: service.NewAccountService(),
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
 	}
 }
 

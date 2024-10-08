@@ -38,7 +38,7 @@ func getFailedLoginAttemptsCount(
 func GetSessionToken(
 	authQueryRepo repository.AuthQueryRepo,
 	authCmdRepo repository.AuthCmdRepo,
-	accQueryRepo repository.AccQueryRepo,
+	accountQueryRepo repository.AccountQueryRepo,
 	activityRecordQueryRepo repository.ActivityRecordQueryRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	loginDto dto.Login,
@@ -60,7 +60,7 @@ func GetSessionToken(
 		return accessToken, errors.New("InvalidCredentials")
 	}
 
-	accountDetails, err := accQueryRepo.GetByUsername(loginDto.Username)
+	accountDetails, err := accountQueryRepo.ReadByUsername(loginDto.Username)
 	if err != nil {
 		return accessToken, errors.New("AccountNotFound")
 	}

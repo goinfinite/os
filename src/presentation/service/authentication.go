@@ -12,14 +12,17 @@ import (
 )
 
 type AuthService struct {
-	trailDbSvc *internalDbInfra.TrailDatabaseService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewAuthService(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AuthService {
 	return &AuthService{
-		trailDbSvc: trailDbSvc,
+		persistentDbSvc: persistentDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
 }
 
@@ -51,7 +54,7 @@ func (service *AuthService) GenerateJwtWithCredentials(
 
 	authQueryRepo := authInfra.AuthQueryRepo{}
 	authCmdRepo := authInfra.AuthCmdRepo{}
-	accQueryRepo := accountInfra.AccQueryRepo{}
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(service.persistentDbSvc)
 	activityRecordQueryRepo := activityRecordInfra.NewActivityRecordQueryRepo(
 		service.trailDbSvc,
 	)
@@ -60,7 +63,7 @@ func (service *AuthService) GenerateJwtWithCredentials(
 	)
 
 	accessToken, err := useCase.GetSessionToken(
-		authQueryRepo, authCmdRepo, accQueryRepo, activityRecordQueryRepo,
+		authQueryRepo, authCmdRepo, accountQueryRepo, activityRecordQueryRepo,
 		activityRecordCmdRepo, dto,
 	)
 	if err != nil {

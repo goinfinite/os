@@ -1,6 +1,7 @@
 package cliController
 
 import (
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
 	"github.com/speedianet/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -10,9 +11,12 @@ type AccountController struct {
 	accountService *service.AccountService
 }
 
-func NewAccountController() *AccountController {
+func NewAccountController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(),
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
 	}
 }
 

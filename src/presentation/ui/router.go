@@ -20,17 +20,20 @@ type Router struct {
 	baseRoute       *echo.Group
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRouter(
 	baseRoute *echo.Group,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *Router {
 	return &Router{
 		baseRoute:       baseRoute,
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
 }
 
@@ -57,7 +60,9 @@ func (router *Router) assetsRoute() {
 func (router *Router) accountsRoutes() {
 	accountGroup := router.baseRoute.Group("/accounts")
 
-	accountsPresenter := presenter.NewAccountsPresenter()
+	accountsPresenter := presenter.NewAccountsPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	accountGroup.GET("/", accountsPresenter.Handler)
 }
 

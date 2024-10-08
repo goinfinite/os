@@ -3,6 +3,7 @@ package apiController
 import (
 	"github.com/labstack/echo/v4"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 	"github.com/speedianet/os/src/presentation/service"
 )
@@ -11,9 +12,12 @@ type AccountController struct {
 	accountService *service.AccountService
 }
 
-func NewAccountController() *AccountController {
+func NewAccountController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(),
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
 	}
 }
 

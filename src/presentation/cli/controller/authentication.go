@@ -12,10 +12,11 @@ type AuthController struct {
 }
 
 func NewAuthController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AuthController {
 	return &AuthController{
-		authService: service.NewAuthService(trailDbSvc),
+		authService: service.NewAuthService(persistentDbSvc, trailDbSvc),
 	}
 }
 

@@ -6,20 +6,35 @@ import (
 	"github.com/speedianet/os/src/domain/valueObject"
 	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
 	accountInfra "github.com/speedianet/os/src/infra/account"
-	filesInfra "github.com/speedianet/os/src/infra/files"
+	activityRecordInfra "github.com/speedianet/os/src/infra/activityRecord"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
 )
 
+var LocalOperatorAccountId, _ = valueObject.NewAccountId(0)
+var LocalOperatorIpAddress = valueObject.NewLocalhostIpAddress()
+
 type AccountService struct {
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	accountQueryRepo      *accountInfra.AccountQueryRepo
+	accountCmdRepo        *accountInfra.AccountCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
-func NewAccountService() *AccountService {
-	return &AccountService{}
+func NewAccountService(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountService {
+	return &AccountService{
+		persistentDbSvc:       persistentDbSvc,
+		accountQueryRepo:      accountInfra.NewAccountQueryRepo(persistentDbSvc),
+		accountCmdRepo:        accountInfra.NewAccountCmdRepo(persistentDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+	}
 }
 
 func (service *AccountService) Read() ServiceOutput {
-	accountsQueryRepo := accountInfra.AccQueryRepo{}
-	accountsList, err := useCase.GetAccounts(accountsQueryRepo)
+	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -44,15 +59,29 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dto := dto.NewCreateAccount(username, password)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	accQueryRepo := accountInfra.AccQueryRepo{}
-	accCmdRepo := accountInfra.AccCmdRepo{}
-	filesQueryRepo := filesInfra.FilesQueryRepo{}
-	filesCmdRepo := filesInfra.FilesCmdRepo{}
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateAccount(
+		username, password, operatorAccountId, operatorIpAddress,
+	)
 
 	err = useCase.CreateAccount(
-		accQueryRepo, accCmdRepo, filesQueryRepo, filesCmdRepo, dto,
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -62,22 +91,19 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 }
 
 func (service *AccountService) Update(input map[string]interface{}) ServiceOutput {
-	var accountIdPtr *valueObject.AccountId
 	if input["id"] != nil {
-		accountId, err := valueObject.NewAccountId(input["id"])
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-		accountIdPtr = &accountId
+		input["accountId"] = input["id"]
 	}
 
-	var usernamePtr *valueObject.Username
-	if input["username"] != nil {
-		username, err := valueObject.NewUsername(input["username"])
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-		usernamePtr = &username
+	requiredParams := []string{"accountId"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
 	}
 
 	var passwordPtr *valueObject.Password
@@ -98,42 +124,83 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 		shouldUpdateApiKeyPtr = &shouldUpdateApiKey
 	}
 
-	dto := dto.NewUpdateAccount(
-		accountIdPtr, usernamePtr, passwordPtr, shouldUpdateApiKeyPtr,
-	)
-
-	accQueryRepo := accountInfra.AccQueryRepo{}
-	accCmdRepo := accountInfra.AccCmdRepo{}
-
-	if dto.Password != nil {
-		err := useCase.UpdateAccountPassword(accQueryRepo, accCmdRepo, dto)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
 		if err != nil {
-			return NewServiceOutput(InfraError, err.Error())
+			return NewServiceOutput(UserError, err.Error())
 		}
 	}
 
-	if dto.ShouldUpdateApiKey != nil && *dto.ShouldUpdateApiKey {
-		newApiKey, err := useCase.UpdateAccountApiKey(accQueryRepo, accCmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateAccount(
+		accountId, passwordPtr, shouldUpdateApiKeyPtr, operatorAccountId,
+		operatorIpAddress,
+	)
+
+	if updateDto.ShouldUpdateApiKey != nil && *updateDto.ShouldUpdateApiKey {
+		newKey, err := useCase.UpdateAccountApiKey(
+			service.accountQueryRepo, service.accountCmdRepo,
+			service.activityRecordCmdRepo, updateDto,
+		)
 		if err != nil {
 			return NewServiceOutput(InfraError, err.Error())
 		}
+		return NewServiceOutput(Success, newKey)
+	}
 
-		return NewServiceOutput(Success, newApiKey)
+	err = useCase.UpdateAccount(
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
 	}
 
 	return NewServiceOutput(Success, "AccountUpdated")
 }
 
 func (service *AccountService) Delete(input map[string]interface{}) ServiceOutput {
-	accountId, err := valueObject.NewAccountId(input["id"])
+	requiredParams := []string{"accountId"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	accQueryRepo := accountInfra.AccQueryRepo{}
-	accCmdRepo := accountInfra.AccCmdRepo{}
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
 
-	err = useCase.DeleteAccount(accQueryRepo, accCmdRepo, accountId)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteAccount(accountId, operatorAccountId, operatorIpAddress)
+
+	err = useCase.DeleteAccount(
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
