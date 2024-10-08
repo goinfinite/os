@@ -6,6 +6,28 @@ import (
 	"os"
 )
 
+script MainLayoutState() {
+	document.addEventListener('alpine:initializing', () => {
+		Alpine.store('main', {
+			displayScheduledTasksPopover: Alpine.$persist(false).as('dash.displayScheduledTasksPopover'),
+
+			toggleScheduledTasksPopover() {
+				this.displayScheduledTasksPopover = !this.displayScheduledTasksPopover;
+			},
+			refreshScheduledTasksPopover() {
+				window.dispatchEvent(new CustomEvent('refresh:footer'));
+				setTimeout(() => {this.displayScheduledTasksPopover = true}, 1000);
+			},
+
+			init() {
+				Alpine.watch(() => this.textualViewSelector, () => {
+					htmx.process(document.body);
+				});
+			}
+		});
+	});
+}
+
 script DevWsHotReload() {
 	hotReloadWs = new WebSocket("wss://" + document.location.host + "/dev/hot-reload");
 	hotReloadWs.onclose = (() => {
@@ -87,12 +109,14 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 			}
 		</head>
 		<body class="bg-os-500 flex text-white">
+			@MainLayoutState()
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->
 			<div class="overflow-h-auto h-screen w-full overflow-x-hidden p-6">
 				@pageContent
 			</div>
+			@FooterSkeleton()
 			@componentUtil.Toast()
 		</body>
 	</html>
