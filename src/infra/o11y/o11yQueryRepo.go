@@ -328,28 +328,32 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 }
 
 func (repo *O11yQueryRepo) getCurrentResourceUsage() (
-	valueObject.CurrentResourceUsage,
-	error,
+	resourceUsage valueObject.CurrentResourceUsage,
+	err error,
 ) {
 	cpuUsagePercent, err := repo.getCpuUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, err
+		return resourceUsage, err
 	}
 	memUsagePercent, err := repo.getMemUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, err
+		return resourceUsage, err
 	}
 
 	storageInfo, err := repo.getStorageInfo()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("GetStorageInfoFailed")
+		return resourceUsage, errors.New("ReadStorageInfoFailed")
 	}
 	storageUsagePercent := float64(storageInfo.Used.Int64()) / float64(storageInfo.Total.Int64()) * 100
 
+	cpuUsagePercentStr := strconv.FormatFloat(cpuUsagePercent, 'f', 0, 64)
+	memUsagePercentStr := strconv.FormatFloat(memUsagePercent, 'f', 0, 64)
+	storageUsagePercentStr := strconv.FormatFloat(storageUsagePercent, 'f', 0, 64)
+
 	return valueObject.NewCurrentResourceUsage(
-		cpuUsagePercent,
-		memUsagePercent,
-		storageUsagePercent,
+		cpuUsagePercent, cpuUsagePercentStr,
+		memUsagePercent, memUsagePercentStr,
+		storageUsagePercent, storageUsagePercentStr,
 	), nil
 }
 
