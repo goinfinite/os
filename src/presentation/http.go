@@ -68,7 +68,7 @@ func HttpServerInit(
 		}
 
 		osBanner = `
-         INFINITE
+        INFINITE
     ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:1618! ` + devModeStr + `        
   ▄██▀    ▀██▄██    ▀█   |
   ██▀      ▀█████▄       |  🏠 Primary Hostname: ` + o11yOverview.Hostname.String() + `
