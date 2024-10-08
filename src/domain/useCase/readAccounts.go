@@ -5,8 +5,8 @@ import (
 	"github.com/speedianet/os/src/domain/repository"
 )
 
-func GetAccounts(
-	accQueryRepo repository.AccQueryRepo,
+func ReadAccounts(
+	accountQueryRepo repository.AccountQueryRepo,
 ) ([]entity.Account, error) {
-	return accQueryRepo.Get()
+	return accountQueryRepo.Read()
 }
