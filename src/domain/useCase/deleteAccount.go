@@ -2,28 +2,28 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
+	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 func DeleteAccount(
-	accQueryRepo repository.AccQueryRepo,
-	accCmdRepo repository.AccCmdRepo,
-	accountId valueObject.AccountId,
+	accountQueryRepo repository.AccountQueryRepo,
+	accountCmdRepo repository.AccountCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	deleteDto dto.DeleteAccount,
 ) error {
-	_, err := accQueryRepo.GetById(accountId)
+	_, err := accountQueryRepo.ReadById(deleteDto.AccountId)
 	if err != nil {
 		return errors.New("AccountNotFound")
 	}
 
-	err = accCmdRepo.Delete(accountId)
+	err = accountCmdRepo.Delete(deleteDto.AccountId)
 	if err != nil {
-		return errors.New("DeleteAccountError")
+		slog.Error("DeleteAccountInfraError", slog.Any("error", err))
+		return errors.New("DeleteAccountInfraError")
 	}
-
-	log.Printf("AccountId '%v' deleted.", accountId)
 
 	return nil
 }

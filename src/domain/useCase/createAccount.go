@@ -2,31 +2,28 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
 )
 
 func CreateAccount(
-	accQueryRepo repository.AccQueryRepo,
-	accCmdRepo repository.AccCmdRepo,
-	filesQueryRepo repository.FilesQueryRepo,
-	filesCmdRepo repository.FilesCmdRepo,
-	createAccount dto.CreateAccount,
+	accountQueryRepo repository.AccountQueryRepo,
+	accountCmdRepo repository.AccountCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateAccount,
 ) error {
-	_, err := accQueryRepo.GetByUsername(createAccount.Username)
+	_, err := accountQueryRepo.ReadByUsername(createDto.Username)
 	if err == nil {
-		return errors.New("UsernameAlreadyExists")
+		return errors.New("AccountAlreadyExists")
 	}
 
-	err = accCmdRepo.Create(createAccount)
+	_, err = accountCmdRepo.Create(createDto)
 	if err != nil {
-		return errors.New("CreateAccountError")
+		slog.Error("CreateAccountInfraError", slog.Any("error", err))
+		return errors.New("CreateAccountInfraError")
 	}
 
-	log.Printf("Account '%v' created.", createAccount.Username.String())
-
-	deleteUnixFilesUc := NewDeleteUnixFiles(filesQueryRepo, filesCmdRepo)
-	return deleteUnixFilesUc.CreateTrash()
+	return nil
 }
