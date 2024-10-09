@@ -19,11 +19,14 @@ func CreateAccount(
 		return errors.New("AccountAlreadyExists")
 	}
 
-	_, err = accountCmdRepo.Create(createDto)
+	accountId, err := accountCmdRepo.Create(createDto)
 	if err != nil {
 		slog.Error("CreateAccountInfraError", slog.Any("error", err))
 		return errors.New("CreateAccountInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateAccount(createDto, accountId)
 
 	return nil
 }

@@ -49,3 +49,21 @@ func (uc *CreateSecurityActivityRecord) CreateSessionToken(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) CreateAccount(
+	createDto dto.CreateAccount,
+	accountId valueObject.AccountId,
+) {
+	recordCode, _ := valueObject.NewActivityRecordCode("AccountCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewAccountSri(accountId),
+		},
+		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
