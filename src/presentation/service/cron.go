@@ -1,11 +1,11 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	cronInfra "github.com/speedianet/os/src/infra/cron"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	cronInfra "github.com/goinfinite/os/src/infra/cron"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type CronService struct {

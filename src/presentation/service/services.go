@@ -6,17 +6,17 @@ import (
 	"strings"
 
 	"github.com/alessio/shellescape"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	scheduledTaskInfra "github.com/speedianet/os/src/infra/scheduledTask"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
-	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type ServicesService struct {
@@ -171,7 +171,7 @@ func (service *ServicesService) CreateInstallable(
 	}
 
 	if shouldSchedule {
-		cliCmd := infraEnvs.SpeediaOsBinary + " services create-installable"
+		cliCmd := infraEnvs.InfiniteOsBinary + " services create-installable"
 		installParams := []string{
 			"--name", name.String(),
 			"--auto-create-mapping", strconv.FormatBool(autoCreateMapping),
@@ -226,7 +226,7 @@ func (service *ServicesService) CreateInstallable(
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("services")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
-		timeoutSeconds := uint(600)
+		timeoutSeconds := uint16(600)
 
 		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
 			taskName, taskCmd, taskTags, &timeoutSeconds, nil,

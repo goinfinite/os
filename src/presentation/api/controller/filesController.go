@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	filesInfra "github.com/goinfinite/os/src/infra/files"
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	filesInfra "github.com/speedianet/os/src/infra/files"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
 )
 
 func parseSourcePaths(

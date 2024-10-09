@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const sslCertificateAuthorityRegex string = `^\w{1,3}[\w\.\,\'\(\)\ \-]{0,100}$`

@@ -1,6 +1,6 @@
 package layout
 
-import infraEnvs "github.com/speedianet/os/src/infra/envs"
+import infraEnvs "github.com/goinfinite/os/src/infra/envs"
 
 type SidebarItem struct {
 	Label             string
@@ -38,7 +38,7 @@ func sidebarItemsGetter(currentUrl string) []SidebarItem {
 		}
 
 		if item.Link == currentUrl {
-			item.AdditionalClasses = " text-speedia-500"
+			item.AdditionalClasses = " text-infinite-500"
 		}
 
 		activeSidebarItems = append(activeSidebarItems, item)
@@ -72,20 +72,22 @@ templ Sidebar(currentUrl string) {
 	<sidebar id="sidebar" class="bg-os-900 w-30 flex h-screen flex-col items-center">
 		<div class="my-7">
 			<a
-				href="/_/#/overview"
-				class="mx-auto mb-2 flex w-[72px] max-w-[72px] items-center justify-center"
+				href="https://goinfinite.net/os/"
+				target="_blank"
+				class="mx-auto mb-2 flex w-[80px] max-w-[80px] items-center justify-center"
 			>
 				<img
 					src="/assets/os-logo.svg"
-					alt="Speedia OS"
+					alt="Infinite OS"
+					class="fill-white"
 				/>
 			</a>
-			<p class="text-center text-xs">v{ infraEnvs.SpeediaOsVersion }</p>
+			<p class="text-center text-xs">v{ infraEnvs.InfiniteOsVersion }</p>
 		</div>
 		<button
 			type="button"
 			onclick="clearSession()"
-			class="hover:bg-speedia-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
+			class="hover:bg-infinite-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
 		>
 			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
 			logout
@@ -93,7 +95,7 @@ templ Sidebar(currentUrl string) {
 		<button
 			id="scrollButton"
 			onclick="scrollToTop()"
-			class="hover:bg-speedia-500 mt-2 hidden rounded-full border border-neutral-500 bg-transparent p-2 transition-all hover:border-transparent"
+			class="hover:bg-infinite-500 mt-2 hidden rounded-full border border-neutral-500 bg-transparent p-2 transition-all hover:border-transparent"
 		>
 			<i class="ph-duotone ph-arrow-fat-up block"></i>
 		</button>

@@ -3,6 +3,7 @@ package o11yInfra
 import (
 	"errors"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"runtime"
@@ -11,10 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	"github.com/dustin/go-humanize"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 const PublicIpTransientKey string = "PublicIp"
@@ -30,12 +32,18 @@ func NewO11yQueryRepo(
 }
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
-	sysinfo := &syscall.Sysinfo_t{}
-	if err := syscall.Sysinfo(sysinfo); err != nil {
-		return 0, err
+	nowEpoch := valueObject.NewUnixTimeNow()
+	rawFirstPidEpoch, err := infraHelper.RunCmdWithSubShell("stat -c '%Y' /proc/1")
+	if err != nil {
+		return 0, errors.New("ReadFirstPidEpochFailed")
+	}
+	firstPidEpoch, err := valueObject.NewUnixTime(rawFirstPidEpoch)
+	if err != nil {
+		return 0, errors.New("ParseFirstPidEpochFailed")
 	}
 
-	return uint64(sysinfo.Uptime), nil
+	uptimeSecs := nowEpoch.Int64() - firstPidEpoch.Int64()
+	return uint64(uptimeSecs), nil
 }
 
 func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
@@ -320,34 +328,36 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 }
 
 func (repo *O11yQueryRepo) getCurrentResourceUsage() (
-	valueObject.CurrentResourceUsage,
-	error,
+	resourceUsage valueObject.CurrentResourceUsage,
+	err error,
 ) {
 	cpuUsagePercent, err := repo.getCpuUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, err
+		return resourceUsage, err
 	}
 	memUsagePercent, err := repo.getMemUsagePercent()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, err
+		return resourceUsage, err
 	}
 
 	storageInfo, err := repo.getStorageInfo()
 	if err != nil {
-		return valueObject.CurrentResourceUsage{}, errors.New("GetStorageInfoFailed")
+		return resourceUsage, errors.New("ReadStorageInfoFailed")
 	}
 	storageUsagePercent := float64(storageInfo.Used.Int64()) / float64(storageInfo.Total.Int64()) * 100
 
+	cpuUsagePercentStr := strconv.FormatFloat(cpuUsagePercent, 'f', 0, 64)
+	memUsagePercentStr := strconv.FormatFloat(memUsagePercent, 'f', 0, 64)
+	storageUsagePercentStr := strconv.FormatFloat(storageUsagePercent, 'f', 0, 64)
+
 	return valueObject.NewCurrentResourceUsage(
-		cpuUsagePercent,
-		memUsagePercent,
-		storageUsagePercent,
+		cpuUsagePercent, cpuUsagePercentStr,
+		memUsagePercent, memUsagePercentStr,
+		storageUsagePercent, storageUsagePercentStr,
 	), nil
 }
 
-func (repo *O11yQueryRepo) ReadOverview() (entity.O11yOverview, error) {
-	var o11yOverview entity.O11yOverview
-
+func (repo *O11yQueryRepo) ReadOverview() (o11yOverview entity.O11yOverview, err error) {
 	hostnameStr, err := os.Hostname()
 	if err != nil {
 		hostnameStr = "localhost"
@@ -363,32 +373,35 @@ func (repo *O11yQueryRepo) ReadOverview() (entity.O11yOverview, error) {
 		return o11yOverview, errors.New("GetHostnameFailed")
 	}
 
-	uptime, err := repo.getUptime()
+	uptimeSecs, err := repo.getUptime()
 	if err != nil {
-		uptime = 0
+		uptimeSecs = 0
+	}
+
+	uptimeSecsDuration := time.Duration(uptimeSecs) * time.Second
+	humanizedUptime := humanize.Time(time.Now().Add(-uptimeSecsDuration))
+	uptimeRelative, err := valueObject.NewRelativeTime(humanizedUptime)
+	if err != nil {
+		uptimeRelative, _ = valueObject.NewRelativeTime("0 seconds ago")
 	}
 
 	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
-		log.Printf("ReadServerPublicIpAddressError: %s", err.Error())
+		slog.Debug("ReadServerPublicIpAddressError", slog.Any("error", err))
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 
 	hardwareSpecs, err := repo.getHardwareSpecs()
 	if err != nil {
-		return o11yOverview, errors.New("GetHardwareSpecsFailed: " + err.Error())
+		return o11yOverview, errors.New("ReadHardwareSpecsFailed: " + err.Error())
 	}
 
 	currentResourceUsage, err := repo.getCurrentResourceUsage()
 	if err != nil {
-		return o11yOverview, errors.New("GetCurrentResourceUsageFailed: " + err.Error())
+		return o11yOverview, errors.New("ReadCurrentResourceUsageFailed: " + err.Error())
 	}
 
 	return entity.NewO11yOverview(
-		hostname,
-		uptime,
-		publicIpAddress,
-		hardwareSpecs,
-		currentResourceUsage,
+		hostname, uptimeSecs, uptimeRelative, publicIpAddress, hardwareSpecs, currentResourceUsage,
 	), nil
 }

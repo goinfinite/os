@@ -3,11 +3,11 @@ package cronInfra
 import (
 	"os"
 
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	"github.com/google/uuid"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 type CronCmdRepo struct {

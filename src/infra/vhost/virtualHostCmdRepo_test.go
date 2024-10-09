@@ -3,11 +3,11 @@ package vhostInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 func TestVirtualHostCmdRepo(t *testing.T) {

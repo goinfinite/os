@@ -1,7 +1,7 @@
 id: 2
 slugs:
- - opencart
- - oc
+  - opencart
+  - oc
 name: OpenCart
 type: app
 description: OpenCart is free open source e-commerce platform for online merchants. OpenCart provides a professional and reliable foundation from which to build a successful online store.
@@ -27,7 +27,7 @@ dataFields:
     type: email
     isRequired: true
 installCmdSteps:
-  - curl -skL -o %installTempDir%/opencart.zip https://speedia.net/assets/os/marketplace/opencart/opencart.zip
+  - curl -skL -o %installTempDir%/opencart.zip https://goinfinite.net/assets/os/marketplace/opencart/opencart.zip
   - unzip -o %installTempDir%/opencart.zip -d %installTempDir%
   - mv %installTempDir%/opencart-*/upload/* %installDirectory%
   - cp %installDirectory%/config-dist.php %installDirectory%/config.php
@@ -54,7 +54,7 @@ uninstallFileNames:
   - php.ini
   - robots.txt
 estimatedSizeBytes: 100000000
-avatarUrl: "https://speedia.net/assets/os/marketplace/opencart/oc-avatar.jpg"
+avatarUrl: "https://goinfinite.net/assets/os/marketplace/opencart/oc-avatar.jpg"
 screenshotUrls:
-  - "https://speedia.net/assets/os/marketplace/opencart/oc-1.jpg"
-  - "https://speedia.net/assets/os/marketplace/opencart/oc-2.jpg"
+  - "https://goinfinite.net/assets/os/marketplace/opencart/oc-1.jpg"
+  - "https://goinfinite.net/assets/os/marketplace/opencart/oc-2.jpg"

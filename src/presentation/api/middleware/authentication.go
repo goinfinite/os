@@ -5,13 +5,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	authInfra "github.com/goinfinite/os/src/infra/auth"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/repository"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	authInfra "github.com/speedianet/os/src/infra/auth"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func getAccountIdFromAccessToken(

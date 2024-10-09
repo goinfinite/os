@@ -3,9 +3,9 @@ package authInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func TestAuthCmdRepo(t *testing.T) {

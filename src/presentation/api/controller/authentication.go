@@ -3,16 +3,16 @@ package apiController
 import (
 	"net/http"
 
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
+	authInfra "github.com/goinfinite/os/src/infra/auth"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	accountInfra "github.com/speedianet/os/src/infra/account"
-	activityRecordInfra "github.com/speedianet/os/src/infra/activityRecord"
-	authInfra "github.com/speedianet/os/src/infra/auth"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
 )
 
 type AuthController struct {

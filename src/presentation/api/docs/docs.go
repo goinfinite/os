@@ -9,11 +9,11 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://speedia.net/tos/",
+        "termsOfService": "https://goinfinite.net/tos/",
         "contact": {
-            "name": "Speedia Engineering",
-            "url": "https://speedia.net/",
-            "email": "eng+swagger@speedia.net"
+            "name": "Infinite Engineering",
+            "url": "https://goinfinite.net/",
+            "email": "eng+swagger@goinfinite.net"
         },
         "license": {
             "name": "Eclipse Public License v2.0",
@@ -3096,7 +3096,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "OsApi",
-	Description:      "Speedia OS API",
+	Description:      "Infinite OS API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

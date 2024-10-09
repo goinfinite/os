@@ -3,7 +3,7 @@ package infraHelper
 import (
 	"errors"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"golang.org/x/net/publicsuffix"
 )
 

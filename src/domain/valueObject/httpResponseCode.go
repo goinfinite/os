@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const responseCodeRegex = "^([1-5][0-9][0-9])$"

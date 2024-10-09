@@ -1,15 +1,15 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 )
 
 type RuntimeService struct {

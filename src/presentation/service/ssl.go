@@ -1,14 +1,14 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	sslInfra "github.com/goinfinite/os/src/infra/ssl"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type SslService struct {

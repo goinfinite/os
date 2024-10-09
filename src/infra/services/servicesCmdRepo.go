@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/alessio/shellescape"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
-const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /speedia/supervisord.conf"
+const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /infinite/supervisord.conf"
 
 var defaultServiceDirectories []string = []string{"conf", "logs"}
 
@@ -165,7 +165,7 @@ password=` + ctlPassword + `
 [supervisord]
 nodaemon=true
 user=root
-directory=/speedia
+directory=/infinite
 logfile=/dev/stdout
 logfile_maxbytes=0
 loglevel=ERROR
@@ -230,7 +230,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	err = infraHelper.UpdateFile(
-		"/speedia/supervisord.conf", supervisorConfFileContent.String(), true,
+		"/infinite/supervisord.conf", supervisorConfFileContent.String(), true,
 	)
 	if err != nil {
 		return err

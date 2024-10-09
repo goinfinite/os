@@ -3,10 +3,10 @@ package databaseInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {

@@ -1,8 +1,8 @@
 package databaseInfra
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type PostgresDatabaseCmdRepo struct {

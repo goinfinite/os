@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import "github.com/goinfinite/os/src/domain/valueObject"
 
 type UpdateAccount struct {
 	AccountId          valueObject.AccountId `json:"accountId"`

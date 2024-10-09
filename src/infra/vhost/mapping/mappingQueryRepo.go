@@ -4,12 +4,12 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 )
 
 type MappingQueryRepo struct {

@@ -5,8 +5,8 @@ import (
 	"path"
 	"runtime"
 
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/joho/godotenv"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func GenerateString(desiredSize int) string {

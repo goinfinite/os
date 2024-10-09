@@ -3,9 +3,9 @@ package vhostInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 func TestVirtualHostQueryRepo(t *testing.T) {

@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/api"
+	"github.com/goinfinite/os/src/presentation/ui/presenter"
 	"github.com/labstack/echo/v4"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	"github.com/speedianet/os/src/presentation/api"
-	"github.com/speedianet/os/src/presentation/ui/presenter"
 	"golang.org/x/net/websocket"
 )
 
@@ -118,6 +118,15 @@ func (router *Router) devRoutes() {
 	})
 }
 
+func (router *Router) fragmentRoutes() {
+	fragmentGroup := router.baseRoute.Group("/fragment")
+
+	footerPresenter := presenter.NewFooterPresenter(
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
+	)
+	fragmentGroup.GET("/footer", footerPresenter.Handler)
+}
+
 func (router *Router) previousDashboardRoute() {
 	dashFilesFs, err := fs.Sub(previousDashFiles, "dist")
 	if err != nil {
@@ -144,6 +153,7 @@ func (router *Router) RegisterRoutes() {
 		router.devRoutes()
 	}
 
+	router.fragmentRoutes()
 	router.previousDashboardRoute()
 
 	router.baseRoute.RouteNotFound("/*", func(c echo.Context) error {

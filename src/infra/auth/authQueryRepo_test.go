@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	accountInfra "github.com/speedianet/os/src/infra/account"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
 )
 
 func TestAuthQueryRepo(t *testing.T) {

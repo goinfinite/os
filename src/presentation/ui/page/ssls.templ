@@ -1,9 +1,9 @@
 package page
 
 import (
-	"github.com/speedianet/os/src/domain/entity"
-	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
-	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
 script SslsIndexLocalState() {
@@ -167,7 +167,7 @@ templ SslsTable(sslPairs []entity.SslPair) {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 					<th scope="row" class="w-1/4 space-y-2 px-5 py-3 text-left">
 						for _, vhostHostname := range sslPair.VirtualHostsHostnames {
-							@componentStructural.Tag("ph-network", "", vhostHostname.String(), "speedia-500")
+							@componentStructural.Tag("ph-network", "", vhostHostname.String(), "infinite-500")
 						}
 					</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.IssuedAt.GetDateOnly() }</th>

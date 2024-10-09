@@ -1,10 +1,10 @@
 package infraEnvs
 
 const (
-	SpeediaOsVersion             string = "0.0.9"
-	SpeediaOsBinary              string = "/speedia/os"
-	PersistentDatabaseFilePath   string = "/speedia/os.db"
-	TrailDatabaseFilePath        string = "/speedia/trail.db"
+	InfiniteOsVersion            string = "0.0.9"
+	InfiniteOsBinary             string = "/infinite/os"
+	PersistentDatabaseFilePath   string = "/infinite/os.db"
+	TrailDatabaseFilePath        string = "/infinite/trail.db"
 	PrimaryPublicDir             string = "/app/html"
 	VirtualHostsConfDir          string = "/app/conf/nginx"
 	PrimaryVhostFileName         string = "primary.conf"

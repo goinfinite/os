@@ -1,20 +1,20 @@
 package dto
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import "github.com/goinfinite/os/src/domain/valueObject"
 
 type UpdateScheduledTask struct {
-	Id     valueObject.ScheduledTaskId      `json:"id"`
-	Status *valueObject.ScheduledTaskStatus `json:"status"`
-	RunAt  *valueObject.UnixTime            `json:"runAt"`
+	TaskId valueObject.ScheduledTaskId      `json:"taskId"`
+	Status *valueObject.ScheduledTaskStatus `json:"status,omitempty"`
+	RunAt  *valueObject.UnixTime            `json:"runAt,omitempty"`
 }
 
 func NewUpdateScheduledTask(
-	id valueObject.ScheduledTaskId,
+	taskId valueObject.ScheduledTaskId,
 	status *valueObject.ScheduledTaskStatus,
 	runAt *valueObject.UnixTime,
 ) UpdateScheduledTask {
 	return UpdateScheduledTask{
-		Id:     id,
+		TaskId: taskId,
 		Status: status,
 		RunAt:  runAt,
 	}

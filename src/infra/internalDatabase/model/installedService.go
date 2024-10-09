@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
 
 type InstalledService struct {
@@ -41,7 +41,7 @@ func (InstalledService) TableName() string {
 }
 
 func (InstalledService) InitialEntries() (entries []interface{}, err error) {
-	osWorkingDirectory := "/speedia"
+	osWorkingDirectory := "/infinite"
 	osLogOutputPath := "/dev/stdout"
 	osLogErrorPath := "/dev/stderr"
 	osApiPortBindings := "1618/http"
@@ -49,8 +49,8 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Name:             "os-api",
 		Nature:           "solo",
 		Type:             "system",
-		Version:          infraEnvs.SpeediaOsVersion,
-		StartCmd:         infraEnvs.SpeediaOsBinary + " serve",
+		Version:          infraEnvs.InfiniteOsVersion,
+		StartCmd:         infraEnvs.InfiniteOsBinary + " serve",
 		PortBindings:     &osApiPortBindings,
 		WorkingDirectory: &osWorkingDirectory,
 		LogOutputPath:    &osLogOutputPath,

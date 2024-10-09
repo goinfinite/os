@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	sslInfra "github.com/goinfinite/os/src/infra/ssl"
+	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	sslInfra "github.com/speedianet/os/src/infra/ssl"
-	apiHelper "github.com/speedianet/os/src/presentation/api/helper"
-	"github.com/speedianet/os/src/presentation/service"
 )
 
 type SslController struct {

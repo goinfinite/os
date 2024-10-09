@@ -1,8 +1,8 @@
 package useCase
 
 import (
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/repository"
 )
 
 func ReadCrons(
