@@ -78,7 +78,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
 	_, err = infraHelper.RunCmd(
-		"sed", "-i", "s/goinfinite.net/"+primaryVhostStr+"/g", primaryConfFilePath,
+		"sed", "-i", "s/goinfinite.local/"+primaryVhostStr+"/g", primaryConfFilePath,
 	)
 	if err != nil {
 		log.Fatal("UpdateVhostFailed")

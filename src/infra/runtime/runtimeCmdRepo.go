@@ -281,7 +281,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 
 	hostnameStr := hostname.String()
 	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "s/goinfinite.net/"+hostnameStr+"/g", phpConfFilePathStr,
+		"sed", "-ie", "s/goinfinite.local/"+hostnameStr+"/g", phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())

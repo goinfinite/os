@@ -98,7 +98,7 @@ podman build -t os:latest .
 To run the project you may use the following command:
 
 ```
-podman run --name os --env 'PRIMARY_VHOST=goinfinite.net' --rm -p 1618:1618 -it os:latest
+podman run --name os --env 'PRIMARY_VHOST=goinfinite.local' --rm -p 1618:1618 -it os:latest
 ```
 
 When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
