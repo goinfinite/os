@@ -6,14 +6,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
-	runtimeInfra "github.com/speedianet/os/src/infra/runtime"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 )
 
 type MappingCmdRepo struct {

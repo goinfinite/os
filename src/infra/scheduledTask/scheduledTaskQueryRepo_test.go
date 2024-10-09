@@ -4,56 +4,39 @@ import (
 	"errors"
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/useCase"
 )
 
-func getScheduledTasks() ([]entity.ScheduledTask, error) {
+func readScheduledTasks() ([]entity.ScheduledTask, error) {
 	persistentDbSvc := testHelpers.GetPersistentDbSvc()
 	scheduledTaskQueryRepo := NewScheduledTaskQueryRepo(persistentDbSvc)
 
-	scheduledTasks, err := scheduledTaskQueryRepo.Read()
-	if err != nil || len(scheduledTasks) == 0 {
+	readDto := dto.ReadScheduledTasksRequest{
+		Pagination: useCase.ScheduledTasksDefaultPagination,
+	}
+
+	responseDto, err := scheduledTaskQueryRepo.Read(readDto)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(responseDto.Tasks) == 0 {
 		return nil, errors.New("NoScheduledTasksFound")
 	}
 
-	return scheduledTasks, nil
+	return responseDto.Tasks, nil
 }
 
 func TestScheduledTaskQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
-	scheduledTaskQueryRepo := NewScheduledTaskQueryRepo(persistentDbSvc)
 
 	t.Run("ReadScheduledTasks", func(t *testing.T) {
-		_, err := scheduledTaskQueryRepo.Read()
+		_, err := readScheduledTasks()
 		if err != nil {
 			t.Error(err)
-			return
-		}
-	})
-
-	t.Run("ReadScheduledTaskById", func(t *testing.T) {
-		scheduledTasks, err := getScheduledTasks()
-		if err != nil {
-			t.Error(err)
-			return
-		}
-
-		_, err = scheduledTaskQueryRepo.ReadById(scheduledTasks[0].Id)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	})
-
-	t.Run("ReadScheduledTasksByStatus", func(t *testing.T) {
-		pendingStatus, _ := valueObject.NewScheduledTaskStatus("pending")
-		_, err := scheduledTaskQueryRepo.ReadByStatus(pendingStatus)
-		if err != nil {
-			t.Error(err)
-			return
 		}
 	})
 }

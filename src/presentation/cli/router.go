@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	"github.com/speedianet/os/src/presentation"
-	cliController "github.com/speedianet/os/src/presentation/cli/controller"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation"
+	cliController "github.com/goinfinite/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "ShowSoftwareVersion",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Speedia OS v" + infraEnvs.SpeediaOsVersion)
+		fmt.Println("Infinite OS v" + infraEnvs.InfiniteOsVersion)
 	},
 }
 
@@ -157,7 +157,7 @@ func (router *Router) scheduledTaskRoutes() {
 func (router Router) serveRoutes() {
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
-		Short: "Start Speedia OS HTTPS server (port 1618)",
+		Short: "Start Infinite OS HTTPS server (port 1618)",
 		Run: func(cmd *cobra.Command, args []string) {
 			presentation.HttpServerInit(
 				router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,

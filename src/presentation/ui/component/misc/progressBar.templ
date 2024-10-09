@@ -1,0 +1,33 @@
+package componentMisc
+
+import "strconv"
+
+func progressBarCssClassesFactory(completionRate uint8) string {
+	completionRateStr := strconv.FormatUint(uint64(completionRate), 10)
+	baseClasses := "h-full rounded-sm w-[" + completionRateStr + "%]"
+
+	bgClass := "bg-cyan-400"
+	switch {
+	case completionRate >= 90:
+		bgClass = "bg-red-800"
+	case completionRate > 85:
+		bgClass = "bg-red-600"
+	case completionRate > 75:
+		bgClass = "bg-amber-600"
+	case completionRate >= 50:
+		bgClass = "bg-amber-300"
+	}
+
+	return baseClasses + " " + bgClass
+}
+
+templ ProgressBar(completionRate uint8, label string) {
+	<div class="bg-os-300 relative flex h-5 w-20 items-center rounded-sm">
+		if label != "" {
+			<div class="bg-os-700 absolute left-1/2 -translate-x-1/2 transform rounded-sm bg-opacity-75 px-1 text-xs text-neutral-50">
+				{ label }
+			</div>
+		}
+		<div class={ progressBarCssClassesFactory(completionRate) }></div>
+	</div>
+}

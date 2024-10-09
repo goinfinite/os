@@ -8,7 +8,7 @@ import (
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
-	"github.com/speedianet/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/service"
 	"golang.org/x/term"
 )
 

@@ -3,10 +3,10 @@ package activityRecordInfra
 import (
 	"log/slog"
 
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/entity"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
 type ActivityRecordQueryRepo struct {

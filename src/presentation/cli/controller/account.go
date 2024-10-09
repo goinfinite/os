@@ -1,8 +1,8 @@
 package cliController
 
 import (
-	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
-	"github.com/speedianet/os/src/presentation/service"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/spf13/cobra"
 )
 

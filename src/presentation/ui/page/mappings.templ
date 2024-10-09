@@ -1,11 +1,11 @@
 package page
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/valueObject"
-	componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
-	componentMappings "github.com/speedianet/os/src/presentation/ui/component/mappings"
-	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
 script MappingsIndexLocalState() {
@@ -197,7 +197,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<span class="truncate text-lg font-bold">{ vhostWithMappings.Hostname.String() }</span>
 						<div class="flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-plus", "speedia-500", "speedia-300",
+								"ph-plus", "infinite-500", "infinite-300",
 								"openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')",
 								"create mapping", "os-200",
 							)
@@ -211,8 +211,8 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						</div>
 					</div>
 					<div class="mt-4 flex flex-wrap gap-3">
-						@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "speedia-300")
-						@componentStructural.Tag("ph-file-text", "", vhostWithMappings.Type.String(), "speedia-300")
+						@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "infinite-300")
+						@componentStructural.Tag("ph-file-text", "", vhostWithMappings.Type.String(), "infinite-300")
 					</div>
 				</div>
 				<!-- Mappings Column -->

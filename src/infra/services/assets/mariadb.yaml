@@ -41,4 +41,4 @@ stopCmdSteps:
   - mariadb-admin --defaults-file=/root/.my.cnf shutdown
 execUser: mysql
 estimatedSizeBytes: 524288000
-avatarUrl: https://speedia.net/assets/os/services/mariadb/mariadb-avatar.jpg
+avatarUrl: https://goinfinite.net/assets/os/services/mariadb/mariadb-avatar.jpg

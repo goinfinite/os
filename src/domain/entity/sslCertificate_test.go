@@ -3,7 +3,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func TestSslCertificate(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/glebarez/sqlite"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
 

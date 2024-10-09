@@ -7,8 +7,8 @@ import (
 	"os"
 	"slices"
 
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	"github.com/joho/godotenv"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
 )
 
 var requiredEnvVars = []string{
@@ -40,7 +40,7 @@ func CheckEnvs() {
 		log.Fatalf("PrimaryHostnameUnidentifiable")
 	}
 
-	envFilePath := "/speedia/.env"
+	envFilePath := "/infinite/.env"
 
 	envFile, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
 	if err != nil {

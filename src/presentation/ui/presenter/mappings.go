@@ -3,12 +3,12 @@ package presenter
 import (
 	"net/http"
 
+	"github.com/goinfinite/os/src/domain/dto"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/service"
+	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
+	"github.com/goinfinite/os/src/presentation/ui/page"
 	"github.com/labstack/echo/v4"
-	"github.com/speedianet/os/src/domain/dto"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	"github.com/speedianet/os/src/presentation/service"
-	uiHelper "github.com/speedianet/os/src/presentation/ui/helper"
-	"github.com/speedianet/os/src/presentation/ui/page"
 )
 
 type MappingsPresenter struct {

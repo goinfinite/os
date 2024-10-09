@@ -3,7 +3,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func TestSslPair(t *testing.T) {
@@ -213,7 +213,7 @@ KPpdzvvtTnOPlC7SQZSYmdunr3Bf9b77AiC/ZidstK36dRILKz7OA54=
 
 		chainCertificates := []SslCertificate{chainCertificate}
 
-		demoHostname, err := valueObject.NewFqdn("os.demo.speedia.net")
+		demoHostname, err := valueObject.NewFqdn("os.demo.goinfinite.net")
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}

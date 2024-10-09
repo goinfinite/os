@@ -5,7 +5,7 @@ import "testing"
 func TestSslHostname(t *testing.T) {
 	t.Run("ValidSslHostname", func(t *testing.T) {
 		validSslHostname := []interface{}{
-			"127.0.0.1", "8.8.8.8", "google.com", "speedia.net", "*.speedia.net",
+			"127.0.0.1", "8.8.8.8", "google.com", "goinfinite.net", "*.goinfinite.net",
 			"*.mysite.com",
 		}
 
@@ -21,7 +21,7 @@ func TestSslHostname(t *testing.T) {
 
 	t.Run("InvalidSslHostname", func(t *testing.T) {
 		invalidSslHostname := []interface{}{
-			"", "127.0.0.1.0", "8.8.8", "https://google.com", "http://speedia.net",
+			"", "127.0.0.1.0", "8.8.8", "https://google.com", "http://goinfinite.net",
 		}
 
 		for _, sslHostname := range invalidSslHostname {

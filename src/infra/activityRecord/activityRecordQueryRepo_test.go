@@ -3,8 +3,8 @@ package activityRecordInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	"github.com/speedianet/os/src/domain/dto"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
 )
 
 func TestActivityRecordQueryRepo(t *testing.T) {

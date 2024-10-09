@@ -21,9 +21,9 @@ make build
 podman build -t os:latest .
 # TODO: Re-add --env 'DEV_MODE=true' after Echo v4.13.0 release.
 podman run --name os -d \
-  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=speedia.cloud' \
-  --hostname=speedia.cloud --cpus=2 --memory=2g --rm \
-  --volume "$(pwd)/bin:/speedia/bin:Z,ro,bind,slave" \
+  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=goinfinite.local' \
+  --hostname=goinfinite.local --cpus=2 --memory=2g --rm \
+  --volume "$(pwd)/bin:/infinite/bin:Z,ro,bind,slave" \
   "${ports[@]}" -it os:latest
 
 echo "=> Waiting for the container to start..."
@@ -40,7 +40,7 @@ echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
 echo "=> Starting the development build..."
 echo "Any changes to the code will trigger a rebuild automatically."
-echo "Please, ignore the 'Only root can run SOS' message."
+echo "Ignore the 'InfiniteOsMustBeRunAsRoot' message or enable DEV_MODE."
 echo
 echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
@@ -52,6 +52,7 @@ stopDevBuild() {
   echo
   echo "=> Development build stopped."
   echo
+  clear
   exit
 }
 

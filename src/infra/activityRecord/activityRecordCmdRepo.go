@@ -1,9 +1,9 @@
 package activityRecordInfra
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	"github.com/goinfinite/os/src/domain/dto"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
 type ActivityRecordCmdRepo struct {

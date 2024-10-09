@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import "github.com/goinfinite/os/src/domain/valueObject"
 
 type CreateMapping struct {
 	Hostname               valueObject.Fqdn                `json:"hostname"`

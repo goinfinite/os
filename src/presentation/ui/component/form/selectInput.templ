@@ -18,11 +18,11 @@ templ SelectInput(
 			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
 			if shouldIncludeBlankOption {
-				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+				<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90">--</option>
 			}
 			for _, option := range options {
 				<option
-					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
+					class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
 					value={ option }
 				>
 					{ option }
@@ -63,11 +63,11 @@ templ SelectInputWithLabelValuePair(
 			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
 			if shouldIncludeBlankOption {
-				<option class="bg-os-500 checked:bg-speedia-500 bg-opacity-90">--</option>
+				<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90">--</option>
 			}
 			for _, option := range options {
 				<option
-					class="bg-os-500 checked:bg-speedia-500 bg-opacity-90"
+					class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
 					value={ option.Value }
 				>
 					{ option.Label }
@@ -153,7 +153,7 @@ templ MultiSelectInput(
 							x-model={ bindModelPath }
 							class="peer sr-only"
 						/>
-						<div class="h-4.5 peer-checked:bg-speedia-500 peer relative ml-auto w-8 rounded-full bg-gray-400 after:absolute after:start-[2px] after:top-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+						<div class="h-4.5 peer-checked:bg-infinite-500 peer relative ml-auto w-8 rounded-full bg-gray-400 after:absolute after:start-[2px] after:top-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
 					</label>
 				</div>
 			}

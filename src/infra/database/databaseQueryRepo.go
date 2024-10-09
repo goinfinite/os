@@ -3,8 +3,8 @@ package databaseInfra
 import (
 	"errors"
 
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type DatabaseQueryRepo struct {

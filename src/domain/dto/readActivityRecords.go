@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type ReadActivityRecords struct {

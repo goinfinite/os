@@ -1,16 +1,16 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
-	vhostInfra "github.com/speedianet/os/src/infra/vhost"
-	mappingInfra "github.com/speedianet/os/src/infra/vhost/mapping"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type VirtualHostService struct {

@@ -1,9 +1,9 @@
 package componentMappings
 
 import (
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	componentStructural "github.com/speedianet/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
 templ VhostMappingsList(
@@ -32,7 +32,7 @@ templ VhostMappingsList(
 					case "static-files":
 						@componentStructural.Tag("", "static files", rootDirectory.String(), "yellow-600")
 				}
-				@componentStructural.Tag("", "match pattern", mapping.MatchPattern.String(), "speedia-300")
+				@componentStructural.Tag("", "match pattern", mapping.MatchPattern.String(), "infinite-300")
 			</div>
 			<div>
 				@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mapping", "red-500")

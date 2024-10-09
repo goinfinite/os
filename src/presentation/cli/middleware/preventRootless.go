@@ -4,17 +4,24 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 func PreventRootless() {
 	currentUser, err := user.Current()
 	if err != nil {
-		fmt.Println("Failed to get current user:", err)
+		fmt.Println("ReadCurrentUserError: ", err)
 		os.Exit(1)
 	}
 
+	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+		fmt.Println("BinaryCompiledSuccessfully")
+		os.Exit(0)
+	}
+
 	if currentUser.Username != "root" {
-		fmt.Println("Only root can run SOS.")
+		fmt.Println("InfiniteOsMustBeRunAsRoot")
 		os.Exit(1)
 	}
 }

@@ -286,4 +286,4 @@ installCmdSteps:
   - if [ ! -f "%startupFile%" ]; then install -o nobody -g nogroup /dev/null %startupFile%; fi
   - if [ ! -s "%startupFile%" ]; then echo 'import com.sun.net.httpserver.HttpServer; import java.net.InetSocketAddress; public class SimpleHttpServer { public static void main(String[] args) throws Exception { HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0); server.start(); } }' >%startupFile%; fi
 estimatedSizeBytes: 362735572
-avatarUrl: https://speedia.net/assets/os/services/java/java-avatar.jpg
+avatarUrl: https://goinfinite.net/assets/os/services/java/java-avatar.jpg

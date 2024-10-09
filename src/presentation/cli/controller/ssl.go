@@ -1,11 +1,11 @@
 package cliController
 
 import (
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	cliHelper "github.com/speedianet/os/src/presentation/cli/helper"
-	"github.com/speedianet/os/src/presentation/service"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/spf13/cobra"
 )
 
