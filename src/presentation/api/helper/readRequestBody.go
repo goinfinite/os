@@ -98,5 +98,8 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "EmptyRequestBody")
 	}
 
+	requestBody["operatorAccountId"] = c.Get("accountId")
+	requestBody["operatorIpAddress"] = c.RealIP()
+
 	return requestBody, nil
 }
