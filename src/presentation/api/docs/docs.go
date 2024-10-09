@@ -168,7 +168,7 @@ const docTemplate = `{
         },
         "/v1/auth/login/": {
             "post": {
-                "description": "Generate JWT with credentials",
+                "description": "Create a new session token with the provided credentials.",
                 "consumes": [
                     "application/json"
                 ],
@@ -178,15 +178,15 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "GenerateJwtWithCredentials",
+                "summary": "CreateSessionTokenWithCredentials",
                 "parameters": [
                     {
-                        "description": "All props are required.",
-                        "name": "loginDto",
+                        "description": "CreateSessionToken",
+                        "name": "createSessionToken",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.Login"
+                            "$ref": "#/definitions/dto.CreateSessionToken"
                         }
                     }
                 ],
@@ -1161,6 +1161,163 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/scheduled-task/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List scheduled tasks.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scheduled-task"
+                ],
+                "summary": "ReadScheduledTasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TaskId",
+                        "name": "taskId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskName",
+                        "name": "taskName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskStatus",
+                        "name": "taskStatus",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskTags (semicolon separated)",
+                        "name": "taskTags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "StartedBeforeAt",
+                        "name": "startedBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "StartedAfterAt",
+                        "name": "startedAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "FinishedBeforeAt",
+                        "name": "finishedBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "FinishedAfterAt",
+                        "name": "finishedAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedBeforeAt",
+                        "name": "createdBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedAfterAt",
+                        "name": "createdAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReadScheduledTasksResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Reschedule a task or change its status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scheduled-task"
+                ],
+                "summary": "UpdateScheduledTask",
+                "parameters": [
+                    {
+                        "description": "UpdateScheduledTask (Only id is required.)",
+                        "name": "updateScheduledTaskDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateScheduledTask"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ScheduledTaskUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/services/": {
             "get": {
                 "security": [
@@ -1510,74 +1667,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "SslPairDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/task/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List scheduled tasks.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "task"
-                ],
-                "summary": "ReadScheduledTasks",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.ScheduledTask"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Reschedule a task or change its status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "task"
-                ],
-                "summary": "UpdateScheduledTask",
-                "parameters": [
-                    {
-                        "description": "UpdateScheduledTask (Only id is required.)",
-                        "name": "updateScheduledTaskDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateScheduledTask"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ScheduledTaskUpdated",
                         "schema": {
                             "type": "object"
                         }
@@ -2031,6 +2120,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateSessionToken": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateSslPair": {
             "type": "object",
             "properties": {
@@ -2225,21 +2325,50 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Login": {
+        "dto.Pagination": {
             "type": "object",
             "properties": {
-                "password": {
+                "itemsPerPage": {
+                    "type": "integer"
+                },
+                "itemsTotal": {
+                    "type": "integer"
+                },
+                "lastSeenId": {
                     "type": "string"
                 },
-                "username": {
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pagesTotal": {
+                    "type": "integer"
+                },
+                "sortBy": {
                     "type": "string"
+                },
+                "sortDirection": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ReadScheduledTasksResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ScheduledTask"
+                    }
                 }
             }
         },
         "dto.UpdateAccount": {
             "type": "object",
             "properties": {
-                "id": {
+                "accountId": {
                     "type": "integer"
                 },
                 "password": {
@@ -2247,9 +2376,6 @@ const docTemplate = `{
                 },
                 "shouldUpdateApiKey": {
                     "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -2296,14 +2422,14 @@ const docTemplate = `{
         "dto.UpdateScheduledTask": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "runAt": {
                     "type": "integer"
                 },
                 "status": {
                     "type": "string"
+                },
+                "taskId": {
+                    "type": "integer"
                 }
             }
         },
@@ -2456,10 +2582,16 @@ const docTemplate = `{
         "entity.Account": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
                 "groupId": {
                     "type": "integer"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
                     "type": "integer"
                 },
                 "username": {
@@ -2721,6 +2853,9 @@ const docTemplate = `{
                 "specs": {
                     "$ref": "#/definitions/valueObject.HardwareSpecs"
                 },
+                "uptimeRelative": {
+                    "type": "string"
+                },
                 "uptimeSecs": {
                     "type": "integer"
                 }
@@ -2772,6 +2907,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "type": {
+                    "type": "string"
+                },
                 "value": {
                     "type": "string"
                 }
@@ -2800,8 +2938,14 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "integer"
                 },
+                "elapsedSecs": {
+                    "type": "integer"
+                },
                 "err": {
                     "type": "string"
+                },
+                "finishedAt": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -2813,6 +2957,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "runAt": {
+                    "type": "integer"
+                },
+                "startedAt": {
                     "type": "integer"
                 },
                 "status": {
@@ -2951,11 +3098,20 @@ const docTemplate = `{
                 "cpuUsagePercent": {
                     "type": "number"
                 },
+                "cpuUsagePercentStr": {
+                    "type": "string"
+                },
                 "memUsagePercent": {
                     "type": "number"
                 },
+                "memUsagePercentStr": {
+                    "type": "string"
+                },
                 "storageUsage": {
                     "type": "number"
+                },
+                "storageUsagePercentStr": {
+                    "type": "string"
                 }
             }
         },
