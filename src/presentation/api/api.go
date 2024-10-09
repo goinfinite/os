@@ -50,6 +50,9 @@ func ApiInit(
 	e.Use(apiMiddleware.PanicHandler)
 	e.Use(apiMiddleware.SetDefaultHeaders(ApiBasePath))
 	e.Use(apiMiddleware.ReadOnlyMode(ApiBasePath))
+	e.Use(apiMiddleware.SetDatabaseServices(
+		persistentDbSvc, transientDbSvc, trailDbSvc,
+	))
 	e.Use(apiMiddleware.Auth(ApiBasePath))
 
 	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc, trailDbSvc)
