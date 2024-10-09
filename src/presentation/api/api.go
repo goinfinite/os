@@ -53,7 +53,7 @@ func ApiInit(
 	e.Use(apiMiddleware.SetDatabaseServices(
 		persistentDbSvc, transientDbSvc, trailDbSvc,
 	))
-	e.Use(apiMiddleware.Auth(ApiBasePath))
+	e.Use(apiMiddleware.Authentication(ApiBasePath))
 
 	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()

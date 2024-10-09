@@ -10,6 +10,8 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	authInfra "github.com/speedianet/os/src/infra/auth"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func getAccountIdFromAccessToken(
@@ -47,7 +49,7 @@ func authError(message string) *echo.HTTPError {
 	})
 }
 
-func Auth(apiBasePath string) echo.MiddlewareFunc {
+func Authentication(apiBasePath string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			shouldSkip := IsSkippableApiCall(c.Request(), apiBasePath)
@@ -56,7 +58,7 @@ func Auth(apiBasePath string) echo.MiddlewareFunc {
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie("os-access-token")
+			accessTokenCookie, err := c.Cookie(infraEnvs.AccessTokenCookieKey)
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}
@@ -80,7 +82,11 @@ func Auth(apiBasePath string) echo.MiddlewareFunc {
 				return authError("InvalidIpAddress")
 			}
 
-			authQueryRepo := authInfra.AuthQueryRepo{}
+			persistentDbSvc := c.Get(
+				"persistentDbSvc",
+			).(*internalDbInfra.PersistentDatabaseService)
+			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
+
 			accountId, err := getAccountIdFromAccessToken(
 				authQueryRepo, accessTokenValue, userIpAddress,
 			)
