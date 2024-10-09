@@ -43,7 +43,7 @@ func (router Router) authRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 
-	authGroup.POST("/login/", authController.GenerateJwtWithCredentials)
+	authGroup.POST("/login/", authController.Login)
 }
 
 func (router Router) accountRoutes() {
