@@ -1,13 +1,13 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	databaseInfra "github.com/speedianet/os/src/infra/database"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
-	sharedHelper "github.com/speedianet/os/src/presentation/shared/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	databaseInfra "github.com/goinfinite/os/src/infra/database"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 )
 
 type DatabaseService struct {

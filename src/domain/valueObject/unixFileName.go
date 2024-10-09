@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"slices"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 const unixFileNameRegexExpression = `^[^\n\r\t\f\0\?\[\]\<\>\/]{1,512}$`

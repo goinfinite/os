@@ -50,4 +50,4 @@ uninstallFilePaths:
   - /root/.pgpass
 execUser: postgres
 estimatedSizeBytes: 367001600
-avatarUrl: https://speedia.net/assets/os/services/postgresql/postgresql-avatar.jpg
+avatarUrl: https://goinfinite.net/assets/os/services/postgresql/postgresql-avatar.jpg

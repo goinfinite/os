@@ -3,7 +3,7 @@ package infraHelper
 import (
 	"os"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func GetPrimaryVirtualHost() (valueObject.Fqdn, error) {

@@ -1,12 +1,9 @@
 package repository
 
 import (
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/dto"
 )
 
 type ScheduledTaskQueryRepo interface {
-	Read() ([]entity.ScheduledTask, error)
-	ReadById(id valueObject.ScheduledTaskId) (entity.ScheduledTask, error)
-	ReadByStatus(status valueObject.ScheduledTaskStatus) ([]entity.ScheduledTask, error)
+	Read(dto.ReadScheduledTasksRequest) (dto.ReadScheduledTasksResponse, error)
 }

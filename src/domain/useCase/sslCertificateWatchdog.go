@@ -3,7 +3,7 @@ package useCase
 import (
 	"log"
 
-	"github.com/speedianet/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/repository"
 )
 
 const SslValidationsPerHour int = 4

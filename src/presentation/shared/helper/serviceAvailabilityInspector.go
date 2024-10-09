@@ -1,9 +1,9 @@
 package sharedHelper
 
 import (
-	"github.com/speedianet/os/src/domain/valueObject"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 )
 
 const ServiceUnavailableError = "ServiceUnavailable"

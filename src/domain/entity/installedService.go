@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/speedianet/os/src/domain/valueObject"
+import "github.com/goinfinite/os/src/domain/valueObject"
 
 type InstalledService struct {
 	Name              valueObject.ServiceName    `json:"name"`

@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"os"
 
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
+	wsInfra "github.com/goinfinite/os/src/infra/webServer"
+	"github.com/goinfinite/os/src/presentation/api"
+	"github.com/goinfinite/os/src/presentation/ui"
 	"github.com/labstack/echo/v4"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	wsInfra "github.com/speedianet/os/src/infra/webServer"
-	"github.com/speedianet/os/src/presentation/api"
-	"github.com/speedianet/os/src/presentation/ui"
 )
 
 func webServerSetup(
@@ -31,13 +33,13 @@ func HttpServerInit(
 	e := echo.New()
 
 	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
-	ui.UiInit(e, persistentDbSvc, transientDbSvc)
+	ui.UiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 
 	httpServer := http.Server{Addr: ":1618", Handler: e}
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 
-	pkiDir := "/speedia/pki"
+	pkiDir := "/infinite/pki"
 	certFile := pkiDir + "/os.crt"
 	keyFile := pkiDir + "/os.key"
 	if !infraHelper.FileExists(certFile) {
@@ -55,22 +57,30 @@ func HttpServerInit(
 		}
 	}
 
-	osBanner := `	
-     ▒       ▒▓██████████████████████▒     ▓██████████████████████▓
-   ▒█▓    ▒██████████      ▒██████████  ██████████▓             ▓██▒
-  ▒█▓     ▓█████████▓      ██████████▓  ██████████▒
- ▓▓█▒▒   ▒██████████      ▓█████████▓    ▓▓███████████████████████
-  ▒█▓    ▓█████████▓      ██████████▒   ▒▒             ▒██████████
-   ▒    ▓██████████       ██████████▓  ████▓          ▒██████████
-  ▒     ▒█████████████████████████▒   ██████████████████████████
-_____________________________________________________________________
+	osBanner := `Infinite OS server started on [::]:1618! 🎉`
 
-⇨ HTTPS server started on [::]:1618 and is ready to serve! 🎉
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
+	o11yOverview, err := o11yQueryRepo.ReadOverview()
+	if err == nil {
+		devModeStr := ""
+		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+			devModeStr = "(🚧 DevMode 🚧)"
+		}
+
+		osBanner = `
+        INFINITE
+    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:1618! ` + devModeStr + `        
+  ▄██▀    ▀██▄██    ▀█   |
+  ██▀      ▀█████▄       |  🏠 Primary Hostname: ` + o11yOverview.Hostname.String() + `
+  ██        ██ ▀█████▄   |  ⏰ Uptime: ` + o11yOverview.UptimeRelative.String() + `
+  ▀██▄    ▄██▀█     ██   |  🌐 IP Address: ` + o11yOverview.PublicIpAddress.String() + `
+    ▀▀████▀▀ █▀█████▀    |  ⚙️  ` + o11yOverview.HardwareSpecs.String() + `
 `
+	}
 
 	fmt.Println(osBanner)
 
-	err := httpServer.ListenAndServeTLS(certFile, keyFile)
+	err = httpServer.ListenAndServeTLS(certFile, keyFile)
 	if err != http.ErrServerClosed {
 		slog.Error("HttpServerError", slog.Any("error", err))
 		os.Exit(1)

@@ -5,7 +5,7 @@ import (
 	"encoding/pem"
 	"errors"
 
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type SslCertificate struct {

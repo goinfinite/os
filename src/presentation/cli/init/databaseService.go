@@ -1,6 +1,6 @@
 package cliInit
 
-import internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+import internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 
 func TransientDatabaseService() *internalDbInfra.TransientDatabaseService {
 	transientDbSvc, err := internalDbInfra.NewTransientDatabaseService()

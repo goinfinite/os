@@ -1,14 +1,14 @@
 package service
 
 import (
-	"github.com/speedianet/os/src/domain/dto"
-	"github.com/speedianet/os/src/domain/useCase"
-	"github.com/speedianet/os/src/domain/valueObject"
-	accountInfra "github.com/speedianet/os/src/infra/account"
-	activityRecordInfra "github.com/speedianet/os/src/infra/activityRecord"
-	authInfra "github.com/speedianet/os/src/infra/auth"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	serviceHelper "github.com/speedianet/os/src/presentation/service/helper"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
+	authInfra "github.com/goinfinite/os/src/infra/auth"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type AuthService struct {

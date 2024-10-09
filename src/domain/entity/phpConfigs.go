@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"github.com/speedianet/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type PhpConfigs struct {

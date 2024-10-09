@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/glebarez/sqlite"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	dbModel "github.com/speedianet/os/src/infra/internalDatabase/model"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
 
@@ -100,6 +100,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.MarketplaceInstalledItem{},
 		&dbModel.InstalledService{},
 		&dbModel.ScheduledTask{},
+		&dbModel.ScheduledTaskTag{},
 	)
 	if err != nil {
 		return errors.New("PersistentDatabaseMigrationError: " + err.Error())

@@ -4,8 +4,8 @@ import (
 	"os/user"
 	"testing"
 
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
 
 func TestFilesQueryRepo(t *testing.T) {

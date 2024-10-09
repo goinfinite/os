@@ -3,10 +3,10 @@ package api
 import (
 	"time"
 
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	apiMiddleware "github.com/goinfinite/os/src/presentation/api/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	apiMiddleware "github.com/speedianet/os/src/presentation/api/middleware"
 )
 
 const (
@@ -15,12 +15,12 @@ const (
 
 // @title			OsApi
 // @version			0.0.9
-// @description		Speedia OS API
-// @termsOfService	https://speedia.net/tos/
+// @description		Infinite OS API
+// @termsOfService	https://goinfinite.net/tos/
 
-// @contact.name	Speedia Engineering
-// @contact.url		https://speedia.net/
-// @contact.email	eng+swagger@speedia.net
+// @contact.name	Infinite Engineering
+// @contact.url		https://goinfinite.net/
+// @contact.email	eng+swagger@goinfinite.net
 
 // @license.name  Eclipse Public License v2.0
 // @license.url   https://www.eclipse.org/legal/epl-2.0/

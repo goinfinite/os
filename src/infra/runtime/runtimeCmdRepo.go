@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/speedianet/os/src/domain/entity"
-	"github.com/speedianet/os/src/domain/valueObject"
-	infraEnvs "github.com/speedianet/os/src/infra/envs"
-	infraHelper "github.com/speedianet/os/src/infra/helper"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
-	servicesInfra "github.com/speedianet/os/src/infra/services"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 )
 
 type RuntimeCmdRepo struct {
@@ -281,7 +281,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 
 	hostnameStr := hostname.String()
 	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "s/speedia.net/"+hostnameStr+"/g", phpConfFilePathStr,
+		"sed", "-ie", "s/goinfinite.local/"+hostnameStr+"/g", phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())

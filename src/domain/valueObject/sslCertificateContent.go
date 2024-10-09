@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 type SslCertificateContent string

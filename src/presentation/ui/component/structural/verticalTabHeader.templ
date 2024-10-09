@@ -16,13 +16,13 @@ script VerticalTabHeaderLocalState(firstMenuItem string) {
 			getTabLayoutClasses(itemValue) {
 				const defaultClasses = 'hover:bg-os-300 border-r-3 w-full bg-inherit py-2 px-6 text-neutral-50 transition-all';
 				if (itemValue == this.selectedMenuItem) {
-					return defaultClasses + ' border-speedia-500';
+					return defaultClasses + ' border-infinite-500';
 				}
 
 				return defaultClasses + ' border-os-400';
 			},
 			getTabTitleWithIconClasses(itemValue) {
-				return itemValue == this.selectedMenuItem ? 'text-speedia-500' : '';
+				return itemValue == this.selectedMenuItem ? 'text-infinite-500' : '';
 			}
 		}));
 	});

@@ -3,8 +3,8 @@ package o11yInfra
 import (
 	"testing"
 
-	testHelpers "github.com/speedianet/os/src/devUtils"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
+	testHelpers "github.com/goinfinite/os/src/devUtils"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 func TestGetOverview(t *testing.T) {

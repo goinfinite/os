@@ -1,6 +1,13 @@
 # Changelog
 
 ```log
+0.1.0 - 2024/10/08
+refactor!: migrate/rename speedia to infinite
+refactor: os-api banner
+refactor: scheduled tasks
+feat: add footer bar with resource usage and scheduled tasks
+fix: uptime with proc/1 on overview
+
 0.0.9 - 2024/10/04
 refactor(front): runtime page with HTMX+Alpine.js
 refactor(front): ssls page with HTMX+Alpine.js

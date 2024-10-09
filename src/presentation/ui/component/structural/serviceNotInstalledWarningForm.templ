@@ -1,6 +1,6 @@
 package componentStructural
 
-import componentForm "github.com/speedianet/os/src/presentation/ui/component/form"
+import componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 
 templ ServiceNotInstalledWarningForm(serviceName string) {
 	<form
@@ -11,7 +11,7 @@ templ ServiceNotInstalledWarningForm(serviceName string) {
 	>
 		<input type="hidden" name="name" value={ serviceName }/>
 		<i class="ph-duotone ph-warning text-yellow mr-3 align-middle text-xl"></i>
-		<span class="mr-3">The <span class="text-speedia-300 font-bold">{ serviceName }</span> service is not installed yet.</span>
+		<span class="mr-3">The <span class="text-infinite-300 font-bold">{ serviceName }</span> service is not installed yet.</span>
 		@componentForm.SubmitButton(
 			"schedule-service-installation",
 			"Schedule "+serviceName+" service installation", "ph-queue",

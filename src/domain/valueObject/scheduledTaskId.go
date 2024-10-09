@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/speedianet/os/src/domain/valueObject/helper"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
 type ScheduledTaskId uint64
@@ -18,6 +18,10 @@ func NewScheduledTaskId(value interface{}) (
 	}
 
 	return ScheduledTaskId(uintValue), nil
+}
+
+func (vo ScheduledTaskId) Uint64() uint64 {
+	return uint64(vo)
 }
 
 func (vo ScheduledTaskId) String() string {
