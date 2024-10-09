@@ -11,4 +11,5 @@ const (
 	MappingsConfDir              string = "/app/conf/nginx/mapping"
 	PkiConfDir                   string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath string = "/usr/local/lsws/conf/httpd_config.conf"
+	AccessTokenCookieKey         string = "os-access-token"
 )
