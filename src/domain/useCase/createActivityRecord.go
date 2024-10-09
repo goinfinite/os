@@ -91,3 +91,20 @@ func (uc *CreateSecurityActivityRecord) UpdateAccount(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) DeleteAccount(
+	deleteDto dto.DeleteAccount,
+) {
+	recordCode, _ := valueObject.NewActivityRecordCode("AccountDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewAccountSri(deleteDto.AccountId),
+		},
+		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}

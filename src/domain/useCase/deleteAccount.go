@@ -25,5 +25,7 @@ func DeleteAccount(
 		return errors.New("DeleteAccountInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).DeleteAccount(deleteDto)
+
 	return nil
 }
