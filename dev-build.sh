@@ -40,7 +40,7 @@ echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
 echo "=> Starting the development build..."
 echo "Any changes to the code will trigger a rebuild automatically."
-echo "Please, ignore the 'Only root can run SOS' message."
+echo "Ignore the 'InfiniteOsMustBeRunAsRoot' message or enable DEV_MODE."
 echo
 echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
