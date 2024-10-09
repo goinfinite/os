@@ -1,8 +1,8 @@
 package apiMiddleware
 
 import (
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/labstack/echo/v4"
-	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func SetDatabaseServices(
