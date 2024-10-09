@@ -11,11 +11,13 @@ import (
 	"github.com/speedianet/os/src/domain/useCase"
 	"github.com/speedianet/os/src/domain/valueObject"
 	authInfra "github.com/speedianet/os/src/infra/auth"
+	infraEnvs "github.com/speedianet/os/src/infra/envs"
+	internalDbInfra "github.com/speedianet/os/src/infra/internalDatabase"
 )
 
 func getAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
-	accessToken valueObject.AccessTokenStr,
+	accessTokenValue valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
@@ -29,7 +31,7 @@ func getAccountIdFromAccessToken(
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo, accessToken, trustedIps, ipAddress,
+		authQueryRepo, accessTokenValue, trustedIps, ipAddress,
 	)
 	if err != nil {
 		return valueObject.AccountId(0), err
@@ -39,11 +41,13 @@ func getAccountIdFromAccessToken(
 }
 
 func shouldSkipUiAuthentication(req *http.Request) bool {
-	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login|dev)/`)
+	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login)/`)
 	return urlSkipRegex.MatchString(req.URL.Path)
 }
 
-func Authentication() echo.MiddlewareFunc {
+func Authentication(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if shouldSkipUiAuthentication(c.Request()) {
@@ -51,7 +55,7 @@ func Authentication() echo.MiddlewareFunc {
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie("os-access-token")
+			accessTokenCookie, err := c.Cookie(infraEnvs.AccessTokenCookieKey)
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}
@@ -67,7 +71,7 @@ func Authentication() echo.MiddlewareFunc {
 				rawAccessToken = tokenWithoutPrefix
 			}
 
-			accessToken, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			accessTokenValue, err := valueObject.NewAccessTokenStr(rawAccessToken)
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
@@ -77,9 +81,9 @@ func Authentication() echo.MiddlewareFunc {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
-			authQueryRepo := authInfra.AuthQueryRepo{}
+			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
 			_, err = getAccountIdFromAccessToken(
-				authQueryRepo, accessToken, userIpAddress,
+				authQueryRepo, accessTokenValue, userIpAddress,
 			)
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
