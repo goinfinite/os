@@ -62,7 +62,7 @@ func (service *AuthService) GenerateJwtWithCredentials(
 		service.trailDbSvc,
 	)
 
-	accessToken, err := useCase.GetSessionToken(
+	accessToken, err := useCase.CreateSessionToken(
 		authQueryRepo, authCmdRepo, accountQueryRepo, activityRecordQueryRepo,
 		activityRecordCmdRepo, dto,
 	)

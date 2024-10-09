@@ -35,7 +35,7 @@ func getFailedLoginAttemptsCount(
 	return uint(len(failedLoginAttempts))
 }
 
-func GetSessionToken(
+func CreateSessionToken(
 	authQueryRepo repository.AuthQueryRepo,
 	authCmdRepo repository.AuthCmdRepo,
 	accountQueryRepo repository.AccountQueryRepo,
