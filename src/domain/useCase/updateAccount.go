@@ -32,5 +32,7 @@ func UpdateAccount(
 
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(updateDto)
+
 	return nil
 }

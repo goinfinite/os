@@ -67,3 +67,27 @@ func (uc *CreateSecurityActivityRecord) CreateAccount(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) UpdateAccount(
+	updateDto dto.UpdateAccount,
+) {
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewAccountSri(updateDto.AccountId),
+		},
+		RecordDetails:     updateDto,
+		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	codeStr := "AccountUpdated"
+	if updateDto.Password != nil {
+		codeStr = "AccountPasswordUpdated"
+		createRecordDto.RecordDetails = nil
+	}
+	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
+	createRecordDto.RecordCode = recordCode
+
+	uc.createActivityRecord(createRecordDto)
+}
