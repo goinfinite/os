@@ -27,24 +27,31 @@ func (repo *ActivityRecordQueryRepo) Read(
 	activityRecordEvents := []entity.ActivityRecord{}
 
 	readModel := dbModel.ActivityRecord{}
-	if readDto.Level != nil {
-		levelStr := readDto.Level.String()
-		readModel.Level = levelStr
+	if readDto.RecordId != nil {
+		recordId := readDto.RecordId.Uint64()
+		readModel.ID = recordId
 	}
 
-	if readDto.Code != nil {
-		codeStr := readDto.Code.String()
-		readModel.Code = &codeStr
+	if readDto.RecordLevel != nil {
+		recordLevelStr := readDto.RecordLevel.String()
+		readModel.RecordLevel = recordLevelStr
 	}
 
-	if readDto.Message != nil {
-		messageStr := readDto.Message.String()
-		readModel.Message = &messageStr
+	if readDto.RecordCode != nil {
+		recordCodeStr := readDto.RecordCode.String()
+		readModel.RecordCode = recordCodeStr
 	}
 
-	if readDto.IpAddress != nil {
-		ipAddressStr := readDto.IpAddress.String()
-		readModel.IpAddress = &ipAddressStr
+	if len(readDto.AffectedResources) > 0 {
+		affectedResources := []dbModel.ActivityRecordAffectedResource{}
+		for _, affectedResourceSri := range readDto.AffectedResources {
+			affectedResourceModel := dbModel.ActivityRecordAffectedResource{
+				SystemResourceIdentifier: affectedResourceSri.String(),
+			}
+			affectedResources = append(affectedResources, affectedResourceModel)
+		}
+
+		readModel.AffectedResources = affectedResources
 	}
 
 	if readDto.OperatorAccountId != nil {
@@ -52,28 +59,23 @@ func (repo *ActivityRecordQueryRepo) Read(
 		readModel.OperatorAccountId = &operatorAccountId
 	}
 
-	if readDto.TargetAccountId != nil {
-		targetAccountId := readDto.TargetAccountId.Uint64()
-		readModel.TargetAccountId = &targetAccountId
-	}
-
-	if readDto.Username != nil {
-		usernameStr := readDto.Username.String()
-		readModel.Username = &usernameStr
-	}
-
-	if readDto.MappingId != nil {
-		mappingId := readDto.MappingId.Uint64()
-		readModel.MappingId = &mappingId
+	if readDto.OperatorIpAddress != nil {
+		operatorIpAddressStr := readDto.OperatorIpAddress.String()
+		readModel.OperatorIpAddress = &operatorIpAddressStr
 	}
 
 	dbQuery := repo.trailDbSvc.Handler.Where(&readModel)
-	if readDto.CreatedAt != nil {
-		dbQuery = dbQuery.Where("created_at >= ?", readDto.CreatedAt.GetAsGoTime())
+	if readDto.CreatedBeforeAt != nil {
+		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.GetAsGoTime())
+	}
+	if readDto.CreatedAfterAt != nil {
+		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.GetAsGoTime())
 	}
 
 	activityRecordEventModels := []dbModel.ActivityRecord{}
-	err := dbQuery.Find(&activityRecordEventModels).Error
+	err := dbQuery.
+		Preload("AffectedResources").
+		Find(&activityRecordEventModels).Error
 	if err != nil {
 		return activityRecordEvents, err
 	}

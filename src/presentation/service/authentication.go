@@ -50,7 +50,7 @@ func (service *AuthService) GenerateJwtWithCredentials(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dto := dto.NewLogin(username, password, ipAddress)
+	dto := dto.NewCreateSessionToken(username, password, ipAddress)
 
 	authQueryRepo := authInfra.AuthQueryRepo{}
 	authCmdRepo := authInfra.AuthCmdRepo{}

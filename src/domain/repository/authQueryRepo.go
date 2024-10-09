@@ -6,7 +6,7 @@ import (
 )
 
 type AuthQueryRepo interface {
-	IsLoginValid(login dto.Login) bool
+	IsLoginValid(createDto dto.CreateSessionToken) bool
 	ReadAccessTokenDetails(
 		token valueObject.AccessTokenStr,
 	) (dto.AccessTokenDetails, error)

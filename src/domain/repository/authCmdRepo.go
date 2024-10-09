@@ -6,7 +6,7 @@ import (
 )
 
 type AuthCmdRepo interface {
-	GenerateSessionToken(
+	CreateSessionToken(
 		accountId valueObject.AccountId,
 		expiresIn valueObject.UnixTime,
 		ipAddress valueObject.IpAddress,

@@ -10,7 +10,7 @@ import (
 
 func DeleteActivityRecord(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	deleteDto dto.DeleteActivityRecords,
+	deleteDto dto.DeleteActivityRecord,
 ) error {
 	err := activityRecordCmdRepo.Delete(deleteDto)
 	if err != nil {

@@ -1,48 +1,38 @@
 package entity
 
 import (
-	"errors"
-
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
 type ActivityRecord struct {
-	Id                valueObject.ActivityRecordId       `json:"id"`
-	Level             valueObject.ActivityRecordLevel    `json:"level"`
-	Code              *valueObject.ActivityRecordCode    `json:"code,omitempty"`
-	Message           *valueObject.ActivityRecordMessage `json:"message,omitempty"`
-	IpAddress         *valueObject.IpAddress             `json:"ipAddress,omitempty"`
-	OperatorAccountId *valueObject.AccountId             `json:"operatorAccountId,omitempty"`
-	TargetAccountId   *valueObject.AccountId             `json:"targetAccountId,omitempty"`
-	Username          *valueObject.Username              `json:"username,omitempty"`
-	MappingId         *valueObject.MappingId             `json:"mappingId,omitempty"`
-	CreatedAt         valueObject.UnixTime               `json:"createdAt"`
+	RecordId          valueObject.ActivityRecordId           `json:"recordId"`
+	RecordLevel       valueObject.ActivityRecordLevel        `json:"recordLevel"`
+	RecordCode        valueObject.ActivityRecordCode         `json:"recordCode,omitempty"`
+	AffectedResources []valueObject.SystemResourceIdentifier `json:"affectedResources,omitempty"`
+	RecordDetails     interface{}                            `json:"recordDetails,omitempty"`
+	OperatorAccountId *valueObject.AccountId                 `json:"operatorAccountId,omitempty"`
+	OperatorIpAddress *valueObject.IpAddress                 `json:"operatorIpAddress,omitempty"`
+	CreatedAt         valueObject.UnixTime                   `json:"createdAt"`
 }
 
 func NewActivityRecord(
-	id valueObject.ActivityRecordId,
-	level valueObject.ActivityRecordLevel,
-	code *valueObject.ActivityRecordCode,
-	message *valueObject.ActivityRecordMessage,
-	ipAddress *valueObject.IpAddress,
+	recordId valueObject.ActivityRecordId,
+	recordLevel valueObject.ActivityRecordLevel,
+	recordCode valueObject.ActivityRecordCode,
+	affectedResources []valueObject.SystemResourceIdentifier,
+	recordDetails interface{},
 	operatorAccountId *valueObject.AccountId,
-	targetAccountId *valueObject.AccountId,
-	username *valueObject.Username,
-	mappingId *valueObject.MappingId,
+	operatorIpAddress *valueObject.IpAddress,
 	createdAt valueObject.UnixTime,
 ) (activityRecord ActivityRecord, err error) {
-	if code == nil && message == nil {
-		return activityRecord, errors.New("CodeOrMessageRequired")
-	}
-
 	return ActivityRecord{
-		Id:                id,
-		Level:             level,
-		Code:              code,
-		Message:           message,
-		IpAddress:         ipAddress,
+		RecordId:          recordId,
+		RecordLevel:       recordLevel,
+		RecordCode:        recordCode,
+		AffectedResources: affectedResources,
+		RecordDetails:     recordDetails,
 		OperatorAccountId: operatorAccountId,
-		TargetAccountId:   targetAccountId,
+		OperatorIpAddress: operatorIpAddress,
 		CreatedAt:         createdAt,
 	}, nil
 }

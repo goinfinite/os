@@ -1,31 +1,51 @@
 package useCase
 
 import (
+	"log/slog"
+
 	"github.com/speedianet/os/src/domain/dto"
 	"github.com/speedianet/os/src/domain/repository"
 	"github.com/speedianet/os/src/domain/valueObject"
 )
 
-func CreateSecurityActivityRecord(
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	code *valueObject.ActivityRecordCode,
-	ipAddress *valueObject.IpAddress,
-	operatorAccountId *valueObject.AccountId,
-	targetAccountId *valueObject.AccountId,
-	username *valueObject.Username,
-) {
-	recordLevel, _ := valueObject.NewActivityRecordLevel("SEC")
+type CreateSecurityActivityRecord struct {
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo
+	recordLevel           valueObject.ActivityRecordLevel
+}
 
-	createDto := dto.CreateActivityRecord{
-		Level:             recordLevel,
-		Code:              code,
-		OperatorAccountId: operatorAccountId,
-		TargetAccountId:   targetAccountId,
-		IpAddress:         ipAddress,
-		Username:          username,
+func NewCreateSecurityActivityRecord(
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+) *CreateSecurityActivityRecord {
+	recordLevel, _ := valueObject.NewActivityRecordLevel("SEC")
+	return &CreateSecurityActivityRecord{
+		activityRecordCmdRepo: activityRecordCmdRepo,
+		recordLevel:           recordLevel,
+	}
+}
+
+func (uc *CreateSecurityActivityRecord) createActivityRecord(
+	createDto dto.CreateActivityRecord,
+) {
+	err := uc.activityRecordCmdRepo.Create(createDto)
+	if err != nil {
+		slog.Debug(
+			"CreateSecurityActivityRecordError",
+			slog.Any("createDto", createDto),
+			slog.Any("error", err),
+		)
+	}
+}
+
+func (uc *CreateSecurityActivityRecord) CreateSessionToken(
+	recordCode valueObject.ActivityRecordCode,
+	createDto dto.CreateSessionToken,
+) {
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		RecordDetails:     createDto.Username,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
-	go func() {
-		_ = activityRecordCmdRepo.Create(createDto)
-	}()
+	uc.createActivityRecord(createRecordDto)
 }

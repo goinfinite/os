@@ -96,7 +96,6 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(
 func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 	err := dbSvc.Handler.AutoMigrate(
 		&dbModel.Account{},
-		&dbModel.ActivityRecord{},
 		&dbModel.InstalledService{},
 		&dbModel.Mapping{},
 		&dbModel.MarketplaceInstalledItem{},

@@ -21,9 +21,9 @@ import (
 type AuthQueryRepo struct {
 }
 
-func (repo AuthQueryRepo) IsLoginValid(login dto.Login) bool {
+func (repo AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 	storedPassHash, err := infraHelper.RunCmdWithSubShell(
-		"getent shadow " + login.Username.String() + " | awk -F: '{print $2}'",
+		"getent shadow " + createDto.Username.String() + " | awk -F: '{print $2}'",
 	)
 	if err != nil {
 		return false
@@ -35,7 +35,7 @@ func (repo AuthQueryRepo) IsLoginValid(login dto.Login) bool {
 
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(storedPassHash),
-		[]byte(login.Password.String()),
+		[]byte(createDto.Password.String()),
 	)
 	return err == nil
 }
