@@ -52,6 +52,7 @@ stopDevBuild() {
   echo
   echo "=> Development build stopped."
   echo
+  clear
   exit
 }
 
