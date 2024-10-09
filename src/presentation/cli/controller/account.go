@@ -69,7 +69,7 @@ func (controller *AccountController) Update() *cobra.Command {
 			}
 
 			if accountIdStr != "" {
-				requestBody["id"] = accountIdStr
+				requestBody["accountId"] = accountIdStr
 			}
 
 			if usernameStr != "" {
@@ -103,7 +103,7 @@ func (controller *AccountController) Delete() *cobra.Command {
 		Short: "DeleteAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"id": accountIdStr,
+				"accountId": accountIdStr,
 			}
 
 			cliHelper.ServiceResponseWrapper(
