@@ -28,6 +28,9 @@ func NewSystemResourceIdentifier(
 	return SystemResourceIdentifier(stringValue), nil
 }
 
+// Note: this panic is solely to warn about the misuse of the VO, specifically for developer
+// auditing, and has nothing to do with user input. This is not a standard and should not be
+// followed for the development of other VOs.
 func NewSystemResourceIdentifierIgnoreError(value interface{}) SystemResourceIdentifier {
 	sri, err := NewSystemResourceIdentifier(value)
 	if err != nil {
