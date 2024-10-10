@@ -20,31 +20,18 @@ func sidebarItemsGetter(currentUrl string) []SidebarItem {
 		{Label: "Mappings", Icon: "ph-graph", Link: "/mappings/"},
 		{Label: "SSL Certificates", Icon: "ph-lock", Link: "/ssls/"},
 		{Label: "Marketplace", Icon: "ph-storefront", Link: "/_/#/marketplace/"},
-		{Label: "Apps", Icon: "ph-circles-four", Link: ""},
-		{Label: "Domains", Icon: "ph-globe", Link: ""},
-		{Label: "Backups", Icon: "ph-cloud-arrow-up", Link: ""},
-		{Label: "Web Servers", Icon: "ph-browsers", Link: ""},
-		{Label: "Metrics", Icon: "ph-chart-bar", Link: ""},
-		{Label: "Logs", Icon: "ph-log", Link: ""},
-		{Label: "Image Optimizer", Icon: "ph-image-square", Link: ""},
-		{Label: "Security", Icon: "ph-shield-checkered", Link: ""},
-		{Label: "Terminal", Icon: "ph-terminal-window", Link: ""},
 	}
 
-	activeSidebarItems := []SidebarItem{}
-	for _, item := range sidebarItems {
-		if item.Link == "" {
+	for itemIndex := range sidebarItems {
+		if sidebarItems[itemIndex].Link != currentUrl {
 			continue
 		}
 
-		if item.Link == currentUrl {
-			item.AdditionalClasses = " text-infinite-500"
-		}
-
-		activeSidebarItems = append(activeSidebarItems, item)
+		sidebarItems[itemIndex].AdditionalClasses = " text-infinite-500"
+		break
 	}
 
-	return activeSidebarItems
+	return sidebarItems
 }
 
 templ Sidebar(currentUrl string) {
