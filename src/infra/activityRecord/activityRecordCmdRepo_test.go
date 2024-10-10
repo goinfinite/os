@@ -25,7 +25,7 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 
 		err := activityRecordCmdRepo.Create(createDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Errorf("Expected no error, got: '%s'", err.Error())
 		}
 	})
 
@@ -37,7 +37,7 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 
 		err := activityRecordCmdRepo.Delete(deleteDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Errorf("Expected no error, got: '%s'", err.Error())
 		}
 	})
 }

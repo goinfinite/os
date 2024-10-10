@@ -16,7 +16,7 @@ func TestActivityRecordQueryRepo(t *testing.T) {
 		readDto := dto.ReadActivityRecords{}
 		_, err := activityRecordQueryRepo.Read(readDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Errorf("Expected no error, got: '%s'", err.Error())
 		}
 	})
 }
