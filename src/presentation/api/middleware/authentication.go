@@ -16,7 +16,7 @@ import (
 
 func getAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
-	accessTokenValue valueObject.AccessTokenStr,
+	accessTokenStr valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
@@ -31,7 +31,7 @@ func getAccountIdFromAccessToken(
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
 		authQueryRepo,
-		accessTokenValue,
+		accessTokenStr,
 		trustedIps,
 		ipAddress,
 	)
@@ -72,7 +72,7 @@ func Authentication(apiBasePath string) echo.MiddlewareFunc {
 				rawAccessToken = tokenWithoutPrefix
 			}
 
-			accessTokenValue, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)
 			if err != nil {
 				return authError("InvalidAccessToken")
 			}
@@ -88,7 +88,7 @@ func Authentication(apiBasePath string) echo.MiddlewareFunc {
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
 
 			accountId, err := getAccountIdFromAccessToken(
-				authQueryRepo, accessTokenValue, userIpAddress,
+				authQueryRepo, accessTokenStr, userIpAddress,
 			)
 			if err != nil {
 				return authError("InvalidAccessToken")

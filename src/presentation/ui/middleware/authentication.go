@@ -17,7 +17,7 @@ import (
 
 func getAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
-	accessTokenValue valueObject.AccessTokenStr,
+	accessTokenStr valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
 ) (valueObject.AccountId, error) {
 	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
@@ -31,7 +31,7 @@ func getAccountIdFromAccessToken(
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo, accessTokenValue, trustedIps, ipAddress,
+		authQueryRepo, accessTokenStr, trustedIps, ipAddress,
 	)
 	if err != nil {
 		return valueObject.AccountId(0), err
@@ -71,7 +71,7 @@ func Authentication(
 				rawAccessToken = tokenWithoutPrefix
 			}
 
-			accessTokenValue, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
@@ -83,7 +83,7 @@ func Authentication(
 
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
 			_, err = getAccountIdFromAccessToken(
-				authQueryRepo, accessTokenValue, userIpAddress,
+				authQueryRepo, accessTokenStr, userIpAddress,
 			)
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
