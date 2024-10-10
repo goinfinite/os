@@ -14,8 +14,7 @@ func NewAccount(
 	accountId valueObject.AccountId,
 	groupId valueObject.GroupId,
 	username valueObject.Username,
-	createdAt valueObject.UnixTime,
-	updatedAt valueObject.UnixTime,
+	createdAt, updatedAt valueObject.UnixTime,
 ) Account {
 	return Account{
 		Id:        accountId,

@@ -22,8 +22,7 @@ func NewDeleteActivityRecord(
 	affectedResources []valueObject.SystemResourceIdentifier,
 	operatorAccountId *valueObject.AccountId,
 	operatorIpAddress *valueObject.IpAddress,
-	createdBeforeAt *valueObject.UnixTime,
-	createdAfterAt *valueObject.UnixTime,
+	createdBeforeAt, createdAfterAt *valueObject.UnixTime,
 ) DeleteActivityRecord {
 	return DeleteActivityRecord{
 		RecordId:          recordId,

@@ -11,8 +11,7 @@ type DeleteAccount struct {
 }
 
 func NewDeleteAccount(
-	accountId valueObject.AccountId,
-	operatorAccountId valueObject.AccountId,
+	accountId, operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) DeleteAccount {
 	return DeleteAccount{
