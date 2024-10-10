@@ -24,8 +24,7 @@ func NewReadActivityRecords(
 	recordDetails *string,
 	operatorAccountId *valueObject.AccountId,
 	operatorIpAddress *valueObject.IpAddress,
-	createdBeforeAt *valueObject.UnixTime,
-	createdAfterAt *valueObject.UnixTime,
+	createdBeforeAt, createdAfterAt *valueObject.UnixTime,
 ) ReadActivityRecords {
 	return ReadActivityRecords{
 		RecordId:          recordId,
