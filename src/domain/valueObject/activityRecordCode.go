@@ -11,15 +11,15 @@ const activityRecordRegex string = `^[A-Za-z]\w{2,128}$`
 
 type ActivityRecordCode string
 
-func NewActivityRecordCode(value interface{}) (ActivityRecordCode, error) {
+func NewActivityRecordCode(value interface{}) (code ActivityRecordCode, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return "", errors.New("ActivityRecordCodeMustBeString")
+		return code, errors.New("ActivityRecordCodeMustBeString")
 	}
 
 	re := regexp.MustCompile(activityRecordRegex)
 	if !re.MatchString(stringValue) {
-		return "", errors.New("InvalidActivityRecordCode")
+		return code, errors.New("InvalidActivityRecordCode")
 	}
 
 	return ActivityRecordCode(stringValue), nil
