@@ -23,7 +23,6 @@ func SetDefaultHeaders(apiBasePath string) echo.MiddlewareFunc {
 			c.Response().Header().Set(
 				"Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS, DELETE, PUT",
 			)
-			c.Response().Header().Set("X-Is-Token-Response", "false")
 
 			if req.Method == "OPTIONS" {
 				return c.NoContent(http.StatusOK)
