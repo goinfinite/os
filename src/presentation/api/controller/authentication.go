@@ -87,5 +87,6 @@ func (controller *AuthController) Login(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusUnauthorized, err.Error())
 	}
 
+	c.Response().Header().Set("X-Is-Token-Response", "true")
 	return apiHelper.ResponseWrapper(c, http.StatusOK, accessToken)
 }
