@@ -24,23 +24,6 @@ script AccountsIndexLocalState() {
 				this.resetPrimaryStates();
 			},
 
-			// Auxiliary states
-			get shouldDisableUpdatePasswordSubmitButton() {
-				if (this.account.password == "") {
-					return true;
-				}
-
-				return this.account.password.length < 6 || this.account.password.length > 64;
-			},
-			get shouldDisableCreateAccountSubmitButton() {
-				if (this.account.password == "") {
-					return true;
-				}
-
-				const isPasswordLongEnough = this.account.password.length >= 6 && this.account.password.length <= 64;
-				return this.account.username == "" || !isPasswordLongEnough
-			},
-
 			// Modal states
 			isCreateAccountModalOpen: false,
 			openCreateAccountModal() {
@@ -160,8 +143,8 @@ templ AccountsTable(accounts []entity.Account) {
 				<th scope="col" class="flex justify-end py-3">
 					<div class="w-3/7">
 						@componentForm.SubmitButton(
-							"create-account-button", "Create account", "ph-user-plus",
-							"openCreateAccountModal()", false,
+							"open-create-account-form-button", "Create account",
+							"ph-user-plus", "openCreateAccountModal()", false,
 						)
 					</div>
 				</th>
@@ -207,9 +190,9 @@ templ CreateAccountForm() {
 			@componentForm.InputField("text", "username", "Username", "account.username", false)
 			@componentForm.PasswordInput("password", "Password", "account.password", false)
 		</div>
-		@componentForm.DeactivatableSubmitButton(
-			"Create", "ph-check-fat", "closeCreateAccountModal()",
-			"shouldDisableCreateAccountSubmitButton", false,
+		@componentForm.SubmitButton(
+			"create-account-button", "Create", "ph-check-fat",
+			"closeCreateAccountModal()", false,
 		)
 	</form>
 }
@@ -232,9 +215,9 @@ templ UpdatePasswordForm() {
 			<input type="hidden" name="id" x-bind:value="account.id"/>
 			@componentForm.PasswordInput("password", "Password", "account.password", false)
 		</div>
-		@componentForm.DeactivatableSubmitButton(
-			"Create", "ph-key", "closeUpdatePasswordModal()",
-			"shouldDisableUpdatePasswordSubmitButton", false,
+		@componentForm.SubmitButton(
+			"update-account-password-button", "Update", "ph-key",
+			"closeUpdatePasswordModal()", false,
 		)
 	</form>
 }
