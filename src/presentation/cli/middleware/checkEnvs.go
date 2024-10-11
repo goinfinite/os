@@ -15,13 +15,11 @@ var requiredEnvVars = []string{
 	"ACCOUNT_API_KEY_SECRET",
 	"JWT_SECRET",
 	"PRIMARY_VHOST",
-	"UAK_SECRET",
 }
 
 var envVarsToGenerateIfEmpty = []string{
 	"ACCOUNT_API_KEY_SECRET",
 	"JWT_SECRET",
-	"UAK_SECRET",
 }
 
 func genSecret() (string, error) {
