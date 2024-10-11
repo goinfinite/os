@@ -95,15 +95,15 @@ func (repo *AuthQueryRepo) readTokenDetailsFromSession(
 
 func (repo *AuthQueryRepo) readKeyHash(
 	accountId valueObject.AccountId,
-) (string, error) {
+) (keyHash string, err error) {
 	accountModel := dbModel.Account{ID: accountId.Uint64()}
-	err := repo.persistentDbSvc.Handler.Model(&accountModel).First(&accountModel).Error
+	err = repo.persistentDbSvc.Handler.Model(&accountModel).First(&accountModel).Error
 	if err != nil {
-		return "", errors.New("AccountNotFound")
+		return keyHash, errors.New("AccountNotFound")
 	}
 
 	if accountModel.KeyHash == nil {
-		return "", errors.New("UserKeyHashNotFound")
+		return keyHash, errors.New("UserKeyHashNotFound")
 	}
 
 	return *accountModel.KeyHash, nil
