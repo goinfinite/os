@@ -51,7 +51,7 @@ func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 	return err == nil
 }
 
-func (repo *AuthQueryRepo) getSessionTokenClaims(
+func (repo *AuthQueryRepo) readSessionTokenClaims(
 	sessionToken valueObject.AccessTokenStr,
 ) (claims jwt.MapClaims, err error) {
 	parsedToken, err := jwt.Parse(
@@ -75,7 +75,7 @@ func (repo *AuthQueryRepo) getSessionTokenClaims(
 	return claims, nil
 }
 
-func (repo *AuthQueryRepo) getTokenDetailsFromSession(
+func (repo *AuthQueryRepo) readTokenDetailsFromSession(
 	sessionTokenClaims jwt.MapClaims,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
 	tokenType, _ := valueObject.NewAccessTokenType("sessionToken")
@@ -93,7 +93,7 @@ func (repo *AuthQueryRepo) getTokenDetailsFromSession(
 	return dto.NewAccessTokenDetails(tokenType, accountId, &issuedIp), nil
 }
 
-func (repo *AuthQueryRepo) getKeyHash(
+func (repo *AuthQueryRepo) readKeyHash(
 	accountId valueObject.AccountId,
 ) (string, error) {
 	accountModel := dbModel.Account{ID: accountId.Uint64()}
@@ -109,7 +109,7 @@ func (repo *AuthQueryRepo) getKeyHash(
 	return *accountModel.KeyHash, nil
 }
 
-func (repo *AuthQueryRepo) getTokenDetailsFromApiKey(
+func (repo *AuthQueryRepo) readTokenDetailsFromApiKey(
 	token valueObject.AccessTokenStr,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
 	secretKey := os.Getenv("ACCOUNT_API_KEY_SECRET")
@@ -131,7 +131,7 @@ func (repo *AuthQueryRepo) getTokenDetailsFromApiKey(
 
 	uuidHash := infraHelper.GenStrongHash(keyParts[1])
 
-	storedUuidHash, err := repo.getKeyHash(accountId)
+	storedUuidHash, err := repo.readKeyHash(accountId)
 	if err != nil {
 		return tokenDetails, errors.New("UserKeyHashUnreadable")
 	}
@@ -148,14 +148,14 @@ func (repo *AuthQueryRepo) getTokenDetailsFromApiKey(
 func (repo *AuthQueryRepo) ReadAccessTokenDetails(
 	token valueObject.AccessTokenStr,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
-	sessionTokenClaims, err := repo.getSessionTokenClaims(token)
+	sessionTokenClaims, err := repo.readSessionTokenClaims(token)
 	if err != nil {
 		if err.Error() == "SessionTokenExpired" {
 			return tokenDetails, err
 		}
 
-		return repo.getTokenDetailsFromApiKey(token)
+		return repo.readTokenDetailsFromApiKey(token)
 	}
 
-	return repo.getTokenDetailsFromSession(sessionTokenClaims)
+	return repo.readTokenDetailsFromSession(sessionTokenClaims)
 }
