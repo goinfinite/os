@@ -83,7 +83,7 @@ func (repo *AccountCmdRepo) Create(
 	return accountId, nil
 }
 
-func (repo *AccountCmdRepo) getUsernameById(
+func (repo *AccountCmdRepo) readUsernameById(
 	accountId valueObject.AccountId,
 ) (valueObject.Username, error) {
 	accountQuery := NewAccountQueryRepo(repo.persistentDbSvc)
@@ -96,7 +96,7 @@ func (repo *AccountCmdRepo) getUsernameById(
 }
 
 func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
-	username, err := repo.getUsernameById(accountId)
+	username, err := repo.readUsernameById(accountId)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func (repo *AccountCmdRepo) UpdatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	username, err := repo.getUsernameById(accountId)
+	username, err := repo.readUsernameById(accountId)
 	if err != nil {
 		return err
 	}
