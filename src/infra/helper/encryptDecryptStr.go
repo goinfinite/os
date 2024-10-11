@@ -10,17 +10,19 @@ import (
 	"log/slog"
 )
 
-func EncryptStr(secretKey string, plainText string) (string, error) {
+func EncryptStr(
+	secretKey, plainText string,
+) (encryptedText string, err error) {
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
 		slog.Error("EncryptSecretKeyError", slog.Any("error", err))
-		return "", errors.New("EncryptSecretKeyError")
+		return encryptedText, errors.New("EncryptSecretKeyError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
 		slog.Error("EncryptCipherError", slog.Any("error", err))
-		return "", errors.New("EncryptCipherError")
+		return encryptedText, errors.New("EncryptCipherError")
 	}
 
 	plainTextBytes := []byte(plainText)
@@ -28,7 +30,7 @@ func EncryptStr(secretKey string, plainText string) (string, error) {
 	iv := cipherText[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		slog.Error("EncryptIvGenerationError", slog.Any("error", err))
-		return "", errors.New("EncryptIvGenerationError")
+		return encryptedText, errors.New("EncryptIvGenerationError")
 	}
 
 	stream := cipher.NewCTR(block, iv)
@@ -37,26 +39,28 @@ func EncryptStr(secretKey string, plainText string) (string, error) {
 	return base64.StdEncoding.EncodeToString(cipherText), nil
 }
 
-func DecryptStr(secretKey string, encryptedText string) (string, error) {
+func DecryptStr(
+	secretKey, encryptedText string,
+) (decryptedText string, err error) {
 	apiKeyDecoded, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
 		slog.Error("DecryptDecodingError", slog.Any("error", err))
-		return "", errors.New("DecryptDecodingError")
+		return decryptedText, errors.New("DecryptDecodingError")
 	}
 	if len(apiKeyDecoded) < aes.BlockSize {
-		return "", errors.New("DecryptDecodedTooShort")
+		return decryptedText, errors.New("DecryptDecodedTooShort")
 	}
 
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
 		slog.Error("DecryptSecretDecodingError", slog.Any("error", err))
-		return "", errors.New("DecryptSecretDecodingError")
+		return decryptedText, errors.New("DecryptSecretDecodingError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
 		slog.Error("DecryptCipherError", slog.Any("error", err))
-		return "", errors.New("DecryptCipherError")
+		return decryptedText, errors.New("DecryptCipherError")
 	}
 
 	apiKeyDecryptedBinary := make([]byte, len(apiKeyDecoded)-aes.BlockSize)
