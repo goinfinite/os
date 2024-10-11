@@ -50,40 +50,32 @@ func (repo *AccountQueryRepo) Read() ([]entity.Account, error) {
 	return accountEntities, nil
 }
 
-func (repo *AccountQueryRepo) ReadByUsername(
-	accountUsername valueObject.Username,
-) (accountEntity entity.Account, err error) {
-	accountEntities, err := repo.Read()
-	if err != nil {
-		return accountEntity, errors.New("ReadAccountsError: " + err.Error())
-	}
-
-	for _, accountEntity := range accountEntities {
-		if accountEntity.Username.String() != accountUsername.String() {
-			continue
-		}
-
-		return accountEntity, nil
-	}
-
-	return accountEntity, errors.New("AccountNotFound")
-}
-
 func (repo *AccountQueryRepo) ReadById(
 	accountId valueObject.AccountId,
 ) (accountEntity entity.Account, err error) {
-	accountEntities, err := repo.Read()
+	var accountModel dbModel.Account
+	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.Account{}).
+		Where("id = ?", accountId.String()).
+		Find(&accountModel).Error
 	if err != nil {
-		return accountEntity, errors.New("ReadAccountsError: " + err.Error())
+		return accountEntity, errors.New("QueryAccountByIdError: " + err.Error())
 	}
 
-	for _, accountEntity := range accountEntities {
-		if accountEntity.Id.String() != accountId.String() {
-			continue
-		}
+	return accountModel.ToEntity()
+}
 
-		return accountEntity, nil
+func (repo *AccountQueryRepo) ReadByUsername(
+	accountUsername valueObject.Username,
+) (accountEntity entity.Account, err error) {
+	var accountModel dbModel.Account
+	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.Account{}).
+		Where("username = ?", accountUsername.String()).
+		Find(&accountModel).Error
+	if err != nil {
+		return accountEntity, errors.New("QueryAccountByUsernameError: " + err.Error())
 	}
 
-	return accountEntity, errors.New("AccountNotFound")
+	return accountModel.ToEntity()
 }
