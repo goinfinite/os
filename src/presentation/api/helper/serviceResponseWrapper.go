@@ -39,7 +39,7 @@ func ServiceTokenResponseWrapper(
 	c echo.Context,
 	serviceOutput service.ServiceOutput,
 ) error {
-	c.Response().Header().Set("X-Is-Token-Response", "true")
+	c.Response().Header().Set("X-Ignore-Toast", "true")
 
 	return ServiceResponseWrapper(c, serviceOutput)
 }

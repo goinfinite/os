@@ -24,10 +24,10 @@ script ToastGlobalState() {
 	document.addEventListener('htmx:afterRequest', (event) => {
 		const httpResponseObject = event.detail.xhr;
 
-		const isTokenResponse = httpResponseObject.getResponseHeader(
-			"X-Is-Token-Response",
+		const ignoreToastCustomHeader = httpResponseObject.getResponseHeader(
+			"X-Ignore-Toast",
 		);
-		if (isTokenResponse === 'true') {
+		if (ignoreToastCustomHeader === 'true') {
 			return;
 		}
 
