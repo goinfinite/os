@@ -13,7 +13,7 @@ func ReadVirtualHostsWithMappings(
 ) ([]dto.VirtualHostWithMappings, error) {
 	vhostsWithMappings, err := mappingQueryRepo.ReadWithMappings()
 	if err != nil {
-		slog.Error("ReadWithMappingsError", slog.Any("err", err))
+		slog.Error("ReadWithMappingsError", slog.Any("error", err))
 		return vhostsWithMappings, errors.New("ReadWithMappingsInfraError")
 	}
 

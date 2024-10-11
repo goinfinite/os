@@ -13,13 +13,13 @@ import (
 func EncryptStr(secretKey string, plainText string) (string, error) {
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
-		slog.Error("EncryptSecretKeyError", slog.Any("err", err))
+		slog.Error("EncryptSecretKeyError", slog.Any("error", err))
 		return "", errors.New("EncryptSecretKeyError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
-		slog.Error("EncryptCipherError", slog.Any("err", err))
+		slog.Error("EncryptCipherError", slog.Any("error", err))
 		return "", errors.New("EncryptCipherError")
 	}
 
@@ -27,7 +27,7 @@ func EncryptStr(secretKey string, plainText string) (string, error) {
 	cipherText := make([]byte, aes.BlockSize+len(plainTextBytes))
 	iv := cipherText[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		slog.Error("EncryptIvGenerationError", slog.Any("err", err))
+		slog.Error("EncryptIvGenerationError", slog.Any("error", err))
 		return "", errors.New("EncryptIvGenerationError")
 	}
 
@@ -40,7 +40,7 @@ func EncryptStr(secretKey string, plainText string) (string, error) {
 func DecryptStr(secretKey string, encryptedText string) (string, error) {
 	apiKeyDecoded, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
-		slog.Error("DecryptDecodingError", slog.Any("err", err))
+		slog.Error("DecryptDecodingError", slog.Any("error", err))
 		return "", errors.New("DecryptDecodingError")
 	}
 	if len(apiKeyDecoded) < aes.BlockSize {
@@ -49,13 +49,13 @@ func DecryptStr(secretKey string, encryptedText string) (string, error) {
 
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
-		slog.Error("DecryptSecretDecodingError", slog.Any("err", err))
+		slog.Error("DecryptSecretDecodingError", slog.Any("error", err))
 		return "", errors.New("DecryptSecretDecodingError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
-		slog.Error("DecryptCipherError", slog.Any("err", err))
+		slog.Error("DecryptCipherError", slog.Any("error", err))
 		return "", errors.New("DecryptCipherError")
 	}
 

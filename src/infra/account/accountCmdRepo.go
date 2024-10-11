@@ -101,9 +101,11 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("pgrep", "-u", accountId.String())
+	accountIdStr := accountId.String()
+
+	_, err = infraHelper.RunCmd("pgrep", "-u", accountIdStr)
 	if err == nil {
-		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountId.String())
+		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountIdStr)
 	}
 
 	_, err = infraHelper.RunCmd("userdel", "-r", username.String())
@@ -112,9 +114,8 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 	}
 
 	accountModel := dbModel.Account{}
-	accountIdUint64 := accountId.Uint64()
 
-	err = repo.persistentDbSvc.Handler.Delete(accountModel, accountIdUint64).Error
+	err = repo.persistentDbSvc.Handler.Delete(accountModel, accountIdStr).Error
 	if err != nil {
 		return errors.New("DeleteAccountDatabaseError: " + err.Error())
 	}
