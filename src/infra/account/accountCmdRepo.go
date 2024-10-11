@@ -85,11 +85,11 @@ func (repo *AccountCmdRepo) Create(
 
 func (repo *AccountCmdRepo) readUsernameById(
 	accountId valueObject.AccountId,
-) (valueObject.Username, error) {
+) (username valueObject.Username, err error) {
 	accountQuery := NewAccountQueryRepo(repo.persistentDbSvc)
 	accountEntity, err := accountQuery.ReadById(accountId)
 	if err != nil {
-		return "", err
+		return username, err
 	}
 
 	return accountEntity.Username, nil
