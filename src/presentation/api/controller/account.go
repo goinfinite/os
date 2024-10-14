@@ -75,7 +75,7 @@ func (controller *AccountController) Update(c echo.Context) error {
 		requestBody["shouldUpdateApiKey"],
 	)
 	if err == nil && shouldUpdateApiKey {
-		return apiHelper.ServiceTokenResponseWrapper(
+		return apiHelper.ServiceResponseWithIgnoreToastWrapper(
 			c, controller.accountService.Update(requestBody),
 		)
 	}
