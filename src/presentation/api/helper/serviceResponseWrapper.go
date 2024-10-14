@@ -35,7 +35,7 @@ func ServiceResponseWrapper(
 	return c.JSON(responseStatus, formattedResponse)
 }
 
-func ServiceTokenResponseWrapper(
+func ServiceResponseWithIgnoreToastWrapper(
 	c echo.Context,
 	serviceOutput service.ServiceOutput,
 ) error {
