@@ -1,18 +1,31 @@
 package page
 
 import (
-	"github.com/goinfinite/os/src/domain/entity"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
+	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
 )
 
 script MarketplaceIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
+			reloadMarketplacePageContent(listType) {
+				htmx.ajax(
+					'GET',
+					'/marketplace/?listType=' + listType,
+					{
+						select: '#marketplace-page-content',
+						target: '#marketplace-page-content',
+						indicator: '#loading-overlay',
+						swap: 'outerHTML transition:true'
+					},
+				);
+			}
 		}));
 	});
 }
 
-templ MarketplaceIndex(catalogItemsList []entity.MarketplaceInstalledItem) {
+templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 	@MarketplaceIndexLocalState()
 	<div class="flex flex-col" x-data="marketplace">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -30,6 +43,34 @@ templ MarketplaceIndex(catalogItemsList []entity.MarketplaceInstalledItem) {
 			hx-target="this"
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
-		></div>
+		>
+			@MarketplaceTabs(marketplaceOverview.ListType)
+		</div>
 	</div>
+}
+
+func readMarketplaceTabHeaderItems(
+	listType presenterValueObject.MarketplaceListType,
+) []componentStructural.HorizontalTabHeaderItem {
+	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
+		{Label: "Installed", ComponentValue: "installed"},
+		{Label: "Catalog", ComponentValue: "catalog"},
+	}
+
+	for itemIndex := range tabHeaderItems {
+		if listType.String() != tabHeaderItems[itemIndex].ComponentValue {
+			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
+			continue
+		}
+
+		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
+	}
+
+	return tabHeaderItems
+}
+
+templ MarketplaceTabs(listType presenterValueObject.MarketplaceListType) {
+	@componentStructural.HorizontalTabHeader(
+		readMarketplaceTabHeaderItems(listType), "reloadMarketplacePageContent",
+	)
 }
