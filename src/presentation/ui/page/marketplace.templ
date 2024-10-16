@@ -1,6 +1,7 @@
 package page
 
 import (
+	"github.com/goinfinite/os/src/domain/entity"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
@@ -44,7 +45,7 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 			hx-swap="outerHTML transition:true"
 			class="card w-full"
 		>
-			@MarketplaceTabs(marketplaceOverview.ListType)
+			@MarketplaceTabs(marketplaceOverview)
 		</div>
 	</div>
 }
@@ -69,8 +70,67 @@ func readMarketplaceTabHeaderItems(
 	return tabHeaderItems
 }
 
-templ MarketplaceTabs(listType presenterValueObject.MarketplaceListType) {
+templ MarketplaceInstalledItemsTable(
+	installedItemsList []entity.MarketplaceInstalledItem,
+) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-1/6 px-5 py-3 text-left">Name</th>
+				<th scope="col" class="w-1/6 px-5 py-3">Type</th>
+				<th scope="col" class="w-1/6 px-5 py-3">Path</th>
+				<th scope="col" class="w-1/6 px-5 py-3">Installation Directory</th>
+				<th scope="col" class="w-1/6 px-5 py-3">Created At</th>
+				<th scope="col" class="w-1/6 px-5 py-3"></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, installedItem := range installedItemsList {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">
+						<div class="inline-flex items-center">
+							<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
+							{ installedItem.Name.String() }
+						</div>
+					</th>
+					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.Type.String() }</th>
+					<th scope="row" class="w-1/6 px-5 py-3 font-normal">
+						{ installedItem.Hostname.String() + installedItem.UrlPath.String() }
+					</th>
+					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
+					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.CreatedAt.GetDateOnly() }</th>
+					<th scope="row" class="w-1/6 px-5 py-3 text-right font-normal">
+						<div class="inline-flex">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"console.log('uninstall "+installedItem.Name.String()+" item')",
+								"Uninstall", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+templ MarketplaceCatalogItemsTab(
+	catalogItemsList []entity.MarketplaceCatalogItem,
+) {
+}
+
+templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 	@componentStructural.HorizontalTabHeader(
-		readMarketplaceTabHeaderItems(listType), "reloadMarketplacePageContent",
+		readMarketplaceTabHeaderItems(marketplaceOverview.ListType),
+		"reloadMarketplacePageContent",
 	)
+	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
+		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">
+			if marketplaceOverview.ListType.String() == "installed" {
+				@MarketplaceInstalledItemsTable(marketplaceOverview.InstalledItemsList)
+			} else {
+				@MarketplaceCatalogItemsTab(marketplaceOverview.CatalogItemsList)
+			}
+		</div>
+	</div>
 }
