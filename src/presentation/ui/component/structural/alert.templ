@@ -1,0 +1,29 @@
+package componentStructural
+
+const (
+	AlertTypeSuccess = "success"
+	AlertTypeError   = "error"
+	AlertTypeWarning = "warning"
+	AlertTypeInfo    = "info"
+)
+
+templ Alert(alertType string, alertMessage string) {
+	<div
+		class="bg-ez-500 flex items-center bg-opacity-75 p-2 text-xs text-neutral-50"
+		role="alert"
+	>
+		switch alertType {
+			case AlertTypeSuccess:
+				<i class="ph-bold ph-check-circle text-xl text-emerald-500"></i>
+			case AlertTypeError:
+				<i class="ph-bold ph-x-circle text-xl text-red-500"></i>
+			case AlertTypeWarning:
+				<i class="ph-bold ph-warning text-xl text-amber-500"></i>
+			default:
+				<i class="ph-bold ph-info text-xl text-sky-500"></i>
+		}
+		<div class="ml-2">
+			{ alertMessage }
+		</div>
+	</div>
+}
