@@ -234,6 +234,12 @@ templ UpdatePasswordModal() {
 templ UpdateApiKeyContent() {
 	<div class="mb-6">
 		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
+		<div x-show="account.apiKey !== ''">
+			@componentStructural.Alert(
+				componentStructural.AlertTypeWarning,
+				"This key is exclusive to the user, it is not stored. So make sure to copy it and keep it in a safe place where you can access it.",
+			)
+		</div>
 	</div>
 	@componentForm.SubmitButton(
 		"generate-new-api-key", "Generate new api key", "ph-key", "updateApiKey()",
