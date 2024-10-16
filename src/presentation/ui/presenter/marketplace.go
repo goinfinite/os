@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -79,8 +78,6 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 	if err != nil {
 		return nil
 	}
-
-	log.Print(marketplaceOverview)
 
 	pageContent := page.MarketplaceIndex(marketplaceOverview)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
