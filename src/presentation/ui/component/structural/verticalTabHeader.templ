@@ -32,9 +32,10 @@ templ VerticalTabHeader(
 	verticalTabHeaderItems []VerticalTabHeaderItem,
 	onClick string,
 ) {
-	<!-- VerticalTabHeader -->
+	<!-- VerticalTabHeader JavaScript -->
 	@VerticalTabHeaderLocalState(verticalTabHeaderItems[0].ComponentValue)
-	<sidebar class="w-25 flex h-full" x-data="verticalTabHeader">
+	<!-- VerticalTabHeader HTML -->
+	<sidebar class="flex h-full w-fit" x-data="verticalTabHeader">
 		<div class="w-full">
 			<ul>
 				for _, item := range verticalTabHeaderItems {
