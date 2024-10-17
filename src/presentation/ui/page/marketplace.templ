@@ -10,6 +10,11 @@ import (
 script MarketplaceIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
+			// Auxiliary States
+			selectedMarketplaceCatalogVerticalTab: 'apps',
+			updateSelectedMarketplaceCatalogVerticalTab(tabName) {
+				this.selectedMarketplaceCatalogVerticalTab = tabName;
+			},
 			reloadMarketplacePageContent(listType) {
 				htmx.ajax(
 					'GET',
@@ -117,6 +122,15 @@ templ MarketplaceInstalledItemsTable(
 templ MarketplaceCatalogItemsTab(
 	catalogItemsList []entity.MarketplaceCatalogItem,
 ) {
+	<div class="flex justify-stretch">
+		@componentStructural.VerticalTabHeader(
+			[]componentStructural.VerticalTabHeaderItem{
+				{Label: "Apps", ComponentValue: "apps"},
+				{Label: "Stack", ComponentValue: "stack"},
+				{Label: "Framework", ComponentValue: "framework"},
+			}, "updateSelectedMarketplaceCatalogVerticalTab",
+		)
+	</div>
 }
 
 templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
