@@ -14,7 +14,7 @@ import (
 type AuthCmdRepo struct {
 }
 
-func (repo AuthCmdRepo) GenerateSessionToken(
+func (repo AuthCmdRepo) CreateSessionToken(
 	accountId valueObject.AccountId,
 	expiresIn valueObject.UnixTime,
 	ipAddress valueObject.IpAddress,
@@ -35,7 +35,7 @@ func (repo AuthCmdRepo) GenerateSessionToken(
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
-		"accountId":  accountId.Uint(),
+		"accountId":  accountId.Uint64(),
 		"originalIp": ipAddress.String(),
 	}
 

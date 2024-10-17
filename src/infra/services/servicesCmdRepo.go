@@ -128,9 +128,16 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	err := repo.Stop(name)
+	service, err := repo.servicesQueryRepo.ReadByName(name)
 	if err != nil {
 		return err
+	}
+
+	if service.Status.String() == "running" {
+		err = repo.Stop(name)
+		if err != nil {
+			return err
+		}
 	}
 
 	return repo.Start(name)

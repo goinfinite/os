@@ -12,14 +12,14 @@ import (
 )
 
 var requiredEnvVars = []string{
-	"PRIMARY_VHOST",
+	"ACCOUNT_API_KEY_SECRET",
 	"JWT_SECRET",
-	"UAK_SECRET",
+	"PRIMARY_VHOST",
 }
 
 var envVarsToGenerateIfEmpty = []string{
+	"ACCOUNT_API_KEY_SECRET",
 	"JWT_SECRET",
-	"UAK_SECRET",
 }
 
 func genSecret() (string, error) {

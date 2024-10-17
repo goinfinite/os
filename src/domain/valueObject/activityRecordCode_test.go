@@ -20,8 +20,7 @@ func TestActivityRecordCode(t *testing.T) {
 
 	t.Run("InvalidActivityRecordCode", func(t *testing.T) {
 		invalidActivityRecordCodes := []interface{}{
-			"FailedToCreateCronTask", "RunScheduledTaskSuccessfully",
-			"SuccessOnAllTests", "ServiceIsNotWorking",
+			"", "a", 1000,
 		}
 
 		for _, code := range invalidActivityRecordCodes {

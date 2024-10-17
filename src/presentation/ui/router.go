@@ -57,6 +57,15 @@ func (router *Router) assetsRoute() {
 	)
 }
 
+func (router *Router) accountsRoutes() {
+	accountGroup := router.baseRoute.Group("/accounts")
+
+	accountsPresenter := presenter.NewAccountsPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+	accountGroup.GET("/", accountsPresenter.Handler)
+}
+
 func (router *Router) databasesRoutes() {
 	databaseGroup := router.baseRoute.Group("/databases")
 
@@ -134,6 +143,7 @@ func (router *Router) previousDashboardRoute() {
 
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
+	router.accountsRoutes()
 	router.databasesRoutes()
 	router.mappingsRoutes()
 	router.runtimesRoutes()

@@ -7,12 +7,10 @@ templ TextArea(
 	<!-- TextArea -->
 	<div class="relative w-full">
 		<textarea
-			id={ id }
 			name={ id }
 			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+				x-model={ bindValuePath }
 			}
-			placeholder={ label }
 			if denseMode {
 				class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-1.5 pt-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
 			} else {
@@ -30,24 +28,20 @@ templ TextArea(
 	</div>
 }
 
-templ TextAreaReadOnly(
-	id, label, bindValuePath string,
-) {
+templ TextAreaReadOnly(id, label, bindValuePath string) {
 	<!-- TextAreaReadOnly -->
 	<div class="relative w-full">
 		<textarea
-			id={ id }
 			name={ id }
 			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+				x-model={ bindValuePath }
 			}
-			x-ref="textAreaReadOnly"
-			placeholder={ label }
-			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border px-3 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
+			x-ref={ id }
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border pl-3 pr-8 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
 			readonly
 		></textarea>
 		<div class="absolute right-2 top-1">
-			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "navigator.clipboard.writeText($refs.textAreaReadOnly.value)" }>
+			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "navigator.clipboard.writeText($refs." + id + ".value)" }>
 				<i class="ph-duotone ph-copy-simple"></i>
 			</button>
 		</div>

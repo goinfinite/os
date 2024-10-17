@@ -1,0 +1,257 @@
+package page
+
+import (
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+script AccountsIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('accounts', () => ({
+			// Primary states
+			account: {},
+			resetPrimaryStates() {
+				this.account = {
+					id: '',
+					groupId: '',
+					username: '',
+					password: '',
+					apiKey: '',
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Modal states
+			isCreateAccountModalOpen: false,
+			openCreateAccountModal() {
+				this.resetPrimaryStates();
+
+				this.isCreateAccountModalOpen = true;
+			},
+			closeCreateAccountModal() {
+				this.isCreateAccountModalOpen = false;
+			},
+			isUpdatePasswordModalOpen: false,
+			openUpdatePasswordModal(id) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.isUpdatePasswordModalOpen = true;
+			},
+			closeUpdatePasswordModal() {
+				this.isUpdatePasswordModalOpen = false;
+			},
+			isUpdateApiKeyModalOpen: false,
+			openUpdateApiKeyModal(id, username) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.account.username = username;
+				this.isUpdateApiKeyModalOpen = true;
+			},
+			closeUpdateApiKeyModal() {
+				this.isUpdateApiKeyModalOpen = false;
+				this.account.apiKey = '';
+			},
+			updateApiKey() {
+				htmx.ajax(
+					'PUT',
+					'/api/v1/account/',
+					{
+						swap: 'none',
+						values: { id: this.account.id, shouldUpdateApiKey: true },
+						handler: (_, responseEvent) => {
+							const httpResponseObject = responseEvent.xhr;
+							if (httpResponseObject.status !== 200) {
+								return;
+							}
+
+							const responseData = JSON.parse(httpResponseObject.response);
+							this.account.apiKey = responseData.body;
+						}
+					},
+				);
+			},
+			isDeleteAccountModalOpen: false,
+			openDeleteAccountModal(id, username) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.account.username = username;
+				this.isDeleteAccountModalOpen = true;
+			},
+			closeDeleteAccountModal() {
+				this.isDeleteAccountModalOpen = false;
+			},
+			deleteAccount() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/account/' + this.account.id + '/',
+					{swap: 'none'},
+				);
+				this.$dispatch('delete:account');
+				this.closeDeleteAccountModal();
+			},
+		}));
+	});
+}
+
+templ AccountsIndex(accounts []entity.Account) {
+	@AccountsIndexLocalState()
+	<div x-data="accounts">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"Accounts",
+					"Create and manage accounts with their own API keys, allowing each one to access and use every Infinite OS resource individually.",
+					"ph-users-three",
+				)
+			</div>
+		</div>
+		<div
+			id="accounts-page-content"
+			hx-get="/accounts/"
+			hx-trigger="submit from:form delay:500ms, delete:account from:window delay:250ms"
+			hx-select="#accounts-page-content"
+			hx-target="#accounts-page-content"
+			hx-swap="outerHTML transition:true"
+			class="flex flex-col"
+		>
+			<div id="accounts-table" class="card w-full">
+				@AccountsTable(accounts)
+			</div>
+		</div>
+		@CreateAccountModal()
+		@UpdatePasswordModal()
+		@UpdateApiKeyModal()
+		@componentStructural.DeleteModal(
+			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
+			"account.username", "account.id",
+		)
+	</div>
+}
+
+templ AccountsTable(accounts []entity.Account) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-2/7 px-5 py-3 text-left">Username(s)</th>
+				<th scope="col" class="w-2/7 px-5 py-3 text-center">UserId(s)/GroupId(s)</th>
+				<th scope="col" class="flex justify-end py-3">
+					<div class="w-3/7">
+						@componentForm.SubmitButton(
+							"open-create-account-form-button", "Create account",
+							"ph-user-plus", "openCreateAccountModal()", false,
+						)
+					</div>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, account := range accounts {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-right">
+						<div class="inline-flex space-x-2">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-lock-key", "blue-900", "blue-700",
+								"openUpdatePasswordModal("+account.Id.String()+")",
+								"update password", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-key", "blue-900", "blue-700",
+								"openUpdateApiKeyModal("+account.Id.String()+", '"+account.Username.String()+"')",
+								"update api key", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"openDeleteAccountModal("+account.Id.String()+", '"+account.Username.String()+"')",
+								"delete account", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+templ CreateAccountForm() {
+	<form
+		hx-post="/api/v1/account/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="space-y-6 mb-6">
+			@componentForm.InputField("text", "username", "Username", "account.username", false)
+			@componentForm.PasswordInput("password", "Password", "account.password", false)
+		</div>
+		@componentForm.SubmitButton(
+			"create-account-button", "Create", "ph-check-fat",
+			"closeCreateAccountModal()", false,
+		)
+	</form>
+}
+
+templ CreateAccountModal() {
+	@componentStructural.Modal(
+		"Create Account", "isCreateAccountModalOpen", "closeCreateAccountModal()", "",
+	) {
+		@CreateAccountForm()
+	}
+}
+
+templ UpdatePasswordForm() {
+	<form
+		hx-put="/api/v1/account/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input type="hidden" name="id" x-bind:value="account.id"/>
+			@componentForm.PasswordInput("password", "Password", "account.password", false)
+		</div>
+		@componentForm.SubmitButton(
+			"update-account-password-button", "Update", "ph-key",
+			"closeUpdatePasswordModal()", false,
+		)
+	</form>
+}
+
+templ UpdatePasswordModal() {
+	@componentStructural.Modal(
+		"Update Password", "isUpdatePasswordModalOpen", "closeUpdatePasswordModal()",
+		"account.id",
+	) {
+		@UpdatePasswordForm()
+	}
+}
+
+templ UpdateApiKeyContent() {
+	<div class="mb-6">
+		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
+		<div x-show="account.apiKey !== ''">
+			@componentStructural.Alert(
+				componentStructural.AlertTypeWarning,
+				"This API key will not be stored on the server side. Please save it securely, as you will not be able to retrieve it again if lost. If you need to access your API key in the future, you will need to generate a new one.",
+			)
+		</div>
+	</div>
+	@componentForm.SubmitButton(
+		"generate-new-api-key", "Generate new api key", "ph-key", "updateApiKey()",
+		false,
+	)
+}
+
+templ UpdateApiKeyModal() {
+	@componentStructural.Modal(
+		"Update Api Key", "isUpdateApiKeyModalOpen", "closeUpdateApiKeyModal()",
+		"account.username",
+	) {
+		@UpdateApiKeyContent()
+	}
+}

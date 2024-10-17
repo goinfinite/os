@@ -96,20 +96,20 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 	}
 	runtimeType, err := valueObject.NewRuntimeType(rawRuntimeType)
 	if err != nil {
-		slog.Error("InvalidRuntimeType", slog.Any("err", err))
+		slog.Error("InvalidRuntimeType", slog.Any("error", err))
 		return nil
 	}
 
 	primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
 	if err != nil {
-		slog.Error("ReadPrimaryVirtualHost", slog.Any("err", err))
+		slog.Error("ReadPrimaryVirtualHost", slog.Any("error", err))
 		return nil
 	}
 	selectedVhostHostname := primaryVhostHostname
 	if c.QueryParam("vhostHostname") != "" {
 		selectedVhostHostname, err = valueObject.NewFqdn(c.QueryParam("vhostHostname"))
 		if err != nil {
-			slog.Error("InvalidVhostHostname", slog.Any("err", err))
+			slog.Error("InvalidVhostHostname", slog.Any("error", err))
 			return nil
 		}
 	}
@@ -118,13 +118,13 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		runtimeType, selectedVhostHostname,
 	)
 	if err != nil {
-		slog.Error("RuntimeOverviewFactoryError", slog.Any("err", err))
+		slog.Error("RuntimeOverviewFactoryError", slog.Any("error", err))
 		return nil
 	}
 
 	vhostsHostnames, err := presenter.readVhostsHostnames()
 	if err != nil {
-		slog.Error("ReadVirtualHostsHostnames", slog.Any("err", err))
+		slog.Error("ReadVirtualHostsHostnames", slog.Any("error", err))
 		return nil
 	}
 

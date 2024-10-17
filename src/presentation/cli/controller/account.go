@@ -1,6 +1,7 @@
 package cliController
 
 import (
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -10,9 +11,12 @@ type AccountController struct {
 	accountService *service.AccountService
 }
 
-func NewAccountController() *AccountController {
+func NewAccountController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(),
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -54,18 +58,18 @@ func (controller *AccountController) Create() *cobra.Command {
 }
 
 func (controller *AccountController) Update() *cobra.Command {
-	var accountIdStr, usernameStr, passwordStr, shouldUpdateApiKeyBool string
+	var accountIdStr, usernameStr, passwordStr, shouldUpdateApiKeyStr string
 
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "UpdateAccount (pass or apiKey)",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"shouldUpdateApiKey": shouldUpdateApiKeyBool,
+				"shouldUpdateApiKey": shouldUpdateApiKeyStr,
 			}
 
 			if accountIdStr != "" {
-				requestBody["id"] = accountIdStr
+				requestBody["accountId"] = accountIdStr
 			}
 
 			if usernameStr != "" {
@@ -86,7 +90,7 @@ func (controller *AccountController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.Flags().StringVarP(
-		&shouldUpdateApiKeyBool, "update-api-key", "k", "false", "ShouldUpdateApiKey",
+		&shouldUpdateApiKeyStr, "update-api-key", "k", "false", "ShouldUpdateApiKey",
 	)
 	return cmd
 }
@@ -99,7 +103,7 @@ func (controller *AccountController) Delete() *cobra.Command {
 		Short: "DeleteAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"id": accountIdStr,
+				"accountId": accountIdStr,
 			}
 
 			cliHelper.ServiceResponseWrapper(
