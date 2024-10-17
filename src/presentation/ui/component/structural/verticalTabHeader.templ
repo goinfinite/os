@@ -7,24 +7,32 @@ type VerticalTabHeaderItem struct {
 }
 
 script VerticalTabHeaderLocalState(firstMenuItem string) {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('verticalTabHeader', () => ({
-			selectedMenuItem: '',
-			init() {
-				this.selectedMenuItem = firstMenuItem;
-			},
-			getTabLayoutClasses(itemValue) {
-				const defaultClasses = 'hover:bg-os-300 border-r-3 w-full bg-inherit py-2 px-6 text-neutral-50 transition-all';
-				if (itemValue == this.selectedMenuItem) {
-					return defaultClasses + ' border-infinite-500';
-				}
-
-				return defaultClasses + ' border-os-400';
-			},
-			getTabTitleWithIconClasses(itemValue) {
-				return itemValue == this.selectedMenuItem ? 'text-infinite-500' : '';
+	const localStateData = {
+		selectedMenuItem: '',
+		init() {
+			this.selectedMenuItem = firstMenuItem;
+		},
+		getTabLayoutClasses(itemValue) {
+			const defaultClasses = 'hover:bg-os-300 border-r-3 w-full bg-inherit py-2 px-6 text-neutral-50 transition-all';
+			if (itemValue == this.selectedMenuItem) {
+				return defaultClasses + ' border-infinite-500';
 			}
-		}));
+
+			return defaultClasses + ' border-os-400';
+		},
+		getTabTitleWithIconClasses(itemValue) {
+			return itemValue == this.selectedMenuItem ? 'text-infinite-500' : '';
+		}
+	};
+
+	const alpineAlreadyInitialized = window.Alpine !== undefined;
+	if (alpineAlreadyInitialized) {
+		Alpine.data('verticalTabHeader', () => localStateData);
+		return;
+	}
+
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('verticalTabHeader', () => (localStateData));
 	});
 }
 
