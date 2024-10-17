@@ -15,21 +15,20 @@ func SetDefaultHeaders(apiBasePath string) echo.MiddlewareFunc {
 			c.Response().Header().Set(
 				"Cache-Control", "no-store, no-cache, must-revalidate",
 			)
+			c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 			c.Response().Header().Set(
-				"Access-Control-Allow-Origin", "*",
-			)
-			c.Response().Header().Set(
-				"Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Origin, Authorization",
+				"Access-Control-Allow-Headers",
+				"X-Requested-With, Content-Type, Accept, Origin, Authorization",
 			)
 			c.Response().Header().Set(
 				"Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS, DELETE, PUT",
 			)
 
-			if c.Request().Method == "OPTIONS" {
+			if req.Method == "OPTIONS" {
 				return c.NoContent(http.StatusOK)
 			}
 
-			urlPath := c.Request().URL.Path
+			urlPath := req.URL.Path
 			isNotApi := !strings.HasPrefix(urlPath, apiBasePath)
 
 			if isNotApi {
@@ -40,9 +39,7 @@ func SetDefaultHeaders(apiBasePath string) echo.MiddlewareFunc {
 				req.Header.Set("Content-Type", "application/json")
 			}
 
-			c.Response().Header().Set(
-				"Content-Type", "application/json",
-			)
+			c.Response().Header().Set("Content-Type", "application/json")
 
 			return next(c)
 		}

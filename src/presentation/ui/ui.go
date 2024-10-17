@@ -15,7 +15,7 @@ func UiInit(
 	basePath := ""
 	baseRoute := e.Group(basePath)
 
-	e.Use(uiMiddleware.Authentication())
+	e.Use(uiMiddleware.Authentication(persistentDbSvc))
 
 	router := NewRouter(baseRoute, persistentDbSvc, transientDbSvc, trailDbSvc)
 	router.RegisterRoutes()

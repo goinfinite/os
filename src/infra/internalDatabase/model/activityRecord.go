@@ -9,14 +9,12 @@ import (
 
 type ActivityRecord struct {
 	ID                uint64 `gorm:"primarykey"`
-	Level             string `gorm:"not null"`
-	Code              *string
-	Message           *string
-	IpAddress         *string
-	OperatorAccountId *uint
-	TargetAccountId   *uint
-	Username          *string
-	MappingId         *uint64
+	RecordLevel       string `gorm:"not null"`
+	RecordCode        string `gorm:"not null"`
+	AffectedResources []ActivityRecordAffectedResource
+	RecordDetails     *string
+	OperatorAccountId *uint64
+	OperatorIpAddress *string
 	CreatedAt         time.Time `gorm:"not null"`
 }
 
@@ -25,67 +23,57 @@ func (ActivityRecord) TableName() string {
 }
 
 func NewActivityRecord(
-	id uint64,
-	level string,
-	code, message, ipAddress *string,
-	operatorAccountId, targetAccountId *uint,
-	username *string,
-	mappingId *uint64,
+	recordId uint64,
+	recordLevel, recordCode string,
+	affectedResources []ActivityRecordAffectedResource,
+	recordDetails *string,
+	operatorAccountId *uint64,
+	operatorIpAddress *string,
 ) ActivityRecord {
 	model := ActivityRecord{
-		Level:             level,
-		Code:              code,
-		Message:           message,
-		IpAddress:         ipAddress,
+		RecordLevel:       recordLevel,
+		RecordCode:        recordCode,
+		AffectedResources: affectedResources,
+		RecordDetails:     recordDetails,
 		OperatorAccountId: operatorAccountId,
-		TargetAccountId:   targetAccountId,
-		Username:          username,
-		MappingId:         mappingId,
+		OperatorIpAddress: operatorIpAddress,
 	}
 
-	if id != 0 {
-		model.ID = id
+	if recordId != 0 {
+		model.ID = recordId
 	}
 
 	return model
 }
 
 func (model ActivityRecord) ToEntity() (recordEntity entity.ActivityRecord, err error) {
-	id, err := valueObject.NewActivityRecordId(model.ID)
+	recordId, err := valueObject.NewActivityRecordId(model.ID)
 	if err != nil {
 		return recordEntity, err
 	}
 
-	level, err := valueObject.NewActivityRecordLevel(model.Level)
+	recordLevel, err := valueObject.NewActivityRecordLevel(model.RecordLevel)
 	if err != nil {
 		return recordEntity, err
 	}
 
-	var codePtr *valueObject.ActivityRecordCode
-	if model.Code != nil {
-		code, err := valueObject.NewActivityRecordCode(*model.Code)
-		if err != nil {
-			return recordEntity, err
-		}
-		codePtr = &code
+	recordCode, err := valueObject.NewActivityRecordCode(model.RecordCode)
+	if err != nil {
+		return recordEntity, err
 	}
 
-	var messagePtr *valueObject.ActivityRecordMessage
-	if model.Message != nil {
-		message, err := valueObject.NewActivityRecordMessage(*model.Message)
+	affectedResources := []valueObject.SystemResourceIdentifier{}
+	for _, resource := range model.AffectedResources {
+		sri, err := valueObject.NewSystemResourceIdentifier(resource.SystemResourceIdentifier)
 		if err != nil {
 			return recordEntity, err
 		}
-		messagePtr = &message
+		affectedResources = append(affectedResources, sri)
 	}
 
-	var ipAddressPtr *valueObject.IpAddress
-	if model.IpAddress != nil {
-		ipAddress, err := valueObject.NewIpAddress(*model.IpAddress)
-		if err != nil {
-			return recordEntity, err
-		}
-		ipAddressPtr = &ipAddress
+	var recordDetails interface{}
+	if model.RecordDetails != nil {
+		recordDetails = *model.RecordDetails
 	}
 
 	var operatorAccountIdPtr *valueObject.AccountId
@@ -97,37 +85,19 @@ func (model ActivityRecord) ToEntity() (recordEntity entity.ActivityRecord, err 
 		operatorAccountIdPtr = &operatorAccountId
 	}
 
-	var targetAccountIdPtr *valueObject.AccountId
-	if model.TargetAccountId != nil {
-		targetAccountId, err := valueObject.NewAccountId(*model.TargetAccountId)
+	var operatorIpAddressPtr *valueObject.IpAddress
+	if model.OperatorIpAddress != nil {
+		operatorIpAddress, err := valueObject.NewIpAddress(*model.OperatorIpAddress)
 		if err != nil {
 			return recordEntity, err
 		}
-		targetAccountIdPtr = &targetAccountId
-	}
-
-	var usernamePtr *valueObject.Username
-	if model.Username != nil {
-		username, err := valueObject.NewUsername(*model.Username)
-		if err != nil {
-			return recordEntity, err
-		}
-		usernamePtr = &username
-	}
-
-	var mappingIdPtr *valueObject.MappingId
-	if model.MappingId != nil {
-		mappingId, err := valueObject.NewMappingId(*model.MappingId)
-		if err != nil {
-			return recordEntity, err
-		}
-		mappingIdPtr = &mappingId
+		operatorIpAddressPtr = &operatorIpAddress
 	}
 
 	createdAt := valueObject.NewUnixTimeWithGoTime(model.CreatedAt)
 
 	return entity.NewActivityRecord(
-		id, level, codePtr, messagePtr, ipAddressPtr, operatorAccountIdPtr,
-		targetAccountIdPtr, usernamePtr, mappingIdPtr, createdAt,
+		recordId, recordLevel, recordCode, affectedResources, recordDetails,
+		operatorAccountIdPtr, operatorIpAddressPtr, createdAt,
 	)
 }

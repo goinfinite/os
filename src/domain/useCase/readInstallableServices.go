@@ -13,7 +13,7 @@ func ReadInstallableServices(
 ) ([]entity.InstallableService, error) {
 	installableServices, err := servicesQueryRepo.ReadInstallables()
 	if err != nil {
-		slog.Error("ReadInstallableServicesError", slog.Any("err", err))
+		slog.Error("ReadInstallableServicesError", slog.Any("error", err))
 		return installableServices, errors.New("ReadInstallableServicesInfraError")
 	}
 

@@ -34,3 +34,12 @@ func ServiceResponseWrapper(
 	}
 	return c.JSON(responseStatus, formattedResponse)
 }
+
+func ServiceResponseWithIgnoreToastHeaderWrapper(
+	c echo.Context,
+	serviceOutput service.ServiceOutput,
+) error {
+	c.Response().Header().Set("X-Ignore-Toast", "true")
+
+	return ServiceResponseWrapper(c, serviceOutput)
+}

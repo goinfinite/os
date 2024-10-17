@@ -26,17 +26,17 @@ func DeleteService(
 
 	err = mappingCmdRepo.DeleteAuto(svcName)
 	if err != nil {
-		slog.Error("DeleteAutoMappingError", slog.Any("err", err))
+		slog.Error("DeleteAutoMappingError", slog.Any("error", err))
 		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
 	err = servicesCmdRepo.Delete(svcName)
 	if err != nil {
-		slog.Error("DeleteServiceError", slog.Any("err", err))
+		slog.Error("DeleteServiceError", slog.Any("error", err))
 		return errors.New("DeleteServiceInfraError")
 	}
 
-	slog.Info("Service "+svcName.String()+" deleted.", slog.Any("err", err))
+	slog.Info("Service "+svcName.String()+" deleted.", slog.Any("error", err))
 
 	return nil
 }

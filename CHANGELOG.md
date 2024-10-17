@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.1.1 - 2024/X/X
+refactor(front): accounts page with HTMX+Alpine.js
+
 0.1.0 - 2024/10/08
 refactor!: migrate/rename speedia to infinite
 refactor: os-api banner

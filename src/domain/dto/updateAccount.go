@@ -3,22 +3,25 @@ package dto
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type UpdateAccount struct {
-	Id                 *valueObject.AccountId `json:"id"`
-	Username           *valueObject.Username  `json:"username"`
-	Password           *valueObject.Password  `json:"password"`
-	ShouldUpdateApiKey *bool                  `json:"shouldUpdateApiKey"`
+	AccountId          valueObject.AccountId `json:"accountId"`
+	Password           *valueObject.Password `json:"password,omitempty"`
+	ShouldUpdateApiKey *bool                 `json:"shouldUpdateApiKey,omitempty"`
+	OperatorAccountId  valueObject.AccountId `json:"-"`
+	OperatorIpAddress  valueObject.IpAddress `json:"-"`
 }
 
 func NewUpdateAccount(
-	id *valueObject.AccountId,
-	username *valueObject.Username,
+	accountId valueObject.AccountId,
 	password *valueObject.Password,
 	shouldUpdateApiKey *bool,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) UpdateAccount {
 	return UpdateAccount{
-		Id:                 id,
-		Username:           username,
+		AccountId:          accountId,
 		Password:           password,
 		ShouldUpdateApiKey: shouldUpdateApiKey,
+		OperatorAccountId:  operatorAccountId,
+		OperatorIpAddress:  operatorIpAddress,
 	}
 }

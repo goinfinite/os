@@ -1,6 +1,8 @@
 package apiController
 
 import (
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -10,9 +12,12 @@ type AccountController struct {
 	accountService *service.AccountService
 }
 
-func NewAccountController() *AccountController {
+func NewAccountController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(),
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -66,6 +71,15 @@ func (controller *AccountController) Update(c echo.Context) error {
 		return err
 	}
 
+	shouldUpdateApiKey, err := voHelper.InterfaceToBool(
+		requestBody["shouldUpdateApiKey"],
+	)
+	if err == nil && shouldUpdateApiKey {
+		return apiHelper.ServiceResponseWithIgnoreToastHeaderWrapper(
+			c, controller.accountService.Update(requestBody),
+		)
+	}
+
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.accountService.Update(requestBody),
 	)
@@ -83,7 +97,7 @@ func (controller *AccountController) Update(c echo.Context) error {
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller *AccountController) Delete(c echo.Context) error {
 	requestBody := map[string]interface{}{
-		"id": c.Param("accountId"),
+		"accountId": c.Param("accountId"),
 	}
 
 	return apiHelper.ServiceResponseWrapper(
