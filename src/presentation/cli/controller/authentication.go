@@ -7,19 +7,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type AuthController struct {
-	authService *service.AuthService
+type AuthenticationController struct {
+	authenticationService *service.AuthenticationService
 }
 
-func NewAuthController(
+func NewAuthenticationController(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) *AuthController {
-	return &AuthController{
-		authService: service.NewAuthService(trailDbSvc),
+) *AuthenticationController {
+	return &AuthenticationController{
+		authenticationService: service.NewAuthenticationService(
+			persistentDbSvc, trailDbSvc,
+		),
 	}
 }
 
-func (controller *AuthController) Login() *cobra.Command {
+func (controller *AuthenticationController) Login() *cobra.Command {
 	var usernameStr, passwordStr, ipAddressStr string
 
 	cmd := &cobra.Command{
@@ -27,13 +30,13 @@ func (controller *AuthController) Login() *cobra.Command {
 		Short: "Login",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"username":  usernameStr,
-				"password":  passwordStr,
-				"ipAddress": ipAddressStr,
+				"username":          usernameStr,
+				"password":          passwordStr,
+				"operatorIpAddress": ipAddressStr,
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.authService.GenerateJwtWithCredentials(requestBody),
+				controller.authenticationService.Login(requestBody),
 			)
 		},
 	}

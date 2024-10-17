@@ -13,7 +13,7 @@ func ReadVirtualHosts(
 ) ([]entity.VirtualHost, error) {
 	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		slog.Error("ReadVirtualHostsError", slog.Any("err", err))
+		slog.Error("ReadVirtualHostsError", slog.Any("error", err))
 		return vhosts, errors.New("ReadVirtualHostsInfraError")
 	}
 

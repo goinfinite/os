@@ -531,7 +531,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 		if err != nil {
 			slog.Error(
 				"ReadMarketplaceCatalogItemError",
-				slog.String("fileName", itemFileName), slog.Any("err", err),
+				slog.String("fileName", itemFileName), slog.Any("error", err),
 			)
 			continue
 		}
@@ -563,7 +563,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 			slog.Error(
 				"GenerateNewMarketplaceItemIdError",
 				slog.String("itemName", catalogItem.Name.String()),
-				slog.Any("err", err),
+				slog.Any("error", err),
 			)
 			continue
 		}
@@ -637,7 +637,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
 		entity, err := installedItemModel.ToEntity()
 		if err != nil {
 			slog.Error(
-				"MarketplaceInstalledItemModelToEntityError", slog.Any("err", err),
+				"MarketplaceInstalledItemModelToEntityError", slog.Any("error", err),
 			)
 			continue
 		}

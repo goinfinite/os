@@ -7,7 +7,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
-type AccountId uint
+type AccountId uint64
 
 func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	uintValue, err := voHelper.InterfaceToUint(value)
@@ -18,8 +18,8 @@ func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	return AccountId(uintValue), nil
 }
 
-func (vo AccountId) Uint() uint {
-	return uint(vo)
+func (vo AccountId) Uint64() uint64 {
+	return uint64(vo)
 }
 
 func (vo AccountId) String() string {

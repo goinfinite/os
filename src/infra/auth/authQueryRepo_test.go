@@ -1,56 +1,54 @@
 package authInfra
 
 import (
-	"encoding/base64"
 	"os"
 	"testing"
+	"time"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
 )
 
 func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-
 	authQueryRepo := AuthQueryRepo{}
-	authCmdRepo := AuthCmdRepo{}
-
-	accountId, _ := valueObject.NewAccountId(1000)
-	expiresIn := valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn)
+	accountCmdRepo := accountInfra.NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
 	localIpAddress := valueObject.NewLocalhostIpAddress()
-	token, err := authCmdRepo.GenerateSessionToken(
-		accountId, expiresIn, localIpAddress,
-	)
-	if err != nil {
-		t.Errorf("UnexpectedError: %s", err.Error())
-	}
-
-	username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 
 	t.Run("ValidLoginCredentials", func(t *testing.T) {
+		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 		password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
-		login := dto.NewLogin(username, password, localIpAddress)
 
-		isValid := authQueryRepo.IsLoginValid(login)
+		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)
+		isValid := authQueryRepo.IsLoginValid(createDto)
 		if !isValid {
-			t.Error("Expected valid login credentials, but got invalid")
+			t.Fatal("LoginCredentialsInvalid")
 		}
 	})
 
 	t.Run("InvalidLoginCredentials", func(t *testing.T) {
+		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 		password, _ := valueObject.NewPassword("wrongPassword")
-		login := dto.NewLogin(username, password, localIpAddress)
 
-		isValid := authQueryRepo.IsLoginValid(login)
+		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)
+		isValid := authQueryRepo.IsLoginValid(createDto)
 		if isValid {
 			t.Error("Expected invalid login credentials, but got valid")
 		}
 	})
 
 	t.Run("ValidSessionAccessToken", func(t *testing.T) {
-		_, err = authQueryRepo.ReadAccessTokenDetails(token.TokenStr)
+		authCmdRepo := AuthCmdRepo{}
+
+		token, _ := authCmdRepo.CreateSessionToken(
+			valueObject.AccountId(1000),
+			valueObject.NewUnixTimeAfterNow(3*time.Hour),
+			valueObject.NewLocalhostIpAddress(),
+		)
+
+		_, err := authQueryRepo.ReadAccessTokenDetails(token.TokenStr)
 		if err != nil {
 			t.Error(err)
 		}
@@ -66,25 +64,16 @@ func TestAuthQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("DecryptValidApiKey", func(t *testing.T) {
-		tokenBytes := []byte(token.TokenStr.String())
-		apiKeyStr := base64.StdEncoding.EncodeToString(tokenBytes)
-		apiKey, _ := valueObject.NewAccessTokenStr(apiKeyStr)
-
-		_, err := authQueryRepo.decryptApiKey(apiKey)
+	t.Run("ValidAccountApiKey", func(t *testing.T) {
+		accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+		apiKey, err := accountCmdRepo.UpdateApiKey(accountId)
 		if err != nil {
-			t.Errorf(
-				"Unexpected '%s' error for '%s'",
-				err.Error(),
-				apiKeyStr,
-			)
+			t.Error(err)
 		}
-	})
 
-	t.Run("DecryptInvalidApiKey", func(t *testing.T) {
-		_, err := authQueryRepo.decryptApiKey(token.TokenStr)
-		if err == nil {
-			t.Errorf("Expecting error for '%s'", token.TokenStr.String())
+		_, err = authQueryRepo.ReadAccessTokenDetails(apiKey)
+		if err != nil {
+			t.Error(err)
 		}
 	})
 }

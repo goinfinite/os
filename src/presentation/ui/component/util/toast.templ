@@ -6,7 +6,7 @@ script ToastGlobalState() {
 			toastVisible: false,
 			toastMessage: '',
 			toastType: 'danger',
-			
+
 			displayToast(message, type) {
 				this.toastVisible = true;
 				this.toastMessage = message;
@@ -22,18 +22,25 @@ script ToastGlobalState() {
 	});
 
 	document.addEventListener('htmx:afterRequest', (event) => {
-		const contentType = event.detail.xhr.getResponseHeader("Content-Type");
+		const httpResponseObject = event.detail.xhr;
+
+		const shouldIgnoreToast = httpResponseObject.getResponseHeader("X-Ignore-Toast");
+		if (shouldIgnoreToast === 'true') {
+			return;
+		}
+
+		const contentType = httpResponseObject.getResponseHeader("Content-Type");
 		if (contentType !== 'application/json') {
 			return;
 		}
 
-	  const responseData = event.detail.xhr.responseText;
+	  	const responseData = httpResponseObject.responseText;
 		if (responseData === '') {
 			return;
 		}
 
 		let toastType = 'success';
-		const isResponseError = event.detail.xhr.status >= 400;
+		const isResponseError = httpResponseObject.status >= 400;
 		if (isResponseError) {
 			toastType = 'danger';
 		}

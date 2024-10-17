@@ -11,22 +11,23 @@ import (
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
-type AuthService struct {
-	trailDbSvc *internalDbInfra.TrailDatabaseService
+type AuthenticationService struct {
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
-func NewAuthService(
+func NewAuthenticationService(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) *AuthService {
-	return &AuthService{
-		trailDbSvc: trailDbSvc,
+) *AuthenticationService {
+	return &AuthenticationService{
+		persistentDbSvc: persistentDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
 }
 
-func (service *AuthService) GenerateJwtWithCredentials(
-	input map[string]interface{},
-) ServiceOutput {
-	requiredParams := []string{"username", "password", "ipAddress"}
+func (service *AuthenticationService) Login(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"username", "password"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
@@ -42,16 +43,16 @@ func (service *AuthService) GenerateJwtWithCredentials(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	ipAddress, err := valueObject.NewIpAddress(input["ipAddress"])
+	operatorIpAddress, err := valueObject.NewIpAddress(input["operatorIpAddress"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dto := dto.NewLogin(username, password, ipAddress)
+	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
 
-	authQueryRepo := authInfra.AuthQueryRepo{}
+	authQueryRepo := authInfra.NewAuthQueryRepo(service.persistentDbSvc)
 	authCmdRepo := authInfra.AuthCmdRepo{}
-	accQueryRepo := accountInfra.AccQueryRepo{}
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(service.persistentDbSvc)
 	activityRecordQueryRepo := activityRecordInfra.NewActivityRecordQueryRepo(
 		service.trailDbSvc,
 	)
@@ -59,8 +60,8 @@ func (service *AuthService) GenerateJwtWithCredentials(
 		service.trailDbSvc,
 	)
 
-	accessToken, err := useCase.GetSessionToken(
-		authQueryRepo, authCmdRepo, accQueryRepo, activityRecordQueryRepo,
+	accessToken, err := useCase.CreateSessionToken(
+		authQueryRepo, authCmdRepo, accountQueryRepo, activityRecordQueryRepo,
 		activityRecordCmdRepo, dto,
 	)
 	if err != nil {
