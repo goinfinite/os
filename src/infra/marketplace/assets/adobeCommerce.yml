@@ -1,9 +1,9 @@
 slugs:
-  - adobe-commerce
   - adobeCommerce
+  - adobe-commerce
   - magento2
   - mage2
-name: AdobeCommerce
+name: Adobe Commerce
 type: app
 description: Adobe Commerce is a commerce platform that lets you create uniquely personalized B2B and B2C experiences, no matter how many brands you have. At least 2GB of RAM is required to run Adobe Commerce.
 services:
