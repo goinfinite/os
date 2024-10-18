@@ -1,0 +1,52 @@
+package componentStructural
+
+script CollapsibleTextLocalState(
+	id, originalTextContent string,
+	maxCharsToDisplay int,
+) {
+	const localStateData = {
+		isTextContentBiggerThanAllowed: originalTextContent.length > maxCharsToDisplay,
+		shouldDisplayPartialContent: true,
+		get truncatedTextContent() {
+			let truncatedTextContent = originalTextContent;
+			if (this.shouldDisplayPartialContent && this.isTextContentBiggerThanAllowed) {
+				truncatedTextContent = originalTextContent.substring(0, maxCharsToDisplay) + '...';
+			}
+			return truncatedTextContent;
+		},
+		toggleTextContentDisplay() {
+			this.shouldDisplayPartialContent = !this.shouldDisplayPartialContent;
+		},
+	};
+
+	const alpineAlreadyInitialized = window.Alpine !== undefined;
+	if (alpineAlreadyInitialized) {
+		Alpine.data(id + 'CollapsibleText', () => localStateData);
+		return;
+	}
+
+	document.addEventListener('alpine:init', () => {
+		Alpine.data(id + 'CollapsibleText', () => (localStateData));
+	});
+}
+
+templ CollapsibleText(
+	id, textContent, textSize string,
+	maxCharsToDisplay int,
+) {
+	<!-- CollapsibleText JavaScript -->
+	@CollapsibleTextLocalState(id, textContent, maxCharsToDisplay)
+	<!-- CollapsibleText HTML -->
+	<div
+		class={ "items-center text-justify text-" + textSize }
+		x-data={ id + "CollapsibleText" }
+	>
+		<span x-text="truncatedTextContent"></span>
+		<span
+			x-show="isTextContentBiggerThanAllowed"
+			class="text-infinite-500 hover:text-infinite-200 cursor-pointer"
+			@click="toggleTextContentDisplay()"
+			x-text="shouldDisplayPartialContent ? 'See more' : 'See less'"
+		></span>
+	</div>
+}
