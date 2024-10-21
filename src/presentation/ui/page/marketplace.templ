@@ -11,6 +11,15 @@ import (
 script MarketplaceIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
+			// Primary States
+			installedMarketplaceItem: {},
+			resetPrimaryStates() {
+				this.installedMarketplaceItem = {
+					id: '',
+					name: '',
+				};
+			},
+
 			// Auxiliary States
 			selectedMarketplaceCatalogVerticalTab: 'apps',
 			updateSelectedMarketplaceCatalogVerticalTab(tabName) {
@@ -27,7 +36,28 @@ script MarketplaceIndexLocalState() {
 						swap: 'outerHTML transition:true'
 					},
 				);
-			}
+			},
+
+			// Modal States
+			isUninstallMarketplaceItemModalOpen: false,
+			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
+				this.resetPrimaryStates();
+
+				this.installedMarketplaceItem.id = installedItemId;
+				this.installedMarketplaceItem.name = installedItemName;
+				this.isUninstallMarketplaceItemModalOpen = true;
+			},
+			closeUninstallMarketplaceItemModal() {
+				this.isUninstallMarketplaceItemModalOpen = false;
+			},
+			uninstallMarketplaceItem() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/marketplace/installed/' + this.installedMarketplaceItem.id + '/',
+					{swap: 'none'},
+				);
+				this.closeUninstallMarketplaceItemModal();
+			},
 		}));
 	});
 }
@@ -44,6 +74,12 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 		</div>
 		<div id="marketplace-page-content">
 			@MarketplaceTabs(marketplaceOverview)
+			@componentStructural.DeleteModal(
+				"isUninstallMarketplaceItemModalOpen",
+				"closeUninstallMarketplaceItemModal()",
+				"uninstallMarketplaceItem()",
+				"installedMarketplaceItem.name", "installedMarketplaceItem.id",
+			)
 		</div>
 	</div>
 }
@@ -101,7 +137,7 @@ templ MarketplaceInstalledItemsTable(
 						<div class="inline-flex">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
-								"console.log('uninstall "+installedItem.Name.String()+" item')",
+								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
 								"Uninstall", "red-500",
 							)
 						</div>
