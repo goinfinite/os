@@ -85,7 +85,7 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 }
 
 func readMarketplaceTabHeaderItems(
-	listType presenterValueObject.MarketplaceListType,
+	selectedListType presenterValueObject.MarketplaceListType,
 ) []componentStructural.HorizontalTabHeaderItem {
 	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
 		{Label: "Installed", ComponentValue: "installed"},
@@ -93,7 +93,7 @@ func readMarketplaceTabHeaderItems(
 	}
 
 	for itemIndex := range tabHeaderItems {
-		if listType.String() != tabHeaderItems[itemIndex].ComponentValue {
+		if selectedListType.String() != tabHeaderItems[itemIndex].ComponentValue {
 			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
 			continue
 		}
@@ -148,37 +148,80 @@ templ MarketplaceInstalledItemsTable(
 	</table>
 }
 
+type MarketplaceCatalogItemsGroupedByType struct {
+	AppMarketplaceCatalogItems       []entity.MarketplaceCatalogItem
+	FrameworkMarketplaceCatalogItems []entity.MarketplaceCatalogItem
+	StackMarketplaceCatalogItems     []entity.MarketplaceCatalogItem
+}
+
+templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalogItem) {
+	<div class="grid grid-cols-2 gap-x-24 gap-y-8">
+		for _, item := range catalogItems {
+			<div class="bg-os-800 border-os-400 space-y-2 rounded-md border border-4 p-4">
+				<div class="inline-flex items-center">
+					<img class="mr-3 h-10 w-10" src={ item.AvatarUrl.String() }/>
+					<h1>{ item.Name.String() }</h1>
+				</div>
+				@componentStructural.CollapsibleText(
+					item.Slugs[0].String(),
+					item.Description.String(), "sm", 180,
+				)
+				<div class="bg-os-500 p-10">Carrossel here!</div>
+				@componentForm.SubmitButton(
+					"install-"+item.Slugs[0].String()+"-marketplace-item",
+					"Install", "ph-arrow-line-down",
+					"console.log('"+item.Name.String()+"')", false,
+				)
+			</div>
+		}
+	</div>
+}
+
 templ MarketplaceCatalogItemsTab(
-	catalogItemsList []entity.MarketplaceCatalogItem,
+	appMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
+	frameworkMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
+	stackMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
 ) {
 	<div class="flex justify-stretch">
 		@componentStructural.VerticalTabHeader(
 			[]componentStructural.VerticalTabHeaderItem{
 				{Label: "Apps", ComponentValue: "apps"},
-				{Label: "Stack", ComponentValue: "stack"},
-				{Label: "Framework", ComponentValue: "framework"},
+				{Label: "Frameworks", ComponentValue: "frameworks"},
+				{Label: "Stacks", ComponentValue: "stacks"},
 			}, "updateSelectedMarketplaceCatalogVerticalTab",
 		)
-		<div class="ml-4 grid grid-cols-2 gap-x-24 gap-y-8">
-			for _, catalogItem := range catalogItemsList {
-				<div class="bg-os-800 border-os-400 space-y-2 rounded-md border border-4 p-4">
-					<div class="inline-flex items-center">
-						<img class="mr-3 h-10 w-10" src={ catalogItem.AvatarUrl.String() }/>
-						<h1>{ catalogItem.Name.String() }</h1>
-					</div>
-					@componentStructural.CollapsibleText(
-						catalogItem.Slugs[0].String(), catalogItem.Description.String(),
-						"sm", 180,
-					)
-					<div class="bg-os-500 p-10">Carrossel here!</div>
-					@componentForm.SubmitButton(
-						"install-"+catalogItem.Slugs[0].String()+"-marketplace-item",
-						"Install", "ph-arrow-line-down", "console.log('"+catalogItem.Name.String()+"')", false,
-					)
-				</div>
-			}
+		<div class="ml-4">
+			<div x-show="selectedMarketplaceCatalogVerticalTab == 'apps'">
+				@MarketplaceCatalogItemsTabContent(appMarketplaceCatalogItems)
+			</div>
+			<div x-show="selectedMarketplaceCatalogVerticalTab == 'frameworks'">
+				@MarketplaceCatalogItemsTabContent(frameworkMarketplaceCatalogItems)
+			</div>
+			<div x-show="selectedMarketplaceCatalogVerticalTab == 'stacks'">
+				@MarketplaceCatalogItemsTabContent(stackMarketplaceCatalogItems)
+			</div>
 		</div>
 	</div>
+}
+
+func splitMarketplaceCatalogItemsIntoGroupsByType(catalogItemsList []entity.MarketplaceCatalogItem) (
+	[]entity.MarketplaceCatalogItem, []entity.MarketplaceCatalogItem, []entity.MarketplaceCatalogItem,
+) {
+	appCatalogItems := []entity.MarketplaceCatalogItem{}
+	frameworkCatalogItems := []entity.MarketplaceCatalogItem{}
+	stackCatalogItems := []entity.MarketplaceCatalogItem{}
+	for _, item := range catalogItemsList {
+		switch item.Type.String() {
+		case "app":
+			appCatalogItems = append(appCatalogItems, item)
+		case "framework":
+			frameworkCatalogItems = append(frameworkCatalogItems, item)
+		case "stack":
+			stackCatalogItems = append(stackCatalogItems, item)
+		}
+	}
+
+	return appCatalogItems, frameworkCatalogItems, stackCatalogItems
 }
 
 templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
@@ -191,7 +234,9 @@ templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 			if marketplaceOverview.ListType.String() == "installed" {
 				@MarketplaceInstalledItemsTable(marketplaceOverview.InstalledItemsList)
 			} else {
-				@MarketplaceCatalogItemsTab(marketplaceOverview.CatalogItemsList)
+				@MarketplaceCatalogItemsTab(
+					splitMarketplaceCatalogItemsIntoGroupsByType(marketplaceOverview.CatalogItemsList),
+				)
 			}
 		</div>
 	</div>
