@@ -2,6 +2,7 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
@@ -41,15 +42,7 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 				"ph-storefront",
 			)
 		</div>
-		<div
-			id="marketplace-page-content"
-			hx-get="/marketplace/"
-			hx-trigger="submit from:form delay:500ms"
-			hx-select="this"
-			hx-target="this"
-			hx-swap="outerHTML transition:true"
-			class="card w-full"
-		>
+		<div id="marketplace-page-content">
 			@MarketplaceTabs(marketplaceOverview)
 		</div>
 	</div>
@@ -130,6 +123,25 @@ templ MarketplaceCatalogItemsTab(
 				{Label: "Framework", ComponentValue: "framework"},
 			}, "updateSelectedMarketplaceCatalogVerticalTab",
 		)
+		<div class="ml-4 grid grid-cols-2 gap-x-24 gap-y-8">
+			for _, catalogItem := range catalogItemsList {
+				<div class="bg-os-800 border-os-400 space-y-2 rounded-md border border-4 p-4">
+					<div class="inline-flex items-center">
+						<img class="mr-3 h-10 w-10" src={ catalogItem.AvatarUrl.String() }/>
+						<h1>{ catalogItem.Name.String() }</h1>
+					</div>
+					@componentStructural.CollapsibleText(
+						catalogItem.Slugs[0].String(), catalogItem.Description.String(),
+						"sm", 180,
+					)
+					<div class="bg-os-500 p-10">Carrossel here!</div>
+					@componentForm.SubmitButton(
+						"install-"+catalogItem.Slugs[0].String()+"-marketplace-item",
+						"Install", "ph-arrow-line-down", "console.log('"+catalogItem.Name.String()+"')", false,
+					)
+				</div>
+			}
+		</div>
 	</div>
 }
 
