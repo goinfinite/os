@@ -13,10 +13,20 @@ script MarketplaceIndexLocalState() {
 		Alpine.data('marketplace', () => ({
 			// Primary States
 			installedMarketplaceItem: {},
+			catalogMarketplaceItem: {},
+			get hostnameWithTrailingSlash() {
+				return this.catalogMarketplaceItem.hostname + "/"
+			},
 			resetPrimaryStates() {
 				this.installedMarketplaceItem = {
 					id: '',
 					name: '',
+				};
+				this.catalogMarketplaceItem = {
+					id: '',
+					name: '',
+					hostname: '',
+					urlPath: '',
 				};
 			},
 
@@ -39,6 +49,17 @@ script MarketplaceIndexLocalState() {
 			},
 
 			// Modal States
+			isScheduleMarketplaceItemInstallationModalOpen: false,
+			openScheduleMarketplaceItemInstallationModal(catalogItemId, catalogItemName) {
+				this.resetPrimaryStates();
+
+				this.catalogMarketplaceItem.id = catalogItemId;
+				this.catalogMarketplaceItem.name = catalogItemName;
+				this.isScheduleMarketplaceItemInstallationModalOpen = true;
+			},
+			closeScheduleMarketplaceItemInstallationModal() {
+				this.isScheduleMarketplaceItemInstallationModalOpen = false;
+			},
 			isUninstallMarketplaceItemModalOpen: false,
 			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
 				this.resetPrimaryStates();
@@ -80,6 +101,7 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 				"uninstallMarketplaceItem()",
 				"installedMarketplaceItem.name", "installedMarketplaceItem.id",
 			)
+			@ScheduleMarketplaceItemInstallationModal(marketplaceOverview.VirtualHostsHostnames)
 		</div>
 	</div>
 }
@@ -170,7 +192,8 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 				@componentForm.SubmitButton(
 					"install-"+item.Slugs[0].String()+"-marketplace-item",
 					"Install", "ph-arrow-line-down",
-					"console.log('"+item.Name.String()+"')", false,
+					"openScheduleMarketplaceItemInstallationModal("+item.Id.String()+", '"+item.Name.String()+"')",
+					false,
 				)
 			</div>
 		}
@@ -240,4 +263,47 @@ templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 			}
 		</div>
 	</div>
+}
+
+templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
+	<form
+		id="schedule-marketplace-item-installation-form"
+		hx-post="/api/v1/marketplace/catalog/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<input type="hidden" name="id" :value="catalogMarketplaceItem.id"/>
+		<div class="my-6 space-y-2">
+			<div class="w-100% inline-flex space-x-2">
+				<div class="w-60%">
+					@componentForm.SelectInput(
+						"hostname", "Hostname", "catalogMarketplaceItem.hostname",
+						"", vhostsHostnames, true,
+					)
+				</div>
+				<div class="w-40%">
+					@componentForm.InputFieldWithPrefix(
+						"text", "urlPath", "Path", "catalogMarketplaceItem.urlPath",
+						"hostnameWithTrailingSlash", false,
+					)
+				</div>
+			</div>
+			@componentStructural.CollapsibleSection("Install parameters", "ph-brackets-curly") {
+				<div class="bg-os-800 p-15 w-full">Install parameters here!</div>
+			}
+		</div>
+		@componentForm.SubmitButton(
+			"install-marketplace-item-button", "Schedule installation",
+			"ph-queue", "closeScheduleMarketplaceItemInstallationModal()", false,
+		)
+	</form>
+}
+
+templ ScheduleMarketplaceItemInstallationModal(vhostsHostnames []string) {
+	@componentStructural.Modal(
+		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
+		"closeScheduleMarketplaceItemInstallationModal()", "catalogMarketplaceItem.name",
+	) {
+		@ScheduleMarketplaceItemInstallationForm(vhostsHostnames)
+	}
 }
