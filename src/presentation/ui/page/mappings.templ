@@ -298,7 +298,7 @@ templ CreateMappingForm(vhostsHostnames []string) {
 					vhostsHostnames, true,
 				)
 			</template>
-			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash", false)
+			@componentForm.InputFieldWithPrefix("text", "path", "Source URL", "mapping.path", "vhostHostnameWithTrailingSlash")
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
