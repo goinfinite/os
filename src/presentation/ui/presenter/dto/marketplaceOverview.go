@@ -6,19 +6,22 @@ import (
 )
 
 type MarketplaceOverview struct {
-	ListType           presenterValueObject.MarketplaceListType
-	InstalledItemsList []entity.MarketplaceInstalledItem
-	CatalogItemsList   []entity.MarketplaceCatalogItem
+	VirtualHostsHostnames []string
+	ListType              presenterValueObject.MarketplaceListType
+	InstalledItemsList    []entity.MarketplaceInstalledItem
+	CatalogItemsList      []entity.MarketplaceCatalogItem
 }
 
 func NewMarketplaceOverview(
+	virtualHostsHostnames []string,
 	listType presenterValueObject.MarketplaceListType,
 	installedItemsList []entity.MarketplaceInstalledItem,
 	catalogItemsList []entity.MarketplaceCatalogItem,
 ) MarketplaceOverview {
 	return MarketplaceOverview{
-		ListType:           listType,
-		InstalledItemsList: installedItemsList,
-		CatalogItemsList:   catalogItemsList,
+		VirtualHostsHostnames: virtualHostsHostnames,
+		ListType:              listType,
+		InstalledItemsList:    installedItemsList,
+		CatalogItemsList:      catalogItemsList,
 	}
 }
