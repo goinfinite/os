@@ -282,10 +282,13 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 					)
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(
-						"text", "urlPath", "Path", "catalogMarketplaceItem.urlPath",
-						"hostnameWithTrailingSlash",
-					)
+					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+						Type:                "text",
+						Id:                  "urlPath",
+						Label:               "Path",
+						BindInputValuePath:  "catalogMarketplaceItem.urlPath",
+						BindPrefixValuePath: "hostnameWithTrailingSlash",
+					})
 				</div>
 			</div>
 			@componentStructural.CollapsibleSection("Install parameters", "ph-brackets-curly") {
