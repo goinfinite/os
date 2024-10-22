@@ -285,9 +285,10 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 						Type:                "text",
 						Id:                  "urlPath",
-						Label:               "Path",
+						Label:               "URL Path",
 						BindInputValuePath:  "catalogMarketplaceItem.urlPath",
 						BindPrefixValuePath: "hostnameWithTrailingSlash",
+						InfoDescription:     "Path where the respective installed item will be available for access.",
 					})
 				</div>
 			</div>
