@@ -17,6 +17,7 @@ import (
 
 type MarketplacePresenter struct {
 	marketplaceService *service.MarketplaceService
+	virtualHostService *service.VirtualHostService
 }
 
 func NewMarketplacePresenter(
@@ -24,10 +25,32 @@ func NewMarketplacePresenter(
 ) *MarketplacePresenter {
 	return &MarketplacePresenter{
 		marketplaceService: service.NewMarketplaceService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }
 
-func (presenter *MarketplacePresenter) readMarketplaceOverviewByType(
+func (presenter *MarketplacePresenter) readVhostsHostnames() ([]string, error) {
+	vhostHostnames := []string{}
+
+	responseOutput := presenter.virtualHostService.Read()
+	if responseOutput.Status != service.Success {
+		return vhostHostnames, errors.New("FailedToReadVirtualHosts")
+	}
+
+	vhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
+	if !assertOk {
+		return vhostHostnames, errors.New("FailedToReadVirtualHosts")
+	}
+
+	for _, vhost := range vhosts {
+		vhostHostnames = append(vhostHostnames, vhost.Hostname.String())
+	}
+
+	return vhostHostnames, nil
+}
+
+func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
+	vhostsHostnames []string,
 	listType presenterValueObject.MarketplaceListType,
 ) (overview presenterDto.MarketplaceOverview, err error) {
 	var assertOk bool
@@ -59,7 +82,7 @@ func (presenter *MarketplacePresenter) readMarketplaceOverviewByType(
 	}
 
 	return presenterDto.NewMarketplaceOverview(
-		listType, installedItemsList, catalogItemsList,
+		vhostsHostnames, listType, installedItemsList, catalogItemsList,
 	), nil
 }
 
@@ -74,8 +97,17 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	marketplaceOverview, err := presenter.readMarketplaceOverviewByType(listType)
+	vhostsHostnames, err := presenter.readVhostsHostnames()
 	if err != nil {
+		slog.Error(err.Error())
+		return nil
+	}
+
+	marketplaceOverview, err := presenter.marketplaceOverviewFactory(
+		vhostsHostnames, listType,
+	)
+	if err != nil {
+		slog.Error(err.Error())
 		return nil
 	}
 
