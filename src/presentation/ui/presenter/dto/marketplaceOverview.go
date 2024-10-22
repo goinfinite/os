@@ -5,23 +5,26 @@ import (
 	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
 )
 
+type CatalogItemsGroupedByType struct {
+	Apps       []entity.MarketplaceCatalogItem
+	Frameworks []entity.MarketplaceCatalogItem
+	Stacks     []entity.MarketplaceCatalogItem
+}
+
 type MarketplaceOverview struct {
-	VirtualHostsHostnames []string
-	ListType              presenterValueObject.MarketplaceListType
-	InstalledItemsList    []entity.MarketplaceInstalledItem
-	CatalogItemsList      []entity.MarketplaceCatalogItem
+	ListType           presenterValueObject.MarketplaceListType
+	InstalledItemsList []entity.MarketplaceInstalledItem
+	CatalogItemsList   CatalogItemsGroupedByType
 }
 
 func NewMarketplaceOverview(
-	virtualHostsHostnames []string,
 	listType presenterValueObject.MarketplaceListType,
 	installedItemsList []entity.MarketplaceInstalledItem,
-	catalogItemsList []entity.MarketplaceCatalogItem,
+	catalogItemsList CatalogItemsGroupedByType,
 ) MarketplaceOverview {
 	return MarketplaceOverview{
-		VirtualHostsHostnames: virtualHostsHostnames,
-		ListType:              listType,
-		InstalledItemsList:    installedItemsList,
-		CatalogItemsList:      catalogItemsList,
+		ListType:           listType,
+		InstalledItemsList: installedItemsList,
+		CatalogItemsList:   catalogItemsList,
 	}
 }

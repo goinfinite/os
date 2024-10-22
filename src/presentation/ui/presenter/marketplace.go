@@ -49,8 +49,31 @@ func (presenter *MarketplacePresenter) readVhostsHostnames() ([]string, error) {
 	return vhostHostnames, nil
 }
 
+func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
+	catalogItemsList []entity.MarketplaceCatalogItem,
+) presenterDto.CatalogItemsGroupedByType {
+	appCatalogItems := []entity.MarketplaceCatalogItem{}
+	frameworkCatalogItems := []entity.MarketplaceCatalogItem{}
+	stackCatalogItems := []entity.MarketplaceCatalogItem{}
+	for _, item := range catalogItemsList {
+		switch item.Type.String() {
+		case "app":
+			appCatalogItems = append(appCatalogItems, item)
+		case "framework":
+			frameworkCatalogItems = append(frameworkCatalogItems, item)
+		case "stack":
+			stackCatalogItems = append(stackCatalogItems, item)
+		}
+	}
+
+	return presenterDto.CatalogItemsGroupedByType{
+		Apps:       appCatalogItems,
+		Frameworks: frameworkCatalogItems,
+		Stacks:     stackCatalogItems,
+	}
+}
+
 func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
-	vhostsHostnames []string,
 	listType presenterValueObject.MarketplaceListType,
 ) (overview presenterDto.MarketplaceOverview, err error) {
 	var assertOk bool
@@ -82,7 +105,8 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
 	}
 
 	return presenterDto.NewMarketplaceOverview(
-		vhostsHostnames, listType, installedItemsList, catalogItemsList,
+		listType, installedItemsList,
+		presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
 	), nil
 }
 
@@ -103,14 +127,12 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	marketplaceOverview, err := presenter.marketplaceOverviewFactory(
-		vhostsHostnames, listType,
-	)
+	marketplaceOverview, err := presenter.marketplaceOverviewFactory(listType)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil
 	}
 
-	pageContent := page.MarketplaceIndex(marketplaceOverview)
+	pageContent := page.MarketplaceIndex(vhostsHostnames, marketplaceOverview)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

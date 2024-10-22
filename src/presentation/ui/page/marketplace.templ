@@ -83,7 +83,10 @@ script MarketplaceIndexLocalState() {
 	});
 }
 
-templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
+templ MarketplaceIndex(
+	vhostsHostnames []string,
+	marketplaceOverview presenterDto.MarketplaceOverview,
+) {
 	@MarketplaceIndexLocalState()
 	<div class="flex flex-col" x-data="marketplace">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -101,7 +104,7 @@ templ MarketplaceIndex(marketplaceOverview presenterDto.MarketplaceOverview) {
 				"uninstallMarketplaceItem()",
 				"installedMarketplaceItem.name", "installedMarketplaceItem.id",
 			)
-			@ScheduleMarketplaceItemInstallationModal(marketplaceOverview.VirtualHostsHostnames)
+			@ScheduleMarketplaceItemInstallationModal(vhostsHostnames)
 		</div>
 	</div>
 }
@@ -170,12 +173,6 @@ templ MarketplaceInstalledItemsTable(
 	</table>
 }
 
-type MarketplaceCatalogItemsGroupedByType struct {
-	AppMarketplaceCatalogItems       []entity.MarketplaceCatalogItem
-	FrameworkMarketplaceCatalogItems []entity.MarketplaceCatalogItem
-	StackMarketplaceCatalogItems     []entity.MarketplaceCatalogItem
-}
-
 templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalogItem) {
 	<div class="grid grid-cols-2 gap-x-24 gap-y-8">
 		for _, item := range catalogItems {
@@ -201,9 +198,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 }
 
 templ MarketplaceCatalogItemsTab(
-	appMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
-	frameworkMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
-	stackMarketplaceCatalogItems []entity.MarketplaceCatalogItem,
+	catalogItemsGroupedByType presenterDto.CatalogItemsGroupedByType,
 ) {
 	<div class="flex justify-stretch">
 		@componentStructural.VerticalTabHeader(
@@ -215,36 +210,16 @@ templ MarketplaceCatalogItemsTab(
 		)
 		<div class="ml-4">
 			<div x-show="selectedMarketplaceCatalogVerticalTab == 'apps'">
-				@MarketplaceCatalogItemsTabContent(appMarketplaceCatalogItems)
+				@MarketplaceCatalogItemsTabContent(catalogItemsGroupedByType.Apps)
 			</div>
 			<div x-show="selectedMarketplaceCatalogVerticalTab == 'frameworks'">
-				@MarketplaceCatalogItemsTabContent(frameworkMarketplaceCatalogItems)
+				@MarketplaceCatalogItemsTabContent(catalogItemsGroupedByType.Frameworks)
 			</div>
 			<div x-show="selectedMarketplaceCatalogVerticalTab == 'stacks'">
-				@MarketplaceCatalogItemsTabContent(stackMarketplaceCatalogItems)
+				@MarketplaceCatalogItemsTabContent(catalogItemsGroupedByType.Stacks)
 			</div>
 		</div>
 	</div>
-}
-
-func splitMarketplaceCatalogItemsIntoGroupsByType(catalogItemsList []entity.MarketplaceCatalogItem) (
-	[]entity.MarketplaceCatalogItem, []entity.MarketplaceCatalogItem, []entity.MarketplaceCatalogItem,
-) {
-	appCatalogItems := []entity.MarketplaceCatalogItem{}
-	frameworkCatalogItems := []entity.MarketplaceCatalogItem{}
-	stackCatalogItems := []entity.MarketplaceCatalogItem{}
-	for _, item := range catalogItemsList {
-		switch item.Type.String() {
-		case "app":
-			appCatalogItems = append(appCatalogItems, item)
-		case "framework":
-			frameworkCatalogItems = append(frameworkCatalogItems, item)
-		case "stack":
-			stackCatalogItems = append(stackCatalogItems, item)
-		}
-	}
-
-	return appCatalogItems, frameworkCatalogItems, stackCatalogItems
 }
 
 templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
@@ -257,9 +232,7 @@ templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 			if marketplaceOverview.ListType.String() == "installed" {
 				@MarketplaceInstalledItemsTable(marketplaceOverview.InstalledItemsList)
 			} else {
-				@MarketplaceCatalogItemsTab(
-					splitMarketplaceCatalogItemsIntoGroupsByType(marketplaceOverview.CatalogItemsList),
-				)
+				@MarketplaceCatalogItemsTab(marketplaceOverview.CatalogItemsList)
 			}
 		</div>
 	</div>
