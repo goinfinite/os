@@ -22,7 +22,7 @@ mappings:
 dataFields:
   - name: locale
     label: Adobe Commerce Language
-    type: text
+    type: select
     defaultValue: en_US
     options:
       - en_US
@@ -34,7 +34,7 @@ dataFields:
       - fr_FR
   - name: timezone
     label: Adobe Commerce Timezone
-    type: text
+    type: select
     defaultValue: America/Los_Angeles
     options:
       - Africa/Abidjan
@@ -458,7 +458,7 @@ dataFields:
       - UTC
   - name: currency
     label: Adobe Commerce Currency
-    type: text
+    type: select
     defaultValue: USD
     options:
       - AFN
@@ -756,7 +756,7 @@ dataFields:
     isRequired: true
   - name: edition
     label: Adobe Commerce Edition
-    type: text
+    type: select
     defaultValue: community
     options:
       - community
