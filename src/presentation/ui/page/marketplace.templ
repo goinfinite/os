@@ -12,17 +12,12 @@ script MarketplaceIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
 			// Primary States
-			installedMarketplaceItem: {},
-			catalogMarketplaceItem: {},
+			marketplaceItem: {},
 			get hostnameWithTrailingSlash() {
-				return this.catalogMarketplaceItem.hostname + "/"
+				return this.marketplaceItem.hostname + "/"
 			},
 			resetPrimaryStates() {
-				this.installedMarketplaceItem = {
-					id: '',
-					name: '',
-				};
-				this.catalogMarketplaceItem = {
+				this.marketplaceItem = {
 					id: '',
 					name: '',
 					hostname: '',
@@ -53,8 +48,8 @@ script MarketplaceIndexLocalState() {
 			openScheduleMarketplaceItemInstallationModal(catalogItemId, catalogItemName) {
 				this.resetPrimaryStates();
 
-				this.catalogMarketplaceItem.id = catalogItemId;
-				this.catalogMarketplaceItem.name = catalogItemName;
+				this.marketplaceItem.id = catalogItemId;
+				this.marketplaceItem.name = catalogItemName;
 				this.isScheduleMarketplaceItemInstallationModalOpen = true;
 			},
 			closeScheduleMarketplaceItemInstallationModal() {
@@ -64,8 +59,8 @@ script MarketplaceIndexLocalState() {
 			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
 				this.resetPrimaryStates();
 
-				this.installedMarketplaceItem.id = installedItemId;
-				this.installedMarketplaceItem.name = installedItemName;
+				this.marketplaceItem.id = installedItemId;
+				this.marketplaceItem.name = installedItemName;
 				this.isUninstallMarketplaceItemModalOpen = true;
 			},
 			closeUninstallMarketplaceItemModal() {
@@ -74,7 +69,7 @@ script MarketplaceIndexLocalState() {
 			uninstallMarketplaceItem() {
 				htmx.ajax(
 					'DELETE',
-					'/api/v1/marketplace/installed/' + this.installedMarketplaceItem.id + '/',
+					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
 					{swap: 'none'},
 				);
 				this.closeUninstallMarketplaceItemModal();
@@ -102,7 +97,7 @@ templ MarketplaceIndex(
 				"isUninstallMarketplaceItemModalOpen",
 				"closeUninstallMarketplaceItemModal()",
 				"uninstallMarketplaceItem()",
-				"installedMarketplaceItem.name", "installedMarketplaceItem.id",
+				"marketplaceItem.name", "marketplaceItem.id",
 			)
 			@ScheduleMarketplaceItemInstallationModal(vhostsHostnames)
 		</div>
@@ -245,12 +240,12 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<input type="hidden" name="id" :value="catalogMarketplaceItem.id"/>
+		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<div class="my-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
 					@componentForm.SelectInput(
-						"hostname", "Hostname", "catalogMarketplaceItem.hostname",
+						"hostname", "Hostname", "marketplaceItem.hostname",
 						"", vhostsHostnames, true,
 					)
 				</div>
@@ -259,7 +254,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 						Type:                "text",
 						Id:                  "urlPath",
 						Label:               "URL Path",
-						BindInputValuePath:  "catalogMarketplaceItem.urlPath",
+						BindInputValuePath:  "marketplaceItem.urlPath",
 						BindPrefixValuePath: "hostnameWithTrailingSlash",
 						InfoDescription:     "Path where the respective installed item will be available for access.",
 					})
@@ -279,7 +274,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 templ ScheduleMarketplaceItemInstallationModal(vhostsHostnames []string) {
 	@componentStructural.Modal(
 		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
-		"closeScheduleMarketplaceItemInstallationModal()", "catalogMarketplaceItem.name",
+		"closeScheduleMarketplaceItemInstallationModal()", "marketplaceItem.name",
 	) {
 		@ScheduleMarketplaceItemInstallationForm(vhostsHostnames)
 	}
