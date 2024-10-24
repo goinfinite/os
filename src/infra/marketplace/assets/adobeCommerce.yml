@@ -746,12 +746,12 @@ dataFields:
       - ZWD
       - ZWR
       - ZWL
-  - name: adobeCommerceMarketplacePublicKey
-    label: Adobe Commerce Marketplace Public Key
+  - name: adobeCommercePublicKey
+    label: Adobe Commerce Public Key
     type: text
     isRequired: true
-  - name: adobeCommerceMarketplacePrivateKey
-    label: Adobe Commerce Marketplace Private Key
+  - name: adobeCommercePrivateKey
+    label: Adobe Commerce Private Key
     type: text
     isRequired: true
   - name: edition
