@@ -45,7 +45,7 @@ templ InputFieldClientSide(bindInputType, bindId, bindLabel, bindValuePath strin
 				x-model:value={ bindValuePath }
 			}
 			autocomplete="off"
-			placeholder={ bindLabel }
+			:placeholder={ bindLabel }
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		/>
 		if bindLabel != "" {
