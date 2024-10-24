@@ -33,6 +33,30 @@ templ InputField(
 	</div>
 }
 
+templ InputFieldClientSide(bindInputType, bindId, bindLabel, bindValuePath string) {
+	<!-- InputFieldClientSide -->
+	<div class="relative w-full">
+		<input
+			:type={ bindInputType }
+			if bindId != "" {
+				:name={ bindId }
+			}
+			if bindValuePath != "" {
+				x-model:value={ bindValuePath }
+			}
+			autocomplete="off"
+			placeholder={ bindLabel }
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		/>
+		if bindLabel != "" {
+			<label
+				x-text={ bindLabel }
+				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			></label>
+		}
+	</div>
+}
+
 type InputFieldWithPrefixDto struct {
 	Type                string
 	Id                  string
