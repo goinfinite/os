@@ -40,6 +40,49 @@ templ SelectInput(
 	</div>
 }
 
+type SelectInputClientSideDto struct {
+	BindId                   string
+	BindLabel                string
+	BindModelPath            string
+	OnSelect                 string
+	BindOptions              string
+	ShouldIncludeBlankOption bool
+}
+
+templ SelectInputClientSide(selectInputDto SelectInputClientSideDto) {
+	<!-- SelectInput -->
+	<div class="relative w-full">
+		<select
+			if selectInputDto.BindId != "" {
+				:name={ selectInputDto.BindId }
+			}
+			x-model={ selectInputDto.BindModelPath }
+			if selectInputDto.OnSelect != "" {
+				x-on:change={ selectInputDto.OnSelect }
+			}
+			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		>
+			if selectInputDto.ShouldIncludeBlankOption {
+				<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90" value="">--</option>
+			}
+			<template x-for={ "option in " + selectInputDto.BindOptions }>
+				<option
+					x-value="option"
+					x-text="option"
+					class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
+				></option>
+			</template>
+		</select>
+		if selectInputDto.BindLabel != "" {
+			<label
+				x-text={ selectInputDto.BindLabel }
+				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-55% to-transparent to-55% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			></label>
+		}
+		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
+	</div>
+}
+
 type SelectLabelValuePair struct {
 	Label string
 	Value string
