@@ -5,7 +5,6 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
-	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
 )
 
 script MarketplaceIndexLocalState() {
@@ -116,7 +115,7 @@ templ MarketplaceIndex(
 }
 
 func readMarketplaceTabHeaderItems(
-	selectedListType presenterValueObject.MarketplaceListType,
+	selectedListType string,
 ) []componentStructural.HorizontalTabHeaderItem {
 	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
 		{Label: "Installed", ComponentValue: "installed"},
@@ -124,7 +123,7 @@ func readMarketplaceTabHeaderItems(
 	}
 
 	for itemIndex := range tabHeaderItems {
-		if selectedListType.String() != tabHeaderItems[itemIndex].ComponentValue {
+		if selectedListType != tabHeaderItems[itemIndex].ComponentValue {
 			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
 			continue
 		}
@@ -206,7 +205,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 templ MarketplaceCatalogItemsTab(
 	catalogItemsGroupedByType presenterDto.CatalogItemsGroupedByType,
 ) {
-	<div class="flex justify-stretch">
+	<div class="flex justify-stretch gap-4">
 		@componentStructural.VerticalTabHeader(
 			[]componentStructural.VerticalTabHeaderItem{
 				{Label: "Apps", ComponentValue: "apps"},
@@ -214,7 +213,7 @@ templ MarketplaceCatalogItemsTab(
 				{Label: "Stacks", ComponentValue: "stacks"},
 			}, "updateSelectedMarketplaceCatalogVerticalTab",
 		)
-		<div class="ml-4">
+		<div>
 			<div x-show="selectedMarketplaceCatalogVerticalTab == 'apps'">
 				@MarketplaceCatalogItemsTabContent(catalogItemsGroupedByType.Apps)
 			</div>
@@ -235,7 +234,7 @@ templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 	)
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">
-			if marketplaceOverview.ListType.String() == "installed" {
+			if marketplaceOverview.ListType == "installed" {
 				@MarketplaceInstalledItemsTable(marketplaceOverview.InstalledItemsList)
 			} else {
 				@MarketplaceCatalogItemsTab(marketplaceOverview.CatalogItemsList)

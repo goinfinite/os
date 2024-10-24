@@ -11,7 +11,6 @@ import (
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
-	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -73,13 +72,13 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	}
 }
 
-func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
-	listType presenterValueObject.MarketplaceListType,
-) (overview presenterDto.MarketplaceOverview, err error) {
+func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType string) (
+	overview presenterDto.MarketplaceOverview, err error,
+) {
 	var assertOk bool
 
 	installedItemsList := []entity.MarketplaceInstalledItem{}
-	if listType.String() == "installed" {
+	if listType == "installed" {
 		responseOutput := presenter.marketplaceService.ReadInstalledItems()
 		if responseOutput.Status != service.Success {
 			return overview, errors.New("FailedToReadInstalledItems")
@@ -92,7 +91,7 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
-	if listType.String() == "catalog" {
+	if listType == "catalog" {
 		responseOutput := presenter.marketplaceService.ReadCatalog()
 		if responseOutput.Status != service.Success {
 			return overview, errors.New("FailedToReadCatalogItems")
@@ -111,14 +110,13 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(
 }
 
 func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
-	rawListType := "installed"
+	listType := "installed"
 	if c.QueryParam("listType") != "" {
-		rawListType = c.QueryParam("listType")
-	}
-	listType, err := presenterValueObject.NewMarketplaceListType(rawListType)
-	if err != nil {
-		slog.Error(err.Error(), slog.Any("rawListType", rawListType))
-		return nil
+		listType = c.QueryParam("listType")
+		if listType != "installed" && listType != "catalog" {
+			slog.Error("InvalidMarketplaceListType", slog.Any("listType", listType))
+			return nil
+		}
 	}
 
 	vhostsHostnames, err := presenter.readVhostsHostnames()

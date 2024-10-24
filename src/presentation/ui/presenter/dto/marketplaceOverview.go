@@ -2,7 +2,6 @@ package presenterDto
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
-	presenterValueObject "github.com/goinfinite/os/src/presentation/ui/presenter/valueObject"
 )
 
 type CatalogItemsGroupedByType struct {
@@ -12,13 +11,13 @@ type CatalogItemsGroupedByType struct {
 }
 
 type MarketplaceOverview struct {
-	ListType           presenterValueObject.MarketplaceListType
+	ListType           string
 	InstalledItemsList []entity.MarketplaceInstalledItem
 	CatalogItemsList   CatalogItemsGroupedByType
 }
 
 func NewMarketplaceOverview(
-	listType presenterValueObject.MarketplaceListType,
+	listType string,
 	installedItemsList []entity.MarketplaceInstalledItem,
 	catalogItemsList CatalogItemsGroupedByType,
 ) MarketplaceOverview {
