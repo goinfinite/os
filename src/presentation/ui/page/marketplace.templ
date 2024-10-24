@@ -24,6 +24,9 @@ script MarketplaceIndexLocalState() {
 					urlPath: '',
 				};
 			},
+			init() {
+				this.resetPrimaryStates();
+			},
 
 			// Auxiliary States
 			selectedMarketplaceCatalogVerticalTab: 'apps',
@@ -72,6 +75,7 @@ script MarketplaceIndexLocalState() {
 					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
 					{swap: 'none'},
 				);
+				this.$dispatch('uninstall:marketplace-item');
 				this.closeUninstallMarketplaceItemModal();
 			},
 		}));
@@ -91,7 +95,14 @@ templ MarketplaceIndex(
 				"ph-storefront",
 			)
 		</div>
-		<div id="marketplace-page-content">
+		<div
+			id="marketplace-page-content"
+			hx-get="/marketplace/"
+			hx-trigger="uninstall:marketplace-item delay:500ms"
+			hx-select="#marketplace-page-content"
+			hx-target="#marketplace-page-content"
+			hx-swap="outerHTML transition:true"
+		>
 			@MarketplaceTabs(marketplaceOverview)
 			@componentStructural.DeleteModal(
 				"isUninstallMarketplaceItemModalOpen",
