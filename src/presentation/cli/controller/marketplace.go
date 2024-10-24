@@ -153,7 +153,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.DeleteInstalledItem(requestBody),
+				controller.marketplaceService.DeleteInstalledItem(requestBody, false),
 			)
 		},
 	}

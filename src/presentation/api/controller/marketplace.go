@@ -172,6 +172,6 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.DeleteInstalledItem(requestBody),
+		c, controller.marketplaceService.DeleteInstalledItem(requestBody, true),
 	)
 }
