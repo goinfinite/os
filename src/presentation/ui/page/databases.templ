@@ -282,7 +282,7 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 				getOnlyDatabasesNames(selectedDbOverview.Databases), true,
 			)
 			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
-			@componentForm.PasswordInput("password", "Password", "databaseUser.password", false)
+			@componentForm.PasswordInput("password", "Password", "databaseUser.password")
 			if selectedDbOverview.Type.String() == "mariadb" {
 				<section class="mb-6 w-full rounded-md">
 					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">

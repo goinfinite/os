@@ -188,7 +188,7 @@ templ CreateAccountForm() {
 	>
 		<div class="space-y-6 mb-6">
 			@componentForm.InputField("text", "username", "Username", "account.username", false)
-			@componentForm.PasswordInput("password", "Password", "account.password", false)
+			@componentForm.PasswordInput("password", "Password", "account.password")
 		</div>
 		@componentForm.SubmitButton(
 			"create-account-button", "Create", "ph-check-fat",
@@ -213,7 +213,7 @@ templ UpdatePasswordForm() {
 	>
 		<div class="mb-6">
 			<input type="hidden" name="id" x-bind:value="account.id"/>
-			@componentForm.PasswordInput("password", "Password", "account.password", false)
+			@componentForm.PasswordInput("password", "Password", "account.password")
 		</div>
 		@componentForm.SubmitButton(
 			"update-account-password-button", "Update", "ph-key",
