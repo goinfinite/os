@@ -343,7 +343,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 					})
 				</div>
 			</div>
-			@componentStructural.CollapsibleSection("Install parameters", "ph-brackets-curly") {
+			@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly") {
 				<template x-if="marketplaceItem.dataFields.length > 0">
 					<div class="grid grid-cols-2 gap-4">
 						<template x-for="dataField in marketplaceItem.dataFields">
