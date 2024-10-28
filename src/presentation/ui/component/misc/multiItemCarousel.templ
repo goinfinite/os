@@ -1,0 +1,102 @@
+package componentMisc
+
+import "strconv"
+
+script MultiItemCarouselLocalState(
+	id string,
+	displayAmount, nItems int,
+) {
+  document.addEventListener('alpine:init', () => {
+    Alpine.data(id + 'MultiItemCarousel', () => ({
+      firstVisibleItemIndex: 0,
+      lastVisibleItemIndex: 0,
+      visibleItemIndexesSet: new Set(),
+      updateVisibleItemIndexesSet() {
+        this.visibleItemIndexesSet.clear();
+        for (let i = this.firstVisibleItemIndex; i <= this.lastVisibleItemIndex; i++) {
+          this.visibleItemIndexesSet.add(i);
+        }
+      },
+      resetPrimaryState() {
+        this.firstVisibleItemIndex = 0;
+        if (displayAmount > nItems) {
+          displayAmount = nItems;
+        }
+        this.lastVisibleItemIndex = displayAmount - 1;
+        this.updateVisibleItemIndexesSet();
+      },
+      scroll(direction) {
+        switch (direction) {
+          case 'right':
+            if (this.lastVisibleItemIndex === nItems - 1) {
+              return;
+            }
+
+            this.firstVisibleItemIndex++;
+            this.lastVisibleItemIndex++;
+            break;
+          case 'left':
+            if (this.firstVisibleItemIndex === 0) {
+              return;
+            }
+
+            this.firstVisibleItemIndex--;
+            this.lastVisibleItemIndex--;
+            break;
+        }
+        this.updateVisibleItemIndexesSet();
+      },
+      init() {
+        this.resetPrimaryState();
+      }
+    }));
+  });
+}
+
+templ MultiItemCarouselBody(
+	id string,
+	carouselItems []templ.Component,
+	displayAmount int,
+) {
+	<!-- MultiItemCarousel JavaScript -->
+	@MultiItemCarouselLocalState(id, displayAmount, len(carouselItems))
+	<!-- MultiItemCarousel HTML -->
+	<div
+		class="flex-inline w-full items-center justify-center gap-4"
+		x-data={ id + "MultiItemCarousel" }
+	>
+		<i
+			class="ph-duotone ph-caret-circle-left hover:text-infinite-500 cursor-pointer text-2xl text-neutral-100 transition-all duration-500"
+			@click="scroll('left')"
+		></i>
+		<div
+			if len(carouselItems) > displayAmount {
+				class={ "grid grid-cols-" + strconv.Itoa(displayAmount) + " gap-3" }
+			} else {
+				class={ "grid grid-cols-" + strconv.Itoa(len(carouselItems)) + " gap-3" }
+			}
+		>
+			for itemIndex, carouselItem := range carouselItems {
+				<div :class={ "visibleItemIndexesSet.has(" + strconv.Itoa(itemIndex) + ") ? 'flex' : 'hidden'" }>
+					@carouselItem
+				</div>
+			}
+		</div>
+		<i
+			class="ph-duotone ph-caret-circle-right hover:text-infinite-500 cursor-pointer text-2xl text-neutral-100 transition-all duration-500"
+			@click="scroll('right')"
+		></i>
+	</div>
+}
+
+templ MultiItemCarousel(
+	id string,
+	carouselItems []templ.Component,
+	displayAmount int,
+) {
+	if len(carouselItems) > 0 {
+		@MultiItemCarouselBody(id, carouselItems, displayAmount)
+	} else {
+		<div class="m-auto text-center text-xs">No items found.</div>
+	}
+}
