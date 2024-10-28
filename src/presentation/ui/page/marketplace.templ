@@ -2,7 +2,9 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 )
@@ -175,6 +177,30 @@ templ MarketplaceInstalledItemsTable(
 	</table>
 }
 
+templ MarketplaceCatalogItemCarouselImage(
+	itemName valueObject.MarketplaceItemName,
+	screenshotUrl valueObject.Url,
+) {
+	<img
+		src={ screenshotUrl.String() }
+		alt={ itemName.String() + " Avatar" }
+		class="max-h-30 m-auto rounded-md"
+	/>
+}
+
+func transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
+	itemName valueObject.MarketplaceItemName,
+	screenshotUrls []valueObject.Url,
+) []templ.Component {
+	carouselImages := []templ.Component{}
+	for _, screenshotUrl := range screenshotUrls {
+		carouselImage := MarketplaceCatalogItemCarouselImage(itemName, screenshotUrl)
+		carouselImages = append(carouselImages, carouselImage)
+	}
+
+	return carouselImages
+}
+
 templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalogItem) {
 	<div class="grid grid-cols-2 gap-x-24 gap-y-8">
 		for _, item := range catalogItems {
@@ -190,7 +216,20 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 					item.Slugs[0].String(),
 					item.Description.String(), "sm", 180,
 				)
-				<div class="bg-os-500 p-10">Carrossel here!</div>
+				<div class="bg-os-500">
+					if len(item.ScreenshotUrls) == 0 {
+						<div class="p-5 text-center text-sm italic text-slate-500">This marketplace item has no screenshots.</div>
+					} else {
+						<div class="py-2">
+							@componentMisc.MultiItemCarousel(
+								item.Slugs[0].String()+"ImagesCarousel",
+								transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
+									item.Name, item.ScreenshotUrls,
+								), 2,
+							)
+						</div>
+					}
+				</div>
 				@componentForm.SubmitButton(
 					"install-"+item.Slugs[0].String()+"-marketplace-item",
 					"Install", "ph-arrow-line-down",
