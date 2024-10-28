@@ -25,5 +25,25 @@ document.addEventListener("alpine:init", () => {
       });
   }
 
-  window.jsonAjax = jsonAjax;
+  function createRandomPassword() {
+		const passwordLength = 16;
+		const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+
+		let passwordContent = '';
+		let passwordIterationCount = 0;
+		while (passwordIterationCount < passwordLength) {
+			const randomIndex = Math.floor(Math.random() * chars.length);
+			const indexAfterRandomIndex = randomIndex + 1;
+			passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
+
+			passwordIterationCount++;
+		}
+
+		return passwordContent;
+	}
+
+	window.Infinite = {
+		JsonAjax: jsonAjax,
+		CreateRandomPassword: createRandomPassword
+	}
 });
