@@ -33,14 +33,11 @@ templ InputField(
 	</div>
 }
 
-templ InputFieldClientSide(bindInputType, bindId, bindLabel, bindValuePath string) {
+templ InputFieldClientSide(bindInputType, bindLabel, bindValuePath string) {
 	<!-- InputFieldClientSide -->
 	<div class="relative w-full">
 		<input
 			:type={ bindInputType }
-			if bindId != "" {
-				:name={ bindId }
-			}
 			if bindValuePath != "" {
 				x-model:value={ bindValuePath }
 			}

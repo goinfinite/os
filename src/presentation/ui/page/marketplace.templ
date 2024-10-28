@@ -281,20 +281,19 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 							<div>
 								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
 									@componentForm.InputFieldClientSide(
-										"dataField.type", "", "dataField.label", "dataField.value",
+										"dataField.type", "dataField.label", "dataField.value",
 									)
 								</template>
 								<template x-if="dataField.type === 'password'">
 									@componentForm.PasswordInputClientSide(
-										"", "dataField.label", "dataField.value",
+										"dataField.label", "dataField.value",
 									)
 								</template>
 								<template x-if="dataField.type === 'select'">
 									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-										BindLabel:                "dataField.label",
-										BindModelPath:            "dataField.value",
-										BindOptions:              "dataField.options",
-										ShouldIncludeBlankOption: true,
+										BindLabel:     "dataField.label",
+										BindModelPath: "dataField.value",
+										BindOptions:   "dataField.options",
 									})
 								</template>
 							</div>

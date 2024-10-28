@@ -41,30 +41,19 @@ templ SelectInput(
 }
 
 type SelectInputClientSideDto struct {
-	BindId                   string
-	BindLabel                string
-	BindModelPath            string
-	OnSelect                 string
-	BindOptions              string
-	ShouldIncludeBlankOption bool
+	BindLabel     string
+	BindModelPath string
+	BindOptions   string
 }
 
 templ SelectInputClientSide(selectInputDto SelectInputClientSideDto) {
 	<!-- SelectInput -->
 	<div class="relative w-full">
 		<select
-			if selectInputDto.BindId != "" {
-				:name={ selectInputDto.BindId }
-			}
 			x-model={ selectInputDto.BindModelPath }
-			if selectInputDto.OnSelect != "" {
-				x-on:change={ selectInputDto.OnSelect }
-			}
 			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
-			if selectInputDto.ShouldIncludeBlankOption {
-				<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90" value="">--</option>
-			}
+			<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90" value="">--</option>
 			<template x-for={ "option in " + selectInputDto.BindOptions }>
 				<option
 					x-value="option"
