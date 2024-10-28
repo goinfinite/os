@@ -216,20 +216,20 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 					item.Slugs[0].String(),
 					item.Description.String(), "sm", 180,
 				)
-				<div class="bg-os-500">
-					if len(item.ScreenshotUrls) == 0 {
-						<div class="p-5 text-center text-sm italic text-slate-500">This marketplace item has no screenshots.</div>
-					} else {
-						<div class="py-2">
-							@componentMisc.MultiItemCarousel(
-								item.Slugs[0].String()+"ImagesCarousel",
-								transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
-									item.Name, item.ScreenshotUrls,
-								), 2,
-							)
-						</div>
-					}
-				</div>
+				if len(item.ScreenshotUrls) == 0 {
+					<div class="bg-os-500 p-5 text-center text-sm italic text-slate-500">
+						This marketplace item has no screenshots.
+					</div>
+				} else {
+					<div class="py-4">
+						@componentMisc.MultiItemCarousel(
+							item.Slugs[0].String()+"ImagesCarousel",
+							transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
+								item.Name, item.ScreenshotUrls,
+							), 3,
+						)
+					</div>
+				}
 				@componentForm.SubmitButton(
 					"install-"+item.Slugs[0].String()+"-marketplace-item",
 					"Install", "ph-arrow-line-down",
@@ -315,7 +315,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 			</div>
 			@componentStructural.CollapsibleSection("Install parameters", "ph-brackets-curly") {
 				<template x-if="marketplaceItem.dataFields.length > 0">
-					<div class="grid grid-cols-3 gap-4">
+					<div class="grid grid-cols-2 gap-4">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
 								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
