@@ -6,51 +6,59 @@ script MultiItemCarouselLocalState(
 	id string,
 	displayAmount, nItems int,
 ) {
-  document.addEventListener('alpine:init', () => {
-    Alpine.data(id + 'MultiItemCarousel', () => ({
-      firstVisibleItemIndex: 0,
-      lastVisibleItemIndex: 0,
-      visibleItemIndexesSet: new Set(),
-      updateVisibleItemIndexesSet() {
-        this.visibleItemIndexesSet.clear();
-        for (let i = this.firstVisibleItemIndex; i <= this.lastVisibleItemIndex; i++) {
-          this.visibleItemIndexesSet.add(i);
-        }
-      },
-      resetPrimaryState() {
-        this.firstVisibleItemIndex = 0;
-        if (displayAmount > nItems) {
-          displayAmount = nItems;
-        }
-        this.lastVisibleItemIndex = displayAmount - 1;
-        this.updateVisibleItemIndexesSet();
-      },
-      scroll(direction) {
-        switch (direction) {
-          case 'right':
-            if (this.lastVisibleItemIndex === nItems - 1) {
-              return;
-            }
+	const localStateData = {
+		firstVisibleItemIndex: 0,
+		lastVisibleItemIndex: 0,
+		visibleItemIndexesSet: new Set(),
+		updateVisibleItemIndexesSet() {
+			this.visibleItemIndexesSet.clear();
+			for (let i = this.firstVisibleItemIndex; i <= this.lastVisibleItemIndex; i++) {
+				this.visibleItemIndexesSet.add(i);
+			}
+		},
+		resetPrimaryState() {
+			this.firstVisibleItemIndex = 0;
+			if (displayAmount > nItems) {
+				displayAmount = nItems;
+			}
+			this.lastVisibleItemIndex = displayAmount - 1;
+			this.updateVisibleItemIndexesSet();
+		},
+		scroll(direction) {
+			switch (direction) {
+				case 'right':
+				if (this.lastVisibleItemIndex === nItems - 1) {
+					return;
+				}
 
-            this.firstVisibleItemIndex++;
-            this.lastVisibleItemIndex++;
-            break;
-          case 'left':
-            if (this.firstVisibleItemIndex === 0) {
-              return;
-            }
+				this.firstVisibleItemIndex++;
+				this.lastVisibleItemIndex++;
+				break;
+				case 'left':
+				if (this.firstVisibleItemIndex === 0) {
+					return;
+				}
 
-            this.firstVisibleItemIndex--;
-            this.lastVisibleItemIndex--;
-            break;
-        }
-        this.updateVisibleItemIndexesSet();
-      },
-      init() {
-        this.resetPrimaryState();
-      }
-    }));
-  });
+				this.firstVisibleItemIndex--;
+				this.lastVisibleItemIndex--;
+				break;
+			}
+			this.updateVisibleItemIndexesSet();
+		},
+		init() {
+			this.resetPrimaryState();
+		}
+	};
+
+	const alpineAlreadyInitialized = window.Alpine !== undefined;
+	if (alpineAlreadyInitialized) {
+		Alpine.data(id + 'MultiItemCarousel', () => localStateData);
+		return;
+	}
+
+	document.addEventListener('alpine:init', () => {
+		Alpine.data(id + 'MultiItemCarousel', () => (localStateData));
+	});
 }
 
 templ MultiItemCarouselBody(
