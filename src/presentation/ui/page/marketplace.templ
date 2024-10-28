@@ -178,23 +178,53 @@ templ MarketplaceInstalledItemsTable(
 }
 
 templ MarketplaceCatalogItemCarouselImage(
+	itemFirstSlug valueObject.MarketplaceItemSlug,
 	itemName valueObject.MarketplaceItemName,
 	screenshotUrl valueObject.Url,
 ) {
-	<img
-		src={ screenshotUrl.String() }
-		alt={ itemName.String() + " Avatar" }
-		class="max-h-30 m-auto rounded-md"
-	/>
+	<div x-data="{ isImageLightboxOpen: false }">
+		<div
+			x-show="isImageLightboxOpen"
+			x-on:click.away="isImageLightboxOpen = false"
+			class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-hidden bg-black bg-opacity-75 p-2"
+		>
+			<div @click.away="isImageLightboxOpen = false" class="flex flex-col overflow-auto">
+				<div class="z-50">
+					<button
+						@click="isImageLightboxOpen = false"
+						class="opacity-85 float-right bg-transparent pr-2 pt-2 hover:opacity-100 active:opacity-100"
+					>
+						<i class="ph-bold ph-x-square align-middle text-3xl"></i>
+					</button>
+				</div>
+				<div class="p-2">
+					<img
+						class="max-h-150"
+						src={ screenshotUrl.String() }
+					/>
+				</div>
+			</div>
+		</div>
+		<a @click="isImageLightboxOpen = true" class="cursor-pointer">
+			<img
+				src={ screenshotUrl.String() }
+				alt={ itemName.String() + " Avatar" }
+				class="max-h-30 m-auto rounded-md"
+			/>
+		</a>
+	</div>
 }
 
 func transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
+	itemFirstSlug valueObject.MarketplaceItemSlug,
 	itemName valueObject.MarketplaceItemName,
 	screenshotUrls []valueObject.Url,
 ) []templ.Component {
 	carouselImages := []templ.Component{}
 	for _, screenshotUrl := range screenshotUrls {
-		carouselImage := MarketplaceCatalogItemCarouselImage(itemName, screenshotUrl)
+		carouselImage := MarketplaceCatalogItemCarouselImage(
+			itemFirstSlug, itemName, screenshotUrl,
+		)
 		carouselImages = append(carouselImages, carouselImage)
 	}
 
@@ -225,7 +255,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 						@componentMisc.MultiItemCarousel(
 							item.Slugs[0].String()+"ImagesCarousel",
 							transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
-								item.Name, item.ScreenshotUrls,
+								item.Slugs[0], item.Name, item.ScreenshotUrls,
 							), 3,
 						)
 					</div>
