@@ -131,26 +131,6 @@ templ MarketplaceIndex(
 	</div>
 }
 
-func readMarketplaceTabHeaderItems(
-	selectedListType string,
-) []componentStructural.HorizontalTabHeaderItem {
-	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
-		{Label: "Installed", ComponentValue: "installed"},
-		{Label: "Catalog", ComponentValue: "catalog"},
-	}
-
-	for itemIndex := range tabHeaderItems {
-		if selectedListType != tabHeaderItems[itemIndex].ComponentValue {
-			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
-			continue
-		}
-
-		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
-	}
-
-	return tabHeaderItems
-}
-
 templ MarketplaceInstalledItemsTable(
 	installedItemsList []entity.MarketplaceInstalledItem,
 ) {
@@ -227,11 +207,11 @@ templ MarketplaceCatalogItemsTab(
 ) {
 	<div class="flex justify-stretch gap-4">
 		@componentStructural.VerticalTabHeader(
-			[]componentStructural.VerticalTabHeaderItem{
-				{Label: "Apps", ComponentValue: "apps"},
-				{Label: "Frameworks", ComponentValue: "frameworks"},
-				{Label: "Stacks", ComponentValue: "stacks"},
-			}, "updateSelectedMarketplaceCatalogVerticalTab",
+			[]componentStructural.TabHeaderItem{
+				{Label: "Apps", Value: "apps"},
+				{Label: "Frameworks", Value: "frameworks"},
+				{Label: "Stacks", Value: "stacks"},
+			}, "selectedMarketplaceCatalogVerticalTab",
 		)
 		<div>
 			<div x-show="selectedMarketplaceCatalogVerticalTab === 'apps'">
@@ -249,8 +229,10 @@ templ MarketplaceCatalogItemsTab(
 
 templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 	@componentStructural.HorizontalTabHeader(
-		readMarketplaceTabHeaderItems(marketplaceOverview.ListType),
-		"reloadMarketplacePageContent",
+		[]componentStructural.TabHeaderItem{
+			{Label: "Installed", Value: "installed"},
+			{Label: "Catalog", Value: "catalog"},
+		}, marketplaceOverview.ListType, "reloadMarketplacePageContent",
 	)
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">

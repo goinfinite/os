@@ -147,30 +147,12 @@ templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
 	</div>
 }
 
-func getDatabasesTabHeaderItems(
-	selectedDbType valueObject.DatabaseType,
-) []componentStructural.HorizontalTabHeaderItem {
-	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
-		{Label: "MySQL/MariaDB/Percona", Icon: "ph-database", ComponentValue: "mariadb"},
-		{Label: "PostgreSQL", Icon: "ph-database", ComponentValue: "postgresql"},
-	}
-
-	selectedDbTypeStr := selectedDbType.String()
-	for itemIndex := range tabHeaderItems {
-		if selectedDbTypeStr != tabHeaderItems[itemIndex].ComponentValue {
-			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
-			continue
-		}
-
-		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
-	}
-
-	return tabHeaderItems
-}
-
 templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 	@componentStructural.HorizontalTabHeader(
-		getDatabasesTabHeaderItems(selectedDbOverview.Type), "changeSelectedDatabaseType",
+		[]componentStructural.TabHeaderItem{
+			{Label: "MySQL/MariaDB/Percona", Icon: "ph-database", Value: "mariadb"},
+			{Label: "PostgreSQL", Icon: "ph-database", Value: "postgresql"},
+		}, selectedDbOverview.Type.String(), "changeSelectedDatabaseType",
 	)
 	<!-- DatabaseTabContent -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
