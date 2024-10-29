@@ -60,7 +60,7 @@ type InputFieldWithPrefixDto struct {
 	Label               string
 	BindInputValuePath  string
 	BindPrefixValuePath string
-	InfoDescription     string
+	InfoTooltipContent  string
 }
 
 templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
@@ -78,11 +78,11 @@ templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 				class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 			/>
 		</div>
-		if inputDto.InfoDescription != "" {
+		if inputDto.InfoTooltipContent != "" {
 			<div class="group absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2">
 				<i class="ph-duotone ph-info cursor-help"></i>
 				<div class="invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-cyan-900 p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
-					{ inputDto.InfoDescription }
+					{ inputDto.InfoTooltipContent }
 				</div>
 			</div>
 		}
