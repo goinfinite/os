@@ -118,9 +118,9 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostName")
 	cmd.Flags().IntVarP(&catalogIdInt, "id", "i", 0, "CatalogItemId")
 	cmd.Flags().StringVarP(&slugStr, "slug", "s", "", "CatalogItemSlug")
-	cmd.Flags().StringVarP(&urlPath, "urlPath", "d", "", "UrlPath")
+	cmd.Flags().StringVarP(&urlPath, "url-path", "d", "", "UrlPath")
 	cmd.Flags().StringSliceVarP(
-		&dataFieldsStr, "dataFields", "f", []string{}, "InstallationDataFields (key:value)",
+		&dataFieldsStr, "data-fields", "f", []string{}, "InstallationDataFields (key:value)",
 	)
 	return cmd
 }
@@ -158,10 +158,10 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&installedIdInt, "installedId", "i", 0, "InstalledItemId")
-	cmd.MarkFlagRequired("installedId")
+	cmd.Flags().IntVarP(&installedIdInt, "installed-id", "i", 0, "InstalledItemId")
+	cmd.MarkFlagRequired("installed-id")
 	cmd.Flags().StringVarP(
-		&shouldUninstallServices, "shouldUninstallServices", "s", "true",
+		&shouldUninstallServices, "should-uninstall-services", "s", "true",
 		"ShouldUninstallUnusedServices",
 	)
 	return cmd

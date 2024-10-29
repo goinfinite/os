@@ -194,8 +194,8 @@ func (service *MarketplaceService) DeleteInstalledItem(
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace delete"
 		installParams := []string{
-			"--installedId", installedId.String(),
-			"--shouldUninstallServices", strconv.FormatBool(shouldUninstallServices),
+			"--installed-id", installedId.String(),
+			"--should-uninstall-services", strconv.FormatBool(shouldUninstallServices),
 		}
 
 		cliCmd += " " + strings.Join(installParams, " ")
