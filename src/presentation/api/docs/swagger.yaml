@@ -1491,7 +1491,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: InstallMarketplaceCatalogItemScheduled
+          description: MarketplaceCatalogItemInstallationScheduled
           schema:
             type: object
       summary: InstallCatalogItem

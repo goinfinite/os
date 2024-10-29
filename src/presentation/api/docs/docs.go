@@ -970,7 +970,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "InstallMarketplaceCatalogItemScheduled",
+                        "description": "MarketplaceCatalogItemInstallationScheduled",
                         "schema": {
                             "type": "object"
                         }
