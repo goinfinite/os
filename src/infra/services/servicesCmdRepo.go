@@ -737,3 +737,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 	return nil
 }
+
+func (repo *ServicesCmdRepo) RefreshItems() error {
+	return nil
+}

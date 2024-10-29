@@ -10,4 +10,5 @@ type ServicesCmdRepo interface {
 	CreateCustom(createDto dto.CreateCustomService) error
 	Update(updateDto dto.UpdateService) error
 	Delete(name valueObject.ServiceName) error
+	RefreshItems() error
 }

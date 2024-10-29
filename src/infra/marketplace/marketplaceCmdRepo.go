@@ -714,3 +714,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 
 	return nil
 }
+
+func (repo *MarketplaceCmdRepo) RefreshItems() error {
+	return nil
+}
