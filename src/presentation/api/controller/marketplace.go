@@ -73,16 +73,19 @@ func (controller *MarketplaceController) parseDataFieldMap(
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
+	fieldIndex := 0
 	for rawFieldName, rawFieldValue := range rawDataFields {
+		fieldIndex++
+
 		fieldName, err := valueObject.NewDataFieldName(rawFieldName)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("rawFieldName", rawFieldName))
+			slog.Error(err.Error(), slog.Int("fieldIndex", fieldIndex))
 			continue
 		}
 
 		fieldValue, err := valueObject.NewDataFieldValue(rawFieldValue)
 		if err != nil {
-			slog.Error(err.Error(), slog.Any("rawFieldValue", rawFieldValue))
+			slog.Error(err.Error(), slog.String("fieldName", fieldName.String()))
 			continue
 		}
 
