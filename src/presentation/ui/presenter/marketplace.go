@@ -10,7 +10,6 @@ import (
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
-	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 	"github.com/labstack/echo/v4"
 )
 
@@ -50,7 +49,7 @@ func (presenter *MarketplacePresenter) readVhostsHostnames() ([]string, error) {
 
 func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	catalogItemsList []entity.MarketplaceCatalogItem,
-) presenterDto.CatalogItemsGroupedByType {
+) page.CatalogItemsGroupedByType {
 	appCatalogItems := []entity.MarketplaceCatalogItem{}
 	frameworkCatalogItems := []entity.MarketplaceCatalogItem{}
 	stackCatalogItems := []entity.MarketplaceCatalogItem{}
@@ -65,7 +64,7 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 		}
 	}
 
-	return presenterDto.CatalogItemsGroupedByType{
+	return page.CatalogItemsGroupedByType{
 		Apps:       appCatalogItems,
 		Frameworks: frameworkCatalogItems,
 		Stacks:     stackCatalogItems,
@@ -73,7 +72,7 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 }
 
 func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType string) (
-	overview presenterDto.MarketplaceOverview, err error,
+	overview page.MarketplaceOverview, err error,
 ) {
 	var assertOk bool
 
@@ -103,10 +102,11 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 		}
 	}
 
-	return presenterDto.NewMarketplaceOverview(
-		listType, installedItemsList,
-		presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
-	), nil
+	return page.MarketplaceOverview{
+		ListType:           listType,
+		InstalledItemsList: installedItemsList,
+		CatalogItemsList:   presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
+	}, nil
 }
 
 func (presenter *MarketplacePresenter) Handler(c echo.Context) error {

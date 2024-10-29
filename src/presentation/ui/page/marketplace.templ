@@ -6,8 +6,19 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
-	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 )
+
+type CatalogItemsGroupedByType struct {
+	Apps       []entity.MarketplaceCatalogItem
+	Frameworks []entity.MarketplaceCatalogItem
+	Stacks     []entity.MarketplaceCatalogItem
+}
+
+type MarketplaceOverview struct {
+	ListType           string
+	InstalledItemsList []entity.MarketplaceInstalledItem
+	CatalogItemsList   CatalogItemsGroupedByType
+}
 
 script MarketplaceIndexLocalState() {
     document.addEventListener('alpine:init', () => {
@@ -114,7 +125,7 @@ script MarketplaceIndexLocalState() {
 
 templ MarketplaceIndex(
 	vhostsHostnames []string,
-	marketplaceOverview presenterDto.MarketplaceOverview,
+	marketplaceOverview MarketplaceOverview,
 ) {
 	@MarketplaceIndexLocalState()
 	<div class="flex flex-col" x-data="marketplace">
@@ -261,7 +272,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 }
 
 templ MarketplaceCatalogItemsTab(
-	catalogItemsGroupedByType presenterDto.CatalogItemsGroupedByType,
+	catalogItemsGroupedByType CatalogItemsGroupedByType,
 ) {
 	<div class="flex justify-stretch gap-4">
 		@componentStructural.VerticalTabHeader(
@@ -285,7 +296,7 @@ templ MarketplaceCatalogItemsTab(
 	</div>
 }
 
-templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
+templ MarketplaceTabs(marketplaceOverview MarketplaceOverview) {
 	@componentStructural.HorizontalTabHeader(
 		[]componentStructural.TabHeaderItem{
 			{Label: "Installed", Value: "installed"},
