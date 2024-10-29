@@ -133,7 +133,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 			return NewServiceOutput(InfraError, err.Error())
 		}
 
-		return NewServiceOutput(Created, "InstallMarketplaceCatalogItemScheduled")
+		return NewServiceOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
 	}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(
@@ -216,7 +216,7 @@ func (service *MarketplaceService) DeleteInstalledItem(
 			return NewServiceOutput(InfraError, err.Error())
 		}
 
-		return NewServiceOutput(Created, "DeleteMarketplaceCatalogItemScheduled")
+		return NewServiceOutput(Created, "MarketplaceCatalogItemDeletionScheduled")
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
