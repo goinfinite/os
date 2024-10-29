@@ -4,9 +4,12 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -14,6 +17,7 @@ import (
 
 type ServicesController struct {
 	servicesService *service.ServicesService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
 func NewServicesController(
@@ -21,6 +25,7 @@ func NewServicesController(
 ) *ServicesController {
 	return &ServicesController{
 		servicesService: service.NewServicesService(persistentDbService),
+		persistentDbSvc: persistentDbService,
 	}
 }
 
@@ -255,4 +260,17 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.Delete(requestBody),
 	)
+}
+
+func (controller *ServicesController) AutoRefreshServicesItems() {
+	taskInterval := time.Duration(24) * time.Hour
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(
+		controller.persistentDbSvc,
+	)
+	for range timer.C {
+		useCase.RefreshServicesItems(servicesCmdRepo)
+	}
 }

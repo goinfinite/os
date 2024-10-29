@@ -4,9 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -174,4 +177,17 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.marketplaceService.DeleteInstalledItem(requestBody),
 	)
+}
+
+func (controller *MarketplaceController) AutoRefreshMarketplaceItems() {
+	taskInterval := time.Duration(24) * time.Hour
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(
+		controller.persistentDbSvc,
+	)
+	for range timer.C {
+		useCase.RefreshMarketplaceItems(marketplaceCmdRepo)
+	}
 }
