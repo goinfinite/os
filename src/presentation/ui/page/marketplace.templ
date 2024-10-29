@@ -58,6 +58,18 @@ script MarketplaceIndexLocalState() {
 					},
 				);
 			},
+			imageLightbox: {
+				isOpen: false,
+				imageUrl: ''
+			},
+			openImageLightbox(imageUrl) {
+				this.imageLightbox.isOpen = true;
+				this.imageLightbox.imageUrl = imageUrl;
+			},
+			closeImageLightbox() {
+				this.imageLightbox.isOpen = false;
+				this.imageLightbox.imageUrl = '';
+			},
 
 			// Modal States
 			isScheduleMarketplaceItemInstallationModalOpen: false,
@@ -122,6 +134,7 @@ templ MarketplaceIndex(
 			hx-swap="outerHTML transition:true"
 		>
 			@MarketplaceTabs(marketplaceOverview)
+			@MarketplaceCatalogItemCarouselImageLightbox()
 			@componentStructural.ScheduleDeletionModal(
 				"isUninstallMarketplaceItemModalOpen",
 				"closeUninstallMarketplaceItemModal()",
@@ -182,37 +195,13 @@ templ MarketplaceCatalogItemCarouselImage(
 	itemName valueObject.MarketplaceItemName,
 	screenshotUrl valueObject.Url,
 ) {
-	<div x-data="{ isImageLightboxOpen: false }">
-		<div
-			x-show="isImageLightboxOpen"
-			x-on:click.away="isImageLightboxOpen = false"
-			class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-hidden bg-black bg-opacity-75 p-2"
-		>
-			<div @click.away="isImageLightboxOpen = false" class="flex flex-col overflow-auto">
-				<div class="z-50">
-					<button
-						@click="isImageLightboxOpen = false"
-						class="opacity-85 float-right bg-transparent pr-2 pt-2 hover:opacity-100 active:opacity-100"
-					>
-						<i class="ph-bold ph-x-square align-middle text-3xl"></i>
-					</button>
-				</div>
-				<div class="p-2">
-					<img
-						class="max-h-150"
-						src={ screenshotUrl.String() }
-					/>
-				</div>
-			</div>
-		</div>
-		<a @click="isImageLightboxOpen = true" class="cursor-pointer">
-			<img
-				src={ screenshotUrl.String() }
-				alt={ itemName.String() + " Avatar" }
-				class="max-h-30 m-auto rounded-md"
-			/>
-		</a>
-	</div>
+	<a @click={ "openImageLightbox('" + screenshotUrl.String() + "')" } class="cursor-pointer">
+		<img
+			src={ screenshotUrl.String() }
+			alt={ itemName.String() + " Avatar" }
+			class="max-h-30 m-auto rounded-md"
+		/>
+	</a>
 }
 
 func transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
@@ -310,6 +299,28 @@ templ MarketplaceTabs(marketplaceOverview presenterDto.MarketplaceOverview) {
 			} else {
 				@MarketplaceCatalogItemsTab(marketplaceOverview.CatalogItemsList)
 			}
+		</div>
+	</div>
+}
+
+templ MarketplaceCatalogItemCarouselImageLightbox() {
+	<div
+		x-show="imageLightbox.isOpen"
+		x-on:click.away="closeImageLightbox()"
+		class="fixed inset-0 z-50 flex h-full w-full items-center justify-center overflow-hidden bg-black bg-opacity-75 p-2"
+	>
+		<div @click.away="closeImageLightbox()" class="flex flex-col overflow-auto">
+			<div class="z-50">
+				<button
+					@click="closeImageLightbox()"
+					class="opacity-85 float-right bg-transparent pr-2 pt-2 hover:opacity-100 active:opacity-100"
+				>
+					<i class="ph-bold ph-x-square align-middle text-3xl"></i>
+				</button>
+			</div>
+			<div class="p-2">
+				<img class="max-h-150" :src="imageLightbox.imageUrl"/>
+			</div>
 		</div>
 	</div>
 }
