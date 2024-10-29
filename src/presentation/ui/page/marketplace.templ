@@ -354,8 +354,8 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 					})
 				</div>
 			</div>
-			@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly") {
-				<template x-if="marketplaceItem.dataFields.length > 0">
+			<template x-if="marketplaceItem.dataFields.length > 0">
+				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly") {
 					<div class="grid grid-cols-2 gap-4">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
@@ -379,11 +379,8 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 							</div>
 						</template>
 					</div>
-				</template>
-				<template x-if="marketplaceItem.dataFields.length === 0">
-					<label class="italic text-slate-500">This marketplace item has no install parameters.</label>
-				</template>
-			}
+				}
+			</template>
 		</div>
 		@componentForm.SubmitButton(
 			"install-marketplace-item-button", "Schedule installation",
