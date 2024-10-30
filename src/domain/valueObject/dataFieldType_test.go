@@ -6,7 +6,7 @@ func TestDataFieldType(t *testing.T) {
 	t.Run("ValidDataFieldType", func(t *testing.T) {
 		validDataFieldTypes := []interface{}{
 			"checkbox", "color", "date", "email", "image", "number", "password",
-			"radio", "range", "search", "tel", "text", "time", "url",
+			"radio", "range", "search", "select", "tel", "text", "time", "url",
 		}
 
 		for _, dataFieldType := range validDataFieldTypes {

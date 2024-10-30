@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.1"
+        "version": "0.1.2"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -964,7 +964,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "MarketplaceCatalogItemInstalled",
+                        "description": "MarketplaceCatalogItemInstallationScheduled",
                         "schema": {
                             "type": "object"
                         }

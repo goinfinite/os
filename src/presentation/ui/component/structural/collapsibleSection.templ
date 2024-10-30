@@ -1,0 +1,17 @@
+package componentStructural
+
+templ CollapsibleSection(title, icon string) {
+	<!-- CollapsibleSection -->
+	<section class="w-full rounded-md">
+		<details class="bg-os-500 group/collapsibleSection rounded-md p-3 group-open/collapsibleSection:bg-opacity-30">
+			<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open/collapsibleSection:text-opacity-100 group-hover/collapsibleSection:text-opacity-100 [&::-webkit-details-marker]:hidden">
+				<i class={ "ph-duotone " + icon + " mr-2 text-2xl" }></i>
+				<span class="font-bold">{ title }</span>
+				<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open/collapsibleSection:rotate-45"></i>
+			</summary>
+			<div class="mb-2 mt-4 p-2">
+				{ children... }
+			</div>
+		</details>
+	</section>
+}

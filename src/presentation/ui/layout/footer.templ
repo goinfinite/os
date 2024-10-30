@@ -192,7 +192,7 @@ templ ResourceUsageProgressBar(usageRate uint8, usageLabel, tooltipText, icon st
 	<div class="group relative flex items-center">
 		<i class={ "ph-bold " + icon + " mr-2 align-middle text-xl" }></i>
 		@componentMisc.ProgressBar(usageRate, usageLabel)
-		<div class={ "absolute left-1/2 transform -translate-x-1/2 opacity-0 bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:opacity-100 p-1.5 bg-os-300 text-neutral-50 text-xs rounded-md shadow-md" }>
+		<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:visible p-1.5 bg-os-300 text-neutral-50 text-xs rounded-md shadow-md" }>
 			{ tooltipText }
 		</div>
 	</div>
