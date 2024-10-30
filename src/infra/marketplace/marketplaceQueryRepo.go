@@ -3,17 +3,17 @@ package marketplaceInfra
 import (
 	"embed"
 	"errors"
-	"io/fs"
 	"log/slog"
+	"os"
 	"slices"
-	"sort"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	"golang.org/x/exp/maps"
 )
 
 //go:embed assets/*
@@ -357,7 +357,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	catalogItemFilePath valueObject.UnixFilePath,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	itemMap, err := infraHelper.EmbedSerializedDataToMap(&assets, catalogItemFilePath)
+	itemMap, err := infraHelper.FileSerializedDataToMap(catalogItemFilePath)
 	if err != nil {
 		return catalogItem, err
 	}
@@ -504,77 +504,98 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 }
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
-	catalogItems []entity.MarketplaceCatalogItem, err error,
+	[]entity.MarketplaceCatalogItem, error,
 ) {
-	itemsFiles, err := fs.ReadDir(assets, "assets")
+	catalogItems := []entity.MarketplaceCatalogItem{}
+
+	_, err := os.Stat(infraEnvs.MarketplaceItemsDir)
 	if err != nil {
-		return catalogItems, errors.New(
-			"GetMarketplaceCatalogItemsFilesError: " + err.Error(),
-		)
+		marketplaceCmdRepo := NewMarketplaceCmdRepo(repo.persistentDbSvc)
+		err = marketplaceCmdRepo.RefreshItems()
+		if err != nil {
+			return catalogItems, errors.New(
+				"RefreshMarketplaceItemsError: " + err.Error(),
+			)
+		}
 	}
 
-	catalogItemsIdsMap := map[uint]interface{}{}
-	for _, itemFileEntry := range itemsFiles {
-		itemFileName := itemFileEntry.Name()
+	rawCatalogFilesList, err := infraHelper.RunCmdWithSubShell(
+		"find " + infraEnvs.MarketplaceItemsDir + " -type f " +
+			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
+			"-not -path '*/.*' -not -name '.*'",
+	)
+	if err != nil {
+		return catalogItems, errors.New("ReadMarketplaceFilesError: " + err.Error())
+	}
 
-		itemFilePathStr := "assets/" + itemFileName
-		itemFilePath, err := valueObject.NewUnixFilePath(itemFilePathStr)
+	if len(rawCatalogFilesList) == 0 {
+		return catalogItems, errors.New("NoMarketplaceFilesFound")
+	}
+
+	rawCatalogFilesListParts := strings.Split(rawCatalogFilesList, "\n")
+	if len(rawCatalogFilesListParts) == 0 {
+		return catalogItems, errors.New("NoMarketplaceFilesFound")
+	}
+
+	catalogItemsIdsMap := map[uint16]struct{}{}
+	for _, rawFilePath := range rawCatalogFilesListParts {
+		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
 		if err != nil {
-			slog.Error(
-				err.Error(), slog.String("fileName", itemFileName),
-				slog.String("filePath", itemFilePathStr),
-			)
+			slog.Error(err.Error(), slog.String("filePath", rawFilePath))
 			continue
 		}
 
 		catalogItem, err := repo.catalogItemFactory(itemFilePath)
 		if err != nil {
 			slog.Error(
-				"ReadMarketplaceCatalogItemError",
-				slog.String("fileName", itemFileName), slog.Any("error", err),
+				"CatalogMarketplaceItemFactoryError",
+				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
 			)
 			continue
 		}
 
-		uintCatalogItemId := uint(catalogItem.Id.Uint16())
-		_, idAlreadyUsed := catalogItemsIdsMap[uintCatalogItemId]
+		itemIdUint16 := catalogItem.Id.Uint16()
+		_, idAlreadyUsed := catalogItemsIdsMap[itemIdUint16]
 		if idAlreadyUsed {
 			catalogItem.Id, _ = valueObject.NewMarketplaceItemId(0)
 		}
 
-		if catalogItem.Id.Uint16() != 0 {
-			catalogItemsIdsMap[uintCatalogItemId] = nil
-		}
-
 		catalogItems = append(catalogItems, catalogItem)
+
+		if catalogItem.Id.Uint16() != 0 {
+			catalogItemsIdsMap[itemIdUint16] = struct{}{}
+		}
 	}
 
-	catalogItemsIds := maps.Keys(catalogItemsIdsMap)
-	slices.Sort(catalogItemsIds)
+	itemsIdsSlice := []uint16{}
+	for itemId := range catalogItemsIdsMap {
+		itemsIdsSlice = append(itemsIdsSlice, itemId)
+	}
+	slices.Sort(itemsIdsSlice)
+
+	if len(itemsIdsSlice) == 0 {
+		itemsIdsSlice = append(itemsIdsSlice, 0)
+	}
 
 	for itemIndex, catalogItem := range catalogItems {
 		if catalogItem.Id.Uint16() != 0 {
 			continue
 		}
 
-		lastIdUsed := catalogItemsIds[len(catalogItemsIds)-1]
+		lastIdUsed := itemsIdsSlice[len(itemsIdsSlice)-1]
 		nextAvailableId, err := valueObject.NewMarketplaceItemId(lastIdUsed + 1)
 		if err != nil {
 			slog.Error(
-				"GenerateNewMarketplaceItemIdError",
+				"CreateNewCatalogMarketplaceItemIdError",
 				slog.String("itemName", catalogItem.Name.String()),
-				slog.Any("error", err),
+				slog.Any("err", err),
 			)
 			continue
 		}
 
 		catalogItems[itemIndex].Id = nextAvailableId
-		catalogItemsIds = append(catalogItemsIds, uint(nextAvailableId.Uint16()))
+		itemsIdsSlice = append(itemsIdsSlice, nextAvailableId.Uint16())
 	}
-
-	sort.SliceStable(catalogItems, func(i, j int) bool {
-		return catalogItems[i].Id.Uint16() < catalogItems[j].Id.Uint16()
-	})
 
 	return catalogItems, nil
 }
