@@ -22,14 +22,14 @@
     {
       "name": "locale",
       "label": "OpenMage Language",
-      "type": "text",
+      "type": "select",
       "defaultValue": "en_US",
       "options": ["en_US", "pt_BR", "pt_PT", "es_ES", "de_DE", "it_IT", "fr_FR"]
     },
     {
       "name": "timezone",
       "label": "OpenMage Timezone",
-      "type": "text",
+      "type": "select",
       "defaultValue": "America/Los_Angeles",
       "options": [
         "Africa/Abidjan",
@@ -456,7 +456,7 @@
     {
       "name": "currency",
       "label": "OpenMage Default Currency",
-      "type": "text",
+      "type": "select",
       "defaultValue": "USD",
       "options": [
         "AFN",

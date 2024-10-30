@@ -146,7 +146,23 @@ func (ws *WebServerSetup) OnStartSetup() {
 		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
+	serviceName, _ := valueObject.NewServiceName("nginx")
 	if workerCount == cpuCoresStr {
+		nginxService, err := servicesQueryRepo.ReadByName(serviceName)
+		if err != nil {
+			log.Fatalf("ReadNginxServiceFailed: %s", err.Error())
+		}
+
+		if nginxService.Status.String() == "running" {
+			return
+		}
+
+		err = servicesCmdRepo.Start(serviceName)
+		if err != nil {
+			log.Fatalf("StartNginxServiceFailed: %s", err.Error())
+		}
 		return
 	}
 
@@ -160,14 +176,11 @@ func (ws *WebServerSetup) OnStartSetup() {
 		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}
 
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-	serviceName, _ := valueObject.NewServiceName("nginx")
 	err = servicesCmdRepo.Restart(serviceName)
 	if err != nil {
 		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
 	_, err = servicesQueryRepo.ReadByName("php-webserver")
 	if err == nil {
 		err = ws.updatePhpMaxChildProcesses(

@@ -1,0 +1,61 @@
+package componentStructural
+
+type TabHeaderItem struct {
+	Label string
+	Value string
+	Icon  string
+}
+
+templ HorizontalTabHeader(
+	tabHeaderItems []TabHeaderItem,
+	selectedItem, onClick string,
+) {
+	<!-- HorizontalTabHeader -->
+	<ul class="text-os-500 bg-os-800 flex w-fit cursor-pointer space-x-2 rounded-t-lg px-4 pt-3.5 text-center text-sm font-medium uppercase">
+		for _, item := range tabHeaderItems {
+			<li
+				class="inline-block rounded-t-md px-5 py-4 text-xl"
+				:class={ "'" + selectedItem + "' === '" + item.Value + "' ? 'bg-os-500 text-neutral-50' : 'bg-os-700 hover:bg-os-300 text-slate-500'" }
+				@click={ onClick + "('" + item.Value + "')" }
+			>
+				if item.Icon != "" {
+					<i class={ "ph-duotone " + item.Icon + " mr-3 align-middle text-lg" }></i>
+				}
+				{ item.Label }
+			</li>
+		}
+	</ul>
+}
+
+templ VerticalTabHeader(
+	tabHeaderItems []TabHeaderItem,
+	bindValuePath string,
+) {
+	<!-- VerticalTabHeader -->
+	<ul class="flex h-full w-fit">
+		<div class="w-full">
+			for _, item := range tabHeaderItems {
+				<li
+					class="hover:bg-os-300 border-r-3 w-full cursor-pointer bg-inherit px-6 py-2 text-neutral-50 transition-all"
+					:class={ bindValuePath + " === '" + item.Value + "' ? 'border-infinite-500' : 'border-os-400'" }
+					@click={ bindValuePath + " = '" + item.Value + "'" }
+				>
+					<div
+						:class={ bindValuePath + " === '" + item.Value + "' && 'text-infinite-500'" }
+					>
+						if item.Icon != "" {
+							<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
+								if item.Icon != "" {
+									<i class={ "ph-duotone " + item.Icon + " align-middle text-lg" }></i>
+								}
+							</div>
+						}
+						<div class="text-center text-sm">
+							{ item.Label }
+						</div>
+					</div>
+				</li>
+			}
+		</div>
+	</ul>
+}

@@ -2,7 +2,7 @@ package componentStructural
 
 templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 	<!-- Tag -->
-	<div class={ "flex rounded-md border-solid border-2.5 border-" + tagColor + " text-sm" }>
+	<div class={ "flex rounded-md border-solid border-2.5 border-" + tagColor + " text-sm w-fit" }>
 		<div class={ "bg-" + tagColor + " flex items-center" }>
 			<div class="flex items-center px-1">
 				if highlightedIcon != "" {

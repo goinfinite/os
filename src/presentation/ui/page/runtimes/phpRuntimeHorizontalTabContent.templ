@@ -25,7 +25,7 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 				this.resetPrimaryStates();
 			},
 			async updatePhpConfigs() {
-				await jsonAjax(
+				await Infinite.JsonAjax(
 					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
 					{
 						version: this.phpConfigs.version.value,
@@ -37,9 +37,6 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 
 			// Auxiliary States
 			selectedPhpVerticalTab: 'modules',
-			updateSelectedPhpVerticalTab(tabName) {
-				this.selectedPhpVerticalTab = tabName;
-			},
 
 			// Modal States
 			isUpdatePhpVersionModalOpen: false,
@@ -179,10 +176,10 @@ templ FunctionalPhpRuntimeContent(
 		</div>
 		<div class="mt-6 flex justify-stretch">
 			@componentStructural.VerticalTabHeader(
-				[]componentStructural.VerticalTabHeaderItem{
-					{Label: "Modules", Icon: "ph-puzzle-piece", ComponentValue: "modules"},
-					{Label: "Settings", Icon: "ph-gear", ComponentValue: "settings"},
-				}, "updateSelectedPhpVerticalTab",
+				[]componentStructural.TabHeaderItem{
+					{Label: "Modules", Icon: "ph-puzzle-piece", Value: "modules"},
+					{Label: "Settings", Icon: "ph-gear", Value: "settings"},
+				}, "selectedPhpVerticalTab",
 			)
 			<div id="php-vertical-tab-content" class="w-full p-8">
 				@PhpModulesCheckboxInputsSwitchToggles(runtimeOverview.PhpConfigs)

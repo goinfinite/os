@@ -80,6 +80,13 @@ func (router *Router) mappingsRoutes() {
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
 }
 
+func (router *Router) marketplaceRoutes() {
+	marketplaceGroup := router.baseRoute.Group("/marketplace")
+
+	marketplacePresenter := presenter.NewMarketplacePresenter(router.persistentDbSvc)
+	marketplaceGroup.GET("/", marketplacePresenter.Handler)
+}
+
 func (router *Router) runtimesRoutes() {
 	runtimesGroup := router.baseRoute.Group("/runtimes")
 
@@ -146,6 +153,7 @@ func (router *Router) RegisterRoutes() {
 	router.accountsRoutes()
 	router.databasesRoutes()
 	router.mappingsRoutes()
+	router.marketplaceRoutes()
 	router.runtimesRoutes()
 	router.sslsRoutes()
 

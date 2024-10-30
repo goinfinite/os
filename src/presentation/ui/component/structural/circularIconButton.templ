@@ -15,7 +15,7 @@ templ CircularIconButtonWithTooltip(
 			<i class={ "ph-bold " + icon + " text-xl" }></i>
 		</button>
 		if tooltipText != "" {
-			<div class={ "absolute invisible w-max p-2 bottom-full mb-2 text-white text-xs rounded-md shadow-lg left-1/2 -translate-x-1/2 bg-" + tooltipColor + " group-hover:block group-hover:visible" }>
+			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:visible p-1.5 bg-" + tooltipColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
 				{ tooltipText }
 			</div>
 		}

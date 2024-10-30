@@ -1,9 +1,8 @@
 package apiController
 
 import (
-	"errors"
-	"net/http"
-	"strconv"
+	"log/slog"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -41,49 +40,107 @@ func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
 	)
 }
 
-func (controller *MarketplaceController) parseDataFields(
-	rawDataFields []interface{},
-) ([]valueObject.MarketplaceInstallableItemDataField, error) {
+func (controller *MarketplaceController) transformDataFieldsIntoMap(
+	rawDataFields string,
+) []map[string]interface{} {
+	dataFieldsMapSlice := []map[string]interface{}{}
+	if len(rawDataFields) == 0 {
+		return dataFieldsMapSlice
+	}
+
+	rawDataFieldsSlice := strings.Split(rawDataFields, ";")
+	for _, rawDataField := range rawDataFieldsSlice {
+		rawDataFieldParts := strings.Split(rawDataField, ":")
+		if len(rawDataFieldParts) != 2 {
+			slog.Error(
+				"InvalidDataFieldStringStructure",
+				slog.String("rawDataField", rawDataField),
+			)
+			continue
+		}
+
+		dataFieldsMapSlice = append(
+			dataFieldsMapSlice,
+			map[string]interface{}{rawDataFieldParts[0]: rawDataFieldParts[1]},
+		)
+	}
+
+	return dataFieldsMapSlice
+}
+
+func (controller *MarketplaceController) parseDataFieldMap(
+	rawDataFields map[string]interface{},
+) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
-	for fieldIndex, rawDataField := range rawDataFields {
-		errPrefix := "[index " + strconv.Itoa(fieldIndex) + "] "
+	fieldIndex := 0
+	for rawFieldName, rawFieldValue := range rawDataFields {
+		fieldIndex++
 
-		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
-		if !assertOk {
-			return dataFields, errors.New(errPrefix + "InvalidDataFieldStructure")
-		}
-
-		rawName, exists := rawDataFieldMap["name"]
-		if !exists {
-			rawName, exists = rawDataFieldMap["key"]
-			if !exists {
-				return dataFields, errors.New(errPrefix + "DataFieldNameNotFound")
-			}
-			rawDataFieldMap["name"] = rawName
-		}
-
-		fieldName, err := valueObject.NewDataFieldName(rawName)
+		fieldName, err := valueObject.NewDataFieldName(rawFieldName)
 		if err != nil {
-			return dataFields, errors.New(errPrefix + err.Error())
+			slog.Error(err.Error(), slog.Int("fieldIndex", fieldIndex))
+			continue
 		}
 
-		fieldValue, err := valueObject.NewDataFieldValue(rawDataFieldMap["value"])
+		fieldValue, err := valueObject.NewDataFieldValue(rawFieldValue)
 		if err != nil {
-			return dataFields, errors.New(errPrefix + err.Error())
+			slog.Error(err.Error(), slog.String("fieldName", fieldName.String()))
+			continue
 		}
 
 		dataField, err := valueObject.NewMarketplaceInstallableItemDataField(
 			fieldName, fieldValue,
 		)
 		if err != nil {
-			return dataFields, errors.New(errPrefix + err.Error())
+			slog.Error(
+				err.Error(),
+				slog.String("fieldName", fieldName.String()),
+				slog.String("fieldValue", fieldValue.String()),
+			)
+			continue
 		}
 
 		dataFields = append(dataFields, dataField)
 	}
 
-	return dataFields, nil
+	return dataFields
+}
+
+// DataFields has multiple possible structures which this parser can handle:
+// "dataFieldName:dataFieldValue;dataFieldName:dataFieldValue" (string slice, semicolon separated items)
+// { "dataFieldName": "dataFieldValue" } (map[string]interface{})
+// [{ "dataFieldName": "dataFieldValue" }] (map[string]interface{} slice)
+func (controller *MarketplaceController) parseDataFields(
+	dataFieldsAsUnknownType any,
+) []valueObject.MarketplaceInstallableItemDataField {
+	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
+
+	rawDataFieldsSlice := []interface{}{}
+	switch dataFieldsValues := dataFieldsAsUnknownType.(type) {
+	case map[string]interface{}:
+		rawDataFieldsSlice = []interface{}{dataFieldsValues}
+	case string:
+		dataFieldsMaps := controller.transformDataFieldsIntoMap(dataFieldsValues)
+		for _, dataFieldMap := range dataFieldsMaps {
+			rawDataFieldsSlice = append(rawDataFieldsSlice, dataFieldMap)
+		}
+	case []interface{}:
+		rawDataFieldsSlice = dataFieldsValues
+	}
+
+	for _, rawDataField := range rawDataFieldsSlice {
+		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
+		if !assertOk {
+			slog.Error(
+				"InvalidDataFieldStructure", slog.Any("rawDataField", rawDataField),
+			)
+			continue
+		}
+		dataFields = append(dataFields, controller.parseDataFieldMap(rawDataFieldMap)...)
+	}
+
+	return dataFields
 }
 
 // InstallCatalogItem	 godoc
@@ -93,7 +150,7 @@ func (controller *MarketplaceController) parseDataFields(
 // @Accept       json
 // @Produce      json
 // @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "urlPath is both the install directory and HTTP sub-directory."
-// @Success      201 {object} object{} "MarketplaceCatalogItemInstalled"
+// @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
@@ -112,23 +169,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 	}
 
 	if requestBody["dataFields"] != nil {
-		_, isMapStringInterface := requestBody["dataFields"].(map[string]interface{})
-		if isMapStringInterface {
-			requestBody["dataFields"] = []interface{}{requestBody["dataFields"]}
-		}
-
-		dataFieldsSlice, assertOk := requestBody["dataFields"].([]interface{})
-		if !assertOk {
-			return apiHelper.ResponseWrapper(
-				c, http.StatusBadRequest, "DataFieldsMustBeArray",
-			)
-		}
-
-		dataFields, err := controller.parseDataFields(dataFieldsSlice)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
-		requestBody["dataFields"] = dataFields
+		requestBody["dataFields"] = controller.parseDataFields(requestBody["dataFields"])
 	}
 
 	return apiHelper.ServiceResponseWrapper(
@@ -172,6 +213,6 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.DeleteInstalledItem(requestBody),
+		c, controller.marketplaceService.DeleteInstalledItem(requestBody, true),
 	)
 }

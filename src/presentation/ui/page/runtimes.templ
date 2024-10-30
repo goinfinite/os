@@ -1,7 +1,6 @@
 package page
 
 import (
-	"github.com/goinfinite/os/src/domain/valueObject"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	pageRuntimes "github.com/goinfinite/os/src/presentation/ui/page/runtimes"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
@@ -65,32 +64,14 @@ templ RuntimesIndex(
 	</div>
 }
 
-func transformRuntimeTypesIntoTabHeaderItems(
-	selectedRuntimeType valueObject.RuntimeType,
-) []componentStructural.HorizontalTabHeaderItem {
-	tabHeaderItems := []componentStructural.HorizontalTabHeaderItem{
-		{Label: "PHP", ComponentValue: "php"},
-	}
-
-	selectedRuntimeTypeStr := selectedRuntimeType.String()
-	for itemIndex := range tabHeaderItems {
-		if selectedRuntimeTypeStr != tabHeaderItems[itemIndex].ComponentValue {
-			tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-700 hover:bg-os-300 text-slate-500"
-			continue
-		}
-
-		tabHeaderItems[itemIndex].AdditionalClasses = "bg-os-500 text-neutral-50"
-	}
-
-	return tabHeaderItems
-}
-
 templ RuntimesTabs(
 	runtimeOverview presenterDto.RuntimeOverview,
 	vhostsHostnames []string,
 ) {
 	@componentStructural.HorizontalTabHeader(
-		transformRuntimeTypesIntoTabHeaderItems(runtimeOverview.Type), "updateSelectedRuntimeType",
+		[]componentStructural.TabHeaderItem{
+			{Label: "PHP", Value: "php"},
+		}, runtimeOverview.Type.String(), "updateSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
 		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
