@@ -6,7 +6,7 @@ const (
 	InfiniteOsBinary             string = InfiniteOsMainDir + "/os"
 	PersistentDatabaseFilePath   string = InfiniteOsMainDir + "/os.db"
 	TrailDatabaseFilePath        string = InfiniteOsMainDir + "/trail.db"
-	MarketplaceDir               string = InfiniteOsMainDir + "/marketplace"
+	MarketplaceItemsDir          string = InfiniteOsMainDir + "/marketplace"
 	PrimaryPublicDir             string = "/app/html"
 	VirtualHostsConfDir          string = "/app/conf/nginx"
 	PrimaryVhostFileName         string = "primary.conf"
