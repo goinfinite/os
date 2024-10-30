@@ -91,7 +91,9 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
 	if listType == "catalog" {
-		responseOutput := presenter.marketplaceService.ReadCatalog()
+		responseOutput := presenter.marketplaceService.ReadCatalog(
+			map[string]interface{}{},
+		)
 		if responseOutput.Status != service.Success {
 			return overview, errors.New("FailedToReadCatalogItems")
 		}

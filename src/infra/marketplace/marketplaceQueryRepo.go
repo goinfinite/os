@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
@@ -389,7 +390,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemInstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
-		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(itemMap["installCmdSteps"])
+		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
+			itemMap["installCmdSteps"],
+		)
 		if err != nil {
 			return catalogItem, err
 		}
@@ -397,7 +400,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemUninstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["uninstallCmdSteps"] != nil {
-		itemUninstallCmdSteps, err = repo.catalogItemCmdStepsFactory(itemMap["uninstallCmdSteps"])
+		itemUninstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
+			itemMap["uninstallCmdSteps"],
+		)
 		if err != nil {
 			return catalogItem, err
 		}
@@ -428,41 +433,30 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemScreenshotUrls := []valueObject.Url{}
 	if itemMap["screenshotUrls"] != nil {
-		itemScreenshotUrls, err = repo.catalogItemScreenshotUrlsFactory(itemMap["screenshotUrls"])
+		itemScreenshotUrls, err = repo.catalogItemScreenshotUrlsFactory(
+			itemMap["screenshotUrls"],
+		)
 		if err != nil {
 			return catalogItem, err
 		}
 	}
 
 	return entity.NewMarketplaceCatalogItem(
-		itemId,
-		itemSlugs,
-		itemName,
-		itemType,
-		itemDescription,
-		itemServices,
-		itemMappings,
-		itemDataFields,
-		itemInstallCmdSteps,
-		itemUninstallCmdSteps,
-		itemUninstallFileNames,
-		estimatedSizeBytes,
-		itemAvatarUrl,
-		itemScreenshotUrls,
+		itemId, itemSlugs, itemName, itemType, itemDescription, itemServices,
+		itemMappings, itemDataFields, itemInstallCmdSteps, itemUninstallCmdSteps,
+		itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl, itemScreenshotUrls,
 	), nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
-	[]entity.MarketplaceCatalogItem, error,
-) {
-	catalogItems := []entity.MarketplaceCatalogItem{}
-
-	_, err := os.Stat(infraEnvs.MarketplaceItemsDir)
+func (repo *MarketplaceQueryRepo) ReadCatalogItems(
+	readDto dto.ReadMarketplaceCatalogItemsRequest,
+) (catalogItemsDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
+	_, err = os.Stat(infraEnvs.MarketplaceItemsDir)
 	if err != nil {
 		marketplaceCmdRepo := NewMarketplaceCmdRepo(repo.persistentDbSvc)
 		err = marketplaceCmdRepo.RefreshItems()
 		if err != nil {
-			return catalogItems, errors.New(
+			return catalogItemsDto, errors.New(
 				"RefreshMarketplaceItemsError: " + err.Error(),
 			)
 		}
@@ -474,18 +468,19 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 			"-not -path '*/.*' -not -name '.*'",
 	)
 	if err != nil {
-		return catalogItems, errors.New("ReadMarketplaceFilesError: " + err.Error())
+		return catalogItemsDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}
 
 	if len(rawCatalogFilesList) == 0 {
-		return catalogItems, errors.New("NoMarketplaceFilesFound")
+		return catalogItemsDto, errors.New("NoMarketplaceFilesFound")
 	}
 
 	rawCatalogFilesListParts := strings.Split(rawCatalogFilesList, "\n")
 	if len(rawCatalogFilesListParts) == 0 {
-		return catalogItems, errors.New("NoMarketplaceFilesFound")
+		return catalogItemsDto, errors.New("NoMarketplaceFilesFound")
 	}
 
+	catalogItems := []entity.MarketplaceCatalogItem{}
 	catalogItemsIdsMap := map[uint16]struct{}{}
 	for _, rawFilePath := range rawCatalogFilesListParts {
 		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
@@ -507,6 +502,28 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 		_, idAlreadyUsed := catalogItemsIdsMap[itemIdUint16]
 		if idAlreadyUsed {
 			catalogItem.Id, _ = valueObject.NewMarketplaceItemId(0)
+		}
+
+		if len(catalogItems) >= int(readDto.Pagination.ItemsPerPage) {
+			break
+		}
+
+		if readDto.ItemId != nil && catalogItem.Id != *readDto.ItemId {
+			continue
+		}
+
+		if readDto.ItemSlug != nil {
+			if !slices.Contains(catalogItem.Slugs, *readDto.ItemSlug) {
+				continue
+			}
+		}
+
+		if readDto.ItemName != nil && catalogItem.Name != *readDto.ItemName {
+			continue
+		}
+
+		if readDto.ItemType != nil && catalogItem.Type != *readDto.ItemType {
+			continue
 		}
 
 		catalogItems = append(catalogItems, catalogItem)
@@ -546,18 +563,61 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems() (
 		itemsIdsSlice = append(itemsIdsSlice, nextAvailableId.Uint16())
 	}
 
-	return catalogItems, nil
+	sortDirectionStr := "asc"
+	if readDto.Pagination.SortDirection != nil {
+		sortDirectionStr = readDto.Pagination.SortDirection.String()
+	}
+
+	if readDto.Pagination.SortBy != nil {
+		slices.SortStableFunc(catalogItems, func(a, b entity.MarketplaceCatalogItem) int {
+			firstElement := a
+			secondElement := b
+			if sortDirectionStr != "asc" {
+				firstElement = b
+				secondElement = a
+			}
+
+			switch readDto.Pagination.SortBy.String() {
+			case "id":
+				if firstElement.Id.Uint16() < secondElement.Id.Uint16() {
+					return -1
+				}
+				if firstElement.Id.Uint16() > secondElement.Id.Uint16() {
+					return 1
+				}
+				return 0
+			case "name":
+				return strings.Compare(firstElement.Name.String(), secondElement.Name.String())
+			case "type":
+				return strings.Compare(firstElement.Type.String(), secondElement.Type.String())
+			default:
+				return 0
+			}
+		})
+	}
+
+	itemsTotal := uint64(len(catalogItems))
+	pagesTotal := uint32(itemsTotal / uint64(readDto.Pagination.ItemsPerPage))
+
+	paginationDto := readDto.Pagination
+	paginationDto.ItemsTotal = &itemsTotal
+	paginationDto.PagesTotal = &pagesTotal
+
+	return dto.ReadMarketplaceCatalogItemsResponse{
+		Pagination: paginationDto,
+		Items:      catalogItems,
+	}, nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 	catalogId valueObject.MarketplaceItemId,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	catalogItems, err := repo.ReadCatalogItems()
+	catalogItems, err := repo.ReadCatalogItems(dto.ReadMarketplaceCatalogItemsRequest{})
 	if err != nil {
 		return catalogItem, err
 	}
 
-	for _, catalogItem := range catalogItems {
+	for _, catalogItem := range catalogItems.Items {
 		if catalogItem.Id.Uint16() != catalogId.Uint16() {
 			continue
 		}
@@ -571,12 +631,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
 func (repo *MarketplaceQueryRepo) ReadCatalogItemBySlug(
 	slug valueObject.MarketplaceItemSlug,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	catalogItems, err := repo.ReadCatalogItems()
+	catalogItems, err := repo.ReadCatalogItems(dto.ReadMarketplaceCatalogItemsRequest{})
 	if err != nil {
 		return catalogItem, err
 	}
 
-	for _, catalogItem := range catalogItems {
+	for _, catalogItem := range catalogItems.Items {
 		for _, catalogItemSlug := range catalogItem.Slugs {
 			if catalogItemSlug.String() != slug.String() {
 				continue

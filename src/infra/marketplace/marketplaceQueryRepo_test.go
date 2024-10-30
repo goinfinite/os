@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
@@ -12,14 +15,28 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
 	testHelpers.LoadEnvVars()
 
-	t.Run("ReadCatalogItems", func(t *testing.T) {
-		catalogItems, err := marketplaceQueryRepo.ReadCatalogItems()
-		if err != nil {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
+	t.Run("Read", func(t *testing.T) {
+		itemType, _ := valueObject.NewMarketplaceItemType("app")
+
+		paginationDto := useCase.MarketplaceDefaultPagination
+		sortBy, _ := valueObject.NewPaginationSortBy("id")
+		sortDirection, _ := valueObject.NewPaginationSortDirection("desc")
+		paginationDto.SortBy = &sortBy
+		paginationDto.SortDirection = &sortDirection
+
+		readDto := dto.ReadMarketplaceCatalogItemsRequest{
+			Pagination: paginationDto,
+			ItemType:   &itemType,
 		}
 
-		if len(catalogItems) == 0 {
-			t.Errorf("ExpectingEmptySliceButGot: %v", catalogItems)
+		responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)
+		if err != nil {
+			t.Errorf("ReadMarketplaceItemsError: %v", err)
+			return
+		}
+
+		if len(responseDto.Items) == 0 {
+			t.Errorf("NoItemsFound")
 		}
 	})
 }

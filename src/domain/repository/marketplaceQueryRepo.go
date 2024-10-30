@@ -1,12 +1,15 @@
 package repository
 
 import (
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type MarketplaceQueryRepo interface {
-	ReadCatalogItems() ([]entity.MarketplaceCatalogItem, error)
+	ReadCatalogItems(
+		readDto dto.ReadMarketplaceCatalogItemsRequest,
+	) (dto.ReadMarketplaceCatalogItemsResponse, error)
 	ReadCatalogItemById(
 		catalogId valueObject.MarketplaceItemId,
 	) (entity.MarketplaceCatalogItem, error)

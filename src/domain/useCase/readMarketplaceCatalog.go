@@ -4,18 +4,24 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+var MarketplaceDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
+
 func ReadMarketplaceCatalog(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
-) ([]entity.MarketplaceCatalogItem, error) {
-	catalogItems, err := marketplaceQueryRepo.ReadCatalogItems()
+	readDto dto.ReadMarketplaceCatalogItemsRequest,
+) (dto.ReadMarketplaceCatalogItemsResponse, error) {
+	responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)
 	if err != nil {
 		slog.Error("ReadMarketplaceCatalogItemsError", slog.Any("error", err))
-		return nil, errors.New("ReadMarketplaceCatalogItemsInfraError")
+		return responseDto, errors.New("ReadMarketplaceCatalogItemsInfraError")
 	}
 
-	return catalogItems, nil
+	return responseDto, nil
 }
