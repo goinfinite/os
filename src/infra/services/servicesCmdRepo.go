@@ -12,6 +12,7 @@ import (
 	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -739,5 +740,24 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) RefreshItems() error {
-	return nil
+	_, err := os.Stat(infraEnvs.ServicesItemsDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+
+		_, err = infraHelper.RunCmdWithSubShell(
+			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
+				"git clone https://github.com/goinfinite/os-services.git services",
+		)
+		if err != nil {
+			return errors.New("CloneServicesItemsRepoError: " + err.Error())
+		}
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"cd " + infraEnvs.ServicesItemsDir + ";" +
+			"git clean -f -d; git reset --hard HEAD; git pull",
+	)
+	return err
 }
