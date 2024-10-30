@@ -9,7 +9,6 @@ templ InputField(
 		<input
 			type={ inputType }
 			if id != "" {
-				id={ id }
 				name={ id }
 			}
 			if bindValuePath != "" {
@@ -34,36 +33,62 @@ templ InputField(
 	</div>
 }
 
-templ InputFieldWithPrefix(
-	inputType, id, label, bindValuePath, prefix string,
-	denseMode bool,
-) {
+templ InputFieldClientSide(bindInputType, bindLabel, bindValuePath string) {
+	<!-- InputFieldClientSide -->
+	<div class="relative w-full">
+		<input
+			:type={ bindInputType }
+			if bindValuePath != "" {
+				x-model:value={ bindValuePath }
+			}
+			autocomplete="off"
+			:placeholder={ bindLabel }
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		/>
+		if bindLabel != "" {
+			<label
+				x-text={ bindLabel }
+				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+			></label>
+		}
+	</div>
+}
+
+type InputFieldWithPrefixDto struct {
+	Type                string
+	Id                  string
+	Label               string
+	BindInputValuePath  string
+	BindPrefixValuePath string
+	InfoTooltipContent  string
+}
+
+templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 	<!-- InputFieldWithPrefix -->
 	<div class="relative w-full">
 		<div class="border-os-200 hover:border-os-100 focus:border-os-50 flex items-center rounded-md border">
-			<span class="bg-os-200 border-os-200 pt-2.7 relative h-10 cursor-default rounded-s-md border-r px-3 text-sm text-slate-400" x-text={ prefix }></span>
+			<span class="bg-os-200 border-os-200 pt-2.7 relative h-10 cursor-default rounded-s-md border-r px-3 text-sm text-slate-400" x-text={ inputDto.BindPrefixValuePath }></span>
 			<input
-				type={ inputType }
-				id={ id }
-				name={ id }
-				if bindValuePath != "" {
-					x-model:value={ bindValuePath }
+				type={ inputDto.Type }
+				name={ inputDto.Id }
+				if inputDto.BindInputValuePath != "" {
+					:value={ inputDto.BindInputValuePath }
 				}
 				autocomplete="off"
-				placeholder={ label }
-				if denseMode {
-					class="bg-os-300 autofill:bg-os-300 h-7.5 peer relative w-full rounded-r-md px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
-				} else {
-					class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
-				}
+				class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 			/>
 		</div>
-		if label != "" {
-			<label
-				for={ id }
-				class="absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
-			>
-				{ label }
+		if inputDto.InfoTooltipContent != "" {
+			<div class="group absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2">
+				<i class="ph-duotone ph-info cursor-help"></i>
+				<div class="invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-cyan-900 p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
+					{ inputDto.InfoTooltipContent }
+				</div>
+			</div>
+		}
+		if inputDto.Label != "" {
+			<label class="absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100">
+				{ inputDto.Label }
 			</label>
 		}
 	</div>
@@ -84,7 +109,7 @@ templ InputFieldReadOnly(
 			if serverSideValue != "" {
 				value={ serverSideValue }
 			}
-			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all cursor-default text-slate-400"
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default rounded-md border px-3 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
 			readonly
 		/>
 		if label != "" {

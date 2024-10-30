@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/alessio/shellescape"
@@ -132,7 +133,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 			return NewServiceOutput(InfraError, err.Error())
 		}
 
-		return NewServiceOutput(Created, "InstallMarketplaceCatalogItemScheduled")
+		return NewServiceOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
 	}
 
 	dto := dto.NewInstallMarketplaceCatalogItem(
@@ -166,6 +167,7 @@ func (service *MarketplaceService) ReadInstalledItems() ServiceOutput {
 
 func (service *MarketplaceService) DeleteInstalledItem(
 	input map[string]interface{},
+	shouldSchedule bool,
 ) ServiceOutput {
 	requiredParams := []string{"installedId"}
 
@@ -187,6 +189,34 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		if err != nil {
 			shouldUninstallServices = false
 		}
+	}
+
+	if shouldSchedule {
+		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace delete"
+		installParams := []string{
+			"--installed-id", installedId.String(),
+			"--should-uninstall-services", strconv.FormatBool(shouldUninstallServices),
+		}
+
+		cliCmd += " " + strings.Join(installParams, " ")
+
+		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbSvc)
+		taskName, _ := valueObject.NewScheduledTaskName("DeleteMarketplaceCatalogItem")
+		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
+		taskTags := []valueObject.ScheduledTaskTag{taskTag}
+		timeoutSeconds := uint16(600)
+
+		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
+			taskName, taskCmd, taskTags, &timeoutSeconds, nil,
+		)
+
+		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		if err != nil {
+			return NewServiceOutput(InfraError, err.Error())
+		}
+
+		return NewServiceOutput(Created, "MarketplaceCatalogItemDeletionScheduled")
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(

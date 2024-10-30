@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.1.2 - 2024/X/X
+refactor(front): marketplace page with HTMX+Alpine.js
+
 0.1.1 - 2024/X/X
 refactor(front): accounts page with HTMX+Alpine.js
 

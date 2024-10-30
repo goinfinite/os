@@ -30,3 +30,15 @@ templ DeleteModal(
 		@DeleteCriticalContent(elNameStatePath, elIdStatePath)
 	}
 }
+
+templ ScheduleDeletionModal(
+	isOpenState, closeFunction, deleteFunction, elNameStatePath, elIdStatePath string,
+) {
+	<!-- ScheduleDeletionModal -->
+	@CriticalModal(
+		isOpenState, closeFunction, "No, Keep it.", deleteFunction,
+		"schedule-deletion-element", "ph-queue", "Yes, Schedule Delete!",
+	) {
+		@DeleteCriticalContent(elNameStatePath, elIdStatePath)
+	}
+}
