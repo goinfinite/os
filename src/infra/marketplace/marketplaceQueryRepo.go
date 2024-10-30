@@ -1,7 +1,6 @@
 package marketplaceInfra
 
 import (
-	"embed"
 	"errors"
 	"log/slog"
 	"os"
@@ -10,14 +9,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
-
-//go:embed assets/*
-var assets embed.FS
 
 type MarketplaceQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
@@ -40,24 +37,17 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
 	}
 
 	for _, rawService := range rawServices {
-		rawServiceNameWithVersion, assertOk := rawService.(string)
-		if !assertOk {
-			slog.Error("InvalidCatalogItemService", slog.Any("service", rawService))
-			continue
-		}
-
 		serviceNameWithVersion, err := valueObject.NewServiceNameWithVersionFromString(
-			rawServiceNameWithVersion,
+			rawService,
 		)
 		if err != nil {
-			slog.Error(
-				err.Error(),
-				slog.String("serviceNameWithVersion", rawServiceNameWithVersion),
-			)
+			slog.Error(err.Error(), slog.Any("serviceNameWithVersion", rawService))
 			continue
 		}
 
-		serviceNamesWithVersions = append(serviceNamesWithVersions, serviceNameWithVersion)
+		serviceNamesWithVersions = append(
+			serviceNamesWithVersions, serviceNameWithVersion,
+		)
 	}
 
 	return serviceNamesWithVersions, nil
@@ -86,13 +76,17 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 			continue
 		}
 
-		matchPattern, err := valueObject.NewMappingMatchPattern(rawItemMappingMap["matchPattern"])
+		matchPattern, err := valueObject.NewMappingMatchPattern(
+			rawItemMappingMap["matchPattern"],
+		)
 		if err != nil {
 			slog.Error(err.Error(), slog.Int("index", mappingIndex))
 			continue
 		}
 
-		targetType, err := valueObject.NewMappingTargetType(rawItemMappingMap["targetType"])
+		targetType, err := valueObject.NewMappingTargetType(
+			rawItemMappingMap["targetType"],
+		)
 		if err != nil {
 			slog.Error(err.Error(), slog.Int("index", mappingIndex))
 			continue
@@ -149,61 +143,43 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			continue
 		}
 
-		rawKey, assertOk := rawItemDataFieldMap["name"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemDataFieldKey",
-				slog.String("key", rawKey),
-			)
-			continue
-		}
+		rawKey := rawItemDataFieldMap["name"]
 		key, err := valueObject.NewDataFieldName(rawKey)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("key", rawKey))
+			slog.Error(err.Error(), slog.Any("key", rawKey))
 			continue
 		}
 
-		rawLabel, assertOk := rawItemDataFieldMap["label"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemDataFieldLabel",
-				slog.String("key", rawKey), slog.String("label", rawLabel),
-			)
-			continue
-		}
+		rawLabel := rawItemDataFieldMap["label"]
 		label, err := valueObject.NewDataFieldLabel(rawLabel)
 		if err != nil {
 			slog.Error(
-				err.Error(), slog.String("key", rawKey),
-				slog.String("label", rawLabel),
+				err.Error(), slog.Any("key", rawKey),
+				slog.Any("label", rawLabel),
 			)
 			continue
 		}
 
-		rawFieldType, assertOk := rawItemDataFieldMap["type"].(string)
-		if !assertOk {
-			slog.Error(
-				"InvalidMarketplaceCatalogItemDataFieldType",
-				slog.String("key", rawKey), slog.String("type", rawFieldType),
-			)
-			continue
-		}
+		rawFieldType := rawItemDataFieldMap["type"]
 		fieldType, err := valueObject.NewDataFieldType(rawFieldType)
 		if err != nil {
 			slog.Error(
-				err.Error(), slog.String("key", rawKey),
-				slog.String("type", rawFieldType),
+				err.Error(), slog.Any("key", rawKey),
+				slog.Any("type", rawFieldType),
 			)
 			continue
 		}
 
 		isRequired := false
 		if rawItemDataFieldMap["isRequired"] != nil {
-			rawIsRequired, assertOk := rawItemDataFieldMap["isRequired"].(bool)
-			if !assertOk {
+			rawIsRequired, err := voHelper.InterfaceToBool(
+				rawItemDataFieldMap["isRequired"],
+			)
+			if err != nil {
 				slog.Error(
 					"InvalidMarketplaceCatalogItemDataFieldIsRequired",
-					slog.String("key", rawKey), slog.Bool("isRequired", rawIsRequired),
+					slog.Any("err", err), slog.Any("key", rawKey),
+					slog.Bool("isRequired", rawIsRequired),
 				)
 				continue
 			}
@@ -212,20 +188,12 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 
 		var defaultValuePtr *valueObject.DataFieldValue
 		if rawItemDataFieldMap["defaultValue"] != nil {
-			rawDefaultValue, assertOk := rawItemDataFieldMap["defaultValue"].(string)
-			if !assertOk {
-				slog.Error(
-					"InvalidMarketplaceCatalogItemDataFieldDefaultValue",
-					slog.String("key", rawKey),
-					slog.String("defaultValue", rawDefaultValue),
-				)
-				continue
-			}
+			rawDefaultValue := rawItemDataFieldMap["defaultValue"]
 			defaultValue, err := valueObject.NewDataFieldValue(rawDefaultValue)
 			if err != nil {
 				slog.Error(
-					err.Error(), slog.String("key", rawKey),
-					slog.String("defaultValue", rawDefaultValue),
+					err.Error(), slog.Any("key", rawKey),
+					slog.Any("defaultValue", rawDefaultValue),
 				)
 				continue
 			}
@@ -245,7 +213,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 			if !assertOk {
 				slog.Error(
 					"InvalidMarketplaceCatalogItemDataFieldOptions",
-					slog.String("key", rawKey), slog.Any("options", rawOptions),
+					slog.Any("key", rawKey), slog.Any("options", rawOptions),
 				)
 				continue
 			}
@@ -254,7 +222,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 				option, err := valueObject.NewDataFieldValue(rawOption)
 				if err != nil {
 					slog.Error(
-						err.Error(), slog.String("key", rawKey),
+						err.Error(), slog.Any("key", rawKey),
 						slog.Any("options", rawOption),
 					)
 					continue
@@ -264,15 +232,10 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 		}
 
 		itemDataField, err := valueObject.NewMarketplaceCatalogItemDataField(
-			key,
-			label,
-			fieldType,
-			defaultValuePtr,
-			options,
-			isRequired,
+			key, label, fieldType, defaultValuePtr, options, isRequired,
 		)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("key", rawKey))
+			slog.Error(err.Error(), slog.Any("key", rawKey))
 			continue
 		}
 		itemDataFields = append(itemDataFields, itemDataField)
@@ -314,7 +277,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFileNames(
 
 	for _, rawItemUninstallFileName := range rawItemUninstallFileNames {
 		itemUninstallUninstallFileNames, err := valueObject.NewUnixFileName(
-			rawItemUninstallFileName.(string),
+			rawItemUninstallFileName,
 		)
 		if err != nil {
 			slog.Error(err.Error(), slog.Any("fileName", rawItemUninstallFileName))
@@ -383,29 +346,19 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	rawItemName, assertOk := itemMap["name"].(string)
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceItemName")
-	}
-	itemName, err := valueObject.NewMarketplaceItemName(rawItemName)
+	itemName, err := valueObject.NewMarketplaceItemName(itemMap["name"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawItemType, assertOk := itemMap["type"].(string)
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceItemType")
-	}
-	itemType, err := valueObject.NewMarketplaceItemType(rawItemType)
+	itemType, err := valueObject.NewMarketplaceItemType(itemMap["type"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	rawItemDescription, assertOk := itemMap["description"].(string)
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceItemDescription")
-	}
-	itemDescription, err := valueObject.NewMarketplaceItemDescription(rawItemDescription)
+	itemDescription, err := valueObject.NewMarketplaceItemDescription(
+		itemMap["description"],
+	)
 	if err != nil {
 		return catalogItem, err
 	}
@@ -468,11 +421,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	rawItemAvatarUrl, assertOk := itemMap["avatarUrl"].(string)
-	if !assertOk {
-		return catalogItem, errors.New("InvalidMarketplaceItemAvatarUrl")
-	}
-	itemAvatarUrl, err := valueObject.NewUrl(rawItemAvatarUrl)
+	itemAvatarUrl, err := valueObject.NewUrl(itemMap["avatarUrl"])
 	if err != nil {
 		return catalogItem, err
 	}
