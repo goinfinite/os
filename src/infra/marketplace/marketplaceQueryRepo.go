@@ -28,7 +28,7 @@ func NewMarketplaceQueryRepo(
 	}
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
+func (repo *MarketplaceQueryRepo) catalogItemServicesFactory(
 	catalogItemServices interface{},
 ) (serviceNamesWithVersions []valueObject.ServiceNameWithVersion, err error) {
 	rawServices, assertOk := catalogItemServices.([]interface{})
@@ -53,7 +53,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemServices(
 	return serviceNamesWithVersions, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
+func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 	catalogItemMappingsMap interface{},
 ) (itemMappings []valueObject.MarketplaceItemMapping, err error) {
 	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
@@ -125,7 +125,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemMappings(
 	return itemMappings, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
+func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 	catalogItemDataFieldsMap interface{},
 ) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
 	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
@@ -244,7 +244,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemDataFields(
 	return itemDataFields, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
+func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 	catalogItemCmdStepsMap interface{},
 ) (itemCmdSteps []valueObject.UnixCommand, err error) {
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
@@ -265,7 +265,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemCmdSteps(
 	return itemCmdSteps, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFileNames(
+func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 	catalogItemUninstallFileNames interface{},
 ) (itemUninstallFileNames []valueObject.UnixFileName, err error) {
 	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]interface{})
@@ -292,7 +292,7 @@ func (repo *MarketplaceQueryRepo) parseCatalogItemUninstallFileNames(
 	return itemUninstallFileNames, nil
 }
 
-func (repo *MarketplaceQueryRepo) parseCatalogItemScreenshotUrls(
+func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 	catalogItemUrlsMap interface{},
 ) (itemUrls []valueObject.Url, err error) {
 	if catalogItemUrlsMap == nil {
@@ -365,7 +365,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemServices := []valueObject.ServiceNameWithVersion{}
 	if itemMap["services"] != nil {
-		itemServices, err = repo.parseCatalogItemServices(itemMap["services"])
+		itemServices, err = repo.catalogItemServicesFactory(itemMap["services"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -373,7 +373,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemMappings := []valueObject.MarketplaceItemMapping{}
 	if itemMap["mappings"] != nil {
-		itemMappings, err = repo.parseCatalogItemMappings(itemMap["mappings"])
+		itemMappings, err = repo.catalogItemMappingsFactory(itemMap["mappings"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -381,7 +381,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemDataFields := []valueObject.MarketplaceCatalogItemDataField{}
 	if itemMap["dataFields"] != nil {
-		itemDataFields, err = repo.parseCatalogItemDataFields(itemMap["dataFields"])
+		itemDataFields, err = repo.catalogItemDataFieldsFactory(itemMap["dataFields"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -389,7 +389,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemInstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
-		itemInstallCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["installCmdSteps"])
+		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(itemMap["installCmdSteps"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -397,7 +397,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemUninstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["uninstallCmdSteps"] != nil {
-		itemUninstallCmdSteps, err = repo.parseCatalogItemCmdSteps(itemMap["uninstallCmdSteps"])
+		itemUninstallCmdSteps, err = repo.catalogItemCmdStepsFactory(itemMap["uninstallCmdSteps"])
 		if err != nil {
 			return catalogItem, err
 		}
@@ -405,7 +405,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemUninstallFileNames := []valueObject.UnixFileName{}
 	if itemMap["uninstallFileNames"] != nil {
-		itemUninstallFileNames, err = repo.parseCatalogItemUninstallFileNames(
+		itemUninstallFileNames, err = repo.catalogItemUninstallFileNamesFactory(
 			itemMap["uninstallFileNames"],
 		)
 		if err != nil {
@@ -428,7 +428,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemScreenshotUrls := []valueObject.Url{}
 	if itemMap["screenshotUrls"] != nil {
-		itemScreenshotUrls, err = repo.parseCatalogItemScreenshotUrls(itemMap["screenshotUrls"])
+		itemScreenshotUrls, err = repo.catalogItemScreenshotUrlsFactory(itemMap["screenshotUrls"])
 		if err != nil {
 			return catalogItem, err
 		}
