@@ -44,7 +44,7 @@ func NewMarketplaceController(
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
-// @Success      200 {array} dto.ReadMarketplaceItemsResponse
+// @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
@@ -201,11 +201,25 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.MarketplaceInstalledItem
+// @Param        itemId query  uint  false  "Id"
+// @Param        itemSlug query  string  false  "Slug"
+// @Param        itemName query  string  false  "Name"
+// @Param        itemType query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadInstalledItems(),
+		c, controller.marketplaceService.ReadInstalledItems(requestBody),
 	)
 }
 
