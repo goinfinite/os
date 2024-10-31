@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
@@ -98,10 +99,11 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 			return overview, errors.New("FailedToReadCatalogItems")
 		}
 
-		catalogItemsList, assertOk = responseOutput.Body.([]entity.MarketplaceCatalogItem)
+		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceCatalogItemsResponse)
 		if !assertOk {
 			return overview, errors.New("FailedToReadCatalogItems")
 		}
+		catalogItemsList = typedOutputBody.Items
 	}
 
 	return page.MarketplaceOverview{
