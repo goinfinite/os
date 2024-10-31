@@ -509,10 +509,6 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			break
 		}
 
-		if readDto.ItemId != nil && catalogItem.Id != *readDto.ItemId {
-			continue
-		}
-
 		if readDto.ItemSlug != nil {
 			if !slices.Contains(catalogItem.Slugs, *readDto.ItemSlug) {
 				continue
@@ -562,6 +558,19 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 
 		catalogItems[itemIndex].Id = nextAvailableId
 		itemsIdsSlice = append(itemsIdsSlice, nextAvailableId.Uint16())
+	}
+
+	if readDto.ItemId != nil {
+		var foundCatalogTime entity.MarketplaceCatalogItem
+		for _, catalogItem := range catalogItems {
+			if catalogItem.Id != *readDto.ItemId {
+				continue
+			}
+
+			foundCatalogTime = catalogItem
+			break
+		}
+		catalogItems = []entity.MarketplaceCatalogItem{foundCatalogTime}
 	}
 
 	sortDirectionStr := "asc"
