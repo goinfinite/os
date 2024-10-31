@@ -13,7 +13,7 @@ var MarketplaceDefaultPagination dto.Pagination = dto.Pagination{
 	ItemsPerPage: 10,
 }
 
-func ReadMarketplaceCatalog(
+func ReadMarketplaceCatalogItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	readDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (dto.ReadMarketplaceCatalogItemsResponse, error) {

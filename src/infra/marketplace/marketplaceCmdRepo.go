@@ -353,7 +353,10 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(*installDto.Id)
+	readDto := dto.ReadMarketplaceCatalogItemsRequest{
+		ItemId: installDto.Id,
+	}
+	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
@@ -678,9 +681,10 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.Slug,
-	)
+	readDto := dto.ReadMarketplaceCatalogItemsRequest{
+		ItemSlug: &installedItem.Slug,
+	}
+	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
 	if err != nil {
 		return err
 	}

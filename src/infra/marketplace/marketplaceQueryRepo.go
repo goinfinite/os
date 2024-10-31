@@ -9,6 +9,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -609,44 +610,22 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}, nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadCatalogItemById(
-	catalogId valueObject.MarketplaceItemId,
+func (repo *MarketplaceQueryRepo) ReadUniqueCatalogItem(
+	readDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	catalogItems, err := repo.ReadCatalogItems(dto.ReadMarketplaceCatalogItemsRequest{})
+	readDto.Pagination = useCase.MarketplaceDefaultPagination
+
+	responseDto, err := repo.ReadCatalogItems(readDto)
 	if err != nil {
 		return catalogItem, err
 	}
 
-	for _, catalogItem := range catalogItems.Items {
-		if catalogItem.Id.Uint16() != catalogId.Uint16() {
-			continue
-		}
-
-		return catalogItem, nil
+	if len(responseDto.Items) == 0 {
+		return catalogItem, errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	return catalogItem, errors.New("CatalogItemNotFound")
-}
-
-func (repo *MarketplaceQueryRepo) ReadCatalogItemBySlug(
-	slug valueObject.MarketplaceItemSlug,
-) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	catalogItems, err := repo.ReadCatalogItems(dto.ReadMarketplaceCatalogItemsRequest{})
-	if err != nil {
-		return catalogItem, err
-	}
-
-	for _, catalogItem := range catalogItems.Items {
-		for _, catalogItemSlug := range catalogItem.Slugs {
-			if catalogItemSlug.String() != slug.String() {
-				continue
-			}
-
-			return catalogItem, nil
-		}
-	}
-
-	return catalogItem, errors.New("CatalogItemNotFound")
+	foundCatalogItem := responseDto.Items[0]
+	return foundCatalogItem, nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
