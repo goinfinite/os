@@ -304,6 +304,15 @@ definitions:
       sortDirection:
         type: string
     type: object
+  dto.ReadMarketplaceCatalogItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/entity.MarketplaceCatalogItem'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
@@ -590,37 +599,6 @@ definitions:
           type: string
         type: array
       type:
-        type: string
-    type: object
-  entity.MarketplaceInstalledItem:
-    properties:
-      avatarUrl:
-        type: string
-      createdAt:
-        type: integer
-      hostname:
-        type: string
-      id:
-        type: integer
-      installDirectory:
-        type: string
-      installUuid:
-        type: string
-      mappings:
-        items:
-          $ref: '#/definitions/entity.Mapping'
-        type: array
-      name:
-        type: string
-      services:
-        items:
-          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
-        type: array
-      type:
-        type: string
-      updatedAt:
-        type: integer
-      urlPath:
         type: string
     type: object
   entity.O11yOverview:
@@ -1462,15 +1440,50 @@ paths:
       consumes:
       - application/json
       description: List marketplace catalog items.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Slug
+        in: query
+        name: slug
+        type: string
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.MarketplaceCatalogItem'
-            type: array
+            $ref: '#/definitions/dto.ReadMarketplaceCatalogItemsResponse'
       security:
       - Bearer: []
       summary: ReadCatalog
@@ -1502,15 +1515,50 @@ paths:
       consumes:
       - application/json
       description: List marketplace installed items.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Hostname
+        in: query
+        name: hostname
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: InstallUuid
+        in: query
+        name: installationUuid
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.MarketplaceInstalledItem'
-            type: array
+            $ref: '#/definitions/dto.ReadMarketplaceCatalogItemsResponse'
       security:
       - Bearer: []
       summary: ReadInstalledItems
@@ -1717,6 +1765,43 @@ paths:
       consumes:
       - application/json
       description: List installed services and their status.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
@@ -1810,6 +1895,43 @@ paths:
       consumes:
       - application/json
       description: List installable services.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
