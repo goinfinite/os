@@ -669,8 +669,11 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
-		deleteDto.InstalledId,
+	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
+		Id: &deleteDto.InstalledId,
+	}
+	installedItem, err := repo.marketplaceQueryRepo.ReadUniqueInstalledItem(
+		readInstalledItemDto,
 	)
 	if err != nil {
 		return err

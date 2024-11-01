@@ -3,7 +3,6 @@ package repository
 import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type MarketplaceQueryRepo interface {
@@ -16,7 +15,7 @@ type MarketplaceQueryRepo interface {
 	ReadInstalledItems(
 		readDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (dto.ReadMarketplaceInstalledItemsResponse, error)
-	ReadInstalledItemById(
-		installedId valueObject.MarketplaceItemId,
+	ReadUniqueInstalledItem(
+		readDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (entity.MarketplaceInstalledItem, error)
 }

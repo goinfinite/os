@@ -729,23 +729,20 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	}, nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadInstalledItemById(
-	installedId valueObject.MarketplaceItemId,
-) (entity entity.MarketplaceInstalledItem, err error) {
-	var model dbModel.MarketplaceInstalledItem
-	err = repo.persistentDbSvc.Handler.
-		Model(&dbModel.MarketplaceInstalledItem{}).
-		Where("id = ?", installedId.Uint16()).
-		Preload("Mappings").
-		Find(&model).Error
+func (repo *MarketplaceQueryRepo) ReadUniqueInstalledItem(
+	readDto dto.ReadMarketplaceInstalledItemsRequest,
+) (installedItem entity.MarketplaceInstalledItem, err error) {
+	readDto.Pagination = useCase.MarketplaceDefaultPagination
+
+	responseDto, err := repo.ReadInstalledItems(readDto)
 	if err != nil {
-		return entity, errors.New("ReadDatabaseEntryError")
+		return installedItem, err
 	}
 
-	entity, err = model.ToEntity()
-	if err != nil {
-		return entity, errors.New("ModelToEntityError")
+	if len(responseDto.Items) == 0 {
+		return installedItem, errors.New("MarketplaceInstalledItemNotFound")
 	}
 
-	return entity, nil
+	foundInstalledItem := responseDto.Items[0]
+	return foundInstalledItem, nil
 }

@@ -11,14 +11,17 @@ import (
 func DeleteMarketplaceInstalledItem(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
-	dto dto.DeleteMarketplaceInstalledItem,
+	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	_, err := marketplaceQueryRepo.ReadInstalledItemById(dto.InstalledId)
+	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
+		Id: &deleteDto.InstalledId,
+	}
+	_, err := marketplaceQueryRepo.ReadUniqueInstalledItem(readInstalledItemDto)
 	if err != nil {
 		return errors.New("MarketplaceInstalledItemNotFound")
 	}
 
-	err = marketplaceCmdRepo.UninstallItem(dto)
+	err = marketplaceCmdRepo.UninstallItem(deleteDto)
 	if err != nil {
 		slog.Error("UninstallMarketplaceItemError", slog.Any("error", err))
 		return errors.New("UninstallMarketplaceItemInfraError")
