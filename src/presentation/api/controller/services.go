@@ -36,10 +36,26 @@ func NewServicesController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
+// @Param        id query  uint  false  "Id"
+// @Param        name query  string  false  "Name"
+// @Param        nature query  string  false  "Nature"
+// @Param        type query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {array} dto.InstalledServiceWithMetrics
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.servicesService.Read())
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.servicesService.Read(requestBody),
+	)
 }
 
 // ReadInstallableServices	 godoc
@@ -49,11 +65,25 @@ func (controller *ServicesController) Read(c echo.Context) error {
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
+// @Param        id query  uint  false  "Id"
+// @Param        name query  string  false  "Name"
+// @Param        nature query  string  false  "Nature"
+// @Param        type query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {array} entity.InstallableService
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstallables(),
+		c, controller.servicesService.ReadInstallables(requestBody),
 	)
 }
 
