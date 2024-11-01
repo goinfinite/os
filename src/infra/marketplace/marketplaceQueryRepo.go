@@ -505,24 +505,6 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			catalogItem.Id, _ = valueObject.NewMarketplaceItemId(0)
 		}
 
-		if len(catalogItems) >= int(readDto.Pagination.ItemsPerPage) {
-			break
-		}
-
-		if readDto.ItemSlug != nil {
-			if !slices.Contains(catalogItem.Slugs, *readDto.ItemSlug) {
-				continue
-			}
-		}
-
-		if readDto.ItemName != nil && catalogItem.Name != *readDto.ItemName {
-			continue
-		}
-
-		if readDto.ItemType != nil && catalogItem.Type != *readDto.ItemType {
-			continue
-		}
-
 		catalogItems = append(catalogItems, catalogItem)
 
 		if catalogItem.Id.Uint16() != 0 {
@@ -560,17 +542,27 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		itemsIdsSlice = append(itemsIdsSlice, nextAvailableId.Uint16())
 	}
 
-	if readDto.ItemId != nil {
-		var foundCatalogTime entity.MarketplaceCatalogItem
-		for _, catalogItem := range catalogItems {
-			if catalogItem.Id != *readDto.ItemId {
-				continue
-			}
-
-			foundCatalogTime = catalogItem
+	filteredCatalogItems := []entity.MarketplaceCatalogItem{}
+	for _, catalogItem := range catalogItems {
+		if len(catalogItems) >= int(readDto.Pagination.ItemsPerPage) {
 			break
 		}
-		catalogItems = []entity.MarketplaceCatalogItem{foundCatalogTime}
+
+		if readDto.ItemSlug != nil {
+			if !slices.Contains(catalogItem.Slugs, *readDto.ItemSlug) {
+				continue
+			}
+		}
+
+		if readDto.ItemName != nil && catalogItem.Name != *readDto.ItemName {
+			continue
+		}
+
+		if readDto.ItemType != nil && catalogItem.Type != *readDto.ItemType {
+			continue
+		}
+
+		filteredCatalogItems = append(filteredCatalogItems, catalogItem)
 	}
 
 	sortDirectionStr := "asc"
@@ -579,7 +571,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	if readDto.Pagination.SortBy != nil {
-		slices.SortStableFunc(catalogItems, func(a, b entity.MarketplaceCatalogItem) int {
+		slices.SortStableFunc(filteredCatalogItems, func(a, b entity.MarketplaceCatalogItem) int {
 			firstElement := a
 			secondElement := b
 			if sortDirectionStr != "asc" {
@@ -606,7 +598,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		})
 	}
 
-	itemsTotal := uint64(len(catalogItems))
+	itemsTotal := uint64(len(filteredCatalogItems))
 	pagesTotal := uint32(itemsTotal / uint64(readDto.Pagination.ItemsPerPage))
 
 	paginationDto := readDto.Pagination
@@ -615,7 +607,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 
 	return dto.ReadMarketplaceCatalogItemsResponse{
 		Pagination: paginationDto,
-		Items:      catalogItems,
+		Items:      filteredCatalogItems,
 	}, nil
 }
 
