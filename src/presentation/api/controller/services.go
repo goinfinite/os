@@ -57,7 +57,7 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	)
 }
 
-func parseRawEnvs(envs interface{}) ([]string, error) {
+func (controller *ServicesController) parseRawEnvs(envs interface{}) ([]string, error) {
 	rawEnvs := []string{}
 	rawEnvsSlice, assertOk := envs.([]interface{})
 	if !assertOk {
@@ -80,7 +80,9 @@ func parseRawEnvs(envs interface{}) ([]string, error) {
 	return rawEnvs, nil
 }
 
-func parseRawPortBindings(bindings interface{}) ([]string, error) {
+func (controller *ServicesController) parseRawPortBindings(
+	bindings interface{},
+) ([]string, error) {
 	rawPortBindings := []string{}
 	rawPortBindingsSlice, assertOk := bindings.([]interface{})
 	if !assertOk {
@@ -145,7 +147,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -154,7 +156,9 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err = controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -184,7 +188,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -193,7 +197,9 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err = controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
@@ -222,7 +228,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	}
 
 	if requestBody["envs"] != nil {
-		rawEnvs, err := parseRawEnvs(requestBody["envs"])
+		rawEnvs, err := controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -230,7 +236,9 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	}
 
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err := parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err := controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
