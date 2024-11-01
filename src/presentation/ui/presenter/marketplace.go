@@ -79,7 +79,9 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 
 	installedItemsList := []entity.MarketplaceInstalledItem{}
 	if listType == "installed" {
-		responseOutput := presenter.marketplaceService.ReadInstalledItems()
+		responseOutput := presenter.marketplaceService.ReadInstalledItems(
+			map[string]interface{}{},
+		)
 		if responseOutput.Status != service.Success {
 			return overview, errors.New("FailedToReadInstalledItems")
 		}

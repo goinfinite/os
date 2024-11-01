@@ -96,7 +96,9 @@ func (service *MarketplaceService) ReadCatalog(
 	}
 
 	if input["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(input["sortDirection"])
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
 		if err != nil {
 			return NewServiceOutput(UserError, err)
 		}
@@ -119,8 +121,10 @@ func (service *MarketplaceService) ReadCatalog(
 		ItemType:   typePtr,
 	}
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(service.persistentDbSvc)
-	itemsList, err := useCase.ReadMarketplaceCatalog(marketplaceQueryRepo, readDto)
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+		service.persistentDbSvc,
+	)
+	itemsList, err := useCase.ReadMarketplaceCatalogItems(marketplaceQueryRepo, readDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -195,12 +199,12 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 
 		if urlPathPtr != nil {
-			installParams = append(installParams, "--urlPath", urlPathPtr.String())
+			installParams = append(installParams, "--url-path", urlPathPtr.String())
 		}
 
 		for _, dataField := range dataFields {
 			escapedField := shellescape.Quote(dataField.String())
-			installParams = append(installParams, "--dataFields", escapedField)
+			installParams = append(installParams, "--data-fields", escapedField)
 		}
 
 		cliCmd += " " + strings.Join(installParams, " ")
@@ -243,9 +247,82 @@ func (service *MarketplaceService) InstallCatalogItem(
 	return NewServiceOutput(Created, "MarketplaceCatalogItemInstalled")
 }
 
-func (service *MarketplaceService) ReadInstalledItems() ServiceOutput {
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(service.persistentDbSvc)
-	itemsList, err := useCase.ReadMarketplaceInstalledItems(marketplaceQueryRepo)
+func (service *MarketplaceService) ReadInstalledItems(
+	input map[string]interface{},
+) ServiceOutput {
+	var idPtr *valueObject.MarketplaceItemId
+	if input["id"] != nil {
+		id, err := valueObject.NewMarketplaceItemId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		idPtr = &id
+	}
+
+	var typePtr *valueObject.MarketplaceItemType
+	if input["type"] != nil {
+		itemType, err := valueObject.NewMarketplaceItemType(input["type"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		typePtr = &itemType
+	}
+
+	paginationDto := useCase.MarketplaceDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readDto := dto.ReadMarketplaceInstalledItemsRequest{
+		Pagination: paginationDto,
+		ItemId:     idPtr,
+		ItemType:   typePtr,
+	}
+
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+		service.persistentDbSvc,
+	)
+	itemsList, err := useCase.ReadMarketplaceInstalledItems(
+		marketplaceQueryRepo, readDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -288,7 +365,9 @@ func (service *MarketplaceService) DeleteInstalledItem(
 
 		cliCmd += " " + strings.Join(installParams, " ")
 
-		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbSvc)
+		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(
+			service.persistentDbSvc,
+		)
 		taskName, _ := valueObject.NewScheduledTaskName("DeleteMarketplaceCatalogItem")
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
@@ -311,8 +390,12 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		installedId, shouldUninstallServices,
 	)
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(service.persistentDbSvc)
-	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(service.persistentDbSvc)
+	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
+		service.persistentDbSvc,
+	)
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(
+		service.persistentDbSvc,
+	)
 
 	err = useCase.DeleteMarketplaceInstalledItem(
 		marketplaceQueryRepo, marketplaceCmdRepo, deleteMarketplaceInstalledItem,

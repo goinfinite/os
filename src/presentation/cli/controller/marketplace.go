@@ -31,8 +31,7 @@ func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
 	var catalogItemSlugStr, catalogItemNameStr, catalogItemTypeStr string
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16
-	var paginationSortByStr, paginationSortDirectionStr string
-	var paginationLastSeenIdStr string
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
 
 	cmd := &cobra.Command{
 		Use:   "list-catalog",
@@ -203,15 +202,75 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 }
 
 func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
+	var installedItemIdUint uint64
+	var installedItemTypeStr string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "ReadInstalledItems",
 		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{}
+
+			if installedItemIdUint != 0 {
+				requestBody["id"] = installedItemIdUint
+			}
+
+			if installedItemTypeStr != "" {
+				requestBody["type"] = installedItemTypeStr
+			}
+
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
+
 			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.ReadInstalledItems(),
+				controller.marketplaceService.ReadInstalledItems(requestBody),
 			)
 		},
 	}
+
+	cmd.Flags().Uint64VarP(
+		&installedItemIdUint, "installed-item-id", "i", 0, "InstalledItemId",
+	)
+	cmd.Flags().StringVarP(
+		&installedItemTypeStr, "installed-item-type", "t", "", "InstalledItemType",
+	)
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "m", 0,
+		"ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "r", "",
+		"SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 
 	return cmd
 }
