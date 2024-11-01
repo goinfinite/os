@@ -204,7 +204,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 	var installedItemIdUint uint64
 	var installedItemHostnameStr, installedItemTypeStr, installedItemUuidStr string
-	var itemInstalledAt int64
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16
 	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
@@ -229,10 +228,6 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 
 			if installedItemUuidStr != "" {
 				requestBody["installId"] = installedItemUuidStr
-			}
-
-			if itemInstalledAt != 0 {
-				requestBody["installedAt"] = itemInstalledAt
 			}
 
 			if paginationPageNumberUint32 != 0 {
@@ -273,9 +268,6 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(
 		&installedItemUuidStr, "installed-item-uuid", "u", "", "InstalledItemUuidStr",
-	)
-	cmd.Flags().Int64VarP(
-		&itemInstalledAt, "item-installed-at", "b", 0, "ItemInstalledAt (UnixTime)",
 	)
 	cmd.Flags().Uint32VarP(
 		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",

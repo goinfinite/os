@@ -288,15 +288,6 @@ func (service *MarketplaceService) ReadInstalledItems(
 		installationUuidPtr = &installationUuid
 	}
 
-	var installedAtPtr *valueObject.UnixTime
-	if input["installedAt"] != nil {
-		installedAt, err := valueObject.NewUnixTime(input["installedAt"])
-		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidInstalledAt"))
-		}
-		installedAtPtr = &installedAt
-	}
-
 	paginationDto := useCase.MarketplaceDefaultPagination
 	if input["pageNumber"] != nil {
 		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
@@ -346,7 +337,6 @@ func (service *MarketplaceService) ReadInstalledItems(
 		Hostname:         hostnamePtr,
 		Type:             typePtr,
 		InstallationUuid: installationUuidPtr,
-		InstalledAt:      installedAtPtr,
 	}
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(

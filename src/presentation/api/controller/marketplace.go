@@ -205,7 +205,6 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Param        hostname query  string  false  "Hostname"
 // @Param        type query  string  false  "Type"
 // @Param        installationUuid query  string  false  "InstallUuid"
-// @Param        installedAt query  string  false  "CreatedAt"
 // @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
 // @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
 // @Param        sortBy query  string  false  "SortBy (Pagination)"

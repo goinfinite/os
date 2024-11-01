@@ -656,12 +656,9 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		model.InstallUuid = readDto.InstallationUuid.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.Where(&model)
-	if readDto.InstalledAt != nil {
-		dbQuery = dbQuery.Where("created_at = ?", readDto.InstalledAt.GetAsGoTime())
-	}
-
-	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
+	dbQuery := repo.persistentDbSvc.Handler.
+		Where(&model).
+		Limit(int(readDto.Pagination.ItemsPerPage))
 	if readDto.Pagination.LastSeenId == nil {
 		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
