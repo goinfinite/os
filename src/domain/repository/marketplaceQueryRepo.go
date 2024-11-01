@@ -13,7 +13,9 @@ type MarketplaceQueryRepo interface {
 	ReadUniqueCatalogItem(
 		readDto dto.ReadMarketplaceCatalogItemsRequest,
 	) (entity.MarketplaceCatalogItem, error)
-	ReadInstalledItems() ([]entity.MarketplaceInstalledItem, error)
+	ReadInstalledItems(
+		readDto dto.ReadMarketplaceInstalledItemsRequest,
+	) (dto.ReadMarketplaceInstalledItemsResponse, error)
 	ReadInstalledItemById(
 		installedId valueObject.MarketplaceItemId,
 	) (entity.MarketplaceInstalledItem, error)

@@ -26,7 +26,7 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 
 		readDto := dto.ReadMarketplaceCatalogItemsRequest{
 			Pagination: paginationDto,
-			ItemType:   &itemType,
+			Type:       &itemType,
 		}
 
 		responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)

@@ -3,6 +3,7 @@ package marketplaceInfra
 import (
 	"errors"
 	"log/slog"
+	"math"
 	"os"
 	"slices"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	"github.com/iancoleman/strcase"
 )
 
 type MarketplaceQueryRepo struct {
@@ -548,18 +550,26 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			break
 		}
 
-		if readDto.ItemSlug != nil {
-			if !slices.Contains(catalogItem.Slugs, *readDto.ItemSlug) {
+		if readDto.Id != nil && catalogItem.Id != *readDto.Id {
+			continue
+		}
+
+		if readDto.Slug != nil {
+			if !slices.Contains(catalogItem.Slugs, *readDto.Slug) {
 				continue
 			}
 		}
 
-		if readDto.ItemName != nil && catalogItem.Name != *readDto.ItemName {
-			continue
+		if readDto.Name != nil {
+			if !strings.EqualFold(catalogItem.Name.String(), readDto.Name.String()) {
+				continue
+			}
 		}
 
-		if readDto.ItemType != nil && catalogItem.Type != *readDto.ItemType {
-			continue
+		if readDto.Type != nil && catalogItem.Type != *readDto.Type {
+			if !strings.EqualFold(catalogItem.Type.String(), readDto.Type.String()) {
+				continue
+			}
 		}
 
 		filteredCatalogItems = append(filteredCatalogItems, catalogItem)
@@ -629,36 +639,94 @@ func (repo *MarketplaceQueryRepo) ReadUniqueCatalogItem(
 	return foundCatalogItem, nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadInstalledItems() (
-	[]entity.MarketplaceInstalledItem, error,
-) {
-	entities := []entity.MarketplaceInstalledItem{}
-
-	models := []dbModel.MarketplaceInstalledItem{}
-	err := repo.persistentDbSvc.Handler.
-		Model(&dbModel.MarketplaceInstalledItem{}).
-		Preload("Mappings").
-		Find(&models).Error
-	if err != nil {
-		return entities, errors.New("ReadDatabaseEntriesError")
+func (repo *MarketplaceQueryRepo) ReadInstalledItems(
+	readDto dto.ReadMarketplaceInstalledItemsRequest,
+) (installedItemsDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
+	model := dbModel.MarketplaceInstalledItem{}
+	if readDto.Id != nil {
+		model.ID = uint(readDto.Id.Uint16())
+	}
+	if readDto.Hostname != nil {
+		model.Hostname = readDto.Hostname.String()
+	}
+	if readDto.Type != nil {
+		model.Type = readDto.Type.String()
+	}
+	if readDto.InstallationUuid != nil {
+		model.InstallUuid = readDto.InstallationUuid.String()
 	}
 
-	for _, installedItemModel := range models {
-		entity, err := installedItemModel.ToEntity()
+	dbQuery := repo.persistentDbSvc.Handler.Where(&model)
+	if readDto.InstalledAt != nil {
+		dbQuery = dbQuery.Where("created_at = ?", readDto.InstalledAt.GetAsGoTime())
+	}
+
+	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
+	if readDto.Pagination.LastSeenId == nil {
+		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
+		dbQuery = dbQuery.Offset(offset)
+	} else {
+		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
+	}
+	if readDto.Pagination.SortBy != nil {
+		orderStatement := readDto.Pagination.SortBy.String()
+		orderStatement = strcase.ToSnake(orderStatement)
+		if orderStatement == "id" {
+			orderStatement = "ID"
+		}
+
+		if readDto.Pagination.SortDirection != nil {
+			orderStatement += " " + readDto.Pagination.SortDirection.String()
+		}
+
+		dbQuery = dbQuery.Order(orderStatement)
+	}
+
+	models := []dbModel.MarketplaceInstalledItem{}
+	err = dbQuery.Preload("Mappings").Find(&models).Error
+	if err != nil {
+		return installedItemsDto, errors.New("ReadMarketplaceInstalledItemsError")
+	}
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return installedItemsDto, errors.New(
+			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
+		)
+	}
+
+	entities := []entity.MarketplaceInstalledItem{}
+	for _, model := range models {
+		entity, err := model.ToEntity()
 		if err != nil {
 			slog.Error(
-				"MarketplaceInstalledItemModelToEntityError", slog.Any("error", err),
+				"MarketplaceInstalledItemModelToEntityError",
+				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
 			)
 			continue
 		}
 
-		entities = append(
-			entities,
-			entity,
-		)
+		entities = append(entities, entity)
 	}
 
-	return entities, nil
+	itemsTotalUint := uint64(itemsTotal)
+	pagesTotal := uint32(
+		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
+	)
+	responsePagination := dto.Pagination{
+		PageNumber:    readDto.Pagination.PageNumber,
+		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
+		SortBy:        readDto.Pagination.SortBy,
+		SortDirection: readDto.Pagination.SortDirection,
+		PagesTotal:    &pagesTotal,
+		ItemsTotal:    &itemsTotalUint,
+	}
+
+	return dto.ReadMarketplaceInstalledItemsResponse{
+		Pagination: responsePagination,
+		Items:      entities,
+	}, nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItemById(

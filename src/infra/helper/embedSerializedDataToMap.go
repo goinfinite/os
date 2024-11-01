@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// TODO: remover isso aqui quando acabar de mudar o services
 func EmbedSerializedDataToMap(
 	embed *embed.FS,
 	filePath valueObject.UnixFilePath,

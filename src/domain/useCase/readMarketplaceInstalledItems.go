@@ -5,19 +5,18 @@ import (
 	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
 func ReadMarketplaceInstalledItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	readDto dto.ReadMarketplaceInstalledItemsRequest,
-) ([]entity.MarketplaceInstalledItem, error) {
-	installedItems, err := marketplaceQueryRepo.ReadInstalledItems()
+) (dto.ReadMarketplaceInstalledItemsResponse, error) {
+	responseDto, err := marketplaceQueryRepo.ReadInstalledItems(readDto)
 	if err != nil {
 		slog.Error("ReadMarketplaceInstalledItemsError", slog.Any("error", err))
-		return nil, errors.New("ReadMarketplaceInstalledItemsInfraError")
+		return responseDto, errors.New("ReadMarketplaceInstalledItemsInfraError")
 	}
 
-	return installedItems, nil
+	return responseDto, nil
 }

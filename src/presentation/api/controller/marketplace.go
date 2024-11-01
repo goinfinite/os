@@ -35,10 +35,10 @@ func NewMarketplaceController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Param        itemId query  uint  false  "Id"
-// @Param        itemSlug query  string  false  "Slug"
-// @Param        itemName query  string  false  "Name"
-// @Param        itemType query  string  false  "Type"
+// @Param        id query  uint  false  "Id"
+// @Param        slug query  string  false  "Slug"
+// @Param        name query  string  false  "Name"
+// @Param        type query  string  false  "Type"
 // @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
 // @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
@@ -201,10 +201,11 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Param        itemId query  uint  false  "Id"
-// @Param        itemSlug query  string  false  "Slug"
-// @Param        itemName query  string  false  "Name"
-// @Param        itemType query  string  false  "Type"
+// @Param        id query  uint  false  "Id"
+// @Param        hostname query  string  false  "Hostname"
+// @Param        type query  string  false  "Type"
+// @Param        installationUuid query  string  false  "InstallUuid"
+// @Param        installedAt query  string  false  "CreatedAt"
 // @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
 // @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
 // @Param        sortBy query  string  false  "SortBy (Pagination)"

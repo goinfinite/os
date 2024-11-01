@@ -7,10 +7,10 @@ import (
 
 type ReadMarketplaceCatalogItemsRequest struct {
 	Pagination Pagination                       `json:"pagination"`
-	ItemId     *valueObject.MarketplaceItemId   `json:"itemId,omitempty"`
-	ItemSlug   *valueObject.MarketplaceItemSlug `json:"itemSlug,omitempty"`
-	ItemName   *valueObject.MarketplaceItemName `json:"itemName,omitempty"`
-	ItemType   *valueObject.MarketplaceItemType `json:"itemType,omitempty"`
+	Id         *valueObject.MarketplaceItemId   `json:"id,omitempty"`
+	Slug       *valueObject.MarketplaceItemSlug `json:"slug,omitempty"`
+	Name       *valueObject.MarketplaceItemName `json:"name,omitempty"`
+	Type       *valueObject.MarketplaceItemType `json:"type,omitempty"`
 }
 
 type ReadMarketplaceCatalogItemsResponse struct {

@@ -75,8 +75,6 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType string) (
 	overview page.MarketplaceOverview, err error,
 ) {
-	var assertOk bool
-
 	installedItemsList := []entity.MarketplaceInstalledItem{}
 	if listType == "installed" {
 		responseOutput := presenter.marketplaceService.ReadInstalledItems(
@@ -86,10 +84,11 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 			return overview, errors.New("FailedToReadInstalledItems")
 		}
 
-		installedItemsList, assertOk = responseOutput.Body.([]entity.MarketplaceInstalledItem)
+		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceInstalledItemsResponse)
 		if !assertOk {
 			return overview, errors.New("FailedToReadInstalledItems")
 		}
+		installedItemsList = typedOutputBody.Items
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}

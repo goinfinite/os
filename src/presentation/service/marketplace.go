@@ -115,10 +115,10 @@ func (service *MarketplaceService) ReadCatalog(
 
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{
 		Pagination: paginationDto,
-		ItemId:     idPtr,
-		ItemSlug:   slugPtr,
-		ItemName:   namePtr,
-		ItemType:   typePtr,
+		Id:         idPtr,
+		Slug:       slugPtr,
+		Name:       namePtr,
+		Type:       typePtr,
 	}
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
@@ -259,6 +259,15 @@ func (service *MarketplaceService) ReadInstalledItems(
 		idPtr = &id
 	}
 
+	var hostnamePtr *valueObject.Fqdn
+	if input["hostname"] != nil {
+		hostname, err := valueObject.NewFqdn(input["hostname"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		hostnamePtr = &hostname
+	}
+
 	var typePtr *valueObject.MarketplaceItemType
 	if input["type"] != nil {
 		itemType, err := valueObject.NewMarketplaceItemType(input["type"])
@@ -266,6 +275,26 @@ func (service *MarketplaceService) ReadInstalledItems(
 			return NewServiceOutput(UserError, err)
 		}
 		typePtr = &itemType
+	}
+
+	var installationUuidPtr *valueObject.MarketplaceInstalledItemUuid
+	if input["installationUuid"] != nil {
+		installationUuid, err := valueObject.NewMarketplaceInstalledItemUuid(
+			input["installationUuid"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		installationUuidPtr = &installationUuid
+	}
+
+	var installedAtPtr *valueObject.UnixTime
+	if input["installedAt"] != nil {
+		installedAt, err := valueObject.NewUnixTime(input["installedAt"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidInstalledAt"))
+		}
+		installedAtPtr = &installedAt
 	}
 
 	paginationDto := useCase.MarketplaceDefaultPagination
@@ -312,9 +341,12 @@ func (service *MarketplaceService) ReadInstalledItems(
 	}
 
 	readDto := dto.ReadMarketplaceInstalledItemsRequest{
-		Pagination: paginationDto,
-		ItemId:     idPtr,
-		ItemType:   typePtr,
+		Pagination:       paginationDto,
+		Id:               idPtr,
+		Hostname:         hostnamePtr,
+		Type:             typePtr,
+		InstallationUuid: installationUuidPtr,
+		InstalledAt:      installedAtPtr,
 	}
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(

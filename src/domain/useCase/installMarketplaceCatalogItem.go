@@ -63,11 +63,11 @@ func MarketplaceCatalogItemLookup(
 
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{}
 	if itemId != nil {
-		readDto.ItemId = itemId
+		readDto.Id = itemId
 		return marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
 	}
 
-	readDto.ItemSlug = itemSlug
+	readDto.Slug = itemSlug
 	return marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
 }
 
