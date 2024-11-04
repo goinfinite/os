@@ -309,7 +309,6 @@ func (repo *ServicesQueryRepo) ReadUniqueInstalledItem(
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-
 	responseDto, err := repo.ReadInstalledItems(readDto)
 	if err != nil {
 		return installedItem, err
@@ -742,24 +741,22 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadInstallableByName(
-	serviceName valueObject.ServiceName,
+func (repo *ServicesQueryRepo) ReadUniqueInstallableItem(
+	readDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
-	responseDto, err := repo.ReadInstallableItems(
-		dto.ReadInstallableServicesItemsRequest{},
-	)
+	readDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
+	}
+	responseDto, err := repo.ReadInstallableItems(readDto)
 	if err != nil {
 		return installableService, err
 	}
 
-	serviceNameStr := serviceName.String()
-	for _, installableService := range responseDto.Items {
-		if serviceNameStr != installableService.Name.String() {
-			continue
-		}
-
-		return installableService, nil
+	if len(responseDto.Items) == 0 {
+		return installableService, errors.New("InstallableServiceItemNotFound")
 	}
 
-	return installableService, errors.New("InstallableServiceNotFound")
+	foundInstallableItem := responseDto.Items[0]
+	return foundInstallableItem, nil
 }

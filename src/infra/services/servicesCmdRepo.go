@@ -350,7 +350,10 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) (installedServiceName valueObject.ServiceName, err error) {
-	installableService, err := repo.servicesQueryRepo.ReadInstallableByName(createDto.Name)
+	readDto := dto.ReadInstallableServicesItemsRequest{
+		Name: &createDto.Name,
+	}
+	installableService, err := repo.servicesQueryRepo.ReadUniqueInstallableItem(readDto)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -741,9 +744,14 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return nil
 	}
 
-	installableEntity, err := repo.servicesQueryRepo.ReadInstallableByName(name)
+	readInstallableDto := dto.ReadInstallableServicesItemsRequest{
+		Name: &name,
+	}
+	installableEntity, err := repo.servicesQueryRepo.ReadUniqueInstallableItem(
+		readInstallableDto,
+	)
 	if err != nil {
-		return errors.New("GetInstallableEntityError: " + err.Error())
+		return errors.New("ReadInstallableEntityError: " + err.Error())
 	}
 
 	err = repo.runCmdSteps("Uninstall", installableEntity.UninstallCmdSteps)
