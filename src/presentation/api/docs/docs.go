@@ -2915,6 +2915,9 @@ const docTemplate = `{
                 "logOutputPath": {
                     "type": "string"
                 },
+                "manifestVersion": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2990,6 +2993,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "manifestVersion": {
+                    "type": "string"
                 },
                 "mappings": {
                     "type": "array",

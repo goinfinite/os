@@ -2909,6 +2909,9 @@
                 "logOutputPath": {
                     "type": "string"
                 },
+                "manifestVersion": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2984,6 +2987,9 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "manifestVersion": {
+                    "type": "string"
                 },
                 "mappings": {
                     "type": "array",
