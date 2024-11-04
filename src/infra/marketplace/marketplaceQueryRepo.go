@@ -631,7 +631,6 @@ func (repo *MarketplaceQueryRepo) ReadUniqueCatalogItem(
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-
 	responseDto, err := repo.ReadCatalogItems(readDto)
 	if err != nil {
 		return catalogItem, err
@@ -739,7 +738,6 @@ func (repo *MarketplaceQueryRepo) ReadUniqueInstalledItem(
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-
 	responseDto, err := repo.ReadInstalledItems(readDto)
 	if err != nil {
 		return installedItem, err
