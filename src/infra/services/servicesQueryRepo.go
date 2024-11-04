@@ -115,44 +115,44 @@ func (repo *ServicesQueryRepo) readPidMetrics(
 
 func (repo *ServicesQueryRepo) readServiceMetrics(
 	name valueObject.ServiceName,
-) (*valueObject.ServiceMetrics, error) {
+) (metrics valueObject.ServiceMetrics, err error) {
 	supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
 		SupervisorCtlBin + " status " + name.String(),
 	)
 	if len(supervisorStatus) == 0 {
-		return nil, errors.New("ReadSupervisorStatusError")
+		return metrics, errors.New("ReadSupervisorStatusError")
 	}
 
 	// # supervisorctl status <serviceName>
 	// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
 	supervisorStatusParts := strings.Fields(supervisorStatus)
 	if len(supervisorStatusParts) < 4 {
-		return nil, errors.New("MissingSupervisorStatusParts")
+		return metrics, errors.New("MissingSupervisorStatusParts")
 	}
 
 	rawServiceStatus := supervisorStatusParts[1]
 	serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 	if err != nil {
-		return nil, errors.New(err.Error() + ": " + rawServiceStatus)
+		return metrics, errors.New(err.Error() + ": " + rawServiceStatus)
 	}
 
 	if serviceStatus.String() != "running" {
-		return nil, nil
+		return metrics, nil
 	}
 
 	rawServicePid := supervisorStatusParts[3]
 	rawServicePid = strings.Trim(rawServicePid, ",")
 	servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
 	if err != nil {
-		return nil, errors.New(err.Error() + ": " + rawServicePid)
+		return metrics, errors.New(err.Error() + ": " + rawServicePid)
 	}
 
-	serviceMetrics, err := repo.readPidMetrics(int32(servicePidInt))
+	metrics, err = repo.readPidMetrics(int32(servicePidInt))
 	if err != nil {
-		return nil, errors.New(err.Error() + ": " + rawServicePid)
+		return metrics, errors.New(err.Error() + ": " + rawServicePid)
 	}
 
-	return &serviceMetrics, nil
+	return metrics, nil
 }
 
 func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
@@ -250,14 +250,14 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 
 		var entityMetricsPtr *valueObject.ServiceMetrics
 		if readDto.ShouldIncludeMetrics {
-			entityMetricsPtr, err = repo.readServiceMetrics(entityWithoutMetrics.Name)
+			entityMetrics, err := repo.readServiceMetrics(entityWithoutMetrics.Name)
 			if err != nil {
 				slog.Error(
 					"FailedToReadInstalledServiceMetrics",
 					slog.String("name", model.Name), slog.Any("error", err),
 				)
-				entityMetricsPtr = nil
 			}
+			entityMetricsPtr = &entityMetrics
 		}
 
 		entityWithMetrics := dto.NewInstalledServiceWithMetrics(
