@@ -68,7 +68,16 @@ func (service *ServicesService) Read(input map[string]interface{}) ServiceOutput
 		typePtr = &itemType
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
+	shouldIncludeMetrics := true
+	if input["shouldIncludeMetrics"] != nil {
+		var err error
+		shouldIncludeMetrics, err = voHelper.InterfaceToBool(input["shouldIncludeMetrics"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+	}
+
+	paginationDto := useCase.ServicesDefaultPagination
 	if input["pageNumber"] != nil {
 		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
 		if err != nil {
@@ -111,14 +120,17 @@ func (service *ServicesService) Read(input map[string]interface{}) ServiceOutput
 		paginationDto.LastSeenId = &lastSeenId
 	}
 
-	_ = dto.ReadInstalledServicesItemsRequest{
-		Pagination: paginationDto,
-		Name:       namePtr,
-		Nature:     naturePtr,
-		Type:       typePtr,
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Pagination:           paginationDto,
+		Name:                 namePtr,
+		Nature:               naturePtr,
+		Type:                 typePtr,
+		ShouldIncludeMetrics: shouldIncludeMetrics,
 	}
 
-	servicesList, err := useCase.ReadServicesWithMetrics(service.servicesQueryRepo)
+	servicesList, err := useCase.ReadInstalledServices(
+		service.servicesQueryRepo, readDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -156,7 +168,7 @@ func (service *ServicesService) ReadInstallables(
 		typePtr = &itemType
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
+	paginationDto := useCase.ServicesDefaultPagination
 	if input["pageNumber"] != nil {
 		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
 		if err != nil {
@@ -199,14 +211,16 @@ func (service *ServicesService) ReadInstallables(
 		paginationDto.LastSeenId = &lastSeenId
 	}
 
-	_ = dto.ReadInstallableServicesItemsRequest{
+	readDto := dto.ReadInstallableServicesItemsRequest{
 		Pagination: paginationDto,
 		Name:       namePtr,
 		Nature:     naturePtr,
 		Type:       typePtr,
 	}
 
-	servicesList, err := useCase.ReadInstallableServices(service.servicesQueryRepo)
+	servicesList, err := useCase.ReadInstallableServices(
+		service.servicesQueryRepo, readDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

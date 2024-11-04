@@ -17,6 +17,7 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	"github.com/iancoleman/strcase"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -34,44 +35,59 @@ func NewServicesQueryRepo(
 	return &ServicesQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
-	servicesEntities := []entity.InstalledService{}
+func (repo *ServicesQueryRepo) readServiceMetrics(
+	name valueObject.ServiceName,
+) (*valueObject.ServiceMetrics, error) {
+	supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
+		SupervisorCtlBin + " status " + name.String(),
+	)
+	if len(supervisorStatus) == 0 {
+		return nil, errors.New("ReadSupervisorStatusError")
+	}
 
-	servicesModels := []dbModel.InstalledService{}
-	err := repo.persistentDbSvc.Handler.
-		Find(&servicesModels).Error
+	// # supervisorctl status <serviceName>
+	// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
+	supervisorStatusParts := strings.Fields(supervisorStatus)
+	if len(supervisorStatusParts) < 4 {
+		return nil, errors.New("MissingSupervisorStatusParts")
+	}
+
+	rawServiceStatus := supervisorStatusParts[1]
+	serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 	if err != nil {
-		return servicesEntities, err
+		return nil, errors.New(err.Error() + ": " + rawServiceStatus)
 	}
 
-	for _, serviceModel := range servicesModels {
-		serviceEntity, err := serviceModel.ToEntity()
-		if err != nil {
-			slog.Debug(
-				"ModelToEntityError",
-				slog.String("serviceName", serviceModel.Name),
-				slog.Any("error", err),
-			)
-			continue
-		}
-
-		servicesEntities = append(servicesEntities, serviceEntity)
+	if serviceStatus.String() != "running" {
+		return nil, nil
 	}
+
+	rawServicePid := supervisorStatusParts[3]
+	rawServicePid = strings.Trim(rawServicePid, ",")
+	servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
+	if err != nil {
+		return nil, errors.New(err.Error() + ": " + rawServicePid)
+	}
+
+	serviceMetrics, err := repo.getPidMetrics(int32(servicePidInt))
+	if err != nil {
+		return nil, errors.New(err.Error() + ": " + rawServicePid)
+	}
+
+	return &serviceMetrics, nil
+}
+
+func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
+	stoppedServicesNames := []string{}
 
 	rawStoppedServices, err := infraHelper.RunCmdWithSubShell(
 		SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'",
 	)
 	if err != nil {
-		slog.Debug("ReadStoppedServicesError", slog.Any("error", err))
-		return servicesEntities, nil
-	}
-
-	if len(rawStoppedServices) == 0 {
-		return servicesEntities, nil
+		return stoppedServicesNames, err
 	}
 
 	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
-	stoppedServiceNames := []string{}
 	for _, rawStoppedService := range rawStoppedServicesLines {
 		if rawStoppedService == "" {
 			continue
@@ -86,19 +102,126 @@ func (repo *ServicesQueryRepo) Read() ([]entity.InstalledService, error) {
 			continue
 		}
 
-		stoppedServiceNames = append(stoppedServiceNames, serviceName.String())
+		stoppedServicesNames = append(stoppedServicesNames, serviceName.String())
 	}
 
-	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
-	for serviceIndex, serviceEntity := range servicesEntities {
-		if !slices.Contains(stoppedServiceNames, serviceEntity.Name.String()) {
+	return stoppedServicesNames, nil
+}
+
+func (repo *ServicesQueryRepo) Read(
+	readDto dto.ReadInstalledServicesItemsRequest,
+) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
+	model := dbModel.InstalledService{}
+	if readDto.Name != nil {
+		model.Name = readDto.Name.String()
+	}
+	if readDto.Nature != nil {
+		model.Nature = readDto.Nature.String()
+	}
+	if readDto.Type != nil {
+		model.Type = readDto.Type.String()
+	}
+
+	dbQuery := repo.persistentDbSvc.Handler.
+		Where(&model).
+		Limit(int(readDto.Pagination.ItemsPerPage))
+	if readDto.Pagination.LastSeenId == nil {
+		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
+		dbQuery = dbQuery.Offset(offset)
+	} else {
+		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
+	}
+	if readDto.Pagination.SortBy != nil {
+		orderStatement := readDto.Pagination.SortBy.String()
+		orderStatement = strcase.ToSnake(orderStatement)
+		if orderStatement == "id" {
+			orderStatement = "ID"
+		}
+
+		if readDto.Pagination.SortDirection != nil {
+			orderStatement += " " + readDto.Pagination.SortDirection.String()
+		}
+
+		dbQuery = dbQuery.Order(orderStatement)
+	}
+
+	models := []dbModel.InstalledService{}
+	err = dbQuery.Find(&models).Error
+	if err != nil {
+		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
+	}
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return installedItemsDto, errors.New(
+			"CountInstalledServicesItemsTotalError: " + err.Error(),
+		)
+	}
+
+	entities := []dto.InstalledServiceWithMetrics{}
+	for _, model := range models {
+		entityWithoutMetrics, err := model.ToEntity()
+		if err != nil {
+			slog.Error(
+				"InstalledServiceItemModelToEntityError",
+				slog.String("name", model.Name), slog.Any("error", err),
+			)
 			continue
 		}
 
-		servicesEntities[serviceIndex].Status = stoppedStatus
+		var entityMetricsPtr *valueObject.ServiceMetrics
+		if readDto.ShouldIncludeMetrics {
+			entityMetricsPtr, err = repo.readServiceMetrics(entityWithoutMetrics.Name)
+			if err != nil {
+				slog.Error(
+					"FailedToReadInstalledServiceMetrics",
+					slog.String("name", model.Name), slog.Any("error", err),
+				)
+				entityMetricsPtr = nil
+			}
+		}
+
+		entityWithMetrics := dto.NewInstalledServiceWithMetrics(
+			entityWithoutMetrics,
+			entityMetricsPtr,
+		)
+		entities = append(entities, entityWithMetrics)
 	}
 
-	return servicesEntities, nil
+	stoppedServicesNames, err := repo.readStoppedServicesNames()
+	if err != nil {
+		return installedItemsDto, errors.New(
+			"FailedToReadStoppedServicesNames: " + err.Error(),
+		)
+	}
+
+	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
+	for entityIndex, entity := range entities {
+		if !slices.Contains(stoppedServicesNames, entity.Name.String()) {
+			continue
+		}
+
+		entities[entityIndex].Status = stoppedStatus
+	}
+
+	itemsTotalUint := uint64(itemsTotal)
+	pagesTotal := uint32(
+		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
+	)
+	responsePagination := dto.Pagination{
+		PageNumber:    readDto.Pagination.PageNumber,
+		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
+		SortBy:        readDto.Pagination.SortBy,
+		SortDirection: readDto.Pagination.SortDirection,
+		PagesTotal:    &pagesTotal,
+		ItemsTotal:    &itemsTotalUint,
+	}
+
+	return dto.ReadInstalledServicesItemsResponse{
+		Pagination: responsePagination,
+		Items:      entities,
+	}, nil
 }
 
 func (repo *ServicesQueryRepo) ReadByName(
@@ -215,91 +338,6 @@ func (repo *ServicesQueryRepo) getPidMetrics(
 	)
 
 	return serviceMetrics, nil
-}
-
-func (repo *ServicesQueryRepo) ReadWithMetrics() ([]dto.InstalledServiceWithMetrics, error) {
-	servicesWithMetrics := []dto.InstalledServiceWithMetrics{}
-
-	servicesEntities, err := repo.Read()
-	if err != nil {
-		return servicesWithMetrics, err
-	}
-	serviceNameServiceEntityMap := map[string]entity.InstalledService{}
-	for _, serviceEntity := range servicesEntities {
-		serviceNameServiceEntityMap[serviceEntity.Name.String()] = serviceEntity
-	}
-
-	supervisorStatus, _ := infraHelper.RunCmdWithSubShell(SupervisorCtlBin + " status")
-	if len(supervisorStatus) == 0 {
-		return servicesWithMetrics, errors.New("GetSupervisorStatusError")
-	}
-
-	// # supervisorctl status
-	// cron                             RUNNING   pid 120, uptime 0:00:35
-	// nginx                            STOPPED   Not started
-	// os-api                           RUNNING   pid 121, uptime 0:00:35
-	supervisorStatusLines := strings.Split(supervisorStatus, "\n")
-	if len(supervisorStatusLines) == 0 {
-		return servicesWithMetrics, errors.New("EmptySupervisorStatus")
-	}
-
-	for _, supervisorStatusLine := range supervisorStatusLines {
-		if supervisorStatusLine == "" {
-			continue
-		}
-
-		supervisorStatusLineParts := strings.Fields(supervisorStatusLine)
-		if len(supervisorStatusLineParts) < 4 {
-			continue
-		}
-
-		rawServiceName := supervisorStatusLineParts[0]
-		serviceName, err := valueObject.NewServiceName(rawServiceName)
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("name", rawServiceName))
-			continue
-		}
-
-		serviceEntity, exists := serviceNameServiceEntityMap[serviceName.String()]
-		if !exists {
-			continue
-		}
-
-		rawServiceStatus := supervisorStatusLineParts[1]
-		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("status", rawServiceStatus))
-			continue
-		}
-
-		if serviceStatus.String() != "running" {
-			serviceWithMetrics := dto.NewInstalledServiceWithMetrics(serviceEntity, nil)
-			servicesWithMetrics = append(servicesWithMetrics, serviceWithMetrics)
-			continue
-		}
-
-		rawServicePid := supervisorStatusLineParts[3]
-		rawServicePid = strings.Trim(rawServicePid, ",")
-		servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("pid", rawServicePid))
-			continue
-		}
-
-		serviceMetrics, err := repo.getPidMetrics(int32(servicePidInt))
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("pid", rawServicePid))
-			continue
-		}
-
-		serviceWithMetrics := dto.NewInstalledServiceWithMetrics(
-			serviceEntity, &serviceMetrics,
-		)
-
-		servicesWithMetrics = append(servicesWithMetrics, serviceWithMetrics)
-	}
-
-	return servicesWithMetrics, nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(

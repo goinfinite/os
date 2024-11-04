@@ -145,15 +145,22 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
-	serviceEntities, err := repo.servicesQueryRepo.Read()
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 100,
+		},
+	}
+	readServicesDto, err := repo.servicesQueryRepo.Read(readDto)
 	if err != nil {
 		return err
 	}
-	if len(serviceEntities) == 0 {
+	if len(readServicesDto.Items) == 0 {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
-	ctlPassword := infraHelper.GenStrongShortHash(serviceEntities[0].CreatedAt.String())
+	ctlPassword := infraHelper.GenStrongShortHash(
+		readServicesDto.Items[0].CreatedAt.String(),
+	)
 
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
@@ -225,7 +232,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	var supervisorConfFileContent strings.Builder
-	err = templatePtr.Execute(&supervisorConfFileContent, serviceEntities)
+	err = templatePtr.Execute(&supervisorConfFileContent, readServicesDto.Items)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
