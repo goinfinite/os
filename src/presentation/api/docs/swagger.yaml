@@ -1875,7 +1875,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: ReadServices
+      summary: ReadInstalledItems
       tags:
       - services
     put:
@@ -2005,7 +2005,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: ReadInstallableServices
+      summary: ReadInstallableItems
       tags:
       - services
     post:

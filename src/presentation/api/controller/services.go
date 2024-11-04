@@ -29,8 +29,8 @@ func NewServicesController(
 	}
 }
 
-// ReadServices	 godoc
-// @Summary      ReadServices
+// ReadInstalledItems	 godoc
+// @Summary      ReadInstalledItems
 // @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
@@ -58,8 +58,8 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 	)
 }
 
-// ReadInstallableServices	 godoc
-// @Summary      ReadInstallableServices
+// ReadInstallableItems	 godoc
+// @Summary      ReadInstallableItems
 // @Description  List installable services.
 // @Tags         services
 // @Security     Bearer
@@ -76,7 +76,7 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {array} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
-func (controller *ServicesController) ReadInstallables(c echo.Context) error {
+func (controller *ServicesController) ReadInstallablesItems(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err

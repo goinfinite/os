@@ -1441,7 +1441,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadServices",
+                "summary": "ReadInstalledItems",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1604,7 +1604,7 @@ const docTemplate = `{
                 "tags": [
                     "services"
                 ],
-                "summary": "ReadInstallableServices",
+                "summary": "ReadInstallableItems",
                 "parameters": [
                     {
                         "type": "integer",

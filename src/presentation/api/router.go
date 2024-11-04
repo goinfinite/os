@@ -149,7 +149,7 @@ func (router Router) servicesRoutes() {
 	)
 
 	servicesGroup.GET("/", servicesController.ReadInstalledItems)
-	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallablesItems)
 	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
 	servicesGroup.POST("/custom/", servicesController.CreateCustom)
 	servicesGroup.PUT("/", servicesController.Update)
