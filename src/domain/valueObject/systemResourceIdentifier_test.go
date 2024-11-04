@@ -5,7 +5,7 @@ import "testing"
 func TestSystemResourceIdentifier(t *testing.T) {
 	t.Run("ValidSystemResourceIdentifier", func(t *testing.T) {
 		validSystemResourceIdentifier := []interface{}{
-			"sri://0:account/120", "sri://1:mapping/200",
+			"sri://0:account/120", "sri://0:cron/1", "sri://1:mapping/200",
 		}
 
 		for _, identifier := range validSystemResourceIdentifier {
