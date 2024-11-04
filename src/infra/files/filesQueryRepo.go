@@ -151,7 +151,7 @@ func (repo FilesQueryRepo) Read(
 
 	sourcePathInfo, err := os.Stat(sourcePathStr)
 	if err != nil {
-		return unixFileList, errors.New("GetSourcePathInfoError")
+		return unixFileList, errors.New("ReadSourcePathInfoError")
 	}
 
 	filesToFactory := []valueObject.UnixFilePath{unixFilePath}
