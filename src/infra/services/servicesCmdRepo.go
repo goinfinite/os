@@ -65,7 +65,10 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
+		Name: &name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readInstalledDto)
 	if err != nil {
 		return err
 	}
@@ -100,7 +103,11 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &name,
+		ShouldIncludeMetrics: false,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readDto)
 	if err != nil {
 		return err
 	}
@@ -129,12 +136,16 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	service, err := repo.servicesQueryRepo.ReadByName(name)
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &name,
+		ShouldIncludeMetrics: false,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readDto)
 	if err != nil {
 		return err
 	}
 
-	if service.Status.String() == "running" {
+	if serviceEntity.Status.String() == "running" {
 		err = repo.Stop(name)
 		if err != nil {
 			return err
@@ -149,6 +160,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 		Pagination: dto.Pagination{
 			ItemsPerPage: 100,
 		},
+		ShouldIncludeMetrics: false,
 	}
 	readServicesDto, err := repo.servicesQueryRepo.ReadInstalledItems(readDto)
 	if err != nil {
@@ -545,7 +557,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(updateDto.Name)
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &updateDto.Name,
+		ShouldIncludeMetrics: false,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readDto)
 	if err != nil {
 		return err
 	}
@@ -686,7 +702,11 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &name,
+		ShouldIncludeMetrics: false,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readDto)
 	if err != nil {
 		return err
 	}

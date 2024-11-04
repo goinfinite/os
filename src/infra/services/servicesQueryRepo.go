@@ -305,39 +305,25 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadByName(
-	name valueObject.ServiceName,
-) (serviceEntity entity.InstalledService, err error) {
-	serviceNameStr := name.String()
-
-	var serviceModel dbModel.InstalledService
-	queryResult := repo.persistentDbSvc.Handler.
-		Where("name = ?", serviceNameStr).
-		Limit(1).
-		Find(&serviceModel)
-	if queryResult.Error != nil {
-		return serviceEntity, err
+func (repo *ServicesQueryRepo) ReadUniqueInstalledItem(
+	readDto dto.ReadInstalledServicesItemsRequest,
+) (installedItem dto.InstalledServiceWithMetrics, err error) {
+	readDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
 	}
 
-	if queryResult.RowsAffected == 0 {
-		return serviceEntity, errors.New("ServiceNotFound")
-	}
-
-	serviceEntity, err = serviceModel.ToEntity()
+	responseDto, err := repo.ReadInstalledItems(readDto)
 	if err != nil {
-		return serviceEntity, err
+		return installedItem, err
 	}
 
-	rawServiceStoppedResult, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " status " + serviceNameStr + " | grep -v 'RUNNING'",
-	)
-	if len(rawServiceStoppedResult) == 0 || err != nil {
-		return serviceEntity, nil
+	if len(responseDto.Items) == 0 {
+		return installedItem, errors.New("ServiceInstalledItemNotFound")
 	}
 
-	serviceEntity.Status, _ = valueObject.NewServiceStatus("stopped")
-
-	return serviceEntity, nil
+	foundInstalledItem := responseDto.Items[0]
+	return foundInstalledItem, nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(

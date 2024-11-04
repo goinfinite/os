@@ -3,13 +3,14 @@ package repository
 import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type ServicesQueryRepo interface {
 	ReadInstalledItems(
 		readDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
-	ReadByName(name valueObject.ServiceName) (entity.InstalledService, error)
+	ReadUniqueInstalledItem(
+		readDto dto.ReadInstalledServicesItemsRequest,
+	) (dto.InstalledServiceWithMetrics, error)
 	ReadInstallableItems() ([]entity.InstallableService, error)
 }

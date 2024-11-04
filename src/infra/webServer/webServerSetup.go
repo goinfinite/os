@@ -149,8 +149,14 @@ func (ws *WebServerSetup) OnStartSetup() {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
 	serviceName, _ := valueObject.NewServiceName("nginx")
+	readInstalledServiceDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &serviceName,
+		ShouldIncludeMetrics: false,
+	}
 	if workerCount == cpuCoresStr {
-		nginxService, err := servicesQueryRepo.ReadByName(serviceName)
+		nginxService, err := servicesQueryRepo.ReadUniqueInstalledItem(
+			readInstalledServiceDto,
+		)
 		if err != nil {
 			log.Fatalf("ReadNginxServiceFailed: %s", err.Error())
 		}
@@ -181,7 +187,9 @@ func (ws *WebServerSetup) OnStartSetup() {
 		log.Fatalf("%sRestartNginxFailed", defaultLogPrefix)
 	}
 
-	_, err = servicesQueryRepo.ReadByName("php-webserver")
+	phpWebServerSvcName, _ := valueObject.NewServiceName("php-webserver")
+	readInstalledServiceDto.Name = &phpWebServerSvcName
+	_, err = servicesQueryRepo.ReadUniqueInstalledItem(readInstalledServiceDto)
 	if err == nil {
 		err = ws.updatePhpMaxChildProcesses(
 			containerResources.HardwareSpecs.MemoryTotal,

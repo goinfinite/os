@@ -71,13 +71,19 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	}
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
-	service, err := servicesQueryRepo.ReadByName(serviceName)
+	readInstalledServiceDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &serviceName,
+		ShouldIncludeMetrics: false,
+	}
+	installedService, err := servicesQueryRepo.ReadUniqueInstalledItem(
+		readInstalledServiceDto,
+	)
 	if err != nil {
-		return "", errors.New("GetServiceByNameError")
+		return "", errors.New("ReadInstalledServiceByNameError")
 	}
 
 	protocolPortsMap := map[string]string{}
-	for _, svcPortBinding := range service.PortBindings {
+	for _, svcPortBinding := range installedService.PortBindings {
 		svcPortBindingProtocolStr := svcPortBinding.Protocol.String()
 		protocolPortsMap[svcPortBindingProtocolStr] = svcPortBinding.Port.String()
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
@@ -14,9 +15,13 @@ func DeleteService(
 	mappingCmdRepo repository.MappingCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
-	serviceEntity, err := servicesQueryRepo.ReadByName(svcName)
+	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
+		Name:                 &svcName,
+		ShouldIncludeMetrics: false,
+	}
+	serviceEntity, err := servicesQueryRepo.ReadUniqueInstalledItem(readInstalledDto)
 	if err != nil {
-		return errors.New("ServiceNotFound")
+		return err
 	}
 
 	isSystemService := serviceEntity.Type.String() == "system"
