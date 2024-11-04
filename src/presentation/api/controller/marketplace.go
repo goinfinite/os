@@ -210,7 +210,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
-// @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
+// @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)

@@ -1109,7 +1109,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ReadMarketplaceCatalogItemsResponse"
+                            "$ref": "#/definitions/dto.ReadMarketplaceInstalledItemsResponse"
                         }
                     }
                 }
@@ -1504,7 +1504,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
+                                "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
                             }
                         }
                     }
@@ -1667,7 +1667,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.InstallableService"
+                                "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
                             }
                         }
                     }
@@ -2569,6 +2569,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReadInstallableServicesItemsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.InstallableService"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
+        "dto.ReadInstalledServicesItemsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
         "dto.ReadMarketplaceCatalogItemsResponse": {
             "type": "object",
             "properties": {
@@ -2576,6 +2604,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceCatalogItem"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
+        "dto.ReadMarketplaceInstalledItemsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.MarketplaceInstalledItem"
                     }
                 },
                 "pagination": {
@@ -3025,6 +3067,53 @@ const docTemplate = `{
                     }
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.MarketplaceInstalledItem": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installDirectory": {
+                    "type": "string"
+                },
+                "installUuid": {
+                    "type": "string"
+                },
+                "mappings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Mapping"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.ServiceNameWithVersion"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "urlPath": {
                     "type": "string"
                 }
             }

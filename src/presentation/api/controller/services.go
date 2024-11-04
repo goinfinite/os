@@ -45,7 +45,7 @@ func NewServicesController(
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
-// @Success      200 {array} dto.InstalledServiceWithMetrics
+// @Success      200 {array} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
@@ -74,7 +74,7 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
-// @Success      200 {array} entity.InstallableService
+// @Success      200 {array} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)

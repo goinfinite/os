@@ -304,11 +304,38 @@ definitions:
       sortDirection:
         type: string
     type: object
+  dto.ReadInstallableServicesItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/entity.InstallableService'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadInstalledServicesItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.InstalledServiceWithMetrics'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
       items:
         items:
           $ref: '#/definitions/entity.MarketplaceCatalogItem'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadMarketplaceInstalledItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
       pagination:
         $ref: '#/definitions/dto.Pagination'
@@ -603,6 +630,37 @@ definitions:
           type: string
         type: array
       type:
+        type: string
+    type: object
+  entity.MarketplaceInstalledItem:
+    properties:
+      avatarUrl:
+        type: string
+      createdAt:
+        type: integer
+      hostname:
+        type: string
+      id:
+        type: integer
+      installDirectory:
+        type: string
+      installUuid:
+        type: string
+      mappings:
+        items:
+          $ref: '#/definitions/entity.Mapping'
+        type: array
+      name:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
+        type: array
+      type:
+        type: string
+      updatedAt:
+        type: integer
+      urlPath:
         type: string
     type: object
   entity.O11yOverview:
@@ -1562,7 +1620,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ReadMarketplaceCatalogItemsResponse'
+            $ref: '#/definitions/dto.ReadMarketplaceInstalledItemsResponse'
       security:
       - Bearer: []
       summary: ReadInstalledItems
@@ -1813,7 +1871,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.InstalledServiceWithMetrics'
+              $ref: '#/definitions/dto.ReadInstalledServicesItemsResponse'
             type: array
       security:
       - Bearer: []
@@ -1943,7 +2001,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.InstallableService'
+              $ref: '#/definitions/dto.ReadInstallableServicesItemsResponse'
             type: array
       security:
       - Bearer: []
