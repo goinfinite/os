@@ -1,11 +1,10 @@
 package servicesInfra
 
 import (
-	"embed"
 	"errors"
-	"io/fs"
 	"log/slog"
 	"math"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -21,9 +21,6 @@ import (
 
 	"github.com/shirou/gopsutil/process"
 )
-
-//go:embed assets/*
-var assets embed.FS
 
 type ServicesQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
@@ -354,7 +351,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 func (repo *ServicesQueryRepo) installableServiceFactory(
 	serviceFilePath valueObject.UnixFilePath,
 ) (installableService entity.InstallableService, err error) {
-	serviceMap, err := infraHelper.EmbedSerializedDataToMap(&assets, serviceFilePath)
+	serviceMap, err := infraHelper.FileSerializedDataToMap(serviceFilePath)
 	if err != nil {
 		return installableService, err
 	}
@@ -618,53 +615,145 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	), nil
 }
 
-func (repo *ServicesQueryRepo) ReadInstallableItems() ([]entity.InstallableService, error) {
-	installableServices := []entity.InstallableService{}
-
-	serviceFiles, err := fs.ReadDir(assets, "assets")
+func (repo *ServicesQueryRepo) ReadInstallableItems(
+	readDto dto.ReadInstallableServicesItemsRequest,
+) (installableItemsDto dto.ReadInstallableServicesItemsResponse, err error) {
+	_, err = os.Stat(infraEnvs.ServicesItemsDir)
 	if err != nil {
-		return installableServices, errors.New("ReadServiceFilesError: " + err.Error())
+		servicesCmdRepo := NewServicesCmdRepo(repo.persistentDbSvc)
+		err = servicesCmdRepo.RefreshItems()
+		if err != nil {
+			return installableItemsDto, errors.New(
+				"RefreshServicesItemsError: " + err.Error(),
+			)
+		}
 	}
 
-	for _, serviceFile := range serviceFiles {
-		serviceFileName := serviceFile.Name()
-		rawServiceFilePath := "assets/" + serviceFileName
-		serviceFilePath, err := valueObject.NewUnixFilePath(rawServiceFilePath)
+	rawInstallableFilesList, err := infraHelper.RunCmdWithSubShell(
+		"find " + infraEnvs.ServicesItemsDir + " -type f " +
+			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
+			"-not -path '*/.*' -not -name '.*'",
+	)
+	if err != nil {
+		return installableItemsDto, errors.New(
+			"ReadInstallableFilesError: " + err.Error(),
+		)
+	}
+
+	if len(rawInstallableFilesList) == 0 {
+		return installableItemsDto, errors.New("NoInstallableFilesFound")
+	}
+
+	rawInstallableFilesListParts := strings.Split(rawInstallableFilesList, "\n")
+	if len(rawInstallableFilesListParts) == 0 {
+		return installableItemsDto, errors.New("NoInstallableFilesFound")
+	}
+
+	installableServices := []entity.InstallableService{}
+	for _, rawFilePath := range rawInstallableFilesListParts {
+		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
 		if err != nil {
-			slog.Debug(
-				"InvalidServiceFilePathError",
-				slog.Any("assetFile", rawServiceFilePath),
+			slog.Error(err.Error(), slog.String("filePath", rawFilePath))
+			continue
+		}
+
+		installableService, err := repo.installableServiceFactory(itemFilePath)
+		if err != nil {
+			slog.Error(
+				"CatalogMarketplaceItemFactoryError",
+				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
 			)
 			continue
 		}
-		serviceFilePathStr := serviceFilePath.String()
 
-		installableService, err := repo.installableServiceFactory(serviceFilePath)
-		if err != nil {
-			slog.Debug(
-				"InstallableServiceFactoryError",
-				slog.String("assetFile", serviceFilePathStr),
-				slog.Any("error", err),
+		if readDto.Name != nil {
+			isNameEqual := strings.EqualFold(
+				installableService.Name.String(), readDto.Name.String(),
 			)
-			continue
+			if !isNameEqual {
+				continue
+			}
+		}
+
+		if readDto.Nature != nil {
+			isNatureEqual := strings.EqualFold(
+				installableService.Nature.String(), readDto.Nature.String(),
+			)
+			if !isNatureEqual {
+				continue
+			}
+		}
+
+		if readDto.Type != nil && installableService.Type != *readDto.Type {
+			isTypeEqual := strings.EqualFold(
+				installableService.Type.String(), readDto.Type.String(),
+			)
+			if !isTypeEqual {
+				continue
+			}
 		}
 
 		installableServices = append(installableServices, installableService)
 	}
 
-	return installableServices, nil
+	sortDirectionStr := "asc"
+	if readDto.Pagination.SortDirection != nil {
+		sortDirectionStr = readDto.Pagination.SortDirection.String()
+	}
+
+	if readDto.Pagination.SortBy != nil {
+		slices.SortStableFunc(installableServices, func(a, b entity.InstallableService) int {
+			firstElement := a
+			secondElement := b
+			if sortDirectionStr != "asc" {
+				firstElement = b
+				secondElement = a
+			}
+
+			switch readDto.Pagination.SortBy.String() {
+			case "name":
+				return strings.Compare(
+					firstElement.Name.String(), secondElement.Name.String(),
+				)
+			case "nature":
+				return strings.Compare(
+					firstElement.Nature.String(), secondElement.Nature.String(),
+				)
+			case "type":
+				return strings.Compare(
+					firstElement.Type.String(), secondElement.Type.String(),
+				)
+			default:
+				return 0
+			}
+		})
+	}
+
+	itemsTotal := uint64(len(installableServices))
+	pagesTotal := uint32(itemsTotal / uint64(readDto.Pagination.ItemsPerPage))
+
+	paginationDto := readDto.Pagination
+	paginationDto.ItemsTotal = &itemsTotal
+	paginationDto.PagesTotal = &pagesTotal
+
+	return dto.ReadInstallableServicesItemsResponse{
+		Pagination: paginationDto,
+		Items:      installableServices,
+	}, nil
 }
 
 func (repo *ServicesQueryRepo) ReadInstallableByName(
 	serviceName valueObject.ServiceName,
 ) (installableService entity.InstallableService, err error) {
-	installableServices, err := repo.ReadInstallableItems()
+	responseDto, err := repo.ReadInstallableItems(
+		dto.ReadInstallableServicesItemsRequest{},
+	)
 	if err != nil {
 		return installableService, err
 	}
 
 	serviceNameStr := serviceName.String()
-	for _, installableService := range installableServices {
+	for _, installableService := range responseDto.Items {
 		if serviceNameStr != installableService.Name.String() {
 			continue
 		}
