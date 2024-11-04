@@ -10,20 +10,24 @@ import (
 
 func CreateCron(
 	cronCmdRepo repository.CronCmdRepo,
-	createCron dto.CreateCron,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateCron,
 ) error {
-	err := cronCmdRepo.Create(createCron)
+	cronId, err := cronCmdRepo.Create(createDto)
 	if err != nil {
 		log.Printf("CreateCronError: %s", err)
 		return errors.New("CreateCronInfraError")
 	}
 
-	cronCmdLimitStr := len(createCron.Command.String())
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateCron(createDto, cronId)
+
+	cronCmdLimitStr := len(createDto.Command.String())
 	if cronCmdLimitStr > 75 {
 		cronCmdLimitStr = 75
 	}
-	cronCmdShortVersion := createCron.Command.String()[:cronCmdLimitStr]
-	cronLine := createCron.Schedule.String() + " " + cronCmdShortVersion
+	cronCmdShortVersion := createDto.Command.String()[:cronCmdLimitStr]
+	cronLine := createDto.Schedule.String() + " " + cronCmdShortVersion
 
 	log.Printf("Cron '%v' created.", cronLine)
 
