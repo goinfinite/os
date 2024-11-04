@@ -11,5 +11,5 @@ type ServicesQueryRepo interface {
 		readDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
 	ReadByName(name valueObject.ServiceName) (entity.InstalledService, error)
-	ReadInstallables() ([]entity.InstallableService, error)
+	ReadInstallableItems() ([]entity.InstallableService, error)
 }

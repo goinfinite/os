@@ -64,7 +64,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.Read(requestBody),
+				controller.servicesService.ReadInstalledItems(requestBody),
 			)
 		},
 	}
@@ -145,7 +145,7 @@ func (controller *ServicesController) ReadInstallables() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.ReadInstallables(requestBody),
+				controller.servicesService.ReadInstallableItems(requestBody),
 			)
 		},
 	}

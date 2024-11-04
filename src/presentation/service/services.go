@@ -40,7 +40,9 @@ func NewServicesService(
 	}
 }
 
-func (service *ServicesService) Read(input map[string]interface{}) ServiceOutput {
+func (service *ServicesService) ReadInstalledItems(
+	input map[string]interface{},
+) ServiceOutput {
 	var namePtr *valueObject.ServiceName
 	if input["name"] != nil {
 		name, err := valueObject.NewServiceName(input["name"])
@@ -138,7 +140,7 @@ func (service *ServicesService) Read(input map[string]interface{}) ServiceOutput
 	return NewServiceOutput(Success, servicesList)
 }
 
-func (service *ServicesService) ReadInstallables(
+func (service *ServicesService) ReadInstallableItems(
 	input map[string]interface{},
 ) ServiceOutput {
 	var namePtr *valueObject.ServiceName

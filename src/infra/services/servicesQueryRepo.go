@@ -632,7 +632,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	), nil
 }
 
-func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, error) {
+func (repo *ServicesQueryRepo) ReadInstallableItems() ([]entity.InstallableService, error) {
 	installableServices := []entity.InstallableService{}
 
 	serviceFiles, err := fs.ReadDir(assets, "assets")
@@ -672,7 +672,7 @@ func (repo *ServicesQueryRepo) ReadInstallables() ([]entity.InstallableService, 
 func (repo *ServicesQueryRepo) ReadInstallableByName(
 	serviceName valueObject.ServiceName,
 ) (installableService entity.InstallableService, err error) {
-	installableServices, err := repo.ReadInstallables()
+	installableServices, err := repo.ReadInstallableItems()
 	if err != nil {
 		return installableService, err
 	}

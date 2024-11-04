@@ -54,7 +54,7 @@ func (controller *ServicesController) Read(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.Read(requestBody),
+		c, controller.servicesService.ReadInstalledItems(requestBody),
 	)
 }
 
@@ -83,7 +83,7 @@ func (controller *ServicesController) ReadInstallables(c echo.Context) error {
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstallables(requestBody),
+		c, controller.servicesService.ReadInstallableItems(requestBody),
 	)
 }
 
