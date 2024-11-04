@@ -148,7 +148,7 @@ func (router Router) servicesRoutes() {
 		router.persistentDbSvc,
 	)
 
-	servicesGroup.GET("/", servicesController.Read)
+	servicesGroup.GET("/", servicesController.ReadInstalledItems)
 	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
 	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
 	servicesGroup.POST("/custom/", servicesController.CreateCustom)

@@ -19,7 +19,7 @@ func NewServicesController(
 	}
 }
 
-func (controller *ServicesController) Read() *cobra.Command {
+func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 	var installedItemNameStr, installedItemNatureStr, installedItemTypeStr string
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16
@@ -100,7 +100,7 @@ func (controller *ServicesController) Read() *cobra.Command {
 	return cmd
 }
 
-func (controller *ServicesController) ReadInstallables() *cobra.Command {
+func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 	var installedItemNameStr, installedItemNatureStr, installedItemTypeStr string
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16

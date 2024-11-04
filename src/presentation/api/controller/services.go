@@ -47,7 +47,7 @@ func NewServicesController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {array} dto.InstalledServiceWithMetrics
 // @Router       /v1/services/ [get]
-func (controller *ServicesController) Read(c echo.Context) error {
+func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
