@@ -122,18 +122,3 @@ func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 
 	return repo.installNewCrontab()
 }
-
-func (repo *CronCmdRepo) DeleteByComment(comment valueObject.CronComment) error {
-	commentStr := comment.String()
-
-	var cronsToKeep []entity.Cron
-	for _, currentCron := range repo.currentCrontab {
-		if commentStr == currentCron.Comment.String() {
-			continue
-		}
-		cronsToKeep = append(cronsToKeep, currentCron)
-	}
-	repo.currentCrontab = cronsToKeep
-
-	return repo.installNewCrontab()
-}
