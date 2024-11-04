@@ -114,3 +114,23 @@ func (uc *CreateSecurityActivityRecord) DeleteAccount(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) CreateCron(
+	createDto dto.CreateCron,
+	cronId valueObject.CronId,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("CronCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewCronSri(operatorAccountId, cronId),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
