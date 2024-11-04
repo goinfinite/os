@@ -12,23 +12,23 @@ func UpdateCron(
 	cronQueryRepo repository.CronQueryRepo,
 	cronCmdRepo repository.CronCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	updateCron dto.UpdateCron,
+	updateDto dto.UpdateCron,
 ) error {
-	_, err := cronQueryRepo.ReadById(updateCron.Id)
+	_, err := cronQueryRepo.ReadById(updateDto.Id)
 	if err != nil {
 		slog.Error("CronNotFound", slog.Any("err", err))
 		return errors.New("CronNotFound")
 	}
 
-	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateCron(updateCron)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateCron(updateDto)
 
-	err = cronCmdRepo.Update(updateCron)
+	err = cronCmdRepo.Update(updateDto)
 	if err != nil {
 		slog.Error("UpdateCronError", slog.Any("err", err))
 		return errors.New("UpdateCronInfraError")
 	}
 
-	slog.Info("CronUpdated", slog.Uint64("cronId", updateCron.Id.Uint64()))
+	slog.Info("CronUpdated", slog.Uint64("cronId", updateDto.Id.Uint64()))
 
 	return nil
 }
