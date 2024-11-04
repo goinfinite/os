@@ -12,7 +12,7 @@ func ReadInstalledServices(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	readDto dto.ReadInstalledServicesItemsRequest,
 ) (dto.ReadInstalledServicesItemsResponse, error) {
-	installedServices, err := servicesQueryRepo.Read(readDto)
+	installedServices, err := servicesQueryRepo.ReadInstalledItems(readDto)
 	if err != nil {
 		slog.Error("ReadInstalledServicesError", slog.Any("error", err))
 		return installedServices, errors.New("ReadInstalledServicesInfraError")

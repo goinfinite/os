@@ -7,7 +7,7 @@ import (
 )
 
 type ServicesQueryRepo interface {
-	Read(
+	ReadInstalledItems(
 		readDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
 	ReadByName(name valueObject.ServiceName) (entity.InstalledService, error)

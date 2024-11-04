@@ -189,7 +189,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	return stoppedServicesNames, nil
 }
 
-func (repo *ServicesQueryRepo) Read(
+func (repo *ServicesQueryRepo) ReadInstalledItems(
 	readDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
 	model := dbModel.InstalledService{}

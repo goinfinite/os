@@ -29,7 +29,7 @@ func TestServicesQueryRepo(t *testing.T) {
 			Name:       &name,
 		}
 
-		services, err := servicesQueryRepo.Read(readDto)
+		services, err := servicesQueryRepo.ReadInstalledItems(readDto)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}

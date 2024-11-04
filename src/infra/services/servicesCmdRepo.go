@@ -150,7 +150,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 			ItemsPerPage: 100,
 		},
 	}
-	readServicesDto, err := repo.servicesQueryRepo.Read(readDto)
+	readServicesDto, err := repo.servicesQueryRepo.ReadInstalledItems(readDto)
 	if err != nil {
 		return err
 	}
