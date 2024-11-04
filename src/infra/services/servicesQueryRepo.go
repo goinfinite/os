@@ -35,6 +35,87 @@ func NewServicesQueryRepo(
 	return &ServicesQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
+func (repo *ServicesQueryRepo) getPidProcessFamily(pid int32) ([]*process.Process, error) {
+	processFamily := []*process.Process{}
+
+	pidProcess, err := process.NewProcess(pid)
+	if err != nil {
+		return processFamily, err
+	}
+
+	processFamily = append(processFamily, pidProcess)
+
+	childrenPidProcesses, err := pidProcess.Children()
+	if err != nil || len(childrenPidProcesses) == 0 {
+		return processFamily, nil
+	}
+
+	for _, childPidProcess := range childrenPidProcesses {
+		grandChildrenPidProcesses, err := repo.getPidProcessFamily(
+			childPidProcess.Pid,
+		)
+		if err != nil || len(grandChildrenPidProcesses) == 0 {
+			continue
+		}
+
+		processFamily = append(processFamily, grandChildrenPidProcesses...)
+	}
+
+	return processFamily, nil
+}
+
+func (repo *ServicesQueryRepo) getPidMetrics(
+	mainPid int32,
+) (serviceMetrics valueObject.ServiceMetrics, err error) {
+	pidProcesses, err := repo.getPidProcessFamily(mainPid)
+	if err != nil {
+		return serviceMetrics, err
+	}
+
+	if len(pidProcesses) == 0 {
+		return serviceMetrics, nil
+	}
+
+	uptimeMilliseconds, err := pidProcesses[0].CreateTime()
+	if err != nil {
+		return serviceMetrics, err
+	}
+	nowMilliseconds := time.Now().UTC().UnixMilli()
+	uptimeSecs := (nowMilliseconds - uptimeMilliseconds) / 1000
+
+	cpuPercent := float64(0.0)
+	memPercent := float32(0.0)
+
+	pids := []uint32{}
+	for _, process := range pidProcesses {
+		pidCpuPercent, err := process.CPUPercent()
+		if err != nil {
+			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
+			continue
+		}
+
+		pidMemPercent, err := process.MemoryPercent()
+		if err != nil {
+			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
+			continue
+		}
+
+		cpuPercent += pidCpuPercent
+		memPercent += pidMemPercent
+
+		pids = append(pids, uint32(process.Pid))
+	}
+
+	cpuPercent = math.Round(cpuPercent*100) / 100
+	memPercent = float32(math.Round(float64(memPercent)*100) / 100)
+
+	serviceMetrics = valueObject.NewServiceMetrics(
+		pids, uptimeSecs, cpuPercent, memPercent,
+	)
+
+	return serviceMetrics, nil
+}
+
 func (repo *ServicesQueryRepo) readServiceMetrics(
 	name valueObject.ServiceName,
 ) (*valueObject.ServiceMetrics, error) {
@@ -257,87 +338,6 @@ func (repo *ServicesQueryRepo) ReadByName(
 	serviceEntity.Status, _ = valueObject.NewServiceStatus("stopped")
 
 	return serviceEntity, nil
-}
-
-func (repo *ServicesQueryRepo) getPidProcessFamily(pid int32) ([]*process.Process, error) {
-	processFamily := []*process.Process{}
-
-	pidProcess, err := process.NewProcess(pid)
-	if err != nil {
-		return processFamily, err
-	}
-
-	processFamily = append(processFamily, pidProcess)
-
-	childrenPidProcesses, err := pidProcess.Children()
-	if err != nil || len(childrenPidProcesses) == 0 {
-		return processFamily, nil
-	}
-
-	for _, childPidProcess := range childrenPidProcesses {
-		grandChildrenPidProcesses, err := repo.getPidProcessFamily(
-			childPidProcess.Pid,
-		)
-		if err != nil || len(grandChildrenPidProcesses) == 0 {
-			continue
-		}
-
-		processFamily = append(processFamily, grandChildrenPidProcesses...)
-	}
-
-	return processFamily, nil
-}
-
-func (repo *ServicesQueryRepo) getPidMetrics(
-	mainPid int32,
-) (serviceMetrics valueObject.ServiceMetrics, err error) {
-	pidProcesses, err := repo.getPidProcessFamily(mainPid)
-	if err != nil {
-		return serviceMetrics, err
-	}
-
-	if len(pidProcesses) == 0 {
-		return serviceMetrics, nil
-	}
-
-	uptimeMilliseconds, err := pidProcesses[0].CreateTime()
-	if err != nil {
-		return serviceMetrics, err
-	}
-	nowMilliseconds := time.Now().UTC().UnixMilli()
-	uptimeSecs := (nowMilliseconds - uptimeMilliseconds) / 1000
-
-	cpuPercent := float64(0.0)
-	memPercent := float32(0.0)
-
-	pids := []uint32{}
-	for _, process := range pidProcesses {
-		pidCpuPercent, err := process.CPUPercent()
-		if err != nil {
-			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
-			continue
-		}
-
-		pidMemPercent, err := process.MemoryPercent()
-		if err != nil {
-			slog.Debug(err.Error(), slog.Int("processPid", int(process.Pid)))
-			continue
-		}
-
-		cpuPercent += pidCpuPercent
-		memPercent += pidMemPercent
-
-		pids = append(pids, uint32(process.Pid))
-	}
-
-	cpuPercent = math.Round(cpuPercent*100) / 100
-	memPercent = float32(math.Round(float64(memPercent)*100) / 100)
-
-	serviceMetrics = valueObject.NewServiceMetrics(
-		pids, uptimeSecs, cpuPercent, memPercent,
-	)
-
-	return serviceMetrics, nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
