@@ -96,6 +96,7 @@ func (router Router) filesRoutes() {
 	filesGroup.POST("/compress/", filesController.Compress)
 	filesGroup.PUT("/extract/", filesController.Extract)
 	filesGroup.POST("/upload/", filesController.Upload)
+	filesGroup.GET("/download/", filesController.Download)
 }
 
 func (router Router) marketplaceRoutes() {

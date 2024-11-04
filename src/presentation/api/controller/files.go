@@ -530,3 +530,27 @@ func (controller *FilesController) Upload(c echo.Context) error {
 
 	return apiHelper.ResponseWrapper(c, httpStatus, uploadProcessInfo)
 }
+
+// DownloadFile    godoc
+// @Summary      DownloadFile
+// @Description  Download a file.
+// @Tags         files
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        sourcePath	query	string	true	"SourcePath"
+// @Success      200 {array} entity.UnixFile
+// @Router       /v1/files/ [get]
+func (controller *FilesController) Download(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+	}
+
+	return c.Attachment(sourcePath.String(), sourcePath.GetFileName().String())
+}
