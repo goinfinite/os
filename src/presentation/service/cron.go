@@ -185,9 +185,32 @@ func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	deleteDto := dto.NewDeleteCron(idPtr, commentPtr)
+	var err error
 
-	err := useCase.DeleteCron(service.cronQueryRepo, service.cronCmdRepo, deleteDto)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteCron(
+		idPtr, commentPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteCron(
+		service.cronQueryRepo, service.cronCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
