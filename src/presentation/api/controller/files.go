@@ -534,12 +534,12 @@ func (controller *FilesController) Upload(c echo.Context) error {
 // DownloadFile    godoc
 // @Summary      DownloadFile
 // @Description  Download a file.
-// @Tags         files
+// @Tags         application/octet-stream
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
-// @Success      200 {array} entity.UnixFile
+// @Success      200 {file} binary
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Download(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)

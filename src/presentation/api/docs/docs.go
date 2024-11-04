@@ -595,7 +595,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "files"
+                    "application/octet-stream"
                 ],
                 "summary": "DownloadFile",
                 "parameters": [
@@ -611,10 +611,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.UnixFile"
-                            }
+                            "type": "file"
                         }
                     }
                 }

@@ -1263,14 +1263,12 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.UnixFile'
-            type: array
+            type: file
       security:
       - Bearer: []
       summary: DownloadFile
       tags:
-      - files
+      - application/octet-stream
     post:
       consumes:
       - application/json
