@@ -20,9 +20,10 @@ type DatabasesPresenter struct {
 
 func NewDatabasesPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *DatabasesPresenter {
 	return &DatabasesPresenter{
-		databaseService: service.NewDatabaseService(persistentDbSvc),
+		databaseService: service.NewDatabaseService(persistentDbSvc, trailDbSvc),
 	}
 }
 

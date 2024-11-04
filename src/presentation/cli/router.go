@@ -93,7 +93,7 @@ func (router Router) databaseRoutes() {
 	rootCmd.AddCommand(databaseCmd)
 
 	databaseController := cliController.NewDatabaseController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	databaseCmd.AddCommand(databaseController.Read())
 	databaseCmd.AddCommand(databaseController.Create())

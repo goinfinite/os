@@ -4,6 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	databaseInfra "github.com/goinfinite/os/src/infra/database"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
@@ -12,14 +13,17 @@ import (
 
 type DatabaseService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
 }
 
 func NewDatabaseService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *DatabaseService {
 	return &DatabaseService{
-		persistentDbSvc: persistentDbSvc,
+		persistentDbSvc:       persistentDbSvc,
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
 			persistentDbSvc,
 		),

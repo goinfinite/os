@@ -75,7 +75,7 @@ func (router Router) cronRoutes() {
 func (router Router) databaseRoutes() {
 	databaseGroup := router.baseRoute.Group("/v1/database")
 	databaseController := apiController.NewDatabaseController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	databaseGroup.GET("/:dbType/", databaseController.Read)

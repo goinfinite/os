@@ -14,10 +14,13 @@ type DatabaseController struct {
 
 func NewDatabaseController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *DatabaseController {
 	return &DatabaseController{
 		persistentDbService: persistentDbService,
-		dbService:           service.NewDatabaseService(persistentDbService),
+		dbService: service.NewDatabaseService(
+			persistentDbService, trailDbSvc,
+		),
 	}
 }
 

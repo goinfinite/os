@@ -69,7 +69,9 @@ func (router *Router) accountsRoutes() {
 func (router *Router) databasesRoutes() {
 	databaseGroup := router.baseRoute.Group("/databases")
 
-	databasesPresenter := presenter.NewDatabasesPresenter(router.persistentDbSvc)
+	databasesPresenter := presenter.NewDatabasesPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	databaseGroup.GET("/", databasesPresenter.Handler)
 }
 
