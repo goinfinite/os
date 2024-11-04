@@ -200,9 +200,17 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		model.Type = readDto.Type.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.
-		Where(&model).
-		Limit(int(readDto.Pagination.ItemsPerPage))
+	dbQuery := repo.persistentDbSvc.Handler.Model(&model).Where(&model)
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return installedItemsDto, errors.New(
+			"CountInstalledServicesItemsTotalError: " + err.Error(),
+		)
+	}
+
+	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
 	if readDto.Pagination.LastSeenId == nil {
 		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
@@ -227,14 +235,6 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	err = dbQuery.Find(&models).Error
 	if err != nil {
 		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
-	}
-
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
-	if err != nil {
-		return installedItemsDto, errors.New(
-			"CountInstalledServicesItemsTotalError: " + err.Error(),
-		)
 	}
 
 	entities := []dto.InstalledServiceWithMetrics{}
