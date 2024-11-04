@@ -82,16 +82,13 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 		}
 	}
 
-	dto := dto.NewCreateCron(
+	createDto := dto.NewCreateCron(
 		schedule, command, commentPtr, operatorAccountId, operatorIpAddress,
 	)
 
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
-	}
-
-	err = useCase.CreateCron(cmdRepo, service.activityRecordCmdRepo, dto)
+	err = useCase.CreateCron(
+		service.cronCmdRepo, service.activityRecordCmdRepo, createDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -138,14 +135,9 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	dto := dto.NewUpdateCron(id, schedulePtr, commandPtr, commentPtr)
+	updateDto := dto.NewUpdateCron(id, schedulePtr, commandPtr, commentPtr)
 
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
-	}
-
-	err = useCase.UpdateCron(service.cronQueryRepo, cmdRepo, dto)
+	err = useCase.UpdateCron(service.cronQueryRepo, service.cronCmdRepo, updateDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -172,14 +164,9 @@ func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
-	}
+	deleteDto := dto.NewDeleteCron(idPtr, commentPtr)
 
-	dto := dto.NewDeleteCron(idPtr, commentPtr)
-
-	err = useCase.DeleteCron(service.cronQueryRepo, cmdRepo, dto)
+	err := useCase.DeleteCron(service.cronQueryRepo, service.cronCmdRepo, deleteDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
