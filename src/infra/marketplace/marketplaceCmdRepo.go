@@ -285,9 +285,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 	for _, mapping := range catalogMappings {
 		contentHash := infraHelper.GenStrongShortHash(
-			hostname.String() +
-				mapping.Path.String() +
-				mapping.MatchPattern.String() +
+			hostname.String() + mapping.Path.String() + mapping.MatchPattern.String() +
 				mapping.TargetType.String(),
 		)
 		currentMapping, alreadyExists := currentMappingsContentHashMap[contentHash]
@@ -297,12 +295,8 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		}
 
 		createDto := dto.NewCreateMapping(
-			hostname,
-			mapping.Path,
-			mapping.MatchPattern,
-			mapping.TargetType,
-			mapping.TargetValue,
-			mapping.TargetHttpResponseCode,
+			hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
+			mapping.TargetValue, mapping.TargetHttpResponseCode,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
@@ -446,11 +440,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	return repo.persistInstalledItem(
-		catalogItem,
-		installDto.Hostname,
-		installUrlPath,
-		installDir,
-		installUuid,
+		catalogItem, installDto.Hostname, installUrlPath, installDir, installUuid,
 		mappingIds,
 	)
 }
@@ -474,10 +464,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 
 	moveCmd := fmt.Sprintf(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
-		sourceDir.String(),
-		findCmdFlagsStr,
-		fileNamesFilterParams,
-		targetDir.String(),
+		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
 	)
 	_, err := infraHelper.RunCmdWithSubShell(moveCmd)
 	return err
@@ -513,11 +500,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 
 	rawInstalledItemRealRootDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
-		installedItem.Slug.String(),
-		itemHostnameStr,
-		installedItem.InstallUuid.String(),
+		installedItem.Slug.String(), itemHostnameStr, installedItem.InstallUuid.String(),
 	)
-	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(rawInstalledItemRealRootDirPath)
+	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(
+		rawInstalledItemRealRootDirPath,
+	)
 	if err != nil {
 		return err
 	}
@@ -582,10 +569,8 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 
 	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
-		useCase.TrashDirPath,
-		installedItem.Slug.String(),
-		installedItem.Hostname.String(),
-		installedItem.InstallUuid.String(),
+		useCase.TrashDirPath, installedItem.Slug.String(),
+		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
 	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
 	if err != nil {
@@ -628,13 +613,13 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 		serviceNamesToUninstallMap[serviceNameWithVersion.Name.String()] = nil
 	}
 
-	readDto := dto.ReadMarketplaceInstalledItemsRequest{
+	readInstalledItemsDto := dto.ReadMarketplaceInstalledItemsRequest{
 		Pagination: dto.Pagination{
 			ItemsPerPage: 100,
 		},
 	}
 	installedItemsResponseDto, err := repo.marketplaceQueryRepo.ReadInstalledItems(
-		readDto,
+		readInstalledItemsDto,
 	)
 	if err != nil {
 		return errors.New("ReadInstalledItemsError: " + err.Error())
@@ -695,10 +680,12 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
-	readDto := dto.ReadMarketplaceCatalogItemsRequest{
+	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
 		Slug: &installedItem.Slug,
 	}
-	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
+	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(
+		readCatalogItemDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -717,10 +704,10 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	installedItemModel := dbModel.MarketplaceInstalledItem{
+	installedServiceItemModel := dbModel.MarketplaceInstalledItem{
 		ID: uint(deleteDto.InstalledId.Uint16()),
 	}
-	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
+	err = repo.persistentDbSvc.Handler.Delete(&installedServiceItemModel).Error
 	if err != nil {
 		return err
 	}
