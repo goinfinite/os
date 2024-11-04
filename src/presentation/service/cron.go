@@ -135,9 +135,30 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	updateDto := dto.NewUpdateCron(id, schedulePtr, commandPtr, commentPtr)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	err = useCase.UpdateCron(service.cronQueryRepo, service.cronCmdRepo, updateDto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateCron(
+		id, schedulePtr, commandPtr, commentPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateCron(
+		service.cronQueryRepo, service.cronCmdRepo, service.activityRecordCmdRepo,
+		updateDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

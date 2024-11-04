@@ -134,3 +134,23 @@ func (uc *CreateSecurityActivityRecord) CreateCron(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) UpdateCron(
+	updateDto dto.UpdateCron,
+) {
+	operatorAccountId := updateDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("CronUpdated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewCronSri(operatorAccountId, updateDto.Id),
+		},
+		RecordDetails:     updateDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}

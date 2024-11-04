@@ -37,7 +37,9 @@ func TestCronCmdRepo(t *testing.T) {
 		schedule, _ := valueObject.NewCronSchedule("* * * * 0")
 		command, _ := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
 		comment, _ := valueObject.NewCronComment("update test")
-		updateCron := dto.NewUpdateCron(id, &schedule, &command, &comment)
+		updateCron := dto.NewUpdateCron(
+			id, &schedule, &command, &comment, operatorAccountId, ipAddress,
+		)
 
 		err = cronCmdRepo.Update(updateCron)
 		if err != nil {
