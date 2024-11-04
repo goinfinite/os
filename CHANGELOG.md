@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.1.5 - 2024/X/X
+fix: download files with more than 5MB in size
+
 0.1.2 - 2024/X/X
 refactor(front): marketplace page with HTMX+Alpine.js
 
