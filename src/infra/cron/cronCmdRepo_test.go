@@ -15,13 +15,18 @@ func TestCronCmdRepo(t *testing.T) {
 		t.Errorf("UnexpectedError: %v", err)
 	}
 
+	ipAddress := valueObject.NewLocalhostIpAddress()
+	operatorAccountId, _ := valueObject.NewAccountId(0)
+
 	t.Run("CreateCron", func(t *testing.T) {
 		schedule, _ := valueObject.NewCronSchedule("* * * * *")
 		command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 		comment, _ := valueObject.NewCronComment("Test cron job")
-		createCron := dto.NewCreateCron(schedule, command, &comment)
+		createCron := dto.NewCreateCron(
+			schedule, command, &comment, operatorAccountId, ipAddress,
+		)
 
-		err = cronCmdRepo.Create(createCron)
+		_, err = cronCmdRepo.Create(createCron)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
