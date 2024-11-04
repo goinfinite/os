@@ -351,10 +351,12 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	readDto := dto.ReadMarketplaceCatalogItemsRequest{
+	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
 		Id: installDto.Id,
 	}
-	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
+	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(
+		readCatalogItemDto,
+	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
