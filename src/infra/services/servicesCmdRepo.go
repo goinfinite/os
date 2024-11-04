@@ -156,22 +156,24 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
-	readDto := dto.ReadInstalledServicesItemsRequest{
+	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
 		Pagination: dto.Pagination{
 			ItemsPerPage: 100,
 		},
 		ShouldIncludeMetrics: false,
 	}
-	readServicesDto, err := repo.servicesQueryRepo.ReadInstalledItems(readDto)
+	readInstalledItemsResponseDto, err := repo.servicesQueryRepo.ReadInstalledItems(
+		readInstalledItemsDto,
+	)
 	if err != nil {
 		return err
 	}
-	if len(readServicesDto.Items) == 0 {
+	if len(readInstalledItemsResponseDto.Items) == 0 {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
 	ctlPassword := infraHelper.GenStrongShortHash(
-		readServicesDto.Items[0].CreatedAt.String(),
+		readInstalledItemsResponseDto.Items[0].CreatedAt.String(),
 	)
 
 	// cSpell:disable
@@ -244,7 +246,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	var supervisorConfFileContent strings.Builder
-	err = templatePtr.Execute(&supervisorConfFileContent, readServicesDto.Items)
+	err = templatePtr.Execute(&supervisorConfFileContent, readInstalledItemsResponseDto.Items)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -507,9 +509,10 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
 		createDto.Version.String(), createDto.StartCmd.String(), createDto.Envs,
 		createDto.PortBindings, createDto.StopCmdSteps, createDto.PreStartCmdSteps,
-		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps, createDto.PostStopCmdSteps,
-		nil, nil, nil, createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries, nil, nil,
+		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps,
+		createDto.PostStopCmdSteps, nil, nil, nil, createDto.AutoStart,
+		createDto.AutoRestart, createDto.TimeoutStartSecs, createDto.MaxStartRetries,
+		nil, nil,
 	)
 
 	if createDto.ExecUser != nil {
@@ -705,11 +708,13 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
-	readDto := dto.ReadInstalledServicesItemsRequest{
+	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
 		Name:                 &name,
 		ShouldIncludeMetrics: false,
 	}
-	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(readDto)
+	serviceEntity, err := repo.servicesQueryRepo.ReadUniqueInstalledItem(
+		readInstalledDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -767,7 +772,9 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		_, err := infraHelper.RunCmd("rm", "-rf", filePathStr)
 		if err != nil {
 			fileIndexStr := strconv.Itoa(fileIndex)
-			return errors.New("RemoveFilePathError (" + fileIndexStr + "): " + err.Error())
+			return errors.New(
+				"RemoveFilePathError (" + fileIndexStr + "): " + err.Error(),
+			)
 		}
 	}
 
