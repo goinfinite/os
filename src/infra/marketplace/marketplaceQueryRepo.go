@@ -34,17 +34,22 @@ func NewMarketplaceQueryRepo(
 func (repo *MarketplaceQueryRepo) catalogItemServicesFactory(
 	catalogItemServices interface{},
 ) (serviceNamesWithVersions []valueObject.ServiceNameWithVersion, err error) {
-	rawServices, assertOk := catalogItemServices.([]interface{})
+	rawServiceNamesWithVersion, assertOk := catalogItemServices.([]interface{})
 	if !assertOk {
-		return serviceNamesWithVersions, errors.New("InvalidCatalogItemServices")
+		return serviceNamesWithVersions, errors.New(
+			"InvalidCatalogItemServicesStructure",
+		)
 	}
 
-	for _, rawService := range rawServices {
+	for _, rawServiceNameWithVersion := range rawServiceNamesWithVersion {
 		serviceNameWithVersion, err := valueObject.NewServiceNameWithVersionFromString(
-			rawService,
+			rawServiceNameWithVersion,
 		)
 		if err != nil {
-			slog.Error(err.Error(), slog.Any("serviceNameWithVersion", rawService))
+			slog.Error(
+				err.Error(),
+				slog.Any("serviceNameWithVersion", rawServiceNameWithVersion),
+			)
 			continue
 		}
 
@@ -61,7 +66,9 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 ) (itemMappings []valueObject.MarketplaceItemMapping, err error) {
 	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
 	if !assertOk {
-		return itemMappings, errors.New("InvalidMarketplaceCatalogItemMappings")
+		return itemMappings, errors.New(
+			"InvalidMarketplaceCatalogItemMappingsStructure",
+		)
 	}
 
 	for mappingIndex, rawItemMapping := range rawItemMappings {
@@ -133,7 +140,9 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 ) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
 	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
 	if !assertOk {
-		return itemDataFields, errors.New("InvalidMarketplaceCatalogItemDataFields")
+		return itemDataFields, errors.New(
+			"InvalidMarketplaceCatalogItemDataFieldsStructure",
+		)
 	}
 
 	for _, rawItemDataField := range rawItemDataFields {
@@ -252,7 +261,9 @@ func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 ) (itemCmdSteps []valueObject.UnixCommand, err error) {
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
-		return itemCmdSteps, errors.New("InvalidMarketplaceCatalogItemCmdSteps")
+		return itemCmdSteps, errors.New(
+			"InvalidMarketplaceCatalogItemCmdStepsStructure",
+		)
 	}
 
 	for _, rawItemCmdStep := range rawItemCmdSteps {
@@ -274,7 +285,7 @@ func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]interface{})
 	if !assertOk {
 		return itemUninstallFileNames, errors.New(
-			"InvalidMarketplaceCatalogItemUninstallFileNames",
+			"InvalidMarketplaceCatalogItemUninstallFileNamesStructure",
 		)
 	}
 
@@ -304,7 +315,9 @@ func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 
 	rawItemUrls, assertOk := catalogItemUrlsMap.([]interface{})
 	if !assertOk {
-		return itemUrls, errors.New("InvalidMarketplaceCatalogItemUrls")
+		return itemUrls, errors.New(
+			"InvalidMarketplaceCatalogItemUrlsStructure",
+		)
 	}
 
 	for _, rawItemUrl := range rawItemUrls {
@@ -338,7 +351,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	if itemMap["slugs"] != nil {
 		rawItemSlugs, assertOk := itemMap["slugs"].([]interface{})
 		if !assertOk {
-			return catalogItem, errors.New("InvalidMarketplaceItemSlugs")
+			return catalogItem, errors.New("InvalidMarketplaceItemSlugsStructure")
 		}
 		for _, rawItemSlug := range rawItemSlugs {
 			itemSlug, err := valueObject.NewMarketplaceItemSlug(rawItemSlug)
