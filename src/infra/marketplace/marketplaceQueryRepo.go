@@ -598,9 +598,13 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 				}
 				return 0
 			case "name":
-				return strings.Compare(firstElement.Name.String(), secondElement.Name.String())
+				return strings.Compare(
+					firstElement.Name.String(), secondElement.Name.String(),
+				)
 			case "type":
-				return strings.Compare(firstElement.Type.String(), secondElement.Type.String())
+				return strings.Compare(
+					firstElement.Type.String(), secondElement.Type.String(),
+				)
 			default:
 				return 0
 			}
