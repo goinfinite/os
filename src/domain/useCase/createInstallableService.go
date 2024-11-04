@@ -21,8 +21,8 @@ func CreateInstallableService(
 		ShouldIncludeMetrics: false,
 	}
 	_, err := servicesQueryRepo.ReadUniqueInstalledItem(readInstalledDto)
-	if err != nil {
-		return err
+	if err == nil {
+		return errors.New("ServiceAlreadyInstalled")
 	}
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
