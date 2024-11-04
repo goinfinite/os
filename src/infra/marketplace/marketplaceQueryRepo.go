@@ -341,6 +341,28 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		return catalogItem, err
 	}
 
+	requiredFields := []string{
+		"manifestVersion", "name", "type", "description", "avatarUrl",
+	}
+	missingFields := []string{}
+	for _, requiredField := range requiredFields {
+		if _, exists := itemMap[requiredField]; !exists {
+			missingFields = append(missingFields, requiredField)
+		}
+	}
+	if len(missingFields) > 0 {
+		return catalogItem, errors.New(
+			"MissingItemFields: " + strings.Join(missingFields, ", "),
+		)
+	}
+
+	itemManifestVersion, err := valueObject.NewMarketplaceItemManifestVersion(
+		itemMap["manifestVersion"],
+	)
+	if err != nil {
+		return catalogItem, err
+	}
+
 	itemId, _ := valueObject.NewMarketplaceItemId(0)
 	rawItemId, exists := itemMap["id"]
 	if exists {
@@ -434,7 +456,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	}
 
 	estimatedSizeBytes := valueObject.Byte(1000000000)
-	if itemMap["estimatedSizeBytes"] == nil {
+	if itemMap["estimatedSizeBytes"] != nil {
 		estimatedSizeBytes, err = valueObject.NewByte(itemMap["estimatedSizeBytes"])
 		if err != nil {
 			return catalogItem, err
@@ -457,9 +479,10 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	}
 
 	return entity.NewMarketplaceCatalogItem(
-		itemId, itemSlugs, itemName, itemType, itemDescription, itemServices,
-		itemMappings, itemDataFields, itemInstallCmdSteps, itemUninstallCmdSteps,
-		itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl, itemScreenshotUrls,
+		itemManifestVersion, itemId, itemSlugs, itemName, itemType, itemDescription,
+		itemServices, itemMappings, itemDataFields, itemInstallCmdSteps,
+		itemUninstallCmdSteps, itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl,
+		itemScreenshotUrls,
 	), nil
 }
 
