@@ -14,7 +14,7 @@ const (
 )
 
 // @title			OsApi
-// @version			0.1.2
+// @version			0.1.5
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 
@@ -53,7 +53,7 @@ func ApiInit(
 	e.Use(apiMiddleware.SetDatabaseServices(
 		persistentDbSvc, transientDbSvc, trailDbSvc,
 	))
-	//e.Use(apiMiddleware.Authentication(ApiBasePath))
+	e.Use(apiMiddleware.Authentication(ApiBasePath))
 
 	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()
