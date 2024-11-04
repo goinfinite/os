@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -15,7 +15,7 @@ func CreateCron(
 ) error {
 	cronId, err := cronCmdRepo.Create(createDto)
 	if err != nil {
-		log.Printf("CreateCronError: %s", err)
+		slog.Error("CreateCronError", slog.Any("err", err))
 		return errors.New("CreateCronInfraError")
 	}
 
@@ -29,7 +29,7 @@ func CreateCron(
 	cronCmdShortVersion := createDto.Command.String()[:cronCmdLimitStr]
 	cronLine := createDto.Schedule.String() + " " + cronCmdShortVersion
 
-	log.Printf("Cron '%v' created.", cronLine)
+	slog.Info("CronCreated", slog.String("cron", cronLine))
 
 	return nil
 }
