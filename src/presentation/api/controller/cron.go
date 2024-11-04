@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -10,10 +11,17 @@ type CronController struct {
 	cronService *service.CronService
 }
 
-func NewCronController() *CronController {
-	return &CronController{
-		cronService: service.NewCronService(),
+func NewCronController(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) (*CronController, error) {
+	cronService, err := service.NewCronService(trailDbSvc)
+	if err != nil {
+		return nil, err
 	}
+
+	return &CronController{
+		cronService: cronService,
+	}, nil
 }
 
 // ReadCrons	 godoc

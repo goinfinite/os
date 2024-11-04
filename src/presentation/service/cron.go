@@ -4,18 +4,31 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	cronInfra "github.com/goinfinite/os/src/infra/cron"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type CronService struct {
-	cronQueryRepo cronInfra.CronQueryRepo
+	cronQueryRepo         cronInfra.CronQueryRepo
+	cronCmdRepo           *cronInfra.CronCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
-func NewCronService() *CronService {
-	return &CronService{
-		cronQueryRepo: cronInfra.CronQueryRepo{},
+func NewCronService(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) (*CronService, error) {
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	if err != nil {
+		return nil, err
 	}
+
+	return &CronService{
+		cronQueryRepo:         cronInfra.CronQueryRepo{},
+		cronCmdRepo:           cronCmdRepo,
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+	}, nil
 }
 
 func (service *CronService) Read() ServiceOutput {
@@ -53,14 +66,32 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	dto := dto.NewCreateCron(schedule, command, commentPtr)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	dto := dto.NewCreateCron(
+		schedule, command, commentPtr, operatorAccountId, operatorIpAddress,
+	)
 
 	cmdRepo, err := cronInfra.NewCronCmdRepo()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	err = useCase.CreateCron(cmdRepo, dto)
+	err = useCase.CreateCron(cmdRepo, service.activityRecordCmdRepo, dto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

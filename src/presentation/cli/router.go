@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"log"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -74,7 +75,10 @@ func (router Router) cronRoutes() {
 	}
 	rootCmd.AddCommand(cronCmd)
 
-	cronController := cliController.NewCronController()
+	cronController, err := cliController.NewCronController(router.trailDbSvc)
+	if err != nil {
+		log.Fatalf("FailedToInitializeCronCliController: " + err.Error())
+	}
 	cronCmd.AddCommand(cronController.Read())
 	cronCmd.AddCommand(cronController.Create())
 	cronCmd.AddCommand(cronController.Update())

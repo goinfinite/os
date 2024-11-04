@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "embed"
+	"log"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiController "github.com/goinfinite/os/src/presentation/api/controller"
@@ -60,7 +61,10 @@ func (router Router) accountRoutes() {
 
 func (router Router) cronRoutes() {
 	cronGroup := router.baseRoute.Group("/v1/cron")
-	cronController := apiController.NewCronController()
+	cronController, err := apiController.NewCronController(router.trailDbSvc)
+	if err != nil {
+		log.Fatalf("FailedToInitializeCronApiController: " + err.Error())
+	}
 
 	cronGroup.GET("/", cronController.Read)
 	cronGroup.POST("/", cronController.Create)
