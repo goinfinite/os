@@ -231,19 +231,19 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		dbQuery = dbQuery.Order(orderStatement)
 	}
 
-	models := []dbModel.InstalledService{}
-	err = dbQuery.Find(&models).Error
+	resultModels := []dbModel.InstalledService{}
+	err = dbQuery.Find(&resultModels).Error
 	if err != nil {
 		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
 	}
 
 	entities := []dto.InstalledServiceWithMetrics{}
-	for _, model := range models {
-		entityWithoutMetrics, err := model.ToEntity()
+	for _, resultModel := range resultModels {
+		entityWithoutMetrics, err := resultModel.ToEntity()
 		if err != nil {
 			slog.Error(
 				"InstalledServiceItemModelToEntityError",
-				slog.String("name", model.Name), slog.Any("error", err),
+				slog.String("name", resultModel.Name), slog.Any("error", err),
 			)
 			continue
 		}
@@ -254,7 +254,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 			if err != nil {
 				slog.Error(
 					"FailedToReadInstalledServiceMetrics",
-					slog.String("name", model.Name), slog.Any("error", err),
+					slog.String("name", resultModel.Name), slog.Any("error", err),
 				)
 			}
 			entityMetricsPtr = &entityMetrics
@@ -356,7 +356,8 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	requiredParams := []string{
-		"name", "nature", "type", "startCmd", "description", "installCmdSteps",
+		"manifestVersion", "name", "nature", "type", "startCmd", "description",
+		"installCmdSteps",
 	}
 	for _, requiredParam := range requiredParams {
 		if serviceMap[requiredParam] != nil {
@@ -364,6 +365,13 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 
 		return installableService, errors.New("MissingParam: " + requiredParam)
+	}
+
+	manifestVersion, err := valueObject.NewServiceManifestVersion(
+		serviceMap["manifestVersion"],
+	)
+	if err != nil {
+		return installableService, err
 	}
 
 	name, err := valueObject.NewServiceName(serviceMap["name"])
@@ -396,7 +404,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	if serviceMap["versions"] != nil {
 		versionsMap, assertOk := serviceMap["versions"].([]interface{})
 		if !assertOk {
-			return installableService, errors.New("InvalidServiceVersions")
+			return installableService, errors.New("InvalidServiceVersionsStructure")
 		}
 		for _, rawVersion := range versionsMap {
 			version, err := valueObject.NewServiceVersion(rawVersion)
@@ -436,7 +444,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	if serviceMap["portBindings"] != nil {
 		portBindingsMap, assertOk := serviceMap["portBindings"].([]interface{})
 		if !assertOk {
-			return installableService, errors.New("InvalidPortBindings")
+			return installableService, errors.New("InvalidPortBindingsStructure")
 		}
 		for _, rawPortBinding := range portBindingsMap {
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
@@ -486,7 +494,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	if serviceMap["uninstallFilePaths"] != nil {
 		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
 		if !assertOk {
-			return installableService, errors.New("InvalidUninstallFilePaths")
+			return installableService, errors.New("InvalidUninstallFilePathsStructure")
 		}
 		for _, rawFileName := range filesMap {
 			fileName, err := valueObject.NewUnixFilePath(rawFileName)
@@ -553,7 +561,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	var workingDirectoryPtr *valueObject.UnixFilePath
 	if serviceMap["workingDirectory"] != nil {
-		workingDirectory, err := valueObject.NewUnixFilePath(serviceMap["workingDirectory"])
+		workingDirectory, err := valueObject.NewUnixFilePath(
+			serviceMap["workingDirectory"],
+		)
 		if err != nil {
 			return installableService, err
 		}
@@ -606,11 +616,11 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	return entity.NewInstallableService(
-		name, nature, serviceType, startCommand, description, versions, envs,
-		portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps, uninstallFilePaths,
-		preStartCmdSteps, postStartCmdSteps, preStopCmdSteps, postStopCmdSteps,
-		execUserPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
-		logErrorPathPtr, estimatedSizeBytesPtr, avatarUrlPtr,
+		manifestVersion, name, nature, serviceType, startCommand, description, versions,
+		envs, portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps,
+		uninstallFilePaths, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
+		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr,
+		logOutputPathPtr, logErrorPathPtr, estimatedSizeBytesPtr, avatarUrlPtr,
 	), nil
 }
 
