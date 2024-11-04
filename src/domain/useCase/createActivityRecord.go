@@ -86,6 +86,12 @@ func (uc *CreateSecurityActivityRecord) UpdateAccount(
 		codeStr = "AccountPasswordUpdated"
 		createRecordDto.RecordDetails = nil
 	}
+
+	if updateDto.ShouldUpdateApiKey != nil && *updateDto.ShouldUpdateApiKey {
+		codeStr = "AccountApiKeyUpdated"
+		createRecordDto.RecordDetails = nil
+	}
+
 	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
 	createRecordDto.RecordCode = recordCode
 
