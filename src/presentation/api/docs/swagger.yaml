@@ -1250,7 +1250,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List dir/files.
+      description: Download a file.
       parameters:
       - description: SourcePath
         in: query
@@ -1268,7 +1268,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetFiles
+      summary: DownloadFile
       tags:
       - files
     post:

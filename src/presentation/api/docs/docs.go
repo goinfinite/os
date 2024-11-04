@@ -587,7 +587,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "List dir/files.",
+                "description": "Download a file.",
                 "consumes": [
                     "application/json"
                 ],
@@ -597,7 +597,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "GetFiles",
+                "summary": "DownloadFile",
                 "parameters": [
                     {
                         "type": "string",
