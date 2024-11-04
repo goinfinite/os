@@ -304,7 +304,7 @@ func (repo FilesCmdRepo) UpdateContent(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdate, err := queryRepo.GetOne(unixSrcFilePath)
+	fileToUpdate, err := queryRepo.ReadUnique(unixSrcFilePath)
 	if err != nil {
 		return err
 	}
@@ -331,7 +331,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	_, err := queryRepo.Get(unixFilePath)
+	_, err := queryRepo.Read(unixFilePath)
 	if err != nil {
 		return err
 	}
@@ -352,7 +352,7 @@ func (repo FilesCmdRepo) Upload(
 		destinationPath,
 	)
 
-	destinationFile, err := queryRepo.GetOne(destinationPath)
+	destinationFile, err := queryRepo.ReadUnique(destinationPath)
 	if err != nil {
 		return uploadProcessReport, errors.New("DestinationFileNotFound")
 	}

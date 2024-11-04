@@ -129,9 +129,10 @@ func (repo FilesQueryRepo) unixFileFactory(
 	return unixFile, nil
 }
 
-func (repo FilesQueryRepo) Get(
+func (repo FilesQueryRepo) Read(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
+	log.Print("aaaa")
 	unixFileList := []entity.UnixFile{}
 
 	sourcePathStr := unixFilePath.String()
@@ -213,7 +214,7 @@ func (repo FilesQueryRepo) Get(
 	return unixFileList, nil
 }
 
-func (repo FilesQueryRepo) GetOne(
+func (repo FilesQueryRepo) ReadUnique(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile

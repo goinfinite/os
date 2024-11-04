@@ -15,7 +15,7 @@ func TestFilesQueryRepo(t *testing.T) {
 
 	t.Run("GetFiles", func(t *testing.T) {
 		unixDirPath, _ := valueObject.NewUnixFilePath(userHomeDir)
-		_, err := filesQueryRepo.Get(unixDirPath)
+		_, err := filesQueryRepo.Read(unixDirPath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -23,7 +23,7 @@ func TestFilesQueryRepo(t *testing.T) {
 
 	t.Run("GetFilesWithInvalidDirectory", func(t *testing.T) {
 		invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
-		_, err := filesQueryRepo.Get(invalidUnixPath)
+		_, err := filesQueryRepo.Read(invalidUnixPath)
 		if err == nil {
 			t.Errorf("ExpectedErrorButGotNil")
 		}
@@ -40,7 +40,7 @@ func TestFilesQueryRepo(t *testing.T) {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 
-		files, err := filesQueryRepo.Get(tmpSymlinkPath)
+		files, err := filesQueryRepo.Read(tmpSymlinkPath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -53,7 +53,7 @@ func TestFilesQueryRepo(t *testing.T) {
 
 	t.Run("GetSingleFile", func(t *testing.T) {
 		unixFilePath, _ := valueObject.NewUnixFilePath(userHomeDir + "/.bashrc")
-		_, err := filesQueryRepo.GetOne(unixFilePath)
+		_, err := filesQueryRepo.ReadUnique(unixFilePath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}

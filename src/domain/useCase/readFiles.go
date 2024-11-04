@@ -6,9 +6,9 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-func GetFiles(
+func ReadFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
-	return filesQueryRepo.Get(unixFilePath)
+	return filesQueryRepo.Read(unixFilePath)
 }

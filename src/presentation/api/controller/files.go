@@ -15,7 +15,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func parseSourcePaths(
+type FilesController struct{}
+
+func (controller *FilesController) parseSourcePaths(
 	rawSourcePaths []interface{},
 ) ([]valueObject.UnixFilePath, error) {
 	filePaths := []valueObject.UnixFilePath{}
@@ -33,8 +35,12 @@ func parseSourcePaths(
 	return filePaths, nil
 }
 
-// GetFiles    godoc
-// @Summary      GetFiles
+func NewFilesController() *FilesController {
+	return &FilesController{}
+}
+
+// ReadFiles    godoc
+// @Summary      ReadFiles
 // @Description  List dir/files.
 // @Tags         files
 // @Accept       json
@@ -43,7 +49,7 @@ func parseSourcePaths(
 // @Param        sourcePath	query	string	true	"SourcePath"
 // @Success      200 {array} entity.UnixFile
 // @Router       /v1/files/ [get]
-func GetFilesController(c echo.Context) error {
+func (controller *FilesController) Read(c echo.Context) error {
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 
 	sourcePath, err := valueObject.NewUnixFilePath(c.QueryParam("sourcePath"))
@@ -51,7 +57,7 @@ func GetFilesController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
 
-	filesList, err := useCase.GetFiles(filesQueryRepo, sourcePath)
+	filesList, err := useCase.ReadFiles(filesQueryRepo, sourcePath)
 	if err != nil {
 		if err.Error() == "DirPathCannotEndWithSlash" {
 			return apiHelper.ResponseWrapper(c, http.StatusNotFound, err.Error())
@@ -73,7 +79,7 @@ func GetFilesController(c echo.Context) error {
 // @Param        createFileDto 	  body    dto.CreateUnixFile  true  "permissions is optional. When not provided, permissions will be '644' for files and '755' for directories."
 // @Success      201 {object} object{} "FileCreated/DirectoryCreated"
 // @Router       /v1/files/ [post]
-func CreateFileController(c echo.Context) error {
+func (controller *FilesController) Create(c echo.Context) error {
 	requiredParams := []string{"filePath"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -144,7 +150,7 @@ func CreateFileController(c echo.Context) error {
 // @Success      200 {object} object{} "FileUpdated"
 // @Success      207 {object} object{} "FilesArePartialUpdated"
 // @Router       /v1/files/ [put]
-func UpdateFileController(c echo.Context) error {
+func (controller *FilesController) Update(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -160,7 +166,7 @@ func UpdateFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "SourcePathMustBeArray")
 	}
 
-	sourcePaths, err := parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
@@ -229,7 +235,7 @@ func UpdateFileController(c echo.Context) error {
 // @Param        copyFileDto 	  body    dto.CopyUnixFile  true  "All props are required."
 // @Success      201 {object} object{} "FileCopied"
 // @Router       /v1/files/copy/ [post]
-func CopyFileController(c echo.Context) error {
+func (controller *FilesController) Copy(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -283,7 +289,7 @@ func CopyFileController(c echo.Context) error {
 // @Param        sourcePaths	body	[]string	true	"FilePaths to deleted."
 // @Success      200 {object} object{} "FilesDeleted"
 // @Router       /v1/files/delete/ [put]
-func DeleteFileController(c echo.Context) error {
+func (controller *FilesController) Delete(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -299,7 +305,7 @@ func DeleteFileController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "SourcePathMustBeArray")
 	}
 
-	sourcePaths, err := parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
@@ -347,7 +353,7 @@ func DeleteFileController(c echo.Context) error {
 // @Success      200 {object} object{} "FilesCompressed"
 // @Success      207 {object} object{} "FilesArePartialCompressed"
 // @Router       /v1/files/compress/ [post]
-func CompressFilesController(c echo.Context) error {
+func (controller *FilesController) Compress(c echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -363,7 +369,7 @@ func CompressFilesController(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "SourcePathMustBeArray")
 	}
 
-	sourcePaths, err := parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 	}
@@ -424,7 +430,7 @@ func CompressFilesController(c echo.Context) error {
 // @Param        extractFilesDto 	  body    dto.ExtractUnixFiles  true  "All props are required."
 // @Success      200 {object} object{} "FilesExtracted"
 // @Router       /v1/files/extract/ [put]
-func ExtractFilesController(c echo.Context) error {
+func (controller *FilesController) Extract(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
@@ -469,7 +475,7 @@ func ExtractFilesController(c echo.Context) error {
 // @Success      200 {object} object{} "FilesUploaded"
 // @Success      207 {object} object{} "FilesPartialUploaded"
 // @Router       /v1/files/upload/ [post]
-func UploadFilesController(c echo.Context) error {
+func (controller *FilesController) Upload(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
 	requestBody, _ := apiHelper.ReadRequestBody(c)
 
