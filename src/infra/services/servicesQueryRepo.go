@@ -35,7 +35,7 @@ func NewServicesQueryRepo(
 	return &ServicesQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo *ServicesQueryRepo) getPidProcessFamily(pid int32) ([]*process.Process, error) {
+func (repo *ServicesQueryRepo) readPidProcessFamily(pid int32) ([]*process.Process, error) {
 	processFamily := []*process.Process{}
 
 	pidProcess, err := process.NewProcess(pid)
@@ -51,7 +51,7 @@ func (repo *ServicesQueryRepo) getPidProcessFamily(pid int32) ([]*process.Proces
 	}
 
 	for _, childPidProcess := range childrenPidProcesses {
-		grandChildrenPidProcesses, err := repo.getPidProcessFamily(
+		grandChildrenPidProcesses, err := repo.readPidProcessFamily(
 			childPidProcess.Pid,
 		)
 		if err != nil || len(grandChildrenPidProcesses) == 0 {
@@ -64,10 +64,10 @@ func (repo *ServicesQueryRepo) getPidProcessFamily(pid int32) ([]*process.Proces
 	return processFamily, nil
 }
 
-func (repo *ServicesQueryRepo) getPidMetrics(
+func (repo *ServicesQueryRepo) readPidMetrics(
 	mainPid int32,
 ) (serviceMetrics valueObject.ServiceMetrics, err error) {
-	pidProcesses, err := repo.getPidProcessFamily(mainPid)
+	pidProcesses, err := repo.readPidProcessFamily(mainPid)
 	if err != nil {
 		return serviceMetrics, err
 	}
@@ -150,7 +150,7 @@ func (repo *ServicesQueryRepo) readServiceMetrics(
 		return nil, errors.New(err.Error() + ": " + rawServicePid)
 	}
 
-	serviceMetrics, err := repo.getPidMetrics(int32(servicePidInt))
+	serviceMetrics, err := repo.readPidMetrics(int32(servicePidInt))
 	if err != nil {
 		return nil, errors.New(err.Error() + ": " + rawServicePid)
 	}
