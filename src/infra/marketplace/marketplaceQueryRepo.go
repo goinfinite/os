@@ -10,7 +10,6 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -624,7 +623,10 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 func (repo *MarketplaceQueryRepo) ReadUniqueCatalogItem(
 	readDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	readDto.Pagination = useCase.MarketplaceDefaultPagination
+	readDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
+	}
 
 	responseDto, err := repo.ReadCatalogItems(readDto)
 	if err != nil {
@@ -729,7 +731,10 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 func (repo *MarketplaceQueryRepo) ReadUniqueInstalledItem(
 	readDto dto.ReadMarketplaceInstalledItemsRequest,
 ) (installedItem entity.MarketplaceInstalledItem, err error) {
-	readDto.Pagination = useCase.MarketplaceDefaultPagination
+	readDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
+	}
 
 	responseDto, err := repo.ReadInstalledItems(readDto)
 	if err != nil {
