@@ -220,12 +220,33 @@ func (service *DatabaseService) CreateUser(
 		}
 	}
 
-	dto := dto.NewCreateDatabaseUser(dbName, dbUsername, dbPassword, dbPrivileges)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateDatabaseUser(
+		dbName, dbUsername, dbPassword, dbPrivileges, operatorAccountId,
+		operatorIpAddress,
+	)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err = useCase.CreateDatabaseUser(databaseQueryRepo, databaseCmdRepo, dto)
+	err = useCase.CreateDatabaseUser(
+		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, createDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
