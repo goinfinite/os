@@ -230,3 +230,23 @@ func (uc *CreateSecurityActivityRecord) CreateDatabaseUser(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) DeleteDatabaseUser(
+	deleteDto dto.DeleteDatabaseUser,
+) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseUserDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewDatabaseSri(operatorAccountId, deleteDto.DatabaseName),
+			valueObject.NewDatabaseUserSri(operatorAccountId, deleteDto.Username),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}

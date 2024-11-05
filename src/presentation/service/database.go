@@ -257,7 +257,7 @@ func (service *DatabaseService) CreateUser(
 func (service *DatabaseService) DeleteUser(
 	input map[string]interface{},
 ) ServiceOutput {
-	requiredParams := []string{"dbType", "dbName", "username"}
+	requiredParams := []string{"dbType", "dbName", "dbUser"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
@@ -281,16 +281,36 @@ func (service *DatabaseService) DeleteUser(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dbUsername, err := valueObject.NewDatabaseUsername(input["username"])
+	dbUsername, err := valueObject.NewDatabaseUsername(input["dbUser"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteDatabaseUser(
+		dbName, dbUsername, operatorAccountId, operatorIpAddress,
+	)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err = useCase.DeleteDatabaseUser(
-		databaseQueryRepo, databaseCmdRepo, dbName, dbUsername,
+		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

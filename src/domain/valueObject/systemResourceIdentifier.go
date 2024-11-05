@@ -66,6 +66,15 @@ func NewDatabaseSri(
 	)
 }
 
+func NewDatabaseUserSri(
+	accountId AccountId,
+	databaseUsername DatabaseUsername,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":databaseUser/" + databaseUsername.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }
