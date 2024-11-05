@@ -57,6 +57,15 @@ func NewCronSri(
 	)
 }
 
+func NewDatabaseSri(
+	accountId AccountId,
+	databaseName DatabaseName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":database/" + databaseName.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

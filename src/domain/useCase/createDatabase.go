@@ -11,22 +11,26 @@ import (
 func CreateDatabase(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	createDatabase dto.CreateDatabase,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateDatabase,
 ) error {
-	_, err := dbQueryRepo.ReadByName(createDatabase.DatabaseName)
+	_, err := dbQueryRepo.ReadByName(createDto.DatabaseName)
 	if err == nil {
 		return errors.New("DatabaseAlreadyExists")
 	}
 
-	err = dbCmdRepo.Create(createDatabase.DatabaseName)
+	err = dbCmdRepo.Create(createDto.DatabaseName)
 	if err != nil {
 		slog.Error("CreateDatabaseError", slog.Any("error", err))
 		return errors.New("CreateDatabaseInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateDatabase(createDto)
+
 	slog.Info(
 		"DatabaseCreated",
-		slog.String("databaseName", createDatabase.DatabaseName.String()),
+		slog.String("databaseName", createDto.DatabaseName.String()),
 	)
 
 	return nil

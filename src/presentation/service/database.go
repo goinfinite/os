@@ -85,12 +85,30 @@ func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
-	dto := dto.NewCreateDatabase(dbName)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	dto := dto.NewCreateDatabase(dbName, dbType, operatorAccountId, operatorIpAddress)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err = useCase.CreateDatabase(databaseQueryRepo, databaseCmdRepo, dto)
+	err = useCase.CreateDatabase(
+		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, dto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

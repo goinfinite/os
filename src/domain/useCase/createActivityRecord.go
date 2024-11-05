@@ -173,3 +173,22 @@ func (uc *CreateSecurityActivityRecord) DeleteCron(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) CreateDatabase(
+	createDto dto.CreateDatabase,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewDatabaseSri(operatorAccountId, createDto.DatabaseName),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
