@@ -139,13 +139,6 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	requestBody["dbType"] = c.Param("dbType")
-
-	rawDatabaseName := requestBody["dbName"]
-	if rawDatabaseName == "" {
-		rawDatabaseName = c.Param("dbName")
-	}
-	requestBody["dbName"] = rawDatabaseName
 
 	rawPrivilegesSlice := []string{}
 	if requestBody["privileges"] != nil {
@@ -176,10 +169,9 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func (controller *DatabaseController) DeleteUser(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"dbType":   c.Param("dbType"),
-		"dbName":   c.Param("dbName"),
-		"username": c.Param("dbUser"),
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
