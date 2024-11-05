@@ -101,13 +101,13 @@ func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutp
 		}
 	}
 
-	dto := dto.NewCreateDatabase(dbName, dbType, operatorAccountId, operatorIpAddress)
+	createDto := dto.NewCreateDatabase(dbName, operatorAccountId, operatorIpAddress)
 
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
 	err = useCase.CreateDatabase(
-		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, dto,
+		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -141,10 +141,30 @@ func (service *DatabaseService) Delete(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteDatabase(dbName, operatorAccountId, operatorIpAddress)
+
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 	databaseCmdRepo := databaseInfra.NewDatabaseCmdRepo(dbType)
 
-	err = useCase.DeleteDatabase(databaseQueryRepo, databaseCmdRepo, dbName)
+	err = useCase.DeleteDatabase(
+		databaseQueryRepo, databaseCmdRepo, service.activityRecordCmdRepo, deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
