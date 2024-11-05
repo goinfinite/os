@@ -94,8 +94,12 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "InvalidContentType")
 	}
 
-	if len(requestBody) == 0 {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, "EmptyRequestBody")
+	for queryParamName, queryParamValues := range c.QueryParams() {
+		requestBody[queryParamName] = queryParamValues[0]
+	}
+
+	for _, paramName := range c.ParamNames() {
+		requestBody[paramName] = c.Param(paramName)
 	}
 
 	requestBody["operatorAccountId"] = c.Get("accountId")
