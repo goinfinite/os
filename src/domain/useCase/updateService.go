@@ -30,8 +30,12 @@ func UpdateService(
 
 	shouldDelete := shouldUpdateStatus && updateDto.Status.String() == "uninstalled"
 	if shouldDelete {
+		deleteDto := dto.NewDeleteService(
+			updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
+		)
 		return DeleteService(
-			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, updateDto.Name,
+			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, activityRecordCmdRepo,
+			deleteDto,
 		)
 	}
 

@@ -4,17 +4,18 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func DeleteService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	svcName valueObject.ServiceName,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	deleteDto dto.DeleteService,
 ) error {
-	serviceEntity, err := servicesQueryRepo.ReadByName(svcName)
+	serviceEntity, err := servicesQueryRepo.ReadByName(deleteDto.Name)
 	if err != nil {
 		return errors.New("ServiceNotFound")
 	}
@@ -24,19 +25,21 @@ func DeleteService(
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 
-	err = mappingCmdRepo.DeleteAuto(svcName)
+	err = mappingCmdRepo.DeleteAuto(deleteDto.Name)
 	if err != nil {
 		slog.Error("DeleteAutoMappingError", slog.Any("error", err))
 		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
-	err = servicesCmdRepo.Delete(svcName)
+	err = servicesCmdRepo.Delete(deleteDto.Name)
 	if err != nil {
 		slog.Error("DeleteServiceError", slog.Any("error", err))
 		return errors.New("DeleteServiceInfraError")
 	}
 
-	slog.Info("Service "+svcName.String()+" deleted.", slog.Any("error", err))
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).DeleteService(deleteDto)
+
+	slog.Info("Service "+deleteDto.Name.String()+" deleted.", slog.Any("error", err))
 
 	return nil
 }

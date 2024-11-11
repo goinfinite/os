@@ -493,9 +493,27 @@ func (service *ServicesService) Delete(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteService(name, operatorAccountId, operatorIpAddress)
+
 	err = useCase.DeleteService(
-		service.servicesQueryRepo, service.servicesCmdRepo,
-		service.mappingCmdRepo, name,
+		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
