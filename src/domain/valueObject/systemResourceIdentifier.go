@@ -143,6 +143,15 @@ func NewInstalledServiceSri(
 	)
 }
 
+func NewSslSri(
+	accountId AccountId,
+	sslPairId SslPairId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":ssl/" + sslPairId.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

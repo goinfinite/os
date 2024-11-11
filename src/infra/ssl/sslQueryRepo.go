@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -96,7 +97,7 @@ func (repo SslQueryRepo) sslPairFactory(
 		)
 	}
 
-	hashId, err := valueObject.NewSslIdFromSslPairContent(
+	hashId, err := valueObject.NewSslPairIdFromSslPairContent(
 		mainCertificate.CertificateContent,
 		chainCertificatesContent,
 		privateKey,
@@ -133,7 +134,7 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 
 	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
 
-	sslPairIdsVhostsNamesMap := map[valueObject.SslId][]valueObject.Fqdn{}
+	sslPairIdsVhostsNamesMap := map[valueObject.SslPairId][]valueObject.Fqdn{}
 	for _, crtFilePathStr := range crtFilePaths {
 		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
 		if err != nil {
@@ -171,7 +172,9 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 	return sslPairs, nil
 }
 
-func (repo SslQueryRepo) ReadById(sslId valueObject.SslId) (entity.SslPair, error) {
+func (repo SslQueryRepo) ReadById(
+	sslPairId valueObject.SslPairId,
+) (entity.SslPair, error) {
 	sslPairs, err := repo.Read()
 	if err != nil {
 		return entity.SslPair{}, err
@@ -182,7 +185,30 @@ func (repo SslQueryRepo) ReadById(sslId valueObject.SslId) (entity.SslPair, erro
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.Id.String() != sslId.String() {
+		if ssl.Id.String() != sslPairId.String() {
+			continue
+		}
+
+		return ssl, nil
+	}
+
+	return entity.SslPair{}, errors.New("SslPairNotFound")
+}
+
+func (repo SslQueryRepo) ReadByVhostHostname(
+	sslPairVhostHostname valueObject.Fqdn,
+) (entity.SslPair, error) {
+	sslPairs, err := repo.Read()
+	if err != nil {
+		return entity.SslPair{}, err
+	}
+
+	if len(sslPairs) < 1 {
+		return entity.SslPair{}, errors.New("SslPairNotFound")
+	}
+
+	for _, ssl := range sslPairs {
+		if !slices.Contains(ssl.VirtualHostsHostnames, sslPairVhostHostname) {
 			continue
 		}
 

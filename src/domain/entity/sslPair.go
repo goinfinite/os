@@ -9,7 +9,7 @@ import (
 const EarlyRenewalThresholdHours int64 = 48
 
 type SslPair struct {
-	Id                    valueObject.SslId         `json:"sslPairId"`
+	Id                    valueObject.SslPairId     `json:"sslPairId"`
 	VirtualHostsHostnames []valueObject.Fqdn        `json:"virtualHostsHostnames"`
 	Certificate           SslCertificate            `json:"certificate"`
 	Key                   valueObject.SslPrivateKey `json:"key"`
@@ -17,7 +17,7 @@ type SslPair struct {
 }
 
 func NewSslPair(
-	sslPairId valueObject.SslId,
+	sslPairId valueObject.SslPairId,
 	virtualHostsHostnames []valueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,

@@ -302,7 +302,7 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 	}
 
 	codeStr := "PhpVersionUpdated"
-	var details interface{} = map[string]interface{}{
+	var details interface{} = map[string]string{
 		"version": updateDto.PhpVersion.String(),
 	}
 
@@ -393,6 +393,36 @@ func (uc *CreateSecurityActivityRecord) DeleteService(deleteDto dto.DeleteServic
 		RecordDetails:     deleteDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CreateSslPair(
+	createDto dto.CreateSslPair,
+	sslPairId valueObject.SslPairId,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("SslPairCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSslSri(operatorAccountId, sslPairId),
+		},
+		RecordDetails: map[string]interface{}{
+			"virtualHostHostnames": createDto.VirtualHostsHostnames,
+			"certificate": map[string]interface{}{
+				"commonName": createDto.Certificate.CommonName,
+				"altNames":   createDto.Certificate.AltNames,
+				"authority":  createDto.Certificate.CertificateAuthority,
+				"issuedAt":   createDto.Certificate.IssuedAt,
+				"expiresAt":  createDto.Certificate.ExpiresAt,
+			},
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
 	uc.createActivityRecord(createRecordDto)

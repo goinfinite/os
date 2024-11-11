@@ -161,7 +161,7 @@ func (router Router) servicesRoutes() {
 func (router Router) sslRoutes() {
 	sslGroup := router.baseRoute.Group("/v1/ssl")
 	sslController := apiController.NewSslController(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 
 	sslGroup.GET("/", sslController.Read)

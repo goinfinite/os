@@ -276,12 +276,15 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	)
 }
 
-func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
+func (repo *SslCmdRepo) Create(
+	createSslPair dto.CreateSslPair,
+) (sslPairId valueObject.SslPairId, err error) {
 	if len(createSslPair.VirtualHostsHostnames) == 0 {
-		return errors.New("EmptyVirtualHosts")
+		return sslPairId, errors.New("EmptyVirtualHosts")
 	}
 
-	firstVhostNameStr := createSslPair.VirtualHostsHostnames[0].String()
+	firstVhostName := createSslPair.VirtualHostsHostnames[0]
+	firstVhostNameStr := firstVhostName.String()
 	firstVhostCertFilePath := infraEnvs.PkiConfDir + "/" + firstVhostNameStr + ".crt"
 	firstVhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + firstVhostNameStr + ".key"
 
@@ -323,22 +326,26 @@ func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 			shouldOverwrite,
 		)
 		if err != nil {
-			return err
+			return sslPairId, err
 		}
 
 		err = infraHelper.UpdateFile(
 			vhostCertKeyFilePath, createSslPair.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
-			return err
+			return sslPairId, err
 		}
 	}
 
-	return nil
+	createdSslPairId, err := repo.sslQueryRepo.ReadByVhostHostname(firstVhostName)
+	if err != nil {
+		return sslPairId, err
+	}
+	return createdSslPairId.Id, nil
 }
 
-func (repo *SslCmdRepo) Delete(sslId valueObject.SslId) error {
-	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslId)
+func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
+	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslPairId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}

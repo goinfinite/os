@@ -104,7 +104,7 @@ func (router *Router) sslsRoutes() {
 	sslsGroup := router.baseRoute.Group("/ssls")
 
 	sslsPresenter := presenter.NewSslsPresenter(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	sslsGroup.GET("/", sslsPresenter.Handler)
 }

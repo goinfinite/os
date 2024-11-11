@@ -25,11 +25,14 @@ type SslController struct {
 func NewSslController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslController {
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslService:      service.NewSslService(persistentDbSvc, transientDbSvc),
+		sslService: service.NewSslService(
+			persistentDbSvc, transientDbSvc, trailDbSvc,
+		),
 	}
 }
 

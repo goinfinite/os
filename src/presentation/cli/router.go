@@ -206,7 +206,7 @@ func (router Router) sslRoutes() {
 	rootCmd.AddCommand(sslCmd)
 
 	sslController := cliController.NewSslController(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	sslCmd.AddCommand(sslController.Read())
 	sslCmd.AddCommand(sslController.Create())
