@@ -69,9 +69,7 @@ func (uc *CreateSecurityActivityRecord) CreateAccount(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) UpdateAccount(
-	updateDto dto.UpdateAccount,
-) {
+func (uc *CreateSecurityActivityRecord) UpdateAccount(updateDto dto.UpdateAccount) {
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
@@ -99,9 +97,7 @@ func (uc *CreateSecurityActivityRecord) UpdateAccount(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) DeleteAccount(
-	deleteDto dto.DeleteAccount,
-) {
+func (uc *CreateSecurityActivityRecord) DeleteAccount(deleteDto dto.DeleteAccount) {
 	recordCode, _ := valueObject.NewActivityRecordCode("AccountDeleted")
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
@@ -137,9 +133,7 @@ func (uc *CreateSecurityActivityRecord) CreateCron(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) UpdateCron(
-	updateDto dto.UpdateCron,
-) {
+func (uc *CreateSecurityActivityRecord) UpdateCron(updateDto dto.UpdateCron) {
 	operatorAccountId := updateDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("CronUpdated")
@@ -157,9 +151,7 @@ func (uc *CreateSecurityActivityRecord) UpdateCron(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) DeleteCron(
-	deleteDto dto.DeleteCron,
-) {
+func (uc *CreateSecurityActivityRecord) DeleteCron(deleteDto dto.DeleteCron) {
 	operatorAccountId := deleteDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("CronDeleted")
@@ -176,9 +168,7 @@ func (uc *CreateSecurityActivityRecord) DeleteCron(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) CreateDatabase(
-	createDto dto.CreateDatabase,
-) {
+func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatabase) {
 	operatorAccountId := createDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseCreated")
@@ -196,9 +186,7 @@ func (uc *CreateSecurityActivityRecord) CreateDatabase(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) DeleteDatabase(
-	deleteDto dto.DeleteDatabase,
-) {
+func (uc *CreateSecurityActivityRecord) DeleteDatabase(deleteDto dto.DeleteDatabase) {
 	operatorAccountId := deleteDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseDeleted")
@@ -382,9 +370,7 @@ func (uc *CreateSecurityActivityRecord) CreateCustomService(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) UpdateService(
-	updateDto dto.UpdateService,
-) {
+func (uc *CreateSecurityActivityRecord) UpdateService(updateDto dto.UpdateService) {
 	operatorAccountId := updateDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("ServiceUpdated")
