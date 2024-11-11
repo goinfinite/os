@@ -61,6 +61,7 @@ func CreateCustomService(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateCustomService,
 ) error {
 	_, err := servicesQueryRepo.ReadByName(createDto.Name)
@@ -78,6 +79,9 @@ func CreateCustomService(
 		slog.Error("CreateCustomServiceError", slog.Any("error", err))
 		return errors.New("CreateCustomServiceInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateCustomService(createDto)
 
 	if createDto.AutoCreateMapping != nil && !*createDto.AutoCreateMapping {
 		return nil

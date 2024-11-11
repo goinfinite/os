@@ -116,6 +116,24 @@ func NewPhpRuntimeSri(
 	)
 }
 
+func NewInstallableServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":installableService/" + serviceName.String(),
+	)
+}
+
+func NewCustomServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":customService/" + serviceName.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

@@ -188,7 +188,7 @@ func (router Router) servicesRoutes() {
 	rootCmd.AddCommand(servicesCmd)
 
 	servicesController := cliController.NewServicesController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	servicesCmd.AddCommand(servicesController.Read())
 	servicesCmd.AddCommand(servicesController.ReadInstallables())

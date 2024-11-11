@@ -44,6 +44,8 @@ func NewMarketplaceCmdRepo(
 func (repo *MarketplaceCmdRepo) installServices(
 	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
 	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
@@ -62,7 +64,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 		createServiceDto := dto.NewCreateInstallableService(
 			serviceWithVersion.Name, []valueObject.ServiceEnv{},
 			[]valueObject.PortBinding{}, serviceWithVersion.Version,
-			nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, operatorAccountId, operatorIpAddress,
 		)
 
 		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
@@ -362,7 +364,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.installServices(installDto.Hostname, catalogItem.Services)
+	err = repo.installServices(
+		installDto.Hostname, catalogItem.Services, installDto.OperatorAccountId,
+		installDto.OperatorIpAddress,
+	)
 	if err != nil {
 		return err
 	}

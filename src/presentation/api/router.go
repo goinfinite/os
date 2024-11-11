@@ -147,7 +147,7 @@ func (router *Router) scheduledTaskRoutes() {
 func (router Router) servicesRoutes() {
 	servicesGroup := router.baseRoute.Group("/v1/services")
 	servicesController := apiController.NewServicesController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	servicesGroup.GET("/", servicesController.Read)

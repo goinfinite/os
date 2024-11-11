@@ -61,6 +61,7 @@ func (uc *CreateSecurityActivityRecord) CreateAccount(
 		AffectedResources: []valueObject.SystemResourceIdentifier{
 			valueObject.NewAccountSri(accountId),
 		},
+		RecordDetails:     createDto,
 		OperatorAccountId: &createDto.OperatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
@@ -128,6 +129,7 @@ func (uc *CreateSecurityActivityRecord) CreateCron(
 		AffectedResources: []valueObject.SystemResourceIdentifier{
 			valueObject.NewCronSri(operatorAccountId, cronId),
 		},
+		RecordDetails:     createDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
@@ -186,6 +188,7 @@ func (uc *CreateSecurityActivityRecord) CreateDatabase(
 		AffectedResources: []valueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(operatorAccountId, createDto.DatabaseName),
 		},
+		RecordDetails:     createDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
@@ -224,6 +227,7 @@ func (uc *CreateSecurityActivityRecord) CreateDatabaseUser(
 		AffectedResources: []valueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(operatorAccountId, createDto.DatabaseName),
 		},
+		RecordDetails:     createDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
@@ -265,6 +269,7 @@ func (uc *CreateSecurityActivityRecord) InstallMarketplaceCatalogItem(
 				operatorAccountId, installDto.Id, installDto.Slug,
 			),
 		},
+		RecordDetails:     installDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &installDto.OperatorIpAddress,
 	}
@@ -316,8 +321,10 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
-	var details interface{}
 	codeStr := "PhpVersionUpdated"
+	var details interface{} = map[string]interface{}{
+		"version": updateDto.PhpVersion.String(),
+	}
 
 	switch configName {
 	case Modules:
@@ -331,6 +338,46 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
 	createRecordDto.RecordCode = recordCode
 	createRecordDto.RecordDetails = details
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CreateInstallableService(
+	createDto dto.CreateInstallableService,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("InstallableServiceCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewInstallableServiceSri(operatorAccountId, createDto.Name),
+		},
+		RecordDetails:     createDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CreateCustomService(
+	createDto dto.CreateCustomService,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("CustomServiceCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewCustomServiceSri(operatorAccountId, createDto.Name),
+		},
+		RecordDetails:     createDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
 
 	uc.createActivityRecord(createRecordDto)
 }

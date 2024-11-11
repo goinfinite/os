@@ -18,9 +18,10 @@ type ServicesController struct {
 
 func NewServicesController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		servicesService: service.NewServicesService(persistentDbService),
+		servicesService: service.NewServicesService(persistentDbService, trailDbSvc),
 	}
 }
 
