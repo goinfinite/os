@@ -448,14 +448,31 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		startupFilePtr = &startupFile
 	}
 
-	dto := dto.NewUpdateService(
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateService(
 		name, typePtr, versionPtr, statusPtr, startCmdPtr, nil, portBindings, nil,
 		nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateService(
 		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
-		service.mappingCmdRepo, dto,
+		service.mappingCmdRepo, service.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

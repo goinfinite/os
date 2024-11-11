@@ -13,6 +13,7 @@ func UpdateService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
 	serviceEntity, err := servicesQueryRepo.ReadByName(updateDto.Name)
@@ -39,6 +40,8 @@ func UpdateService(
 		slog.Error("UpdateServiceError", slog.Any("error", err))
 		return errors.New("UpdateServiceInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateService(updateDto)
 
 	if len(updateDto.PortBindings) == 0 {
 		return nil

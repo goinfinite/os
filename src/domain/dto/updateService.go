@@ -24,6 +24,8 @@ type UpdateService struct {
 	MaxStartRetries   *uint                       `json:"maxStartRetries"`
 	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
+	OperatorAccountId valueObject.AccountId       `json:"-"`
+	OperatorIpAddress valueObject.IpAddress       `json:"-"`
 }
 
 func NewUpdateService(
@@ -40,6 +42,8 @@ func NewUpdateService(
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) UpdateService {
 	return UpdateService{
 		Name:              name,
@@ -63,5 +67,7 @@ func NewUpdateService(
 		MaxStartRetries:   maxStartRetries,
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
+		OperatorAccountId: operatorAccountId,
+		OperatorIpAddress: operatorIpAddress,
 	}
 }

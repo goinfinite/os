@@ -381,3 +381,23 @@ func (uc *CreateSecurityActivityRecord) CreateCustomService(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) UpdateService(
+	updateDto dto.UpdateService,
+) {
+	operatorAccountId := updateDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("ServiceUpdated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewInstallableServiceSri(operatorAccountId, updateDto.Name),
+		},
+		RecordDetails:     updateDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
