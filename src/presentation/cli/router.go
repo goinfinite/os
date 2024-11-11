@@ -142,7 +142,9 @@ func (router Router) runtimeRoutes() {
 	}
 	runtimeCmd.AddCommand(phpCmd)
 
-	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
+	runtimeController := cliController.NewRuntimeController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	phpCmd.AddCommand(runtimeController.ReadPhpConfigs())
 	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
 	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())

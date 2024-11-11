@@ -94,7 +94,9 @@ func (router *Router) marketplaceRoutes() {
 func (router *Router) runtimesRoutes() {
 	runtimesGroup := router.baseRoute.Group("/runtimes")
 
-	runtimesPresenter := presenter.NewRuntimesPresenter(router.persistentDbSvc)
+	runtimesPresenter := presenter.NewRuntimesPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
 }
 

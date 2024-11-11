@@ -23,9 +23,10 @@ type RuntimesPresenter struct {
 
 func NewRuntimesPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *RuntimesPresenter {
 	return &RuntimesPresenter{
-		runtimeService:     service.NewRuntimeService(persistentDbSvc),
+		runtimeService:     service.NewRuntimeService(persistentDbSvc, trailDbSvc),
 		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }

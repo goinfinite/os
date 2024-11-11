@@ -128,7 +128,7 @@ func (router Router) o11yRoutes() {
 func (router Router) runtimeRoutes() {
 	runtimeGroup := router.baseRoute.Group("/v1/runtime")
 	runtimeController := apiController.NewRuntimeController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
