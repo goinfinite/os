@@ -286,17 +286,9 @@ func (uc *CreateSecurityActivityRecord) DeleteMarketplaceInstalledItem(
 	uc.createActivityRecord(createRecordDto)
 }
 
-type phpConfigNameEnum string
-
-const (
-	Version  phpConfigNameEnum = "version"
-	Modules  phpConfigNameEnum = "modules"
-	Settings phpConfigNameEnum = "settings"
-)
-
 func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 	updateDto dto.UpdatePhpConfigs,
-	configName phpConfigNameEnum,
+	configType string,
 ) {
 	operatorAccountId := updateDto.OperatorAccountId
 
@@ -314,11 +306,11 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 		"version": updateDto.PhpVersion.String(),
 	}
 
-	switch configName {
-	case Modules:
+	switch configType {
+	case "modules":
 		codeStr = "PhpModulesUpdated"
 		details = updateDto.PhpModules
-	case Settings:
+	case "settings":
 		codeStr = "PhpSettingsUpdated"
 		details = updateDto.PhpSettings
 	}

@@ -53,7 +53,7 @@ func UpdatePhpConfigs(
 		return errors.New("UpdatePhpVersionInfraError")
 	}
 	securityActivityRecord := NewCreateSecurityActivityRecord(activityCmdRepo)
-	securityActivityRecord.UpdatePhpConfigs(updateDto, Version)
+	securityActivityRecord.UpdatePhpConfigs(updateDto, "version")
 
 	if len(updateDto.PhpModules) > 0 {
 		err = runtimeCmdRepo.UpdatePhpModules(updateDto.Hostname, updateDto.PhpModules)
@@ -61,7 +61,7 @@ func UpdatePhpConfigs(
 			slog.Error("UpdatePhpModulesError", slog.Any("err", err))
 			return errors.New("UpdatePhpModulesInfraError")
 		}
-		securityActivityRecord.UpdatePhpConfigs(updateDto, Modules)
+		securityActivityRecord.UpdatePhpConfigs(updateDto, "modules")
 	}
 
 	if len(updateDto.PhpSettings) > 0 {
@@ -70,7 +70,7 @@ func UpdatePhpConfigs(
 			slog.Error("UpdatePhpSettingsError", slog.Any("err", err))
 			return errors.New("UpdatePhpSettingsInfraError")
 		}
-		securityActivityRecord.UpdatePhpConfigs(updateDto, Settings)
+		securityActivityRecord.UpdatePhpConfigs(updateDto, "settings")
 	}
 
 	return nil
