@@ -99,13 +99,32 @@ func (service *RuntimeService) UpdatePhpConfigs(
 		}
 	}
 
-	dto := dto.NewUpdatePhpConfigs(hostname, phpVersion, phpModules, phpSettings)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdatePhpConfigs(
+		hostname, phpVersion, phpModules, phpSettings, operatorAccountId,
+		operatorIpAddress,
+	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
 	err = useCase.UpdatePhpConfigs(
 		service.runtimeQueryRepo, service.runtimeCmdRepo, vhostQueryRepo,
-		service.activityRecordCmdRepo, dto,
+		service.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

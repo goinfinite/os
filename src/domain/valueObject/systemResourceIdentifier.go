@@ -85,6 +85,15 @@ func NewMarketplaceInstalledItemSri(
 	)
 }
 
+func NewPhpRuntimeSri(
+	accountId AccountId,
+	virtualHostHostname Fqdn,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":phpRuntime/" + virtualHostHostname.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

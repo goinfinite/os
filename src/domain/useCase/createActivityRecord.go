@@ -286,3 +286,45 @@ func (uc *CreateSecurityActivityRecord) DeleteMarketplaceInstalledItem(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+type phpConfigNameEnum string
+
+const (
+	Version  phpConfigNameEnum = "version"
+	Modules  phpConfigNameEnum = "modules"
+	Settings phpConfigNameEnum = "settings"
+)
+
+func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
+	updateDto dto.UpdatePhpConfigs,
+	configName phpConfigNameEnum,
+) {
+	operatorAccountId := updateDto.OperatorAccountId
+
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewPhpRuntimeSri(operatorAccountId, updateDto.Hostname),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	var details interface{}
+	codeStr := "PhpVersionUpdated"
+
+	switch configName {
+	case Modules:
+		codeStr = "PhpModulesUpdated"
+		details = updateDto.PhpModules
+	case Settings:
+		codeStr = "PhpSettingsUpdated"
+		details = updateDto.PhpSettings
+	}
+
+	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
+	createRecordDto.RecordCode = recordCode
+	createRecordDto.RecordDetails = details
+
+	uc.createActivityRecord(createRecordDto)
+}
