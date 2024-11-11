@@ -254,13 +254,32 @@ func (uc *CreateSecurityActivityRecord) DeleteDatabaseUser(
 func (uc *CreateSecurityActivityRecord) InstallMarketplaceCatalogItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) {
-	operatorAccountId := installDto.OperatorAccountId
-
 	recordCode, _ := valueObject.NewActivityRecordCode("MarketplaceCatalogItemInstalled")
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
 		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		OperatorAccountId: &installDto.OperatorAccountId,
+		OperatorIpAddress: &installDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteMarketplaceInstalledItem(
+	installDto dto.DeleteMarketplaceInstalledItem,
+) {
+	operatorAccountId := installDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("MarketplaceInstalledItemDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewMarketplaceInstalledItemSri(
+				operatorAccountId, installDto.InstalledId,
+			),
+		},
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &installDto.OperatorIpAddress,
 	}

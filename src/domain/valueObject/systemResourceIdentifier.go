@@ -75,6 +75,16 @@ func NewDatabaseUserSri(
 	)
 }
 
+func NewMarketplaceInstalledItemSri(
+	accountId AccountId,
+	marketplaceInstalledItem MarketplaceItemId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":marketplaceInstalledItem/" +
+			marketplaceInstalledItem.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

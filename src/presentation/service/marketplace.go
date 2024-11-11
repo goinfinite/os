@@ -213,6 +213,22 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		}
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace delete"
 		installParams := []string{
@@ -242,12 +258,12 @@ func (service *MarketplaceService) DeleteInstalledItem(
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
-		installedId, shouldUninstallServices,
+		installedId, shouldUninstallServices, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.DeleteMarketplaceInstalledItem(
 		service.marketplaceQueryRepo, service.marketplaceCmdRepo,
-		deleteMarketplaceInstalledItem,
+		service.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
