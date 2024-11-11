@@ -75,13 +75,35 @@ func NewDatabaseUserSri(
 	)
 }
 
+func NewMarketplaceCatalogItemSri(
+	accountId AccountId,
+	marketplaceCatalogItemId *MarketplaceItemId,
+	marketplaceCatalogItemSlug *MarketplaceItemSlug,
+) SystemResourceIdentifier {
+	if marketplaceCatalogItemId == nil && marketplaceCatalogItemSlug == nil {
+		slog.Debug("MarketplaceCatalogItemSriMustHaveIdOrSlug")
+		panic("MarketplaceCatalogItemSriMustHaveIdOrSlug")
+	}
+
+	marketplaceCatalogItemSri := "sri://" + accountId.String() + ":marketplaceCatalogItem/"
+	if marketplaceCatalogItemId != nil {
+		return NewSystemResourceIdentifierIgnoreError(
+			marketplaceCatalogItemSri + marketplaceCatalogItemId.String(),
+		)
+	}
+
+	return NewSystemResourceIdentifierIgnoreError(
+		marketplaceCatalogItemSri + marketplaceCatalogItemSlug.String(),
+	)
+}
+
 func NewMarketplaceInstalledItemSri(
 	accountId AccountId,
-	marketplaceInstalledItem MarketplaceItemId,
+	marketplaceInstalledItemId MarketplaceItemId,
 ) SystemResourceIdentifier {
 	return NewSystemResourceIdentifierIgnoreError(
 		"sri://" + accountId.String() + ":marketplaceInstalledItem/" +
-			marketplaceInstalledItem.String(),
+			marketplaceInstalledItemId.String(),
 	)
 }
 
