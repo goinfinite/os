@@ -73,6 +73,7 @@ func InstallMarketplaceCatalogItem(
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
 	_, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
@@ -98,6 +99,9 @@ func InstallMarketplaceCatalogItem(
 		slog.Error("InstallMarketplaceCatalogItem", slog.Any("error", err))
 		return errors.New("InstallMarketplaceCatalogItemInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		InstallMarketplaceCatalogItem(installDto)
 
 	return nil
 }

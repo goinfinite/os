@@ -143,8 +143,25 @@ func (service *MarketplaceService) InstallCatalogItem(
 		return NewServiceOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	dto := dto.NewInstallMarketplaceCatalogItem(
-		hostname, idPtr, slugPtr, urlPathPtr, dataFields,
+		hostname, idPtr, slugPtr, urlPathPtr, dataFields, operatorAccountId,
+		operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)

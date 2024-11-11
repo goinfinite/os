@@ -5,11 +5,13 @@ import (
 )
 
 type InstallMarketplaceCatalogItem struct {
-	Hostname   valueObject.Fqdn                                  `json:"hostname"`
-	Id         *valueObject.MarketplaceItemId                    `json:"id"`
-	Slug       *valueObject.MarketplaceItemSlug                  `json:"slug"`
-	UrlPath    *valueObject.UrlPath                              `json:"urlPath"`
-	DataFields []valueObject.MarketplaceInstallableItemDataField `json:"dataFields"`
+	Hostname          valueObject.Fqdn                                  `json:"hostname"`
+	Id                *valueObject.MarketplaceItemId                    `json:"id"`
+	Slug              *valueObject.MarketplaceItemSlug                  `json:"slug"`
+	UrlPath           *valueObject.UrlPath                              `json:"urlPath"`
+	DataFields        []valueObject.MarketplaceInstallableItemDataField `json:"dataFields"`
+	OperatorAccountId valueObject.AccountId                             `json:"-"`
+	OperatorIpAddress valueObject.IpAddress                             `json:"-"`
 }
 
 func NewInstallMarketplaceCatalogItem(
@@ -18,12 +20,16 @@ func NewInstallMarketplaceCatalogItem(
 	slug *valueObject.MarketplaceItemSlug,
 	urlPath *valueObject.UrlPath,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) InstallMarketplaceCatalogItem {
 	return InstallMarketplaceCatalogItem{
-		Id:         id,
-		Slug:       slug,
-		Hostname:   hostname,
-		UrlPath:    urlPath,
-		DataFields: dataFields,
+		Id:                id,
+		Slug:              slug,
+		Hostname:          hostname,
+		UrlPath:           urlPath,
+		DataFields:        dataFields,
+		OperatorAccountId: operatorAccountId,
+		OperatorIpAddress: operatorIpAddress,
 	}
 }
