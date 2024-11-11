@@ -392,7 +392,7 @@ func (uc *CreateSecurityActivityRecord) UpdateService(
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewInstallableServiceSri(operatorAccountId, updateDto.Name),
+			valueObject.NewInstalledServiceSri(operatorAccountId, updateDto.Name),
 		},
 		RecordDetails:     updateDto,
 		OperatorAccountId: &operatorAccountId,

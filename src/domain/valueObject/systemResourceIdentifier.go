@@ -134,6 +134,15 @@ func NewCustomServiceSri(
 	)
 }
 
+func NewInstalledServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":installedService/" + serviceName.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }
