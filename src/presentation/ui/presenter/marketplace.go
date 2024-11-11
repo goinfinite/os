@@ -20,9 +20,10 @@ type MarketplacePresenter struct {
 
 func NewMarketplacePresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MarketplacePresenter {
 	return &MarketplacePresenter{
-		marketplaceService: service.NewMarketplaceService(persistentDbSvc),
+		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
 		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
 	}
 }

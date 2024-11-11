@@ -85,7 +85,9 @@ func (router *Router) mappingsRoutes() {
 func (router *Router) marketplaceRoutes() {
 	marketplaceGroup := router.baseRoute.Group("/marketplace")
 
-	marketplacePresenter := presenter.NewMarketplacePresenter(router.persistentDbSvc)
+	marketplacePresenter := presenter.NewMarketplacePresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	marketplaceGroup.GET("/", marketplacePresenter.Handler)
 }
 

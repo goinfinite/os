@@ -110,7 +110,7 @@ func (router Router) marketplaceRoutes() {
 	rootCmd.AddCommand(marketplaceCmd)
 
 	marketplaceController := cliController.NewMarketplaceController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
 	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())

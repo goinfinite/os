@@ -103,7 +103,7 @@ func (router Router) filesRoutes() {
 func (router Router) marketplaceRoutes() {
 	marketplaceGroup := router.baseRoute.Group("/v1/marketplace")
 	marketplaceController := apiController.NewMarketplaceController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	marketplaceInstalledGroup := marketplaceGroup.Group("/installed")
