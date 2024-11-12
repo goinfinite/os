@@ -174,7 +174,7 @@ func (router Router) sslRoutes() {
 func (router Router) vhostsRoutes() {
 	vhostsGroup := router.baseRoute.Group("/v1/vhosts")
 	vhostController := apiController.NewVirtualHostController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	vhostsGroup.GET("/", vhostController.Read)

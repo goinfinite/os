@@ -24,7 +24,7 @@ func NewMarketplacePresenter(
 ) *MarketplacePresenter {
 	return &MarketplacePresenter{
 		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
 	}
 }
 

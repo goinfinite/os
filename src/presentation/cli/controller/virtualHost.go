@@ -13,9 +13,10 @@ type VirtualHostController struct {
 
 func NewVirtualHostController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
 	}
 }
 

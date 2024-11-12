@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
@@ -14,22 +15,25 @@ import (
 )
 
 type VirtualHostService struct {
-	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
-	vhostQueryRepo   *vhostInfra.VirtualHostQueryRepo
-	vhostCmdRepo     *vhostInfra.VirtualHostCmdRepo
-	mappingQueryRepo *mappingInfra.MappingQueryRepo
-	mappingCmdRepo   *mappingInfra.MappingCmdRepo
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	vhostQueryRepo        *vhostInfra.VirtualHostQueryRepo
+	vhostCmdRepo          *vhostInfra.VirtualHostCmdRepo
+	mappingQueryRepo      *mappingInfra.MappingQueryRepo
+	mappingCmdRepo        *mappingInfra.MappingCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewVirtualHostService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *VirtualHostService {
 	return &VirtualHostService{
-		persistentDbSvc:  persistentDbSvc,
-		vhostQueryRepo:   vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
-		vhostCmdRepo:     vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
-		mappingQueryRepo: mappingInfra.NewMappingQueryRepo(persistentDbSvc),
-		mappingCmdRepo:   mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		persistentDbSvc:       persistentDbSvc,
+		vhostQueryRepo:        vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		vhostCmdRepo:          vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
+		mappingQueryRepo:      mappingInfra.NewMappingQueryRepo(persistentDbSvc),
+		mappingCmdRepo:        mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 

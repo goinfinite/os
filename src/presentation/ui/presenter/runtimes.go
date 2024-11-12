@@ -27,7 +27,7 @@ func NewRuntimesPresenter(
 ) *RuntimesPresenter {
 	return &RuntimesPresenter{
 		runtimeService:     service.NewRuntimeService(persistentDbSvc, trailDbSvc),
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
 	}
 }
 

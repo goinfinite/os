@@ -222,7 +222,7 @@ func (router Router) virtualHostRoutes() {
 	rootCmd.AddCommand(vhostCmd)
 
 	vhostController := cliController.NewVirtualHostController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	vhostCmd.AddCommand(vhostController.Read())
 	vhostCmd.AddCommand(vhostController.Create())
