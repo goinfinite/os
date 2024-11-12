@@ -526,9 +526,7 @@ func (uc *CreateSecurityActivityRecord) CreateMapping(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) DeleteMapping(
-	deleteDto dto.DeleteMapping,
-) {
+func (uc *CreateSecurityActivityRecord) DeleteMapping(deleteDto dto.DeleteMapping) {
 	operatorAccountId := deleteDto.OperatorAccountId
 
 	recordCode, _ := valueObject.NewActivityRecordCode("MappingDeleted")
@@ -541,6 +539,173 @@ func (uc *CreateSecurityActivityRecord) DeleteMapping(
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CreateUnixFile(createDto dto.CreateUnixFile) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewUnixFileSri(operatorAccountId, createDto.FilePath),
+		},
+		RecordDetails: map[string]interface{}{
+			"permissions": createDto.Permissions,
+			"mimeType":    createDto.MimeType,
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteUnixFiles(deleteDto dto.DeleteUnixFiles) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		RecordDetails:     map[string]bool{"shouldHardDelete": deleteDto.HardDelete},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	affectedResources := []valueObject.SystemResourceIdentifier{}
+	for _, fileToDelete := range deleteDto.SourcePaths {
+		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
+		affectedResources = append(affectedResources, unixFileSri)
+	}
+	createRecordDto.AffectedResources = affectedResources
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnixFiles) {
+	operatorAccountId := updateDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileUpdated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	affectedResources := []valueObject.SystemResourceIdentifier{}
+	for _, fileToDelete := range updateDto.SourcePaths {
+		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
+		affectedResources = append(affectedResources, unixFileSri)
+	}
+	createRecordDto.AffectedResources = affectedResources
+
+	details := map[string]interface{}{}
+	if updateDto.DestinationPath != nil {
+		details["destinationPath"] = updateDto.DestinationPath
+	}
+	if updateDto.Permissions != nil {
+		details["permissions"] = updateDto.Permissions
+	}
+	if updateDto.EncodedContent != nil {
+		details["contentWasUpdated"] = true
+	}
+	createRecordDto.RecordDetails = details
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CopyUnixFile(copyDto dto.CopyUnixFile) {
+	operatorAccountId := copyDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCopied")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewUnixFileSri(operatorAccountId, copyDto.SourcePath),
+		},
+		RecordDetails: map[string]interface{}{
+			"destinationPath": copyDto.DestinationPath,
+			"shouldOverwrite": copyDto.ShouldOverwrite,
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &copyDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) CompressUnixFile(
+	compressDto dto.CompressUnixFiles,
+) {
+	operatorAccountId := compressDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFilesCompressed")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		RecordDetails: map[string]interface{}{
+			"destinationPath": compressDto.DestinationPath,
+			"compressionType": compressDto.CompressionType,
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &compressDto.OperatorIpAddress,
+	}
+
+	affectedResources := []valueObject.SystemResourceIdentifier{}
+	for _, fileToDelete := range compressDto.SourcePaths {
+		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
+		affectedResources = append(affectedResources, unixFileSri)
+	}
+	createRecordDto.AffectedResources = affectedResources
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) ExtractUnixFile(
+	extractDto dto.ExtractUnixFiles,
+) {
+	operatorAccountId := extractDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileExtracted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		RecordDetails:     extractDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &extractDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) UploadUnixFiles(
+	uploadDto dto.UploadUnixFiles,
+) {
+	operatorAccountId := uploadDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("UnixFilesUploaded")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &uploadDto.OperatorIpAddress,
+	}
+
+	details := map[string]interface{}{"destinationPath": uploadDto.DestinationPath}
+
+	fileNames := []valueObject.UnixFileName{}
+	for _, fileStreamHandler := range uploadDto.FileStreamHandlers {
+		fileNames = append(fileNames, fileStreamHandler.Name)
+	}
+	details["fileNames"] = fileNames
+
+	createRecordDto.RecordDetails = details
 
 	uc.createActivityRecord(createRecordDto)
 }

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -10,14 +10,17 @@ import (
 )
 
 type UpdateUnixFiles struct {
-	filesCmdRepo repository.FilesCmdRepo
+	filesCmdRepo          repository.FilesCmdRepo
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
-		filesCmdRepo: filesCmdRepo,
+		filesCmdRepo:          filesCmdRepo,
+		activityRecordCmdRepo: activityRecordCmdRepo,
 	}
 }
 
@@ -32,31 +35,18 @@ func (uc UpdateUnixFiles) updateFailureFactory(
 		return updateProcessFailure, err
 	}
 
-	return valueObject.NewUpdateProcessFailure(
-		filePath,
-		failureReason,
-	), nil
+	return valueObject.NewUpdateProcessFailure(filePath, failureReason), nil
 }
 
 func (uc UpdateUnixFiles) updateFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
-	err := uc.filesCmdRepo.UpdatePermissions(
-		sourcePath,
-		permissions,
-	)
+	err := uc.filesCmdRepo.UpdatePermissions(sourcePath, permissions)
 	if err != nil {
-		log.Printf("UpdateFilePermissionsError: %s", err.Error())
+		slog.Error("UpdateFilePermissionsError", slog.Any("err", err))
 		return errors.New("UpdateFilePermissionsInfraError")
 	}
-
-	log.Printf(
-		"File '%s' (%s) permissions updated to '%s'.",
-		sourcePath.GetFileName().String(),
-		sourcePath.GetFileDir().String(),
-		permissions.String(),
-	)
 
 	return nil
 }
@@ -67,12 +57,10 @@ func (uc UpdateUnixFiles) moveFile(
 ) error {
 	shouldOverwrite := false
 	err := uc.filesCmdRepo.Move(
-		sourcePath,
-		destinationPath,
-		shouldOverwrite,
+		sourcePath, destinationPath, shouldOverwrite,
 	)
 	if err != nil {
-		log.Printf("MoveFileError: %s", err.Error())
+		slog.Error("MoveFileError", slog.Any("err", err))
 		return errors.New("MoveFileInfraError")
 	}
 
@@ -85,33 +73,28 @@ func (uc UpdateUnixFiles) updateFileContent(
 ) error {
 	err := uc.filesCmdRepo.UpdateContent(sourcePath, encodedContent)
 	if err != nil {
-		log.Printf("UpdateFileContentError: %s", err.Error())
+		slog.Error("UpdateFileContentError", slog.Any("err", err))
 		return errors.New("UpdateFileContentInfraError")
 	}
-
-	log.Printf(
-		"File '%s' content updated.",
-		sourcePath.GetFileName().String(),
-	)
 
 	return nil
 }
 
 func (uc UpdateUnixFiles) Execute(
-	updateUnixFiles dto.UpdateUnixFiles,
+	updateDto dto.UpdateUnixFiles,
 ) (dto.UpdateProcessReport, error) {
 	updateProcessReport := dto.NewUpdateProcessReport(
 		[]valueObject.UnixFilePath{},
 		[]valueObject.UpdateProcessFailure{},
 	)
 
-	for _, sourcePath := range updateUnixFiles.SourcePaths {
-		if updateUnixFiles.Permissions != nil {
-			err := uc.updateFilePermissions(sourcePath, *updateUnixFiles.Permissions)
+	for _, sourcePath := range updateDto.SourcePaths {
+		if updateDto.Permissions != nil {
+			err := uc.updateFilePermissions(sourcePath, *updateDto.Permissions)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddUpdatePermissionsFailureError: %s", err.Error())
+					slog.Error("AddUpdatePermissionsFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -122,12 +105,12 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.DestinationPath != nil {
-			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
+		if updateDto.EncodedContent != nil {
+			err := uc.updateFileContent(sourcePath, *updateDto.EncodedContent)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddMoveFailureError: %s", err.Error())
+					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -138,12 +121,12 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
+		if updateDto.DestinationPath != nil {
+			err := uc.moveFile(sourcePath, *updateDto.DestinationPath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddUpdateContentFailureError: %s", err.Error())
+					slog.Error("AddMoveFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -159,6 +142,9 @@ func (uc UpdateUnixFiles) Execute(
 			sourcePath,
 		)
 	}
+
+	NewCreateSecurityActivityRecord(uc.activityRecordCmdRepo).
+		UpdateUnixFiles(updateDto)
 
 	return updateProcessReport, nil
 }

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -12,6 +12,7 @@ import (
 func UploadUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	uploadDto dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
 	maxFileSizeInGb := int64(5)
@@ -33,23 +34,22 @@ func UploadUnixFiles(
 		)
 		tooBigFiles = append(tooBigFiles, processFailure)
 
-		log.Printf("FileTooBig: %s", fileStream.Name)
+		slog.Info("FileTooBig", slog.String("name", fileStream.Name.String()))
 	}
 
 	uploadDto.FileStreamHandlers = filesToUpload
 
 	uploadProcessReport, err := filesCmdRepo.Upload(uploadDto)
 	if err != nil {
-		log.Printf("UploadUnixFileInfraError: %s", err.Error())
+		slog.Info("UploadUnixFileInfraError", slog.Any("err", err))
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 
 	uploadProcessReport.FailedNamesWithReason = append(
-		uploadProcessReport.FailedNamesWithReason,
-		tooBigFiles...,
+		uploadProcessReport.FailedNamesWithReason, tooBigFiles...,
 	)
 
-	log.Printf("Files uploaded to '%s'.", uploadDto.DestinationPath)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UploadUnixFiles(uploadDto)
 
 	return uploadProcessReport, nil
 }

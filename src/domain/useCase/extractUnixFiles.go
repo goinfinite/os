@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -11,19 +11,16 @@ import (
 func ExtractUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	extractUnixFiles dto.ExtractUnixFiles,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	extractDto dto.ExtractUnixFiles,
 ) error {
-	err := filesCmdRepo.Extract(extractUnixFiles)
+	err := filesCmdRepo.Extract(extractDto)
 	if err != nil {
-		log.Printf("ExtractUnixFilesInfraError: %s", err.Error())
+		slog.Error("ExtractUnixFilesInfraError", slog.Any("err", err))
 		return errors.New("ExtractUnixFilesInfraError")
 	}
 
-	log.Printf(
-		"File '%s' extracted to '%s'.",
-		extractUnixFiles.SourcePath.String(),
-		extractUnixFiles.DestinationPath.String(),
-	)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).ExtractUnixFile(extractDto)
 
 	return nil
 }

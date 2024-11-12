@@ -90,14 +90,16 @@ func (router Router) databaseRoutes() {
 
 func (router Router) filesRoutes() {
 	filesGroup := router.baseRoute.Group("/v1/files")
-	filesGroup.GET("/", apiController.GetFilesController)
-	filesGroup.POST("/", apiController.CreateFileController)
-	filesGroup.PUT("/", apiController.UpdateFileController)
-	filesGroup.POST("/copy/", apiController.CopyFileController)
-	filesGroup.PUT("/delete/", apiController.DeleteFileController)
-	filesGroup.POST("/compress/", apiController.CompressFilesController)
-	filesGroup.PUT("/extract/", apiController.ExtractFilesController)
-	filesGroup.POST("/upload/", apiController.UploadFilesController)
+	filesController := apiController.NewFilesController(router.trailDbSvc)
+
+	filesGroup.GET("/", filesController.GetFilesController)
+	filesGroup.POST("/", filesController.CreateFileController)
+	filesGroup.PUT("/", filesController.UpdateFileController)
+	filesGroup.POST("/copy/", filesController.CopyFileController)
+	filesGroup.PUT("/delete/", filesController.DeleteFileController)
+	filesGroup.POST("/compress/", filesController.CompressFilesController)
+	filesGroup.PUT("/extract/", filesController.ExtractFilesController)
+	filesGroup.POST("/upload/", filesController.UploadFilesController)
 }
 
 func (router Router) marketplaceRoutes() {
