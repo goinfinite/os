@@ -165,9 +165,30 @@ func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOut
 		vhosts = append(vhosts, vhost)
 	}
 
-	dto := dto.NewDeleteSslPairVhosts(pairId, vhosts)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	err = useCase.DeleteSslPairVhosts(service.sslQueryRepo, service.sslCmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSslPairVhosts(
+		pairId, vhosts, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteSslPairVhosts(
+		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

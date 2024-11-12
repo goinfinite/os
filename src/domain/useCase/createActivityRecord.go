@@ -443,3 +443,25 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPair(deleteDto dto.DeleteSslPai
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
+	deleteDto dto.DeleteSslPairVhosts,
+) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("SslPairVhostsDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSslSri(operatorAccountId, deleteDto.SslPairId),
+		},
+		RecordDetails: map[string]interface{}{
+			"sslPairVhosts": deleteDto.VirtualHostsHostnames,
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
