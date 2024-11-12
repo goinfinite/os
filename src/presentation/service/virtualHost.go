@@ -127,8 +127,29 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteVirtualHost(
+		primaryVhost, hostname, operatorAccountId, operatorIpAddress,
+	)
+
 	err = useCase.DeleteVirtualHost(
-		service.vhostQueryRepo, service.vhostCmdRepo, primaryVhost, hostname,
+		service.vhostQueryRepo, service.vhostCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

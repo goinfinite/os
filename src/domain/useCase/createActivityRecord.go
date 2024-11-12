@@ -485,3 +485,22 @@ func (uc *CreateSecurityActivityRecord) CreateVirtualHost(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) DeleteVirtualHost(
+	deleteDto dto.DeleteVirtualHost,
+) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("VirtualHostDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewVirtualHostSri(operatorAccountId, deleteDto.Hostname),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
