@@ -390,7 +390,6 @@ func (uc *CreateSecurityActivityRecord) DeleteService(deleteDto dto.DeleteServic
 		AffectedResources: []valueObject.SystemResourceIdentifier{
 			valueObject.NewInstalledServiceSri(operatorAccountId, deleteDto.Name),
 		},
-		RecordDetails:     deleteDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
@@ -423,6 +422,23 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 		},
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteSslPair(deleteDto dto.DeleteSslPair) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("SslPairDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSslSri(operatorAccountId, deleteDto.SslPairId),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
 	uc.createActivityRecord(createRecordDto)

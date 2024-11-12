@@ -115,7 +115,28 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	err = useCase.DeleteSslPair(service.sslQueryRepo, service.sslCmdRepo, pairId)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSslPair(pairId, operatorAccountId, operatorIpAddress)
+
+	err = useCase.DeleteSslPair(
+		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
