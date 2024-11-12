@@ -3,10 +3,10 @@ package dto
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type DeleteMarketplaceInstalledItem struct {
-	InstalledId             valueObject.MarketplaceItemId
-	ShouldUninstallServices bool
-	OperatorAccountId       valueObject.AccountId
-	OperatorIpAddress       valueObject.IpAddress
+	InstalledId             valueObject.MarketplaceItemId `json:"installedId"`
+	ShouldUninstallServices bool                          `json:"shouldUninstallServices"`
+	OperatorAccountId       valueObject.AccountId         `json:"-"`
+	OperatorIpAddress       valueObject.IpAddress         `json:"-"`
 }
 
 func NewDeleteMarketplaceInstalledItem(
