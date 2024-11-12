@@ -25,5 +25,8 @@ func DeleteSslPairVhosts(
 		return errors.New("DeleteSslPairVhostsInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		DeleteSslPairVhosts(deleteDto)
+
 	return nil
 }
