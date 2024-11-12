@@ -79,9 +79,30 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		parentHostnamePtr = &parentHostname
 	}
 
-	dto := dto.NewCreateVirtualHost(hostname, vhostType, parentHostnamePtr)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	err = useCase.CreateVirtualHost(service.vhostQueryRepo, service.vhostCmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateVirtualHost(
+		hostname, vhostType, parentHostnamePtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.CreateVirtualHost(
+		service.vhostQueryRepo, service.vhostCmdRepo, service.activityRecordCmdRepo,
+		createDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

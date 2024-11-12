@@ -152,6 +152,15 @@ func NewSslSri(
 	)
 }
 
+func NewVirtualHostSri(
+	accountId AccountId,
+	vhostHostname Fqdn,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":virtualHost/" + vhostHostname.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

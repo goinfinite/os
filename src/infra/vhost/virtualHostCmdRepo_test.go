@@ -21,7 +21,11 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
-		dto := dto.NewCreateVirtualHost(vhostName, vhostType, nil)
+		operatorAccountId, _ := valueObject.NewAccountId(0)
+		ipAddress := valueObject.NewLocalhostIpAddress()
+		dto := dto.NewCreateVirtualHost(
+			vhostName, vhostType, nil, operatorAccountId, ipAddress,
+		)
 
 		err := vhostCmdRepo.Create(dto)
 		if err != nil {

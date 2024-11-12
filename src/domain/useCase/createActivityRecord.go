@@ -465,3 +465,23 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) CreateVirtualHost(
+	createDto dto.CreateVirtualHost,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("VirtualHostCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewVirtualHostSri(operatorAccountId, createDto.Hostname),
+		},
+		RecordDetails:     createDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
