@@ -516,12 +516,30 @@ func (uc *CreateSecurityActivityRecord) CreateMapping(
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewVirtualHostSri(operatorAccountId, createDto.Hostname),
 			valueObject.NewMappingSri(operatorAccountId, mappingId),
 		},
 		RecordDetails:     createDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteMapping(
+	deleteDto dto.DeleteMapping,
+) {
+	operatorAccountId := deleteDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("MappingDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewMappingSri(operatorAccountId, deleteDto.MappingId),
+		},
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
 	uc.createActivityRecord(createRecordDto)

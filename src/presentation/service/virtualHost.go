@@ -279,8 +279,27 @@ func (service *VirtualHostService) DeleteMapping(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteMapping(id, operatorAccountId, operatorIpAddress)
+
 	err = useCase.DeleteMapping(
-		service.mappingQueryRepo, service.mappingCmdRepo, id,
+		service.mappingQueryRepo, service.mappingCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
