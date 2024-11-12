@@ -504,3 +504,25 @@ func (uc *CreateSecurityActivityRecord) DeleteVirtualHost(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) CreateMapping(
+	createDto dto.CreateMapping,
+	mappingId valueObject.MappingId,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("MappingCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewVirtualHostSri(operatorAccountId, createDto.Hostname),
+			valueObject.NewMappingSri(operatorAccountId, mappingId),
+		},
+		RecordDetails:     createDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}

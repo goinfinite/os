@@ -260,6 +260,8 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) (mappingIds []valueObject.MappingId, err error) {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	currentMappings, err := mappingQueryRepo.ReadByHostname(hostname)
@@ -293,12 +295,9 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		}
 
 		createDto := dto.NewCreateMapping(
-			hostname,
-			mapping.Path,
-			mapping.MatchPattern,
-			mapping.TargetType,
-			mapping.TargetValue,
-			mapping.TargetHttpResponseCode,
+			hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
+			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
+			operatorIpAddress,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
@@ -436,7 +435,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		)
 	}
 
-	mappingIds, err := repo.createMappings(installDto.Hostname, catalogItem.Mappings)
+	mappingIds, err := repo.createMappings(
+		installDto.Hostname, catalogItem.Mappings, installDto.OperatorAccountId,
+		installDto.OperatorIpAddress,
+	)
 	if err != nil {
 		return err
 	}

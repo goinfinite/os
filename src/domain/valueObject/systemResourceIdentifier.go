@@ -161,6 +161,15 @@ func NewVirtualHostSri(
 	)
 }
 
+func NewMappingSri(
+	accountId AccountId,
+	mappingId MappingId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":mapping/" + mappingId.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

@@ -14,6 +14,8 @@ func createFirstMapping(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) error {
 	vhosts, err := vhostQueryRepo.Read()
 	if err != nil {
@@ -38,12 +40,8 @@ func createFirstMapping(
 	targetValue, _ := valueObject.NewMappingTargetValue(serviceName.String(), targetType)
 
 	createMappingDto := dto.NewCreateMapping(
-		primaryVhost.Hostname,
-		mappingPath,
-		matchPattern,
-		targetType,
-		&targetValue,
-		nil,
+		primaryVhost.Hostname, mappingPath, matchPattern, targetType, &targetValue, nil,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	_, err = mappingCmdRepo.Create(createMappingDto)
@@ -94,5 +92,6 @@ func CreateCustomService(
 
 	return createFirstMapping(
 		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, createDto.Name,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }

@@ -51,7 +51,9 @@ func UpdateService(
 		return nil
 	}
 
-	err = mappingCmdRepo.RecreateByServiceName(updateDto.Name)
+	err = mappingCmdRepo.RecreateByServiceName(
+		updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
+	)
 	if err != nil {
 		slog.Error("RecreateMappingError", slog.Any("error", err))
 	}

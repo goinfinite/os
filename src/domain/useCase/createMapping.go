@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -61,6 +61,7 @@ func CreateMapping(
 	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateMapping,
 ) error {
 	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
@@ -79,7 +80,7 @@ func CreateMapping(
 
 	existingMappings, err := mappingQueryRepo.ReadByHostname(createDto.Hostname)
 	if err != nil {
-		log.Printf("ReadMappingsError: %s", err.Error())
+		slog.Error("ReadMappingsError", slog.Any("err", err))
 		return errors.New("ReadMappingsInfraError")
 	}
 
@@ -105,7 +106,7 @@ func CreateMapping(
 
 		service, err := svcsQueryRepo.ReadByName(svcName)
 		if err != nil {
-			log.Printf("GetServiceByNameError: %s", err.Error())
+			slog.Error("ReadServiceByNameError", slog.Any("err", err))
 			return errors.New("GetServiceByNameInfraError")
 		}
 
@@ -122,11 +123,14 @@ func CreateMapping(
 		}
 	}
 
-	_, err = mappingCmdRepo.Create(createDto)
+	mappingId, err := mappingCmdRepo.Create(createDto)
 	if err != nil {
-		log.Printf("CreateMappingError: %s", err.Error())
+		slog.Error("CreateMappingError", slog.Any("err", err))
 		return errors.New("CreateMappingInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateMapping(createDto, mappingId)
 
 	return nil
 }

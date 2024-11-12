@@ -48,5 +48,6 @@ func CreateInstallableService(
 
 	return createFirstMapping(
 		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, installedServiceName,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }

@@ -231,16 +231,32 @@ func (service *VirtualHostService) CreateMapping(
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
-	dto := dto.NewCreateMapping(
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateMapping(
 		hostname, path, matchPattern, targetType, targetValuePtr,
-		targetHttpResponseCodePtr,
+		targetHttpResponseCodePtr, operatorAccountId, operatorIpAddress,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
 
 	err = useCase.CreateMapping(
 		service.mappingQueryRepo, service.mappingCmdRepo, service.vhostQueryRepo,
-		servicesQueryRepo, dto,
+		servicesQueryRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

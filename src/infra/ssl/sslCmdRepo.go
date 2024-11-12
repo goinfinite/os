@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -124,6 +123,8 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	mappingCmdRepo *mappingInfra.MappingCmdRepo,
 	targetVhostName valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) (mappingId valueObject.MappingId, err error) {
 	path, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
@@ -135,6 +136,7 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 
 	inlineHtmlMapping := dto.NewCreateMapping(
 		targetVhostName, path, matchPattern, targetType, &targetValue, &httpResponseCode,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	mappingId, err = mappingCmdRepo.Create(inlineHtmlMapping)
@@ -149,6 +151,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 	vhostNames []valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
 	serverPublicIpAddress valueObject.IpAddress,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) []valueObject.Fqdn {
 	functionalHostnames := []valueObject.Fqdn{}
 
@@ -159,7 +163,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 	for _, vhostName := range vhostNames {
 		vhostNameStr := vhostName.String()
 		ownershipValidationMappingId, err := repo.createOwnershipValidationMapping(
-			mappingCmdRepo, vhostName, expectedOwnershipHash,
+			mappingCmdRepo, vhostName, expectedOwnershipHash, operatorAccountId,
+			operatorIpAddress,
 		)
 		if err != nil {
 			continue
@@ -242,7 +247,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 	return nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
+func (repo *SslCmdRepo) ReplaceWithValidSsl(replaceDto dto.ReplaceWithValidSsl) error {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(repo.transientDbSvc)
 	serverPublicIpAddress, err := o11yQueryRepo.ReadServerPublicIpAddress()
 	if err != nil {
@@ -250,14 +255,14 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
-		sslPair.VirtualHostsHostnames, serverPublicIpAddress,
+		replaceDto.VirtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
 	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
-		sslPair.Certificate.CertificateContent,
+		replaceDto.Certificate.CertificateContent,
 	)
 	if err != nil {
 		return errors.New(
@@ -266,13 +271,14 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
+		replaceDto.OperatorAccountId, replaceDto.OperatorIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
 	return repo.issueValidSsl(
-		sslPair.VirtualHostsHostnames[0], httpFunctionalHostnames,
+		replaceDto.VirtualHostsHostnames[0], httpFunctionalHostnames,
 	)
 }
 

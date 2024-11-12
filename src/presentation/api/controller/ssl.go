@@ -201,6 +201,9 @@ func (controller *SslController) SslCertificateWatchdog() {
 	)
 
 	for range timer.C {
-		useCase.SslCertificateWatchdog(sslQueryRepo, sslCmdRepo)
+		useCase.SslCertificateWatchdog(
+			sslQueryRepo, sslCmdRepo, service.LocalOperatorAccountId,
+			service.LocalOperatorIpAddress,
+		)
 	}
 }
