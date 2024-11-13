@@ -729,10 +729,10 @@ definitions:
         type: string
       expiresAt:
         type: integer
+      id:
+        type: string
       issuedAt:
         type: integer
-      sslId:
-        type: string
     type: object
   entity.SslPair:
     properties:
