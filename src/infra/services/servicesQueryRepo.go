@@ -241,7 +241,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	for _, resultModel := range resultModels {
 		entityWithoutMetrics, err := resultModel.ToEntity()
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				"InstalledServiceItemModelToEntityError",
 				slog.String("name", resultModel.Name), slog.Any("error", err),
 			)
@@ -252,7 +252,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		if readDto.ShouldIncludeMetrics != nil && *readDto.ShouldIncludeMetrics {
 			entityMetrics, err := repo.readServiceMetrics(entityWithoutMetrics.Name)
 			if err != nil {
-				slog.Error(
+				slog.Debug(
 					"FailedToReadInstalledServiceMetrics",
 					slog.String("name", resultModel.Name), slog.Any("error", err),
 				)
@@ -665,13 +665,13 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	for _, rawFilePath := range rawInstallableFilesListParts {
 		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("filePath", rawFilePath))
+			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))
 			continue
 		}
 
 		installableService, err := repo.installableServiceFactory(itemFilePath)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				"CatalogMarketplaceItemFactoryError",
 				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
 			)

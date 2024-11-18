@@ -69,7 +69,7 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 	for _, rawDataField := range rawDataFieldsSlice {
 		rawDataFieldParts := strings.Split(rawDataField, ":")
 		if len(rawDataFieldParts) != 2 {
-			slog.Error(
+			slog.Debug(
 				"InvalidDataFieldStringStructure",
 				slog.String("rawDataField", rawDataField),
 			)
@@ -96,13 +96,13 @@ func (controller *MarketplaceController) parseDataFieldMap(
 
 		fieldName, err := valueObject.NewDataFieldName(rawFieldName)
 		if err != nil {
-			slog.Error(err.Error(), slog.Int("fieldIndex", fieldIndex))
+			slog.Debug(err.Error(), slog.Int("fieldIndex", fieldIndex))
 			continue
 		}
 
 		fieldValue, err := valueObject.NewDataFieldValue(rawFieldValue)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("fieldName", fieldName.String()))
+			slog.Debug(err.Error(), slog.String("fieldName", fieldName.String()))
 			continue
 		}
 
@@ -110,7 +110,7 @@ func (controller *MarketplaceController) parseDataFieldMap(
 			fieldName, fieldValue,
 		)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				err.Error(),
 				slog.String("fieldName", fieldName.String()),
 				slog.String("fieldValue", fieldValue.String()),
@@ -149,7 +149,7 @@ func (controller *MarketplaceController) parseDataFields(
 	for _, rawDataField := range rawDataFieldsSlice {
 		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
 		if !assertOk {
-			slog.Error(
+			slog.Debug(
 				"InvalidDataFieldStructure", slog.Any("rawDataField", rawDataField),
 			)
 			continue
