@@ -361,7 +361,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		readCatalogItemDto.Slug = installDto.Slug
 	}
 
-	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
 		readCatalogItemDto,
 	)
 	if err != nil {
@@ -670,7 +670,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
 		Id: &deleteDto.InstalledId,
 	}
-	installedItem, err := repo.marketplaceQueryRepo.ReadUniqueInstalledItem(
+	installedItem, err := repo.marketplaceQueryRepo.ReadOneInstalledItem(
 		readInstalledItemDto,
 	)
 	if err != nil {
@@ -692,7 +692,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
 		Slug: &installedItem.Slug,
 	}
-	catalogItem, err := repo.marketplaceQueryRepo.ReadUniqueCatalogItem(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
 		readCatalogItemDto,
 	)
 	if err != nil {

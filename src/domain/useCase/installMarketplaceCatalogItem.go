@@ -64,11 +64,11 @@ func MarketplaceCatalogItemLookup(
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{}
 	if itemId != nil {
 		readDto.Id = itemId
-		return marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
+		return marketplaceQueryRepo.ReadOneCatalogItem(readDto)
 	}
 
 	readDto.Slug = itemSlug
-	return marketplaceQueryRepo.ReadUniqueCatalogItem(readDto)
+	return marketplaceQueryRepo.ReadOneCatalogItem(readDto)
 }
 
 func InstallMarketplaceCatalogItem(

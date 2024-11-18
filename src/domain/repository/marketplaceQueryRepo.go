@@ -9,13 +9,13 @@ type MarketplaceQueryRepo interface {
 	ReadCatalogItems(
 		readDto dto.ReadMarketplaceCatalogItemsRequest,
 	) (dto.ReadMarketplaceCatalogItemsResponse, error)
-	ReadUniqueCatalogItem(
+	ReadOneCatalogItem(
 		readDto dto.ReadMarketplaceCatalogItemsRequest,
 	) (entity.MarketplaceCatalogItem, error)
 	ReadInstalledItems(
 		readDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (dto.ReadMarketplaceInstalledItemsResponse, error)
-	ReadUniqueInstalledItem(
+	ReadOneInstalledItem(
 		readDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (entity.MarketplaceInstalledItem, error)
 }

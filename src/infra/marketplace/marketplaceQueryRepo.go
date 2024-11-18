@@ -660,7 +660,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}, nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadUniqueCatalogItem(
+func (repo *MarketplaceQueryRepo) ReadOneCatalogItem(
 	readDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
 	readDto.Pagination = dto.Pagination{
@@ -767,7 +767,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	}, nil
 }
 
-func (repo *MarketplaceQueryRepo) ReadUniqueInstalledItem(
+func (repo *MarketplaceQueryRepo) ReadOneInstalledItem(
 	readDto dto.ReadMarketplaceInstalledItemsRequest,
 ) (installedItem entity.MarketplaceInstalledItem, err error) {
 	readDto.Pagination = dto.Pagination{
