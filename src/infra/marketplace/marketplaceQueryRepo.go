@@ -489,7 +489,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	readDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItemsDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
-	_, err = os.Stat(infraEnvs.MarketplaceItemsDir)
+	_, err = os.Stat(infraEnvs.MarketplaceCatalogItemsDir)
 	if err != nil {
 		marketplaceCmdRepo := NewMarketplaceCmdRepo(repo.persistentDbSvc)
 		err = marketplaceCmdRepo.RefreshCatalogItems()
@@ -501,7 +501,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	rawCatalogFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.MarketplaceItemsDir + " -type f " +
+		"find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
 	)

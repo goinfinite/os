@@ -789,7 +789,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
-	_, err := os.Stat(infraEnvs.ServicesItemsDir)
+	_, err := os.Stat(infraEnvs.ServiceInstalledItemsDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -805,7 +805,7 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.ServicesItemsDir + ";" +
+		"cd " + infraEnvs.ServiceInstalledItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
 	)
 	return err

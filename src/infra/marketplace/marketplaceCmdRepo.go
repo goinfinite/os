@@ -726,7 +726,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 }
 
 func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
-	_, err := os.Stat(infraEnvs.MarketplaceItemsDir)
+	_, err := os.Stat(infraEnvs.MarketplaceCatalogItemsDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -742,7 +742,7 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.MarketplaceItemsDir + ";" +
+		"cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
 	)
 	return err
