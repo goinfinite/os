@@ -15,9 +15,9 @@ var MarketplaceDefaultPagination dto.Pagination = dto.Pagination{
 
 func ReadMarketplaceCatalogItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
-	readDto dto.ReadMarketplaceCatalogItemsRequest,
-) (dto.ReadMarketplaceCatalogItemsResponse, error) {
-	responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)
+	requestDto dto.ReadMarketplaceCatalogItemsRequest,
+) (responseDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
+	responseDto, err = marketplaceQueryRepo.ReadCatalogItems(requestDto)
 	if err != nil {
 		slog.Error("ReadMarketplaceCatalogItemsError", slog.Any("error", err))
 		return responseDto, errors.New("ReadMarketplaceCatalogItemsInfraError")

@@ -300,7 +300,7 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	)
 }
 
-func (controller *ServicesController) AutoRefreshServicesItems() {
+func (controller *ServicesController) AutoRefreshServiceInstallableItems() {
 	taskInterval := time.Duration(2) * time.Minute
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
@@ -309,6 +309,6 @@ func (controller *ServicesController) AutoRefreshServicesItems() {
 		controller.persistentDbSvc,
 	)
 	for range timer.C {
-		useCase.RefreshServicesItems(servicesCmdRepo)
+		useCase.RefreshServiceInstallableItems(servicesCmdRepo)
 	}
 }

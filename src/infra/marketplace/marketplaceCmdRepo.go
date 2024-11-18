@@ -725,7 +725,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) RefreshItems() error {
+func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 	_, err := os.Stat(infraEnvs.MarketplaceItemsDir)
 	if err != nil {
 		if !os.IsNotExist(err) {

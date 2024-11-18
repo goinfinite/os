@@ -15,13 +15,13 @@ var ServicesDefaultPagination dto.Pagination = dto.Pagination{
 
 func ReadInstallableServices(
 	servicesQueryRepo repository.ServicesQueryRepo,
-	readDto dto.ReadInstallableServicesItemsRequest,
-) (dto.ReadInstallableServicesItemsResponse, error) {
-	installableServices, err := servicesQueryRepo.ReadInstallableItems(readDto)
+	requestDto dto.ReadInstallableServicesItemsRequest,
+) (responseDto dto.ReadInstallableServicesItemsResponse, err error) {
+	responseDto, err = servicesQueryRepo.ReadInstallableItems(requestDto)
 	if err != nil {
 		slog.Error("ReadInstallableServicesError", slog.Any("error", err))
-		return installableServices, errors.New("ReadInstallableServicesInfraError")
+		return responseDto, errors.New("ReadInstallableServicesInfraError")
 	}
 
-	return installableServices, nil
+	return responseDto, nil
 }

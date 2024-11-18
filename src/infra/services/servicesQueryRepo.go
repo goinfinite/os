@@ -633,10 +633,10 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	_, err = os.Stat(infraEnvs.ServicesItemsDir)
 	if err != nil {
 		servicesCmdRepo := NewServicesCmdRepo(repo.persistentDbSvc)
-		err = servicesCmdRepo.RefreshItems()
+		err = servicesCmdRepo.RefreshInstallableItems()
 		if err != nil {
 			return installableItemsDto, errors.New(
-				"RefreshServicesItemsError: " + err.Error(),
+				"RefreshServiceInstallableItemsError: " + err.Error(),
 			)
 		}
 	}

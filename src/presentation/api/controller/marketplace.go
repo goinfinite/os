@@ -248,7 +248,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	)
 }
 
-func (controller *MarketplaceController) AutoRefreshMarketplaceItems() {
+func (controller *MarketplaceController) AutoRefreshMarketplaceCatalogItems() {
 	taskInterval := time.Duration(2) * time.Minute
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
@@ -257,6 +257,6 @@ func (controller *MarketplaceController) AutoRefreshMarketplaceItems() {
 		controller.persistentDbSvc,
 	)
 	for range timer.C {
-		useCase.RefreshMarketplaceItems(marketplaceCmdRepo)
+		useCase.RefreshMarketplaceCatalogItems(marketplaceCmdRepo)
 	}
 }

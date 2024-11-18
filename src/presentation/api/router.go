@@ -113,7 +113,7 @@ func (router Router) marketplaceRoutes() {
 	marketplaceCatalogGroup.GET("/", marketplaceController.ReadCatalog)
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
 
-	go marketplaceController.AutoRefreshMarketplaceItems()
+	go marketplaceController.AutoRefreshMarketplaceCatalogItems()
 }
 
 func (router Router) o11yRoutes() {
@@ -155,7 +155,7 @@ func (router Router) servicesRoutes() {
 	servicesGroup.PUT("/", servicesController.Update)
 	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
 
-	go servicesController.AutoRefreshServicesItems()
+	go servicesController.AutoRefreshServiceInstallableItems()
 }
 
 func (router Router) sslRoutes() {

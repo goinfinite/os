@@ -7,5 +7,5 @@ import (
 type MarketplaceCmdRepo interface {
 	InstallItem(installDto dto.InstallMarketplaceCatalogItem) error
 	UninstallItem(deleteDto dto.DeleteMarketplaceInstalledItem) error
-	RefreshItems() error
+	RefreshCatalogItems() error
 }

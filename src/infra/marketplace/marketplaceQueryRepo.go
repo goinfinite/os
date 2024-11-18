@@ -492,10 +492,10 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	_, err = os.Stat(infraEnvs.MarketplaceItemsDir)
 	if err != nil {
 		marketplaceCmdRepo := NewMarketplaceCmdRepo(repo.persistentDbSvc)
-		err = marketplaceCmdRepo.RefreshItems()
+		err = marketplaceCmdRepo.RefreshCatalogItems()
 		if err != nil {
 			return catalogItemsDto, errors.New(
-				"RefreshMarketplaceItemsError: " + err.Error(),
+				"RefreshMarketplaceCatalogItemsError: " + err.Error(),
 			)
 		}
 	}

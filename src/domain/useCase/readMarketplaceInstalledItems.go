@@ -10,9 +10,9 @@ import (
 
 func ReadMarketplaceInstalledItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
-	readDto dto.ReadMarketplaceInstalledItemsRequest,
-) (dto.ReadMarketplaceInstalledItemsResponse, error) {
-	responseDto, err := marketplaceQueryRepo.ReadInstalledItems(readDto)
+	requestDto dto.ReadMarketplaceInstalledItemsRequest,
+) (responseDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
+	responseDto, err = marketplaceQueryRepo.ReadInstalledItems(requestDto)
 	if err != nil {
 		slog.Error("ReadMarketplaceInstalledItemsError", slog.Any("error", err))
 		return responseDto, errors.New("ReadMarketplaceInstalledItemsInfraError")
