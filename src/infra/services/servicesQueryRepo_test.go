@@ -25,8 +25,8 @@ func TestServicesQueryRepo(t *testing.T) {
 		paginationDto.SortDirection = &sortDirection
 
 		readDto := dto.ReadInstalledServicesItemsRequest{
-			Pagination: paginationDto,
-			Name:       &name,
+			Pagination:  paginationDto,
+			ServiceName: &name,
 		}
 
 		services, err := servicesQueryRepo.ReadInstalledItems(readDto)
@@ -34,7 +34,7 @@ func TestServicesQueryRepo(t *testing.T) {
 			t.Errorf("Expected no error, got %v", err)
 		}
 
-		if len(services.Items) == 0 {
+		if len(services.InstalledServices) == 0 {
 			t.Errorf("Expected a list of services, got %v", services)
 		}
 	})

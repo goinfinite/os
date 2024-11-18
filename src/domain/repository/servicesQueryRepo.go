@@ -8,7 +8,7 @@ type ServicesQueryRepo interface {
 	ReadInstalledItems(
 		readDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
-	ReadUniqueInstalledItem(
+	ReadOneInstalledItem(
 		readDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.InstalledServiceWithMetrics, error)
 	ReadInstallableItems(

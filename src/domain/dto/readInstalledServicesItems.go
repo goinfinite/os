@@ -6,13 +6,13 @@ import (
 
 type ReadInstalledServicesItemsRequest struct {
 	Pagination           Pagination                 `json:"pagination"`
-	Name                 *valueObject.ServiceName   `json:"name,omitempty"`
-	Nature               *valueObject.ServiceNature `json:"nature,omitempty"`
-	Type                 *valueObject.ServiceType   `json:"type,omitempty"`
-	ShouldIncludeMetrics bool                       `json:"shouldIncludeMetrics"`
+	ServiceName          *valueObject.ServiceName   `json:"serviceName,omitempty"`
+	ServiceNature        *valueObject.ServiceNature `json:"serviceNature,omitempty"`
+	ServiceType          *valueObject.ServiceType   `json:"serviceType,omitempty"`
+	ShouldIncludeMetrics *bool                      `json:"shouldIncludeMetrics,omitempty"`
 }
 
 type ReadInstalledServicesItemsResponse struct {
-	Pagination Pagination                    `json:"pagination"`
-	Items      []InstalledServiceWithMetrics `json:"items"`
+	Pagination        Pagination                    `json:"pagination"`
+	InstalledServices []InstalledServiceWithMetrics `json:"installedServices"`
 }

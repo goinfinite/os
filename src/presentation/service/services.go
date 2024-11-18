@@ -124,10 +124,10 @@ func (service *ServicesService) ReadInstalledItems(
 
 	readDto := dto.ReadInstalledServicesItemsRequest{
 		Pagination:           paginationDto,
-		Name:                 namePtr,
-		Nature:               naturePtr,
-		Type:                 typePtr,
-		ShouldIncludeMetrics: shouldIncludeMetrics,
+		ServiceName:          namePtr,
+		ServiceNature:        naturePtr,
+		ServiceType:          typePtr,
+		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
 
 	servicesList, err := useCase.ReadInstalledServices(
@@ -214,10 +214,10 @@ func (service *ServicesService) ReadInstallableItems(
 	}
 
 	readDto := dto.ReadInstallableServicesItemsRequest{
-		Pagination: paginationDto,
-		Name:       namePtr,
-		Nature:     naturePtr,
-		Type:       typePtr,
+		Pagination:    paginationDto,
+		ServiceName:   namePtr,
+		ServiceNature: naturePtr,
+		ServiceType:   typePtr,
 	}
 
 	servicesList, err := useCase.ReadInstallableServices(

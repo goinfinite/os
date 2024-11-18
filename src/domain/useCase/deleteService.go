@@ -15,11 +15,12 @@ func DeleteService(
 	mappingCmdRepo repository.MappingCmdRepo,
 	svcName valueObject.ServiceName,
 ) error {
+	shouldIncludeMetrics := false
 	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
-		Name:                 &svcName,
-		ShouldIncludeMetrics: false,
+		ServiceName:          &svcName,
+		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	serviceEntity, err := servicesQueryRepo.ReadUniqueInstalledItem(readInstalledDto)
+	serviceEntity, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledDto)
 	if err != nil {
 		return err
 	}

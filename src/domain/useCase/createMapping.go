@@ -103,11 +103,12 @@ func CreateMapping(
 			return errors.New(err.Error() + ": " + targetValueStr)
 		}
 
+		shouldIncludeServiceMetrics := false
 		readInstalledDto := dto.ReadInstalledServicesItemsRequest{
-			Name:                 &svcName,
-			ShouldIncludeMetrics: false,
+			ServiceName:          &svcName,
+			ShouldIncludeMetrics: &shouldIncludeServiceMetrics,
 		}
-		serviceEntity, err := svcsQueryRepo.ReadUniqueInstalledItem(readInstalledDto)
+		serviceEntity, err := svcsQueryRepo.ReadOneInstalledItem(readInstalledDto)
 		if err != nil {
 			return err
 		}

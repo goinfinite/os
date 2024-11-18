@@ -190,14 +190,14 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	readDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
 	model := dbModel.InstalledService{}
-	if readDto.Name != nil {
-		model.Name = readDto.Name.String()
+	if readDto.ServiceName != nil {
+		model.Name = readDto.ServiceName.String()
 	}
-	if readDto.Nature != nil {
-		model.Nature = readDto.Nature.String()
+	if readDto.ServiceNature != nil {
+		model.Nature = readDto.ServiceNature.String()
 	}
-	if readDto.Type != nil {
-		model.Type = readDto.Type.String()
+	if readDto.ServiceType != nil {
+		model.Type = readDto.ServiceType.String()
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(&model).Where(&model)
@@ -249,7 +249,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		}
 
 		var entityMetricsPtr *valueObject.ServiceMetrics
-		if readDto.ShouldIncludeMetrics {
+		if readDto.ShouldIncludeMetrics != nil && *readDto.ShouldIncludeMetrics {
 			entityMetrics, err := repo.readServiceMetrics(entityWithoutMetrics.Name)
 			if err != nil {
 				slog.Error(
@@ -297,12 +297,12 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}
 
 	return dto.ReadInstalledServicesItemsResponse{
-		Pagination: responsePagination,
-		Items:      entities,
+		Pagination:        responsePagination,
+		InstalledServices: entities,
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadUniqueInstalledItem(
+func (repo *ServicesQueryRepo) ReadOneInstalledItem(
 	readDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItem dto.InstalledServiceWithMetrics, err error) {
 	readDto.Pagination = dto.Pagination{
@@ -314,11 +314,11 @@ func (repo *ServicesQueryRepo) ReadUniqueInstalledItem(
 		return installedItem, err
 	}
 
-	if len(responseDto.Items) == 0 {
+	if len(responseDto.InstalledServices) == 0 {
 		return installedItem, errors.New("ServiceInstalledItemNotFound")
 	}
 
-	foundInstalledItem := responseDto.Items[0]
+	foundInstalledItem := responseDto.InstalledServices[0]
 	return foundInstalledItem, nil
 }
 
@@ -356,7 +356,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	requiredParams := []string{
-		"manifestVersion", "name", "nature", "type", "startCmd", "description",
+		"name", "nature", "type", "startCmd", "description",
 		"installCmdSteps",
 	}
 	for _, requiredParam := range requiredParams {
@@ -367,11 +367,14 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		return installableService, errors.New("MissingParam: " + requiredParam)
 	}
 
-	manifestVersion, err := valueObject.NewServiceManifestVersion(
-		serviceMap["manifestVersion"],
-	)
-	if err != nil {
-		return installableService, err
+	manifestVersion, _ := valueObject.NewServiceManifestVersion("v1")
+	if serviceMap["manifestVersion"] != nil {
+		manifestVersion, err = valueObject.NewServiceManifestVersion(
+			serviceMap["manifestVersion"],
+		)
+		if err != nil {
+			return installableService, err
+		}
 	}
 
 	name, err := valueObject.NewServiceName(serviceMap["name"])
@@ -675,27 +678,27 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 			continue
 		}
 
-		if readDto.Name != nil {
+		if readDto.ServiceName != nil {
 			isNameEqual := strings.EqualFold(
-				installableService.Name.String(), readDto.Name.String(),
+				installableService.Name.String(), readDto.ServiceName.String(),
 			)
 			if !isNameEqual {
 				continue
 			}
 		}
 
-		if readDto.Nature != nil {
+		if readDto.ServiceNature != nil {
 			isNatureEqual := strings.EqualFold(
-				installableService.Nature.String(), readDto.Nature.String(),
+				installableService.Nature.String(), readDto.ServiceNature.String(),
 			)
 			if !isNatureEqual {
 				continue
 			}
 		}
 
-		if readDto.Type != nil && installableService.Type != *readDto.Type {
+		if readDto.ServiceType != nil && installableService.Type != *readDto.ServiceType {
 			isTypeEqual := strings.EqualFold(
-				installableService.Type.String(), readDto.Type.String(),
+				installableService.Type.String(), readDto.ServiceType.String(),
 			)
 			if !isTypeEqual {
 				continue
@@ -746,12 +749,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	paginationDto.PagesTotal = &pagesTotal
 
 	return dto.ReadInstallableServicesItemsResponse{
-		Pagination: paginationDto,
-		Items:      installableServices,
+		Pagination:          paginationDto,
+		InstallableServices: installableServices,
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadUniqueInstallableItem(
+func (repo *ServicesQueryRepo) ReadOneInstallableItem(
 	readDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
 	readDto.Pagination = dto.Pagination{
@@ -763,10 +766,10 @@ func (repo *ServicesQueryRepo) ReadUniqueInstallableItem(
 		return installableService, err
 	}
 
-	if len(responseDto.Items) == 0 {
+	if len(responseDto.InstallableServices) == 0 {
 		return installableService, errors.New("InstallableServiceItemNotFound")
 	}
 
-	foundInstallableItem := responseDto.Items[0]
+	foundInstallableItem := responseDto.InstallableServices[0]
 	return foundInstallableItem, nil
 }
