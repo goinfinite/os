@@ -25,8 +25,8 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		paginationDto.SortDirection = &sortDirection
 
 		readDto := dto.ReadMarketplaceCatalogItemsRequest{
-			Pagination: paginationDto,
-			Type:       &itemType,
+			Pagination:                 paginationDto,
+			MarketplaceCatalogItemType: &itemType,
 		}
 
 		responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)
@@ -35,7 +35,7 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 			return
 		}
 
-		if len(responseDto.Items) == 0 {
+		if len(responseDto.MarketplaceCatalogItems) == 0 {
 			t.Errorf("NoItemsFound")
 		}
 	})

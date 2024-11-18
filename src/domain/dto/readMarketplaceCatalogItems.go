@@ -6,14 +6,14 @@ import (
 )
 
 type ReadMarketplaceCatalogItemsRequest struct {
-	Pagination Pagination                       `json:"pagination"`
-	Id         *valueObject.MarketplaceItemId   `json:"id,omitempty"`
-	Slug       *valueObject.MarketplaceItemSlug `json:"slug,omitempty"`
-	Name       *valueObject.MarketplaceItemName `json:"name,omitempty"`
-	Type       *valueObject.MarketplaceItemType `json:"type,omitempty"`
+	Pagination                 Pagination                       `json:"pagination"`
+	MarketplaceCatalogItemId   *valueObject.MarketplaceItemId   `json:"marketplaceCatalogItemId,omitempty"`
+	MarketplaceCatalogItemSlug *valueObject.MarketplaceItemSlug `json:"MarketplaceCatalogItemSlug,omitempty"`
+	MarketplaceCatalogItemName *valueObject.MarketplaceItemName `json:"marketplaceCatalogItemName,omitempty"`
+	MarketplaceCatalogItemType *valueObject.MarketplaceItemType `json:"marketplaceCatalogItemType,omitempty"`
 }
 
 type ReadMarketplaceCatalogItemsResponse struct {
-	Pagination Pagination                      `json:"pagination"`
-	Items      []entity.MarketplaceCatalogItem `json:"items"`
+	Pagination              Pagination                      `json:"pagination"`
+	MarketplaceCatalogItems []entity.MarketplaceCatalogItem `json:"marketplaceCatalogItems"`
 }

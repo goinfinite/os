@@ -114,11 +114,11 @@ func (service *MarketplaceService) ReadCatalog(
 	}
 
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{
-		Pagination: paginationDto,
-		Id:         idPtr,
-		Slug:       slugPtr,
-		Name:       namePtr,
-		Type:       typePtr,
+		Pagination:                 paginationDto,
+		MarketplaceCatalogItemId:   idPtr,
+		MarketplaceCatalogItemSlug: slugPtr,
+		MarketplaceCatalogItemName: namePtr,
+		MarketplaceCatalogItemType: typePtr,
 	}
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
@@ -332,11 +332,11 @@ func (service *MarketplaceService) ReadInstalledItems(
 	}
 
 	readDto := dto.ReadMarketplaceInstalledItemsRequest{
-		Pagination:       paginationDto,
-		Id:               idPtr,
-		Hostname:         hostnamePtr,
-		Type:             typePtr,
-		InstallationUuid: installationUuidPtr,
+		Pagination:                       paginationDto,
+		MarketplaceInstalledItemId:       idPtr,
+		MarketplaceInstalledItemHostname: hostnamePtr,
+		MarketplaceInstalledItemType:     typePtr,
+		MarketplaceInstalledItemUuid:     installationUuidPtr,
 	}
 
 	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(

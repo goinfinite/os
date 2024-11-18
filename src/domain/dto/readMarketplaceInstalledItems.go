@@ -6,14 +6,14 @@ import (
 )
 
 type ReadMarketplaceInstalledItemsRequest struct {
-	Pagination       Pagination                                `json:"pagination"`
-	Id               *valueObject.MarketplaceItemId            `json:"id,omitempty"`
-	Hostname         *valueObject.Fqdn                         `json:"hostname,omitempty"`
-	Type             *valueObject.MarketplaceItemType          `json:"type,omitempty"`
-	InstallationUuid *valueObject.MarketplaceInstalledItemUuid `json:"installationUuid,omitempty"`
+	Pagination                       Pagination                                `json:"pagination"`
+	MarketplaceInstalledItemId       *valueObject.MarketplaceItemId            `json:"marketplaceInstalledItemId,omitempty"`
+	MarketplaceInstalledItemHostname *valueObject.Fqdn                         `json:"marketplaceInstalledItemHostname,omitempty"`
+	MarketplaceInstalledItemType     *valueObject.MarketplaceItemType          `json:"marketplaceInstalledItemType,omitempty"`
+	MarketplaceInstalledItemUuid     *valueObject.MarketplaceInstalledItemUuid `json:"marketplaceInstalledItemUuid,omitempty"`
 }
 
 type ReadMarketplaceInstalledItemsResponse struct {
-	Pagination Pagination                        `json:"pagination"`
-	Items      []entity.MarketplaceInstalledItem `json:"items"`
+	Pagination                Pagination                        `json:"pagination"`
+	MarketplaceInstalledItems []entity.MarketplaceInstalledItem `json:"items"`
 }

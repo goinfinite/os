@@ -88,7 +88,7 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 		if !assertOk {
 			return overview, errors.New("FailedToReadInstalledItems")
 		}
-		installedItemsList = typedOutputBody.Items
+		installedItemsList = typedOutputBody.MarketplaceInstalledItems
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
@@ -104,7 +104,7 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 		if !assertOk {
 			return overview, errors.New("FailedToReadCatalogItems")
 		}
-		catalogItemsList = typedOutputBody.Items
+		catalogItemsList = typedOutputBody.MarketplaceCatalogItems
 	}
 
 	return page.MarketplaceOverview{

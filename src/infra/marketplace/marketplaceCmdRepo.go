@@ -355,10 +355,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{}
 	isCatalogItemIdProvided := installDto.Id != nil
 	if isCatalogItemIdProvided {
-		readCatalogItemDto.Id = installDto.Id
+		readCatalogItemDto.MarketplaceCatalogItemId = installDto.Id
 	}
 	if !isCatalogItemIdProvided && installDto.Slug != nil {
-		readCatalogItemDto.Slug = installDto.Slug
+		readCatalogItemDto.MarketplaceCatalogItemSlug = installDto.Slug
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
@@ -635,7 +635,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	}
 
 	serviceNamesInUseMap := map[string]interface{}{}
-	for _, installedItem := range installedItemsResponseDto.Items {
+	for _, installedItem := range installedItemsResponseDto.MarketplaceInstalledItems {
 		for _, serviceNameWithVersion := range installedItem.Services {
 			serviceNamesInUseMap[serviceNameWithVersion.Name.String()] = nil
 		}
@@ -668,7 +668,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
 	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
-		Id: &deleteDto.InstalledId,
+		MarketplaceInstalledItemId: &deleteDto.InstalledId,
 	}
 	installedItem, err := repo.marketplaceQueryRepo.ReadOneInstalledItem(
 		readInstalledItemDto,
@@ -690,7 +690,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
-		Slug: &installedItem.Slug,
+		MarketplaceCatalogItemSlug: &installedItem.Slug,
 	}
 	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
 		readCatalogItemDto,

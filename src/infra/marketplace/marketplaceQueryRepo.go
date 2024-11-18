@@ -585,24 +585,28 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			break
 		}
 
-		if readDto.Id != nil && catalogItem.Id != *readDto.Id {
+		itemId := readDto.MarketplaceCatalogItemId
+		if itemId != nil && catalogItem.Id != *itemId {
 			continue
 		}
 
-		if readDto.Slug != nil {
-			if !slices.Contains(catalogItem.Slugs, *readDto.Slug) {
+		itemSlug := readDto.MarketplaceCatalogItemSlug
+		if itemSlug != nil {
+			if !slices.Contains(catalogItem.Slugs, *itemSlug) {
 				continue
 			}
 		}
 
-		if readDto.Name != nil {
-			if !strings.EqualFold(catalogItem.Name.String(), readDto.Name.String()) {
+		itemName := readDto.MarketplaceCatalogItemName
+		if itemName != nil {
+			if !strings.EqualFold(catalogItem.Name.String(), itemName.String()) {
 				continue
 			}
 		}
 
-		if readDto.Type != nil && catalogItem.Type != *readDto.Type {
-			if !strings.EqualFold(catalogItem.Type.String(), readDto.Type.String()) {
+		itemType := readDto.MarketplaceCatalogItemType
+		if itemType != nil {
+			if !strings.EqualFold(catalogItem.Type.String(), itemType.String()) {
 				continue
 			}
 		}
@@ -655,8 +659,8 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	paginationDto.PagesTotal = &pagesTotal
 
 	return dto.ReadMarketplaceCatalogItemsResponse{
-		Pagination: paginationDto,
-		Items:      filteredCatalogItems,
+		Pagination:              paginationDto,
+		MarketplaceCatalogItems: filteredCatalogItems,
 	}, nil
 }
 
@@ -672,11 +676,11 @@ func (repo *MarketplaceQueryRepo) ReadOneCatalogItem(
 		return catalogItem, err
 	}
 
-	if len(responseDto.Items) == 0 {
+	if len(responseDto.MarketplaceCatalogItems) == 0 {
 		return catalogItem, errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	foundCatalogItem := responseDto.Items[0]
+	foundCatalogItem := responseDto.MarketplaceCatalogItems[0]
 	return foundCatalogItem, nil
 }
 
@@ -684,17 +688,17 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	readDto dto.ReadMarketplaceInstalledItemsRequest,
 ) (installedItemsDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
 	model := dbModel.MarketplaceInstalledItem{}
-	if readDto.Id != nil {
-		model.ID = uint(readDto.Id.Uint16())
+	if readDto.MarketplaceInstalledItemId != nil {
+		model.ID = uint(readDto.MarketplaceInstalledItemId.Uint16())
 	}
-	if readDto.Hostname != nil {
-		model.Hostname = readDto.Hostname.String()
+	if readDto.MarketplaceInstalledItemHostname != nil {
+		model.Hostname = readDto.MarketplaceInstalledItemHostname.String()
 	}
-	if readDto.Type != nil {
-		model.Type = readDto.Type.String()
+	if readDto.MarketplaceInstalledItemType != nil {
+		model.Type = readDto.MarketplaceInstalledItemType.String()
 	}
-	if readDto.InstallationUuid != nil {
-		model.InstallUuid = readDto.InstallationUuid.String()
+	if readDto.MarketplaceInstalledItemUuid != nil {
+		model.InstallUuid = readDto.MarketplaceInstalledItemUuid.String()
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.
@@ -762,8 +766,8 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	}
 
 	return dto.ReadMarketplaceInstalledItemsResponse{
-		Pagination: responsePagination,
-		Items:      entities,
+		Pagination:                responsePagination,
+		MarketplaceInstalledItems: entities,
 	}, nil
 }
 
@@ -779,10 +783,10 @@ func (repo *MarketplaceQueryRepo) ReadOneInstalledItem(
 		return installedItem, err
 	}
 
-	if len(responseDto.Items) == 0 {
+	if len(responseDto.MarketplaceInstalledItems) == 0 {
 		return installedItem, errors.New("MarketplaceInstalledItemNotFound")
 	}
 
-	foundInstalledItem := responseDto.Items[0]
+	foundInstalledItem := responseDto.MarketplaceInstalledItems[0]
 	return foundInstalledItem, nil
 }
