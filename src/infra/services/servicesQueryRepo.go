@@ -187,17 +187,17 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 }
 
 func (repo *ServicesQueryRepo) ReadInstalledItems(
-	readDto dto.ReadInstalledServicesItemsRequest,
+	requestDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
 	model := dbModel.InstalledService{}
-	if readDto.ServiceName != nil {
-		model.Name = readDto.ServiceName.String()
+	if requestDto.ServiceName != nil {
+		model.Name = requestDto.ServiceName.String()
 	}
-	if readDto.ServiceNature != nil {
-		model.Nature = readDto.ServiceNature.String()
+	if requestDto.ServiceNature != nil {
+		model.Nature = requestDto.ServiceNature.String()
 	}
-	if readDto.ServiceType != nil {
-		model.Type = readDto.ServiceType.String()
+	if requestDto.ServiceType != nil {
+		model.Type = requestDto.ServiceType.String()
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(&model).Where(&model)
@@ -210,22 +210,22 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		)
 	}
 
-	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
-	if readDto.Pagination.LastSeenId == nil {
-		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
+	dbQuery = dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
+	if requestDto.Pagination.LastSeenId == nil {
+		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
 	} else {
-		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
+		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
 	}
-	if readDto.Pagination.SortBy != nil {
-		orderStatement := readDto.Pagination.SortBy.String()
+	if requestDto.Pagination.SortBy != nil {
+		orderStatement := requestDto.Pagination.SortBy.String()
 		orderStatement = strcase.ToSnake(orderStatement)
 		if orderStatement == "id" {
 			orderStatement = "ID"
 		}
 
-		if readDto.Pagination.SortDirection != nil {
-			orderStatement += " " + readDto.Pagination.SortDirection.String()
+		if requestDto.Pagination.SortDirection != nil {
+			orderStatement += " " + requestDto.Pagination.SortDirection.String()
 		}
 
 		dbQuery = dbQuery.Order(orderStatement)
@@ -249,7 +249,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		}
 
 		var entityMetricsPtr *valueObject.ServiceMetrics
-		if readDto.ShouldIncludeMetrics != nil && *readDto.ShouldIncludeMetrics {
+		if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
 			entityMetrics, err := repo.readServiceMetrics(entityWithoutMetrics.Name)
 			if err != nil {
 				slog.Debug(
@@ -285,13 +285,13 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 
 	itemsTotalUint := uint64(itemsTotal)
 	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
+		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
 	)
 	responsePagination := dto.Pagination{
-		PageNumber:    readDto.Pagination.PageNumber,
-		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
-		SortBy:        readDto.Pagination.SortBy,
-		SortDirection: readDto.Pagination.SortDirection,
+		PageNumber:    requestDto.Pagination.PageNumber,
+		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
+		SortBy:        requestDto.Pagination.SortBy,
+		SortDirection: requestDto.Pagination.SortDirection,
 		PagesTotal:    &pagesTotal,
 		ItemsTotal:    &itemsTotalUint,
 	}
@@ -303,13 +303,13 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 }
 
 func (repo *ServicesQueryRepo) ReadOneInstalledItem(
-	readDto dto.ReadInstalledServicesItemsRequest,
+	requestDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItem dto.InstalledServiceWithMetrics, err error) {
-	readDto.Pagination = dto.Pagination{
+	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-	responseDto, err := repo.ReadInstalledItems(readDto)
+	responseDto, err := repo.ReadInstalledItems(requestDto)
 	if err != nil {
 		return installedItem, err
 	}
@@ -628,7 +628,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 }
 
 func (repo *ServicesQueryRepo) ReadInstallableItems(
-	readDto dto.ReadInstallableServicesItemsRequest,
+	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableItemsDto dto.ReadInstallableServicesItemsResponse, err error) {
 	_, err = os.Stat(infraEnvs.ServiceInstalledItemsDir)
 	if err != nil {
@@ -678,43 +678,51 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 			continue
 		}
 
-		if readDto.ServiceName != nil {
+		installableServices = append(installableServices, installableService)
+	}
+
+	filteredInstallableServices := []entity.InstallableService{}
+	for _, installableService := range installableServices {
+		if requestDto.ServiceName != nil {
 			isNameEqual := strings.EqualFold(
-				installableService.Name.String(), readDto.ServiceName.String(),
+				installableService.Name.String(), requestDto.ServiceName.String(),
 			)
 			if !isNameEqual {
 				continue
 			}
 		}
 
-		if readDto.ServiceNature != nil {
+		if requestDto.ServiceNature != nil {
 			isNatureEqual := strings.EqualFold(
-				installableService.Nature.String(), readDto.ServiceNature.String(),
+				installableService.Nature.String(), requestDto.ServiceNature.String(),
 			)
 			if !isNatureEqual {
 				continue
 			}
 		}
 
-		if readDto.ServiceType != nil && installableService.Type != *readDto.ServiceType {
+		if requestDto.ServiceType != nil && installableService.Type != *requestDto.ServiceType {
 			isTypeEqual := strings.EqualFold(
-				installableService.Type.String(), readDto.ServiceType.String(),
+				installableService.Type.String(), requestDto.ServiceType.String(),
 			)
 			if !isTypeEqual {
 				continue
 			}
 		}
 
-		installableServices = append(installableServices, installableService)
+		filteredInstallableServices = append(
+			filteredInstallableServices, installableService,
+		)
 	}
+	filteredInstallableServices = filteredInstallableServices[:requestDto.Pagination.ItemsPerPage]
 
 	sortDirectionStr := "asc"
-	if readDto.Pagination.SortDirection != nil {
-		sortDirectionStr = readDto.Pagination.SortDirection.String()
+	if requestDto.Pagination.SortDirection != nil {
+		sortDirectionStr = requestDto.Pagination.SortDirection.String()
 	}
 
-	if readDto.Pagination.SortBy != nil {
-		slices.SortStableFunc(installableServices, func(a, b entity.InstallableService) int {
+	if requestDto.Pagination.SortBy != nil {
+		slices.SortStableFunc(filteredInstallableServices, func(a, b entity.InstallableService) int {
 			firstElement := a
 			secondElement := b
 			if sortDirectionStr != "asc" {
@@ -722,7 +730,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 				secondElement = a
 			}
 
-			switch readDto.Pagination.SortBy.String() {
+			switch requestDto.Pagination.SortBy.String() {
 			case "name":
 				return strings.Compare(
 					firstElement.Name.String(), secondElement.Name.String(),
@@ -741,27 +749,27 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		})
 	}
 
-	itemsTotal := uint64(len(installableServices))
-	pagesTotal := uint32(itemsTotal / uint64(readDto.Pagination.ItemsPerPage))
+	itemsTotal := uint64(len(filteredInstallableServices))
+	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
 
-	paginationDto := readDto.Pagination
+	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
 	paginationDto.PagesTotal = &pagesTotal
 
 	return dto.ReadInstallableServicesItemsResponse{
 		Pagination:          paginationDto,
-		InstallableServices: installableServices,
+		InstallableServices: filteredInstallableServices,
 	}, nil
 }
 
 func (repo *ServicesQueryRepo) ReadOneInstallableItem(
-	readDto dto.ReadInstallableServicesItemsRequest,
+	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
-	readDto.Pagination = dto.Pagination{
+	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-	responseDto, err := repo.ReadInstallableItems(readDto)
+	responseDto, err := repo.ReadInstallableItems(requestDto)
 	if err != nil {
 		return installableService, err
 	}

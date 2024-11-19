@@ -581,10 +581,6 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 
 	filteredCatalogItems := []entity.MarketplaceCatalogItem{}
 	for _, catalogItem := range catalogItems {
-		if len(catalogItems) >= int(requestDto.Pagination.ItemsPerPage) {
-			break
-		}
-
 		itemId := requestDto.MarketplaceCatalogItemId
 		if itemId != nil && catalogItem.Id != *itemId {
 			continue
@@ -613,6 +609,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 
 		filteredCatalogItems = append(filteredCatalogItems, catalogItem)
 	}
+	filteredCatalogItems = filteredCatalogItems[:requestDto.Pagination.ItemsPerPage]
 
 	sortDirectionStr := "asc"
 	if requestDto.Pagination.SortDirection != nil {
