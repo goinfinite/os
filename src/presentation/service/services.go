@@ -70,7 +70,7 @@ func (service *ServicesService) ReadInstalledItems(
 		typePtr = &itemType
 	}
 
-	shouldIncludeMetrics := true
+	shouldIncludeMetrics := false
 	if input["shouldIncludeMetrics"] != nil {
 		var err error
 		shouldIncludeMetrics, err = voHelper.InterfaceToBool(input["shouldIncludeMetrics"])
