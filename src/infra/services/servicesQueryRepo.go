@@ -237,9 +237,9 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
 	}
 
-	entities := []dto.InstalledServiceWithMetrics{}
+	entities := []entity.InstalledService{}
 	for _, resultModel := range resultModels {
-		entityWithoutMetrics, err := resultModel.ToEntity()
+		entity, err := resultModel.ToEntity()
 		if err != nil {
 			slog.Debug(
 				"InstalledServiceItemModelToEntityError",
@@ -248,23 +248,18 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 			continue
 		}
 
-		var entityMetricsPtr *valueObject.ServiceMetrics
 		if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
-			entityMetrics, err := repo.readServiceMetrics(entityWithoutMetrics.Name)
+			entityMetrics, err := repo.readServiceMetrics(entity.Name)
 			if err != nil {
 				slog.Debug(
 					"FailedToReadInstalledServiceMetrics",
 					slog.String("name", resultModel.Name), slog.Any("error", err),
 				)
 			}
-			entityMetricsPtr = &entityMetrics
+			entity.Metrics = &entityMetrics
 		}
 
-		entityWithMetrics := dto.NewInstalledServiceWithMetrics(
-			entityWithoutMetrics,
-			entityMetricsPtr,
-		)
-		entities = append(entities, entityWithMetrics)
+		entities = append(entities, entity)
 	}
 
 	stoppedServicesNames, err := repo.readStoppedServicesNames()
@@ -304,7 +299,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 
 func (repo *ServicesQueryRepo) ReadOneInstalledItem(
 	requestDto dto.ReadInstalledServicesItemsRequest,
-) (installedItem dto.InstalledServiceWithMetrics, err error) {
+) (installedItem entity.InstalledService, err error) {
 	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
