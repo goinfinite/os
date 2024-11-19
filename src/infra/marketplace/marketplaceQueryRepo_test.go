@@ -15,7 +15,7 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 	marketplaceQueryRepo := NewMarketplaceQueryRepo(persistentDbSvc)
 	testHelpers.LoadEnvVars()
 
-	t.Run("Read", func(t *testing.T) {
+	t.Run("ReadCatalogItems", func(t *testing.T) {
 		itemType, _ := valueObject.NewMarketplaceItemType("app")
 
 		paginationDto := useCase.MarketplaceDefaultPagination
@@ -33,12 +33,71 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 			readCatalogItemRequestDto,
 		)
 		if err != nil {
-			t.Errorf("ReadMarketplaceItemsError: %v", err)
+			t.Errorf("ReadMarketplaceCatalogItemsError: %v", err)
 			return
 		}
 
 		if len(responseDto.MarketplaceCatalogItems) == 0 {
-			t.Errorf("NoItemsFound")
+			t.Error("NoCatalogItemsFound")
+		}
+	})
+
+	t.Run("ReadOneCatalogItem", func(t *testing.T) {
+		itemType, _ := valueObject.NewMarketplaceItemType("app")
+
+		readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
+			MarketplaceCatalogItemType: &itemType,
+		}
+
+		_, err := marketplaceQueryRepo.ReadOneCatalogItem(
+			readCatalogItemRequestDto,
+		)
+		if err != nil {
+			t.Errorf("ReadOneMarketplaceCatalogItemError: %v", err)
+			return
+		}
+	})
+
+	t.Run("ReadInstalledItems", func(t *testing.T) {
+		itemType, _ := valueObject.NewMarketplaceItemType("app")
+
+		paginationDto := useCase.MarketplaceDefaultPagination
+		sortBy, _ := valueObject.NewPaginationSortBy("id")
+		sortDirection, _ := valueObject.NewPaginationSortDirection("desc")
+		paginationDto.SortBy = &sortBy
+		paginationDto.SortDirection = &sortDirection
+
+		readInstalledItemRequestDto := dto.ReadMarketplaceInstalledItemsRequest{
+			Pagination:                   paginationDto,
+			MarketplaceInstalledItemType: &itemType,
+		}
+
+		responseDto, err := marketplaceQueryRepo.ReadInstalledItems(
+			readInstalledItemRequestDto,
+		)
+		if err != nil {
+			t.Errorf("Expected no error, but got: %v", err)
+			return
+		}
+
+		if len(responseDto.MarketplaceInstalledItems) == 0 {
+			t.Error("NoInstalledItemsFound")
+		}
+	})
+
+	t.Run("ReadOneInstalledItem", func(t *testing.T) {
+		itemType, _ := valueObject.NewMarketplaceItemType("app")
+
+		readInstalledItemRequestDto := dto.ReadMarketplaceInstalledItemsRequest{
+			MarketplaceInstalledItemType: &itemType,
+		}
+
+		_, err := marketplaceQueryRepo.ReadOneInstalledItem(
+			readInstalledItemRequestDto,
+		)
+		if err != nil {
+			t.Errorf("ReadOneMarketplaceInstalledItemError: %v", err)
+			return
 		}
 	})
 }
