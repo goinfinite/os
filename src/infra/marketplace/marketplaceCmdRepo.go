@@ -66,6 +66,10 @@ func (repo *MarketplaceCmdRepo) installServices(
 			return err
 		}
 
+		if err == nil {
+			continue
+		}
+
 		createServiceDto := dto.NewCreateInstallableService(
 			serviceWithVersion.Name, []valueObject.ServiceEnv{},
 			[]valueObject.PortBinding{}, serviceWithVersion.Version,
