@@ -84,10 +84,10 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("MoveUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+			fileBasePathStr + "/testDir_/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/filesCmdRepoTest.txt",
+			fileBasePathStr + "/filesCmdRepoTest.txt",
 		)
 
 		err := filesCmdRepo.Move(sourceFilePath, destinationFilePath, false)
@@ -110,7 +110,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CopyUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+			fileBasePathStr + "/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
@@ -125,12 +125,12 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CompressUnixFile (with compression type)", func(t *testing.T) {
-		compressionType, _ := valueObject.NewUnixCompressionType("gzip")
+		compressionType, _ := valueObject.NewUnixCompressionType("tgz")
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress",
+			fileBasePathStr + "/testDir_/testDirCompressWithType",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -149,7 +149,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress",
+			fileBasePathStr + "/testDir_/testDirCompressWithoutType",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -162,12 +162,12 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("CompressUnixFile (with compression type in file path)", func(t *testing.T) {
+	t.Run("CompressUnixFile (with compression type in file name)", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress_.gzip",
+			fileBasePathStr + "/testDir_/testDirCompressWithTypeOnFileName_.gzip",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -185,7 +185,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirCompress.tar.gz",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirExtracted",
+			fileBasePathStr + "/testDir_/testDirCompressWithType",
 		)
 
 		dto := dto.NewExtractUnixFiles(sourceFilePath, destinationFilePath)
