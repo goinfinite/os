@@ -69,6 +69,12 @@ func (repo *ScheduledTaskQueryRepo) Read(
 		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.GetAsGoTime())
 	}
 
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return responseDto, errors.New("CountItemsTotalError: " + err.Error())
+	}
+
 	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
 	if readDto.Pagination.LastSeenId == nil {
 		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
@@ -94,12 +100,6 @@ func (repo *ScheduledTaskQueryRepo) Read(
 	err = dbQuery.Find(&scheduledTaskModels).Error
 	if err != nil {
 		return responseDto, errors.New("FindScheduledTasksError: " + err.Error())
-	}
-
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
-	if err != nil {
-		return responseDto, errors.New("CountItemsTotalError: " + err.Error())
 	}
 
 	for _, scheduledTaskModel := range scheduledTaskModels {

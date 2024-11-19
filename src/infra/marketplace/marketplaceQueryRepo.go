@@ -700,9 +700,17 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		model.InstallUuid = requestDto.MarketplaceInstalledItemUuid.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.
-		Where(&model).
-		Limit(int(requestDto.Pagination.ItemsPerPage))
+	dbQuery := repo.persistentDbSvc.Handler.Where(&model).Preload("Mappings")
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
+	if err != nil {
+		return responseDto, errors.New(
+			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
+		)
+	}
+
+	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
 	if requestDto.Pagination.LastSeenId == nil {
 		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
@@ -724,17 +732,9 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	}
 
 	models := []dbModel.MarketplaceInstalledItem{}
-	err = dbQuery.Preload("Mappings").Find(&models).Error
+	err = dbQuery.Find(&models).Error
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceInstalledItemsError")
-	}
-
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
-	if err != nil {
-		return responseDto, errors.New(
-			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
-		)
 	}
 
 	entities := []entity.MarketplaceInstalledItem{}
