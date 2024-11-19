@@ -680,8 +680,7 @@ func (repo *MarketplaceQueryRepo) ReadOneCatalogItem(
 		return catalogItem, errors.New("MarketplaceCatalogItemNotFound")
 	}
 
-	foundCatalogItem := responseDto.MarketplaceCatalogItems[0]
-	return foundCatalogItem, nil
+	return responseDto.MarketplaceCatalogItems[0], nil
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItems(
@@ -787,6 +786,5 @@ func (repo *MarketplaceQueryRepo) ReadOneInstalledItem(
 		return installedItem, errors.New("MarketplaceInstalledItemNotFound")
 	}
 
-	foundInstalledItem := responseDto.MarketplaceInstalledItems[0]
-	return foundInstalledItem, nil
+	return responseDto.MarketplaceInstalledItems[0], nil
 }

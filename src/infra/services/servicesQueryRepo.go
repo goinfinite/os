@@ -313,8 +313,7 @@ func (repo *ServicesQueryRepo) ReadOneInstalledItem(
 		return installedItem, errors.New("ServiceInstalledItemNotFound")
 	}
 
-	foundInstalledItem := responseDto.InstalledServices[0]
-	return foundInstalledItem, nil
+	return responseDto.InstalledServices[0], nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
@@ -773,6 +772,5 @@ func (repo *ServicesQueryRepo) ReadOneInstallableItem(
 		return installableService, errors.New("InstallableServiceItemNotFound")
 	}
 
-	foundInstallableItem := responseDto.InstallableServices[0]
-	return foundInstallableItem, nil
+	return responseDto.InstallableServices[0], nil
 }
