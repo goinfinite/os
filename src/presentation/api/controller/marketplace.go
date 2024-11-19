@@ -249,7 +249,9 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 }
 
 func (controller *MarketplaceController) AutoRefreshMarketplaceCatalogItems() {
-	taskInterval := time.Duration(2) * time.Minute
+	refreshIntervalHours := 24 / useCase.RefreshMarketplaceCatalogItemsAmountPerDay
+
+	taskInterval := time.Duration(refreshIntervalHours) * time.Hour
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 

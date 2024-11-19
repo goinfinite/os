@@ -301,7 +301,9 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 }
 
 func (controller *ServicesController) AutoRefreshServiceInstallableItems() {
-	taskInterval := time.Duration(2) * time.Minute
+	refreshIntervalHours := 24 / useCase.RefreshServiceInstallableItemsAmountPerDay
+
+	taskInterval := time.Duration(refreshIntervalHours) * time.Hour
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 

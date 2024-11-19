@@ -6,6 +6,8 @@ import (
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+const RefreshServiceInstallableItemsAmountPerDay int = 1
+
 func RefreshServiceInstallableItems(servicesCmdRepo repository.ServicesCmdRepo) {
 	err := servicesCmdRepo.RefreshInstallableItems()
 	if err != nil {
