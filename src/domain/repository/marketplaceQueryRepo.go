@@ -7,15 +7,15 @@ import (
 
 type MarketplaceQueryRepo interface {
 	ReadCatalogItems(
-		readDto dto.ReadMarketplaceCatalogItemsRequest,
+		requestDto dto.ReadMarketplaceCatalogItemsRequest,
 	) (dto.ReadMarketplaceCatalogItemsResponse, error)
 	ReadOneCatalogItem(
-		readDto dto.ReadMarketplaceCatalogItemsRequest,
+		requestDto dto.ReadMarketplaceCatalogItemsRequest,
 	) (entity.MarketplaceCatalogItem, error)
 	ReadInstalledItems(
-		readDto dto.ReadMarketplaceInstalledItemsRequest,
+		requestDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (dto.ReadMarketplaceInstalledItemsResponse, error)
 	ReadOneInstalledItem(
-		readDto dto.ReadMarketplaceInstalledItemsRequest,
+		requestDto dto.ReadMarketplaceInstalledItemsRequest,
 	) (entity.MarketplaceInstalledItem, error)
 }

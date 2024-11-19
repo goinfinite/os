@@ -487,14 +487,14 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 }
 
 func (repo *MarketplaceQueryRepo) ReadCatalogItems(
-	readDto dto.ReadMarketplaceCatalogItemsRequest,
-) (catalogItemsDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
+	requestDto dto.ReadMarketplaceCatalogItemsRequest,
+) (responseDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
 	_, err = os.Stat(infraEnvs.MarketplaceCatalogItemsDir)
 	if err != nil {
 		marketplaceCmdRepo := NewMarketplaceCmdRepo(repo.persistentDbSvc)
 		err = marketplaceCmdRepo.RefreshCatalogItems()
 		if err != nil {
-			return catalogItemsDto, errors.New(
+			return responseDto, errors.New(
 				"RefreshMarketplaceCatalogItemsError: " + err.Error(),
 			)
 		}
@@ -506,16 +506,16 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			"-not -path '*/.*' -not -name '.*'",
 	)
 	if err != nil {
-		return catalogItemsDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
+		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}
 
 	if len(rawCatalogFilesList) == 0 {
-		return catalogItemsDto, errors.New("NoMarketplaceFilesFound")
+		return responseDto, errors.New("NoMarketplaceFilesFound")
 	}
 
 	rawCatalogFilesListParts := strings.Split(rawCatalogFilesList, "\n")
 	if len(rawCatalogFilesListParts) == 0 {
-		return catalogItemsDto, errors.New("NoMarketplaceFilesFound")
+		return responseDto, errors.New("NoMarketplaceFilesFound")
 	}
 
 	catalogItems := []entity.MarketplaceCatalogItem{}
@@ -581,30 +581,30 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 
 	filteredCatalogItems := []entity.MarketplaceCatalogItem{}
 	for _, catalogItem := range catalogItems {
-		if len(catalogItems) >= int(readDto.Pagination.ItemsPerPage) {
+		if len(catalogItems) >= int(requestDto.Pagination.ItemsPerPage) {
 			break
 		}
 
-		itemId := readDto.MarketplaceCatalogItemId
+		itemId := requestDto.MarketplaceCatalogItemId
 		if itemId != nil && catalogItem.Id != *itemId {
 			continue
 		}
 
-		itemSlug := readDto.MarketplaceCatalogItemSlug
+		itemSlug := requestDto.MarketplaceCatalogItemSlug
 		if itemSlug != nil {
 			if !slices.Contains(catalogItem.Slugs, *itemSlug) {
 				continue
 			}
 		}
 
-		itemName := readDto.MarketplaceCatalogItemName
+		itemName := requestDto.MarketplaceCatalogItemName
 		if itemName != nil {
 			if !strings.EqualFold(catalogItem.Name.String(), itemName.String()) {
 				continue
 			}
 		}
 
-		itemType := readDto.MarketplaceCatalogItemType
+		itemType := requestDto.MarketplaceCatalogItemType
 		if itemType != nil {
 			if !strings.EqualFold(catalogItem.Type.String(), itemType.String()) {
 				continue
@@ -615,11 +615,11 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	sortDirectionStr := "asc"
-	if readDto.Pagination.SortDirection != nil {
-		sortDirectionStr = readDto.Pagination.SortDirection.String()
+	if requestDto.Pagination.SortDirection != nil {
+		sortDirectionStr = requestDto.Pagination.SortDirection.String()
 	}
 
-	if readDto.Pagination.SortBy != nil {
+	if requestDto.Pagination.SortBy != nil {
 		slices.SortStableFunc(filteredCatalogItems, func(a, b entity.MarketplaceCatalogItem) int {
 			firstElement := a
 			secondElement := b
@@ -628,7 +628,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 				secondElement = a
 			}
 
-			switch readDto.Pagination.SortBy.String() {
+			switch requestDto.Pagination.SortBy.String() {
 			case "id":
 				if firstElement.Id.Uint16() < secondElement.Id.Uint16() {
 					return -1
@@ -652,9 +652,9 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	itemsTotal := uint64(len(filteredCatalogItems))
-	pagesTotal := uint32(itemsTotal / uint64(readDto.Pagination.ItemsPerPage))
+	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
 
-	paginationDto := readDto.Pagination
+	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
 	paginationDto.PagesTotal = &pagesTotal
 
@@ -665,13 +665,13 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 }
 
 func (repo *MarketplaceQueryRepo) ReadOneCatalogItem(
-	readDto dto.ReadMarketplaceCatalogItemsRequest,
+	requestDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	readDto.Pagination = dto.Pagination{
+	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-	responseDto, err := repo.ReadCatalogItems(readDto)
+	responseDto, err := repo.ReadCatalogItems(requestDto)
 	if err != nil {
 		return catalogItem, err
 	}
@@ -685,40 +685,40 @@ func (repo *MarketplaceQueryRepo) ReadOneCatalogItem(
 }
 
 func (repo *MarketplaceQueryRepo) ReadInstalledItems(
-	readDto dto.ReadMarketplaceInstalledItemsRequest,
-) (installedItemsDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
+	requestDto dto.ReadMarketplaceInstalledItemsRequest,
+) (responseDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
 	model := dbModel.MarketplaceInstalledItem{}
-	if readDto.MarketplaceInstalledItemId != nil {
-		model.ID = uint(readDto.MarketplaceInstalledItemId.Uint16())
+	if requestDto.MarketplaceInstalledItemId != nil {
+		model.ID = uint(requestDto.MarketplaceInstalledItemId.Uint16())
 	}
-	if readDto.MarketplaceInstalledItemHostname != nil {
-		model.Hostname = readDto.MarketplaceInstalledItemHostname.String()
+	if requestDto.MarketplaceInstalledItemHostname != nil {
+		model.Hostname = requestDto.MarketplaceInstalledItemHostname.String()
 	}
-	if readDto.MarketplaceInstalledItemType != nil {
-		model.Type = readDto.MarketplaceInstalledItemType.String()
+	if requestDto.MarketplaceInstalledItemType != nil {
+		model.Type = requestDto.MarketplaceInstalledItemType.String()
 	}
-	if readDto.MarketplaceInstalledItemUuid != nil {
-		model.InstallUuid = readDto.MarketplaceInstalledItemUuid.String()
+	if requestDto.MarketplaceInstalledItemUuid != nil {
+		model.InstallUuid = requestDto.MarketplaceInstalledItemUuid.String()
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.
 		Where(&model).
-		Limit(int(readDto.Pagination.ItemsPerPage))
-	if readDto.Pagination.LastSeenId == nil {
-		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
+		Limit(int(requestDto.Pagination.ItemsPerPage))
+	if requestDto.Pagination.LastSeenId == nil {
+		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
 	} else {
-		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
+		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
 	}
-	if readDto.Pagination.SortBy != nil {
-		orderStatement := readDto.Pagination.SortBy.String()
+	if requestDto.Pagination.SortBy != nil {
+		orderStatement := requestDto.Pagination.SortBy.String()
 		orderStatement = strcase.ToSnake(orderStatement)
 		if orderStatement == "id" {
 			orderStatement = "ID"
 		}
 
-		if readDto.Pagination.SortDirection != nil {
-			orderStatement += " " + readDto.Pagination.SortDirection.String()
+		if requestDto.Pagination.SortDirection != nil {
+			orderStatement += " " + requestDto.Pagination.SortDirection.String()
 		}
 
 		dbQuery = dbQuery.Order(orderStatement)
@@ -727,13 +727,13 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	models := []dbModel.MarketplaceInstalledItem{}
 	err = dbQuery.Preload("Mappings").Find(&models).Error
 	if err != nil {
-		return installedItemsDto, errors.New("ReadMarketplaceInstalledItemsError")
+		return responseDto, errors.New("ReadMarketplaceInstalledItemsError")
 	}
 
 	var itemsTotal int64
 	err = dbQuery.Count(&itemsTotal).Error
 	if err != nil {
-		return installedItemsDto, errors.New(
+		return responseDto, errors.New(
 			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
 		)
 	}
@@ -754,13 +754,13 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 
 	itemsTotalUint := uint64(itemsTotal)
 	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
+		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
 	)
 	responsePagination := dto.Pagination{
-		PageNumber:    readDto.Pagination.PageNumber,
-		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
-		SortBy:        readDto.Pagination.SortBy,
-		SortDirection: readDto.Pagination.SortDirection,
+		PageNumber:    requestDto.Pagination.PageNumber,
+		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
+		SortBy:        requestDto.Pagination.SortBy,
+		SortDirection: requestDto.Pagination.SortDirection,
 		PagesTotal:    &pagesTotal,
 		ItemsTotal:    &itemsTotalUint,
 	}
@@ -772,13 +772,13 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 }
 
 func (repo *MarketplaceQueryRepo) ReadOneInstalledItem(
-	readDto dto.ReadMarketplaceInstalledItemsRequest,
+	requestDto dto.ReadMarketplaceInstalledItemsRequest,
 ) (installedItem entity.MarketplaceInstalledItem, err error) {
-	readDto.Pagination = dto.Pagination{
+	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
-	responseDto, err := repo.ReadInstalledItems(readDto)
+	responseDto, err := repo.ReadInstalledItems(requestDto)
 	if err != nil {
 		return installedItem, err
 	}

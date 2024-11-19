@@ -6,12 +6,12 @@ import (
 
 type ServicesQueryRepo interface {
 	ReadInstalledItems(
-		readDto dto.ReadInstalledServicesItemsRequest,
+		requestDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
 	ReadOneInstalledItem(
-		readDto dto.ReadInstalledServicesItemsRequest,
+		requestDto dto.ReadInstalledServicesItemsRequest,
 	) (dto.InstalledServiceWithMetrics, error)
 	ReadInstallableItems(
-		readDto dto.ReadInstallableServicesItemsRequest,
+		requestDto dto.ReadInstallableServicesItemsRequest,
 	) (dto.ReadInstallableServicesItemsResponse, error)
 }

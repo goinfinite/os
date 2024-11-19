@@ -24,12 +24,14 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		paginationDto.SortBy = &sortBy
 		paginationDto.SortDirection = &sortDirection
 
-		readDto := dto.ReadMarketplaceCatalogItemsRequest{
+		readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
 			Pagination:                 paginationDto,
 			MarketplaceCatalogItemType: &itemType,
 		}
 
-		responseDto, err := marketplaceQueryRepo.ReadCatalogItems(readDto)
+		responseDto, err := marketplaceQueryRepo.ReadCatalogItems(
+			readCatalogItemRequestDto,
+		)
 		if err != nil {
 			t.Errorf("ReadMarketplaceItemsError: %v", err)
 			return
