@@ -356,17 +356,17 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{}
-	isCatalogItemIdProvided := installDto.Id != nil
-	if isCatalogItemIdProvided {
-		readCatalogItemDto.MarketplaceCatalogItemId = installDto.Id
+	if installDto.Id == nil && installDto.Slug == nil {
+		return errors.New("CatalogIdOrSlugMustBeProvided")
 	}
-	if !isCatalogItemIdProvided && installDto.Slug != nil {
-		readCatalogItemDto.MarketplaceCatalogItemSlug = installDto.Slug
+
+	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
+		MarketplaceCatalogItemId:   installDto.Id,
+		MarketplaceCatalogItemSlug: installDto.Slug,
 	}
 
 	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
-		readCatalogItemDto,
+		readCatalogItemRequestDto,
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
