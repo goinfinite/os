@@ -182,10 +182,10 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("ExtractUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress.tar.gz",
+			fileBasePathStr + "/testDir_/testDirCompressWithType.tgz",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompressWithType",
+			fileBasePathStr + "/testDir_/testDirExtracted",
 		)
 
 		dto := dto.NewExtractUnixFiles(sourceFilePath, destinationFilePath)
