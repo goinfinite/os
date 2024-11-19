@@ -165,7 +165,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 	shouldIncludeMetrics := false
 	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
 		Pagination: dto.Pagination{
-			ItemsPerPage: 100,
+			ItemsPerPage: 1000,
 		},
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}

@@ -624,7 +624,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 
 	readInstalledItemsDto := dto.ReadMarketplaceInstalledItemsRequest{
 		Pagination: dto.Pagination{
-			ItemsPerPage: 100,
+			ItemsPerPage: 1000,
 		},
 	}
 	installedItemsResponseDto, err := repo.marketplaceQueryRepo.ReadInstalledItems(
