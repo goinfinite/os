@@ -342,7 +342,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	}
 
 	requiredFields := []string{
-		"manifestVersion", "name", "type", "description", "avatarUrl",
+		"name", "type", "description", "avatarUrl",
 	}
 	missingFields := []string{}
 	for _, requiredField := range requiredFields {
@@ -356,11 +356,14 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		)
 	}
 
-	itemManifestVersion, err := valueObject.NewMarketplaceItemManifestVersion(
-		itemMap["manifestVersion"],
-	)
-	if err != nil {
-		return catalogItem, err
+	itemManifestVersion, _ := valueObject.NewMarketplaceItemManifestVersion("v1")
+	if itemMap["manifestVersion"] != nil {
+		itemManifestVersion, err = valueObject.NewMarketplaceItemManifestVersion(
+			itemMap["manifestVersion"],
+		)
+		if err != nil {
+			return catalogItem, err
+		}
 	}
 
 	itemId, _ := valueObject.NewMarketplaceItemId(0)
