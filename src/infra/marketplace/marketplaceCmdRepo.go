@@ -62,7 +62,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 			ShouldIncludeMetrics: &shouldIncludeMetrics,
 		}
 		_, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledServiceDto)
-		if err != nil {
+		if err != nil && err.Error() != "ServiceInstalledItemNotFound" {
 			return err
 		}
 
