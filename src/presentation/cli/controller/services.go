@@ -20,7 +20,8 @@ func NewServicesController(
 }
 
 func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
-	var installedItemNameStr, installedItemNatureStr, installedItemTypeStr string
+	var installedItemNameStr, installedItemNatureStr, installedItemTypeStr,
+		shouldIncludeMetricsStr string
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16
 	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
@@ -29,7 +30,9 @@ func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 		Use:   "get",
 		Short: "ReadServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]interface{}{
+				"shouldIncludeMetrics": shouldIncludeMetricsStr,
+			}
 
 			if installedItemNameStr != "" {
 				requestBody["name"] = installedItemNameStr
@@ -78,6 +81,10 @@ func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(
 		&installedItemTypeStr, "installed-item-type", "u", "", "InstalledItemTypeStr",
+	)
+	cmd.Flags().StringVarP(
+		&shouldIncludeMetricsStr, "should-include-metrics", "s", "false",
+		"ShouldIncludeMetrics",
 	)
 	cmd.Flags().Uint32VarP(
 		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",
