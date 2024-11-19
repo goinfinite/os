@@ -5,7 +5,7 @@ import (
 )
 
 type MarketplaceCmdRepo interface {
-	InstallItem(installDto dto.InstallMarketplaceCatalogItem) error
-	UninstallItem(deleteDto dto.DeleteMarketplaceInstalledItem) error
+	InstallItem(dto.InstallMarketplaceCatalogItem) error
+	UninstallItem(dto.DeleteMarketplaceInstalledItem) error
 	RefreshCatalogItems() error
 }
