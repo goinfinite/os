@@ -3,6 +3,7 @@ package testHelpers
 import (
 	"encoding/base64"
 
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliMiddleware "github.com/goinfinite/os/src/presentation/cli/middleware"
 	"github.com/joho/godotenv"
@@ -18,7 +19,7 @@ func GenerateString(desiredSize int) string {
 func LoadEnvVars() {
 	cliMiddleware.CheckEnvs()
 
-	loadEnvErr := godotenv.Load("/infinite/.env")
+	loadEnvErr := godotenv.Load(infraEnvs.InfiniteOsEnvFilePath)
 	if loadEnvErr != nil {
 		panic("LoadingEnvFileError: " + loadEnvErr.Error())
 	}
