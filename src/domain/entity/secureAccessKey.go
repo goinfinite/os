@@ -3,13 +3,13 @@ package entity
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type SecureAccessKey struct {
-	HashId  valueObject.Hash                   `json:"hashId"`
+	HashId  valueObject.SecureAccessKeyHashId  `json:"hashId"`
 	Name    valueObject.SecureAccessKeyName    `json:"name"`
 	Content valueObject.SecureAccessKeyContent `json:"-"`
 }
 
 func NewSecureAccessKey(
-	hashId valueObject.Hash,
+	hashId valueObject.SecureAccessKeyHashId,
 	name valueObject.SecureAccessKeyName,
 	content valueObject.SecureAccessKeyContent,
 ) SecureAccessKey {
