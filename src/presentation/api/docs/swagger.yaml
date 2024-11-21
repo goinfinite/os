@@ -1939,9 +1939,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.ReadInstalledServicesItemsResponse'
-            type: array
+            $ref: '#/definitions/dto.ReadInstalledServicesItemsResponse'
       security:
       - Bearer: []
       summary: ReadInstalledItems
@@ -2069,9 +2067,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.ReadInstallableServicesItemsResponse'
-            type: array
+            $ref: '#/definitions/dto.ReadInstallableServicesItemsResponse'
       security:
       - Bearer: []
       summary: ReadInstallableItems

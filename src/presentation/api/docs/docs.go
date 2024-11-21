@@ -1502,10 +1502,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
                         }
                     }
                 }
@@ -1665,10 +1662,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
                         }
                     }
                 }
