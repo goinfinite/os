@@ -700,7 +700,10 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		model.InstallUuid = requestDto.MarketplaceInstalledItemUuid.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.Where(&model).Preload("Mappings")
+	dbQuery := repo.persistentDbSvc.Handler.
+		Model(&model).
+		Where(&model).
+		Preload("Mappings")
 
 	var itemsTotal int64
 	err = dbQuery.Count(&itemsTotal).Error
