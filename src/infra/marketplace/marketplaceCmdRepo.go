@@ -56,12 +56,12 @@ func (repo *MarketplaceCmdRepo) installServices(
 			shouldCreatePhpVirtualHost = true
 		}
 
-		shouldIncludeMetrics := false
-		readInstalledServiceDto := dto.ReadInstalledServicesItemsRequest{
-			ServiceName:          &serviceWithVersion.Name,
-			ShouldIncludeMetrics: &shouldIncludeMetrics,
+		readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &serviceWithVersion.Name,
 		}
-		_, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledServiceDto)
+		_, err := servicesQueryRepo.ReadFirstInstalledItem(
+			readFirstInstalledServiceRequestDto,
+		)
 		if err != nil && err.Error() != "ServiceInstalledItemNotFound" {
 			return err
 		}

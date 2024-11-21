@@ -10,7 +10,7 @@ type ServicesQueryRepo interface {
 		dto.ReadInstalledServicesItemsRequest,
 	) (dto.ReadInstalledServicesItemsResponse, error)
 	ReadFirstInstalledItem(
-		dto.ReadInstalledServicesItemsRequest,
+		dto.ReadFirstInstalledServiceItemsRequest,
 	) (entity.InstalledService, error)
 	ReadInstallableItems(
 		dto.ReadInstallableServicesItemsRequest,

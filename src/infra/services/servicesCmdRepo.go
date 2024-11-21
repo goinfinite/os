@@ -65,10 +65,12 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
 		ServiceName: &name,
 	}
-	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -103,13 +105,11 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	shouldIncludeMetrics := false
-	readInstalledItemRequestDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &name,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
 	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledItemRequestDto,
+		readFirstInstalledRequestDto,
 	)
 	if err != nil {
 		return err
@@ -139,13 +139,11 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	shouldIncludeMetrics := false
-	readInstalledItemRequestDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &name,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
 	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledItemRequestDto,
+		readFirstInstalledRequestDto,
 	)
 	if err != nil {
 		return err
@@ -574,13 +572,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	shouldIncludeMetrics := false
-	readInstalledItemRequestDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &updateDto.Name,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &updateDto.Name,
 	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledItemRequestDto,
+		readFirstInstalledRequestDto,
 	)
 	if err != nil {
 		return err
@@ -722,13 +718,11 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
-	shouldIncludeMetrics := false
-	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &name,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
 	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledDto,
+		readFirstInstalledRequestDto,
 	)
 	if err != nil {
 		return err

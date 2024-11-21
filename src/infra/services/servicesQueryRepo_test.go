@@ -70,12 +70,12 @@ func TestServicesQueryRepo(t *testing.T) {
 	t.Run("ReadFirstInstalledItem", func(t *testing.T) {
 		name, _ := valueObject.NewServiceName("node")
 
-		readInstalledItemsRequestDto := dto.ReadInstalledServicesItemsRequest{
+		readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
 			ServiceName: &name,
 		}
 
 		_, err := servicesQueryRepo.ReadFirstInstalledItem(
-			readInstalledItemsRequestDto,
+			readFirstInstalledRequestDto,
 		)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)

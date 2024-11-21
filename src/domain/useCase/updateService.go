@@ -15,12 +15,12 @@ func UpdateService(
 	mappingCmdRepo repository.MappingCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	shouldIncludeMetrics := false
-	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &updateDto.Name,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &updateDto.Name,
 	}
-	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}

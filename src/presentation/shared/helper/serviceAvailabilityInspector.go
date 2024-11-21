@@ -24,13 +24,11 @@ func NewServiceAvailabilityInspector(
 func (inspector *ServiceAvailabilityInspector) IsAvailable(
 	serviceName valueObject.ServiceName,
 ) bool {
-	shouldIncludeServiceMetrics := false
-	readInstalledDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &serviceName,
-		ShouldIncludeMetrics: &shouldIncludeServiceMetrics,
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &serviceName,
 	}
 	availableService, err := inspector.servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledDto,
+		readFirstInstalledRequestDto,
 	)
 	if err != nil {
 		return false

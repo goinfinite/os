@@ -113,48 +113,6 @@ func (repo *ServicesQueryRepo) readPidMetrics(
 	return serviceMetrics, nil
 }
 
-func (repo *ServicesQueryRepo) readServiceMetrics(
-	name valueObject.ServiceName,
-) (metrics valueObject.ServiceMetrics, err error) {
-	supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " status " + name.String(),
-	)
-	if len(supervisorStatus) == 0 {
-		return metrics, errors.New("ReadSupervisorStatusError")
-	}
-
-	// # supervisorctl status <serviceName>
-	// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
-	supervisorStatusParts := strings.Fields(supervisorStatus)
-	if len(supervisorStatusParts) < 4 {
-		return metrics, errors.New("MissingSupervisorStatusParts")
-	}
-
-	rawServiceStatus := supervisorStatusParts[1]
-	serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
-	if err != nil {
-		return metrics, errors.New(err.Error() + ": " + rawServiceStatus)
-	}
-
-	if serviceStatus.String() != "running" {
-		return metrics, nil
-	}
-
-	rawServicePid := supervisorStatusParts[3]
-	rawServicePid = strings.Trim(rawServicePid, ",")
-	servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
-	if err != nil {
-		return metrics, errors.New(err.Error() + ": " + rawServicePid)
-	}
-
-	metrics, err = repo.readPidMetrics(int32(servicePidInt))
-	if err != nil {
-		return metrics, errors.New(err.Error() + ": " + rawServicePid)
-	}
-
-	return metrics, nil
-}
-
 func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
@@ -184,6 +142,97 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	}
 
 	return stoppedServicesNames, nil
+}
+
+func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
+	installedServices []entity.InstalledService,
+) []dto.InstalledServiceWithMetrics {
+	installedServicesWithMetrics := []dto.InstalledServiceWithMetrics{}
+	for _, installedService := range installedServices {
+		serviceWithoutMetrics := dto.NewInstalledServiceWithMetrics(
+			installedService, nil,
+		)
+
+		serviceNameStr := installedService.Name.String()
+
+		supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
+			SupervisorCtlBin + " status " + serviceNameStr,
+		)
+		if len(supervisorStatus) == 0 {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			slog.Debug("ReadSupervisorStatusError", slog.String("name", serviceNameStr))
+			continue
+		}
+
+		// # supervisorctl status <serviceName>
+		// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
+		supervisorStatusParts := strings.Fields(supervisorStatus)
+		if len(supervisorStatusParts) < 4 {
+			slog.Debug("MissingSupervisorStatusParts", slog.String("name", serviceNameStr))
+		}
+
+		rawServiceStatus := supervisorStatusParts[1]
+		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
+		if err != nil {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			slog.Debug(
+				err.Error(), slog.String("name", serviceNameStr),
+				slog.String("rawStatus", rawServiceStatus),
+			)
+			continue
+		}
+
+		if serviceStatus.String() != "running" {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			continue
+		}
+
+		rawServicePid := supervisorStatusParts[3]
+		rawServicePid = strings.Trim(rawServicePid, ",")
+		servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
+		if err != nil {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			slog.Debug(
+				err.Error(), slog.String("name", serviceNameStr),
+				slog.String("rawPid", rawServicePid),
+			)
+			continue
+		}
+
+		metrics, err := repo.readPidMetrics(int32(servicePidInt))
+		if err != nil {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			slog.Debug(
+				err.Error(), slog.String("name", serviceNameStr),
+				slog.String("rawPid", rawServicePid),
+			)
+			continue
+		}
+
+		serviceWithMetrics := dto.NewInstalledServiceWithMetrics(
+			installedService, &metrics,
+		)
+		installedServicesWithMetrics = append(
+			installedServicesWithMetrics, serviceWithMetrics,
+		)
+	}
+
+	return installedServicesWithMetrics
 }
 
 func (repo *ServicesQueryRepo) ReadInstalledItems(
@@ -248,16 +297,6 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 			continue
 		}
 
-		if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
-			_, err = repo.readServiceMetrics(entity.Name)
-			if err != nil {
-				slog.Debug(
-					"FailedToReadInstalledServiceMetrics",
-					slog.String("name", resultModel.Name), slog.Any("error", err),
-				)
-			}
-		}
-
 		entities = append(entities, entity)
 	}
 
@@ -281,29 +320,43 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	pagesTotal := uint32(
 		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
 	)
-	responsePagination := dto.Pagination{
-		PageNumber:    requestDto.Pagination.PageNumber,
-		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-		SortBy:        requestDto.Pagination.SortBy,
-		SortDirection: requestDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
+	responseDto := dto.ReadInstalledServicesItemsResponse{
+		Pagination: dto.Pagination{
+			PageNumber:    requestDto.Pagination.PageNumber,
+			ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
+			SortBy:        requestDto.Pagination.SortBy,
+			SortDirection: requestDto.Pagination.SortDirection,
+			PagesTotal:    &pagesTotal,
+			ItemsTotal:    &itemsTotalUint,
+		},
 	}
 
-	return dto.ReadInstalledServicesItemsResponse{
-		Pagination:        responsePagination,
-		InstalledServices: entities,
-	}, nil
+	if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
+		responseDto.InstalledServicesWithMetrics = repo.installedServicesMetricsFactory(
+			entities,
+		)
+		return responseDto, nil
+	}
+
+	responseDto.InstalledServices = entities
+	return responseDto, nil
 }
 
 func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
-	requestDto dto.ReadInstalledServicesItemsRequest,
+	readFirstRequestDto dto.ReadFirstInstalledServiceItemsRequest,
 ) (installedItem entity.InstalledService, err error) {
-	requestDto.Pagination = dto.Pagination{
-		PageNumber:   0,
-		ItemsPerPage: 1,
+	shouldIncludeMetrics := false
+	readRequestDto := dto.ReadInstalledServicesItemsRequest{
+		Pagination: dto.Pagination{
+			PageNumber:   0,
+			ItemsPerPage: 1,
+		},
+		ServiceName:          readFirstRequestDto.ServiceName,
+		ServiceNature:        readFirstRequestDto.ServiceNature,
+		ServiceType:          readFirstRequestDto.ServiceType,
+		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	responseDto, err := repo.ReadInstalledItems(requestDto)
+	responseDto, err := repo.ReadInstalledItems(readRequestDto)
 	if err != nil {
 		return installedItem, err
 	}

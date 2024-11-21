@@ -71,13 +71,11 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	}
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
-	shouldIncludeMetrics := false
-	readInstalledServiceDto := dto.ReadInstalledServicesItemsRequest{
-		ServiceName:          &serviceName,
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &serviceName,
 	}
 	installedService, err := servicesQueryRepo.ReadFirstInstalledItem(
-		readInstalledServiceDto,
+		readFirstInstalledServiceRequestDto,
 	)
 	if err != nil {
 		return "", errors.New("ReadInstalledServiceByNameError")
