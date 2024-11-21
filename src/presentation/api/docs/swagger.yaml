@@ -306,7 +306,7 @@ definitions:
     type: object
   dto.ReadInstallableServicesItemsResponse:
     properties:
-      items:
+      installableServices:
         items:
           $ref: '#/definitions/entity.InstallableService'
         type: array
@@ -315,7 +315,11 @@ definitions:
     type: object
   dto.ReadInstalledServicesItemsResponse:
     properties:
-      items:
+      installedServices:
+        items:
+          $ref: '#/definitions/entity.InstalledService'
+        type: array
+      installedServicesWithMetrics:
         items:
           $ref: '#/definitions/dto.InstalledServiceWithMetrics'
         type: array
@@ -324,7 +328,7 @@ definitions:
     type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
-      items:
+      marketplaceCatalogItems:
         items:
           $ref: '#/definitions/entity.MarketplaceCatalogItem'
         type: array
@@ -333,7 +337,7 @@ definitions:
     type: object
   dto.ReadMarketplaceInstalledItemsResponse:
     properties:
-      items:
+      marketplaceInstalledItems:
         items:
           $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
@@ -577,6 +581,71 @@ definitions:
         items:
           type: string
         type: array
+      workingDirectory:
+        type: string
+    type: object
+  entity.InstalledService:
+    properties:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      createdAt:
+        type: integer
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
+      maxStartRetries:
+        type: integer
+      name:
+        type: string
+      nature:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
+      startCmd:
+        type: string
+      startupFile:
+        type: string
+      status:
+        type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: integer
+      version:
+        type: string
       workingDirectory:
         type: string
     type: object

@@ -2572,7 +2572,7 @@ const docTemplate = `{
         "dto.ReadInstallableServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installableServices": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.InstallableService"
@@ -2586,7 +2586,13 @@ const docTemplate = `{
         "dto.ReadInstalledServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installedServices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.InstalledService"
+                    }
+                },
+                "installedServicesWithMetrics": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
@@ -2600,7 +2606,7 @@ const docTemplate = `{
         "dto.ReadMarketplaceCatalogItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceCatalogItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceCatalogItem"
@@ -2614,7 +2620,7 @@ const docTemplate = `{
         "dto.ReadMarketplaceInstalledItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceInstalledItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceInstalledItem"
@@ -2986,6 +2992,104 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.InstalledService": {
+            "type": "object",
+            "properties": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 },
                 "workingDirectory": {
                     "type": "string"
