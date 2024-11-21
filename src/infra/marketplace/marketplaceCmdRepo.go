@@ -718,7 +718,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	installedServiceItemModel := dbModel.MarketplaceInstalledItem{
-		ID: uint(deleteDto.InstalledId.Uint16()),
+		ID: deleteDto.InstalledId.Uint16(),
 	}
 	err = repo.persistentDbSvc.Handler.Delete(&installedServiceItemModel).Error
 	if err != nil {
