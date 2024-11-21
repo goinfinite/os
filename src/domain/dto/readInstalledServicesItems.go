@@ -13,15 +13,15 @@ type ReadInstalledServicesItemsRequest struct {
 	ShouldIncludeMetrics *bool                      `json:"shouldIncludeMetrics,omitempty"`
 }
 
-type ReadInstalledServicesItemsResponse struct {
-	Pagination                   Pagination                    `json:"pagination"`
-	InstalledServices            []entity.InstalledService     `json:"installedServices"`
-	InstalledServicesWithMetrics []InstalledServiceWithMetrics `json:"installedServicesWithMetrics"`
-}
-
 type ReadFirstInstalledServiceItemsRequest struct {
 	Pagination    Pagination                 `json:"pagination"`
 	ServiceName   *valueObject.ServiceName   `json:"serviceName,omitempty"`
 	ServiceNature *valueObject.ServiceNature `json:"serviceNature,omitempty"`
 	ServiceType   *valueObject.ServiceType   `json:"serviceType,omitempty"`
+}
+
+type ReadInstalledServicesItemsResponse struct {
+	Pagination                   Pagination                    `json:"pagination"`
+	InstalledServices            []entity.InstalledService     `json:"installedServices"`
+	InstalledServicesWithMetrics []InstalledServiceWithMetrics `json:"installedServicesWithMetrics"`
 }
