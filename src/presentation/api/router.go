@@ -112,6 +112,8 @@ func (router Router) marketplaceRoutes() {
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
 	marketplaceCatalogGroup.GET("/", marketplaceController.ReadCatalog)
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
+
+	go marketplaceController.AutoRefreshMarketplaceCatalogItems()
 }
 
 func (router Router) o11yRoutes() {
@@ -146,12 +148,14 @@ func (router Router) servicesRoutes() {
 		router.persistentDbSvc,
 	)
 
-	servicesGroup.GET("/", servicesController.Read)
-	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
+	servicesGroup.GET("/", servicesController.ReadInstalledItems)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallablesItems)
 	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
 	servicesGroup.POST("/custom/", servicesController.CreateCustom)
 	servicesGroup.PUT("/", servicesController.Update)
 	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
+
+	go servicesController.AutoRefreshServiceInstallableItems()
 }
 
 func (router Router) sslRoutes() {

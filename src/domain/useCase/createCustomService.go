@@ -63,7 +63,10 @@ func CreateCustomService(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	createDto dto.CreateCustomService,
 ) error {
-	_, err := servicesQueryRepo.ReadByName(createDto.Name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &createDto.Name,
+	}
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(readFirstInstalledRequestDto)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}

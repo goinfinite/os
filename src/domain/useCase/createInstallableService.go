@@ -16,7 +16,10 @@ func CreateInstallableService(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.ReadByName(createDto.Name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &createDto.Name,
+	}
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(readFirstInstalledRequestDto)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -27,7 +30,10 @@ func CreateInstallableService(
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
-	serviceEntity, err := servicesQueryRepo.ReadByName(installedServiceName)
+	readFirstInstalledRequestDto.ServiceName = &installedServiceName
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		slog.Error("GetServiceByNameError", slog.Any("error", err))
 		return errors.New("GetServiceByNameInfraError")

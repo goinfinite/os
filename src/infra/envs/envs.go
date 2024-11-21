@@ -1,10 +1,14 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion            string = "0.1.2"
-	InfiniteOsBinary             string = "/infinite/os"
-	PersistentDatabaseFilePath   string = "/infinite/os.db"
-	TrailDatabaseFilePath        string = "/infinite/trail.db"
+	InfiniteOsVersion            string = "0.1.4"
+	InfiniteOsMainDir            string = "/infinite"
+	InfiniteOsBinary             string = InfiniteOsMainDir + "/os"
+	InfiniteOsEnvFilePath        string = InfiniteOsMainDir + "/.env"
+	PersistentDatabaseFilePath   string = InfiniteOsMainDir + "/os.db"
+	TrailDatabaseFilePath        string = InfiniteOsMainDir + "/trail.db"
+	MarketplaceCatalogItemsDir   string = InfiniteOsMainDir + "/marketplace"
+	ServiceInstalledItemsDir     string = InfiniteOsMainDir + "/services"
 	PrimaryPublicDir             string = "/app/html"
 	VirtualHostsConfDir          string = "/app/conf/nginx"
 	PrimaryVhostFileName         string = "primary.conf"

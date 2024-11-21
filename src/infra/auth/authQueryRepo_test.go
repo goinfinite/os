@@ -15,12 +15,19 @@ func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 	authQueryRepo := AuthQueryRepo{}
 	accountCmdRepo := accountInfra.NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+
+	accountId, _ := valueObject.NewAccountId(1001)
+	username, _ := valueObject.NewUsername("authDummyUser")
+	password, _ := valueObject.NewPassword("q1w2e3r4t5y6")
 	localIpAddress := valueObject.NewLocalhostIpAddress()
+	createDto := dto.NewCreateAccount(username, password, accountId, localIpAddress)
+
+	_, err := accountCmdRepo.Create(createDto)
+	if err != nil {
+		t.Fatal("FailedToCreateDummyAccount")
+	}
 
 	t.Run("ValidLoginCredentials", func(t *testing.T) {
-		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
-		password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
-
 		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)
 		isValid := authQueryRepo.IsLoginValid(createDto)
 		if !isValid {
@@ -29,7 +36,6 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("InvalidLoginCredentials", func(t *testing.T) {
-		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 		password, _ := valueObject.NewPassword("wrongPassword")
 
 		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)

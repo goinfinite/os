@@ -4,9 +4,12 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -14,6 +17,7 @@ import (
 
 type ServicesController struct {
 	servicesService *service.ServicesService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
 func NewServicesController(
@@ -21,38 +25,69 @@ func NewServicesController(
 ) *ServicesController {
 	return &ServicesController{
 		servicesService: service.NewServicesService(persistentDbService),
+		persistentDbSvc: persistentDbService,
 	}
 }
 
-// ReadServices	 godoc
-// @Summary      ReadServices
+// ReadInstalledItems	 godoc
+// @Summary      ReadInstalledItems
 // @Description  List installed services and their status.
 // @Tags         services
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} dto.InstalledServiceWithMetrics
+// @Param        id query  uint  false  "Id"
+// @Param        name query  string  false  "Name"
+// @Param        nature query  string  false  "Nature"
+// @Param        type query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
-func (controller *ServicesController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.servicesService.Read())
+func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.servicesService.ReadInstalledItems(requestBody),
+	)
 }
 
-// ReadInstallableServices	 godoc
-// @Summary      ReadInstallableServices
+// ReadInstallableItems	 godoc
+// @Summary      ReadInstallableItems
 // @Description  List installable services.
 // @Tags         services
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.InstallableService
+// @Param        id query  uint  false  "Id"
+// @Param        name query  string  false  "Name"
+// @Param        nature query  string  false  "Nature"
+// @Param        type query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
-func (controller *ServicesController) ReadInstallables(c echo.Context) error {
+func (controller *ServicesController) ReadInstallablesItems(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstallables(),
+		c, controller.servicesService.ReadInstallableItems(requestBody),
 	)
 }
 
-func parseRawEnvs(envs interface{}) ([]string, error) {
+func (controller *ServicesController) parseRawEnvs(envs interface{}) ([]string, error) {
 	rawEnvs := []string{}
 	rawEnvsSlice, assertOk := envs.([]interface{})
 	if !assertOk {
@@ -75,7 +110,9 @@ func parseRawEnvs(envs interface{}) ([]string, error) {
 	return rawEnvs, nil
 }
 
-func parseRawPortBindings(bindings interface{}) ([]string, error) {
+func (controller *ServicesController) parseRawPortBindings(
+	bindings interface{},
+) ([]string, error) {
 	rawPortBindings := []string{}
 	rawPortBindingsSlice, assertOk := bindings.([]interface{})
 	if !assertOk {
@@ -140,7 +177,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -149,7 +186,9 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err = controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -179,7 +218,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	rawEnvs := []string{}
 	if requestBody["envs"] != nil {
-		rawEnvs, err = parseRawEnvs(requestBody["envs"])
+		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -188,7 +227,9 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 
 	rawPortBindings := []string{}
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err = parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err = controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
@@ -217,7 +258,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	}
 
 	if requestBody["envs"] != nil {
-		rawEnvs, err := parseRawEnvs(requestBody["envs"])
+		rawEnvs, err := controller.parseRawEnvs(requestBody["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -225,7 +266,9 @@ func (controller *ServicesController) Update(c echo.Context) error {
 	}
 
 	if requestBody["portBindings"] != nil {
-		rawPortBindings, err := parseRawPortBindings(requestBody["portBindings"])
+		rawPortBindings, err := controller.parseRawPortBindings(
+			requestBody["portBindings"],
+		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
@@ -255,4 +298,19 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.Delete(requestBody),
 	)
+}
+
+func (controller *ServicesController) AutoRefreshServiceInstallableItems() {
+	refreshIntervalHours := 24 / useCase.RefreshServiceInstallableItemsAmountPerDay
+
+	taskInterval := time.Duration(refreshIntervalHours) * time.Hour
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(
+		controller.persistentDbSvc,
+	)
+	for range timer.C {
+		useCase.RefreshServiceInstallableItems(servicesCmdRepo)
+	}
 }

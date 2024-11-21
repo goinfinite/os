@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func StringDotNotationToHierarchicalMap(
+func stringDotNotationToHierarchicalMap(
 	hierarchicalMap map[string]interface{}, remainingKeys []string, finalValue string,
 ) map[string]interface{} {
 	if len(remainingKeys) == 1 {
@@ -22,7 +22,7 @@ func StringDotNotationToHierarchicalMap(
 		hierarchicalMap[parentKey] = make(map[string]interface{})
 	}
 
-	hierarchicalMap[parentKey] = StringDotNotationToHierarchicalMap(
+	hierarchicalMap[parentKey] = stringDotNotationToHierarchicalMap(
 		hierarchicalMap[parentKey].(map[string]interface{}), nextKeys, finalValue,
 	)
 
@@ -67,7 +67,7 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 				continue
 			}
 
-			requestBody = StringDotNotationToHierarchicalMap(requestBody, keyParts, keyValue)
+			requestBody = stringDotNotationToHierarchicalMap(requestBody, keyParts, keyValue)
 		}
 	case strings.HasPrefix(contentType, "multipart/form-data"):
 		multipartForm, err := c.MultipartForm()
@@ -94,8 +94,8 @@ func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "InvalidContentType")
 	}
 
-	if len(requestBody) == 0 {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, "EmptyRequestBody")
+	for paramName, paramValues := range c.QueryParams() {
+		requestBody[paramName] = paramValues[0]
 	}
 
 	requestBody["operatorAccountId"] = c.Get("accountId")

@@ -304,6 +304,46 @@ definitions:
       sortDirection:
         type: string
     type: object
+  dto.ReadInstallableServicesItemsResponse:
+    properties:
+      installableServices:
+        items:
+          $ref: '#/definitions/entity.InstallableService'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadInstalledServicesItemsResponse:
+    properties:
+      installedServices:
+        items:
+          $ref: '#/definitions/entity.InstalledService'
+        type: array
+      installedServicesWithMetrics:
+        items:
+          $ref: '#/definitions/dto.InstalledServiceWithMetrics'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadMarketplaceCatalogItemsResponse:
+    properties:
+      marketplaceCatalogItems:
+        items:
+          $ref: '#/definitions/entity.MarketplaceCatalogItem'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadMarketplaceInstalledItemsResponse:
+    properties:
+      marketplaceInstalledItems:
+        items:
+          $ref: '#/definitions/entity.MarketplaceInstalledItem'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
@@ -521,6 +561,8 @@ definitions:
         type: string
       logOutputPath:
         type: string
+      manifestVersion:
+        type: string
       name:
         type: string
       nature:
@@ -539,6 +581,71 @@ definitions:
         items:
           type: string
         type: array
+      workingDirectory:
+        type: string
+    type: object
+  entity.InstalledService:
+    properties:
+      autoRestart:
+        type: boolean
+      autoStart:
+        type: boolean
+      createdAt:
+        type: integer
+      envs:
+        items:
+          type: string
+        type: array
+      execUser:
+        type: string
+      logErrorPath:
+        type: string
+      logOutputPath:
+        type: string
+      maxStartRetries:
+        type: integer
+      name:
+        type: string
+      nature:
+        type: string
+      portBindings:
+        items:
+          $ref: '#/definitions/valueObject.PortBinding'
+        type: array
+      postStartCmdSteps:
+        items:
+          type: string
+        type: array
+      postStopCmdSteps:
+        items:
+          type: string
+        type: array
+      preStartCmdSteps:
+        items:
+          type: string
+        type: array
+      preStopCmdSteps:
+        items:
+          type: string
+        type: array
+      startCmd:
+        type: string
+      startupFile:
+        type: string
+      status:
+        type: string
+      stopCmdSteps:
+        items:
+          type: string
+        type: array
+      timeoutStartSecs:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: integer
+      version:
+        type: string
       workingDirectory:
         type: string
     type: object
@@ -571,6 +678,8 @@ definitions:
         type: integer
       id:
         type: integer
+      manifestVersion:
+        type: string
       mappings:
         items:
           $ref: '#/definitions/valueObject.MarketplaceItemMapping'
@@ -893,7 +1002,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.1.2
+  version: 0.1.4
 paths:
   /v1/account/:
     get:
@@ -1462,15 +1571,50 @@ paths:
       consumes:
       - application/json
       description: List marketplace catalog items.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Slug
+        in: query
+        name: slug
+        type: string
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.MarketplaceCatalogItem'
-            type: array
+            $ref: '#/definitions/dto.ReadMarketplaceCatalogItemsResponse'
       security:
       - Bearer: []
       summary: ReadCatalog
@@ -1502,15 +1646,50 @@ paths:
       consumes:
       - application/json
       description: List marketplace installed items.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Hostname
+        in: query
+        name: hostname
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: InstallUuid
+        in: query
+        name: installationUuid
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.MarketplaceInstalledItem'
-            type: array
+            $ref: '#/definitions/dto.ReadMarketplaceInstalledItemsResponse'
       security:
       - Bearer: []
       summary: ReadInstalledItems
@@ -1717,18 +1896,53 @@ paths:
       consumes:
       - application/json
       description: List installed services and their status.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.InstalledServiceWithMetrics'
-            type: array
+            $ref: '#/definitions/dto.ReadInstalledServicesItemsResponse'
       security:
       - Bearer: []
-      summary: ReadServices
+      summary: ReadInstalledItems
       tags:
       - services
     put:
@@ -1810,18 +2024,53 @@ paths:
       consumes:
       - application/json
       description: List installable services.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.InstallableService'
-            type: array
+            $ref: '#/definitions/dto.ReadInstallableServicesItemsResponse'
       security:
       - Bearer: []
-      summary: ReadInstallableServices
+      summary: ReadInstallableItems
       tags:
       - services
     post:
