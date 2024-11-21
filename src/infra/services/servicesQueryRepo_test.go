@@ -33,14 +33,14 @@ func TestServicesQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadOneInstallableItem", func(t *testing.T) {
+	t.Run("ReadFirstInstallableItem", func(t *testing.T) {
 		name, _ := valueObject.NewServiceName("node")
 
 		readInstallableItemsRequestDto := dto.ReadInstallableServicesItemsRequest{
 			ServiceName: &name,
 		}
 
-		_, err := servicesQueryRepo.ReadOneInstallableItem(
+		_, err := servicesQueryRepo.ReadFirstInstallableItem(
 			readInstallableItemsRequestDto,
 		)
 		if err != nil {
@@ -67,14 +67,14 @@ func TestServicesQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadOneInstalledItem", func(t *testing.T) {
+	t.Run("ReadFirstInstalledItem", func(t *testing.T) {
 		name, _ := valueObject.NewServiceName("node")
 
 		readInstalledItemsRequestDto := dto.ReadInstalledServicesItemsRequest{
 			ServiceName: &name,
 		}
 
-		_, err := servicesQueryRepo.ReadOneInstalledItem(
+		_, err := servicesQueryRepo.ReadFirstInstalledItem(
 			readInstalledItemsRequestDto,
 		)
 		if err != nil {

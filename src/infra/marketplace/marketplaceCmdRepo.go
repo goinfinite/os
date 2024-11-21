@@ -61,7 +61,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 			ServiceName:          &serviceWithVersion.Name,
 			ShouldIncludeMetrics: &shouldIncludeMetrics,
 		}
-		_, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledServiceDto)
+		_, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledServiceDto)
 		if err != nil && err.Error() != "ServiceInstalledItemNotFound" {
 			return err
 		}
@@ -365,7 +365,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		MarketplaceCatalogItemSlug: installDto.Slug,
 	}
 
-	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
 		readCatalogItemRequestDto,
 	)
 	if err != nil {
@@ -674,7 +674,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
 		MarketplaceInstalledItemId: &deleteDto.InstalledId,
 	}
-	installedItem, err := repo.marketplaceQueryRepo.ReadOneInstalledItem(
+	installedItem, err := repo.marketplaceQueryRepo.ReadFirstInstalledItem(
 		readInstalledItemDto,
 	)
 	if err != nil {
@@ -696,7 +696,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
 		MarketplaceCatalogItemSlug: &installedItem.Slug,
 	}
-	catalogItem, err := repo.marketplaceQueryRepo.ReadOneCatalogItem(
+	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
 		readCatalogItemDto,
 	)
 	if err != nil {

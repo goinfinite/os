@@ -21,7 +21,7 @@ func CreateInstallableService(
 		ServiceName:          &createDto.Name,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	_, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledDto)
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -33,7 +33,7 @@ func CreateInstallableService(
 	}
 
 	readInstalledDto.ServiceName = &installedServiceName
-	serviceEntity, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledDto)
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
 	if err != nil {
 		slog.Error("GetServiceByNameError", slog.Any("error", err))
 		return errors.New("GetServiceByNameInfraError")

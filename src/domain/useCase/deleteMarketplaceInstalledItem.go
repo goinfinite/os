@@ -16,7 +16,7 @@ func DeleteMarketplaceInstalledItem(
 	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
 		MarketplaceInstalledItemId: &deleteDto.InstalledId,
 	}
-	_, err := marketplaceQueryRepo.ReadOneInstalledItem(readInstalledItemDto)
+	_, err := marketplaceQueryRepo.ReadFirstInstalledItem(readInstalledItemDto)
 	if err != nil {
 		return errors.New("MarketplaceInstalledItemNotFound")
 	}

@@ -76,7 +76,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		ServiceName:          &serviceName,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	installedService, err := servicesQueryRepo.ReadOneInstalledItem(
+	installedService, err := servicesQueryRepo.ReadFirstInstalledItem(
 		readInstalledServiceDto,
 	)
 	if err != nil {

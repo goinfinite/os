@@ -42,14 +42,14 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadOneCatalogItem", func(t *testing.T) {
+	t.Run("ReadFirstCatalogItem", func(t *testing.T) {
 		itemType, _ := valueObject.NewMarketplaceItemType("app")
 
 		readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
 			MarketplaceCatalogItemType: &itemType,
 		}
 
-		_, err := marketplaceQueryRepo.ReadOneCatalogItem(
+		_, err := marketplaceQueryRepo.ReadFirstCatalogItem(
 			readCatalogItemRequestDto,
 		)
 		if err != nil {
@@ -85,14 +85,14 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadOneInstalledItem", func(t *testing.T) {
+	t.Run("ReadFirstInstalledItem", func(t *testing.T) {
 		itemType, _ := valueObject.NewMarketplaceItemType("app")
 
 		readInstalledItemRequestDto := dto.ReadMarketplaceInstalledItemsRequest{
 			MarketplaceInstalledItemType: &itemType,
 		}
 
-		_, err := marketplaceQueryRepo.ReadOneInstalledItem(
+		_, err := marketplaceQueryRepo.ReadFirstInstalledItem(
 			readInstalledItemRequestDto,
 		)
 		if err != nil {

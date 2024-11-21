@@ -20,7 +20,7 @@ func DeleteService(
 		ServiceName:          &svcName,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	serviceEntity, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledDto)
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
 	if err != nil {
 		return err
 	}

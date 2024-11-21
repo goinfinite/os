@@ -297,7 +297,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadOneInstalledItem(
+func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	requestDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItem entity.InstalledService, err error) {
 	requestDto.Pagination = dto.Pagination{
@@ -756,7 +756,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	}, nil
 }
 
-func (repo *ServicesQueryRepo) ReadOneInstallableItem(
+func (repo *ServicesQueryRepo) ReadFirstInstallableItem(
 	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
 	requestDto.Pagination = dto.Pagination{

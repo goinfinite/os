@@ -68,7 +68,7 @@ func CreateCustomService(
 		ServiceName:          &createDto.Name,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
-	_, err := servicesQueryRepo.ReadOneInstalledItem(readInstalledDto)
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(readInstalledDto)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}

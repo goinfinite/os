@@ -29,7 +29,7 @@ func (inspector *ServiceAvailabilityInspector) IsAvailable(
 		ServiceName:          &serviceName,
 		ShouldIncludeMetrics: &shouldIncludeServiceMetrics,
 	}
-	availableService, err := inspector.servicesQueryRepo.ReadOneInstalledItem(
+	availableService, err := inspector.servicesQueryRepo.ReadFirstInstalledItem(
 		readInstalledDto,
 	)
 	if err != nil {

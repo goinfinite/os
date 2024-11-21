@@ -65,7 +65,7 @@ func MarketplaceCatalogItemLookup(
 		MarketplaceCatalogItemId:   itemId,
 		MarketplaceCatalogItemSlug: itemSlug,
 	}
-	return marketplaceQueryRepo.ReadOneCatalogItem(readCatalogItemRequestDto)
+	return marketplaceQueryRepo.ReadFirstCatalogItem(readCatalogItemRequestDto)
 }
 
 func InstallMarketplaceCatalogItem(
