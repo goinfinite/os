@@ -67,7 +67,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 
 	serviceName, err := valueObject.NewServiceName(svcNameStr)
 	if err != nil {
-		return "", errors.New(err.Error() + ": " + svcNameStr)
+		return svcMappingConfig, errors.New(err.Error() + ": " + svcNameStr)
 	}
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
@@ -78,7 +78,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		readFirstInstalledServiceRequestDto,
 	)
 	if err != nil {
-		return "", err
+		return svcMappingConfig, err
 	}
 
 	protocolPortsMap := map[string]string{}
