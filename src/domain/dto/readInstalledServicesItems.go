@@ -14,6 +14,7 @@ type ReadInstalledServicesItemsRequest struct {
 }
 
 type ReadInstalledServicesItemsResponse struct {
-	Pagination        Pagination                `json:"pagination"`
-	InstalledServices []entity.InstalledService `json:"installedServices"`
+	Pagination                   Pagination                    `json:"pagination"`
+	InstalledServices            []entity.InstalledService     `json:"installedServices"`
+	InstalledServicesWithMetrics []InstalledServiceWithMetrics `json:"installedServicesWithMetrics"`
 }
