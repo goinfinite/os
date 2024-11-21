@@ -124,9 +124,7 @@ func (InstalledService) SplitEnvs(envsStr string) []valueObject.ServiceEnv {
 	return envs
 }
 
-func (InstalledService) JoinPortBindings(
-	portBindings []valueObject.PortBinding,
-) string {
+func (InstalledService) JoinPortBindings(portBindings []valueObject.PortBinding) string {
 	portBindingsStr := ""
 	for _, portBinding := range portBindings {
 		portBindingsStr += portBinding.String() + ";"
@@ -134,9 +132,7 @@ func (InstalledService) JoinPortBindings(
 	return strings.TrimSuffix(portBindingsStr, ";")
 }
 
-func (InstalledService) SplitPortBindings(
-	portBindingsStr string,
-) []valueObject.PortBinding {
+func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.PortBinding {
 	rawPortBindingsList := strings.Split(portBindingsStr, ";")
 	var portBindings []valueObject.PortBinding
 	for portIndex, rawPortBinding := range rawPortBindingsList {
@@ -224,9 +220,7 @@ func NewInstalledService(
 	}
 }
 
-func (model InstalledService) ToEntity() (
-	serviceEntity entity.InstalledService, err error,
-) {
+func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService, err error) {
 	name, err := valueObject.NewServiceName(model.Name)
 	if err != nil {
 		return serviceEntity, err
@@ -356,10 +350,10 @@ func (model InstalledService) ToEntity() (
 
 	return entity.NewInstalledService(
 		name, nature, serviceType, version, startCmd, status, envs, portBindings,
-		stopCmdSteps, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
-		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr, autoStart,
-		autoRestart, timeoutStartSecs, maxStartRetries, logOutputPathPtr,
-		logErrorPathPtr, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		stopCmdSteps, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps, postStopCmdSteps,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, autoStart, autoRestart,
+		timeoutStartSecs, maxStartRetries, logOutputPathPtr, logErrorPathPtr,
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }
