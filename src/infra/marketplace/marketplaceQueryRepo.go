@@ -589,23 +589,20 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			continue
 		}
 
-		itemSlug := requestDto.MarketplaceCatalogItemSlug
-		if itemSlug != nil {
-			if !slices.Contains(catalogItem.Slugs, *itemSlug) {
+		if requestDto.MarketplaceCatalogItemSlug != nil {
+			if !slices.Contains(catalogItem.Slugs, *requestDto.MarketplaceCatalogItemSlug) {
 				continue
 			}
 		}
 
-		itemName := requestDto.MarketplaceCatalogItemName
-		if itemName != nil {
-			if !strings.EqualFold(catalogItem.Name.String(), itemName.String()) {
+		if requestDto.MarketplaceCatalogItemName != nil {
+			if catalogItem.Name != *requestDto.MarketplaceCatalogItemName {
 				continue
 			}
 		}
 
-		itemType := requestDto.MarketplaceCatalogItemType
-		if itemType != nil {
-			if !strings.EqualFold(catalogItem.Type.String(), itemType.String()) {
+		if requestDto.MarketplaceCatalogItemType != nil {
+			if catalogItem.Type != *requestDto.MarketplaceCatalogItemType {
 				continue
 			}
 		}

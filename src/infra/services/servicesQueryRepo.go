@@ -678,28 +678,19 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	filteredInstallableServices := []entity.InstallableService{}
 	for _, installableService := range installableServices {
 		if requestDto.ServiceName != nil {
-			isNameEqual := strings.EqualFold(
-				installableService.Name.String(), requestDto.ServiceName.String(),
-			)
-			if !isNameEqual {
+			if installableService.Name != *requestDto.ServiceName {
 				continue
 			}
 		}
 
 		if requestDto.ServiceNature != nil {
-			isNatureEqual := strings.EqualFold(
-				installableService.Nature.String(), requestDto.ServiceNature.String(),
-			)
-			if !isNatureEqual {
+			if installableService.Nature != *requestDto.ServiceNature {
 				continue
 			}
 		}
 
 		if requestDto.ServiceType != nil && installableService.Type != *requestDto.ServiceType {
-			isTypeEqual := strings.EqualFold(
-				installableService.Type.String(), requestDto.ServiceType.String(),
-			)
-			if !isTypeEqual {
+			if installableService.Type != *requestDto.ServiceType {
 				continue
 			}
 		}
