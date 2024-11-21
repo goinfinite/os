@@ -78,7 +78,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 		readFirstInstalledServiceRequestDto,
 	)
 	if err != nil {
-		return "", errors.New("ReadInstalledServiceByNameError")
+		return "", err
 	}
 
 	protocolPortsMap := map[string]string{}
