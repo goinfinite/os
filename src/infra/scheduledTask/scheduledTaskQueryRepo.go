@@ -38,7 +38,9 @@ func (repo *ScheduledTaskQueryRepo) Read(
 		scheduledTaskModel.Status = readDto.TaskStatus.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.Where(&scheduledTaskModel)
+	dbQuery := repo.persistentDbSvc.Handler.
+		Model(&scheduledTaskModel).
+		Where(&scheduledTaskModel)
 	if len(readDto.TaskTags) == 0 {
 		dbQuery = dbQuery.Preload("Tags")
 	} else {
