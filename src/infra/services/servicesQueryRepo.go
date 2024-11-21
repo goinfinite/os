@@ -249,14 +249,13 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		}
 
 		if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
-			entityMetrics, err := repo.readServiceMetrics(entity.Name)
+			_, err = repo.readServiceMetrics(entity.Name)
 			if err != nil {
 				slog.Debug(
 					"FailedToReadInstalledServiceMetrics",
 					slog.String("name", resultModel.Name), slog.Any("error", err),
 				)
 			}
-			entity.Metrics = &entityMetrics
 		}
 
 		entities = append(entities, entity)

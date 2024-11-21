@@ -355,7 +355,7 @@ func (model InstalledService) ToEntity() (
 	}
 
 	return entity.NewInstalledService(
-		name, nature, serviceType, version, startCmd, status, envs, portBindings, nil,
+		name, nature, serviceType, version, startCmd, status, envs, portBindings,
 		stopCmdSteps, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
 		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr, autoStart,
 		autoRestart, timeoutStartSecs, maxStartRetries, logOutputPathPtr,

@@ -3,31 +3,30 @@ package entity
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type InstalledService struct {
-	Name              valueObject.ServiceName     `json:"name"`
-	Nature            valueObject.ServiceNature   `json:"nature"`
-	Type              valueObject.ServiceType     `json:"type"`
-	Version           valueObject.ServiceVersion  `json:"version"`
-	Status            valueObject.ServiceStatus   `json:"status"`
-	StartCmd          valueObject.UnixCommand     `json:"startCmd"`
-	Envs              []valueObject.ServiceEnv    `json:"envs"`
-	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
-	Metrics           *valueObject.ServiceMetrics `json:"metrics"`
-	StopCmdSteps      []valueObject.UnixCommand   `json:"stopCmdSteps"`
-	PreStartCmdSteps  []valueObject.UnixCommand   `json:"preStartCmdSteps"`
-	PostStartCmdSteps []valueObject.UnixCommand   `json:"postStartCmdSteps"`
-	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
-	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
-	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
-	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
-	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
-	AutoStart         *bool                       `json:"autoStart"`
-	AutoRestart       *bool                       `json:"autoRestart"`
-	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
-	MaxStartRetries   *uint                       `json:"maxStartRetries"`
-	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
-	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
-	CreatedAt         valueObject.UnixTime        `json:"createdAt"`
-	UpdatedAt         valueObject.UnixTime        `json:"updatedAt"`
+	Name              valueObject.ServiceName    `json:"name"`
+	Nature            valueObject.ServiceNature  `json:"nature"`
+	Type              valueObject.ServiceType    `json:"type"`
+	Version           valueObject.ServiceVersion `json:"version"`
+	Status            valueObject.ServiceStatus  `json:"status"`
+	StartCmd          valueObject.UnixCommand    `json:"startCmd"`
+	Envs              []valueObject.ServiceEnv   `json:"envs"`
+	PortBindings      []valueObject.PortBinding  `json:"portBindings"`
+	StopCmdSteps      []valueObject.UnixCommand  `json:"stopCmdSteps"`
+	PreStartCmdSteps  []valueObject.UnixCommand  `json:"preStartCmdSteps"`
+	PostStartCmdSteps []valueObject.UnixCommand  `json:"postStartCmdSteps"`
+	PreStopCmdSteps   []valueObject.UnixCommand  `json:"preStopCmdSteps"`
+	PostStopCmdSteps  []valueObject.UnixCommand  `json:"postStopCmdSteps"`
+	ExecUser          *valueObject.UnixUsername  `json:"execUser"`
+	WorkingDirectory  *valueObject.UnixFilePath  `json:"workingDirectory"`
+	StartupFile       *valueObject.UnixFilePath  `json:"startupFile"`
+	AutoStart         *bool                      `json:"autoStart"`
+	AutoRestart       *bool                      `json:"autoRestart"`
+	TimeoutStartSecs  *uint                      `json:"timeoutStartSecs"`
+	MaxStartRetries   *uint                      `json:"maxStartRetries"`
+	LogOutputPath     *valueObject.UnixFilePath  `json:"logOutputPath"`
+	LogErrorPath      *valueObject.UnixFilePath  `json:"logErrorPath"`
+	CreatedAt         valueObject.UnixTime       `json:"createdAt"`
+	UpdatedAt         valueObject.UnixTime       `json:"updatedAt"`
 }
 
 func NewInstalledService(
@@ -39,7 +38,6 @@ func NewInstalledService(
 	status valueObject.ServiceStatus,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	metrics *valueObject.ServiceMetrics,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile *valueObject.UnixFilePath,
@@ -58,7 +56,6 @@ func NewInstalledService(
 		Status:            status,
 		Envs:              envs,
 		PortBindings:      portBindings,
-		Metrics:           metrics,
 		StopCmdSteps:      stopSteps,
 		PreStartCmdSteps:  preStartSteps,
 		PostStartCmdSteps: postStartSteps,
