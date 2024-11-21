@@ -751,7 +751,10 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 			filteredInstallableServices, installableService,
 		)
 	}
-	filteredInstallableServices = filteredInstallableServices[:requestDto.Pagination.ItemsPerPage]
+
+	if len(filteredInstallableServices) > int(requestDto.Pagination.ItemsPerPage) {
+		filteredInstallableServices = filteredInstallableServices[:requestDto.Pagination.ItemsPerPage]
+	}
 
 	sortDirectionStr := "asc"
 	if requestDto.Pagination.SortDirection != nil {
