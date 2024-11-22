@@ -109,12 +109,12 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.DestinationPath != nil {
-			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
+		if updateUnixFiles.EncodedContent != nil {
+			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddMoveFailureError", slog.Any("err", err))
+					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -124,12 +124,12 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
+		if updateUnixFiles.DestinationPath != nil {
+			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
+					slog.Error("AddMoveFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
