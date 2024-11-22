@@ -548,10 +548,10 @@ func (controller *FilesController) Upload(c echo.Context) error {
 // @Description  Download a file.
 // @Tags         files
 // @Accept       json
-// @Produce      json
+// @Produce      octet-stream
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
-// @Success      200 {file} binary
+// @Success      200 {file} file
 // @Router       /v1/files/download/ [get]
 func (controller *FilesController) Download(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
