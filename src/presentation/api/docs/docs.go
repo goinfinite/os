@@ -587,7 +587,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Download a file.",
+                "description": "List dir/files.",
                 "consumes": [
                     "application/json"
                 ],
@@ -597,7 +597,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "DownloadFile",
+                "summary": "ReadFiles",
                 "parameters": [
                     {
                         "type": "string",
@@ -611,7 +611,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "file"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.UnixFile"
+                            }
                         }
                     }
                 }
@@ -818,6 +821,43 @@ const docTemplate = `{
                         "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files/download/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download a file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DownloadFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
                         }
                     }
                 }

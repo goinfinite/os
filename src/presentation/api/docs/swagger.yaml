@@ -1359,7 +1359,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Download a file.
+      description: List dir/files.
       parameters:
       - description: SourcePath
         in: query
@@ -1372,10 +1372,12 @@ paths:
         "200":
           description: OK
           schema:
-            type: file
+            items:
+              $ref: '#/definitions/entity.UnixFile'
+            type: array
       security:
       - Bearer: []
-      summary: DownloadFile
+      summary: ReadFiles
       tags:
       - files
     post:
@@ -1506,6 +1508,29 @@ paths:
       security:
       - Bearer: []
       summary: DeleteFiles
+      tags:
+      - files
+  /v1/files/download/:
+    get:
+      consumes:
+      - application/json
+      description: Download a file.
+      parameters:
+      - description: SourcePath
+        in: query
+        name: sourcePath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - Bearer: []
+      summary: DownloadFile
       tags:
       - files
   /v1/files/extract/:
