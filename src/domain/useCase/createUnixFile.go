@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -15,15 +15,9 @@ func CreateUnixFile(
 ) error {
 	err := filesCmdRepo.Create(createUnixFile)
 	if err != nil {
-		log.Printf("CreateUnixFileInfraError: %s", err.Error())
+		slog.Error("CreateUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CreateUnixFileInfraError")
 	}
-
-	log.Printf(
-		"File '%s' created in '%s'.",
-		createUnixFile.FilePath.GetFileName().String(),
-		createUnixFile.FilePath.GetFileDir().String(),
-	)
 
 	return nil
 }
