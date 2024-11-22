@@ -132,7 +132,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 func (repo FilesQueryRepo) Read(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
-	log.Print("aaaa")
 	unixFileList := []entity.UnixFile{}
 
 	sourcePathStr := unixFilePath.String()
