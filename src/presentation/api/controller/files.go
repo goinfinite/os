@@ -552,7 +552,7 @@ func (controller *FilesController) Upload(c echo.Context) error {
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
 // @Success      200 {file} binary
-// @Router       /v1/files/ [get]
+// @Router       /v1/files/download/ [get]
 func (controller *FilesController) Download(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
