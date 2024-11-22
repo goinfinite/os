@@ -96,8 +96,9 @@ func (controller *AccountController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller *AccountController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"accountId": c.Param("accountId"),
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
