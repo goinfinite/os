@@ -38,7 +38,7 @@ func (controller *FilesController) Read(c echo.Context) error {
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
@@ -71,14 +71,14 @@ func (controller *FilesController) Create(c echo.Context) error {
 
 	filePath, err := valueObject.NewUnixFilePath(requestBody["filePath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	fileType, _ := valueObject.NewMimeType("generic")
 	if requestBody["mimeType"] != nil {
 		fileType, err = valueObject.NewMimeType(requestBody["mimeType"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
 
@@ -95,7 +95,7 @@ func (controller *FilesController) Create(c echo.Context) error {
 			requestBody["permissions"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
 
@@ -163,7 +163,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 
 	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	var destinationPathPtr *valueObject.UnixFilePath
@@ -172,7 +172,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 			requestBody["destinationPath"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		destinationPathPtr = &destinationPath
 	}
@@ -183,7 +183,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 			requestBody["permissions"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		permissionsPtr = &permissions
 	}
@@ -194,7 +194,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 			requestBody["encodedContent"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		encodedContentPtr = &encodedContent
 	}
@@ -243,12 +243,12 @@ func (controller *FilesController) Copy(c echo.Context) error {
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	shouldOverwrite := false
@@ -307,7 +307,7 @@ func (controller *FilesController) Delete(c echo.Context) error {
 
 	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	hardDelete := false
@@ -369,12 +369,12 @@ func (controller *FilesController) Compress(c echo.Context) error {
 
 	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	var compressionUnixTypePtr *valueObject.UnixCompressionType
@@ -383,7 +383,7 @@ func (controller *FilesController) Compress(c echo.Context) error {
 			requestBody["compressionType"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		compressionUnixTypePtr = &compressionUnixType
 	}
@@ -434,12 +434,12 @@ func (controller *FilesController) Extract(c echo.Context) error {
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	extractDto := dto.NewExtractUnixFiles(sourcePath, destinationPath)
@@ -478,14 +478,14 @@ func (controller *FilesController) Upload(c echo.Context) error {
 
 	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	var filesToUpload []valueObject.FileStreamHandler
 	for _, requestBodyFile := range requestBody["files"].(map[string]*multipart.FileHeader) {
 		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestBodyFile)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
@@ -532,7 +532,7 @@ func (controller *FilesController) Download(c echo.Context) error {
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	return c.Attachment(sourcePath.String(), sourcePath.GetFileName().String())
