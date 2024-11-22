@@ -155,13 +155,14 @@ func (controller *FilesController) Update(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	if requestBody["sourcePaths"] == nil {
 		if _, exists := requestBody["sourcePath"]; exists {
 			requestBody["sourcePaths"] = requestBody["sourcePath"]
 		}
 	}
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	_, isSourcePathsString := requestBody["sourcePath"].(string)
 	if isSourcePathsString {
@@ -305,13 +306,14 @@ func (controller *FilesController) Delete(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	if requestBody["sourcePaths"] == nil {
 		if _, exists := requestBody["sourcePath"]; exists {
 			requestBody["sourcePaths"] = requestBody["sourcePath"]
 		}
 	}
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	_, isSourcePathsString := requestBody["sourcePath"].(string)
 	if isSourcePathsString {
@@ -373,13 +375,14 @@ func (controller *FilesController) Compress(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	if requestBody["sourcePaths"] == nil {
 		if _, exists := requestBody["sourcePath"]; exists {
 			requestBody["sourcePaths"] = requestBody["sourcePath"]
 		}
 	}
+
+	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
 	_, isSourcePathsString := requestBody["sourcePath"].(string)
 	if isSourcePathsString {
