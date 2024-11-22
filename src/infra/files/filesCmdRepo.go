@@ -319,7 +319,7 @@ func (repo FilesCmdRepo) UpdateContent(
 	}
 
 	return infraHelper.UpdateFile(
-		updateContentDto.Content.String(), decodedContent, true,
+		updateContentDto.SourcePath.String(), decodedContent, true,
 	)
 }
 
