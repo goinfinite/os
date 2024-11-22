@@ -157,9 +157,15 @@ func (controller *FilesController) Update(c echo.Context) error {
 	}
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	_, isSourcePathsMap := requestBody["sourcePaths"].(map[string]interface{})
-	if isSourcePathsMap {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePaths"]}
+	if requestBody["sourcePaths"] == nil {
+		if _, exists := requestBody["sourcePath"]; exists {
+			requestBody["sourcePaths"] = requestBody["sourcePath"]
+		}
+	}
+
+	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	if isSourcePathsString {
+		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
 	}
 
 	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
@@ -301,9 +307,15 @@ func (controller *FilesController) Delete(c echo.Context) error {
 	}
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	_, isSourcePathsMap := requestBody["sourcePaths"].(map[string]interface{})
-	if isSourcePathsMap {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePaths"]}
+	if requestBody["sourcePaths"] == nil {
+		if _, exists := requestBody["sourcePath"]; exists {
+			requestBody["sourcePaths"] = requestBody["sourcePath"]
+		}
+	}
+
+	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	if isSourcePathsString {
+		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
 	}
 
 	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
@@ -363,9 +375,15 @@ func (controller *FilesController) Compress(c echo.Context) error {
 	}
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
-	_, isSourcePathsMap := requestBody["sourcePaths"].(map[string]interface{})
-	if isSourcePathsMap {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePaths"]}
+	if requestBody["sourcePaths"] == nil {
+		if _, exists := requestBody["sourcePath"]; exists {
+			requestBody["sourcePaths"] = requestBody["sourcePath"]
+		}
+	}
+
+	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	if isSourcePathsString {
+		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
 	}
 
 	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
