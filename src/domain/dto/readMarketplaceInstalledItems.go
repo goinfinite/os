@@ -15,5 +15,5 @@ type ReadMarketplaceInstalledItemsRequest struct {
 
 type ReadMarketplaceInstalledItemsResponse struct {
 	Pagination                Pagination                        `json:"pagination"`
-	MarketplaceInstalledItems []entity.MarketplaceInstalledItem `json:"items"`
+	MarketplaceInstalledItems []entity.MarketplaceInstalledItem `json:"marketplaceInstalledItems"`
 }

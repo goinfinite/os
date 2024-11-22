@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.2"
+        "version": "0.1.5"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -591,7 +591,7 @@
                 "tags": [
                     "files"
                 ],
-                "summary": "GetFiles",
+                "summary": "ReadFiles",
                 "parameters": [
                     {
                         "type": "string",
@@ -815,6 +815,43 @@
                         "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files/download/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download a file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DownloadFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
                         }
                     }
                 }
@@ -1496,10 +1533,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
                         }
                     }
                 }
@@ -1659,10 +1693,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
                         }
                     }
                 }
@@ -2566,7 +2597,7 @@
         "dto.ReadInstallableServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installableServices": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.InstallableService"
@@ -2580,7 +2611,13 @@
         "dto.ReadInstalledServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installedServices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.InstalledService"
+                    }
+                },
+                "installedServicesWithMetrics": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
@@ -2594,7 +2631,7 @@
         "dto.ReadMarketplaceCatalogItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceCatalogItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceCatalogItem"
@@ -2608,7 +2645,7 @@
         "dto.ReadMarketplaceInstalledItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceInstalledItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceInstalledItem"
@@ -2980,6 +3017,104 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.InstalledService": {
+            "type": "object",
+            "properties": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 },
                 "workingDirectory": {
                     "type": "string"

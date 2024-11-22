@@ -7,6 +7,7 @@ import (
 	"os"
 	"slices"
 
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	"github.com/joho/godotenv"
 )
@@ -42,15 +43,15 @@ func CheckEnvs() {
 		log.Fatalf("PrimaryHostnameUnidentifiable")
 	}
 
-	envFilePath := "/infinite/.env"
-
-	envFile, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400)
+	envFile, err := os.OpenFile(
+		infraEnvs.InfiniteOsEnvFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0400,
+	)
 	if err != nil {
 		log.Fatalf("EnvOpenFileError: %v", err)
 	}
 	defer envFile.Close()
 
-	err = godotenv.Load(envFilePath)
+	err = godotenv.Load(infraEnvs.InfiniteOsEnvFilePath)
 	if err != nil {
 		log.Fatalf("EnvLoadError: %v", err)
 	}

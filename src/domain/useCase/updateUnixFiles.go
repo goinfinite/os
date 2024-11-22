@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -42,21 +42,13 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
-	err := uc.filesCmdRepo.UpdatePermissions(
-		sourcePath,
-		permissions,
-	)
+	updatePermissions := dto.NewUpdateUnixFilePermissions(sourcePath, permissions)
+
+	err := uc.filesCmdRepo.UpdatePermissions(updatePermissions)
 	if err != nil {
-		log.Printf("UpdateFilePermissionsError: %s", err.Error())
+		slog.Error("UpdateFilePermissionsError", slog.Any("err", err))
 		return errors.New("UpdateFilePermissionsInfraError")
 	}
-
-	log.Printf(
-		"File '%s' (%s) permissions updated to '%s'.",
-		sourcePath.GetFileName().String(),
-		sourcePath.GetFileDir().String(),
-		permissions.String(),
-	)
 
 	return nil
 }
@@ -66,13 +58,12 @@ func (uc UpdateUnixFiles) moveFile(
 	destinationPath valueObject.UnixFilePath,
 ) error {
 	shouldOverwrite := false
-	err := uc.filesCmdRepo.Move(
-		sourcePath,
-		destinationPath,
-		shouldOverwrite,
-	)
+
+	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
+
+	err := uc.filesCmdRepo.Move(moveDto)
 	if err != nil {
-		log.Printf("MoveFileError: %s", err.Error())
+		slog.Error("MoveFileError", slog.Any("err", err))
 		return errors.New("MoveFileInfraError")
 	}
 
@@ -83,80 +74,73 @@ func (uc UpdateUnixFiles) updateFileContent(
 	sourcePath valueObject.UnixFilePath,
 	encodedContent valueObject.EncodedContent,
 ) error {
-	err := uc.filesCmdRepo.UpdateContent(sourcePath, encodedContent)
+	updateContentDto := dto.NewUpdateUnixFileContent(sourcePath, encodedContent)
+
+	err := uc.filesCmdRepo.UpdateContent(updateContentDto)
 	if err != nil {
-		log.Printf("UpdateFileContentError: %s", err.Error())
+		slog.Error("UpdateFileContentError", slog.Any("err", err))
 		return errors.New("UpdateFileContentInfraError")
 	}
-
-	log.Printf(
-		"File '%s' content updated.",
-		sourcePath.GetFileName().String(),
-	)
 
 	return nil
 }
 
 func (uc UpdateUnixFiles) Execute(
-	updateUnixFiles dto.UpdateUnixFiles,
+	updateDto dto.UpdateUnixFiles,
 ) (dto.UpdateProcessReport, error) {
 	updateProcessReport := dto.NewUpdateProcessReport(
 		[]valueObject.UnixFilePath{},
 		[]valueObject.UpdateProcessFailure{},
 	)
 
-	for _, sourcePath := range updateUnixFiles.SourcePaths {
-		if updateUnixFiles.Permissions != nil {
-			err := uc.updateFilePermissions(sourcePath, *updateUnixFiles.Permissions)
+	for _, sourcePath := range updateDto.SourcePaths {
+		if updateDto.Permissions != nil {
+			err := uc.updateFilePermissions(sourcePath, *updateDto.Permissions)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddUpdatePermissionsFailureError: %s", err.Error())
+					slog.Error("AddUpdatePermissionsFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
 		}
 
-		if updateUnixFiles.DestinationPath != nil {
-			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
+		if updateDto.EncodedContent != nil {
+			err := uc.updateFileContent(sourcePath, *updateDto.EncodedContent)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddMoveFailureError: %s", err.Error())
+					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
 		}
 
-		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
+		if updateDto.DestinationPath != nil {
+			err := uc.moveFile(sourcePath, *updateDto.DestinationPath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					log.Printf("AddUpdateContentFailureError: %s", err.Error())
+					slog.Error("AddMoveFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
 		}
 
 		updateProcessReport.FilePathsSuccessfullyUpdated = append(
-			updateProcessReport.FilePathsSuccessfullyUpdated,
-			sourcePath,
+			updateProcessReport.FilePathsSuccessfullyUpdated, sourcePath,
 		)
 	}
 

@@ -597,7 +597,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "GetFiles",
+                "summary": "ReadFiles",
                 "parameters": [
                     {
                         "type": "string",
@@ -821,6 +821,43 @@ const docTemplate = `{
                         "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files/download/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download a file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DownloadFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
                         }
                     }
                 }
@@ -1502,10 +1539,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstalledServicesItemsResponse"
                         }
                     }
                 }
@@ -1665,10 +1699,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
-                            }
+                            "$ref": "#/definitions/dto.ReadInstallableServicesItemsResponse"
                         }
                     }
                 }
@@ -2572,7 +2603,7 @@ const docTemplate = `{
         "dto.ReadInstallableServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installableServices": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.InstallableService"
@@ -2586,7 +2617,13 @@ const docTemplate = `{
         "dto.ReadInstalledServicesItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "installedServices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.InstalledService"
+                    }
+                },
+                "installedServicesWithMetrics": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
@@ -2600,7 +2637,7 @@ const docTemplate = `{
         "dto.ReadMarketplaceCatalogItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceCatalogItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceCatalogItem"
@@ -2614,7 +2651,7 @@ const docTemplate = `{
         "dto.ReadMarketplaceInstalledItemsResponse": {
             "type": "object",
             "properties": {
-                "items": {
+                "marketplaceInstalledItems": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MarketplaceInstalledItem"
@@ -2986,6 +3023,104 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "workingDirectory": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.InstalledService": {
+            "type": "object",
+            "properties": {
+                "autoRestart": {
+                    "type": "boolean"
+                },
+                "autoStart": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "envs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "execUser": {
+                    "type": "string"
+                },
+                "logErrorPath": {
+                    "type": "string"
+                },
+                "logOutputPath": {
+                    "type": "string"
+                },
+                "maxStartRetries": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "type": "string"
+                },
+                "portBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/valueObject.PortBinding"
+                    }
+                },
+                "postStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "postStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStartCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preStopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startCmd": {
+                    "type": "string"
+                },
+                "startupFile": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stopCmdSteps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeoutStartSecs": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 },
                 "workingDirectory": {
                     "type": "string"
@@ -3527,7 +3662,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1.2",
+	Version:          "0.1.5",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

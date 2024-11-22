@@ -6,6 +6,6 @@ import (
 )
 
 type FilesQueryRepo interface {
-	Get(unixFilePath valueObject.UnixFilePath) ([]entity.UnixFile, error)
-	GetOne(unixFilePath valueObject.UnixFilePath) (entity.UnixFile, error)
+	Read(valueObject.UnixFilePath) ([]entity.UnixFile, error)
+	ReadFirst(valueObject.UnixFilePath) (entity.UnixFile, error)
 }

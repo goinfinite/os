@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -19,6 +19,7 @@ func UploadUnixFiles(
 	tooBigFiles := []valueObject.UploadProcessFailure{}
 	filesToUpload := []valueObject.FileStreamHandler{}
 
+	failureReasonStr := "FileTooBig"
 	for _, fileStream := range uploadDto.FileStreamHandlers {
 		fileSizeInGb := fileStream.Size.ToGiB()
 		if fileSizeInGb < maxFileSizeInGb {
@@ -26,30 +27,26 @@ func UploadUnixFiles(
 			continue
 		}
 
-		failureReason, _ := valueObject.NewFailureReason("FileTooBig")
+		failureReason, _ := valueObject.NewFailureReason(failureReasonStr)
 		processFailure := valueObject.NewUploadProcessFailure(
-			fileStream.Name,
-			failureReason,
+			fileStream.Name, failureReason,
 		)
 		tooBigFiles = append(tooBigFiles, processFailure)
 
-		log.Printf("FileTooBig: %s", fileStream.Name)
+		slog.Debug(failureReasonStr, slog.String("fileName", fileStream.Name.String()))
 	}
 
 	uploadDto.FileStreamHandlers = filesToUpload
 
 	uploadProcessReport, err := filesCmdRepo.Upload(uploadDto)
 	if err != nil {
-		log.Printf("UploadUnixFileInfraError: %s", err.Error())
+		slog.Error("UploadUnixFileError", slog.Any("err", err))
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 
 	uploadProcessReport.FailedNamesWithReason = append(
-		uploadProcessReport.FailedNamesWithReason,
-		tooBigFiles...,
+		uploadProcessReport.FailedNamesWithReason, tooBigFiles...,
 	)
-
-	log.Printf("Files uploaded to '%s'.", uploadDto.DestinationPath)
 
 	return uploadProcessReport, nil
 }

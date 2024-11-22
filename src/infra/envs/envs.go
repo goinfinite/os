@@ -1,9 +1,10 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion            string = "0.1.2"
+	InfiniteOsVersion            string = "0.1.5"
 	InfiniteOsMainDir            string = "/infinite"
 	InfiniteOsBinary             string = InfiniteOsMainDir + "/os"
+	InfiniteOsEnvFilePath        string = InfiniteOsMainDir + "/.env"
 	PersistentDatabaseFilePath   string = InfiniteOsMainDir + "/os.db"
 	TrailDatabaseFilePath        string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir   string = InfiniteOsMainDir + "/marketplace"

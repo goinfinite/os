@@ -688,7 +688,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 ) (responseDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
 	model := dbModel.MarketplaceInstalledItem{}
 	if requestDto.MarketplaceInstalledItemId != nil {
-		model.ID = uint(requestDto.MarketplaceInstalledItemId.Uint16())
+		model.ID = requestDto.MarketplaceInstalledItemId.Uint16()
 	}
 	if requestDto.MarketplaceInstalledItemHostname != nil {
 		model.Hostname = requestDto.MarketplaceInstalledItemHostname.String()
