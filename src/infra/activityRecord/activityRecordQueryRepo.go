@@ -64,7 +64,7 @@ func (repo *ActivityRecordQueryRepo) Read(
 		readModel.OperatorIpAddress = &operatorIpAddressStr
 	}
 
-	dbQuery := repo.trailDbSvc.Handler.Where(&readModel)
+	dbQuery := repo.trailDbSvc.Handler.Model(&readModel).Where(&readModel)
 	if readDto.CreatedBeforeAt != nil {
 		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.GetAsGoTime())
 	}

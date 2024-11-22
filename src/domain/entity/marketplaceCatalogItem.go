@@ -5,6 +5,7 @@ import (
 )
 
 type MarketplaceCatalogItem struct {
+	ManifestVersion    valueObject.MarketplaceItemManifestVersion    `json:"manifestVersion"`
 	Id                 valueObject.MarketplaceItemId                 `json:"id"`
 	Slugs              []valueObject.MarketplaceItemSlug             `json:"slugs"`
 	Name               valueObject.MarketplaceItemName               `json:"name"`
@@ -22,6 +23,7 @@ type MarketplaceCatalogItem struct {
 }
 
 func NewMarketplaceCatalogItem(
+	manifestVersion valueObject.MarketplaceItemManifestVersion,
 	id valueObject.MarketplaceItemId,
 	slugs []valueObject.MarketplaceItemSlug,
 	itemName valueObject.MarketplaceItemName,
@@ -38,6 +40,7 @@ func NewMarketplaceCatalogItem(
 	screenshotUrls []valueObject.Url,
 ) MarketplaceCatalogItem {
 	return MarketplaceCatalogItem{
+		ManifestVersion:    manifestVersion,
 		Id:                 id,
 		Slugs:              slugs,
 		Name:               itemName,

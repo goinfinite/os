@@ -1,6 +1,7 @@
 package sharedHelper
 
 import (
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
@@ -23,10 +24,15 @@ func NewServiceAvailabilityInspector(
 func (inspector *ServiceAvailabilityInspector) IsAvailable(
 	serviceName valueObject.ServiceName,
 ) bool {
-	availableSvc, err := inspector.servicesQueryRepo.ReadByName(serviceName)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &serviceName,
+	}
+	availableService, err := inspector.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return false
 	}
 
-	return availableSvc.Status.String() == "running"
+	return availableService.Status.String() == "running"
 }

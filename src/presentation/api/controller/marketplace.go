@@ -3,9 +3,12 @@ package apiController
 import (
 	"log/slog"
 	"strings"
+	"time"
 
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -32,11 +35,25 @@ func NewMarketplaceController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.MarketplaceCatalogItem
+// @Param        id query  uint  false  "Id"
+// @Param        slug query  string  false  "Slug"
+// @Param        name query  string  false  "Name"
+// @Param        type query  string  false  "Type"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadCatalog(),
+		c, controller.marketplaceService.ReadCatalog(requestBody),
 	)
 }
 
@@ -52,7 +69,7 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 	for _, rawDataField := range rawDataFieldsSlice {
 		rawDataFieldParts := strings.Split(rawDataField, ":")
 		if len(rawDataFieldParts) != 2 {
-			slog.Error(
+			slog.Debug(
 				"InvalidDataFieldStringStructure",
 				slog.String("rawDataField", rawDataField),
 			)
@@ -79,13 +96,13 @@ func (controller *MarketplaceController) parseDataFieldMap(
 
 		fieldName, err := valueObject.NewDataFieldName(rawFieldName)
 		if err != nil {
-			slog.Error(err.Error(), slog.Int("fieldIndex", fieldIndex))
+			slog.Debug(err.Error(), slog.Int("fieldIndex", fieldIndex))
 			continue
 		}
 
 		fieldValue, err := valueObject.NewDataFieldValue(rawFieldValue)
 		if err != nil {
-			slog.Error(err.Error(), slog.String("fieldName", fieldName.String()))
+			slog.Debug(err.Error(), slog.String("fieldName", fieldName.String()))
 			continue
 		}
 
@@ -93,7 +110,7 @@ func (controller *MarketplaceController) parseDataFieldMap(
 			fieldName, fieldValue,
 		)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				err.Error(),
 				slog.String("fieldName", fieldName.String()),
 				slog.String("fieldValue", fieldValue.String()),
@@ -132,7 +149,7 @@ func (controller *MarketplaceController) parseDataFields(
 	for _, rawDataField := range rawDataFieldsSlice {
 		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
 		if !assertOk {
-			slog.Error(
+			slog.Debug(
 				"InvalidDataFieldStructure", slog.Any("rawDataField", rawDataField),
 			)
 			continue
@@ -184,11 +201,25 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.MarketplaceInstalledItem
+// @Param        id query  uint  false  "Id"
+// @Param        hostname query  string  false  "Hostname"
+// @Param        type query  string  false  "Type"
+// @Param        installationUuid query  string  false  "InstallUuid"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadInstalledItems(),
+		c, controller.marketplaceService.ReadInstalledItems(requestBody),
 	)
 }
 
@@ -215,4 +246,19 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.marketplaceService.DeleteInstalledItem(requestBody, true),
 	)
+}
+
+func (controller *MarketplaceController) AutoRefreshMarketplaceCatalogItems() {
+	refreshIntervalHours := 24 / useCase.RefreshMarketplaceCatalogItemsAmountPerDay
+
+	taskInterval := time.Duration(refreshIntervalHours) * time.Hour
+	timer := time.NewTicker(taskInterval)
+	defer timer.Stop()
+
+	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(
+		controller.persistentDbSvc,
+	)
+	for range timer.C {
+		useCase.RefreshMarketplaceCatalogItems(marketplaceCmdRepo)
+	}
 }
