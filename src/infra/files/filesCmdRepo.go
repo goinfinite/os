@@ -304,7 +304,7 @@ func (repo FilesCmdRepo) UpdateContent(
 ) error {
 	queryRepo := FilesQueryRepo{}
 
-	fileToUpdate, err := queryRepo.ReadUnique(unixSrcFilePath)
+	fileToUpdate, err := queryRepo.ReadFirst(unixSrcFilePath)
 	if err != nil {
 		return err
 	}
@@ -352,7 +352,7 @@ func (repo FilesCmdRepo) Upload(
 		destinationPath,
 	)
 
-	destinationFile, err := queryRepo.ReadUnique(destinationPath)
+	destinationFile, err := queryRepo.ReadFirst(destinationPath)
 	if err != nil {
 		return uploadProcessReport, errors.New("DestinationFileNotFound")
 	}

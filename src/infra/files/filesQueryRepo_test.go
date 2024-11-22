@@ -13,7 +13,7 @@ func TestFilesQueryRepo(t *testing.T) {
 	currentUser, _ := user.Current()
 	userHomeDir := "/home/" + currentUser.Username
 
-	t.Run("GetFiles", func(t *testing.T) {
+	t.Run("Read", func(t *testing.T) {
 		unixDirPath, _ := valueObject.NewUnixFilePath(userHomeDir)
 		_, err := filesQueryRepo.Read(unixDirPath)
 		if err != nil {
@@ -21,7 +21,7 @@ func TestFilesQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("GetFilesWithInvalidDirectory", func(t *testing.T) {
+	t.Run("ReadWithInvalidDirectory", func(t *testing.T) {
 		invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
 		_, err := filesQueryRepo.Read(invalidUnixPath)
 		if err == nil {
@@ -29,7 +29,7 @@ func TestFilesQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("GetFilesFollowingSymlink", func(t *testing.T) {
+	t.Run("ReadFollowingSymlink", func(t *testing.T) {
 		downloadsDirPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/Downloads")
 		tmpSymlinkPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/tmpSymlink")
 
@@ -51,9 +51,9 @@ func TestFilesQueryRepo(t *testing.T) {
 		_ = infraHelper.RemoveSymlink(tmpSymlinkPath.String())
 	})
 
-	t.Run("GetSingleFile", func(t *testing.T) {
+	t.Run("ReadFirstFile", func(t *testing.T) {
 		unixFilePath, _ := valueObject.NewUnixFilePath(userHomeDir + "/.bashrc")
-		_, err := filesQueryRepo.ReadUnique(unixFilePath)
+		_, err := filesQueryRepo.ReadFirst(unixFilePath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}

@@ -214,7 +214,7 @@ func (repo FilesQueryRepo) Read(
 	return unixFileList, nil
 }
 
-func (repo FilesQueryRepo) ReadUnique(
+func (repo FilesQueryRepo) ReadFirst(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile

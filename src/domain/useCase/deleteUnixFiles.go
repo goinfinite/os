@@ -39,7 +39,7 @@ func (uc DeleteUnixFiles) emptyTrash() error {
 func (uc DeleteUnixFiles) CreateTrash() error {
 	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
 
-	_, err := uc.filesQueryRepo.ReadUnique(trashPath)
+	_, err := uc.filesQueryRepo.ReadFirst(trashPath)
 	if err == nil {
 		return nil
 	}

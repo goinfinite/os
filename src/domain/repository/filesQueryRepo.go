@@ -7,5 +7,5 @@ import (
 
 type FilesQueryRepo interface {
 	Read(unixFilePath valueObject.UnixFilePath) ([]entity.UnixFile, error)
-	ReadUnique(unixFilePath valueObject.UnixFilePath) (entity.UnixFile, error)
+	ReadFirst(unixFilePath valueObject.UnixFilePath) (entity.UnixFile, error)
 }
