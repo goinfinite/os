@@ -9,6 +9,7 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 )
 
 var LocalOperatorAccountId, _ = valueObject.NewAccountId(0)
@@ -19,6 +20,7 @@ type AccountService struct {
 	accountQueryRepo      *accountInfra.AccountQueryRepo
 	accountCmdRepo        *accountInfra.AccountCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
+	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
 }
 
 func NewAccountService(
@@ -30,6 +32,9 @@ func NewAccountService(
 		accountQueryRepo:      accountInfra.NewAccountQueryRepo(persistentDbSvc),
 		accountCmdRepo:        accountInfra.NewAccountCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
+			persistentDbSvc,
+		),
 	}
 }
 
@@ -206,4 +211,41 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 	}
 
 	return NewServiceOutput(Success, "AccountDeleted")
+}
+
+func (service *AccountService) ReadSecureAccessKey(
+	input map[string]interface{},
+) ServiceOutput {
+	serviceName, _ := valueObject.NewServiceName("openssh")
+	if !service.availabilityInspector.IsAvailable(serviceName) {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
+
+	if input["id"] != nil {
+		input["accountId"] = input["id"]
+	}
+
+	if input["accountId"] == nil {
+		input["accountId"] = input["operatorAccountId"]
+	}
+
+	requiredParams := []string{"accountId"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	secureAccessKeys, err := useCase.ReadAccountSecureAccessKeys(
+		service.accountQueryRepo, accountId,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, secureAccessKeys)
 }

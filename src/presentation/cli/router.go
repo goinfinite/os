@@ -51,6 +51,7 @@ func (router Router) accountRoutes() {
 	accountCmd.AddCommand(accountController.Create())
 	accountCmd.AddCommand(accountController.Update())
 	accountCmd.AddCommand(accountController.Delete())
+	accountCmd.AddCommand(accountController.ReadSecureAccessKeys())
 }
 
 func (router Router) authenticationRoutes() {

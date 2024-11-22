@@ -116,3 +116,25 @@ func (controller *AccountController) Delete() *cobra.Command {
 	cmd.MarkFlagRequired("account-id")
 	return cmd
 }
+
+func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
+	var accountIdStr string
+
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "GetSecureAccessKeys",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"accountId": accountIdStr,
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.accountService.ReadSecureAccessKey(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.MarkFlagRequired("account-id")
+	return cmd
+}

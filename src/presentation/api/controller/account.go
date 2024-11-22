@@ -105,3 +105,23 @@ func (controller *AccountController) Delete(c echo.Context) error {
 		c, controller.accountService.Delete(requestBody),
 	)
 }
+
+// ReadSecureAccessKeys	 godoc
+// @Summary      ReadSecureAccessKeys
+// @Description  List accounts secure access keys.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200 {array} entity.SecureAccessKey
+// @Router       /v1/account/secure-access-key [get]
+func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.ReadSecureAccessKey(requestBody),
+	)
+}
