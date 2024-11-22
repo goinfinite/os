@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -11,23 +11,13 @@ import (
 func CopyUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	copyUnixFile dto.CopyUnixFile,
+	copyDto dto.CopyUnixFile,
 ) error {
-	err := filesCmdRepo.Copy(copyUnixFile)
+	err := filesCmdRepo.Copy(copyDto)
 	if err != nil {
-		log.Printf("CopyUnixFileInfraError: %s", err.Error())
+		slog.Error("CopyUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CopyUnixFileInfraError")
 	}
-
-	fileSourcePath := copyUnixFile.SourcePath
-	fileDestinationPath := copyUnixFile.DestinationPath
-	log.Printf(
-		"File '%s' (%s) copy created to '%s' with name '%s'.",
-		fileSourcePath.GetFileName().String(),
-		fileSourcePath.GetFileDir().String(),
-		fileDestinationPath.GetFileName().String(),
-		fileDestinationPath.GetFileDir().String(),
-	)
 
 	return nil
 }

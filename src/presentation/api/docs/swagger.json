@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.4"
+        "version": "0.1.5"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -591,7 +591,7 @@
                 "tags": [
                     "files"
                 ],
-                "summary": "GetFiles",
+                "summary": "ReadFiles",
                 "parameters": [
                     {
                         "type": "string",
@@ -815,6 +815,43 @@
                         "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files/download/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download a file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DownloadFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
                         }
                     }
                 }

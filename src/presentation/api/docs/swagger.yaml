@@ -1002,7 +1002,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.1.4
+  version: 0.1.5
 paths:
   /v1/account/:
     get:
@@ -1377,7 +1377,7 @@ paths:
             type: array
       security:
       - Bearer: []
-      summary: GetFiles
+      summary: ReadFiles
       tags:
       - files
     post:
@@ -1508,6 +1508,29 @@ paths:
       security:
       - Bearer: []
       summary: DeleteFiles
+      tags:
+      - files
+  /v1/files/download/:
+    get:
+      consumes:
+      - application/json
+      description: Download a file.
+      parameters:
+      - description: SourcePath
+        in: query
+        name: sourcePath
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - Bearer: []
+      summary: DownloadFile
       tags:
       - files
   /v1/files/extract/:

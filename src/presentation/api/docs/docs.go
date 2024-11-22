@@ -597,7 +597,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "GetFiles",
+                "summary": "ReadFiles",
                 "parameters": [
                     {
                         "type": "string",
@@ -821,6 +821,43 @@ const docTemplate = `{
                         "description": "FilesDeleted",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files/download/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download a file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "DownloadFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SourcePath",
+                        "name": "sourcePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
                         }
                     }
                 }
@@ -3625,7 +3662,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1.4",
+	Version:          "0.1.5",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
