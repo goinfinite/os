@@ -595,7 +595,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "application/octet-stream"
+                    "files"
                 ],
                 "summary": "DownloadFile",
                 "parameters": [

@@ -1377,7 +1377,7 @@ paths:
       - Bearer: []
       summary: DownloadFile
       tags:
-      - application/octet-stream
+      - files
     post:
       consumes:
       - application/json
