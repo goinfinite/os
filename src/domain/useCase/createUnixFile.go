@@ -11,9 +11,9 @@ import (
 func CreateUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	createUnixFile dto.CreateUnixFile,
+	createDto dto.CreateUnixFile,
 ) error {
-	err := filesCmdRepo.Create(createUnixFile)
+	err := filesCmdRepo.Create(createDto)
 	if err != nil {
 		slog.Error("CreateUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CreateUnixFileInfraError")

@@ -86,16 +86,16 @@ func (uc UpdateUnixFiles) updateFileContent(
 }
 
 func (uc UpdateUnixFiles) Execute(
-	updateUnixFiles dto.UpdateUnixFiles,
+	updateDto dto.UpdateUnixFiles,
 ) (dto.UpdateProcessReport, error) {
 	updateProcessReport := dto.NewUpdateProcessReport(
 		[]valueObject.UnixFilePath{},
 		[]valueObject.UpdateProcessFailure{},
 	)
 
-	for _, sourcePath := range updateUnixFiles.SourcePaths {
-		if updateUnixFiles.Permissions != nil {
-			err := uc.updateFilePermissions(sourcePath, *updateUnixFiles.Permissions)
+	for _, sourcePath := range updateDto.SourcePaths {
+		if updateDto.Permissions != nil {
+			err := uc.updateFilePermissions(sourcePath, *updateDto.Permissions)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
@@ -109,8 +109,8 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.EncodedContent != nil {
-			err := uc.updateFileContent(sourcePath, *updateUnixFiles.EncodedContent)
+		if updateDto.EncodedContent != nil {
+			err := uc.updateFileContent(sourcePath, *updateDto.EncodedContent)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
@@ -124,8 +124,8 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateUnixFiles.DestinationPath != nil {
-			err := uc.moveFile(sourcePath, *updateUnixFiles.DestinationPath)
+		if updateDto.DestinationPath != nil {
+			err := uc.moveFile(sourcePath, *updateDto.DestinationPath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {

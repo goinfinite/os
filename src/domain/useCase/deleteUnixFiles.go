@@ -53,10 +53,8 @@ func (uc DeleteUnixFiles) CreateTrash() error {
 	return uc.filesCmdRepo.Create(createTrashDir)
 }
 
-func (uc DeleteUnixFiles) Execute(
-	deleteUnixFiles dto.DeleteUnixFiles,
-) error {
-	for fileToDeleteIndex, fileToDelete := range deleteUnixFiles.SourcePaths {
+func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
+	for fileToDeleteIndex, fileToDelete := range deleteDto.SourcePaths {
 		shouldCleanTrash := fileToDelete.String() == TrashDirPath
 		if shouldCleanTrash {
 			err := uc.emptyTrash()
@@ -66,11 +64,11 @@ func (uc DeleteUnixFiles) Execute(
 
 			fileToDeleteAfterTrashPathIndex := fileToDeleteIndex + 1
 			filesToDeleteWithoutTrashPath := slices.Delete(
-				deleteUnixFiles.SourcePaths, fileToDeleteIndex,
+				deleteDto.SourcePaths, fileToDeleteIndex,
 				fileToDeleteAfterTrashPathIndex,
 			)
 
-			deleteUnixFiles.SourcePaths = filesToDeleteWithoutTrashPath
+			deleteDto.SourcePaths = filesToDeleteWithoutTrashPath
 
 			continue
 		}
@@ -86,15 +84,15 @@ func (uc DeleteUnixFiles) Execute(
 
 		fileToDeleteAfterNotAllowedPathIndex := fileToDeleteIndex + 1
 		filesToDeleteWithoutNotAllowedPath := slices.Delete(
-			deleteUnixFiles.SourcePaths, fileToDeleteIndex,
+			deleteDto.SourcePaths, fileToDeleteIndex,
 			fileToDeleteAfterNotAllowedPathIndex,
 		)
 
-		deleteUnixFiles.SourcePaths = filesToDeleteWithoutNotAllowedPath
+		deleteDto.SourcePaths = filesToDeleteWithoutNotAllowedPath
 	}
 
-	if deleteUnixFiles.HardDelete {
-		for _, fileToDelete := range deleteUnixFiles.SourcePaths {
+	if deleteDto.HardDelete {
+		for _, fileToDelete := range deleteDto.SourcePaths {
 			err := uc.filesCmdRepo.Delete(fileToDelete)
 			if err != nil {
 				slog.Debug("DeleteFileError", slog.Any("err", err))
@@ -110,7 +108,7 @@ func (uc DeleteUnixFiles) Execute(
 		return err
 	}
 
-	for _, fileToMoveToTrash := range deleteUnixFiles.SourcePaths {
+	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
 		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 		shouldOverwrite := true

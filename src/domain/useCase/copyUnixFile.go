@@ -11,9 +11,9 @@ import (
 func CopyUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	copyUnixFile dto.CopyUnixFile,
+	copyDto dto.CopyUnixFile,
 ) error {
-	err := filesCmdRepo.Copy(copyUnixFile)
+	err := filesCmdRepo.Copy(copyDto)
 	if err != nil {
 		slog.Error("CopyUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CopyUnixFileInfraError")
