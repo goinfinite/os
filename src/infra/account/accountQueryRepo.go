@@ -165,6 +165,10 @@ func (repo *AccountQueryRepo) ReadSecureAccessKeys(
 
 	secureAccessKeysFileContentParts := strings.Split(secureAccessKeysFileContent, "\n")
 	for index, rawSecureAccessKeyContent := range secureAccessKeysFileContentParts {
+		if rawSecureAccessKeyContent == "" {
+			continue
+		}
+
 		secureAccessKey, err := repo.secureAccessKeyFactory(
 			rawSecureAccessKeyContent, secretKey,
 		)
