@@ -290,5 +290,12 @@ func (repo *AccountCmdRepo) CreateSecureAccessKey(
 		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
 	}
 
-	return keyId, nil
+	key, err := repo.accountQueryRepo.ReadSecureAccessKeyByName(
+		createDto.AccountId, createDto.Name,
+	)
+	if err != nil {
+		return keyId, errors.New("SecureAccessKeyNotCreated")
+	}
+
+	return key.Id, nil
 }
