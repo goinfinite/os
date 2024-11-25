@@ -169,6 +169,26 @@ func (repo *AccountQueryRepo) ReadSecureAccessKeys(
 	return secureAccessKeys, nil
 }
 
+func (repo *AccountQueryRepo) ReadSecureAccessKeyById(
+	accountId valueObject.AccountId,
+	secureAccessKeyId valueObject.SecureAccessKeyId,
+) (secureAccessKey entity.SecureAccessKey, err error) {
+	secureAccessKeys, err := repo.ReadSecureAccessKeys(accountId)
+	if err != nil {
+		return secureAccessKey, err
+	}
+
+	for _, key := range secureAccessKeys {
+		if key.Id.Uint16() != secureAccessKeyId.Uint16() {
+			continue
+		}
+
+		return key, nil
+	}
+
+	return secureAccessKey, errors.New("SecureAccessKeyNotFound")
+}
+
 func (repo *AccountQueryRepo) ReadSecureAccessKeyByName(
 	accountId valueObject.AccountId,
 	secureAccessKeyName valueObject.SecureAccessKeyName,
