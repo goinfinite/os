@@ -121,7 +121,7 @@ func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
 	var accountIdStr string
 
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "get-keys",
 		Short: "GetSecureAccessKeys",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
@@ -136,5 +136,37 @@ func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
 
 	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
 	cmd.MarkFlagRequired("account-id")
+	return cmd
+}
+
+func (controller *AccountController) CreateSecureAccessKey() *cobra.Command {
+	var accountIdStr, keyNameStr, keyContentStr string
+
+	cmd := &cobra.Command{
+		Use:   "create-key",
+		Short: "CreateSecureAccessKey",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"accountId": accountIdStr,
+				"content":   keyContentStr,
+			}
+
+			if keyNameStr != "" {
+				requestBody["name"] = keyNameStr
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.accountService.CreateSecureAccessKey(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.MarkFlagRequired("account-id")
+	cmd.Flags().StringVarP(&keyNameStr, "key-name", "n", "", "SecureAccessKeyName")
+	cmd.Flags().StringVarP(
+		&keyContentStr, "key-content", "c", "", "SecureAccessKeyContent",
+	)
+	cmd.MarkFlagRequired("key-content")
 	return cmd
 }

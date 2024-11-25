@@ -57,6 +57,7 @@ func (router Router) accountRoutes() {
 	accountGroup.PUT("/", accountController.Update)
 	accountGroup.DELETE("/:accountId/", accountController.Delete)
 	accountGroup.GET("/secure-access-key/", accountController.ReadSecureAccessKey)
+	accountGroup.POST("/secure-access-key/", accountController.CreateSecureAccessKey)
 }
 
 func (router Router) cronRoutes() {

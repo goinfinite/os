@@ -249,3 +249,65 @@ func (service *AccountService) ReadSecureAccessKey(
 
 	return NewServiceOutput(Success, secureAccessKeys)
 }
+
+func (service *AccountService) CreateSecureAccessKey(
+	input map[string]interface{},
+) ServiceOutput {
+	if input["id"] != nil {
+		input["accountId"] = input["id"]
+	}
+
+	requiredParams := []string{"accountId", "content"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyContent, err := valueObject.NewSecureAccessKeyContent(input["content"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyName, err := valueObject.NewSecureAccessKeyName(input["name"])
+	if err != nil {
+		keyName, err = keyContent.ReadOnlyKeyName()
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateSecureAccessKey(
+		keyName, keyContent, accountId, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.CreateSecureAccessKey(
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, createDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "SecureAccessKeyCreated")
+}

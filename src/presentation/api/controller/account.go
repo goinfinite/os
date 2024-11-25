@@ -35,7 +35,7 @@ func (controller *AccountController) Read(c echo.Context) error {
 }
 
 // CreateAccount    godoc
-// @Summary      CreateNewAccount
+// @Summary      CreateAccount
 // @Description  Create a new account.
 // @Tags         account
 // @Accept       json
@@ -114,7 +114,7 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Success      200 {array} entity.SecureAccessKey
-// @Router       /v1/account/secure-access-key [get]
+// @Router       /v1/account/secure-access-key/ [get]
 func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
@@ -123,5 +123,26 @@ func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.accountService.ReadSecureAccessKey(requestBody),
+	)
+}
+
+// CreateSecureAccessKey    godoc
+// @Summary      CreateSecureAccessKey
+// @Description  Create a new secure access key.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "All props are required."
+// @Success      201 {object} object{} "SecureAccessKeyCreated"
+// @Router       /v1/account/secure-access-key/ [post]
+func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.CreateSecureAccessKey(requestBody),
 	)
 }
