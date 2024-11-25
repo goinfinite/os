@@ -4,7 +4,7 @@ import "github.com/goinfinite/os/src/domain/valueObject"
 
 type DeleteSecureAccessKey struct {
 	Id                valueObject.SecureAccessKeyId `json:"id"`
-	AccountId         valueObject.AccountId         `json:"accountId"`
+	AccountId         valueObject.AccountId         `json:"-"`
 	OperatorAccountId valueObject.AccountId         `json:"-"`
 	OperatorIpAddress valueObject.IpAddress         `json:"-"`
 }

@@ -58,7 +58,8 @@ func (controller *AccountController) Create() *cobra.Command {
 }
 
 func (controller *AccountController) Update() *cobra.Command {
-	var accountIdStr, usernameStr, passwordStr, shouldUpdateApiKeyStr string
+	var accountIdUint64 uint64
+	var usernameStr, passwordStr, shouldUpdateApiKeyStr string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -68,8 +69,8 @@ func (controller *AccountController) Update() *cobra.Command {
 				"shouldUpdateApiKey": shouldUpdateApiKeyStr,
 			}
 
-			if accountIdStr != "" {
-				requestBody["accountId"] = accountIdStr
+			if accountIdUint64 != 0 {
+				requestBody["accountId"] = accountIdUint64
 			}
 
 			if usernameStr != "" {
@@ -86,7 +87,7 @@ func (controller *AccountController) Update() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.Flags().StringVarP(
@@ -96,14 +97,14 @@ func (controller *AccountController) Update() *cobra.Command {
 }
 
 func (controller *AccountController) Delete() *cobra.Command {
-	var accountIdStr string
+	var accountIdUint64 uint64
 
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "DeleteAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"accountId": accountIdStr,
+				"accountId": accountIdUint64,
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -112,20 +113,20 @@ func (controller *AccountController) Delete() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
 	cmd.MarkFlagRequired("account-id")
 	return cmd
 }
 
 func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
-	var accountIdStr string
+	var accountIdUint64 uint64
 
 	cmd := &cobra.Command{
 		Use:   "get-keys",
 		Short: "GetSecureAccessKeys",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"accountId": accountIdStr,
+				"accountId": accountIdUint64,
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -134,20 +135,21 @@ func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "u", 0, "AccountId")
 	cmd.MarkFlagRequired("account-id")
 	return cmd
 }
 
 func (controller *AccountController) CreateSecureAccessKey() *cobra.Command {
-	var accountIdStr, keyNameStr, keyContentStr string
+	var accountIdUint64 uint64
+	var keyNameStr, keyContentStr string
 
 	cmd := &cobra.Command{
 		Use:   "create-key",
 		Short: "CreateSecureAccessKey",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"accountId": accountIdStr,
+				"accountId": accountIdUint64,
 				"content":   keyContentStr,
 			}
 
@@ -161,12 +163,40 @@ func (controller *AccountController) CreateSecureAccessKey() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&accountIdStr, "account-id", "i", "", "AccountId")
+	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "u", 0, "AccountId")
 	cmd.MarkFlagRequired("account-id")
 	cmd.Flags().StringVarP(&keyNameStr, "key-name", "n", "", "SecureAccessKeyName")
 	cmd.Flags().StringVarP(
 		&keyContentStr, "key-content", "c", "", "SecureAccessKeyContent",
 	)
 	cmd.MarkFlagRequired("key-content")
+	return cmd
+}
+
+func (controller *AccountController) DeleteSecureAccessKey() *cobra.Command {
+	var accountIdUint64 uint64
+	var keyIdUint16 uint16
+
+	cmd := &cobra.Command{
+		Use:   "delete-key",
+		Short: "DeleteSecureAccessKey",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"accountId": accountIdUint64,
+				"id":        keyIdUint16,
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.accountService.DeleteSecureAccessKey(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().Uint64VarP(
+		&accountIdUint64, "account-id", "u", 0, "AccountId",
+	)
+	cmd.MarkFlagRequired("account-id")
+	cmd.Flags().Uint16VarP(&keyIdUint16, "key-id", "i", 0, "SecureAccessKeyId")
+	cmd.MarkFlagRequired("key-id")
 	return cmd
 }

@@ -294,8 +294,34 @@ func (repo *AccountCmdRepo) CreateSecureAccessKey(
 		createDto.AccountId, createDto.Name,
 	)
 	if err != nil {
-		return keyId, errors.New("SecureAccessKeyNotCreated")
+		return keyId, errors.New("SecureAccessKeyWasNotCreated")
 	}
 
 	return key.Id, nil
+}
+
+func (repo *AccountCmdRepo) DeleteSecureAccessKey(
+	deleteDto dto.DeleteSecureAccessKey,
+) error {
+	account, err := repo.accountQueryRepo.ReadById(deleteDto.AccountId)
+	if err != nil {
+		return errors.New("AccountNotFound")
+	}
+
+	keyToDelete, err := repo.accountQueryRepo.ReadSecureAccessKeyById(
+		deleteDto.AccountId, deleteDto.Id,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"sed -i '\\|" + keyToDelete.Content.String() + "|d' " +
+			"/home/" + account.Username.String() + "/.ssh/authorized_keys",
+	)
+	if err != nil {
+		return errors.New("FailToDeleteSecureAccessKeyFromFile: " + err.Error())
+	}
+
+	return nil
 }

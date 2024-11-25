@@ -13,4 +13,5 @@ type AccountCmdRepo interface {
 	CreateSecureAccessKey(
 		dto.CreateSecureAccessKey,
 	) (valueObject.SecureAccessKeyId, error)
+	DeleteSecureAccessKey(dto.DeleteSecureAccessKey) error
 }

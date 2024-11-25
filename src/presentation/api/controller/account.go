@@ -113,8 +113,9 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
+// @Param        accountId 	  path   string  true  "AccountId that keys belongs to."
 // @Success      200 {array} entity.SecureAccessKey
-// @Router       /v1/account/secure-access-key/ [get]
+// @Router       /v1/account/{accountId}/secure-access-key/ [get]
 func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
@@ -133,9 +134,10 @@ func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
+// @Param        accountId 	  path   string  true  "AccountId to create secure access key."
 // @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "All props are required."
 // @Success      201 {object} object{} "SecureAccessKeyCreated"
-// @Router       /v1/account/secure-access-key/ [post]
+// @Router       /v1/account/{accountId}/secure-access-key/ [post]
 func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
@@ -144,5 +146,27 @@ func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.accountService.CreateSecureAccessKey(requestBody),
+	)
+}
+
+// DeleteSecureAccessKey godoc
+// @Summary      DeleteSecureAccessKey
+// @Description  Delete a secure access key.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        accountId 	  path   string  true  "AccountId that keys belongs to."
+// @Param        secureAccessKeyId 	  path   string  true  "SecureAccessKeyId to delete."
+// @Success      200 {object} object{} "SecureAccessKeyDeleted"
+// @Router       /v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/ [delete]
+func (controller *AccountController) DeleteSecureAccessKey(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.DeleteSecureAccessKey(requestBody),
 	)
 }

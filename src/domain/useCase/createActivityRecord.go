@@ -126,3 +126,20 @@ func (uc *CreateSecurityActivityRecord) CreateSecureAccessKey(
 
 	uc.createActivityRecord(createRecordDto)
 }
+
+func (uc *CreateSecurityActivityRecord) DeleteSecureAccessKey(
+	deleteDto dto.DeleteSecureAccessKey,
+) {
+	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessKeyDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSecureAccessKeySri(deleteDto.AccountId, deleteDto.Id),
+		},
+		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}

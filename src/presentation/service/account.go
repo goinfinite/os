@@ -253,10 +253,6 @@ func (service *AccountService) ReadSecureAccessKey(
 func (service *AccountService) CreateSecureAccessKey(
 	input map[string]interface{},
 ) ServiceOutput {
-	if input["id"] != nil {
-		input["accountId"] = input["id"]
-	}
-
 	requiredParams := []string{"accountId", "content"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -310,4 +306,54 @@ func (service *AccountService) CreateSecureAccessKey(
 	}
 
 	return NewServiceOutput(Created, "SecureAccessKeyCreated")
+}
+
+func (service *AccountService) DeleteSecureAccessKey(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"accountId", "secureAccessKeyId"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyId, err := valueObject.NewSecureAccessKeyId(input["secureAccessKeyId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSecureAccessKey(
+		keyId, accountId, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteSecureAccessKey(
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "SecureAccessKeyDeleted")
 }
