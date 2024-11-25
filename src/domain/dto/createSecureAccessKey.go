@@ -5,7 +5,7 @@ import "github.com/goinfinite/os/src/domain/valueObject"
 type CreateSecureAccessKey struct {
 	Name              valueObject.SecureAccessKeyName    `json:"name"`
 	Content           valueObject.SecureAccessKeyContent `json:"content"`
-	AccountId         valueObject.AccountId              `json:"accountId"`
+	AccountId         valueObject.AccountId              `json:"-"`
 	OperatorAccountId valueObject.AccountId              `json:"-"`
 	OperatorIpAddress valueObject.IpAddress              `json:"-"`
 }
