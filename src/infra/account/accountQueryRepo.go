@@ -128,35 +128,15 @@ func (repo *AccountQueryRepo) ReadSecureAccessKeys(
 	if err != nil {
 		return secureAccessKeys, errors.New("AccountNotFound")
 	}
-	accountUsernameStr := account.Username.String()
 
-	secureAccessKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
-	err = infraHelper.MakeDir(secureAccessKeysDirPath)
+	accountCmdRepo := NewAccountCmdRepo(repo.persistentDbSvc)
+	err = accountCmdRepo.ensureSecureAccessKeysDirAndFileExistence(account.Username)
 	if err != nil {
-		return secureAccessKeys, errors.New(
-			"CreateSecureAccessKeysDirectoryError: " + err.Error(),
-		)
+		return secureAccessKeys, err
 	}
 
-	secureAccessKeysFilePath := secureAccessKeysDirPath + "/authorized_keys"
-	if !infraHelper.FileExists(secureAccessKeysFilePath) {
-		_, err = os.Create(secureAccessKeysFilePath)
-		if err != nil {
-			return secureAccessKeys, errors.New(
-				"CreateSecureAccessKeysFileError: " + err.Error(),
-			)
-		}
-
-		_, err = infraHelper.RunCmd(
-			"chown", "-R", accountUsernameStr, secureAccessKeysFilePath,
-		)
-		if err != nil {
-			return secureAccessKeys, errors.New(
-				"ChownSecureAccessKeysFileError: " + err.Error(),
-			)
-		}
-	}
-
+	secureAccessKeysFilePath := "/home/" + account.Username.String() + "/.ssh" +
+		"/authorized_keys"
 	secureAccessKeysFileContent, err := infraHelper.GetFileContent(
 		secureAccessKeysFilePath,
 	)

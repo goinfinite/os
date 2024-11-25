@@ -2,6 +2,7 @@ package accountInfra
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"os/user"
 	"time"
@@ -17,14 +18,16 @@ import (
 )
 
 type AccountCmdRepo struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
+	accountQueryRepo *AccountQueryRepo
 }
 
 func NewAccountCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *AccountCmdRepo {
 	return &AccountCmdRepo{
-		persistentDbSvc: persistentDbSvc,
+		persistentDbSvc:  persistentDbSvc,
+		accountQueryRepo: NewAccountQueryRepo(persistentDbSvc),
 	}
 }
 
@@ -86,8 +89,7 @@ func (repo *AccountCmdRepo) Create(
 func (repo *AccountCmdRepo) readUsernameById(
 	accountId valueObject.AccountId,
 ) (username valueObject.Username, err error) {
-	accountQuery := NewAccountQueryRepo(repo.persistentDbSvc)
-	accountEntity, err := accountQuery.ReadById(accountId)
+	accountEntity, err := repo.accountQueryRepo.ReadById(accountId)
 	if err != nil {
 		return username, err
 	}
@@ -178,4 +180,115 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 	}
 
 	return apiKey, nil
+}
+
+func (repo *AccountCmdRepo) ensureSecureAccessKeysDirAndFileExistence(
+	accountUsername valueObject.Username,
+) error {
+	accountUsernameStr := accountUsername.String()
+
+	secureAccessKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
+	if !infraHelper.FileExists(secureAccessKeysDirPath) {
+		err := infraHelper.MakeDir(secureAccessKeysDirPath)
+		if err != nil {
+			return errors.New("CreateSecureAccessKeysDirectoryError: " + err.Error())
+		}
+	}
+
+	secureAccessKeysFilePath := secureAccessKeysDirPath + "/authorized_keys"
+	if infraHelper.FileExists(secureAccessKeysFilePath) {
+		return nil
+	}
+
+	_, err := os.Create(secureAccessKeysFilePath)
+	if err != nil {
+		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown", "-R", accountUsernameStr, secureAccessKeysFilePath,
+	)
+	if err != nil {
+		return errors.New("ChownSecureAccessKeysFileError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *AccountCmdRepo) isSecureAccessKeyValid(
+	keyContent valueObject.SecureAccessKeyContent,
+) bool {
+	keyName, err := keyContent.ReadOnlyKeyName()
+	if err != nil {
+		slog.Error(err.Error())
+		return false
+	}
+	keyNameStr := keyName.String()
+
+	keyTempFilePath := "/tmp/" + keyNameStr + "_secureAccessKey"
+	shouldOverwrite := true
+	err = infraHelper.UpdateFile(
+		keyTempFilePath, keyContent.String(), shouldOverwrite,
+	)
+	if err != nil {
+		slog.Error(
+			"CreateSecureAccessKeyTempFileError", slog.String("keyName", keyNameStr),
+			slog.Any("err", err),
+		)
+		return false
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell("ssh-keygen -l -f " + keyTempFilePath)
+	if err != nil {
+		slog.Error(
+			"ValidateSecureAccessKeyError", slog.String("keyName", keyNameStr),
+			slog.Any("err", err),
+		)
+		return false
+	}
+
+	err = os.Remove(keyTempFilePath)
+	if err != nil {
+		slog.Error(
+			"DeleteSecureAccessKeyTempFileError", slog.String("keyName", keyNameStr),
+			slog.Any("err", err),
+		)
+	}
+
+	return true
+}
+
+func (repo *AccountCmdRepo) CreateSecureAccessKey(
+	createDto dto.CreateSecureAccessKey,
+) (keyId valueObject.SecureAccessKeyId, err error) {
+	account, err := repo.accountQueryRepo.ReadById(createDto.AccountId)
+	if err != nil {
+		return keyId, errors.New("AccountNotFound")
+	}
+
+	err = repo.ensureSecureAccessKeysDirAndFileExistence(account.Username)
+	if err != nil {
+		return keyId, err
+	}
+
+	keyContentStr := createDto.Content.ReadWithoutKeyName() + " " +
+		createDto.Name.String()
+	keyContent, err := valueObject.NewSecureAccessKeyContent(keyContentStr)
+	if err != nil {
+		return keyId, errors.New("InvalidSecureAccessKey")
+	}
+
+	if !repo.isSecureAccessKeyValid(keyContent) {
+		return keyId, errors.New("InvalidSecureAccessKey")
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"echo \"" + keyContentStr + "\" >> /home/" + account.Username.String() +
+			"/.ssh/authorized_keys",
+	)
+	if err != nil {
+		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
+	}
+
+	return keyId, nil
 }
