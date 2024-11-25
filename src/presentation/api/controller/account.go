@@ -135,7 +135,7 @@ func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 // @Produce      json
 // @Security     Bearer
 // @Param        accountId 	  path   string  true  "AccountId to create secure access key."
-// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "All props are required."
+// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "Only 'content' is required.<br />'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
 // @Success      201 {object} object{} "SecureAccessKeyCreated"
 // @Router       /v1/account/{accountId}/secure-access-key/ [post]
 func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {

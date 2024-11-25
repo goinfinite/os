@@ -231,7 +231,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "All props are required.",
+                        "description": "Only 'content' is required.\u003cbr /\u003e'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
                         "name": "createSecureAccessKey",
                         "in": "body",
                         "required": true,
