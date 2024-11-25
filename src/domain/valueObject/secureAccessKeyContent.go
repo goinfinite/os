@@ -42,7 +42,7 @@ func (vo SecureAccessKeyContent) ReadOnlyKeyName() (
 ) {
 	keyContentParts := strings.Split(string(vo), " ")
 	if len(keyContentParts) == 2 {
-		return keyName, errors.New("SecureAccessKeyNameNotFound")
+		return keyName, errors.New("SecureAccessKeyContentHasNoName")
 	}
 
 	return NewSecureAccessKeyName(keyContentParts[2])
