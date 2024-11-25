@@ -19,11 +19,14 @@ func CreateSecureAccessKey(
 		return errors.New("AccountNotFound")
 	}
 
-	_, err = accountCmdRepo.CreateSecureAccessKey(createDto)
+	keyId, err := accountCmdRepo.CreateSecureAccessKey(createDto)
 	if err != nil {
 		slog.Error("CreateSecureAccessKeyError", slog.Any("error", err))
 		return errors.New("CreateSecureAccessKeyInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateSecureAccessKey(createDto, keyId)
 
 	return nil
 }
