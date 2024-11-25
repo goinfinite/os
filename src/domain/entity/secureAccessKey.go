@@ -3,19 +3,22 @@ package entity
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type SecureAccessKey struct {
-	HashId  valueObject.SecureAccessKeyHashId  `json:"hashId"`
-	Name    valueObject.SecureAccessKeyName    `json:"name"`
-	Content valueObject.SecureAccessKeyContent `json:"-"`
+	Id             valueObject.SecureAccessKeyUuid    `json:"id"`
+	Name           valueObject.SecureAccessKeyName    `json:"name"`
+	Content        valueObject.SecureAccessKeyContent `json:"-"`
+	EncodedContent valueObject.EncodedContent         `json:"encodedContent"`
 }
 
 func NewSecureAccessKey(
-	hashId valueObject.SecureAccessKeyHashId,
+	id valueObject.SecureAccessKeyUuid,
 	name valueObject.SecureAccessKeyName,
 	content valueObject.SecureAccessKeyContent,
+	encodedContent valueObject.EncodedContent,
 ) SecureAccessKey {
 	return SecureAccessKey{
-		HashId:  hashId,
-		Name:    name,
-		Content: content,
+		Id:             id,
+		Name:           name,
+		Content:        content,
+		EncodedContent: encodedContent,
 	}
 }

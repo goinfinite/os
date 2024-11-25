@@ -11,6 +11,7 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	"github.com/google/uuid"
 )
 
 type AccountQueryRepo struct {
@@ -87,6 +88,13 @@ func (repo *AccountQueryRepo) secureAccessKeyFactory(
 	rawSecureAccessKeyContent string,
 	secureAccessKeySecret string,
 ) (secureAccessKey entity.SecureAccessKey, err error) {
+	rawKeyUuid := uuid.New().String()[:16]
+	rawKeyUuidNoHyphens := strings.Replace(rawKeyUuid, "-", "", -1)
+	keyUuid, err := valueObject.NewSecureAccessKeyUuid(rawKeyUuidNoHyphens)
+	if err != nil {
+		return secureAccessKey, err
+	}
+
 	keyContent, err := valueObject.NewSecureAccessKeyContent(
 		rawSecureAccessKeyContent,
 	)
@@ -99,19 +107,18 @@ func (repo *AccountQueryRepo) secureAccessKeyFactory(
 		return secureAccessKey, err
 	}
 
-	rawKeyHashId, err := infraHelper.EncryptStr(
-		secureAccessKeySecret, keyContent.String(),
+	rawKeyHashContent, err := infraHelper.EncryptStr(
+		secureAccessKeySecret, keyContent.ReadWithoutKeyName(),
 	)
 	if err != nil {
 		return secureAccessKey, err
 	}
-
-	keyHashId, err := valueObject.NewSecureAccessKeyHashId(rawKeyHashId)
+	keyHashContent, err := valueObject.NewEncodedContent(rawKeyHashContent)
 	if err != nil {
 		return secureAccessKey, err
 	}
 
-	return entity.NewSecureAccessKey(keyHashId, keyName, keyContent), nil
+	return entity.NewSecureAccessKey(keyUuid, keyName, keyContent, keyHashContent), nil
 }
 
 func (repo *AccountQueryRepo) ReadSecureAccessKeys(
