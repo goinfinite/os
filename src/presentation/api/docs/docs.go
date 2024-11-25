@@ -107,7 +107,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "CreateNewAccount",
+                "summary": "CreateAccount",
                 "parameters": [
                     {
                         "description": "All props are required.",
@@ -159,6 +159,134 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "AccountDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/{accountId}/secure-access-key/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List accounts secure access keys.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "ReadSecureAccessKeys",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AccountId that keys belongs to.",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.SecureAccessKey"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new secure access key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "CreateSecureAccessKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AccountId to create secure access key.",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "All props are required.",
+                        "name": "createSecureAccessKey",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateSecureAccessKey"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "SecureAccessKeyCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a secure access key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "DeleteSecureAccessKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AccountId that keys belongs to.",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "SecureAccessKeyId to delete.",
+                        "name": "secureAccessKeyId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecureAccessKeyDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -2369,6 +2497,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateSecureAccessKey": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateSessionToken": {
             "type": "object",
             "properties": {
@@ -3391,6 +3530,20 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "integer"
+                }
+            }
+        },
+        "entity.SecureAccessKey": {
+            "type": "object",
+            "properties": {
+                "encodedContent": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

@@ -153,6 +153,13 @@ definitions:
       targetValue:
         type: string
     type: object
+  dto.CreateSecureAccessKey:
+    properties:
+      content:
+        type: string
+      name:
+        type: string
+    type: object
   dto.CreateSessionToken:
     properties:
       password:
@@ -824,6 +831,15 @@ definitions:
       updatedAt:
         type: integer
     type: object
+  entity.SecureAccessKey:
+    properties:
+      encodedContent:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   entity.SslCertificate:
     properties:
       altNames:
@@ -1043,7 +1059,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewAccount
+      summary: CreateAccount
       tags:
       - account
     put:
@@ -1090,6 +1106,87 @@ paths:
       security:
       - Bearer: []
       summary: DeleteAccount
+      tags:
+      - account
+  /v1/account/{accountId}/secure-access-key/:
+    get:
+      consumes:
+      - application/json
+      description: List accounts secure access keys.
+      parameters:
+      - description: AccountId that keys belongs to.
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.SecureAccessKey'
+            type: array
+      security:
+      - Bearer: []
+      summary: ReadSecureAccessKeys
+      tags:
+      - account
+    post:
+      consumes:
+      - application/json
+      description: Create a new secure access key.
+      parameters:
+      - description: AccountId to create secure access key.
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: All props are required.
+        in: body
+        name: createSecureAccessKey
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSecureAccessKey'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: SecureAccessKeyCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreateSecureAccessKey
+      tags:
+      - account
+  /v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a secure access key.
+      parameters:
+      - description: AccountId that keys belongs to.
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: SecureAccessKeyId to delete.
+        in: path
+        name: secureAccessKeyId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SecureAccessKeyDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteSecureAccessKey
       tags:
       - account
   /v1/auth/login/:
