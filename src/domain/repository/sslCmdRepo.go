@@ -6,8 +6,8 @@ import (
 )
 
 type SslCmdRepo interface {
-	Create(createSslPair dto.CreateSslPair) (valueObject.SslPairId, error)
-	Delete(sslPairId valueObject.SslPairId) error
-	ReplaceWithValidSsl(replaceDto dto.ReplaceWithValidSsl) error
-	DeleteSslPairVhosts(deleteDto dto.DeleteSslPairVhosts) error
+	Create(dto.CreateSslPair) (valueObject.SslPairId, error)
+	Delete(valueObject.SslPairId) error
+	ReplaceWithValidSsl(dto.ReplaceWithValidSsl) error
+	DeleteSslPairVhosts(dto.DeleteSslPairVhosts) error
 }
