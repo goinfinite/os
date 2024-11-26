@@ -7,11 +7,13 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func TransformContentIntoStrongHash(content string) (strongHash string, err error) {
+func TransformPlainContentIntoStrongHash(
+	plainContent string,
+) (strongHash string, err error) {
 	hash := sha3.New256()
-	_, err = hash.Write([]byte(content))
+	_, err = hash.Write([]byte(plainContent))
 	if err != nil {
-		return strongHash, errors.New("InvalidContentToHash")
+		return strongHash, errors.New("InvalidPlainContentToHash")
 	}
 	encodedContentBytes := hash.Sum(nil)
 	return hex.EncodeToString(encodedContentBytes), nil
