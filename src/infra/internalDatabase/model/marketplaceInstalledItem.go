@@ -10,7 +10,7 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID               uint   `gorm:"primarykey"`
+	ID               uint16 `gorm:"primarykey"`
 	Name             string `gorm:"not null"`
 	Hostname         string `gorm:"not null"`
 	Type             string `gorm:"not null"`
@@ -107,17 +107,8 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	}
 
 	return entity.NewMarketplaceInstalledItem(
-		id,
-		itemName,
-		hostname,
-		itemType,
-		urlPath,
-		installDirectory,
-		installUuid,
-		serviceNamesWithVersion,
-		mappings,
-		avatarUrl,
-		slug,
+		id, itemName, hostname, itemType, urlPath, installDirectory, installUuid,
+		serviceNamesWithVersion, mappings, avatarUrl, slug,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

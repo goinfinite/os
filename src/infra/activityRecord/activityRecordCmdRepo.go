@@ -92,7 +92,7 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecord) er
 		deleteModel.OperatorIpAddress = &operatorIpAddressStr
 	}
 
-	dbQuery := repo.trailDbSvc.Handler.Where(&deleteModel)
+	dbQuery := repo.trailDbSvc.Handler.Model(&deleteModel).Where(&deleteModel)
 
 	if deleteDto.CreatedBeforeAt != nil {
 		dbQuery.Where("created_at < ?", deleteDto.CreatedBeforeAt.GetAsGoTime())

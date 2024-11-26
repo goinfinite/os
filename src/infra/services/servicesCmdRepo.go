@@ -12,6 +12,7 @@ import (
 	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -64,7 +65,12 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 }
 
 func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -99,7 +105,12 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -128,12 +139,17 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	service, err := repo.servicesQueryRepo.ReadByName(name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
 
-	if service.Status.String() == "running" {
+	if serviceEntity.Status.String() == "running" {
 		err = repo.Stop(name)
 		if err != nil {
 			return err
@@ -144,15 +160,26 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
-	serviceEntities, err := repo.servicesQueryRepo.Read()
+	shouldIncludeMetrics := false
+	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	}
+	readInstalledItemsResponseDto, err := repo.servicesQueryRepo.ReadInstalledItems(
+		readInstalledItemsDto,
+	)
 	if err != nil {
 		return err
 	}
-	if len(serviceEntities) == 0 {
+	if len(readInstalledItemsResponseDto.InstalledServices) == 0 {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
-	ctlPassword := infraHelper.GenStrongShortHash(serviceEntities[0].CreatedAt.String())
+	ctlPassword := infraHelper.GenStrongShortHash(
+		readInstalledItemsResponseDto.InstalledServices[0].CreatedAt.String(),
+	)
 
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
@@ -224,7 +251,9 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	var supervisorConfFileContent strings.Builder
-	err = templatePtr.Execute(&supervisorConfFileContent, serviceEntities)
+	err = templatePtr.Execute(
+		&supervisorConfFileContent, readInstalledItemsResponseDto.InstalledServices,
+	)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -330,7 +359,12 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) (installedServiceName valueObject.ServiceName, err error) {
-	installableService, err := repo.servicesQueryRepo.ReadInstallableByName(createDto.Name)
+	readInstalledItemRequestDto := dto.ReadInstallableServicesItemsRequest{
+		ServiceName: &createDto.Name,
+	}
+	installableService, err := repo.servicesQueryRepo.ReadFirstInstallableItem(
+		readInstalledItemRequestDto,
+	)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -484,9 +518,10 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
 		createDto.Version.String(), createDto.StartCmd.String(), createDto.Envs,
 		createDto.PortBindings, createDto.StopCmdSteps, createDto.PreStartCmdSteps,
-		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps, createDto.PostStopCmdSteps,
-		nil, nil, nil, createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries, nil, nil,
+		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps,
+		createDto.PostStopCmdSteps, nil, nil, nil, createDto.AutoStart,
+		createDto.AutoRestart, createDto.TimeoutStartSecs, createDto.MaxStartRetries,
+		nil, nil,
 	)
 
 	if createDto.ExecUser != nil {
@@ -537,7 +572,12 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(updateDto.Name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &updateDto.Name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -678,7 +718,12 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
-	serviceEntity, err := repo.servicesQueryRepo.ReadByName(name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &name,
+	}
+	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}
@@ -713,9 +758,14 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return nil
 	}
 
-	installableEntity, err := repo.servicesQueryRepo.ReadInstallableByName(name)
+	readInstallableDto := dto.ReadInstallableServicesItemsRequest{
+		ServiceName: &name,
+	}
+	installableEntity, err := repo.servicesQueryRepo.ReadFirstInstallableItem(
+		readInstallableDto,
+	)
 	if err != nil {
-		return errors.New("GetInstallableEntityError: " + err.Error())
+		return errors.New("ReadInstallableEntityError: " + err.Error())
 	}
 
 	err = repo.runCmdSteps("Uninstall", installableEntity.UninstallCmdSteps)
@@ -731,9 +781,34 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		_, err := infraHelper.RunCmd("rm", "-rf", filePathStr)
 		if err != nil {
 			fileIndexStr := strconv.Itoa(fileIndex)
-			return errors.New("RemoveFilePathError (" + fileIndexStr + "): " + err.Error())
+			return errors.New(
+				"RemoveFilePathError (" + fileIndexStr + "): " + err.Error(),
+			)
 		}
 	}
 
 	return nil
+}
+
+func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
+	_, err := os.Stat(infraEnvs.ServiceInstalledItemsDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+
+		_, err = infraHelper.RunCmdWithSubShell(
+			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
+				"git clone https://github.com/goinfinite/os-services.git services",
+		)
+		if err != nil {
+			return errors.New("CloneServicesItemsRepoError: " + err.Error())
+		}
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"cd " + infraEnvs.ServiceInstalledItemsDir + ";" +
+			"git clean -f -d; git reset --hard HEAD; git pull",
+	)
+	return err
 }

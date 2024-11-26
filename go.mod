@@ -1,6 +1,6 @@
 module github.com/goinfinite/os
 
-go 1.23
+go 1.23.0
 
 require (
 	github.com/alecthomas/chroma v0.10.0

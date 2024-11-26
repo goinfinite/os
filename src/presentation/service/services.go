@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -43,8 +44,99 @@ func NewServicesService(
 	}
 }
 
-func (service *ServicesService) Read() ServiceOutput {
-	servicesList, err := useCase.ReadServicesWithMetrics(service.servicesQueryRepo)
+func (service *ServicesService) ReadInstalledItems(
+	input map[string]interface{},
+) ServiceOutput {
+	var namePtr *valueObject.ServiceName
+	if input["name"] != nil {
+		name, err := valueObject.NewServiceName(input["name"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		namePtr = &name
+	}
+
+	var naturePtr *valueObject.ServiceNature
+	if input["nature"] != nil {
+		nature, err := valueObject.NewServiceNature(input["nature"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		naturePtr = &nature
+	}
+
+	var typePtr *valueObject.ServiceType
+	if input["type"] != nil {
+		itemType, err := valueObject.NewServiceType(input["type"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		typePtr = &itemType
+	}
+
+	shouldIncludeMetrics := false
+	if input["shouldIncludeMetrics"] != nil {
+		var err error
+		shouldIncludeMetrics, err = voHelper.InterfaceToBool(input["shouldIncludeMetrics"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+	}
+
+	paginationDto := useCase.ServicesDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readDto := dto.ReadInstalledServicesItemsRequest{
+		Pagination:           paginationDto,
+		ServiceName:          namePtr,
+		ServiceNature:        naturePtr,
+		ServiceType:          typePtr,
+		ShouldIncludeMetrics: &shouldIncludeMetrics,
+	}
+
+	servicesList, err := useCase.ReadInstalledServices(
+		service.servicesQueryRepo, readDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -52,8 +144,89 @@ func (service *ServicesService) Read() ServiceOutput {
 	return NewServiceOutput(Success, servicesList)
 }
 
-func (service *ServicesService) ReadInstallables() ServiceOutput {
-	servicesList, err := useCase.ReadInstallableServices(service.servicesQueryRepo)
+func (service *ServicesService) ReadInstallableItems(
+	input map[string]interface{},
+) ServiceOutput {
+	var namePtr *valueObject.ServiceName
+	if input["name"] != nil {
+		name, err := valueObject.NewServiceName(input["name"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		namePtr = &name
+	}
+
+	var naturePtr *valueObject.ServiceNature
+	if input["nature"] != nil {
+		nature, err := valueObject.NewServiceNature(input["nature"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		naturePtr = &nature
+	}
+
+	var typePtr *valueObject.ServiceType
+	if input["type"] != nil {
+		itemType, err := valueObject.NewServiceType(input["type"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		typePtr = &itemType
+	}
+
+	paginationDto := useCase.ServicesDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readDto := dto.ReadInstallableServicesItemsRequest{
+		Pagination:    paginationDto,
+		ServiceName:   namePtr,
+		ServiceNature: naturePtr,
+		ServiceType:   typePtr,
+	}
+
+	servicesList, err := useCase.ReadInstallableServices(
+		service.servicesQueryRepo, readDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

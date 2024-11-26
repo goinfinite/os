@@ -20,6 +20,7 @@ func UploadUnixFiles(
 	tooBigFiles := []valueObject.UploadProcessFailure{}
 	filesToUpload := []valueObject.FileStreamHandler{}
 
+	failureReasonStr := "FileTooBig"
 	for _, fileStream := range uploadDto.FileStreamHandlers {
 		fileSizeInGb := fileStream.Size.ToGiB()
 		if fileSizeInGb < maxFileSizeInGb {
@@ -27,21 +28,20 @@ func UploadUnixFiles(
 			continue
 		}
 
-		failureReason, _ := valueObject.NewFailureReason("FileTooBig")
+		failureReason, _ := valueObject.NewFailureReason(failureReasonStr)
 		processFailure := valueObject.NewUploadProcessFailure(
-			fileStream.Name,
-			failureReason,
+			fileStream.Name, failureReason,
 		)
 		tooBigFiles = append(tooBigFiles, processFailure)
 
-		slog.Info("FileTooBig", slog.String("name", fileStream.Name.String()))
+		slog.Debug(failureReasonStr, slog.String("fileName", fileStream.Name.String()))
 	}
 
 	uploadDto.FileStreamHandlers = filesToUpload
 
 	uploadProcessReport, err := filesCmdRepo.Upload(uploadDto)
 	if err != nil {
-		slog.Info("UploadUnixFileInfraError", slog.Any("err", err))
+		slog.Error("UploadUnixFileError", slog.Any("err", err))
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 

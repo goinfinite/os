@@ -4,18 +4,24 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+var ServicesDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
+
 func ReadInstallableServices(
 	servicesQueryRepo repository.ServicesQueryRepo,
-) ([]entity.InstallableService, error) {
-	installableServices, err := servicesQueryRepo.ReadInstallables()
+	requestDto dto.ReadInstallableServicesItemsRequest,
+) (responseDto dto.ReadInstallableServicesItemsResponse, err error) {
+	responseDto, err = servicesQueryRepo.ReadInstallableItems(requestDto)
 	if err != nil {
 		slog.Error("ReadInstallableServicesError", slog.Any("error", err))
-		return installableServices, errors.New("ReadInstallableServicesInfraError")
+		return responseDto, errors.New("ReadInstallableServicesInfraError")
 	}
 
-	return installableServices, nil
+	return responseDto, nil
 }

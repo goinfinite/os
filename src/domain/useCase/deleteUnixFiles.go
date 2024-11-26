@@ -48,7 +48,7 @@ func (uc DeleteUnixFiles) CreateTrash(
 ) error {
 	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
 
-	_, err := uc.filesQueryRepo.GetOne(trashPath)
+	_, err := uc.filesQueryRepo.ReadFirst(trashPath)
 	if err == nil {
 		return nil
 	}
@@ -69,9 +69,7 @@ func (uc DeleteUnixFiles) CreateTrash(
 	return nil
 }
 
-func (uc DeleteUnixFiles) Execute(
-	deleteDto dto.DeleteUnixFiles,
-) error {
+func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	for fileToDeleteIndex, fileToDelete := range deleteDto.SourcePaths {
 		shouldCleanTrash := fileToDelete.String() == TrashDirPath
 		if shouldCleanTrash {
@@ -79,7 +77,7 @@ func (uc DeleteUnixFiles) Execute(
 				deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress,
 			)
 			if err != nil {
-				slog.Error("FailedToCleanTrash", slog.Any("err", err))
+				slog.Debug("FailedToCleanTrash", slog.Any("err", err))
 			}
 
 			fileToDeleteAfterTrashPathIndex := fileToDeleteIndex + 1
@@ -98,12 +96,13 @@ func (uc DeleteUnixFiles) Execute(
 			continue
 		}
 
-		slog.Info("DeleteUnixFilesError: Path '/' cannot be deleted.")
+		slog.Debug(
+			"DeleteUnixFilesError", slog.String("err", "Path '/' cannot be deleted."),
+		)
 
 		fileToDeleteAfterNotAllowedPathIndex := fileToDeleteIndex + 1
 		filesToDeleteWithoutNotAllowedPath := slices.Delete(
-			deleteDto.SourcePaths,
-			fileToDeleteIndex,
+			deleteDto.SourcePaths, fileToDeleteIndex,
 			fileToDeleteAfterNotAllowedPathIndex,
 		)
 
@@ -114,11 +113,9 @@ func (uc DeleteUnixFiles) Execute(
 		for _, fileToDelete := range deleteDto.SourcePaths {
 			err := uc.filesCmdRepo.Delete(fileToDelete)
 			if err != nil {
-				slog.Error("DeleteFileError", slog.Any("err", err))
+				slog.Debug("DeleteFileError", slog.Any("err", err))
 				continue
 			}
-
-			slog.Info("FileDeleted.", slog.String("fileToDelete", fileToDelete.String()))
 		}
 
 		return nil
@@ -132,13 +129,14 @@ func (uc DeleteUnixFiles) Execute(
 	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
 		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
-
 		shouldOverwrite := true
-		err = uc.filesCmdRepo.Move(
+		moveDto := dto.NewMoveUnixFile(
 			fileToMoveToTrash, trashPathWithFileName, shouldOverwrite,
 		)
+
+		err = uc.filesCmdRepo.Move(moveDto)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				"MoveUnixFileToTrashError",
 				slog.String("fileToMoveToTrash", fileToMoveToTrash.String()),
 				slog.Any("err", err),
@@ -147,8 +145,7 @@ func (uc DeleteUnixFiles) Execute(
 		}
 
 		slog.Info(
-			"FileMovedToTrash",
-			slog.String("fileToMoveToTrash", fileToMoveToTrash.String()),
+			"FileMovedToTrash", slog.String("filePath", fileToMoveToTrash.String()),
 		)
 	}
 

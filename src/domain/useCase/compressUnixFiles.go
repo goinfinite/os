@@ -21,6 +21,5 @@ func CompressUnixFiles(
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).CompressUnixFile(compressDto)
-
 	return compressionProcessReport, nil
 }

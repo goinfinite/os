@@ -3,6 +3,14 @@
 ```log
 0.1.5 - 2024/X/X
 feat: add all missing security records to write ops
+fix: download files with more than 5MB in size
+
+0.1.4 - 2024/X/X
+feat: move marketplace registry to its own git repository
+feat: move services registry to its own git repository
+
+0.1.3 - 2024/X/X
+Nothing yet
 
 0.1.2 - 2024/X/X
 refactor(front): marketplace page with HTMX+Alpine.js

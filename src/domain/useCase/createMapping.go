@@ -104,17 +104,21 @@ func CreateMapping(
 			return errors.New(err.Error() + ": " + targetValueStr)
 		}
 
-		service, err := svcsQueryRepo.ReadByName(svcName)
+		readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &svcName,
+		}
+		serviceEntity, err := svcsQueryRepo.ReadFirstInstalledItem(
+			readFirstInstalledServiceRequestDto,
+		)
 		if err != nil {
-			slog.Error("ReadServiceByNameError", slog.Any("err", err))
-			return errors.New("GetServiceByNameInfraError")
+			return err
 		}
 
-		if len(service.PortBindings) == 0 {
+		if len(serviceEntity.PortBindings) == 0 {
 			return errors.New("ServiceDoesNotExposeAnyPorts")
 		}
 
-		for _, portBinding := range service.PortBindings {
+		for _, portBinding := range serviceEntity.PortBindings {
 			protocolStr := portBinding.Protocol.String()
 			isTransportLayer := protocolStr == "tcp" || protocolStr == "udp"
 			if isTransportLayer {

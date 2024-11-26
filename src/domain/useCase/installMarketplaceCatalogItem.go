@@ -61,11 +61,11 @@ func MarketplaceCatalogItemLookup(
 		return itemEntity, errors.New("ItemIdOrSlugRequired")
 	}
 
-	if itemId != nil {
-		return marketplaceQueryRepo.ReadCatalogItemById(*itemId)
+	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
+		MarketplaceCatalogItemId:   itemId,
+		MarketplaceCatalogItemSlug: itemSlug,
 	}
-
-	return marketplaceQueryRepo.ReadCatalogItemBySlug(*itemSlug)
+	return marketplaceQueryRepo.ReadFirstCatalogItem(readCatalogItemRequestDto)
 }
 
 func InstallMarketplaceCatalogItem(

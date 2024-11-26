@@ -14,7 +14,10 @@ func DeleteMarketplaceInstalledItem(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	_, err := marketplaceQueryRepo.ReadInstalledItemById(deleteDto.InstalledId)
+	readFirstInstalledRequestDto := dto.ReadMarketplaceInstalledItemsRequest{
+		MarketplaceInstalledItemId: &deleteDto.InstalledId,
+	}
+	_, err := marketplaceQueryRepo.ReadFirstInstalledItem(readFirstInstalledRequestDto)
 	if err != nil {
 		return errors.New("MarketplaceInstalledItemNotFound")
 	}

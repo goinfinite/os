@@ -15,9 +15,14 @@ func DeleteService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteService,
 ) error {
-	serviceEntity, err := servicesQueryRepo.ReadByName(deleteDto.Name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &deleteDto.Name,
+	}
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
-		return errors.New("ServiceNotFound")
+		return err
 	}
 
 	isSystemService := serviceEntity.Type.String() == "system"
@@ -38,8 +43,6 @@ func DeleteService(
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).DeleteService(deleteDto)
-
-	slog.Info("Service "+deleteDto.Name.String()+" deleted.", slog.Any("error", err))
 
 	return nil
 }

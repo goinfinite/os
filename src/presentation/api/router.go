@@ -90,16 +90,18 @@ func (router Router) databaseRoutes() {
 
 func (router Router) filesRoutes() {
 	filesGroup := router.baseRoute.Group("/v1/files")
+
 	filesController := apiController.NewFilesController(router.trailDbSvc)
 
-	filesGroup.GET("/", filesController.GetFilesController)
-	filesGroup.POST("/", filesController.CreateFileController)
-	filesGroup.PUT("/", filesController.UpdateFileController)
-	filesGroup.POST("/copy/", filesController.CopyFileController)
-	filesGroup.PUT("/delete/", filesController.DeleteFileController)
-	filesGroup.POST("/compress/", filesController.CompressFilesController)
-	filesGroup.PUT("/extract/", filesController.ExtractFilesController)
-	filesGroup.POST("/upload/", filesController.UploadFilesController)
+	filesGroup.GET("/", filesController.Read)
+	filesGroup.POST("/", filesController.Create)
+	filesGroup.PUT("/", filesController.Update)
+	filesGroup.POST("/copy/", filesController.Copy)
+	filesGroup.PUT("/delete/", filesController.Delete)
+	filesGroup.POST("/compress/", filesController.Compress)
+	filesGroup.PUT("/extract/", filesController.Extract)
+	filesGroup.POST("/upload/", filesController.Upload)
+	filesGroup.GET("/download/", filesController.Download)
 }
 
 func (router Router) marketplaceRoutes() {
@@ -118,6 +120,8 @@ func (router Router) marketplaceRoutes() {
 	marketplaceCatalogGroup := marketplaceGroup.Group("/catalog")
 	marketplaceCatalogGroup.GET("/", marketplaceController.ReadCatalog)
 	marketplaceCatalogGroup.POST("/", marketplaceController.InstallCatalogItem)
+
+	go marketplaceController.AutoRefreshMarketplaceCatalogItems()
 }
 
 func (router Router) o11yRoutes() {
@@ -152,12 +156,14 @@ func (router Router) servicesRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 
-	servicesGroup.GET("/", servicesController.Read)
-	servicesGroup.GET("/installables/", servicesController.ReadInstallables)
+	servicesGroup.GET("/", servicesController.ReadInstalledItems)
+	servicesGroup.GET("/installables/", servicesController.ReadInstallablesItems)
 	servicesGroup.POST("/installables/", servicesController.CreateInstallable)
 	servicesGroup.POST("/custom/", servicesController.CreateCustom)
 	servicesGroup.PUT("/", servicesController.Update)
 	servicesGroup.DELETE("/:svcName/", servicesController.Delete)
+
+	go servicesController.AutoRefreshServiceInstallableItems()
 }
 
 func (router Router) sslRoutes() {

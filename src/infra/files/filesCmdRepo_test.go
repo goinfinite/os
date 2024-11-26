@@ -34,7 +34,9 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CreateUnixFile", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
 		mimeType, _ := valueObject.NewMimeType("generic")
 
 		createDto := dto.NewCreateUnixFile(
@@ -48,10 +50,14 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateUnixFileContent", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir/filesCmdRepoTest.txt")
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
 		encodedContent, _ := valueObject.NewEncodedContent("Q29udGVudCB0byB0ZXN0")
 
-		err := filesCmdRepo.UpdateContent(filePath, encodedContent)
+		updateContentDto := dto.NewUpdateUnixFileContent(filePath, encodedContent)
+
+		err := filesCmdRepo.UpdateContent(updateContentDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -61,7 +67,11 @@ func TestFilesCmdRepo(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 		filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
 
-		err := filesCmdRepo.UpdatePermissions(filePath, filePermissions)
+		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
+			filePath, filePermissions,
+		)
+
+		err := filesCmdRepo.UpdatePermissions(updatePermissionsDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -72,7 +82,11 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 
-		err := filesCmdRepo.UpdatePermissions(filePath, filePermissions)
+		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
+			filePath, filePermissions,
+		)
+
+		err := filesCmdRepo.UpdatePermissions(updatePermissionsDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -80,9 +94,13 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
-		destinationFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir_")
+		destinationFilePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir_",
+		)
 
-		err := filesCmdRepo.Move(sourceFilePath, destinationFilePath, true)
+		moveDto := dto.NewMoveUnixFile(sourceFilePath, destinationFilePath, true)
+
+		err := filesCmdRepo.Move(moveDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -90,13 +108,15 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("MoveUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
-		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir_/filesCmdRepoTest.txt",
 		)
+		destinationFilePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/filesCmdRepoTest.txt",
+		)
 
-		err := filesCmdRepo.Move(sourceFilePath, destinationFilePath, false)
+		moveDto := dto.NewMoveUnixFile(sourceFilePath, destinationFilePath, false)
+
+		err := filesCmdRepo.Move(moveDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -104,7 +124,9 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CopyUnixDirectory", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir_")
-		destinationFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
+		destinationFilePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir",
+		)
 
 		dto := dto.NewCopyUnixFile(
 			sourceFilePath, destinationFilePath, true, operatorAccountId, ipAddress,
@@ -118,7 +140,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CopyUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+			fileBasePathStr + "/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
@@ -135,12 +157,12 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CompressUnixFile (with compression type)", func(t *testing.T) {
-		compressionType, _ := valueObject.NewUnixCompressionType("gzip")
+		compressionType, _ := valueObject.NewUnixCompressionType("tgz")
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress",
+			fileBasePathStr + "/testDir_/testDirCompressWithType",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -159,7 +181,7 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress",
+			fileBasePathStr + "/testDir_/testDirCompressWithoutType",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -173,12 +195,12 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("CompressUnixFile (with compression type in file path)", func(t *testing.T) {
+	t.Run("CompressUnixFile (with compression type in file name)", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress_.gzip",
+			fileBasePathStr + "/testDir_/testDirCompressWithTypeOnFileName_.gzip",
 		)
 
 		dto := dto.NewCompressUnixFiles(
@@ -194,7 +216,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("ExtractUnixFile", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompress.tar.gz",
+			fileBasePathStr + "/testDir_/testDirCompressWithType.tgz",
 		)
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir_/testDirExtracted",

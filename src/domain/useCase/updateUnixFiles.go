@@ -42,7 +42,9 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
-	err := uc.filesCmdRepo.UpdatePermissions(sourcePath, permissions)
+	updatePermissions := dto.NewUpdateUnixFilePermissions(sourcePath, permissions)
+
+	err := uc.filesCmdRepo.UpdatePermissions(updatePermissions)
 	if err != nil {
 		slog.Error("UpdateFilePermissionsError", slog.Any("err", err))
 		return errors.New("UpdateFilePermissionsInfraError")
@@ -56,9 +58,9 @@ func (uc UpdateUnixFiles) moveFile(
 	destinationPath valueObject.UnixFilePath,
 ) error {
 	shouldOverwrite := false
-	err := uc.filesCmdRepo.Move(
-		sourcePath, destinationPath, shouldOverwrite,
-	)
+	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
+
+	err := uc.filesCmdRepo.Move(moveDto)
 	if err != nil {
 		slog.Error("MoveFileError", slog.Any("err", err))
 		return errors.New("MoveFileInfraError")
@@ -71,7 +73,9 @@ func (uc UpdateUnixFiles) updateFileContent(
 	sourcePath valueObject.UnixFilePath,
 	encodedContent valueObject.EncodedContent,
 ) error {
-	err := uc.filesCmdRepo.UpdateContent(sourcePath, encodedContent)
+	updateContentDto := dto.NewUpdateUnixFileContent(sourcePath, encodedContent)
+
+	err := uc.filesCmdRepo.UpdateContent(updateContentDto)
 	if err != nil {
 		slog.Error("UpdateFileContentError", slog.Any("err", err))
 		return errors.New("UpdateFileContentInfraError")
@@ -98,8 +102,7 @@ func (uc UpdateUnixFiles) Execute(
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
@@ -114,8 +117,7 @@ func (uc UpdateUnixFiles) Execute(
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
@@ -130,16 +132,14 @@ func (uc UpdateUnixFiles) Execute(
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
-					updateProcessReport.FailedPathsWithReason,
-					updateFailure,
+					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
 				continue
 			}
 		}
 
 		updateProcessReport.FilePathsSuccessfullyUpdated = append(
-			updateProcessReport.FilePathsSuccessfullyUpdated,
-			sourcePath,
+			updateProcessReport.FilePathsSuccessfullyUpdated, sourcePath,
 		)
 	}
 

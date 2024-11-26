@@ -16,7 +16,12 @@ func UpdateService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	serviceEntity, err := servicesQueryRepo.ReadByName(updateDto.Name)
+	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &updateDto.Name,
+	}
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		readFirstInstalledRequestDto,
+	)
 	if err != nil {
 		return err
 	}

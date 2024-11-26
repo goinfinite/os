@@ -3,7 +3,7 @@ package filesInfra
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -112,24 +112,15 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileUpdatedAt := valueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
 
 	unixFile = entity.NewUnixFile(
-		unixFilePath.GetFileName(),
-		unixFilePath,
-		unixFileMimeType,
-		unixFilePermissions,
-		unixFileSize,
-		unixFileExtensionPtr,
-		unixFileContentPtr,
-		unixFileUid,
-		unixFileUsername,
-		unixFileGid,
-		unixFileGroup,
-		unixFileUpdatedAt,
+		unixFilePath.GetFileName(), unixFilePath, unixFileMimeType, unixFilePermissions,
+		unixFileSize, unixFileExtensionPtr, unixFileContentPtr, unixFileUid,
+		unixFileUsername, unixFileGid, unixFileGroup, unixFileUpdatedAt,
 	)
 
 	return unixFile, nil
 }
 
-func (repo FilesQueryRepo) Get(
+func (repo FilesQueryRepo) Read(
 	unixFilePath valueObject.UnixFilePath,
 ) ([]entity.UnixFile, error) {
 	unixFileList := []entity.UnixFile{}
@@ -150,7 +141,7 @@ func (repo FilesQueryRepo) Get(
 
 	sourcePathInfo, err := os.Stat(sourcePathStr)
 	if err != nil {
-		return unixFileList, errors.New("GetSourcePathInfoError")
+		return unixFileList, errors.New("ReadSourcePathInfoError")
 	}
 
 	filesToFactory := []valueObject.UnixFilePath{unixFilePath}
@@ -173,10 +164,9 @@ func (repo FilesQueryRepo) Get(
 		for _, fileToFactoryStr := range rawDirectoryFilesList {
 			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
 			if err != nil {
-				log.Printf(
-					"FileToFactoryError (%s): %s",
-					filePath.String(),
-					err.Error(),
+				slog.Error(
+					"FileToFactoryError", slog.String("filePath", filePath.String()),
+					slog.Any("err", err),
 				)
 				continue
 			}
@@ -199,10 +189,9 @@ func (repo FilesQueryRepo) Get(
 		unixFile, err := repo.unixFileFactory(filePath, shouldReturnContent)
 
 		if err != nil {
-			log.Printf(
-				"UnixFileFactoryError (%s): %s",
-				filePath.String(),
-				err.Error(),
+			slog.Error(
+				"UnixFileFactoryError", slog.String("filePath", filePath.String()),
+				slog.Any("err", err),
 			)
 			continue
 		}
@@ -213,7 +202,7 @@ func (repo FilesQueryRepo) Get(
 	return unixFileList, nil
 }
 
-func (repo FilesQueryRepo) GetOne(
+func (repo FilesQueryRepo) ReadFirst(
 	unixFilePath valueObject.UnixFilePath,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile

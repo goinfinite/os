@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -56,7 +58,16 @@ func (repo *MarketplaceCmdRepo) installServices(
 			shouldCreatePhpVirtualHost = true
 		}
 
-		_, err := servicesQueryRepo.ReadByName(serviceWithVersion.Name)
+		readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &serviceWithVersion.Name,
+		}
+		_, err := servicesQueryRepo.ReadFirstInstalledItem(
+			readFirstInstalledServiceRequestDto,
+		)
+		if err != nil && err.Error() != servicesInfra.InstalledServiceNotFound {
+			return err
+		}
+
 		if err == nil {
 			continue
 		}
@@ -243,7 +254,7 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 		rawUpdatedPath := installUrlPathStr + pathStr
 		updatedPath, err := valueObject.NewMappingPath(rawUpdatedPath)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				err.Error(),
 				slog.Int("index", mappingIndex),
 				slog.String("path", rawUpdatedPath),
@@ -283,9 +294,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 	for _, mapping := range catalogMappings {
 		contentHash := infraHelper.GenStrongShortHash(
-			hostname.String() +
-				mapping.Path.String() +
-				mapping.MatchPattern.String() +
+			hostname.String() + mapping.Path.String() + mapping.MatchPattern.String() +
 				mapping.TargetType.String(),
 		)
 		currentMapping, alreadyExists := currentMappingsContentHashMap[contentHash]
@@ -302,7 +311,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
 		if err != nil {
-			slog.Error("CreateItemMappingError", slog.Any("error", err))
+			slog.Debug("CreateItemMappingError", slog.Any("error", err))
 			continue
 		}
 
@@ -352,7 +361,18 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 func (repo *MarketplaceCmdRepo) InstallItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemById(*installDto.Id)
+	if installDto.Id == nil && installDto.Slug == nil {
+		return errors.New("CatalogIdOrSlugMustBeProvided")
+	}
+
+	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
+		MarketplaceCatalogItemId:   installDto.Id,
+		MarketplaceCatalogItemSlug: installDto.Slug,
+	}
+
+	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
+		readCatalogItemRequestDto,
+	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
 	}
@@ -444,11 +464,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	return repo.persistInstalledItem(
-		catalogItem,
-		installDto.Hostname,
-		installUrlPath,
-		installDir,
-		installUuid,
+		catalogItem, installDto.Hostname, installUrlPath, installDir, installUuid,
 		mappingIds,
 	)
 }
@@ -472,10 +488,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 
 	moveCmd := fmt.Sprintf(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
-		sourceDir.String(),
-		findCmdFlagsStr,
-		fileNamesFilterParams,
-		targetDir.String(),
+		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
 	)
 	_, err := infraHelper.RunCmdWithSubShell(moveCmd)
 	return err
@@ -511,11 +524,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 
 	rawInstalledItemRealRootDirPath := fmt.Sprintf(
 		"/app/%s-%s-%s",
-		installedItem.Slug.String(),
-		itemHostnameStr,
-		installedItem.InstallUuid.String(),
+		installedItem.Slug.String(), itemHostnameStr, installedItem.InstallUuid.String(),
 	)
-	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(rawInstalledItemRealRootDirPath)
+	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(
+		rawInstalledItemRealRootDirPath,
+	)
 	if err != nil {
 		return err
 	}
@@ -580,10 +593,8 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 
 	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
-		useCase.TrashDirPath,
-		installedItem.Slug.String(),
-		installedItem.Hostname.String(),
-		installedItem.InstallUuid.String(),
+		useCase.TrashDirPath, installedItem.Slug.String(),
+		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
 	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
 	if err != nil {
@@ -626,13 +637,20 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 		serviceNamesToUninstallMap[serviceNameWithVersion.Name.String()] = nil
 	}
 
-	installedItems, err := repo.marketplaceQueryRepo.ReadInstalledItems()
+	readInstalledItemsDto := dto.ReadMarketplaceInstalledItemsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+	}
+	installedItemsResponseDto, err := repo.marketplaceQueryRepo.ReadInstalledItems(
+		readInstalledItemsDto,
+	)
 	if err != nil {
 		return errors.New("ReadInstalledItemsError: " + err.Error())
 	}
 
 	serviceNamesInUseMap := map[string]interface{}{}
-	for _, installedItem := range installedItems {
+	for _, installedItem := range installedItemsResponseDto.MarketplaceInstalledItems {
 		for _, serviceNameWithVersion := range installedItem.Services {
 			serviceNamesInUseMap[serviceNameWithVersion.Name.String()] = nil
 		}
@@ -653,7 +671,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	for _, unusedService := range unusedServiceNames {
 		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
-			slog.Error("UninstallUnusedServiceError", slog.Any("error", err))
+			slog.Debug("UninstallUnusedServiceError", slog.Any("error", err))
 			continue
 		}
 	}
@@ -664,8 +682,11 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	installedItem, err := repo.marketplaceQueryRepo.ReadInstalledItemById(
-		deleteDto.InstalledId,
+	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
+		MarketplaceInstalledItemId: &deleteDto.InstalledId,
+	}
+	installedItem, err := repo.marketplaceQueryRepo.ReadFirstInstalledItem(
+		readInstalledItemDto,
 	)
 	if err != nil {
 		return err
@@ -674,7 +695,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	for _, installedItemMapping := range installedItem.Mappings {
 		err = repo.mappingCmdRepo.Delete(installedItemMapping.Id)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				"DeleteMappingError",
 				slog.String("mappingPath", installedItemMapping.Path.String()),
 				slog.Any("error", err),
@@ -683,8 +704,11 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		}
 	}
 
-	catalogItem, err := repo.marketplaceQueryRepo.ReadCatalogItemBySlug(
-		installedItem.Slug,
+	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
+		MarketplaceCatalogItemSlug: &installedItem.Slug,
+	}
+	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
+		readCatalogItemDto,
 	)
 	if err != nil {
 		return err
@@ -704,10 +728,10 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return err
 	}
 
-	installedItemModel := dbModel.MarketplaceInstalledItem{
-		ID: uint(deleteDto.InstalledId.Uint16()),
+	installedServiceItemModel := dbModel.MarketplaceInstalledItem{
+		ID: deleteDto.InstalledId.Uint16(),
 	}
-	err = repo.persistentDbSvc.Handler.Delete(&installedItemModel).Error
+	err = repo.persistentDbSvc.Handler.Delete(&installedServiceItemModel).Error
 	if err != nil {
 		return err
 	}
@@ -720,4 +744,27 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	return nil
+}
+
+func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
+	_, err := os.Stat(infraEnvs.MarketplaceCatalogItemsDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+
+		_, err = infraHelper.RunCmdWithSubShell(
+			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
+				"git clone https://github.com/goinfinite/os-marketplace.git marketplace",
+		)
+		if err != nil {
+			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
+		}
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
+			"git clean -f -d; git reset --hard HEAD; git pull",
+	)
+	return err
 }
