@@ -28,11 +28,5 @@ func DeleteDatabaseUser(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		DeleteDatabaseUser(deleteDto)
 
-	slog.Info(
-		"DatabaseUserDeleted",
-		slog.String("databaseName", deleteDto.DatabaseName.String()),
-		slog.String("databaseUsername", deleteDto.Username.String()),
-	)
-
 	return nil
 }

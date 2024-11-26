@@ -22,14 +22,5 @@ func CreateCron(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateCron(createDto, cronId)
 
-	cronCmdLimitStr := len(createDto.Command.String())
-	if cronCmdLimitStr > 75 {
-		cronCmdLimitStr = 75
-	}
-	cronCmdShortVersion := createDto.Command.String()[:cronCmdLimitStr]
-	cronLine := createDto.Schedule.String() + " " + cronCmdShortVersion
-
-	slog.Info("CronCreated", slog.String("cron", cronLine))
-
 	return nil
 }

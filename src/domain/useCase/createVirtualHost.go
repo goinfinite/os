@@ -47,9 +47,5 @@ func CreateVirtualHost(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateVirtualHost(createDto)
 
-	slog.Info(
-		"VirtualHostCreated", slog.String("vhostHostname", createDto.Hostname.String()),
-	)
-
 	return nil
 }

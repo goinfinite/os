@@ -28,10 +28,5 @@ func CreateDatabase(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateDatabase(createDto)
 
-	slog.Info(
-		"DatabaseCreated",
-		slog.String("databaseName", createDto.DatabaseName.String()),
-	)
-
 	return nil
 }

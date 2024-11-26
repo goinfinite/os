@@ -33,7 +33,5 @@ func DeleteVirtualHost(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		DeleteVirtualHost(deleteDto)
 
-	slog.Info("VirtualHostDeleted", slog.String("hostname", deleteDto.Hostname.String()))
-
 	return nil
 }

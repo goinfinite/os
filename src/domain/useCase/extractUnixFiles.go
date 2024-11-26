@@ -16,7 +16,7 @@ func ExtractUnixFiles(
 ) error {
 	err := filesCmdRepo.Extract(extractDto)
 	if err != nil {
-		slog.Error("ExtractUnixFilesInfraError", slog.Any("err", err))
+		slog.Error("ExtractUnixFilesError", slog.Any("err", err))
 		return errors.New("ExtractUnixFilesInfraError")
 	}
 

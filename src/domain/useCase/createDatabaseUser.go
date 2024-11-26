@@ -40,11 +40,5 @@ func CreateDatabaseUser(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateDatabaseUser(createDto)
 
-	slog.Info(
-		"DatabaseUserCreated",
-		slog.String("databaseName", createDto.DatabaseName.String()),
-		slog.String("databaseUsername", createDto.Username.String()),
-	)
-
 	return nil
 }

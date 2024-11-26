@@ -28,7 +28,5 @@ func UpdateCron(
 		return errors.New("UpdateCronInfraError")
 	}
 
-	slog.Info("CronUpdated", slog.Uint64("cronId", updateDto.Id.Uint64()))
-
 	return nil
 }
