@@ -18,6 +18,7 @@ script AccountsIndexLocalState() {
 					username: '',
 					password: '',
 					apiKey: '',
+					secureAccessKeys: [],
 				}
 			},
 			init() {
@@ -75,6 +76,25 @@ script AccountsIndexLocalState() {
 					},
 				);
 			},
+			isSecureAccessKeysModalOpen: false,
+			async readSecureAccessKeys() {
+				const responseData = await Infinite.JsonAjax(
+					'GET', '/api/v1/account/' + this.account.id + '/secure-access-key/'
+				);
+				this.account.secureAccessKeys = responseData;
+			},
+			async openSecureAccessKeysModal(id, username) {
+				this.resetPrimaryStates();
+
+				this.account.id = id;
+				this.account.username = username;
+				await this.readSecureAccessKeys();
+
+				this.isSecureAccessKeysModalOpen = true;
+			},
+			closeSecureAccessKeysModal() {
+				this.isSecureAccessKeysModalOpen = false;
+			},
 			isDeleteAccountModalOpen: false,
 			openDeleteAccountModal(id, username) {
 				this.resetPrimaryStates();
@@ -127,6 +147,7 @@ templ AccountsIndex(accounts []entity.Account) {
 		@CreateAccountModal()
 		@UpdatePasswordModal()
 		@UpdateApiKeyModal()
+		@SecureAccessKeysModal()
 		@componentStructural.DeleteModal(
 			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
 			"account.username", "account.id",
@@ -166,6 +187,11 @@ templ AccountsTable(accounts []entity.Account) {
 								"ph-key", "blue-900", "blue-700",
 								"openUpdateApiKeyModal("+account.Id.String()+", '"+account.Username.String()+"')",
 								"update api key", "blue-500",
+							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-fingerprint", "blue-900", "blue-700",
+								"openSecureAccessKeysModal("+account.Id.String()+")",
+								"secure access keys", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
@@ -253,5 +279,22 @@ templ UpdateApiKeyModal() {
 		"account.username",
 	) {
 		@UpdateApiKeyContent()
+	}
+}
+
+templ SecureAccessKeysList() {
+	@componentStructural.Alert(
+		componentStructural.AlertTypeInfo,
+		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
+	)
+	<div id="account-secure-access-keys-list"></div>
+}
+
+templ SecureAccessKeysModal() {
+	@componentStructural.Modal(
+		"Secure Access Keys", "isSecureAccessKeysModalOpen", "closeSecureAccessKeysModal()",
+		"account.username",
+	) {
+		@SecureAccessKeysList()
 	}
 }
