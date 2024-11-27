@@ -253,6 +253,11 @@ func (service *AccountService) ReadSecureAccessKey(
 func (service *AccountService) CreateSecureAccessKey(
 	input map[string]interface{},
 ) ServiceOutput {
+	serviceName, _ := valueObject.NewServiceName("openssh")
+	if !service.availabilityInspector.IsAvailable(serviceName) {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
+
 	requiredParams := []string{"accountId", "content"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -311,6 +316,11 @@ func (service *AccountService) CreateSecureAccessKey(
 func (service *AccountService) DeleteSecureAccessKey(
 	input map[string]interface{},
 ) ServiceOutput {
+	serviceName, _ := valueObject.NewServiceName("openssh")
+	if !service.availabilityInspector.IsAvailable(serviceName) {
+		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
+
 	requiredParams := []string{"accountId", "secureAccessKeyId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
