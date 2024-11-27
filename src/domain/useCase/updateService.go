@@ -13,6 +13,7 @@ func UpdateService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
 	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
@@ -34,8 +35,12 @@ func UpdateService(
 
 	shouldDelete := shouldUpdateStatus && updateDto.Status.String() == "uninstalled"
 	if shouldDelete {
+		deleteDto := dto.NewDeleteService(
+			updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
+		)
 		return DeleteService(
-			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, updateDto.Name,
+			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, activityRecordCmdRepo,
+			deleteDto,
 		)
 	}
 
@@ -45,11 +50,15 @@ func UpdateService(
 		return errors.New("UpdateServiceInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateService(updateDto)
+
 	if len(updateDto.PortBindings) == 0 {
 		return nil
 	}
 
-	err = mappingCmdRepo.RecreateByServiceName(updateDto.Name)
+	err = mappingCmdRepo.RecreateByServiceName(
+		updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
+	)
 	if err != nil {
 		slog.Error("RecreateMappingError", slog.Any("error", err))
 	}

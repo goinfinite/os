@@ -21,9 +21,10 @@ type MarketplaceController struct {
 
 func NewMarketplaceController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MarketplaceController {
 	return &MarketplaceController{
-		marketplaceService: service.NewMarketplaceService(persistentDbSvc),
+		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
 		persistentDbSvc:    persistentDbSvc,
 	}
 }

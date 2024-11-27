@@ -49,14 +49,9 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	}
 
 	return dbModel.NewMapping(
-		0,
-		createDto.Hostname.String(),
-		createDto.Path.String(),
-		createDto.MatchPattern.String(),
-		createDto.TargetType.String(),
-		targetValuePtr,
-		targetHttpResponseCodePtr,
-		vhostName.String(),
+		0, createDto.Hostname.String(), createDto.Path.String(),
+		createDto.MatchPattern.String(), createDto.TargetType.String(),
+		targetValuePtr, targetHttpResponseCodePtr, vhostName.String(),
 	)
 }
 
@@ -487,6 +482,8 @@ func (repo *MappingCmdRepo) DeleteAuto(
 
 func (repo *MappingCmdRepo) RecreateByServiceName(
 	serviceName valueObject.ServiceName,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) error {
 	mappings, err := repo.mappingQueryRepo.ReadByServiceName(serviceName)
 	if err != nil {
@@ -500,12 +497,9 @@ func (repo *MappingCmdRepo) RecreateByServiceName(
 		}
 
 		createDto := dto.NewCreateMapping(
-			mapping.Hostname,
-			mapping.Path,
-			mapping.MatchPattern,
-			mapping.TargetType,
-			mapping.TargetValue,
-			mapping.TargetHttpResponseCode,
+			mapping.Hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
+			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
+			operatorIpAddress,
 		)
 
 		_, err = repo.Create(createDto)

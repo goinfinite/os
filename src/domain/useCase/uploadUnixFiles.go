@@ -12,6 +12,7 @@ import (
 func UploadUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	uploadDto dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
 	maxFileSizeInGb := int64(5)
@@ -47,6 +48,8 @@ func UploadUnixFiles(
 	uploadProcessReport.FailedNamesWithReason = append(
 		uploadProcessReport.FailedNamesWithReason, tooBigFiles...,
 	)
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UploadUnixFiles(uploadDto)
 
 	return uploadProcessReport, nil
 }

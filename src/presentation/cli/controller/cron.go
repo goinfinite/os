@@ -1,6 +1,9 @@
 package cliController
 
 import (
+	"errors"
+
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/spf13/cobra"
@@ -10,10 +13,17 @@ type CronController struct {
 	cronService *service.CronService
 }
 
-func NewCronController() *CronController {
-	return &CronController{
-		cronService: service.NewCronService(),
+func NewCronController(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) (*CronController, error) {
+	cronService, err := service.NewCronService(trailDbSvc)
+	if err != nil {
+		return nil, errors.New("FailedToInitializeCronService: " + err.Error())
 	}
+
+	return &CronController{
+		cronService: cronService,
+	}, nil
 }
 
 func (controller *CronController) Read() *cobra.Command {

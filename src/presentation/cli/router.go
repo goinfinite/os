@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"log"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -74,7 +75,10 @@ func (router Router) cronRoutes() {
 	}
 	rootCmd.AddCommand(cronCmd)
 
-	cronController := cliController.NewCronController()
+	cronController, err := cliController.NewCronController(router.trailDbSvc)
+	if err != nil {
+		log.Fatalf("FailedToInitializeCronCliController: " + err.Error())
+	}
 	cronCmd.AddCommand(cronController.Read())
 	cronCmd.AddCommand(cronController.Create())
 	cronCmd.AddCommand(cronController.Update())
@@ -89,7 +93,7 @@ func (router Router) databaseRoutes() {
 	rootCmd.AddCommand(databaseCmd)
 
 	databaseController := cliController.NewDatabaseController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	databaseCmd.AddCommand(databaseController.Read())
 	databaseCmd.AddCommand(databaseController.Create())
@@ -106,7 +110,7 @@ func (router Router) marketplaceRoutes() {
 	rootCmd.AddCommand(marketplaceCmd)
 
 	marketplaceController := cliController.NewMarketplaceController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	marketplaceCmd.AddCommand(marketplaceController.ReadCatalog())
 	marketplaceCmd.AddCommand(marketplaceController.InstallCatalogItem())
@@ -138,7 +142,9 @@ func (router Router) runtimeRoutes() {
 	}
 	runtimeCmd.AddCommand(phpCmd)
 
-	runtimeController := cliController.NewRuntimeController(router.persistentDbSvc)
+	runtimeController := cliController.NewRuntimeController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	phpCmd.AddCommand(runtimeController.ReadPhpConfigs())
 	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
 	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())
@@ -182,7 +188,7 @@ func (router Router) servicesRoutes() {
 	rootCmd.AddCommand(servicesCmd)
 
 	servicesController := cliController.NewServicesController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	servicesCmd.AddCommand(servicesController.ReadInstalledItems())
 	servicesCmd.AddCommand(servicesController.ReadInstallableItems())
@@ -200,7 +206,7 @@ func (router Router) sslRoutes() {
 	rootCmd.AddCommand(sslCmd)
 
 	sslController := cliController.NewSslController(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	sslCmd.AddCommand(sslController.Read())
 	sslCmd.AddCommand(sslController.Create())
@@ -216,7 +222,7 @@ func (router Router) virtualHostRoutes() {
 	rootCmd.AddCommand(vhostCmd)
 
 	vhostController := cliController.NewVirtualHostController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 	vhostCmd.AddCommand(vhostController.Read())
 	vhostCmd.AddCommand(vhostController.Create())

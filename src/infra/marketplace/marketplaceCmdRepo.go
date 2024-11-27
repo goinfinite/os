@@ -46,6 +46,8 @@ func NewMarketplaceCmdRepo(
 func (repo *MarketplaceCmdRepo) installServices(
 	vhostName valueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
 	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
@@ -73,7 +75,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 		createServiceDto := dto.NewCreateInstallableService(
 			serviceWithVersion.Name, []valueObject.ServiceEnv{},
 			[]valueObject.PortBinding{}, serviceWithVersion.Version,
-			nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, operatorAccountId, operatorIpAddress,
 		)
 
 		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
@@ -269,6 +271,8 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 func (repo *MarketplaceCmdRepo) createMappings(
 	hostname valueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) (mappingIds []valueObject.MappingId, err error) {
 	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	currentMappings, err := mappingQueryRepo.ReadByHostname(hostname)
@@ -301,7 +305,8 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		createDto := dto.NewCreateMapping(
 			hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
-			mapping.TargetValue, mapping.TargetHttpResponseCode,
+			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
+			operatorIpAddress,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
@@ -378,7 +383,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	err = repo.installServices(installDto.Hostname, catalogItem.Services)
+	err = repo.installServices(
+		installDto.Hostname, catalogItem.Services, installDto.OperatorAccountId,
+		installDto.OperatorIpAddress,
+	)
 	if err != nil {
 		return err
 	}
@@ -447,7 +455,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		)
 	}
 
-	mappingIds, err := repo.createMappings(installDto.Hostname, catalogItem.Mappings)
+	mappingIds, err := repo.createMappings(
+		installDto.Hostname, catalogItem.Mappings, installDto.OperatorAccountId,
+		installDto.OperatorIpAddress,
+	)
 	if err != nil {
 		return err
 	}

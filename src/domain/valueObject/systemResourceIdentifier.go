@@ -8,7 +8,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
-const systemResourceIdentifierRegex string = `^sri://(?P<accountId>[\d]{1,64}):(?P<resourceType>[\w\_\-]{2,64})\/(?P<resourceId>[\w\_\.\-]{2,256}|\*)$`
+const systemResourceIdentifierRegex string = `^sri://(?P<accountId>[\d]{1,64}):(?P<resourceType>[\w\_\-]{2,64})\/(?P<resourceId>[\w\_\.\-/]{1,256}|\*)$`
 
 type SystemResourceIdentifier string
 
@@ -45,6 +45,137 @@ func NewSystemResourceIdentifierIgnoreError(value interface{}) SystemResourceIde
 func NewAccountSri(accountId AccountId) SystemResourceIdentifier {
 	return NewSystemResourceIdentifierIgnoreError(
 		"sri://0:account/" + accountId.String(),
+	)
+}
+
+func NewCronSri(
+	accountId AccountId,
+	cronId CronId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":cron/" + cronId.String(),
+	)
+}
+
+func NewDatabaseSri(
+	accountId AccountId,
+	databaseName DatabaseName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":database/" + databaseName.String(),
+	)
+}
+
+func NewDatabaseUserSri(
+	accountId AccountId,
+	databaseUsername DatabaseUsername,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":databaseUser/" + databaseUsername.String(),
+	)
+}
+
+func NewMarketplaceCatalogItemSri(
+	accountId AccountId,
+	marketplaceCatalogItemId *MarketplaceItemId,
+	marketplaceCatalogItemSlug *MarketplaceItemSlug,
+) SystemResourceIdentifier {
+	if marketplaceCatalogItemId == nil && marketplaceCatalogItemSlug == nil {
+		slog.Debug("MarketplaceCatalogItemSriMustHaveIdOrSlug")
+		panic("MarketplaceCatalogItemSriMustHaveIdOrSlug")
+	}
+
+	marketplaceCatalogItemSri := "sri://" + accountId.String() + ":marketplaceCatalogItem/"
+	if marketplaceCatalogItemId != nil {
+		return NewSystemResourceIdentifierIgnoreError(
+			marketplaceCatalogItemSri + marketplaceCatalogItemId.String(),
+		)
+	}
+
+	return NewSystemResourceIdentifierIgnoreError(
+		marketplaceCatalogItemSri + marketplaceCatalogItemSlug.String(),
+	)
+}
+
+func NewMarketplaceInstalledItemSri(
+	accountId AccountId,
+	marketplaceInstalledItemId MarketplaceItemId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":marketplaceInstalledItem/" +
+			marketplaceInstalledItemId.String(),
+	)
+}
+
+func NewPhpRuntimeSri(
+	accountId AccountId,
+	virtualHostHostname Fqdn,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":phpRuntime/" + virtualHostHostname.String(),
+	)
+}
+
+func NewInstallableServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":installableService/" + serviceName.String(),
+	)
+}
+
+func NewCustomServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":customService/" + serviceName.String(),
+	)
+}
+
+func NewInstalledServiceSri(
+	accountId AccountId,
+	serviceName ServiceName,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":installedService/" + serviceName.String(),
+	)
+}
+
+func NewSslSri(
+	accountId AccountId,
+	sslPairId SslPairId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":ssl/" + sslPairId.String(),
+	)
+}
+
+func NewVirtualHostSri(
+	accountId AccountId,
+	vhostHostname Fqdn,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":virtualHost/" + vhostHostname.String(),
+	)
+}
+
+func NewMappingSri(
+	accountId AccountId,
+	mappingId MappingId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":mapping/" + mappingId.String(),
+	)
+}
+
+func NewUnixFileSri(
+	accountId AccountId,
+	unixFilePath UnixFilePath,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":unixFile/" + unixFilePath.String(),
 	)
 }
 

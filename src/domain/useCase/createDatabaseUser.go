@@ -12,35 +12,33 @@ import (
 func CreateDatabaseUser(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	createDatabaseUser dto.CreateDatabaseUser,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateDatabaseUser,
 ) error {
-	_, err := dbQueryRepo.ReadByName(createDatabaseUser.DatabaseName)
+	_, err := dbQueryRepo.ReadByName(createDto.DatabaseName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}
 
-	if len(createDatabaseUser.Privileges) == 0 {
+	if len(createDto.Privileges) == 0 {
 		defaultPrivilege, err := valueObject.NewDatabasePrivilege("ALL")
 		if err != nil {
 			return err
 		}
 
-		createDatabaseUser.Privileges = []valueObject.DatabasePrivilege{
+		createDto.Privileges = []valueObject.DatabasePrivilege{
 			defaultPrivilege,
 		}
 	}
 
-	err = dbCmdRepo.CreateUser(createDatabaseUser)
+	err = dbCmdRepo.CreateUser(createDto)
 	if err != nil {
 		slog.Error("CreateDatabaseUserError", slog.Any("error", err))
 		return errors.New("CreateDatabaseUserInfraError")
 	}
 
-	slog.Info(
-		"DatabaseUserCreated",
-		slog.String("databaseName", createDatabaseUser.DatabaseName.String()),
-		slog.String("databaseUsername", createDatabaseUser.Username.String()),
-	)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateDatabaseUser(createDto)
 
 	return nil
 }

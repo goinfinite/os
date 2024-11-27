@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
@@ -15,16 +16,23 @@ import (
 type RuntimeService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
+	runtimeQueryRepo      runtimeInfra.RuntimeQueryRepo
+	runtimeCmdRepo        *runtimeInfra.RuntimeCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewRuntimeService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *RuntimeService {
 	return &RuntimeService{
 		persistentDbSvc: persistentDbSvc,
 		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
 			persistentDbSvc,
 		),
+		runtimeQueryRepo:      runtimeInfra.RuntimeQueryRepo{},
+		runtimeCmdRepo:        runtimeInfra.NewRuntimeCmdRepo(persistentDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
@@ -41,8 +49,7 @@ func (service *RuntimeService) ReadPhpConfigs(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	phpConfigs, err := useCase.ReadPhpConfigs(runtimeQueryRepo, hostname)
+	phpConfigs, err := useCase.ReadPhpConfigs(service.runtimeQueryRepo, hostname)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -92,14 +99,32 @@ func (service *RuntimeService) UpdatePhpConfigs(
 		}
 	}
 
-	dto := dto.NewUpdatePhpConfigs(hostname, phpVersion, phpModules, phpSettings)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	runtimeQueryRepo := runtimeInfra.RuntimeQueryRepo{}
-	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(service.persistentDbSvc)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdatePhpConfigs(
+		hostname, phpVersion, phpModules, phpSettings, operatorAccountId,
+		operatorIpAddress,
+	)
+
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
 	err = useCase.UpdatePhpConfigs(
-		runtimeQueryRepo, runtimeCmdRepo, vhostQueryRepo, dto,
+		service.runtimeQueryRepo, service.runtimeCmdRepo, vhostQueryRepo,
+		service.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

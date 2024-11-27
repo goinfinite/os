@@ -11,6 +11,7 @@ import (
 func CreateUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateUnixFile,
 ) error {
 	err := filesCmdRepo.Create(createDto)
@@ -18,6 +19,9 @@ func CreateUnixFile(
 		slog.Error("CreateUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CreateUnixFileInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateUnixFile(createDto)
 
 	return nil
 }

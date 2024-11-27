@@ -24,6 +24,9 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 
+	ipAddress := valueObject.NewLocalhostIpAddress()
+	operatorAccountId, _ := valueObject.NewAccountId(0)
+
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 
 	t.Run("CreateDatabase", func(t *testing.T) {
@@ -36,6 +39,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Run("CreateDatabaseUser", func(t *testing.T) {
 		createDatabaseUserDto := dto.NewCreateDatabaseUser(
 			dbName, dbUsername, dbPassword, dbPrivileges,
+			operatorAccountId, ipAddress,
 		)
 
 		err := mysqlDatabaseCmdRepo.CreateUser(createDatabaseUserDto)

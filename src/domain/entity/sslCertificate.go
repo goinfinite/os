@@ -9,7 +9,7 @@ import (
 )
 
 type SslCertificate struct {
-	Id                   valueObject.SslId                   `json:"sslId"`
+	Id                   valueObject.SslCertificateId        `json:"id"`
 	CommonName           *valueObject.SslHostname            `json:"commonName"`
 	CertificateContent   valueObject.SslCertificateContent   `json:"certificateContent"`
 	IsIntermediary       bool                                `json:"-"`
@@ -32,7 +32,7 @@ func NewSslCertificate(
 		return certificate, errors.New("SslCertificateContentParseError")
 	}
 
-	certId, err := valueObject.NewSslIdFromSslCertificateContent(certContent)
+	certId, err := valueObject.NewSslCertificateIdFromSslCertificateContent(certContent)
 	if err != nil {
 		return certificate, err
 	}

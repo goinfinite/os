@@ -1,6 +1,9 @@
 package useCase
 
 import (
+	"errors"
+	"log/slog"
+
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 )
@@ -8,5 +11,11 @@ import (
 func ReadCrons(
 	cronQueryRepo repository.CronQueryRepo,
 ) ([]entity.Cron, error) {
-	return cronQueryRepo.Read()
+	cronsList, err := cronQueryRepo.Read()
+	if err != nil {
+		slog.Error("ReadCronsError", slog.Any("err", err))
+		return cronsList, errors.New("ReadCronsInfraError")
+	}
+
+	return cronsList, err
 }

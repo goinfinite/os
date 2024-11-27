@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -11,26 +11,29 @@ import (
 func DeleteCron(
 	cronQueryRepo repository.CronQueryRepo,
 	cronCmdRepo repository.CronCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteCron,
 ) error {
-	if deleteDto.Id == nil && deleteDto.Comment == nil {
-		return errors.New("CronIdOrCommentRequired")
-	}
-
-	if deleteDto.Id != nil {
-		err := cronCmdRepo.Delete(*deleteDto.Id)
-		if err != nil {
-			log.Printf("DeleteCronError: %s", err)
-			return errors.New("DeleteCronInfraError")
+	if deleteDto.Id == nil {
+		if deleteDto.Comment == nil {
+			return errors.New("CronIdOrCommentRequired")
 		}
-		return nil
+
+		cron, err := cronQueryRepo.ReadByComment(*deleteDto.Comment)
+		if err != nil {
+			slog.Error("ReadCronToDeleteError", slog.Any("err", err))
+			return errors.New("ReadCronToDeleteInfraError")
+		}
+		deleteDto.Id = &cron.Id
 	}
 
-	err := cronCmdRepo.DeleteByComment(*deleteDto.Comment)
+	err := cronCmdRepo.Delete(*deleteDto.Id)
 	if err != nil {
-		log.Printf("DeleteCronByCommentError: %s", err)
-		return errors.New("DeleteCronByCommentInfraError")
+		slog.Error("DeleteCronError", slog.Any("err", err))
+		return errors.New("DeleteCronInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).DeleteCron(deleteDto)
 
 	return nil
 }

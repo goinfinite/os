@@ -11,6 +11,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
@@ -21,22 +22,25 @@ import (
 )
 
 type ServicesService struct {
-	persistentDbService *internalDbInfra.PersistentDatabaseService
-	servicesQueryRepo   *servicesInfra.ServicesQueryRepo
-	servicesCmdRepo     *servicesInfra.ServicesCmdRepo
-	mappingQueryRepo    *mappingInfra.MappingQueryRepo
-	mappingCmdRepo      *mappingInfra.MappingCmdRepo
+	persistentDbService   *internalDbInfra.PersistentDatabaseService
+	servicesQueryRepo     *servicesInfra.ServicesQueryRepo
+	servicesCmdRepo       *servicesInfra.ServicesCmdRepo
+	mappingQueryRepo      *mappingInfra.MappingQueryRepo
+	mappingCmdRepo        *mappingInfra.MappingCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewServicesService(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *ServicesService {
 	return &ServicesService{
-		persistentDbService: persistentDbService,
-		servicesQueryRepo:   servicesInfra.NewServicesQueryRepo(persistentDbService),
-		servicesCmdRepo:     servicesInfra.NewServicesCmdRepo(persistentDbService),
-		mappingQueryRepo:    mappingInfra.NewMappingQueryRepo(persistentDbService),
-		mappingCmdRepo:      mappingInfra.NewMappingCmdRepo(persistentDbService),
+		persistentDbService:   persistentDbService,
+		servicesQueryRepo:     servicesInfra.NewServicesQueryRepo(persistentDbService),
+		servicesCmdRepo:       servicesInfra.NewServicesCmdRepo(persistentDbService),
+		mappingQueryRepo:      mappingInfra.NewMappingQueryRepo(persistentDbService),
+		mappingCmdRepo:        mappingInfra.NewMappingCmdRepo(persistentDbService),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
@@ -343,6 +347,22 @@ func (service *ServicesService) CreateInstallable(
 		}
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " services create-installable"
 		installParams := []string{
@@ -413,16 +433,18 @@ func (service *ServicesService) CreateInstallable(
 		return NewServiceOutput(Created, "CreateInstallableServiceScheduled")
 	}
 
-	dto := dto.NewCreateInstallableService(
+	createDto := dto.NewCreateInstallableService(
 		name, envs, portBindings, versionPtr, startupFilePtr, autoStartPtr,
 		timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr, &autoCreateMapping,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
 
 	err = useCase.CreateInstallableService(
 		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
-		service.mappingCmdRepo, vhostQueryRepo, dto,
+		service.mappingCmdRepo, vhostQueryRepo, service.activityRecordCmdRepo,
+		createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -489,17 +511,34 @@ func (service *ServicesService) CreateCustom(
 		}
 	}
 
-	dto := dto.NewCreateCustomService(
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, []valueObject.ServiceEnv{}, portBindings,
 		nil, nil, nil, nil, nil, versionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
-		&autoCreateMapping,
+		&autoCreateMapping, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
 
 	err = useCase.CreateCustomService(
 		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
-		service.mappingCmdRepo, vhostQueryRepo, dto,
+		service.mappingCmdRepo, vhostQueryRepo, service.activityRecordCmdRepo,
+		createCustomDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -582,14 +621,31 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		startupFilePtr = &startupFile
 	}
 
-	dto := dto.NewUpdateService(
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateService(
 		name, typePtr, versionPtr, statusPtr, startCmdPtr, nil, portBindings, nil,
 		nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateService(
 		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingQueryRepo,
-		service.mappingCmdRepo, dto,
+		service.mappingCmdRepo, service.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -610,9 +666,27 @@ func (service *ServicesService) Delete(input map[string]interface{}) ServiceOutp
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteService(name, operatorAccountId, operatorIpAddress)
+
 	err = useCase.DeleteService(
-		service.servicesQueryRepo, service.servicesCmdRepo,
-		service.mappingCmdRepo, name,
+		service.servicesQueryRepo, service.servicesCmdRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

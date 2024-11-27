@@ -65,13 +65,13 @@ func (repo *CronCmdRepo) installNewCrontab() error {
 	return os.Remove(repo.tmpCrontabFilename)
 }
 
-func (repo *CronCmdRepo) Create(createCron dto.CreateCron) error {
+func (repo *CronCmdRepo) Create(createCron dto.CreateCron) (valueObject.CronId, error) {
 	cronsCount := len(repo.currentCrontab)
 	newCronIndex := cronsCount + 1
 
 	cronId, err := valueObject.NewCronId(newCronIndex)
 	if err != nil {
-		return err
+		return cronId, err
 	}
 
 	newCron := entity.NewCron(
@@ -80,7 +80,7 @@ func (repo *CronCmdRepo) Create(createCron dto.CreateCron) error {
 
 	repo.currentCrontab = append(repo.currentCrontab, newCron)
 
-	return repo.installNewCrontab()
+	return cronId, repo.installNewCrontab()
 }
 
 func (repo *CronCmdRepo) Update(updateCron dto.UpdateCron) error {
@@ -114,21 +114,6 @@ func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	var cronsToKeep []entity.Cron
 	for _, currentCron := range repo.currentCrontab {
 		if cronId.Uint64() == currentCron.Id.Uint64() {
-			continue
-		}
-		cronsToKeep = append(cronsToKeep, currentCron)
-	}
-	repo.currentCrontab = cronsToKeep
-
-	return repo.installNewCrontab()
-}
-
-func (repo *CronCmdRepo) DeleteByComment(comment valueObject.CronComment) error {
-	commentStr := comment.String()
-
-	var cronsToKeep []entity.Cron
-	for _, currentCron := range repo.currentCrontab {
-		if commentStr == currentCron.Comment.String() {
 			continue
 		}
 		cronsToKeep = append(cronsToKeep, currentCron)

@@ -3415,11 +3415,11 @@ const docTemplate = `{
                 "expiresAt": {
                     "type": "integer"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "issuedAt": {
                     "type": "integer"
-                },
-                "sslId": {
-                    "type": "string"
                 }
             }
         },

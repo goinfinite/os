@@ -20,9 +20,10 @@ type RuntimeController struct {
 
 func NewRuntimeController(
 	persistentDbService *internalDbInfra.PersistentDatabaseService,
+	trailDbService *internalDbInfra.TrailDatabaseService,
 ) *RuntimeController {
 	return &RuntimeController{
-		runtimeService: service.NewRuntimeService(persistentDbService),
+		runtimeService: service.NewRuntimeService(persistentDbService, trailDbService),
 	}
 }
 

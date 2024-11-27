@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -10,22 +10,17 @@ import (
 
 func CreateCron(
 	cronCmdRepo repository.CronCmdRepo,
-	createCron dto.CreateCron,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateCron,
 ) error {
-	err := cronCmdRepo.Create(createCron)
+	cronId, err := cronCmdRepo.Create(createDto)
 	if err != nil {
-		log.Printf("CreateCronError: %s", err)
+		slog.Error("CreateCronError", slog.Any("err", err))
 		return errors.New("CreateCronInfraError")
 	}
 
-	cronCmdLimitStr := len(createCron.Command.String())
-	if cronCmdLimitStr > 75 {
-		cronCmdLimitStr = 75
-	}
-	cronCmdShortVersion := createCron.Command.String()[:cronCmdLimitStr]
-	cronLine := createCron.Schedule.String() + " " + cronCmdShortVersion
-
-	log.Printf("Cron '%v' created.", cronLine)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateCron(createDto, cronId)
 
 	return nil
 }

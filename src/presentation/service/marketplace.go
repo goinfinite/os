@@ -10,6 +10,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -20,14 +21,21 @@ import (
 )
 
 type MarketplaceService struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	marketplaceQueryRepo  *marketplaceInfra.MarketplaceQueryRepo
+	marketplaceCmdRepo    *marketplaceInfra.MarketplaceCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 }
 
 func NewMarketplaceService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MarketplaceService {
 	return &MarketplaceService{
-		persistentDbSvc: persistentDbSvc,
+		marketplaceQueryRepo:  marketplaceInfra.NewMarketplaceQueryRepo(persistentDbSvc),
+		marketplaceCmdRepo:    marketplaceInfra.NewMarketplaceCmdRepo(persistentDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+		persistentDbSvc:       persistentDbSvc,
 	}
 }
 
@@ -228,17 +236,33 @@ func (service *MarketplaceService) InstallCatalogItem(
 		return NewServiceOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	dto := dto.NewInstallMarketplaceCatalogItem(
-		hostname, idPtr, slugPtr, urlPathPtr, dataFields,
+		hostname, idPtr, slugPtr, urlPathPtr, dataFields, operatorAccountId,
+		operatorIpAddress,
 	)
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(service.persistentDbSvc)
-	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(service.persistentDbSvc)
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
 
 	err = useCase.InstallMarketplaceCatalogItem(
-		marketplaceQueryRepo, marketplaceCmdRepo, vhostQueryRepo, vhostCmdRepo, dto,
+		service.marketplaceQueryRepo, service.marketplaceCmdRepo, vhostQueryRepo,
+		vhostCmdRepo, service.activityRecordCmdRepo, dto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -378,6 +402,22 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		}
 	}
 
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace delete"
 		installParams := []string{
@@ -409,18 +449,12 @@ func (service *MarketplaceService) DeleteInstalledItem(
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
-		installedId, shouldUninstallServices,
-	)
-
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-		service.persistentDbSvc,
-	)
-	marketplaceCmdRepo := marketplaceInfra.NewMarketplaceCmdRepo(
-		service.persistentDbSvc,
+		installedId, shouldUninstallServices, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.DeleteMarketplaceInstalledItem(
-		marketplaceQueryRepo, marketplaceCmdRepo, deleteMarketplaceInstalledItem,
+		service.marketplaceQueryRepo, service.marketplaceCmdRepo,
+		service.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

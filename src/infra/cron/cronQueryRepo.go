@@ -119,3 +119,27 @@ func (repo CronQueryRepo) ReadById(
 
 	return cronEntity, errors.New("CronNotFound")
 }
+
+func (repo CronQueryRepo) ReadByComment(
+	cronComment valueObject.CronComment,
+) (cronEntity entity.Cron, err error) {
+	crons, err := repo.Read()
+	if err != nil {
+		return cronEntity, err
+	}
+
+	if len(crons) == 0 {
+		return cronEntity, errors.New("CronNotFound")
+	}
+
+	cronCommentStr := cronComment.String()
+	for _, cron := range crons {
+		if cron.Comment.String() != cronCommentStr {
+			continue
+		}
+
+		return cron, nil
+	}
+
+	return cronEntity, errors.New("CronNotFound")
+}

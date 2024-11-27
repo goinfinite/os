@@ -18,9 +18,10 @@ type SslsPresenter struct {
 func NewSslsPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslsPresenter {
 	return &SslsPresenter{
-		sslService: service.NewSslService(persistentDbSvc, transientDbSvc),
+		sslService: service.NewSslService(persistentDbSvc, transientDbSvc, trailDbSvc),
 	}
 }
 

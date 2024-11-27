@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -11,21 +11,22 @@ import (
 func UpdateCron(
 	cronQueryRepo repository.CronQueryRepo,
 	cronCmdRepo repository.CronCmdRepo,
-	updateCron dto.UpdateCron,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	updateDto dto.UpdateCron,
 ) error {
-	_, err := cronQueryRepo.ReadById(updateCron.Id)
+	_, err := cronQueryRepo.ReadById(updateDto.Id)
 	if err != nil {
-		log.Printf("CronNotFound: %s", err)
+		slog.Error("CronNotFound", slog.Any("err", err))
 		return errors.New("CronNotFound")
 	}
 
-	err = cronCmdRepo.Update(updateCron)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateCron(updateDto)
+
+	err = cronCmdRepo.Update(updateDto)
 	if err != nil {
-		log.Printf("UpdateCronError: %s", err)
+		slog.Error("UpdateCronError", slog.Any("err", err))
 		return errors.New("UpdateCronInfraError")
 	}
-
-	log.Printf("Cron with ID '%v' updated.", updateCron.Id.String())
 
 	return nil
 }

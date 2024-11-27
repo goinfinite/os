@@ -30,5 +30,7 @@ func UpdateAccountApiKey(
 		return newKey, errors.New("UpdateAccountApiKeyInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(updateDto)
+
 	return newKey, nil
 }
