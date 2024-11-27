@@ -60,13 +60,9 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 		operatorIpAddress,
 	)
 
-	err = CreateUnixFile(
+	return CreateUnixFile(
 		uc.filesQueryRepo, uc.filesCmdRepo, uc.activityRecordCmdRepo, createGeneralTrashDir,
 	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
