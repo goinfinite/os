@@ -39,10 +39,10 @@ func (uc DeleteUnixFiles) emptyTrash(
 		return err
 	}
 
-	return uc.CreateTrash(operatorAccountId, operatorIpAddress)
+	return uc.CreateGeneralTrash(operatorAccountId, operatorIpAddress)
 }
 
-func (uc DeleteUnixFiles) CreateTrash(
+func (uc DeleteUnixFiles) CreateGeneralTrash(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
@@ -55,13 +55,13 @@ func (uc DeleteUnixFiles) CreateTrash(
 
 	trashDirPermissions, _ := valueObject.NewUnixFilePermissions("755")
 	trashDirMimeType, _ := valueObject.NewMimeType("directory")
-	createTrashDir := dto.NewCreateUnixFile(
+	createGeneralTrashDir := dto.NewCreateUnixFile(
 		trashPath, &trashDirPermissions, trashDirMimeType, operatorAccountId,
 		operatorIpAddress,
 	)
 
 	err = CreateUnixFile(
-		uc.filesQueryRepo, uc.filesCmdRepo, uc.activityRecordCmdRepo, createTrashDir,
+		uc.filesQueryRepo, uc.filesCmdRepo, uc.activityRecordCmdRepo, createGeneralTrashDir,
 	)
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 		return nil
 	}
 
-	err := uc.CreateTrash(deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress)
+	err := uc.CreateGeneralTrash(deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress)
 	if err != nil {
 		return err
 	}
