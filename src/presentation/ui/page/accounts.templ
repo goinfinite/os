@@ -11,6 +11,7 @@ script AccountsIndexLocalState() {
 		Alpine.data('accounts', () => ({
 			// Primary states
 			account: {},
+			secureAccessKeys: [],
 			resetPrimaryStates() {
 				this.account = {
 					id: '',
@@ -18,11 +19,19 @@ script AccountsIndexLocalState() {
 					username: '',
 					password: '',
 					apiKey: '',
-					secureAccessKeys: [],
-				}
+				};
 			},
 			init() {
 				this.resetPrimaryStates();
+			},
+
+			// Auxiliary states
+			selectedSecureAccessKeyToDelete: {},
+			resetAuxiliaryStates() {
+				this.selectedSecureAccessKeyToDelete = {
+					id: '',
+					name: '',
+				};
 			},
 
 			// Modal states
@@ -59,8 +68,7 @@ script AccountsIndexLocalState() {
 			},
 			updateApiKey() {
 				htmx.ajax(
-					'PUT',
-					'/api/v1/account/',
+					'PUT', '/api/v1/account/',
 					{
 						swap: 'none',
 						values: { id: this.account.id, shouldUpdateApiKey: true },
@@ -77,23 +85,48 @@ script AccountsIndexLocalState() {
 				);
 			},
 			isSecureAccessKeysModalOpen: false,
-			async readSecureAccessKeys() {
-				const responseData = await Infinite.JsonAjax(
-					'GET', '/api/v1/account/' + this.account.id + '/secure-access-key/'
-				);
-				this.account.secureAccessKeys = responseData;
+			readSecureAccessKeys() {
+				Infinite.JsonAjax(
+					'GET', `/api/v1/account/${this.account.id}/secure-access-key/`
+				).then(secureAccessKeys => {
+					this.secureAccessKeys = secureAccessKeys;
+				});
 			},
-			async openSecureAccessKeysModal(id, username) {
+			openSecureAccessKeysModal(id, username) {
 				this.resetPrimaryStates();
 
 				this.account.id = id;
 				this.account.username = username;
-				await this.readSecureAccessKeys();
+				this.readSecureAccessKeys();
 
 				this.isSecureAccessKeysModalOpen = true;
 			},
 			closeSecureAccessKeysModal() {
+				this.resetPrimaryStates();
+
 				this.isSecureAccessKeysModalOpen = false;
+			},
+			isDeleteSecureAccessKeyModalOpen: false,
+			openDeleteSecureAccessKeyModal(id, name) {
+				this.resetAuxiliaryStates();
+
+				this.selectedSecureAccessKeyToDelete.id = id;
+				this.selectedSecureAccessKeyToDelete.name = name;
+				this.isDeleteSecureAccessKeyModalOpen = true;
+			},
+			closeDeleteSecureAccessKeyModal() {
+				this.resetPrimaryStates();
+				this.resetAuxiliaryStates();
+
+				this.isDeleteSecureAccessKeyModalOpen = false;
+			},
+			deleteSecureAccessKey() {
+				htmx.ajax(
+					'DELETE',
+					`/api/v1/account/${this.account.id}/secure-access-key/${this.selectedSecureAccessKeyToDelete.id}/`,
+					{swap: 'none'},
+				);
+				this.closeDeleteSecureAccessKeyModal();
 			},
 			isDeleteAccountModalOpen: false,
 			openDeleteAccountModal(id, username) {
@@ -104,13 +137,13 @@ script AccountsIndexLocalState() {
 				this.isDeleteAccountModalOpen = true;
 			},
 			closeDeleteAccountModal() {
+				this.resetPrimaryStates();
+
 				this.isDeleteAccountModalOpen = false;
 			},
 			deleteAccount() {
 				htmx.ajax(
-					'DELETE',
-					'/api/v1/account/' + this.account.id + '/',
-					{swap: 'none'},
+					'DELETE', `/api/v1/account/${this.account.id}/`, {swap: 'none'},
 				);
 				this.$dispatch('delete:account');
 				this.closeDeleteAccountModal();
@@ -151,6 +184,11 @@ templ AccountsIndex(accounts []entity.Account) {
 		@componentStructural.DeleteModal(
 			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
 			"account.username", "account.id",
+		)
+		@componentStructural.DeleteModal(
+			"isDeleteSecureAccessKeyModalOpen", "closeDeleteSecureAccessKeyModal()",
+			"closeSecureAccessKeysModal(); deleteSecureAccessKey()",
+			"selectedSecureAccessKeyToDelete.name", "selectedSecureAccessKeyToDelete.id",
 		)
 	</div>
 }
@@ -212,7 +250,7 @@ templ CreateAccountForm() {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="space-y-6 mb-6">
+		<div class="mb-6 space-y-6">
 			@componentForm.InputField("text", "username", "Username", "account.username", false)
 			@componentForm.PasswordInput("password", "Password", "account.password")
 		</div>
@@ -287,7 +325,28 @@ templ SecureAccessKeysList() {
 		componentStructural.AlertTypeInfo,
 		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
 	)
-	<div id="account-secure-access-keys-list"></div>
+	<div id="account-secure-access-keys-list" class="space-y-2">
+		<template x-for="secureAccessKey of secureAccessKeys">
+			<div class="bg-os-500 flex rounded-2xl p-4">
+				<div class="flex-col w-90%">
+					<div class="flex items-center">
+						<i class="ph-duotone ph-key mr-2 text-lg"></i>
+						<p class="mb-0.5" x-text="secureAccessKey.name"></p>
+					</div>
+					<p x-text="secureAccessKey.encodedContent" class="max-w-150 truncate text-xs italic text-slate-500"></p>
+				</div>
+				<div class="flex flex-col w-10% justify-center">
+					<div class="ml-auto">
+						@componentStructural.CircularIconButtonWithTooltip(
+							"ph-trash", "red-800", "red-600",
+							"openDeleteSecureAccessKeyModal(secureAccessKey.id, secureAccessKey.name)",
+							"delete key", "red-500",
+						)
+					</div>
+				</div>
+			</div>
+		</template>
+	</div>
 }
 
 templ SecureAccessKeysModal() {
