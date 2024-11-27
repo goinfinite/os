@@ -36,7 +36,7 @@ func NewSslPairIdFromSslPairContent(
 	}
 	contentToEncode := sslCertificate.String() + "\n" + sslChainCertificatesMerged + "\n" + sslPrivateKey.String()
 
-	sslPairIdContent, err := voHelper.TransformPlainContentIntoStrongHash(contentToEncode)
+	sslPairIdContent, err := voHelper.StrongStringHasher(contentToEncode)
 	if err != nil {
 		return sslPairId, errors.New("InvalidSslPairIdFromSslPairContent")
 	}

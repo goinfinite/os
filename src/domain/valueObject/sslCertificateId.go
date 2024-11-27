@@ -28,7 +28,7 @@ func NewSslCertificateId(value interface{}) (sslCertificateId SslCertificateId, 
 func NewSslCertificateIdFromSslCertificateContent(
 	sslCertificate SslCertificateContent,
 ) (sslCertificateId SslCertificateId, err error) {
-	sslCertificateIdContent, err := voHelper.TransformPlainContentIntoStrongHash(
+	sslCertificateIdContent, err := voHelper.StrongStringHasher(
 		sslCertificate.String(),
 	)
 	if err != nil {
