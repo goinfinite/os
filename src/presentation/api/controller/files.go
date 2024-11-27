@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	"log"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
@@ -14,7 +13,6 @@ import (
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
 )
 
@@ -121,24 +119,18 @@ func (controller *FilesController) Create(c echo.Context) error {
 		}
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	createDto := dto.NewCreateUnixFile(
@@ -256,24 +248,18 @@ func (controller *FilesController) Update(c echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	updateUnixFileDto := dto.NewUpdateUnixFiles(
@@ -340,24 +326,18 @@ func (controller *FilesController) Copy(c echo.Context) error {
 		}
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	copyDto := dto.NewCopyUnixFile(
@@ -435,24 +415,18 @@ func (controller *FilesController) Delete(c echo.Context) error {
 		}
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	deleteDto := dto.NewDeleteUnixFiles(
@@ -537,24 +511,18 @@ func (controller *FilesController) Compress(c echo.Context) error {
 		compressionUnixTypePtr = &compressionUnixType
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	compressDto := dto.NewCompressUnixFiles(
@@ -610,24 +578,18 @@ func (controller *FilesController) Extract(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	extractDto := dto.NewExtractUnixFiles(
@@ -663,7 +625,6 @@ func (controller *FilesController) Upload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Print(requestBody)
 
 	apiHelper.CheckMissingParams(requestBody, requiredParams)
 
@@ -681,24 +642,18 @@ func (controller *FilesController) Upload(c echo.Context) error {
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 
-	operatorAccountId := service.LocalOperatorAccountId
-	if requestBody["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(
-			requestBody["operatorAccountId"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorAccountId, err := valueObject.NewAccountId(
+		requestBody["operatorAccountId"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress := service.LocalOperatorIpAddress
-	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
-			requestBody["operatorIpAddress"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
+	operatorIpAddress, err := valueObject.NewIpAddress(
+		requestBody["operatorIpAddress"],
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	uploadDto := dto.NewUploadUnixFiles(
