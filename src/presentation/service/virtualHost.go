@@ -144,7 +144,7 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 	}
 
 	deleteDto := dto.NewDeleteVirtualHost(
-		primaryVhost, hostname, operatorAccountId, operatorIpAddress,
+		hostname, primaryVhost, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.DeleteVirtualHost(
