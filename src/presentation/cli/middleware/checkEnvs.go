@@ -14,14 +14,12 @@ import (
 
 var requiredEnvVars = []string{
 	"ACCOUNT_API_KEY_SECRET",
-	"ACCOUNT_SECURE_ACCESS_KEY_SECRET",
 	"JWT_SECRET",
 	"PRIMARY_VHOST",
 }
 
 var envVarsToGenerateIfEmpty = []string{
 	"ACCOUNT_API_KEY_SECRET",
-	"ACCOUNT_SECURE_ACCESS_KEY_SECRET",
 	"JWT_SECRET",
 }
 
