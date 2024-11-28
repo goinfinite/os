@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -13,19 +13,20 @@ import (
 func CreateVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	createVirtualHost dto.CreateVirtualHost,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateVirtualHost,
 ) error {
-	_, err := vhostQueryRepo.ReadByHostname(createVirtualHost.Hostname)
+	_, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
 	if err == nil {
 		return errors.New("VirtualHostAlreadyExists")
 	}
 
-	isAlias := createVirtualHost.Type.String() == "alias"
-	if isAlias && createVirtualHost.ParentHostname == nil {
+	isAlias := createDto.Type.String() == "alias"
+	if isAlias && createDto.ParentHostname == nil {
 		return errors.New("AliasMustHaveParentHostname")
 	}
 
-	hostnameStr := createVirtualHost.Hostname.String()
+	hostnameStr := createDto.Hostname.String()
 	hasWildcardInHostname := strings.HasPrefix(hostnameStr, "*.")
 	if hasWildcardInHostname {
 		hostnameWithoutWildcardStr := strings.Replace(hostnameStr, "*.", "", 1)
@@ -34,16 +35,17 @@ func CreateVirtualHost(
 			return errors.New("FailedToRemoveWildcardFromHostname: " + err.Error())
 		}
 
-		createVirtualHost.Hostname = hostnameWithoutWildcard
+		createDto.Hostname = hostnameWithoutWildcard
 	}
 
-	err = vhostCmdRepo.Create(createVirtualHost)
+	err = vhostCmdRepo.Create(createDto)
 	if err != nil {
-		log.Printf("CreateVirtualHostError: %s", err.Error())
+		slog.Error("CreateVirtualHostError", slog.Any("err", err))
 		return errors.New("CreateVirtualHostInfraError")
 	}
 
-	log.Printf("VirtualHost '%s' created.", createVirtualHost.Hostname)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateVirtualHost(createDto)
 
 	return nil
 }

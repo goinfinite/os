@@ -14,6 +14,7 @@ func CreateInstallableService(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
 	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
@@ -29,6 +30,9 @@ func CreateInstallableService(
 		slog.Error("CreateInstallableServiceError", slog.Any("error", err))
 		return errors.New("CreateInstallableServiceInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateInstallableService(createDto)
 
 	readFirstInstalledRequestDto.ServiceName = &installedServiceName
 	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
@@ -50,5 +54,6 @@ func CreateInstallableService(
 
 	return createFirstMapping(
 		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, installedServiceName,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }

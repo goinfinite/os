@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -124,6 +123,8 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	mappingCmdRepo *mappingInfra.MappingCmdRepo,
 	targetVhostName valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) (mappingId valueObject.MappingId, err error) {
 	path, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
@@ -135,6 +136,7 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 
 	inlineHtmlMapping := dto.NewCreateMapping(
 		targetVhostName, path, matchPattern, targetType, &targetValue, &httpResponseCode,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	mappingId, err = mappingCmdRepo.Create(inlineHtmlMapping)
@@ -149,6 +151,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 	vhostNames []valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
 	serverPublicIpAddress valueObject.IpAddress,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) []valueObject.Fqdn {
 	functionalHostnames := []valueObject.Fqdn{}
 
@@ -159,7 +163,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 	for _, vhostName := range vhostNames {
 		vhostNameStr := vhostName.String()
 		ownershipValidationMappingId, err := repo.createOwnershipValidationMapping(
-			mappingCmdRepo, vhostName, expectedOwnershipHash,
+			mappingCmdRepo, vhostName, expectedOwnershipHash, operatorAccountId,
+			operatorIpAddress,
 		)
 		if err != nil {
 			continue
@@ -242,7 +247,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 	return nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
+func (repo *SslCmdRepo) ReplaceWithValidSsl(replaceDto dto.ReplaceWithValidSsl) error {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(repo.transientDbSvc)
 	serverPublicIpAddress, err := o11yQueryRepo.ReadServerPublicIpAddress()
 	if err != nil {
@@ -250,14 +255,14 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 
 	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
-		sslPair.VirtualHostsHostnames, serverPublicIpAddress,
+		replaceDto.VirtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
 	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
-		sslPair.Certificate.CertificateContent,
+		replaceDto.Certificate.CertificateContent,
 	)
 	if err != nil {
 		return errors.New(
@@ -266,22 +271,26 @@ func (repo *SslCmdRepo) ReplaceWithValidSsl(sslPair entity.SslPair) error {
 	}
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
+		replaceDto.OperatorAccountId, replaceDto.OperatorIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
 	return repo.issueValidSsl(
-		sslPair.VirtualHostsHostnames[0], httpFunctionalHostnames,
+		replaceDto.VirtualHostsHostnames[0], httpFunctionalHostnames,
 	)
 }
 
-func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
+func (repo *SslCmdRepo) Create(
+	createSslPair dto.CreateSslPair,
+) (sslPairId valueObject.SslPairId, err error) {
 	if len(createSslPair.VirtualHostsHostnames) == 0 {
-		return errors.New("EmptyVirtualHosts")
+		return sslPairId, errors.New("EmptyVirtualHosts")
 	}
 
-	firstVhostNameStr := createSslPair.VirtualHostsHostnames[0].String()
+	firstVhostName := createSslPair.VirtualHostsHostnames[0]
+	firstVhostNameStr := firstVhostName.String()
 	firstVhostCertFilePath := infraEnvs.PkiConfDir + "/" + firstVhostNameStr + ".crt"
 	firstVhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + firstVhostNameStr + ".key"
 
@@ -323,22 +332,26 @@ func (repo *SslCmdRepo) Create(createSslPair dto.CreateSslPair) error {
 			shouldOverwrite,
 		)
 		if err != nil {
-			return err
+			return sslPairId, err
 		}
 
 		err = infraHelper.UpdateFile(
 			vhostCertKeyFilePath, createSslPair.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
-			return err
+			return sslPairId, err
 		}
 	}
 
-	return nil
+	createdSslPairId, err := repo.sslQueryRepo.ReadByVhostHostname(firstVhostName)
+	if err != nil {
+		return sslPairId, err
+	}
+	return createdSslPairId.Id, nil
 }
 
-func (repo *SslCmdRepo) Delete(sslId valueObject.SslId) error {
-	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslId)
+func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
+	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslPairId)
 	if err != nil {
 		return errors.New("SslNotFound")
 	}

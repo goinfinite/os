@@ -4,32 +4,29 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func DeleteDatabaseUser(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	dbName valueObject.DatabaseName,
-	dbUser valueObject.DatabaseUsername,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	deleteDto dto.DeleteDatabaseUser,
 ) error {
-	_, err := dbQueryRepo.ReadByName(dbName)
+	_, err := dbQueryRepo.ReadByName(deleteDto.DatabaseName)
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}
 
-	err = dbCmdRepo.DeleteUser(dbName, dbUser)
+	err = dbCmdRepo.DeleteUser(deleteDto.DatabaseName, deleteDto.Username)
 	if err != nil {
 		slog.Error("DeleteDatabaseUserError", slog.Any("error", err))
 		return errors.New("DeleteDatabaseUserInfraError")
 	}
 
-	slog.Info(
-		"DatabaseUserDeleted",
-		slog.String("databaseName", dbUser.String()),
-		slog.String("databaseUsername", dbName.String()),
-	)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		DeleteDatabaseUser(deleteDto)
 
 	return nil
 }

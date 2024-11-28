@@ -11,6 +11,7 @@ import (
 func CompressUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	compressDto dto.CompressUnixFiles,
 ) (dto.CompressionProcessReport, error) {
 	compressionProcessReport, err := filesCmdRepo.Compress(compressDto)
@@ -19,5 +20,6 @@ func CompressUnixFiles(
 		return compressionProcessReport, errors.New("CompressUnixFilesInfraError")
 	}
 
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).CompressUnixFile(compressDto)
 	return compressionProcessReport, nil
 }

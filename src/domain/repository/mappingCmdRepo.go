@@ -6,8 +6,12 @@ import (
 )
 
 type MappingCmdRepo interface {
-	Create(createDto dto.CreateMapping) (valueObject.MappingId, error)
-	Delete(mappingId valueObject.MappingId) error
-	DeleteAuto(serviceName valueObject.ServiceName) error
-	RecreateByServiceName(serviceName valueObject.ServiceName) error
+	Create(dto.CreateMapping) (valueObject.MappingId, error)
+	Delete(valueObject.MappingId) error
+	DeleteAuto(valueObject.ServiceName) error
+	RecreateByServiceName(
+		valueObject.ServiceName,
+		valueObject.AccountId,
+		valueObject.IpAddress,
+	) error
 }

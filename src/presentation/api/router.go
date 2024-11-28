@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "embed"
+	"log"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiController "github.com/goinfinite/os/src/presentation/api/controller"
@@ -69,7 +70,10 @@ func (router Router) accountRoutes() {
 
 func (router Router) cronRoutes() {
 	cronGroup := router.baseRoute.Group("/v1/cron")
-	cronController := apiController.NewCronController()
+	cronController, err := apiController.NewCronController(router.trailDbSvc)
+	if err != nil {
+		log.Fatalf("FailedToInitializeCronApiController: " + err.Error())
+	}
 
 	cronGroup.GET("/", cronController.Read)
 	cronGroup.POST("/", cronController.Create)
@@ -80,7 +84,7 @@ func (router Router) cronRoutes() {
 func (router Router) databaseRoutes() {
 	databaseGroup := router.baseRoute.Group("/v1/database")
 	databaseController := apiController.NewDatabaseController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	databaseGroup.GET("/:dbType/", databaseController.Read)
@@ -95,7 +99,8 @@ func (router Router) databaseRoutes() {
 
 func (router Router) filesRoutes() {
 	filesGroup := router.baseRoute.Group("/v1/files")
-	filesController := apiController.NewFilesController()
+
+	filesController := apiController.NewFilesController(router.trailDbSvc)
 
 	filesGroup.GET("/", filesController.Read)
 	filesGroup.POST("/", filesController.Create)
@@ -111,7 +116,7 @@ func (router Router) filesRoutes() {
 func (router Router) marketplaceRoutes() {
 	marketplaceGroup := router.baseRoute.Group("/v1/marketplace")
 	marketplaceController := apiController.NewMarketplaceController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	marketplaceInstalledGroup := marketplaceGroup.Group("/installed")
@@ -138,7 +143,7 @@ func (router Router) o11yRoutes() {
 func (router Router) runtimeRoutes() {
 	runtimeGroup := router.baseRoute.Group("/v1/runtime")
 	runtimeController := apiController.NewRuntimeController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
@@ -157,7 +162,7 @@ func (router *Router) scheduledTaskRoutes() {
 func (router Router) servicesRoutes() {
 	servicesGroup := router.baseRoute.Group("/v1/services")
 	servicesController := apiController.NewServicesController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	servicesGroup.GET("/", servicesController.ReadInstalledItems)
@@ -173,7 +178,7 @@ func (router Router) servicesRoutes() {
 func (router Router) sslRoutes() {
 	sslGroup := router.baseRoute.Group("/v1/ssl")
 	sslController := apiController.NewSslController(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 
 	sslGroup.GET("/", sslController.Read)
@@ -186,7 +191,7 @@ func (router Router) sslRoutes() {
 func (router Router) vhostsRoutes() {
 	vhostsGroup := router.baseRoute.Group("/v1/vhosts")
 	vhostController := apiController.NewVirtualHostController(
-		router.persistentDbSvc,
+		router.persistentDbSvc, router.trailDbSvc,
 	)
 
 	vhostsGroup.GET("/", vhostController.Read)

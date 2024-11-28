@@ -4,18 +4,31 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	cronInfra "github.com/goinfinite/os/src/infra/cron"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
 type CronService struct {
-	cronQueryRepo cronInfra.CronQueryRepo
+	cronQueryRepo         cronInfra.CronQueryRepo
+	cronCmdRepo           *cronInfra.CronCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
-func NewCronService() *CronService {
-	return &CronService{
-		cronQueryRepo: cronInfra.CronQueryRepo{},
+func NewCronService(
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) (*CronService, error) {
+	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
+	if err != nil {
+		return nil, err
 	}
+
+	return &CronService{
+		cronQueryRepo:         cronInfra.CronQueryRepo{},
+		cronCmdRepo:           cronCmdRepo,
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+	}, nil
 }
 
 func (service *CronService) Read() ServiceOutput {
@@ -53,14 +66,29 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	dto := dto.NewCreateCron(schedule, command, commentPtr)
-
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 
-	err = useCase.CreateCron(cmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateCron(
+		schedule, command, commentPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.CreateCron(
+		service.cronCmdRepo, service.activityRecordCmdRepo, createDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -107,14 +135,30 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	dto := dto.NewUpdateCron(id, schedulePtr, commandPtr, commentPtr)
-
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 
-	err = useCase.UpdateCron(service.cronQueryRepo, cmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateCron(
+		id, schedulePtr, commandPtr, commentPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateCron(
+		service.cronQueryRepo, service.cronCmdRepo, service.activityRecordCmdRepo,
+		updateDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -141,14 +185,32 @@ func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 		commentPtr = &comment
 	}
 
-	cmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	var err error
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 
-	dto := dto.NewDeleteCron(idPtr, commentPtr)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	err = useCase.DeleteCron(service.cronQueryRepo, cmdRepo, dto)
+	deleteDto := dto.NewDeleteCron(
+		idPtr, commentPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteCron(
+		service.cronQueryRepo, service.cronCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

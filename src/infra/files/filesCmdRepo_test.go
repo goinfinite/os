@@ -16,14 +16,18 @@ func TestFilesCmdRepo(t *testing.T) {
 	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
 
 	filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
+	operatorAccountId, _ := valueObject.NewAccountId(0)
+	ipAddress := valueObject.NewLocalhostIpAddress()
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 		mimeType, _ := valueObject.NewMimeType("directory")
 
-		dto := dto.NewCreateUnixFile(filePath, &filePermissions, mimeType)
+		createDto := dto.NewCreateUnixFile(
+			filePath, &filePermissions, mimeType, operatorAccountId, ipAddress,
+		)
 
-		err := filesCmdRepo.Create(dto)
+		err := filesCmdRepo.Create(createDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -35,9 +39,11 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 		mimeType, _ := valueObject.NewMimeType("generic")
 
-		dto := dto.NewCreateUnixFile(filePath, &filePermissions, mimeType)
+		createDto := dto.NewCreateUnixFile(
+			filePath, &filePermissions, mimeType, operatorAccountId, ipAddress,
+		)
 
-		err := filesCmdRepo.Create(dto)
+		err := filesCmdRepo.Create(createDto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
 		}
@@ -122,7 +128,9 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir",
 		)
 
-		dto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, true)
+		dto := dto.NewCopyUnixFile(
+			sourceFilePath, destinationFilePath, true, operatorAccountId, ipAddress,
+		)
 
 		err := filesCmdRepo.Copy(dto)
 		if err != nil {
@@ -138,7 +146,9 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
 
-		dto := dto.NewCopyUnixFile(sourceFilePath, destinationFilePath, false)
+		dto := dto.NewCopyUnixFile(
+			sourceFilePath, destinationFilePath, false, operatorAccountId, ipAddress,
+		)
 
 		err := filesCmdRepo.Copy(dto)
 		if err != nil {
@@ -157,7 +167,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 		dto := dto.NewCompressUnixFiles(
 			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath,
-			&compressionType,
+			&compressionType, operatorAccountId, ipAddress,
 		)
 
 		_, err := filesCmdRepo.Compress(dto)
@@ -176,6 +186,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 		dto := dto.NewCompressUnixFiles(
 			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			operatorAccountId, ipAddress,
 		)
 
 		_, err := filesCmdRepo.Compress(dto)
@@ -194,6 +205,7 @@ func TestFilesCmdRepo(t *testing.T) {
 
 		dto := dto.NewCompressUnixFiles(
 			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			operatorAccountId, ipAddress,
 		)
 
 		_, err := filesCmdRepo.Compress(dto)
@@ -210,7 +222,9 @@ func TestFilesCmdRepo(t *testing.T) {
 			fileBasePathStr + "/testDir_/testDirExtracted",
 		)
 
-		dto := dto.NewExtractUnixFiles(sourceFilePath, destinationFilePath)
+		dto := dto.NewExtractUnixFiles(
+			sourceFilePath, destinationFilePath, operatorAccountId, ipAddress,
+		)
 
 		err := filesCmdRepo.Extract(dto)
 		if err != nil {

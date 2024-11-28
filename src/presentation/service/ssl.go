@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
@@ -12,21 +13,22 @@ import (
 )
 
 type SslService struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	sslQueryRepo    sslInfra.SslQueryRepo
-	sslCmdRepo      *sslInfra.SslCmdRepo
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	sslQueryRepo          sslInfra.SslQueryRepo
+	sslCmdRepo            *sslInfra.SslCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewSslService(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslService {
 	return &SslService{
-		persistentDbSvc: persistentDbSvc,
-		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    sslInfra.SslQueryRepo{},
-		sslCmdRepo:      sslInfra.NewSslCmdRepo(persistentDbSvc, transientDbSvc),
+		persistentDbSvc:       persistentDbSvc,
+		sslQueryRepo:          sslInfra.SslQueryRepo{},
+		sslCmdRepo:            sslInfra.NewSslCmdRepo(persistentDbSvc, transientDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
@@ -69,11 +71,31 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dto := dto.NewCreateSslPair(vhosts, cert, privateKeyContent)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateSslPair(
+		vhosts, cert, privateKeyContent, operatorAccountId, operatorIpAddress,
+	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
-	err = useCase.CreateSslPair(service.sslCmdRepo, vhostQueryRepo, dto)
+	err = useCase.CreateSslPair(
+		service.sslCmdRepo, vhostQueryRepo, service.activityRecordCmdRepo, createDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -88,12 +110,33 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	pairId, err := valueObject.NewSslId(input["id"])
+	pairId, err := valueObject.NewSslPairId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	err = useCase.DeleteSslPair(service.sslQueryRepo, service.sslCmdRepo, pairId)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSslPair(pairId, operatorAccountId, operatorIpAddress)
+
+	err = useCase.DeleteSslPair(
+		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -108,7 +151,7 @@ func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOut
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	pairId, err := valueObject.NewSslId(input["id"])
+	pairId, err := valueObject.NewSslPairId(input["id"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
@@ -122,9 +165,30 @@ func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOut
 		vhosts = append(vhosts, vhost)
 	}
 
-	dto := dto.NewDeleteSslPairVhosts(pairId, vhosts)
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
 
-	err = useCase.DeleteSslPairVhosts(service.sslQueryRepo, service.sslCmdRepo, dto)
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSslPairVhosts(
+		pairId, vhosts, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteSslPairVhosts(
+		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
+		deleteDto,
+	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

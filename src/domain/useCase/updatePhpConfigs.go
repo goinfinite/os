@@ -2,14 +2,14 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-func isPhpInstalled(
+func isPhpVersionInstalled(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	phpVersion valueObject.PhpVersion,
 ) bool {
@@ -31,49 +31,46 @@ func UpdatePhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	runtimeCmdRepo repository.RuntimeCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	updatePhpConfigsDto dto.UpdatePhpConfigs,
+	activityCmdRepo repository.ActivityRecordCmdRepo,
+	updateDto dto.UpdatePhpConfigs,
 ) error {
-	isPhpInstalled := isPhpInstalled(
-		runtimeQueryRepo,
-		updatePhpConfigsDto.PhpVersion,
+	isPhpVersionInstalled := isPhpVersionInstalled(
+		runtimeQueryRepo, updateDto.PhpVersion,
 	)
-	if !isPhpInstalled {
+	if !isPhpVersionInstalled {
 		return errors.New("PhpVersionNotInstalled")
 	}
 
-	_, err := vhostQueryRepo.ReadByHostname(
-		updatePhpConfigsDto.Hostname,
-	)
+	_, err := vhostQueryRepo.ReadByHostname(updateDto.Hostname)
 	if err != nil {
-		log.Printf("HostnameNotFound: %s", err.Error())
+		slog.Error("HostnameNotFound", slog.Any("err", err))
 		return errors.New("HostnameNotFound")
 	}
 
-	err = runtimeCmdRepo.UpdatePhpVersion(
-		updatePhpConfigsDto.Hostname,
-		updatePhpConfigsDto.PhpVersion,
-	)
+	err = runtimeCmdRepo.UpdatePhpVersion(updateDto.Hostname, updateDto.PhpVersion)
 	if err != nil {
-		log.Printf("UpdatePhpVersionError: %s", err.Error())
+		slog.Error("UpdatePhpVersionError", slog.Any("err", err))
 		return errors.New("UpdatePhpVersionInfraError")
 	}
+	securityActivityRecord := NewCreateSecurityActivityRecord(activityCmdRepo)
+	securityActivityRecord.UpdatePhpConfigs(updateDto, "version")
 
-	err = runtimeCmdRepo.UpdatePhpSettings(
-		updatePhpConfigsDto.Hostname,
-		updatePhpConfigsDto.PhpSettings,
-	)
-	if err != nil {
-		log.Printf("UpdatePhpSettingsError: %s", err.Error())
-		return errors.New("UpdatePhpSettingsInfraError")
+	if len(updateDto.PhpModules) > 0 {
+		err = runtimeCmdRepo.UpdatePhpModules(updateDto.Hostname, updateDto.PhpModules)
+		if err != nil {
+			slog.Error("UpdatePhpModulesError", slog.Any("err", err))
+			return errors.New("UpdatePhpModulesInfraError")
+		}
+		securityActivityRecord.UpdatePhpConfigs(updateDto, "modules")
 	}
 
-	err = runtimeCmdRepo.UpdatePhpModules(
-		updatePhpConfigsDto.Hostname,
-		updatePhpConfigsDto.PhpModules,
-	)
-	if err != nil {
-		log.Printf("UpdatePhpModulesError: %s", err.Error())
-		return errors.New("UpdatePhpModulesInfraError")
+	if len(updateDto.PhpSettings) > 0 {
+		err = runtimeCmdRepo.UpdatePhpSettings(updateDto.Hostname, updateDto.PhpSettings)
+		if err != nil {
+			slog.Error("UpdatePhpSettingsError", slog.Any("err", err))
+			return errors.New("UpdatePhpSettingsInfraError")
+		}
+		securityActivityRecord.UpdatePhpConfigs(updateDto, "settings")
 	}
 
 	return nil

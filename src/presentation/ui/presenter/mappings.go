@@ -17,9 +17,10 @@ type MappingsPresenter struct {
 
 func NewMappingsPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MappingsPresenter {
 	return &MappingsPresenter{
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc),
+		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
 	}
 }
 

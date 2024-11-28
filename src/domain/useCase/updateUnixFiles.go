@@ -10,14 +10,17 @@ import (
 )
 
 type UpdateUnixFiles struct {
-	filesCmdRepo repository.FilesCmdRepo
+	filesCmdRepo          repository.FilesCmdRepo
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
-		filesCmdRepo: filesCmdRepo,
+		filesCmdRepo:          filesCmdRepo,
+		activityRecordCmdRepo: activityRecordCmdRepo,
 	}
 }
 
@@ -32,10 +35,7 @@ func (uc UpdateUnixFiles) updateFailureFactory(
 		return updateProcessFailure, err
 	}
 
-	return valueObject.NewUpdateProcessFailure(
-		filePath,
-		failureReason,
-	), nil
+	return valueObject.NewUpdateProcessFailure(filePath, failureReason), nil
 }
 
 func (uc UpdateUnixFiles) updateFilePermissions(
@@ -58,7 +58,6 @@ func (uc UpdateUnixFiles) moveFile(
 	destinationPath valueObject.UnixFilePath,
 ) error {
 	shouldOverwrite := false
-
 	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
 
 	err := uc.filesCmdRepo.Move(moveDto)
@@ -143,6 +142,9 @@ func (uc UpdateUnixFiles) Execute(
 			updateProcessReport.FilePathsSuccessfullyUpdated, sourcePath,
 		)
 	}
+
+	NewCreateSecurityActivityRecord(uc.activityRecordCmdRepo).
+		UpdateUnixFiles(updateDto)
 
 	return updateProcessReport, nil
 }

@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"slices"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -13,16 +13,16 @@ import (
 func CreateSslPair(
 	sslCmdRepo repository.SslCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	createSslPair dto.CreateSslPair,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	createDto dto.CreateSslPair,
 ) error {
 	existingVhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		log.Printf("ReadVhostsError: %s", err.Error())
+		slog.Error("ReadVhostsError", slog.Any("err", err))
 		return errors.New("ReadVhostsInfraError")
 	}
 
 	if len(existingVhosts) == 0 {
-		log.Printf("VhostsNotFound")
 		return errors.New("VhostsNotFound")
 	}
 
@@ -32,7 +32,7 @@ func CreateSslPair(
 			continue
 		}
 
-		if slices.Contains(createSslPair.VirtualHostsHostnames, vhost.Hostname) {
+		if slices.Contains(createDto.VirtualHostsHostnames, vhost.Hostname) {
 			validSslVirtualHostsHostnames = append(
 				validSslVirtualHostsHostnames, vhost.Hostname,
 			)
@@ -43,13 +43,16 @@ func CreateSslPair(
 		return errors.New("VhostDoesNotExists")
 	}
 
-	createSslPair.VirtualHostsHostnames = validSslVirtualHostsHostnames
+	createDto.VirtualHostsHostnames = validSslVirtualHostsHostnames
 
-	err = sslCmdRepo.Create(createSslPair)
+	createdSslPairId, err := sslCmdRepo.Create(createDto)
 	if err != nil {
-		log.Printf("CreateSslPairError: %s", err)
+		slog.Error("CreateSslPairError", slog.Any("err", err))
 		return errors.New("CreateSslPairInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		CreateSslPair(createDto, createdSslPairId)
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 func CopyUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	copyDto dto.CopyUnixFile,
 ) error {
 	err := filesCmdRepo.Copy(copyDto)
@@ -18,6 +19,8 @@ func CopyUnixFile(
 		slog.Error("CopyUnixFileInfraError", slog.Any("err", err))
 		return errors.New("CopyUnixFileInfraError")
 	}
+
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).CopyUnixFile(copyDto)
 
 	return nil
 }

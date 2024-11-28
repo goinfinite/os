@@ -23,6 +23,8 @@ type CreateCustomService struct {
 	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
 	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
+	OperatorAccountId valueObject.AccountId       `json:"-"`
+	OperatorIpAddress valueObject.IpAddress       `json:"-"`
 }
 
 func NewCreateCustomService(
@@ -39,6 +41,8 @@ func NewCreateCustomService(
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
 	autoCreateMapping *bool,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) CreateCustomService {
 	return CreateCustomService{
 		Name:              name,
@@ -61,5 +65,7 @@ func NewCreateCustomService(
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
 		AutoCreateMapping: autoCreateMapping,
+		OperatorAccountId: operatorAccountId,
+		OperatorIpAddress: operatorIpAddress,
 	}
 }

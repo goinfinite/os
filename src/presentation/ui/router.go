@@ -69,28 +69,36 @@ func (router *Router) accountsRoutes() {
 func (router *Router) databasesRoutes() {
 	databaseGroup := router.baseRoute.Group("/databases")
 
-	databasesPresenter := presenter.NewDatabasesPresenter(router.persistentDbSvc)
+	databasesPresenter := presenter.NewDatabasesPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	databaseGroup.GET("/", databasesPresenter.Handler)
 }
 
 func (router *Router) mappingsRoutes() {
 	mappingsGroup := router.baseRoute.Group("/mappings")
 
-	mappingsPresenter := presenter.NewMappingsPresenter(router.persistentDbSvc)
+	mappingsPresenter := presenter.NewMappingsPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
 }
 
 func (router *Router) marketplaceRoutes() {
 	marketplaceGroup := router.baseRoute.Group("/marketplace")
 
-	marketplacePresenter := presenter.NewMarketplacePresenter(router.persistentDbSvc)
+	marketplacePresenter := presenter.NewMarketplacePresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	marketplaceGroup.GET("/", marketplacePresenter.Handler)
 }
 
 func (router *Router) runtimesRoutes() {
 	runtimesGroup := router.baseRoute.Group("/runtimes")
 
-	runtimesPresenter := presenter.NewRuntimesPresenter(router.persistentDbSvc)
+	runtimesPresenter := presenter.NewRuntimesPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
 }
 
@@ -98,7 +106,7 @@ func (router *Router) sslsRoutes() {
 	sslsGroup := router.baseRoute.Group("/ssls")
 
 	sslsPresenter := presenter.NewSslsPresenter(
-		router.persistentDbSvc, router.transientDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	sslsGroup.GET("/", sslsPresenter.Handler)
 }

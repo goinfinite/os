@@ -71,7 +71,9 @@ ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 
-		pairId, err := valueObject.NewSslIdFromSslCertificateContent(certificateContent)
+		pairId, err := valueObject.NewSslPairIdFromSslPairContent(
+			certificateContent, []valueObject.SslCertificateContent{}, privateKey,
+		)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -98,42 +100,34 @@ ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
 	// the certificate content when you need to run this test.
 	t.Run("PubliclyTrustedSslPair", func(t *testing.T) {
 		certContentStr := `-----BEGIN CERTIFICATE-----
-MIIGSzCCBTOgAwIBAgIRANMDDKIK+yRUsVHwvAK9MRswDQYJKoZIhvcNAQELBQAw
-gY8xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAO
-BgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRlZDE3MDUGA1UE
-AxMuU2VjdGlnbyBSU0EgRG9tYWluIFZhbGlkYXRpb24gU2VjdXJlIFNlcnZlciBD
-QTAeFw0yNDA2MjAwMDAwMDBaFw0yNTA3MjAyMzU5NTlaMB4xHDAaBgNVBAMTE29z
-LmRlbW8uc3BlZWRpYS5uZXQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-AQC423Hxcoj7XcF5gITUKdHPjNGL6JaXFPqvXrPVPeJSbFa6CqfoLJ6cFrbNP8i/
-hDZEXeSDSkfn/KVQRvpWoaa3DHZaRSiElbheLvznV7TdOB6Hwj9qUMAdZoUINDKN
-G0MNXwRq4Z3tJptfNVieVXnxumdEcB0bYIdZdf4j5wlcCEoQYYZdTpeD0u4pagKL
-P7DQzfGq9OCQAhUdfCrR3gZfUptZ/hlKtuRft+fovmzuTKvyACBNeDwkaCf3VVYC
-5A8ddx+DiQn3glUHh4Bzz8DpJ9NJKSxRpGAKL7ZyennmBRA/cLZQN3Vdt7RAsoHF
-frDDMZtfPp6qRN74bxXFEW77AgMBAAGjggMQMIIDDDAfBgNVHSMEGDAWgBSNjF7E
-VK2K4Xfpm/mbBeG4AY1h4TAdBgNVHQ4EFgQUFQ3xxuSRmDhwqYFcRMaK5BI+wTQw
-DgYDVR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwHQYDVR0lBBYwFAYIKwYBBQUH
-AwEGCCsGAQUFBwMCMEkGA1UdIARCMEAwNAYLKwYBBAGyMQECAgcwJTAjBggrBgEF
-BQcCARYXaHR0cHM6Ly9zZWN0aWdvLmNvbS9DUFMwCAYGZ4EMAQIBMIGEBggrBgEF
-BQcBAQR4MHYwTwYIKwYBBQUHMAKGQ2h0dHA6Ly9jcnQuc2VjdGlnby5jb20vU2Vj
-dGlnb1JTQURvbWFpblZhbGlkYXRpb25TZWN1cmVTZXJ2ZXJDQS5jcnQwIwYIKwYB
-BQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMIIBfwYKKwYBBAHWeQIEAgSC
-AW8EggFrAWkAdgDd3Mo0ldfhFgXnlTL6x5/4PRxQ39sAOhQSdgosrLvIKgAAAZA2
-OPGyAAAEAwBHMEUCIQDiJQ1Lc4wsokT6pU3+E6ihc7D1bJydJhy64qsgjd9EvwIg
-U6p39mRYkmGtIq4ADMCT0yeyx9PSnrTyezqAr8+c698AdwAN4fIwK9MNwUBiEgnq
-VS78R3R8sdfpMO8OQh60fk6qNAAAAZA2OPF3AAAEAwBIMEYCIQDNtjwCVCZk6WRt
-oE0oAFz8Fg7S913GsdADfX0Fhedy2gIhANhDvqiUIWtG75YMRyR8lHFu6oeleBSo
-85Y+w+JFOTVCAHYAEvFONL1TckyEBhnDjz96E/jntWKHiJxtMAWE6+WGJjoAAAGQ
-NjjxVwAABAMARzBFAiAZau995xwzZmXhJ0yjApLE7KyasdDn5FhsOCFMsEvj/QIh
-AKTDmot9NJeLQrKIHNWvP1rWjajQD2ED5a1BJXNJeAe4MDgGA1UdEQQxMC+CE29z
-LmRlbW8uc3BlZWRpYS5uZXSCGGNvbnRyb2wuZGVtby5zcGVlZGlhLm5ldDANBgkq
-hkiG9w0BAQsFAAOCAQEAR9no5nPb6ojjp9C4fm9ajgsn95u51b5nCCQO7tdNCaE1
-jt0lG+5+M61S9N8bqXUcZ11gTqf4LLTT5hTwnA5zfG5urdWYNOugDfkhhsL0hqNJ
-GIM1Z+pbLBMYWoaNnUii48jQqUqODrrClFH1bDWMTT82G9wi/4KEvvgGOGefhVTd
-aN0HAD5UxhQ2OmwmQXdqCE5fN077Nb4UYhECz8doxNbeqa9BL+GQ4+4cNA225z4f
-lY19UyUMo2FiTQdUKvNoNG6vxL/gMOS9t8YgFsZ/6ha+9r6Fdr5g2bf7R3oCLI5C
-PnXCM5ivLmWxjcKU1ZQNbPDmDGPRsohwZ6hQJKz93Q==
------END CERTIFICATE-----
-`
+MIIE9jCCA96gAwIBAgISBIDWvWgXgjNvB7WgPRWRQ1zfMA0GCSqGSIb3DQEBCwUA
+MDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD
+EwNSMTEwHhcNMjQxMDIxMTgxODA2WhcNMjUwMTE5MTgxODA1WjAeMRwwGgYDVQQD
+ExNvcy5kZW1vLnNwZWVkaWEubmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEA087PdaZpjoAc+FUS4dY1wZp3IGDx14Kua5EFWvS439CUEJMDgb3x7Dne
+IRZr/gPnOD/FC2z04yCPQO7t7X4P0tgHAs3LEgtMgRbwTOpimdsJSlPXCS+BRuVu
+8mWMWcVLeh4GMTVwtFlXC2jq3nj62OA1v0x9zZZCGfDRiilwltXOe/icsWwrz7n6
+ufWpecEZdLOK9D5tI09TAadDUuLdjFD00J53kQpF5fKQ0FGahh6fGvawNrYqXIVI
+XRPqfrouaFjWFtMp3bgszFqdbxzO9PmvIcc1Kh0dBuBKuu8mVWsT5VL31NBfUmIE
+w0SKQfsXhv7ie9GFRCw1WhCe/9RMxwIDAQABo4ICFzCCAhMwDgYDVR0PAQH/BAQD
+AgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAA
+MB0GA1UdDgQWBBQNMMznCLjD1FYggFYA89e3Ar7FOTAfBgNVHSMEGDAWgBTFz0ak
+6vTDwHpslcQtsF6SLybjuTBXBggrBgEFBQcBAQRLMEkwIgYIKwYBBQUHMAGGFmh0
+dHA6Ly9yMTEuby5sZW5jci5vcmcwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTEuaS5s
+ZW5jci5vcmcvMB4GA1UdEQQXMBWCE29zLmRlbW8uc3BlZWRpYS5uZXQwEwYDVR0g
+BAwwCjAIBgZngQwBAgEwggEEBgorBgEEAdZ5AgQCBIH1BIHyAPAAdwCi4wrkRe+9
+rZt+OO1HZ3dT14JbhJTXK14bLMS5UKRH5wAAAZKwgoP6AAAEAwBIMEYCIQDsnp0m
+G5/iHp2fqhdYUIXKFcQPTyD3AMr+DHiTwV7tagIhAOcVuDPfANi9XB8Bd1/3SlbE
+18vvmARjz0rRAUV2d4ldAHUAzxFW7tUufK/zh1vZaS6b6RpxZ0qwF+ysAdJbd87M
+OwgAAAGSsIKEOQAABAMARjBEAiBMptjBPBnVXyfn6vonpk/2Nae5J1DN2sRR0I1N
+nW5gQAIgYvEvJ4lHOja5jsP+gjW16gYqY4zfKDvRxiqlplWjSVYwDQYJKoZIhvcN
+AQELBQADggEBAAPKbigHUBSdiV4auW4cdEIsX/XS4H/gI2iHfY/8L0XwgdI5gxb9
+8zzvFguNOAYuECA9OADTLw3EQ8mhQnmSuQ2hPns2pECKho/2kktDXVCWhb0GXRrT
+k/6JsjxO5x9KvaoTjTHWoflYXPyuLbWO5mHY9WIvBxgJTIU5Fl7EWcmIXsGAdld5
+a6mH1/CaaNSq/51K11++C6K6UV8yijajLVXFmyenip6cm/1Y+7nVbAr94i/41u66
+QGPu3K3BYnoShgjlzsFH0A4FtFMZ03GQ7eK0jP90Te+u8H0J01x0CjEH9WfJciWk
+Q3wUgydHco28WaFEj6KGD+nK7o9EtPMSBSA=
+-----END CERTIFICATE-----`
 		certificateContent, err := valueObject.NewSslCertificateContent(certContentStr)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
@@ -172,11 +166,6 @@ TjK39rhrlvV4HPH0SUp0+LHgP83UTOdbggJwDV3mRkuNrxdqKY8slJfOurAJtk1t
 cgNzy7pXTh6r4/5EvmhJ+1o=
 -----END PRIVATE KEY-----`
 		privateKey, err := valueObject.NewSslPrivateKey(privateKeyStr)
-		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
-		}
-
-		pairId, err := valueObject.NewSslIdFromSslCertificateContent(certificateContent)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -220,6 +209,14 @@ KPpdzvvtTnOPlC7SQZSYmdunr3Bf9b77AiC/ZidstK36dRILKz7OA54=
 		}
 
 		chainCertificates := []SslCertificate{chainCertificate}
+
+		pairId, err := valueObject.NewSslPairIdFromSslPairContent(
+			certificateContent,
+			[]valueObject.SslCertificateContent{chainCertificateContent}, privateKey,
+		)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
+		}
 
 		demoHostname, err := valueObject.NewFqdn("os.demo.goinfinite.net")
 		if err != nil {

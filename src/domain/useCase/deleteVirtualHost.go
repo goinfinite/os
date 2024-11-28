@@ -2,35 +2,36 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func DeleteVirtualHost(
-	queryRepo repository.VirtualHostQueryRepo,
-	cmdRepo repository.VirtualHostCmdRepo,
-	primaryHostname valueObject.Fqdn,
-	hostname valueObject.Fqdn,
+	vhostQueryRepo repository.VirtualHostQueryRepo,
+	vhostCmdRepo repository.VirtualHostCmdRepo,
+	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	deleteDto dto.DeleteVirtualHost,
 ) error {
-	isPrimaryHostname := hostname.String() == primaryHostname.String()
+	isPrimaryHostname := deleteDto.Hostname.String() == deleteDto.PrimaryVirtualHost.String()
 	if isPrimaryHostname {
 		return errors.New("PrimaryVirtualHostCannotBeDeleted")
 	}
 
-	vhost, err := queryRepo.ReadByHostname(hostname)
+	vhost, err := vhostQueryRepo.ReadByHostname(deleteDto.Hostname)
 	if err != nil {
 		return errors.New("VirtualHostNotFound")
 	}
 
-	err = cmdRepo.Delete(vhost)
+	err = vhostCmdRepo.Delete(vhost)
 	if err != nil {
-		log.Printf("DeleteVirtualHostError: %v", err)
+		slog.Error("DeleteVirtualHostError", slog.Any("err", err))
 		return errors.New("DeleteVirtualHostInfraError")
 	}
 
-	log.Printf("VirtualHost '%v' deleted.", hostname)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		DeleteVirtualHost(deleteDto)
 
 	return nil
 }

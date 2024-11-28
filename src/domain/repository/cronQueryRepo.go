@@ -7,5 +7,6 @@ import (
 
 type CronQueryRepo interface {
 	Read() ([]entity.Cron, error)
-	ReadById(cronId valueObject.CronId) (entity.Cron, error)
+	ReadById(valueObject.CronId) (entity.Cron, error)
+	ReadByComment(valueObject.CronComment) (entity.Cron, error)
 }

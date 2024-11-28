@@ -9,6 +9,8 @@ type CreateMapping struct {
 	TargetType             valueObject.MappingTargetType   `json:"targetType"`
 	TargetValue            *valueObject.MappingTargetValue `json:"targetValue"`
 	TargetHttpResponseCode *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
+	OperatorAccountId      valueObject.AccountId           `json:"-"`
+	OperatorIpAddress      valueObject.IpAddress           `json:"-"`
 }
 
 func NewCreateMapping(
@@ -18,6 +20,8 @@ func NewCreateMapping(
 	targetType valueObject.MappingTargetType,
 	targetValue *valueObject.MappingTargetValue,
 	targetHttpResponseCode *valueObject.HttpResponseCode,
+	operatorAccountId valueObject.AccountId,
+	operatorIpAddress valueObject.IpAddress,
 ) CreateMapping {
 	return CreateMapping{
 		Hostname:               hostname,
@@ -26,5 +30,7 @@ func NewCreateMapping(
 		TargetType:             targetType,
 		TargetValue:            targetValue,
 		TargetHttpResponseCode: targetHttpResponseCode,
+		OperatorAccountId:      operatorAccountId,
+		OperatorIpAddress:      operatorIpAddress,
 	}
 }
