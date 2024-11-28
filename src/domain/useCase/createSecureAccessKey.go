@@ -10,7 +10,7 @@ import (
 
 func CreateSecureAccessKey(
 	accountQueryRepo repository.AccountQueryRepo,
-	accountCmdRepo repository.AccountCmdRepo,
+	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateSecureAccessKey,
 ) error {
@@ -19,7 +19,7 @@ func CreateSecureAccessKey(
 		return errors.New("AccountNotFound")
 	}
 
-	keyId, err := accountCmdRepo.CreateSecureAccessKey(createDto)
+	keyId, err := secureAccessKeyCmdRepo.Create(createDto)
 	if err != nil {
 		slog.Error("CreateSecureAccessKeyError", slog.Any("error", err))
 		return errors.New("CreateSecureAccessKeyInfraError")

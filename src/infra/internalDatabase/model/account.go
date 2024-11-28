@@ -8,12 +8,13 @@ import (
 )
 
 type Account struct {
-	ID        uint64 `gorm:"primarykey"`
-	GroupId   uint64 `gorm:"not null"`
-	Username  string `gorm:"not null"`
-	KeyHash   *string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID               uint64 `gorm:"primarykey"`
+	GroupId          uint64 `gorm:"not null"`
+	Username         string `gorm:"not null"`
+	KeyHash          *string
+	SecureAccessKeys []SecureAccessKey
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 func (Account) TableName() string {

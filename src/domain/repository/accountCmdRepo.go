@@ -10,8 +10,4 @@ type AccountCmdRepo interface {
 	Delete(valueObject.AccountId) error
 	UpdatePassword(valueObject.AccountId, valueObject.Password) error
 	UpdateApiKey(valueObject.AccountId) (valueObject.AccessTokenStr, error)
-	CreateSecureAccessKey(
-		dto.CreateSecureAccessKey,
-	) (valueObject.SecureAccessKeyId, error)
-	DeleteSecureAccessKey(dto.DeleteSecureAccessKey) error
 }
