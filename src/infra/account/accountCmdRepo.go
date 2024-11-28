@@ -247,6 +247,27 @@ func (repo *AccountCmdRepo) isSecureAccessKeyValid(
 	return true
 }
 
+func (repo *AccountCmdRepo) allowAccountSecureRemoteConnection(
+	accountId valueObject.AccountId,
+) error {
+	accountUsername, err := infraHelper.RunCmdWithSubShell(
+		"awk -F: '$3 == " + accountId.String() +
+			" && $7 != \"/bin/bash\" {print $1}' /etc/passwd",
+	)
+	if err != nil {
+		return errors.New("ReadUnixUsernameFromFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"chsh -s /bin/bash " + accountUsername,
+	)
+	if err != nil {
+		return errors.New("ChangeDefaultBashError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo *AccountCmdRepo) CreateSecureAccessKey(
 	createDto dto.CreateSecureAccessKey,
 ) (keyId valueObject.SecureAccessKeyId, err error) {
@@ -284,6 +305,11 @@ func (repo *AccountCmdRepo) CreateSecureAccessKey(
 	)
 	if err != nil {
 		return keyId, errors.New("SecureAccessKeyWasNotCreated")
+	}
+
+	err = repo.allowAccountSecureRemoteConnection(createDto.AccountId)
+	if err != nil {
+		return keyId, err
 	}
 
 	return key.Id, nil
