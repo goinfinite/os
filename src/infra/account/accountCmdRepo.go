@@ -86,19 +86,8 @@ func (repo *AccountCmdRepo) Create(
 	return accountId, nil
 }
 
-func (repo *AccountCmdRepo) readUsernameById(
-	accountId valueObject.AccountId,
-) (username valueObject.Username, err error) {
-	accountEntity, err := repo.accountQueryRepo.ReadById(accountId)
-	if err != nil {
-		return username, err
-	}
-
-	return accountEntity.Username, nil
-}
-
 func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
-	username, err := repo.readUsernameById(accountId)
+	account, err := repo.accountQueryRepo.ReadById(accountId)
 	if err != nil {
 		return err
 	}
@@ -110,7 +99,7 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountIdStr)
 	}
 
-	_, err = infraHelper.RunCmd("userdel", "-r", username.String())
+	_, err = infraHelper.RunCmd("userdel", "-r", account.Username.String())
 	if err != nil {
 		return err
 	}
@@ -135,12 +124,12 @@ func (repo *AccountCmdRepo) UpdatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	username, err := repo.readUsernameById(accountId)
+	account, err := repo.accountQueryRepo.ReadById(accountId)
 	if err != nil {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("usermod", "-p", string(passHash), username.String())
+	_, err = infraHelper.RunCmd("usermod", "-p", string(passHash), account.Username.String())
 	if err != nil {
 		return errors.New("UserModFailed: " + err.Error())
 	}
