@@ -130,9 +130,19 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	accountId valueObject.AccountId,
 	accountUsername valueObject.Username,
 ) error {
-	keys, err := repo.secureAccessKeyQueryRepo.Read(accountId)
+	readRequestDto := dto.ReadSecureAccessKeysRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+		AccountId: accountId,
+	}
+	keys, err := repo.secureAccessKeyQueryRepo.Read(readRequestDto)
 	if err != nil {
 		return err
+	}
+
+	if len(keys.SecureAccessKeys) == 0 {
+		return errors.New("NoSecureAccessKeyFound")
 	}
 
 	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
@@ -149,8 +159,8 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	}
 
 	keysFileContent := ""
-	for _, key := range keys {
-		keysFileContent += key.Content.String() + "\n"
+	for _, key := range keys.SecureAccessKeys {
+		keysFileContent += key.Content.String() + " " + key.Name.String() + "\n"
 	}
 
 	shouldOverwrite := true
@@ -186,6 +196,17 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, errors.New("InvalidSecureAccessKey")
 	}
 
+	rawFingerprint, err := infraHelper.RunCmdWithSubShell(
+		"echo \"" + keyContentStr + "\" | ssh-keygen -lf /dev/stdin | awk '{print $2}'",
+	)
+	if err != nil {
+		return keyId, errors.New("FailToReadSecureAccessKeyFingerprint: " + err.Error())
+	}
+	fingerPrint, err := valueObject.NewSecureAccessKeyFingerprint(rawFingerprint)
+	if err != nil {
+		return keyId, err
+	}
+
 	_, err = infraHelper.RunCmdWithSubShell(
 		"echo \"" + keyContentStr + "\" >> /home/" + account.Username.String() +
 			"/.ssh/authorized_keys",
@@ -201,7 +222,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 
 	secureAccessKeyModel := dbModel.NewSecureAccessKey(
 		0, account.Id.Uint64(), createDto.Name.String(),
-		createDto.Content.ReadWithoutKeyName(),
+		createDto.Content.ReadWithoutKeyName(), fingerPrint.String(),
 	)
 
 	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessKeyModel)
@@ -225,20 +246,21 @@ func (repo *SecureAccessKeyCmdRepo) Delete(
 		return errors.New("AccountNotFound")
 	}
 
-	keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadById(
-		deleteDto.AccountId, deleteDto.Id,
-	)
+	readFirstRequestDto := dto.ReadSecureAccessKeysRequest{
+		AccountId:         deleteDto.AccountId,
+		SecureAccessKeyId: &deleteDto.Id,
+	}
+	_, err = repo.secureAccessKeyQueryRepo.ReadFirst(readFirstRequestDto)
+	if err != nil {
+		return errors.New("SecureAccessKeyNotFound")
+	}
+
+	err = repo.persistentDbSvc.Handler.Delete(
+		dbModel.SecureAccessKey{}, deleteDto.Id.Uint16(),
+	).Error
 	if err != nil {
 		return err
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"sed -i '\\|" + keyToDelete.Content.String() + "|d' " +
-			"/home/" + account.Username.String() + "/.ssh/authorized_keys",
-	)
-	if err != nil {
-		return errors.New("FailToDeleteSecureAccessKeyFromFile: " + err.Error())
-	}
-
-	return nil
+	return repo.recreateSecureAccessKeysFile(account.Id, account.Username)
 }

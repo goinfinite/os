@@ -38,28 +38,33 @@ func TestSecureAccessKeyQueryRepo(t *testing.T) {
 	)
 
 	secureAccessKeyCmdRepo := NewSecureAccessKeyCmdRepo(testHelpers.GetPersistentDbSvc())
-	_, err = secureAccessKeyCmdRepo.Create(createDto)
+	keyId, err := secureAccessKeyCmdRepo.Create(createDto)
 	if err != nil {
 		t.Fatalf("Fail to create dummy SecureAccessKey to test")
 	}
 
 	secureAccessKeyQueryRepo := NewSecureAccessKeyQueryRepo(testHelpers.GetPersistentDbSvc())
 
+	requestDto := dto.ReadSecureAccessKeysRequest{
+		AccountId:         accountId,
+		SecureAccessKeyId: &keyId,
+	}
 	t.Run("ReadSecureAccessKeys", func(t *testing.T) {
-		keys, err := secureAccessKeyQueryRepo.Read(accountId)
+		responseDto, err := secureAccessKeyQueryRepo.Read(requestDto)
 		if err != nil {
 			t.Fatalf(
-				"Expecting no error for %d, but got %s", accountId.Uint64(), err.Error(),
+				"Expecting no error for %d, but got %s", accountId.Uint64(),
+				err.Error(),
 			)
 		}
 
-		if len(keys) == 0 {
+		if len(responseDto.SecureAccessKeys) == 0 {
 			t.Error("Expecting a keys list, but got an empty one")
 		}
 	})
 
 	t.Run("ReadSecureAccessKeyByName", func(t *testing.T) {
-		_, err := secureAccessKeyQueryRepo.ReadByName(accountId, keyName)
+		_, err := secureAccessKeyQueryRepo.ReadFirst(requestDto)
 		if err != nil {
 			t.Fatalf(
 				"Expecting no error for %s (%d), but got %s", keyName.String(),

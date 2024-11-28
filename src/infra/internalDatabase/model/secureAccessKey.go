@@ -8,12 +8,13 @@ import (
 )
 
 type SecureAccessKey struct {
-	ID        uint16 `gorm:"primarykey"`
-	AccountId uint64 `gorm:"not null"`
-	Name      string `gorm:"primarykey"`
-	Content   string `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          uint16 `gorm:"primarykey"`
+	AccountId   uint64 `gorm:"not null"`
+	Name        string `gorm:"not null"`
+	Content     string `gorm:"not null"`
+	Fingerprint string `gorm:"not null"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (SecureAccessKey) TableName() string {
@@ -23,12 +24,13 @@ func (SecureAccessKey) TableName() string {
 func NewSecureAccessKey(
 	id uint16,
 	accountId uint64,
-	name, content string,
+	name, content, fingerprint string,
 ) SecureAccessKey {
 	model := SecureAccessKey{
-		AccountId: accountId,
-		Name:      name,
-		Content:   content,
+		AccountId:   accountId,
+		Name:        name,
+		Content:     content,
+		Fingerprint: fingerprint,
 	}
 
 	if id != 0 {
@@ -61,8 +63,13 @@ func (model SecureAccessKey) ToEntity() (
 		return secureAccessKeyEntity, err
 	}
 
+	fingerprint, err := valueObject.NewSecureAccessKeyFingerprint(model.Fingerprint)
+	if err != nil {
+		return secureAccessKeyEntity, err
+	}
+
 	return entity.NewSecureAccessKey(
-		id, accountId, name, content,
+		id, accountId, name, content, fingerprint,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

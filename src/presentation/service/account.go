@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -234,10 +236,6 @@ func (service *AccountService) ReadSecureAccessKey(
 		input["accountId"] = input["id"]
 	}
 
-	if input["accountId"] == nil {
-		input["accountId"] = input["operatorAccountId"]
-	}
-
 	requiredParams := []string{"accountId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -249,8 +247,76 @@ func (service *AccountService) ReadSecureAccessKey(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	var idPtr *valueObject.SecureAccessKeyId
+	if input["id"] != nil {
+		id, err := valueObject.NewSecureAccessKeyId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		idPtr = &id
+	}
+
+	var namePtr *valueObject.SecureAccessKeyName
+	if input["name"] != nil {
+		name, err := valueObject.NewSecureAccessKeyName(input["name"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		namePtr = &name
+	}
+
+	paginationDto := useCase.MarketplaceDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readRequestDto := dto.ReadSecureAccessKeysRequest{
+		Pagination:          paginationDto,
+		AccountId:           accountId,
+		SecureAccessKeyId:   idPtr,
+		SecureAccessKeyName: namePtr,
+	}
+
 	secureAccessKeys, err := useCase.ReadSecureAccessKeys(
-		service.secureAccessKeyQueryRepo, accountId,
+		service.secureAccessKeyQueryRepo, readRequestDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

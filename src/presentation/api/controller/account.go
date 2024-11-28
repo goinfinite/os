@@ -113,8 +113,15 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        accountId 	  path   string  true  "AccountId that keys belongs to."
-// @Success      200 {array} entity.SecureAccessKey
+// @Param        accountId query  uint  true  "AccountId that keys belongs to"
+// @Param        id query  string  false  "Id"
+// @Param        name query  string  false  "Name"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadSecureAccessKeysResponse
 // @Router       /v1/account/{accountId}/secure-access-key/ [get]
 func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)

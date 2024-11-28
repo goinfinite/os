@@ -4,16 +4,20 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
+
+var SecureAccessKeysDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
 
 func ReadSecureAccessKeys(
 	secureAccessKeyQueryRepo repository.SecureAccessKeyQueryRepo,
-	accountId valueObject.AccountId,
-) (secureAccessKeys []entity.SecureAccessKey, err error) {
-	secureAccessKeys, err = secureAccessKeyQueryRepo.Read(accountId)
+	requestDto dto.ReadSecureAccessKeysRequest,
+) (secureAccessKeys dto.ReadSecureAccessKeysResponse, err error) {
+	secureAccessKeys, err = secureAccessKeyQueryRepo.Read(requestDto)
 	if err != nil {
 		slog.Error("ReadSecureAccessKeysInfraError", slog.Any("error", err))
 		return secureAccessKeys, errors.New("ReadSecureAccessKeysInfraError")

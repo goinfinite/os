@@ -3,13 +3,14 @@ package secureAccessKeyInfra
 import (
 	"errors"
 	"log/slog"
-	"strings"
+	"math"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	"github.com/iancoleman/strcase"
 )
 
 type SecureAccessKeyQueryRepo struct {
@@ -26,113 +27,106 @@ func NewSecureAccessKeyQueryRepo(
 	}
 }
 
-func (repo *SecureAccessKeyQueryRepo) secureAccessKeyFactory(
-	rawKeyId int,
-	rawSecureAccessKeyContent string,
-	accountId valueObject.AccountId,
-) (secureAccessKey entity.SecureAccessKey, err error) {
-	keyId, err := valueObject.NewSecureAccessKeyId(rawKeyId)
-	if err != nil {
-		return secureAccessKey, err
-	}
-
-	keyContent, err := valueObject.NewSecureAccessKeyContent(
-		rawSecureAccessKeyContent,
-	)
-	if err != nil {
-		return secureAccessKey, err
-	}
-
-	keyName, err := keyContent.ReadOnlyKeyName()
-	if err != nil {
-		return secureAccessKey, err
-	}
-
-	now := valueObject.NewUnixTimeNow()
-
-	return entity.NewSecureAccessKey(
-		keyId, accountId, keyName, keyContent, now, now,
-	), nil
-}
-
 func (repo *SecureAccessKeyQueryRepo) Read(
-	accountId valueObject.AccountId,
-) ([]entity.SecureAccessKey, error) {
-	secureAccessKeys := []entity.SecureAccessKey{}
-
-	account, err := repo.accountQueryRepo.ReadById(accountId)
-	if err != nil {
-		return secureAccessKeys, errors.New("AccountNotFound")
+	requestDto dto.ReadSecureAccessKeysRequest,
+) (responseDto dto.ReadSecureAccessKeysResponse, err error) {
+	model := dbModel.SecureAccessKey{
+		AccountId: requestDto.AccountId.Uint64(),
+	}
+	if requestDto.SecureAccessKeyId != nil {
+		model.ID = requestDto.SecureAccessKeyId.Uint16()
+	}
+	if requestDto.SecureAccessKeyName != nil {
+		model.Name = requestDto.SecureAccessKeyName.String()
 	}
 
-	secureAccessKeysFilePath := "/home/" + account.Username.String() + "/.ssh" +
-		"/authorized_keys"
-	secureAccessKeysFileContent, err := infraHelper.GetFileContent(
-		secureAccessKeysFilePath,
-	)
+	dbQuery := repo.persistentDbSvc.Handler.
+		Model(&model).
+		Where(&model)
+
+	var itemsTotal int64
+	err = dbQuery.Count(&itemsTotal).Error
 	if err != nil {
-		return secureAccessKeys, errors.New(
-			"ReadSecureAccessKeysFileContentError: " + err.Error(),
+		return responseDto, errors.New(
+			"CountSecureAccessKeysTotalError: " + err.Error(),
 		)
 	}
 
-	secureAccessKeysFileContentParts := strings.Split(secureAccessKeysFileContent, "\n")
-	for index, rawSecureAccessKeyContent := range secureAccessKeysFileContentParts {
-		if rawSecureAccessKeyContent == "" {
-			continue
+	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
+	if requestDto.Pagination.LastSeenId == nil {
+		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
+		dbQuery = dbQuery.Offset(offset)
+	} else {
+		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
+	}
+	if requestDto.Pagination.SortBy != nil {
+		orderStatement := requestDto.Pagination.SortBy.String()
+		orderStatement = strcase.ToSnake(orderStatement)
+		if orderStatement == "id" {
+			orderStatement = "ID"
 		}
 
-		rawKeyId := index + 1
-		secureAccessKey, err := repo.secureAccessKeyFactory(
-			rawKeyId, rawSecureAccessKeyContent, accountId,
-		)
+		if requestDto.Pagination.SortDirection != nil {
+			orderStatement += " " + requestDto.Pagination.SortDirection.String()
+		}
+
+		dbQuery = dbQuery.Order(orderStatement)
+	}
+
+	models := []dbModel.SecureAccessKey{}
+	err = dbQuery.Find(&models).Error
+	if err != nil {
+		return responseDto, errors.New("ReadSecureAccessKeysError: " + err.Error())
+	}
+
+	entities := []entity.SecureAccessKey{}
+	for _, model := range models {
+		entity, err := model.ToEntity()
 		if err != nil {
-			slog.Debug(err.Error(), slog.Int("index", index))
+			slog.Debug(
+				"SecureAccessKeyModelToEntityError",
+				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
+			)
 			continue
 		}
 
-		secureAccessKeys = append(secureAccessKeys, secureAccessKey)
+		entities = append(entities, entity)
 	}
 
-	return secureAccessKeys, nil
+	itemsTotalUint := uint64(itemsTotal)
+	pagesTotal := uint32(
+		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
+	)
+	responsePagination := dto.Pagination{
+		PageNumber:    requestDto.Pagination.PageNumber,
+		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
+		SortBy:        requestDto.Pagination.SortBy,
+		SortDirection: requestDto.Pagination.SortDirection,
+		PagesTotal:    &pagesTotal,
+		ItemsTotal:    &itemsTotalUint,
+	}
+
+	return dto.ReadSecureAccessKeysResponse{
+		Pagination:       responsePagination,
+		SecureAccessKeys: entities,
+	}, nil
 }
 
-func (repo *SecureAccessKeyQueryRepo) ReadById(
-	accountId valueObject.AccountId,
-	secureAccessKeyId valueObject.SecureAccessKeyId,
+func (repo *SecureAccessKeyQueryRepo) ReadFirst(
+	requestDto dto.ReadSecureAccessKeysRequest,
 ) (secureAccessKey entity.SecureAccessKey, err error) {
-	secureAccessKeys, err := repo.Read(accountId)
+	requestDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
+	}
+	responseDto, err := repo.Read(requestDto)
 	if err != nil {
 		return secureAccessKey, err
 	}
 
-	for _, key := range secureAccessKeys {
-		if key.Id.Uint16() != secureAccessKeyId.Uint16() {
-			continue
-		}
-
-		return key, nil
+	if len(responseDto.SecureAccessKeys) == 0 {
+		return secureAccessKey, errors.New("SecureAccessKeyNotFound")
 	}
 
-	return secureAccessKey, errors.New("SecureAccessKeyNotFound")
-}
-
-func (repo *SecureAccessKeyQueryRepo) ReadByName(
-	accountId valueObject.AccountId,
-	secureAccessKeyName valueObject.SecureAccessKeyName,
-) (secureAccessKey entity.SecureAccessKey, err error) {
-	secureAccessKeys, err := repo.Read(accountId)
-	if err != nil {
-		return secureAccessKey, err
-	}
-
-	for _, key := range secureAccessKeys {
-		if key.Name.String() != secureAccessKeyName.String() {
-			continue
-		}
-
-		return key, nil
-	}
-
-	return secureAccessKey, errors.New("SecureAccessKeyNotFound")
+	return responseDto.SecureAccessKeys[0], nil
 }
