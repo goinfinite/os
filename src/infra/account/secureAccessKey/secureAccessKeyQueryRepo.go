@@ -7,23 +7,20 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	accountInfra "github.com/goinfinite/os/src/infra/account"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"github.com/iancoleman/strcase"
 )
 
 type SecureAccessKeyQueryRepo struct {
-	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
-	accountQueryRepo *accountInfra.AccountQueryRepo
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
 func NewSecureAccessKeyQueryRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *SecureAccessKeyQueryRepo {
 	return &SecureAccessKeyQueryRepo{
-		persistentDbSvc:  persistentDbSvc,
-		accountQueryRepo: accountInfra.NewAccountQueryRepo(persistentDbSvc),
+		persistentDbSvc: persistentDbSvc,
 	}
 }
 
