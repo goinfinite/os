@@ -321,7 +321,11 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		</template>
 		<template x-if="mapping.targetType == 'inline-html'">
 			<div class="mb-6 space-y-6">
-				@componentForm.TextArea("targetValue", "Inline HTML", "mapping.targetValue", false)
+				@componentForm.TextArea(componentForm.TextAreaDto{
+					Id:                 "targetValue",
+					Label:              "Inline HTML",
+					BindModelValuePath: "mapping.targetValue",
+				})
 				@componentMappings.ResponseCodeSelectInput("targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode")
 			</div>
 		</template>
