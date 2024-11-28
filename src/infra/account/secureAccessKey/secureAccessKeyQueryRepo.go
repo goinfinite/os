@@ -13,18 +13,16 @@ import (
 )
 
 type SecureAccessKeyQueryRepo struct {
-	persistentDbSvc        *internalDbInfra.PersistentDatabaseService
-	secureAccessKeyCmdRepo *SecureAccessKeyCmdRepo
-	accountQueryRepo       *accountInfra.AccountQueryRepo
+	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
+	accountQueryRepo *accountInfra.AccountQueryRepo
 }
 
 func NewSecureAccessKeyQueryRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *SecureAccessKeyQueryRepo {
 	return &SecureAccessKeyQueryRepo{
-		persistentDbSvc:        persistentDbSvc,
-		secureAccessKeyCmdRepo: NewSecureAccessKeyCmdRepo(persistentDbSvc),
-		accountQueryRepo:       accountInfra.NewAccountQueryRepo(persistentDbSvc),
+		persistentDbSvc:  persistentDbSvc,
+		accountQueryRepo: accountInfra.NewAccountQueryRepo(persistentDbSvc),
 	}
 }
 
@@ -65,13 +63,6 @@ func (repo *SecureAccessKeyQueryRepo) Read(
 	account, err := repo.accountQueryRepo.ReadById(accountId)
 	if err != nil {
 		return secureAccessKeys, errors.New("AccountNotFound")
-	}
-
-	err = repo.secureAccessKeyCmdRepo.ensureSecureAccessKeysDirAndFileExistence(
-		account.Username,
-	)
-	if err != nil {
-		return secureAccessKeys, err
 	}
 
 	secureAccessKeysFilePath := "/home/" + account.Username.String() + "/.ssh" +

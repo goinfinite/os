@@ -20,15 +20,22 @@ func (SecureAccessKey) TableName() string {
 	return "secure_access_key"
 }
 
-func (SecureAccessKey) ToModel(
-	secureAccessKeyEntity entity.SecureAccessKey,
-) (model SecureAccessKey, err error) {
-	return SecureAccessKey{
-		ID:        secureAccessKeyEntity.Id.Uint16(),
-		AccountId: secureAccessKeyEntity.AccountId.Uint64(),
-		Name:      secureAccessKeyEntity.Name.String(),
-		Content:   secureAccessKeyEntity.Content.ReadWithoutKeyName(),
-	}, nil
+func NewSecureAccessKey(
+	id uint16,
+	accountId uint64,
+	name, content string,
+) SecureAccessKey {
+	model := SecureAccessKey{
+		AccountId: accountId,
+		Name:      name,
+		Content:   content,
+	}
+
+	if id != 0 {
+		model.ID = id
+	}
+
+	return model
 }
 
 func (model SecureAccessKey) ToEntity() (

@@ -10,23 +10,26 @@ import (
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
 type SecureAccessKeyCmdRepo struct {
-	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
-	accountQueryRepo *accountInfra.AccountQueryRepo
+	persistentDbSvc          *internalDbInfra.PersistentDatabaseService
+	secureAccessKeyQueryRepo *SecureAccessKeyQueryRepo
+	accountQueryRepo         *accountInfra.AccountQueryRepo
 }
 
 func NewSecureAccessKeyCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *SecureAccessKeyCmdRepo {
 	return &SecureAccessKeyCmdRepo{
-		persistentDbSvc:  persistentDbSvc,
-		accountQueryRepo: accountInfra.NewAccountQueryRepo(persistentDbSvc),
+		persistentDbSvc:          persistentDbSvc,
+		secureAccessKeyQueryRepo: NewSecureAccessKeyQueryRepo(persistentDbSvc),
+		accountQueryRepo:         accountInfra.NewAccountQueryRepo(persistentDbSvc),
 	}
 }
 
-func (repo *SecureAccessKeyCmdRepo) ensureSecureAccessKeysDirAndFileExistence(
+func (repo *SecureAccessKeyCmdRepo) createSecureAccessKeysFileIfNotExists(
 	accountUsername valueObject.Username,
 ) error {
 	accountUsernameStr := accountUsername.String()
@@ -123,6 +126,42 @@ func (repo *SecureAccessKeyCmdRepo) allowAccountSecureRemoteConnection(
 	return nil
 }
 
+func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
+	accountId valueObject.AccountId,
+	accountUsername valueObject.Username,
+) error {
+	keys, err := repo.secureAccessKeyQueryRepo.Read(accountId)
+	if err != nil {
+		return err
+	}
+
+	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
+	if infraHelper.FileExists(keysFilePath) {
+		err = os.Remove(keysFilePath)
+		if err != nil {
+			return errors.New("DeleteSecureAccessKeysFileError: " + err.Error())
+		}
+	}
+
+	err = repo.createSecureAccessKeysFileIfNotExists(accountUsername)
+	if err != nil {
+		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
+	}
+
+	keysFileContent := ""
+	for _, key := range keys {
+		keysFileContent += key.Content.String() + "\n"
+	}
+
+	shouldOverwrite := true
+	err = infraHelper.UpdateFile(keysFilePath, keysFileContent, shouldOverwrite)
+	if err != nil {
+		return errors.New("UpdateSecureAccessKeysFileContentError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo *SecureAccessKeyCmdRepo) Create(
 	createDto dto.CreateSecureAccessKey,
 ) (keyId valueObject.SecureAccessKeyId, err error) {
@@ -131,7 +170,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, errors.New("AccountNotFound")
 	}
 
-	err = repo.ensureSecureAccessKeysDirAndFileExistence(account.Username)
+	err = repo.createSecureAccessKeysFileIfNotExists(account.Username)
 	if err != nil {
 		return keyId, err
 	}
@@ -155,23 +194,38 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
 	}
 
-	err = repo.allowAccountSecureRemoteConnection(createDto.AccountId)
+	err = repo.allowAccountSecureRemoteConnection(account.Id)
 	if err != nil {
 		return keyId, err
 	}
 
-	return keyId, nil
+	secureAccessKeyModel := dbModel.NewSecureAccessKey(
+		0, account.Id.Uint64(), createDto.Name.String(),
+		createDto.Content.ReadWithoutKeyName(),
+	)
+
+	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessKeyModel)
+	if createResult.Error != nil {
+		return keyId, createResult.Error
+	}
+
+	keyId, err = valueObject.NewSecureAccessKeyId(secureAccessKeyModel.ID)
+	if err != nil {
+		return keyId, err
+	}
+
+	return keyId, repo.recreateSecureAccessKeysFile(account.Id, account.Username)
 }
 
 func (repo *SecureAccessKeyCmdRepo) Delete(
 	deleteDto dto.DeleteSecureAccessKey,
 ) error {
-	_, err := repo.accountQueryRepo.ReadById(deleteDto.AccountId)
+	account, err := repo.accountQueryRepo.ReadById(deleteDto.AccountId)
 	if err != nil {
 		return errors.New("AccountNotFound")
 	}
 
-	/*keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadById(
+	keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadById(
 		deleteDto.AccountId, deleteDto.Id,
 	)
 	if err != nil {
@@ -184,7 +238,7 @@ func (repo *SecureAccessKeyCmdRepo) Delete(
 	)
 	if err != nil {
 		return errors.New("FailToDeleteSecureAccessKeyFromFile: " + err.Error())
-	}*/
+	}
 
 	return nil
 }
