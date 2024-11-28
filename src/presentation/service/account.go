@@ -250,7 +250,7 @@ func (service *AccountService) ReadSecureAccessKey(
 	}
 
 	secureAccessKeys, err := useCase.ReadSecureAccessKeys(
-		service.accountQueryRepo, service.secureAccessKeyQueryRepo, accountId,
+		service.secureAccessKeyQueryRepo, accountId,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -312,8 +312,7 @@ func (service *AccountService) CreateSecureAccessKey(
 	)
 
 	err = useCase.CreateSecureAccessKey(
-		service.accountQueryRepo, service.secureAccessKeyCmdRepo,
-		service.activityRecordCmdRepo, createDto,
+		service.secureAccessKeyCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -367,8 +366,7 @@ func (service *AccountService) DeleteSecureAccessKey(
 	)
 
 	err = useCase.DeleteSecureAccessKey(
-		service.accountQueryRepo, service.secureAccessKeyCmdRepo,
-		service.activityRecordCmdRepo, deleteDto,
+		service.secureAccessKeyCmdRepo, service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

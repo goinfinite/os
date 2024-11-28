@@ -9,17 +9,11 @@ import (
 )
 
 func DeleteSecureAccessKey(
-	accountQueryRepo repository.AccountQueryRepo,
 	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteSecureAccessKey,
 ) error {
-	_, err := accountQueryRepo.ReadById(deleteDto.AccountId)
-	if err != nil {
-		return errors.New("AccountNotFound")
-	}
-
-	err = secureAccessKeyCmdRepo.Delete(deleteDto)
+	err := secureAccessKeyCmdRepo.Delete(deleteDto)
 	if err != nil {
 		slog.Error("DeleteSecureAccessKeyError", slog.Any("error", err))
 		return errors.New("DeleteSecureAccessKeyInfraError")
