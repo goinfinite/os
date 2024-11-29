@@ -19,7 +19,7 @@ func ReadSecureAccessKeys(
 ) (secureAccessKeys dto.ReadSecureAccessKeysResponse, err error) {
 	secureAccessKeys, err = secureAccessKeyQueryRepo.Read(requestDto)
 	if err != nil {
-		slog.Error("ReadSecureAccessKeysInfraError", slog.Any("error", err))
+		slog.Error("ReadSecureAccessKeysError", slog.Any("error", err))
 		return secureAccessKeys, errors.New("ReadSecureAccessKeysInfraError")
 	}
 
