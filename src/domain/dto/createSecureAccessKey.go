@@ -3,23 +3,24 @@ package dto
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type CreateSecureAccessKey struct {
-	Name              valueObject.SecureAccessKeyName    `json:"name"`
+	AccountId         valueObject.AccountId              `json:"accountId"`
 	Content           valueObject.SecureAccessKeyContent `json:"content"`
-	AccountId         valueObject.AccountId              `json:"-"`
+	Name              valueObject.SecureAccessKeyName    `json:"name"`
 	OperatorAccountId valueObject.AccountId              `json:"-"`
 	OperatorIpAddress valueObject.IpAddress              `json:"-"`
 }
 
 func NewCreateSecureAccessKey(
-	name valueObject.SecureAccessKeyName,
+	accountId valueObject.AccountId,
 	content valueObject.SecureAccessKeyContent,
-	accountId, operatorAccountId valueObject.AccountId,
+	name valueObject.SecureAccessKeyName,
+	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) CreateSecureAccessKey {
 	return CreateSecureAccessKey{
-		Name:              name,
-		Content:           content,
 		AccountId:         accountId,
+		Content:           content,
+		Name:              name,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,
 	}
