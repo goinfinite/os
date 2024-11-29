@@ -196,7 +196,7 @@ const docTemplate = `{
                 "summary": "CreateSecureAccessKey",
                 "parameters": [
                     {
-                        "description": "Only 'content' is required.\u003cbr /\u003e'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
+                        "description": "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
                         "name": "createSecureAccessKey",
                         "in": "body",
                         "required": true,
@@ -2495,6 +2495,9 @@ const docTemplate = `{
         "dto.CreateSecureAccessKey": {
             "type": "object",
             "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
                 "content": {
                     "type": "string"
                 },

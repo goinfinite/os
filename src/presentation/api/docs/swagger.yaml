@@ -155,6 +155,8 @@ definitions:
     type: object
   dto.CreateSecureAccessKey:
     properties:
+      accountId:
+        type: integer
       content:
         type: string
       name:
@@ -1165,9 +1167,9 @@ paths:
       - application/json
       description: Create a new secure access key.
       parameters:
-      - description: Only 'content' is required.<br />'name' will only become required
-          if there is no name in 'content'. If the 'name' is provided, it will overwrite
-          the name in the 'content'.
+      - description: '''name'' is optional. Will only become required if there is
+          no name in ''content''. If the ''name'' is provided, it will overwrite the
+          name in the ''content''.'
         in: body
         name: createSecureAccessKey
         required: true
