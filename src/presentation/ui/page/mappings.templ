@@ -244,19 +244,44 @@ templ CreateVhostForm() {
 		</div>
 		<template x-if="virtualHost.type == 'top-level'">
 			<div class="mb-6">
-				@componentForm.InputField("text", "hostname", "Hostname", "virtualHost.hostname", false)
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Hostname",
+					BindModelValuePath: "virtualHost.hostname",
+				})
 			</div>
 		</template>
 		<template x-if="virtualHost.type == 'subdomain'">
 			<div class="mb-6 space-y-6">
-				@componentForm.InputField("text", "hostname", "Subdomain", "virtualHost.hostname", false)
-				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Subdomain",
+					BindModelValuePath: "virtualHost.hostname",
+				})
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "parentHostname",
+					Label:              "Parent Hostname",
+					BindModelValuePath: "virtualHost.parentHostname",
+				})
 			</div>
 		</template>
 		<template x-if="virtualHost.type == 'alias'">
 			<div class="mb-6 space-y-6">
-				@componentForm.InputField("text", "hostname", "Alias", "virtualHost.hostname", false)
-				@componentForm.InputField("text", "parentHostname", "Parent Hostname", "virtualHost.parentHostname", false)
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Alias",
+					BindModelValuePath: "virtualHost.hostname",
+				})
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "parentHostname",
+					Label:              "Parent Hostname",
+					BindModelValuePath: "virtualHost.parentHostname",
+				})
 			</div>
 		</template>
 		@componentForm.DeactivatableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "shouldDisableCreateVhostSubmitButton", false)
@@ -316,7 +341,12 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		</template>
 		<template x-if="mapping.targetType == 'url'">
 			<div class="mb-6 space-y-6">
-				@componentForm.InputField("text", "targetValue", "Destination URL", "mapping.targetValue", false)
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "targetValue",
+					Label:              "Destination URL",
+					BindModelValuePath: "mapping.targetValue",
+				})
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'inline-html'">

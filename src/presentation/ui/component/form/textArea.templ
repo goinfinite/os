@@ -17,10 +17,10 @@ templ TextArea(inputDto TextAreaDto) {
 			if inputDto.BindModelValuePath != "" {
 				x-model={ inputDto.BindModelValuePath }
 			}
-			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full rounded-md border px-3 pt-1.5 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full rounded-md border px-3 pr-7 pt-1.5 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		></textarea>
 		if inputDto.InfoTooltipContent != "" {
-			<div class="group absolute right-2 top-1/8 z-10 w-fit -translate-y-1/2">
+			<div class="top-1/8 group absolute right-2 z-10 w-fit -translate-y-1/2">
 				<i class="ph-duotone ph-info cursor-help"></i>
 				<div class="invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-cyan-900 p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
 					{ inputDto.InfoTooltipContent }
