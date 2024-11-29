@@ -7,5 +7,5 @@ import (
 
 type SecureAccessKeyCmdRepo interface {
 	Create(dto.CreateSecureAccessKey) (valueObject.SecureAccessKeyId, error)
-	Delete(dto.DeleteSecureAccessKey) error
+	Delete(valueObject.SecureAccessKeyId) error
 }

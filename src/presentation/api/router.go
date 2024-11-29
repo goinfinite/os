@@ -58,8 +58,7 @@ func (router Router) accountRoutes() {
 	accountGroup.PUT("/", accountController.Update)
 	accountGroup.DELETE("/:accountId/", accountController.Delete)
 
-	secureAccessKeyGroup := accountGroup.Group("/:accountId/secure-access-key")
-	secureAccessKeyGroup.GET("/", accountController.ReadSecureAccessKey)
+	secureAccessKeyGroup := accountGroup.Group("/secure-access-key")
 	secureAccessKeyGroup.POST("/", accountController.CreateSecureAccessKey)
 	secureAccessKeyGroup.DELETE("/:secureAccessKeyId/", accountController.DeleteSecureAccessKey)
 }

@@ -25,7 +25,11 @@ func NewAccountsPresenter(
 }
 
 func (presenter *AccountsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.accountService.Read()
+	responseOutput := presenter.accountService.Read(
+		map[string]interface{}{
+			"shouldIncludeSecureAccessKeys": true,
+		},
+	)
 	if responseOutput.Status != service.Success {
 		return nil
 	}

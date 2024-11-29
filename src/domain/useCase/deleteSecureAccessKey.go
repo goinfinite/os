@@ -9,18 +9,27 @@ import (
 )
 
 func DeleteSecureAccessKey(
+	secureAccessKeyQueryRepo repository.SecureAccessKeyQueryRepo,
 	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteSecureAccessKey,
 ) error {
-	err := secureAccessKeyCmdRepo.Delete(deleteDto)
+	readRequestDto := dto.ReadSecureAccessKeysRequest{
+		SecureAccessKeyId: &deleteDto.Id,
+	}
+	keyToDelete, err := secureAccessKeyQueryRepo.ReadFirst(readRequestDto)
+	if err != nil {
+		return errors.New("SecureAccessKeyNotFound")
+	}
+
+	err = secureAccessKeyCmdRepo.Delete(keyToDelete.Id)
 	if err != nil {
 		slog.Error("DeleteSecureAccessKeyError", slog.Any("error", err))
 		return errors.New("DeleteSecureAccessKeyInfraError")
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
-		DeleteSecureAccessKey(deleteDto)
+		DeleteSecureAccessKey(deleteDto, keyToDelete.AccountId)
 
 	return nil
 }

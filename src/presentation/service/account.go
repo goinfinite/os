@@ -49,8 +49,91 @@ func NewAccountService(
 	}
 }
 
-func (service *AccountService) Read() ServiceOutput {
-	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo)
+func (service *AccountService) Read(input map[string]interface{}) ServiceOutput {
+	if input["id"] != nil {
+		input["accountId"] = input["id"]
+	}
+
+	var idPtr *valueObject.AccountId
+	if input["id"] != nil {
+		id, err := valueObject.NewAccountId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		idPtr = &id
+	}
+
+	var usernamePtr *valueObject.Username
+	if input["name"] != nil {
+		username, err := valueObject.NewUsername(input["username"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		usernamePtr = &username
+	}
+
+	shouldIncludeSecureAccessKeys := false
+	if input["shouldIncludeSecureAccessKeys"] != nil {
+		var err error
+		shouldIncludeSecureAccessKeys, err = voHelper.InterfaceToBool(
+			input["shouldIncludeSecureAccessKeys"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+	}
+
+	paginationDto := useCase.MarketplaceDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readRequestDto := dto.ReadAccountsRequest{
+		Pagination:                    paginationDto,
+		AccountId:                     idPtr,
+		AccountUsername:               usernamePtr,
+		ShouldIncludeSecureAccessKeys: &shouldIncludeSecureAccessKeys,
+	}
+
+	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo, readRequestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -224,107 +307,6 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 	return NewServiceOutput(Success, "AccountDeleted")
 }
 
-func (service *AccountService) ReadSecureAccessKey(
-	input map[string]interface{},
-) ServiceOutput {
-	serviceName, _ := valueObject.NewServiceName("openssh")
-	if !service.availabilityInspector.IsAvailable(serviceName) {
-		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
-	}
-
-	if input["id"] != nil {
-		input["accountId"] = input["id"]
-	}
-
-	requiredParams := []string{"accountId"}
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	accountId, err := valueObject.NewAccountId(input["accountId"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	var idPtr *valueObject.SecureAccessKeyId
-	if input["id"] != nil {
-		id, err := valueObject.NewSecureAccessKeyId(input["id"])
-		if err != nil {
-			return NewServiceOutput(UserError, err)
-		}
-		idPtr = &id
-	}
-
-	var namePtr *valueObject.SecureAccessKeyName
-	if input["name"] != nil {
-		name, err := valueObject.NewSecureAccessKeyName(input["name"])
-		if err != nil {
-			return NewServiceOutput(UserError, err)
-		}
-		namePtr = &name
-	}
-
-	paginationDto := useCase.MarketplaceDefaultPagination
-	if input["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
-		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if input["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
-		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if input["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
-		if err != nil {
-			return NewServiceOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if input["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
-			input["sortDirection"],
-		)
-		if err != nil {
-			return NewServiceOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if input["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
-		if err != nil {
-			return NewServiceOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
-	}
-
-	readRequestDto := dto.ReadSecureAccessKeysRequest{
-		Pagination:          paginationDto,
-		AccountId:           accountId,
-		SecureAccessKeyId:   idPtr,
-		SecureAccessKeyName: namePtr,
-	}
-
-	secureAccessKeys, err := useCase.ReadSecureAccessKeys(
-		service.secureAccessKeyQueryRepo, readRequestDto,
-	)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
-	}
-
-	return NewServiceOutput(Success, secureAccessKeys)
-}
-
 func (service *AccountService) CreateSecureAccessKey(
 	input map[string]interface{},
 ) ServiceOutput {
@@ -395,18 +377,13 @@ func (service *AccountService) DeleteSecureAccessKey(
 		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
-	requiredParams := []string{"accountId", "secureAccessKeyId"}
+	requiredParams := []string{"secureAccessKeyId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
 	keyId, err := valueObject.NewSecureAccessKeyId(input["secureAccessKeyId"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	accountId, err := valueObject.NewAccountId(input["accountId"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
@@ -428,11 +405,12 @@ func (service *AccountService) DeleteSecureAccessKey(
 	}
 
 	deleteDto := dto.NewDeleteSecureAccessKey(
-		keyId, accountId, operatorAccountId, operatorIpAddress,
+		keyId, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.DeleteSecureAccessKey(
-		service.secureAccessKeyCmdRepo, service.activityRecordCmdRepo, deleteDto,
+		service.secureAccessKeyQueryRepo, service.secureAccessKeyCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

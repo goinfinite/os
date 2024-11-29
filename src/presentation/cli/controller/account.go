@@ -21,13 +21,79 @@ func NewAccountController(
 }
 
 func (controller *AccountController) Read() *cobra.Command {
+	var accountIdUint64 uint64
+	var accountUsernameStr, shouldIncludeSecureAccessKeysStr string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.ServiceResponseWrapper(controller.accountService.Read())
+			requestBody := map[string]interface{}{
+				"shouldIncludeSecureAccessKeys": shouldIncludeSecureAccessKeysStr,
+			}
+
+			if accountIdUint64 != 0 {
+				requestBody["id"] = accountIdUint64
+			}
+
+			if accountUsernameStr != "" {
+				requestBody["username"] = accountUsernameStr
+			}
+
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.accountService.Read(requestBody),
+			)
 		},
 	}
+
+	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
+	cmd.Flags().StringVarP(
+		&accountUsernameStr, "account-username", "n", "", "AccountUsername",
+	)
+	cmd.Flags().StringVarP(
+		&shouldIncludeSecureAccessKeysStr, "should-include-secure-access-keys",
+		"s", "false", "ShouldIncludeSecureAccessKeys",
+	)
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "m", 0,
+		"ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "r", "",
+		"SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 
 	return cmd
 }
@@ -114,28 +180,6 @@ func (controller *AccountController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
-	cmd.MarkFlagRequired("account-id")
-	return cmd
-}
-
-func (controller *AccountController) ReadSecureAccessKeys() *cobra.Command {
-	var accountIdUint64 uint64
-
-	cmd := &cobra.Command{
-		Use:   "get-keys",
-		Short: "GetSecureAccessKeys",
-		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
-				"accountId": accountIdUint64,
-			}
-
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.ReadSecureAccessKey(requestBody),
-			)
-		},
-	}
-
-	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "u", 0, "AccountId")
 	cmd.MarkFlagRequired("account-id")
 	return cmd
 }

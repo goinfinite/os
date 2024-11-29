@@ -46,8 +46,17 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
+	secureAccessKeys := []entity.SecureAccessKey{}
+	for _, secureAccessKeyModel := range model.SecureAccessKeys {
+		secureAccessKeyEntity, err := secureAccessKeyModel.ToEntity()
+		if err != nil {
+			return accountEntity, err
+		}
+		secureAccessKeys = append(secureAccessKeys, secureAccessKeyEntity)
+	}
+
 	return entity.NewAccount(
-		accountId, groupId, username,
+		accountId, groupId, username, secureAccessKeys,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

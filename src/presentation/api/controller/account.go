@@ -28,10 +28,25 @@ func NewAccountController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.Account
+// @Param        id query  string  false  "Id"
+// @Param        username query  string  false  "Username"
+// @Param        shouldIncludeSecureAccessKeys query  bool  false  "ShouldIncludeSecureAccessKeys (this prop only works if OpenSSH service is installed)"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadAccountsResponse
 // @Router       /v1/account/ [get]
 func (controller *AccountController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.accountService.Read())
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.Read(requestBody),
+	)
 }
 
 // CreateAccount    godoc
@@ -106,34 +121,6 @@ func (controller *AccountController) Delete(c echo.Context) error {
 	)
 }
 
-// ReadSecureAccessKeys	 godoc
-// @Summary      ReadSecureAccessKeys
-// @Description  List accounts secure access keys.
-// @Tags         account
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        accountId query  uint  true  "AccountId that keys belongs to"
-// @Param        id query  string  false  "Id"
-// @Param        name query  string  false  "Name"
-// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
-// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
-// @Param        sortBy query  string  false  "SortBy (Pagination)"
-// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
-// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
-// @Success      200 {object} dto.ReadSecureAccessKeysResponse
-// @Router       /v1/account/{accountId}/secure-access-key/ [get]
-func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
-	if err != nil {
-		return err
-	}
-
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.ReadSecureAccessKey(requestBody),
-	)
-}
-
 // CreateSecureAccessKey    godoc
 // @Summary      CreateSecureAccessKey
 // @Description  Create a new secure access key.
@@ -141,10 +128,9 @@ func (controller *AccountController) ReadSecureAccessKey(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        accountId 	  path   string  true  "AccountId to create secure access key."
 // @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "Only 'content' is required.<br />'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
 // @Success      201 {object} object{} "SecureAccessKeyCreated"
-// @Router       /v1/account/{accountId}/secure-access-key/ [post]
+// @Router       /v1/account/secure-access-key/ [post]
 func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
@@ -163,10 +149,9 @@ func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        accountId 	  path   string  true  "AccountId that keys belongs to."
 // @Param        secureAccessKeyId 	  path   string  true  "SecureAccessKeyId to delete."
 // @Success      200 {object} object{} "SecureAccessKeyDeleted"
-// @Router       /v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/ [delete]
+// @Router       /v1/account/secure-access-key/{secureAccessKeyId}/ [delete]
 func (controller *AccountController) DeleteSecureAccessKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {

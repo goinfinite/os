@@ -130,6 +130,19 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	accountId valueObject.AccountId,
 	accountUsername valueObject.Username,
 ) error {
+	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
+	if infraHelper.FileExists(keysFilePath) {
+		err := os.Remove(keysFilePath)
+		if err != nil {
+			return errors.New("DeleteSecureAccessKeysFileError: " + err.Error())
+		}
+	}
+
+	err := repo.createSecureAccessKeysFileIfNotExists(accountUsername)
+	if err != nil {
+		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
+	}
+
 	readRequestDto := dto.ReadSecureAccessKeysRequest{
 		Pagination: dto.Pagination{
 			ItemsPerPage: 1000,
@@ -139,23 +152,6 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	keys, err := repo.secureAccessKeyQueryRepo.Read(readRequestDto)
 	if err != nil {
 		return err
-	}
-
-	if len(keys.SecureAccessKeys) == 0 {
-		return errors.New("NoSecureAccessKeyFound")
-	}
-
-	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
-	if infraHelper.FileExists(keysFilePath) {
-		err = os.Remove(keysFilePath)
-		if err != nil {
-			return errors.New("DeleteSecureAccessKeysFileError: " + err.Error())
-		}
-	}
-
-	err = repo.createSecureAccessKeysFileIfNotExists(accountUsername)
-	if err != nil {
-		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
 	}
 
 	keysFileContent := ""
@@ -239,24 +235,23 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 }
 
 func (repo *SecureAccessKeyCmdRepo) Delete(
-	deleteDto dto.DeleteSecureAccessKey,
+	secureAccessKeyId valueObject.SecureAccessKeyId,
 ) error {
-	account, err := repo.accountQueryRepo.ReadById(deleteDto.AccountId)
-	if err != nil {
-		return errors.New("AccountNotFound")
-	}
-
 	readFirstRequestDto := dto.ReadSecureAccessKeysRequest{
-		AccountId:         deleteDto.AccountId,
-		SecureAccessKeyId: &deleteDto.Id,
+		SecureAccessKeyId: &secureAccessKeyId,
 	}
-	_, err = repo.secureAccessKeyQueryRepo.ReadFirst(readFirstRequestDto)
+	keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadFirst(readFirstRequestDto)
 	if err != nil {
 		return errors.New("SecureAccessKeyNotFound")
 	}
 
+	account, err := repo.accountQueryRepo.ReadById(keyToDelete.AccountId)
+	if err != nil {
+		return errors.New("AccountNotFound")
+	}
+
 	err = repo.persistentDbSvc.Handler.Delete(
-		dbModel.SecureAccessKey{}, deleteDto.Id.Uint16(),
+		dbModel.SecureAccessKey{}, secureAccessKeyId.Uint16(),
 	).Error
 	if err != nil {
 		return err

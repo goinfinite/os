@@ -51,9 +51,7 @@ func TestSecureAccessKeyCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteSecureAccessKey", func(t *testing.T) {
-		deleteDto := dto.NewDeleteSecureAccessKey(keyId, accountId, accountId, ipAddress)
-
-		err = secureAccessKeyCmdRepo.Delete(deleteDto)
+		err = secureAccessKeyCmdRepo.Delete(keyId)
 		if err != nil {
 			t.Fatalf(
 				"Expected no error for %s, but got %s", keyName.String(), err.Error(),

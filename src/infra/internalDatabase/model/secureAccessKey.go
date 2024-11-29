@@ -18,7 +18,7 @@ type SecureAccessKey struct {
 }
 
 func (SecureAccessKey) TableName() string {
-	return "secure_access_key"
+	return "secure_access_keys"
 }
 
 func NewSecureAccessKey(

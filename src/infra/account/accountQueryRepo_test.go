@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
@@ -17,7 +18,10 @@ func TestAccountQueryRepo(t *testing.T) {
 	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
 	t.Run("ReadValidAccounts", func(t *testing.T) {
-		_, err := accountQueryRepo.Read()
+		requestDto := dto.ReadAccountsRequest{
+			AccountId: &accountId,
+		}
+		_, err := accountQueryRepo.Read(requestDto)
 		if err != nil {
 			t.Errorf("Expecting no error, but got %s", err.Error())
 		}

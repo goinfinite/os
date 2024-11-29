@@ -69,7 +69,8 @@ func (repo *AccountCmdRepo) Create(
 
 	nowUnixTime := valueObject.NewUnixTimeNow()
 	accountEntity := entity.NewAccount(
-		accountId, groupId, createDto.Username, nowUnixTime, nowUnixTime,
+		accountId, groupId, createDto.Username, []entity.SecureAccessKey{},
+		nowUnixTime, nowUnixTime,
 	)
 
 	accountModel, err := dbModel.Account{}.ToModel(accountEntity)

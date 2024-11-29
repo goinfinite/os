@@ -6,7 +6,7 @@ type SecureAccessKey struct {
 	Id          valueObject.SecureAccessKeyId          `json:"id"`
 	AccountId   valueObject.AccountId                  `json:"accountId"`
 	Name        valueObject.SecureAccessKeyName        `json:"name"`
-	Content     valueObject.SecureAccessKeyContent     `json:"--"`
+	Content     valueObject.SecureAccessKeyContent     `json:"-"`
 	Fingerprint valueObject.SecureAccessKeyFingerprint `json:"fingerprint"`
 	CreatedAt   valueObject.UnixTime                   `json:"createdAt"`
 	UpdatedAt   valueObject.UnixTime                   `json:"updatedAt"`
