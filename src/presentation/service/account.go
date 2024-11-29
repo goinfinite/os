@@ -356,7 +356,7 @@ func (service *AccountService) CreateSecureAccessKey(
 	}
 
 	createDto := dto.NewCreateSecureAccessKey(
-		keyName, keyContent, accountId, operatorAccountId, operatorIpAddress,
+		accountId, keyContent, keyName, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.CreateSecureAccessKey(
