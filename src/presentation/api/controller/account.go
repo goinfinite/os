@@ -128,7 +128,7 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "Only 'content' is required.<br />'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
+// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
 // @Success      201 {object} object{} "SecureAccessKeyCreated"
 // @Router       /v1/account/secure-access-key/ [post]
 func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {
