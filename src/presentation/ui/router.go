@@ -3,6 +3,7 @@ package ui
 import (
 	"embed"
 	"io/fs"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -64,6 +65,17 @@ func (router *Router) accountsRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	accountGroup.GET("/", accountsPresenter.Handler)
+}
+
+func (router *Router) cronsRoutes() {
+	cronsGroup := router.baseRoute.Group("/crons")
+
+	cronsPresenter, err := presenter.NewCronsPresenter(router.trailDbSvc)
+	if err != nil {
+		log.Fatalf("FailedToInitializeCronApiController: " + err.Error())
+	}
+
+	cronsGroup.GET("/", cronsPresenter.Handler)
 }
 
 func (router *Router) databasesRoutes() {
@@ -158,6 +170,7 @@ func (router *Router) previousDashboardRoute() {
 
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
+	router.cronsRoutes()
 	router.accountsRoutes()
 	router.databasesRoutes()
 	router.mappingsRoutes()

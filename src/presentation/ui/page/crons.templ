@@ -1,0 +1,95 @@
+package page
+
+import (
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+script CronsIndexLocalState() {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('crons', () => ({
+			// Primary states
+			cron: {},
+			resetPrimaryStates() {
+				this.cron = {
+					id: '',
+					schedule: '',
+					command: '',
+					comment: '',
+				}
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Modal states
+		}));
+	});
+}
+
+templ CronsIndex(crons []entity.Cron) {
+	@CronsIndexLocalState()
+	<div x-data="crons">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"Crons",
+					"",
+					"ph-clock",
+				)
+			</div>
+		</div>
+		<div
+			id="crons-page-content"
+			hx-get="/crons/"
+			hx-trigger="submit from:form delay:500ms"
+			hx-select="#crons-page-content"
+			hx-target="#crons-page-content"
+			hx-swap="outerHTML transition:true"
+			class="flex flex-col"
+		>
+			<div id="crons-table" class="card w-full">
+				@CronsTable(crons)
+			</div>
+		</div>
+	</div>
+}
+
+templ CronsTable(crons []entity.Cron) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-2/10 px-5 py-3 text-left">Schedule(s)</th>
+				<th scope="col" class="w-2/10 px-5 py-3 text-center">Command(s)</th>
+				<th scope="col" class="w-2/10 px-5 py-3 text-center">Comment(s)</th>
+				<th scope="col" class="flex justify-end py-3">
+					<div class="w-5/10 mr-2">
+						@componentForm.SubmitButton(
+							"open-create-cron-form-button", "Schedule new task",
+							"ph-clock-clockwise", "console.log('schedule new task')", false,
+						)
+					</div>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, cron := range crons {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ cron.Schedule.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ cron.Command.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ cron.Comment.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-right">
+						<div class="inline-flex space-x-2">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"console.log("+cron.Id.String()+")",
+								"delete task", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
