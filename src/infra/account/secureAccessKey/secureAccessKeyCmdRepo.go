@@ -2,7 +2,6 @@ package secureAccessKeyInfra
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -60,49 +59,6 @@ func (repo *SecureAccessKeyCmdRepo) createSecureAccessKeysFileIfNotExists(
 	}
 
 	return nil
-}
-
-func (repo *SecureAccessKeyCmdRepo) isSecureAccessKeyValid(
-	keyContent valueObject.SecureAccessKeyContent,
-) bool {
-	keyName, err := keyContent.ReadOnlyKeyName()
-	if err != nil {
-		slog.Error(err.Error())
-		return false
-	}
-	keyNameStr := keyName.String()
-
-	keyTempFilePath := "/tmp/" + keyNameStr + "_secureAccessKey"
-	shouldOverwrite := true
-	err = infraHelper.UpdateFile(
-		keyTempFilePath, keyContent.String(), shouldOverwrite,
-	)
-	if err != nil {
-		slog.Error(
-			"CreateSecureAccessKeyTempFileError", slog.String("keyName", keyNameStr),
-			slog.Any("err", err),
-		)
-		return false
-	}
-
-	_, err = infraHelper.RunCmdWithSubShell("ssh-keygen -l -f " + keyTempFilePath)
-	if err != nil {
-		slog.Error(
-			"ValidateSecureAccessKeyError", slog.String("keyName", keyNameStr),
-			slog.Any("err", err),
-		)
-		return false
-	}
-
-	err = os.Remove(keyTempFilePath)
-	if err != nil {
-		slog.Error(
-			"DeleteSecureAccessKeyTempFileError", slog.String("keyName", keyNameStr),
-			slog.Any("err", err),
-		)
-	}
-
-	return true
 }
 
 func (repo *SecureAccessKeyCmdRepo) allowAccountSecureRemoteConnection(
@@ -181,17 +137,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, err
 	}
 
-	keyContentStr := createDto.Content.ReadWithoutKeyName() + " " +
-		createDto.Name.String()
-	keyContent, err := valueObject.NewSecureAccessKeyContent(keyContentStr)
-	if err != nil {
-		return keyId, errors.New("InvalidSecureAccessKey")
-	}
-
-	if !repo.isSecureAccessKeyValid(keyContent) {
-		return keyId, errors.New("InvalidSecureAccessKey")
-	}
-
+	keyContentStr := createDto.Content.String()
 	rawFingerprint, err := infraHelper.RunCmdWithSubShell(
 		"echo \"" + keyContentStr + "\" | ssh-keygen -lf /dev/stdin | awk '{print $2}'",
 	)
