@@ -42,14 +42,61 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "ReadAccounts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "ShouldIncludeSecureAccessKeys (this prop only works if OpenSSH service is installed)",
+                        "name": "shouldIncludeSecureAccessKeys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Account"
-                            }
+                            "$ref": "#/definitions/dto.ReadAccountsResponse"
                         }
                     }
                 }
@@ -129,6 +176,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/account/secure-access-key/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new secure access key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "CreateSecureAccessKey",
+                "parameters": [
+                    {
+                        "description": "Only 'content' is required.\u003cbr /\u003e'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
+                        "name": "createSecureAccessKey",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateSecureAccessKey"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "SecureAccessKeyCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/secure-access-key/{secureAccessKeyId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a secure access key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "DeleteSecureAccessKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SecureAccessKeyId to delete.",
+                        "name": "secureAccessKeyId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecureAccessKeyDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/account/{accountId}/": {
             "delete": {
                 "security": [
@@ -159,134 +282,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "AccountDeleted",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/account/{accountId}/secure-access-key/": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List accounts secure access keys.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "ReadSecureAccessKeys",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "AccountId that keys belongs to.",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.SecureAccessKey"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new secure access key.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "CreateSecureAccessKey",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "AccountId to create secure access key.",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Only 'content' is required.\u003cbr /\u003e'name' will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
-                        "name": "createSecureAccessKey",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateSecureAccessKey"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "SecureAccessKeyCreated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/": {
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete a secure access key.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "DeleteSecureAccessKey",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "AccountId that keys belongs to.",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "SecureAccessKeyId to delete.",
-                        "name": "secureAccessKeyId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SecureAccessKeyDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -2739,6 +2734,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReadAccountsResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Account"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
         "dto.ReadInstallableServicesItemsResponse": {
             "type": "object",
             "properties": {
@@ -3040,6 +3049,12 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "secureAccessKeys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SecureAccessKey"
+                    }
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -3536,7 +3551,13 @@ const docTemplate = `{
         "entity.SecureAccessKey": {
             "type": "object",
             "properties": {
-                "encodedContent": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "fingerprint": {
                     "type": "string"
                 },
                 "id": {
@@ -3544,6 +3565,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
                 }
             }
         },

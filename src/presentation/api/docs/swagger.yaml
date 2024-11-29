@@ -311,6 +311,15 @@ definitions:
       sortDirection:
         type: string
     type: object
+  dto.ReadAccountsResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/entity.Account'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadInstallableServicesItemsResponse:
     properties:
       installableServices:
@@ -508,6 +517,10 @@ definitions:
         type: integer
       id:
         type: integer
+      secureAccessKeys:
+        items:
+          $ref: '#/definitions/entity.SecureAccessKey'
+        type: array
       updatedAt:
         type: integer
       username:
@@ -833,12 +846,18 @@ definitions:
     type: object
   entity.SecureAccessKey:
     properties:
-      encodedContent:
+      accountId:
+        type: integer
+      createdAt:
+        type: integer
+      fingerprint:
         type: string
       id:
         type: integer
       name:
         type: string
+      updatedAt:
+        type: integer
     type: object
   entity.SslCertificate:
     properties:
@@ -1025,15 +1044,47 @@ paths:
       consumes:
       - application/json
       description: List accounts.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: string
+      - description: Username
+        in: query
+        name: username
+        type: string
+      - description: ShouldIncludeSecureAccessKeys (this prop only works if OpenSSH
+          service is installed)
+        in: query
+        name: shouldIncludeSecureAccessKeys
+        type: boolean
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.Account'
-            type: array
+            $ref: '#/definitions/dto.ReadAccountsResponse'
       security:
       - Bearer: []
       summary: ReadAccounts
@@ -1108,41 +1159,12 @@ paths:
       summary: DeleteAccount
       tags:
       - account
-  /v1/account/{accountId}/secure-access-key/:
-    get:
-      consumes:
-      - application/json
-      description: List accounts secure access keys.
-      parameters:
-      - description: AccountId that keys belongs to.
-        in: path
-        name: accountId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.SecureAccessKey'
-            type: array
-      security:
-      - Bearer: []
-      summary: ReadSecureAccessKeys
-      tags:
-      - account
+  /v1/account/secure-access-key/:
     post:
       consumes:
       - application/json
       description: Create a new secure access key.
       parameters:
-      - description: AccountId to create secure access key.
-        in: path
-        name: accountId
-        required: true
-        type: string
       - description: Only 'content' is required.<br />'name' will only become required
           if there is no name in 'content'. If the 'name' is provided, it will overwrite
           the name in the 'content'.
@@ -1163,17 +1185,12 @@ paths:
       summary: CreateSecureAccessKey
       tags:
       - account
-  /v1/account/{accountId}/secure-access-key/{secureAccessKeyId}/:
+  /v1/account/secure-access-key/{secureAccessKeyId}/:
     delete:
       consumes:
       - application/json
       description: Delete a secure access key.
       parameters:
-      - description: AccountId that keys belongs to.
-        in: path
-        name: accountId
-        required: true
-        type: string
       - description: SecureAccessKeyId to delete.
         in: path
         name: secureAccessKeyId
