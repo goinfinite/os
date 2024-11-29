@@ -87,16 +87,11 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	accountUsername valueObject.Username,
 ) error {
 	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
-	if infraHelper.FileExists(keysFilePath) {
-		err := os.Remove(keysFilePath)
+	if !infraHelper.FileExists(keysFilePath) {
+		err := repo.createSecureAccessKeysFileIfNotExists(accountUsername)
 		if err != nil {
-			return errors.New("DeleteSecureAccessKeysFileError: " + err.Error())
+			return err
 		}
-	}
-
-	err := repo.createSecureAccessKeysFileIfNotExists(accountUsername)
-	if err != nil {
-		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
 	}
 
 	readRequestDto := dto.ReadSecureAccessKeysRequest{
