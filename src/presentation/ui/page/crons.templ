@@ -24,6 +24,25 @@ script CronsIndexLocalState() {
 			},
 
 			// Modal states
+			isDeleteCronJobModalOpen: false,
+			openDeleteCronJobModal(id) {
+				this.resetPrimaryStates();
+
+				this.cron.id = id;
+				this.isDeleteCronJobModalOpen = true;
+			},
+			closeDeleteCronJobModal() {
+				this.isDeleteCronJobModalOpen = false;
+			},
+			deleteCronJob() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/cron/' + this.cron.id + '/',
+					{swap: 'none'},
+				);
+				this.$dispatch('delete:cron');
+				this.closeDeleteCronJobModal();
+			},
 		}));
 	});
 }
@@ -43,16 +62,19 @@ templ CronsIndex(crons []entity.Cron) {
 		<div
 			id="crons-page-content"
 			hx-get="/crons/"
-			hx-trigger="submit from:form delay:500ms"
+			hx-trigger="submit from:form delay:500ms, delete:cron from:window delay:250ms"
 			hx-select="#crons-page-content"
 			hx-target="#crons-page-content"
 			hx-swap="outerHTML transition:true"
-			class="flex flex-col"
 		>
 			<div id="crons-table" class="card w-full">
 				@CronsTable(crons)
 			</div>
 		</div>
+		@componentStructural.DeleteModal(
+			"isDeleteCronJobModalOpen", "closeDeleteCronJobModal()", "deleteCronJob()",
+			"", "cron.id",
+		)
 	</div>
 }
 
@@ -64,7 +86,7 @@ templ CronsTable(crons []entity.Cron) {
 				<th scope="col" class="w-2/10 px-5 py-3 text-center">Command(s)</th>
 				<th scope="col" class="w-2/10 px-5 py-3 text-center">Comment(s)</th>
 				<th scope="col" class="flex justify-end py-3">
-					<div class="w-5/10 mr-2">
+					<div class="w-2/4 mr-2">
 						@componentForm.SubmitButton(
 							"open-create-cron-form-button", "Schedule new task",
 							"ph-clock-clockwise", "console.log('schedule new task')", false,
@@ -76,18 +98,18 @@ templ CronsTable(crons []entity.Cron) {
 		<tbody>
 			for _, cron := range crons {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ cron.Schedule.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ cron.Command.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">
+					<th scope="row" class="px-5 py-3 text-left font-normal">{ cron.Schedule.String() }</th>
+					<th scope="row" class="px-5 py-3 text-center font-normal">{ cron.Command.String() }</th>
+					<th scope="row" class="px-5 py-3 text-center font-normal">
 						if cron.Comment != nil {
 							{ cron.Comment.String() }
 						}
 					</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-right">
+					<th scope="row" class="w-2/4 px-5 py-3 text-right">
 						<div class="inline-flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
-								"console.log("+cron.Id.String()+")",
+								"openDeleteCronJobModal("+cron.Id.String()+")",
 								"delete task", "red-500",
 							)
 						</div>
