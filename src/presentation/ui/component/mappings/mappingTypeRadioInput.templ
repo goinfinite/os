@@ -3,6 +3,7 @@ package componentMappings
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"strings"
@@ -16,17 +17,27 @@ func transformMappingTypeIntoLabelFormat(mappingType string) string {
 
 templ MappingTypeRadioInput(id, label, bindModelPath string) {
 	<!-- MappingTypeSelectInput -->
-	<div class="space-x-3 -ml-3">
+	<div class="space-x-3 -ml-1 -mb-3">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", transformMappingTypeIntoLabelFormat(mappingType),
 				mappingType, bindModelPath,
 			)
 		}
-		<p x-show={ bindModelPath + " == 'url'" } class="text-sm">Set up direct redirects to an URL.</p>
-		<p x-show={ bindModelPath + " == 'service'" } class="text-sm">Configure how requests are forwarded to backend services, such as PHP, for handling dynamic content.</p>
-		<p x-show={ bindModelPath + " == 'response-code'" } class="text-sm">Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).</p>
-		<p x-show={ bindModelPath + " == 'inline-html'" } class="text-sm">Send a specific HTTP status code along with HTML content in the server\'s response.</p>
-		<p x-show={ bindModelPath + " == 'static-files'" } class="text-sm">Set the root directory to make static files accessible. The server will attempt to locate files in various locations until it finds one that exists.</p>
+	</div>
+	<div x-show={ bindModelPath + " == 'url'" }>
+		@componentStructural.Alert("info", "Set up direct redirects to an URL.")
+	</div>
+	<div x-show={ bindModelPath + " == 'service'" }>
+		@componentStructural.Alert("info", "Configure how requests are forwarded to backend services, such as PHP, for handling dynamic content.")
+	</div>
+	<div x-show={ bindModelPath + " == 'response-code'" }>
+		@componentStructural.Alert("info", "Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).")
+	</div>
+	<div x-show={ bindModelPath + " == 'inline-html'" }>
+		@componentStructural.Alert("info", "Send a specific HTTP status code along with HTML content in the server's response.")
+	</div>
+	<div x-show={ bindModelPath + " == 'static-files'" }>
+		@componentStructural.Alert("info", "Set the root directory to make static files accessible. The server will attempt to locate files in various locations until it finds one that exists.")
 	</div>
 }
