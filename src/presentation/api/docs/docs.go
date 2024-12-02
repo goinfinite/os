@@ -224,14 +224,55 @@ const docTemplate = `{
                     "cron"
                 ],
                 "summary": "ReadCrons",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comment",
+                        "name": "comment",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Cron"
-                            }
+                            "$ref": "#/definitions/dto.ReadCronsResponse"
                         }
                     }
                 }
@@ -289,7 +330,7 @@ const docTemplate = `{
                 "tags": [
                     "cron"
                 ],
-                "summary": "CreateNewCron",
+                "summary": "CreateCron",
                 "parameters": [
                     {
                         "description": "comment is optional.",
@@ -2597,6 +2638,20 @@ const docTemplate = `{
                 },
                 "sortDirection": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.ReadCronsResponse": {
+            "type": "object",
+            "properties": {
+                "crons": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Cron"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
                 }
             }
         },
