@@ -1,20 +1,33 @@
 package componentForm
 
-templ RadioInput(id, label, bindValue, bindModelPath string) {
+templ RadioInput(id, label, value, bindModelPath string) {
 	<!-- RadioInput -->
-	<div class="inline-flex items-center">
-		<label class="relative -mr-2 flex cursor-pointer items-center rounded-full p-3">
+	<div
+		class="hover:text-infinite-500 inline-flex items-center text-neutral-100"
+		@click={ bindModelPath + ` = "` + value + `"` }
+	>
+		<label class="relative flex cursor-pointer items-center rounded-full p-1">
 			<input
 				type="radio"
 				name={ id }
-				value={ bindValue }
+				value={ value }
 				x-model={ bindModelPath }
-				class="border-infinite-500 checked:bg-infinite-500 peer relative h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border bg-inherit transition-all checked:h-4 checked:w-4 checked:border-inherit"
+				class="hidden"
 			/>
-			<span class="absolute mx-0.5 mt-0.5 text-xs text-white opacity-0 transition-opacity peer-checked:opacity-100">
-				<i class="ph-duotone ph-check-fat h-full w-full"></i>
-			</span>
+			<i
+				x-show={ bindModelPath + ` !== "` + value + `"` }
+				class="ph-duotone ph-circle text-xl"
+			></i>
+			<i
+				x-show={ bindModelPath + ` === "` + value + `"` }
+				class="ph-duotone ph-check-circle text-infinite-500 text-xl"
+			></i>
 		</label>
-		<label class="ml-1 text-sm font-medium text-neutral-100">{ label }</label>
+		<label
+			class="cursor-pointer text-sm"
+			:class={ bindModelPath + " === '" + value + "' && 'text-infinite-500 font-bold'" }
+		>
+			{ label }
+		</label>
 	</div>
 }
