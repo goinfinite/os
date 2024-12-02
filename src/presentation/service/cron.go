@@ -168,8 +168,8 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 
 func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 	var idPtr *valueObject.CronId
-	if input["id"] != nil {
-		id, err := valueObject.NewCronId(input["id"])
+	if input["cronId"] != nil {
+		id, err := valueObject.NewCronId(input["cronId"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
