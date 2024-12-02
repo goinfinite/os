@@ -78,7 +78,11 @@ templ CronsTable(crons []entity.Cron) {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ cron.Schedule.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ cron.Command.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ cron.Comment.String() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">
+						if cron.Comment != nil {
+							{ cron.Comment.String() }
+						}
+					</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-right">
 						<div class="inline-flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
