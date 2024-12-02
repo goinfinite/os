@@ -9,7 +9,9 @@ templ RadioInput(id, label, value, bindModelPath string) {
 		<label class="relative flex cursor-pointer items-center rounded-full p-1">
 			<input
 				type="radio"
-				name={ id }
+				if id != "" {
+					name={ id }
+				}
 				value={ value }
 				x-model={ bindModelPath }
 				class="hidden"
