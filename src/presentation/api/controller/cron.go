@@ -90,8 +90,9 @@ func (controller *CronController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func (controller *CronController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"id": c.Param("cronId"),
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
