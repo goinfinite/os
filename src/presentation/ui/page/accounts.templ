@@ -222,7 +222,7 @@ templ AccountsTable(accounts []entity.Account) {
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-fingerprint", "blue-900", "blue-700",
 								"openSecureAccessKeysModal("+account.Id.String()+", '"+account.Username.String()+"')",
-								"secure access keys", "blue-500",
+								"view secure access keys", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
@@ -323,10 +323,10 @@ templ SecureAccessKeysList() {
 		componentStructural.AlertTypeInfo,
 		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
 	)
-	<div class="mt-2 space-y-2">
+	<div class="mt-2">
 		<div id="account-secure-access-keys-list">
 			<template x-for="key of account.secureAccessKeys">
-				<div class="bg-os-500 flex rounded-md p-4">
+				<div class="bg-os-500 mt-2 flex rounded-md p-4">
 					<div class="w-90% flex-col">
 						<div class="flex items-center">
 							<i class="ph-duotone ph-key mr-2 text-lg"></i>
@@ -347,7 +347,7 @@ templ SecureAccessKeysList() {
 			</template>
 		</div>
 		<div class="flex">
-			<div class="ml-auto">
+			<div class="ml-auto mt-2">
 				@componentForm.SubmitButton(
 					"open-create-secure-access-key-modal", "Create secure access key",
 					"ph-fingerprint", "openCreateSecureAccessKeyModal()", true,
@@ -378,12 +378,13 @@ templ CreateSecureAccessKeyForm() {
 				Type:               "text",
 				Id:                 "name",
 				Label:              "Key name",
+				BindModelValuePath: "secureAccessKey.name",
 				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "content",
 				Label:              "Key content",
-				BindModelValuePath: "",
+				BindModelValuePath: "secureAccessKey.content",
 				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
 			})
 		</div>
