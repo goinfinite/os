@@ -1,124 +1,146 @@
 package cronInfra
 
 import (
+	"errors"
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	"github.com/google/uuid"
 )
 
 type CronCmdRepo struct {
-	currentCrontab     []entity.Cron
-	tmpCrontabFilename string
+	cronQueryRepo *CronQueryRepo
 }
 
-func NewCronCmdRepo() (*CronCmdRepo, error) {
-	cronQueryRepo := CronQueryRepo{}
+func NewCronCmdRepo() *CronCmdRepo {
+	return &CronCmdRepo{
+		cronQueryRepo: NewCronQueryRepo(),
+	}
+}
 
-	currentCrontab, err := cronQueryRepo.Read()
-	if err != nil {
-		return nil, err
+func (repo *CronCmdRepo) updateCrontabFile(cronsList []entity.Cron) error {
+	tmpCrontabFilePath := "/tmp/crontab"
+
+	if !infraHelper.FileExists(tmpCrontabFilePath) {
+		_, err := os.Create(tmpCrontabFilePath)
+		if err != nil {
+			return errors.New("CreateCrontabTempFileError: " + err.Error())
+		}
 	}
 
-	tmpCrontabFilename := "tmpCrontab_" + uuid.NewString()
+	crontabContent := ""
+	for _, cron := range cronsList {
+		crontabContent += cron.String() + "\n"
+	}
 
-	return &CronCmdRepo{
-		currentCrontab:     currentCrontab,
-		tmpCrontabFilename: tmpCrontabFilename,
-	}, nil
-}
+	err := infraHelper.UpdateFile(tmpCrontabFilePath, crontabContent, true)
+	if err != nil {
+		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
+	}
 
-func (repo *CronCmdRepo) createCrontabTmpFile() error {
-	tmpCrontabFile, err := os.Create(repo.tmpCrontabFilename)
+	_, err = infraHelper.RunCmdWithSubShell("crontab " + tmpCrontabFilePath)
 	if err != nil {
 		return err
 	}
-	defer tmpCrontabFile.Close()
+
+	err = os.Remove(tmpCrontabFilePath)
+	if err != nil {
+		return errors.New("DeleteCrontabTempFileError: " + err.Error())
+	}
 
 	return nil
 }
 
-func (repo *CronCmdRepo) installNewCrontab() error {
-	err := repo.createCrontabTmpFile()
+func (repo *CronCmdRepo) Create(
+	createDto dto.CreateCron,
+) (cronId valueObject.CronId, err error) {
+	readRequestDto := dto.ReadCronsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+	}
+	readResponseDto, err := repo.cronQueryRepo.Read(readRequestDto)
 	if err != nil {
-		return nil
+		return cronId, errors.New("ReadCronsError: " + err.Error())
 	}
 
-	var crontabContent string
-	for _, cron := range repo.currentCrontab {
-		crontabContent += cron.String() + "\n"
-	}
+	cronsList := readResponseDto.Crons
 
-	err = infraHelper.UpdateFile(repo.tmpCrontabFilename, crontabContent, true)
-	if err != nil {
-		return err
-	}
-
-	_, err = infraHelper.RunCmd("crontab", repo.tmpCrontabFilename)
-	if err != nil {
-		return err
-	}
-
-	return os.Remove(repo.tmpCrontabFilename)
-}
-
-func (repo *CronCmdRepo) Create(createCron dto.CreateCron) (valueObject.CronId, error) {
-	cronsCount := len(repo.currentCrontab)
-	newCronIndex := cronsCount + 1
-
-	cronId, err := valueObject.NewCronId(newCronIndex)
+	rawCronId := len(readResponseDto.Crons) + 1
+	cronId, err = valueObject.NewCronId(rawCronId)
 	if err != nil {
 		return cronId, err
 	}
 
 	newCron := entity.NewCron(
-		cronId, createCron.Schedule, createCron.Command, createCron.Comment,
+		cronId, createDto.Schedule, createDto.Command, createDto.Comment,
 	)
+	cronsList = append(cronsList, newCron)
 
-	repo.currentCrontab = append(repo.currentCrontab, newCron)
-
-	return cronId, repo.installNewCrontab()
+	return cronId, repo.updateCrontabFile(cronsList)
 }
 
-func (repo *CronCmdRepo) Update(updateCron dto.UpdateCron) error {
-	cronToUpdateId := updateCron.Id
-	cronToUpdateListIndex := cronToUpdateId.Uint64() - 1
+func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
+	readRequestDto := dto.ReadCronsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+	}
+	readResponseDto, err := repo.cronQueryRepo.Read(readRequestDto)
+	if err != nil {
+		return errors.New("ReadCronsError: " + err.Error())
+	}
+	crons := readResponseDto.Crons
 
-	newCronSchedule := repo.currentCrontab[cronToUpdateListIndex].Schedule
-	if updateCron.Schedule != nil {
-		newCronSchedule = *updateCron.Schedule
+	desiredCronIndex := updateDto.Id.Uint64() - 1
+	desiredCron := crons[desiredCronIndex]
+
+	schedule := desiredCron.Schedule
+	if updateDto.Schedule != nil {
+		schedule = *updateDto.Schedule
 	}
 
-	newCronCommand := repo.currentCrontab[cronToUpdateListIndex].Command
-	if updateCron.Command != nil {
-		newCronCommand = *updateCron.Command
+	command := desiredCron.Command
+	if updateDto.Command != nil {
+		command = *updateDto.Command
 	}
 
-	newCronComment := repo.currentCrontab[cronToUpdateListIndex].Comment
-	if updateCron.Comment != nil {
-		newCronComment = updateCron.Comment
+	comment := desiredCron.Comment
+	if updateDto.Comment != nil {
+		comment = updateDto.Comment
 	}
 
-	newCron := entity.NewCron(
-		cronToUpdateId, newCronSchedule, newCronCommand, newCronComment,
-	)
-	repo.currentCrontab[cronToUpdateListIndex] = newCron
+	id, err := valueObject.NewCronId(desiredCronIndex)
+	if err != nil {
+		return err
+	}
 
-	return repo.installNewCrontab()
+	desiredCronWithUpdatedValues := entity.NewCron(id, schedule, command, comment)
+
+	crons[desiredCronIndex] = desiredCronWithUpdatedValues
+
+	return repo.updateCrontabFile(crons)
 }
 
 func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
-	var cronsToKeep []entity.Cron
-	for _, currentCron := range repo.currentCrontab {
-		if cronId.Uint64() == currentCron.Id.Uint64() {
-			continue
-		}
-		cronsToKeep = append(cronsToKeep, currentCron)
+	readRequestDto := dto.ReadCronsRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
 	}
-	repo.currentCrontab = cronsToKeep
+	readResponseDto, err := repo.cronQueryRepo.Read(readRequestDto)
+	if err != nil {
+		return errors.New("ReadCronsError: " + err.Error())
+	}
 
-	return repo.installNewCrontab()
+	desiredCronIndex := cronId.Uint64() - 1
+
+	cronsToKeep := append(
+		readResponseDto.Crons[:desiredCronIndex],
+		readResponseDto.Crons[desiredCronIndex+1:]...,
+	)
+
+	return repo.updateCrontabFile(cronsToKeep)
 }

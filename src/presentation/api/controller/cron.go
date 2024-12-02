@@ -13,15 +13,10 @@ type CronController struct {
 
 func NewCronController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) (*CronController, error) {
-	cronService, err := service.NewCronService(trailDbSvc)
-	if err != nil {
-		return nil, err
-	}
-
+) *CronController {
 	return &CronController{
-		cronService: cronService,
-	}, nil
+		cronService: service.NewCronService(trailDbSvc),
+	}
 }
 
 // ReadCrons	 godoc
@@ -31,14 +26,26 @@ func NewCronController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.Cron
+// @Param        id query  uint  false  "Id"
+// @Param        comment query  string  false  "Comment"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
 func (controller *CronController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read())
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read(requestBody))
 }
 
 // CreateCron    godoc
-// @Summary      CreateNewCron
+// @Summary      CreateCron
 // @Description  Create a new cron.
 // @Tags         cron
 // @Accept       json

@@ -3,7 +3,7 @@ package presenter
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
@@ -17,28 +17,23 @@ type CronsPresenter struct {
 
 func NewCronsPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) (presenter *CronsPresenter, err error) {
-	cronService, err := service.NewCronService(trailDbSvc)
-	if err != nil {
-		return presenter, err
-	}
-
+) *CronsPresenter {
 	return &CronsPresenter{
-		cronService: cronService,
-	}, nil
+		cronService: service.NewCronService(trailDbSvc),
+	}
 }
 
 func (presenter *CronsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.cronService.Read()
+	responseOutput := presenter.cronService.Read(map[string]interface{}{})
 	if responseOutput.Status != service.Success {
 		return nil
 	}
 
-	crons, assertOk := responseOutput.Body.([]entity.Cron)
+	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadCronsResponse)
 	if !assertOk {
 		return nil
 	}
 
-	pageContent := page.CronsIndex(crons)
+	pageContent := page.CronsIndex(typedOutputBody.Crons)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

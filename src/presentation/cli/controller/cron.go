@@ -1,8 +1,6 @@
 package cliController
 
 import (
-	"errors"
-
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
@@ -15,25 +13,77 @@ type CronController struct {
 
 func NewCronController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) (*CronController, error) {
-	cronService, err := service.NewCronService(trailDbSvc)
-	if err != nil {
-		return nil, errors.New("FailedToInitializeCronService: " + err.Error())
-	}
-
+) *CronController {
 	return &CronController{
-		cronService: cronService,
-	}, nil
+		cronService: service.NewCronService(trailDbSvc),
+	}
 }
 
 func (controller *CronController) Read() *cobra.Command {
+	var idUint uint64
+	var commentStr string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "ReadCrons",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.ServiceResponseWrapper(controller.cronService.Read())
+			requestBody := map[string]interface{}{}
+
+			if idUint != 0 {
+				requestBody["id"] = idUint
+			}
+
+			if commentStr != "" {
+				requestBody["comment"] = commentStr
+			}
+
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
+
+			cliHelper.ServiceResponseWrapper(controller.cronService.Read(requestBody))
 		},
 	}
+
+	cmd.Flags().Uint64VarP(&idUint, "cron-id", "i", 0, "CronId")
+	cmd.Flags().StringVarP(&commentStr, "cron-comment", "s", "", "CronComment")
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "m", 0,
+		"ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "r", "",
+		"SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
+
 	return cmd
 }
 

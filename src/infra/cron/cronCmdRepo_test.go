@@ -10,48 +10,51 @@ import (
 
 func TestCronCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	cronCmdRepo, err := NewCronCmdRepo()
-	if err != nil {
-		t.Errorf("UnexpectedError: %v", err)
-	}
+	cronCmdRepo := NewCronCmdRepo()
 
-	ipAddress := valueObject.NewLocalhostIpAddress()
+	var id valueObject.CronId
+	schedule, _ := valueObject.NewCronSchedule("* * * * *")
+	command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
+	comment, _ := valueObject.NewCronComment("Test cron job")
 	operatorAccountId, _ := valueObject.NewAccountId(0)
+	operatorIpAddress := valueObject.NewLocalhostIpAddress()
+
+	createCron := dto.NewCreateCron(
+		schedule, command, &comment, operatorAccountId, operatorIpAddress,
+	)
 
 	t.Run("CreateCron", func(t *testing.T) {
-		schedule, _ := valueObject.NewCronSchedule("* * * * *")
-		command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
-		comment, _ := valueObject.NewCronComment("Test cron job")
-		createCron := dto.NewCreateCron(
-			schedule, command, &comment, operatorAccountId, ipAddress,
-		)
-
-		_, err = cronCmdRepo.Create(createCron)
+		var err error
+		id, err = cronCmdRepo.Create(createCron)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Fatalf(
+				"Expected no error for '%s', but got '%s'", comment.String(),
+				err.Error(),
+			)
 		}
 	})
 
 	t.Run("UpdateCron", func(t *testing.T) {
-		id, _ := valueObject.NewCronId(1)
-		schedule, _ := valueObject.NewCronSchedule("* * * * 0")
-		command, _ := valueObject.NewUnixCommand("echo \"cronUpdateTest\" >> crontab_logs.txt")
-		comment, _ := valueObject.NewCronComment("update test")
+		schedule, _ = valueObject.NewCronSchedule("* * * * 0")
 		updateCron := dto.NewUpdateCron(
-			id, &schedule, &command, &comment, operatorAccountId, ipAddress,
+			id, &schedule, nil, nil, operatorAccountId, operatorIpAddress,
 		)
 
-		err = cronCmdRepo.Update(updateCron)
+		err := cronCmdRepo.Update(updateCron)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for '%s', but got '%s'", comment.String(),
+				err.Error(),
+			)
 		}
 	})
 
 	t.Run("DeleteCron", func(t *testing.T) {
-		id, _ := valueObject.NewCronId(1)
-		err = cronCmdRepo.Delete(id)
+		err := cronCmdRepo.Delete(id)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for '%d', but got '%s'", id.Uint64(), err.Error(),
+			)
 		}
 	})
 }

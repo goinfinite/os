@@ -19,7 +19,10 @@ func DeleteCron(
 			return errors.New("CronIdOrCommentRequired")
 		}
 
-		cron, err := cronQueryRepo.ReadByComment(*deleteDto.Comment)
+		readRequestDto := dto.ReadCronsRequest{
+			CronComment: deleteDto.Comment,
+		}
+		cron, err := cronQueryRepo.ReadFirst(readRequestDto)
 		if err != nil {
 			slog.Error("ReadCronToDeleteError", slog.Any("err", err))
 			return errors.New("ReadCronToDeleteInfraError")

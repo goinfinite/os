@@ -14,9 +14,11 @@ func UpdateCron(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateCron,
 ) error {
-	_, err := cronQueryRepo.ReadById(updateDto.Id)
+	readRequestDto := dto.ReadCronsRequest{
+		CronId: &updateDto.Id,
+	}
+	_, err := cronQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		slog.Error("CronNotFound", slog.Any("err", err))
 		return errors.New("CronNotFound")
 	}
 
