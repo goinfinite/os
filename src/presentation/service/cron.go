@@ -123,7 +123,7 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 	}
 
 	var commentPtr *valueObject.CronComment
-	if input["comment"] != nil {
+	if input["comment"] != nil && input["comment"] != "" {
 		comment, err := valueObject.NewCronComment(input["comment"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
