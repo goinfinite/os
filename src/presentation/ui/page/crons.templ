@@ -55,6 +55,35 @@ script CronsIndexLocalState() {
 			closeCreateCronJobModal() {
 				this.isCreateCronJobModalOpen = false;
 			},
+			isUpdateCronJobModalOpen: false,
+			openUpdateCronJobModal(id, schedule, command, comment) {
+				this.resetPrimaryStates();
+				this.resetAuxiliaryStates();
+
+				this.cron.id = id;
+				this.cron.schedule = schedule;
+				this.cron.command = command;
+				this.cron.comment = comment;
+
+				if (!schedule.includes('@')) {
+					this.cron.schedule = '@daily';
+					this.selectedScheduleType = 'custom';
+
+					const scheduleParts = schedule.split(' ');
+					this.customScheduleParts = {
+						minute: scheduleParts[0],
+						hour: scheduleParts[1],
+						day: scheduleParts[2],
+						month: scheduleParts[3],
+						weekday: scheduleParts[4],
+					};
+				}
+
+				this.isUpdateCronJobModalOpen = true;
+			},
+			closeUpdateCronJobModal() {
+				this.isUpdateCronJobModalOpen = false;
+			},
 			isDeleteCronJobModalOpen: false,
 			openDeleteCronJobModal(id) {
 				this.resetPrimaryStates();
@@ -103,6 +132,7 @@ templ CronsIndex(crons []entity.Cron) {
 			</div>
 		</div>
 		@CreateCronJobModal()
+		@UpdateCronJobModal()
 		@componentStructural.DeleteModal(
 			"isDeleteCronJobModalOpen", "closeDeleteCronJobModal()", "deleteCronJob()",
 			"", "cron.id",
@@ -141,7 +171,7 @@ templ CronsTable(crons []entity.Cron) {
 						<div class="inline-flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-pencil", "blue-900", "blue-700",
-								"console.log('update task ' + "+cron.Id.String()+")",
+								"openUpdateCronJobModal("+cron.Id.String()+", '"+cron.Schedule.String()+"', '"+cron.Command.String()+"', '"+cron.Comment.String()+"')",
 								"update job", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
@@ -328,5 +358,61 @@ templ CreateCronJobModal() {
 		"Create Job", "isCreateCronJobModalOpen", "closeCreateCronJobModal()", "",
 	) {
 		@CreateCronJobForm()
+	}
+}
+
+templ UpdateCronJobForm() {
+	<form
+		hx-put="/api/v1/cron/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="-mt-4 mb-3 space-x-3">
+			@componentForm.RadioInput("", "Predefined", "predefined", "selectedScheduleType")
+			@componentForm.RadioInput("", "Custom", "custom", "selectedScheduleType")
+		</div>
+		<div class="mb-6 space-y-6">
+			<input name="id" type="hidden" :value="cron.id"/>
+			<input
+				name="schedule"
+				type="hidden"
+				:value="selectedScheduleType === 'predefined' ? cron.schedule : customSchedule"
+			/>
+			<template x-if="selectedScheduleType === 'predefined'">
+				@componentForm.SelectInputWithLabelValuePair(
+					"", "Schedule", "cron.schedule", []componentForm.SelectLabelValuePair{
+						{Label: "Hourly", Value: "@hourly"},
+						{Label: "Every 3 hours", Value: "0 */3 * * *"},
+						{Label: "Every 6 hours", Value: "0 */6 * * *"},
+						{Label: "Every 12 hours", Value: "0 */12 * * *"},
+						{Label: "Daily", Value: "@daily"},
+						{Label: "Weekly", Value: "@weekly"},
+						{Label: "Monthly", Value: "@monthly"},
+						{Label: "Annualy", Value: "@annualy"},
+						{Label: "Reboot", Value: "@reboot"},
+					}, false,
+				)
+			</template>
+			<template x-if="selectedScheduleType === 'custom'">
+				<div>
+					@customScheduleInput()
+				</div>
+			</template>
+			@componentForm.TextArea("command", "Command", "cron.command", false)
+			@componentForm.InputField("text", "comment", "Comment", "cron.comment", false)
+		</div>
+		@componentForm.SubmitButton(
+			"update-cron-job-button", "Update", "ph-clock-countdown",
+			"closeUpdateCronJobModal()", false,
+		)
+	</form>
+}
+
+templ UpdateCronJobModal() {
+	@componentStructural.Modal(
+		"Update Job", "isUpdateCronJobModalOpen", "closeUpdateCronJobModal()",
+		"cron.id",
+	) {
+		@UpdateCronJobForm()
 	}
 }
