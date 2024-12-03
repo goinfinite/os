@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	"log"
 	"log/slog"
 	"strings"
 	"time"
@@ -95,7 +94,6 @@ func (controller *MarketplaceController) parseDataFields(
 	dataFieldsAsUnknownType any,
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
-	log.Print(dataFieldsAsUnknownType)
 
 	rawDataFieldsSlice := []interface{}{}
 	switch dataFieldsValues := dataFieldsAsUnknownType.(type) {
@@ -116,7 +114,6 @@ func (controller *MarketplaceController) parseDataFields(
 			slog.Debug("InvalidDataFieldStructure", slog.Any("fieldIndex", index))
 			continue
 		}
-		log.Print(rawDataFieldMap)
 
 		fieldName, err := valueObject.NewDataFieldName(rawDataFieldMap["name"])
 		if err != nil {
