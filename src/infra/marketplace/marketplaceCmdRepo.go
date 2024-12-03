@@ -110,7 +110,7 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	for key, value := range dataMap {
 		dataFieldKey, _ := valueObject.NewDataFieldName(key)
 		dataFieldValue, _ := valueObject.NewDataFieldValue(value)
-		dataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		dataField := valueObject.NewMarketplaceInstallableItemDataField(
 			dataFieldKey, dataFieldValue,
 		)
 		systemDataFields = append(systemDataFields, dataField)
@@ -139,7 +139,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 			continue
 		}
 
-		missingDataField, _ := valueObject.NewMarketplaceInstallableItemDataField(
+		missingDataField := valueObject.NewMarketplaceInstallableItemDataField(
 			catalogDataField.Name, *catalogDataField.DefaultValue,
 		)
 		missingDataFields = append(missingDataFields, missingDataField)
