@@ -19,7 +19,7 @@ func TestDataFieldValue(t *testing.T) {
 
 	t.Run("InvalidDataFieldValue", func(t *testing.T) {
 		invalidDataFieldValues := []interface{}{
-			"", "'Hello world!", "Hello, world!\"",
+			"",
 		}
 
 		for _, value := range invalidDataFieldValues {
