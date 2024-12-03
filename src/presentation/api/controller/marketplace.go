@@ -86,45 +86,6 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 	return dataFieldsMapSlice
 }
 
-func (controller *MarketplaceController) parseDataFieldMap(
-	rawDataFields map[string]interface{},
-) []valueObject.MarketplaceInstallableItemDataField {
-	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
-
-	fieldIndex := 0
-	for rawFieldName, rawFieldValue := range rawDataFields {
-		fieldIndex++
-
-		fieldName, err := valueObject.NewDataFieldName(rawFieldName)
-		if err != nil {
-			slog.Debug(err.Error(), slog.Int("fieldIndex", fieldIndex))
-			continue
-		}
-
-		fieldValue, err := valueObject.NewDataFieldValue(rawFieldValue)
-		if err != nil {
-			slog.Debug(err.Error(), slog.String("fieldName", fieldName.String()))
-			continue
-		}
-
-		dataField, err := valueObject.NewMarketplaceInstallableItemDataField(
-			fieldName, fieldValue,
-		)
-		if err != nil {
-			slog.Debug(
-				err.Error(),
-				slog.String("fieldName", fieldName.String()),
-				slog.String("fieldValue", fieldValue.String()),
-			)
-			continue
-		}
-
-		dataFields = append(dataFields, dataField)
-	}
-
-	return dataFields
-}
-
 // DataFields has multiple possible structures which this parser can handle:
 // "dataFieldName:dataFieldValue;dataFieldName:dataFieldValue" (string slice, semicolon separated items)
 // { "dataFieldName": "dataFieldValue" } (map[string]interface{})
@@ -147,15 +108,29 @@ func (controller *MarketplaceController) parseDataFields(
 		rawDataFieldsSlice = dataFieldsValues
 	}
 
-	for _, rawDataField := range rawDataFieldsSlice {
+	for index, rawDataField := range rawDataFieldsSlice {
 		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
 		if !assertOk {
-			slog.Debug(
-				"InvalidDataFieldStructure", slog.Any("rawDataField", rawDataField),
-			)
+			slog.Debug("InvalidDataFieldStructure", slog.Any("fieldIndex", index))
 			continue
 		}
-		dataFields = append(dataFields, controller.parseDataFieldMap(rawDataFieldMap)...)
+
+		fieldName, err := valueObject.NewDataFieldName(rawDataFieldMap["name"])
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("fieldIndex", index))
+			continue
+		}
+
+		fieldValue, err := valueObject.NewDataFieldValue(rawDataFieldMap["value"])
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("fieldName", fieldName.String()))
+			continue
+		}
+
+		dataField := valueObject.NewMarketplaceInstallableItemDataField(
+			fieldName, fieldValue,
+		)
+		dataFields = append(dataFields, dataField)
 	}
 
 	return dataFields

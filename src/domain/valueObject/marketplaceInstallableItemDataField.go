@@ -7,11 +7,11 @@ type MarketplaceInstallableItemDataField struct {
 
 func NewMarketplaceInstallableItemDataField(
 	name DataFieldName, value DataFieldValue,
-) (MarketplaceInstallableItemDataField, error) {
+) MarketplaceInstallableItemDataField {
 	return MarketplaceInstallableItemDataField{
 		Name:  name,
 		Value: value,
-	}, nil
+	}
 }
 
 func (vo MarketplaceInstallableItemDataField) String() string {
