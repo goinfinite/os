@@ -1,8 +1,7 @@
 package cliController
 
 import (
-	"errors"
-	"strconv"
+	"log/slog"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -117,38 +116,34 @@ func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
 
 func (controller *MarketplaceController) parseDataFields(
 	rawDataFields []string,
-) ([]valueObject.MarketplaceInstallableItemDataField, error) {
+) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
-
-	for fieldIndex, rawDataField := range rawDataFields {
-		errPrefix := "[index " + strconv.Itoa(fieldIndex) + "] "
-
+	for index, rawDataField := range rawDataFields {
 		dataFieldsParts := strings.Split(rawDataField, ":")
 		if len(dataFieldsParts) < 2 {
-			return dataFields, errors.New(errPrefix + "InvalidDataFields")
+			slog.Debug("InvalidDataFieldStructure", slog.Any("fieldIndex", index))
+			continue
 		}
 
 		fieldName, err := valueObject.NewDataFieldName(dataFieldsParts[0])
 		if err != nil {
-			return dataFields, errors.New(errPrefix + "InvalidDataFieldName")
+			slog.Debug(err.Error(), slog.Any("fieldIndex", index))
+			continue
 		}
 
 		fieldValue, err := valueObject.NewDataFieldValue(dataFieldsParts[1])
 		if err != nil {
-			return dataFields, errors.New(errPrefix + "InvalidDataFieldValue")
+			slog.Debug(err.Error(), slog.Any("fieldName", fieldName.String()))
+			continue
 		}
 
-		dataField, err := valueObject.NewMarketplaceInstallableItemDataField(
+		dataField := valueObject.NewMarketplaceInstallableItemDataField(
 			fieldName, fieldValue,
 		)
-		if err != nil {
-			return dataFields, errors.New(errPrefix + "InvalidDataField")
-		}
-
 		dataFields = append(dataFields, dataField)
 	}
 
-	return dataFields, nil
+	return dataFields
 }
 
 func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
@@ -161,7 +156,9 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]interface{}{
+				"dataFields": controller.parseDataFields(dataFieldsStr),
+			}
 
 			if hostnameStr != "" {
 				requestBody["hostname"] = hostnameStr
@@ -178,12 +175,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 			if urlPathStr != "" {
 				requestBody["urlPath"] = urlPathStr
 			}
-
-			dataFields, err := controller.parseDataFields(dataFieldsStr)
-			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
-			}
-			requestBody["dataFields"] = dataFields
 
 			cliHelper.ServiceResponseWrapper(
 				controller.marketplaceService.InstallCatalogItem(requestBody, false),
