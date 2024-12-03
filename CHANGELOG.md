@@ -5,6 +5,7 @@
 feat: add all missing security records to write ops
 fix: download files with more than 5MB in size
 fix: correctly mapping dataFieldName to ensure the marketplace item installation api route works as expected
+refactor(front): crons page with HTMX+Alpine.js
 
 0.1.4 - 2024/X/X
 feat: move marketplace registry to its own git repository
