@@ -85,12 +85,15 @@ templ SelectInputWithLabelValuePair(
 	<!-- SelectInputWithLabelValuePair -->
 	<div class="relative w-full">
 		<select
-			id={ id }
-			name={ id }
+			if id != "" {
+				name={ id }
+			}
 			if bindModelPath != "" {
 				x-model={ bindModelPath }
 			}
-			placeholder={ label }
+			if label != "" {
+				placeholder={ label }
+			}
 			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
 			if shouldIncludeBlankOption {
@@ -114,6 +117,52 @@ templ SelectInputWithLabelValuePair(
 			</label>
 		}
 		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
+	</div>
+}
+
+templ SelectInputWithLabelValuePairAndInputField(
+	id, label, bindModelPath string,
+	options []SelectLabelValuePair,
+	shouldIncludeBlankOption bool,
+) {
+	<!-- SelectInputWithLabelValuePairAndInputField -->
+	<div class="hover:border-os-100 bg-os-300 border-os-200 focus-visible:border-os-50 rounded-md border">
+		<label
+			for={ id }
+			class="from-os-300 via-os-300 absolute left-[52.5%] top-[33%] z-[1] cursor-text bg-gradient-to-t via-55% to-transparent to-55% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80"
+		>
+			{ label }
+		</label>
+		<div class="flex flex-row items-center">
+			<div class="border-os-200 relative flex basis-1/3 items-center border-r">
+				<input
+					name={ id }
+					type="text"
+					class="peer relative ml-1 block w-full rounded-r-md bg-inherit p-2.5 text-sm text-neutral-50 placeholder-neutral-400 outline-none duration-300"
+					x-model:value={ bindModelPath }
+				/>
+			</div>
+			<div class="relative w-full">
+				<select
+					x-model={ bindModelPath }
+					placeholder={ label }
+					class="peer relative h-10 w-full appearance-none rounded-r-md bg-inherit px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+				>
+					if shouldIncludeBlankOption {
+						<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90">--</option>
+					}
+					for _, option := range options {
+						<option
+							class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
+							value={ option.Value }
+						>
+							{ option.Label }
+						</option>
+					}
+				</select>
+				<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
+			</div>
+		</div>
 	</div>
 }
 
