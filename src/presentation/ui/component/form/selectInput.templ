@@ -121,7 +121,7 @@ templ SelectInputWithLabelValuePair(
 }
 
 templ SelectInputWithLabelValuePairAndInputField(
-	id, label, bindModelPath string,
+	inputFieldType, id, label, bindModelPath string,
 	options []SelectLabelValuePair,
 ) {
 	<!-- SelectInputWithLabelValuePairAndInputField -->
@@ -133,7 +133,7 @@ templ SelectInputWithLabelValuePairAndInputField(
 						if id != "" {
 							name={ id }
 						}
-						type="text"
+						type={ inputFieldType }
 						class="peer relative ml-1 block w-full rounded-r-md bg-inherit p-2.5 text-sm text-neutral-50 placeholder-neutral-400 outline-none duration-300"
 						x-model:value={ bindModelPath }
 					/>
