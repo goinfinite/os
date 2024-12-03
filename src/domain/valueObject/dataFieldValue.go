@@ -2,6 +2,7 @@ package valueObject
 
 import (
 	"errors"
+	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
@@ -22,6 +23,14 @@ func NewDataFieldValue(value interface{}) (
 
 	if len(stringValue) >= 2048 {
 		return dataFieldValue, errors.New("DataFieldValueTooBig")
+	}
+
+	if strings.Contains(stringValue, "'") {
+		return dataFieldValue, errors.New("DataFieldValueDoesNotAllowSimpleQuote")
+	}
+
+	if strings.Contains(stringValue, "\"") {
+		return dataFieldValue, errors.New("DataFieldValueDoesNotSupportDoubleQuotes")
 	}
 
 	return DataFieldValue(stringValue), nil
