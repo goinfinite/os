@@ -48,13 +48,13 @@ func NewAccountSri(accountId AccountId) SystemResourceIdentifier {
 	)
 }
 
-func NewSecureAccessKeySri(
+func NewSecureAccessPublicKeySri(
 	accountId AccountId,
-	secureAccessKeyId SecureAccessPublicKeyId,
+	secureAccessPublicKeyId SecureAccessPublicKeyId,
 ) SystemResourceIdentifier {
 	return NewSystemResourceIdentifierIgnoreError(
 		"sri://" + accountId.String() + ":secureAccessPublicKey/" +
-			secureAccessKeyId.String(),
+			secureAccessPublicKeyId.String(),
 	)
 }
 

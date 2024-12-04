@@ -307,7 +307,7 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 	return NewServiceOutput(Success, "AccountDeleted")
 }
 
-func (service *AccountService) CreateSecureAccessKey(
+func (service *AccountService) CreateSecureAccessPublicKey(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("openssh")
@@ -366,10 +366,10 @@ func (service *AccountService) CreateSecureAccessKey(
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Created, "SecureAccessKeyCreated")
+	return NewServiceOutput(Created, "SecureAccessPublicKeyCreated")
 }
 
-func (service *AccountService) DeleteSecureAccessKey(
+func (service *AccountService) DeleteSecureAccessPublicKey(
 	input map[string]interface{},
 ) ServiceOutput {
 	serviceName, _ := valueObject.NewServiceName("openssh")
@@ -377,13 +377,15 @@ func (service *AccountService) DeleteSecureAccessKey(
 		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
-	requiredParams := []string{"secureAccessKeyId"}
+	requiredParams := []string{"secureAccessPublicKeyId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	keyId, err := valueObject.NewSecureAccessPublicKeyId(input["secureAccessKeyId"])
+	keyId, err := valueObject.NewSecureAccessPublicKeyId(
+		input["secureAccessPublicKeyId"],
+	)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
@@ -416,5 +418,5 @@ func (service *AccountService) DeleteSecureAccessKey(
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Created, "SecureAccessKeyDeleted")
+	return NewServiceOutput(Created, "SecureAccessPublicKeyDeleted")
 }

@@ -74,8 +74,9 @@ func (controller *AccountController) Read() *cobra.Command {
 		&accountUsernameStr, "account-username", "n", "", "AccountUsername",
 	)
 	cmd.Flags().StringVarP(
-		&shouldIncludeSecureAccessPublicKeysStr, "should-include-secure-access-keys",
-		"s", "false", "ShouldIncludeSecureAccessPublicKeys",
+		&shouldIncludeSecureAccessPublicKeysStr,
+		"should-include-secure-access-public-keys", "s", "false",
+		"ShouldIncludeSecureAccessPublicKeys",
 	)
 	cmd.Flags().Uint32VarP(
 		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",
@@ -184,13 +185,13 @@ func (controller *AccountController) Delete() *cobra.Command {
 	return cmd
 }
 
-func (controller *AccountController) CreateSecureAccessKey() *cobra.Command {
+func (controller *AccountController) CreateSecureAccessPublicKey() *cobra.Command {
 	var accountIdUint64 uint64
 	var keyNameStr, keyContentStr string
 
 	cmd := &cobra.Command{
-		Use:   "create-key",
-		Short: "CreateSecureAccessKey",
+		Use:   "create-public-key",
+		Short: "CreateSecureAccessPublicKey",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"accountId": accountIdUint64,
@@ -202,28 +203,30 @@ func (controller *AccountController) CreateSecureAccessKey() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.accountService.CreateSecureAccessKey(requestBody),
+				controller.accountService.CreateSecureAccessPublicKey(requestBody),
 			)
 		},
 	}
 
 	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "u", 0, "AccountId")
 	cmd.MarkFlagRequired("account-id")
-	cmd.Flags().StringVarP(&keyNameStr, "key-name", "n", "", "SecureAccessKeyName")
 	cmd.Flags().StringVarP(
-		&keyContentStr, "key-content", "c", "", "SecureAccessKeyContent",
+		&keyNameStr, "public-key-name", "n", "", "SecureAccessPublicKeyName",
 	)
-	cmd.MarkFlagRequired("key-content")
+	cmd.Flags().StringVarP(
+		&keyContentStr, "public-key-content", "c", "", "SecureAccessPublicKeyContent",
+	)
+	cmd.MarkFlagRequired("public-key-content")
 	return cmd
 }
 
-func (controller *AccountController) DeleteSecureAccessKey() *cobra.Command {
+func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Command {
 	var accountIdUint64 uint64
 	var keyIdUint16 uint16
 
 	cmd := &cobra.Command{
 		Use:   "delete-key",
-		Short: "DeleteSecureAccessKey",
+		Short: "DeleteSecureAccessPublicKey",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"accountId": accountIdUint64,
@@ -231,7 +234,7 @@ func (controller *AccountController) DeleteSecureAccessKey() *cobra.Command {
 			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.accountService.DeleteSecureAccessKey(requestBody),
+				controller.accountService.DeleteSecureAccessPublicKey(requestBody),
 			)
 		},
 	}
@@ -240,7 +243,9 @@ func (controller *AccountController) DeleteSecureAccessKey() *cobra.Command {
 		&accountIdUint64, "account-id", "u", 0, "AccountId",
 	)
 	cmd.MarkFlagRequired("account-id")
-	cmd.Flags().Uint16VarP(&keyIdUint16, "key-id", "i", 0, "SecureAccessKeyId")
-	cmd.MarkFlagRequired("key-id")
+	cmd.Flags().Uint16VarP(
+		&keyIdUint16, "public-key-id", "i", 0, "SecureAccessPublicKeyId",
+	)
+	cmd.MarkFlagRequired("public-key-id")
 	return cmd
 }

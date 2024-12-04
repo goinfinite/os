@@ -176,7 +176,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/account/secure-access-key/": {
+        "/v1/account/secure-access-public-key/": {
             "post": {
                 "security": [
                     {
@@ -215,7 +215,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/account/secure-access-key/{secureAccessKeyId}/": {
+        "/v1/account/secure-access-public-key/{secureAccessKeyId}/": {
             "delete": {
                 "security": [
                     {

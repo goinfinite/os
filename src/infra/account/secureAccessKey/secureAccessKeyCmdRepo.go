@@ -116,7 +116,9 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		"echo \"" + keyContentStr + "\" | ssh-keygen -lf /dev/stdin | awk '{print $2}'",
 	)
 	if err != nil {
-		return keyId, errors.New("ReadSecureAccessKeyFingerprintError: " + err.Error())
+		return keyId, errors.New(
+			"ReadSecureAccessPublicKeyFingerprintError: " + err.Error(),
+		)
 	}
 	fingerPrint, err := valueObject.NewSecureAccessPublicKeyFingerprint(rawFingerprint)
 	if err != nil {
@@ -128,20 +130,22 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 			"/.ssh/authorized_keys",
 	)
 	if err != nil {
-		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
+		return keyId, errors.New(
+			"AddNewSecureAccessPublicKeyToFileError: " + err.Error(),
+		)
 	}
 
-	secureAccessKeyModel := dbModel.NewSecureAccessPublicKey(
+	secureAccessPublicKeyModel := dbModel.NewSecureAccessPublicKey(
 		0, accountEntity.Id.Uint64(), createDto.Name.String(),
 		createDto.Content.ReadWithoutKeyName(), fingerPrint.String(),
 	)
 
-	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessKeyModel)
+	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessPublicKeyModel)
 	if createResult.Error != nil {
 		return keyId, createResult.Error
 	}
 
-	keyId, err = valueObject.NewSecureAccessPublicKeyId(secureAccessKeyModel.ID)
+	keyId, err = valueObject.NewSecureAccessPublicKeyId(secureAccessPublicKeyModel.ID)
 	if err != nil {
 		return keyId, err
 	}
@@ -159,7 +163,7 @@ func (repo *SecureAccessKeyCmdRepo) Delete(
 	}
 	keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadFirst(readFirstRequestDto)
 	if err != nil {
-		return errors.New("SecureAccessKeyNotFound")
+		return errors.New("SecureAccessPublicKeyNotFound")
 	}
 
 	account, err := repo.accountQueryRepo.ReadById(keyToDelete.AccountId)

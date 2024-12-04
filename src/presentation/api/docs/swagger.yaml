@@ -1162,7 +1162,7 @@ paths:
       summary: DeleteAccount
       tags:
         - account
-  /v1/account/secure-access-key/:
+  /v1/account/secure-access-public-key/:
     post:
       consumes:
         - application/json
@@ -1189,7 +1189,7 @@ paths:
       summary: CreateSecureAccessKey
       tags:
         - account
-  /v1/account/secure-access-key/{secureAccessKeyId}/:
+  /v1/account/secure-access-public-key/{secureAccessKeyId}/:
     delete:
       consumes:
         - application/json

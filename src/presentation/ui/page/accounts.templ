@@ -96,30 +96,30 @@ script AccountsIndexLocalState() {
 			closeSecureAccessPublicKeysModal() {
 				this.isSecureAccessPublicKeysModalOpen = false;
 			},
-			isCreateSecureAccessKeyModalOpen: false,
-			openCreateSecureAccessKeyModal() {
-				this.isCreateSecureAccessKeyModalOpen = true;
+			isCreateSecureAccessPublicKeyModalOpen: false,
+			openCreateSecureAccessPublicKeyModal() {
+				this.isCreateSecureAccessPublicKeyModalOpen = true;
 			},
-			closeCreateSecureAccessKeyModal() {
-				this.isCreateSecureAccessKeyModalOpen = false;
+			closeCreateSecureAccessPublicKeyModal() {
+				this.isCreateSecureAccessPublicKeyModalOpen = false;
 			},
-			isDeleteSecureAccessKeyModalOpen: false,
-			openDeleteSecureAccessKeyModal(id, name) {
+			isDeleteSecureAccessPublicKeyModalOpen: false,
+			openDeleteSecureAccessPublicKeyModal(id, name) {
 				this.secureAccessPublicKey.id = id;
 				this.secureAccessPublicKey.name = name;
-				this.isDeleteSecureAccessKeyModalOpen = true;
+				this.isDeleteSecureAccessPublicKeyModalOpen = true;
 			},
-			closeDeleteSecureAccessKeyModal() {
-				this.isDeleteSecureAccessKeyModalOpen = false;
+			closeDeleteSecureAccessPublicKeyModal() {
+				this.isDeleteSecureAccessPublicKeyModalOpen = false;
 			},
-			deleteSecureAccessKey() {
+			deleteSecureAccessPublicKey() {
 				htmx.ajax(
 					'DELETE',
-					`/api/v1/account/secure-access-key/${this.secureAccessPublicKey.id}/`,
+					`/api/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
 					{swap: 'none'},
 				);
-				this.$dispatch('delete:secure-access-key');
-				this.closeDeleteSecureAccessKeyModal();
+				this.$dispatch('delete:secure-access-public-key');
+				this.closeDeleteSecureAccessPublicKeyModal();
 			},
 			isDeleteAccountModalOpen: false,
 			openDeleteAccountModal(id, username) {
@@ -158,7 +158,7 @@ templ AccountsIndex(accounts []entity.Account) {
 		<div
 			id="accounts-page-content"
 			hx-get="/accounts/"
-			hx-trigger="submit from:form delay:500ms, delete:account from:window delay:250ms, delete:secure-access-key from:window delay:250ms"
+			hx-trigger="submit from:form delay:500ms, delete:account from:window delay:250ms, delete:secure-access-public-key from:window delay:250ms"
 			hx-select="#accounts-page-content"
 			hx-target="#accounts-page-content"
 			hx-swap="outerHTML transition:true"
@@ -176,10 +176,10 @@ templ AccountsIndex(accounts []entity.Account) {
 			"account.username", "account.id",
 		)
 		@SecureAccessPublicKeysModal()
-		@CreateSecureAccessKeyModal()
+		@CreateSecureAccessPublicKeyModal()
 		@componentStructural.DeleteModal(
-			"isDeleteSecureAccessKeyModalOpen", "closeDeleteSecureAccessKeyModal()",
-			"deleteSecureAccessKey(); closeSecureAccessPublicKeysModal()",
+			"isDeleteSecureAccessPublicKeyModalOpen", "closeDeleteSecureAccessPublicKeyModal()",
+			"deleteSecureAccessPublicKey(); closeSecureAccessPublicKeysModal()",
 			"secureAccessPublicKey.name", "secureAccessPublicKey.id",
 		)
 	</div>
@@ -324,7 +324,7 @@ templ SecureAccessPublicKeysList() {
 		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
 	)
 	<div class="mt-2">
-		<div id="account-secure-access-keys-list">
+		<div id="account-secure-access-public-keys-list">
 			<template x-for="key of account.secureAccessPublicKeys">
 				<div class="bg-os-500 mt-2 flex rounded-md p-4">
 					<div class="w-90% flex-col">
@@ -338,7 +338,7 @@ templ SecureAccessPublicKeysList() {
 						<div class="ml-auto">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
-								"openDeleteSecureAccessKeyModal(key.id, key.name)",
+								"openDeleteSecureAccessPublicKeyModal(key.id, key.name)",
 								"delete key", "red-500",
 							)
 						</div>
@@ -349,8 +349,8 @@ templ SecureAccessPublicKeysList() {
 		<div class="flex">
 			<div class="ml-auto mt-2">
 				@componentForm.SubmitButton(
-					"open-create-secure-access-key-modal", "Create secure access key",
-					"ph-fingerprint", "openCreateSecureAccessKeyModal()", true,
+					"open-create-secure-access-public-key-modal", "Create secure access key",
+					"ph-fingerprint", "openCreateSecureAccessPublicKeyModal()", true,
 				)
 			</div>
 		</div>
@@ -366,9 +366,9 @@ templ SecureAccessPublicKeysModal() {
 	}
 }
 
-templ CreateSecureAccessKeyForm() {
+templ CreateSecureAccessPublicKeyForm() {
 	<form
-		hx-post="/api/v1/account/secure-access-key"
+		hx-post="/api/v1/account/secure-access-public-key"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -389,17 +389,17 @@ templ CreateSecureAccessKeyForm() {
 			})
 		</div>
 		@componentForm.SubmitButton(
-			"create-new-secure-access-key", "Create secure access key", "ph-check-fat",
-			"closeCreateSecureAccessKeyModal(); closeSecureAccessPublicKeysModal()", false,
+			"create-new-secure-access-public-key", "Create secure access key", "ph-check-fat",
+			"closeCreateSecureAccessPublicKeyModal(); closeSecureAccessPublicKeysModal()", false,
 		)
 	</form>
 }
 
-templ CreateSecureAccessKeyModal() {
+templ CreateSecureAccessPublicKeyModal() {
 	@componentStructural.Modal(
-		"Create Secure Access Key", "isCreateSecureAccessKeyModalOpen",
-		"closeCreateSecureAccessKeyModal()", "account.username",
+		"Create Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
+		"closeCreateSecureAccessPublicKeyModal()", "account.username",
 	) {
-		@CreateSecureAccessKeyForm()
+		@CreateSecureAccessPublicKeyForm()
 	}
 }

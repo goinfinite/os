@@ -121,7 +121,7 @@ func (uc *CreateSecurityActivityRecord) CreateSecureAccessPublicKey(
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewSecureAccessKeySri(createDto.AccountId, keyId),
+			valueObject.NewSecureAccessPublicKeySri(createDto.AccountId, keyId),
 		},
 		OperatorAccountId: &createDto.OperatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
@@ -139,7 +139,7 @@ func (uc *CreateSecurityActivityRecord) DeleteSecureAccessPublicKey(
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewSecureAccessKeySri(accountId, deleteDto.Id),
+			valueObject.NewSecureAccessPublicKeySri(accountId, deleteDto.Id),
 		},
 		OperatorAccountId: &deleteDto.OperatorAccountId,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,

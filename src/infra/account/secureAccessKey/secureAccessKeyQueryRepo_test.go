@@ -13,7 +13,7 @@ func TestSecureAccessKeyQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	accountId, _ := valueObject.NewAccountId(2000)
-	accountUsername, _ := valueObject.NewUsername("accountToTestSecureAccessKey")
+	accountUsername, _ := valueObject.NewUsername("accountToTestSecureAccessPublicKey")
 	accountPassword, _ := valueObject.NewPassword("q1w2e3r4")
 	ipAddress := valueObject.NewLocalhostIpAddress()
 
@@ -63,7 +63,7 @@ func TestSecureAccessKeyQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadSecureAccessKeyByName", func(t *testing.T) {
+	t.Run("ReadSecureAccessPublicKeyByName", func(t *testing.T) {
 		_, err := secureAccessKeyQueryRepo.ReadFirst(requestDto)
 		if err != nil {
 			t.Fatalf(

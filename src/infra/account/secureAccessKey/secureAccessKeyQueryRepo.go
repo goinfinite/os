@@ -81,7 +81,7 @@ func (repo *SecureAccessKeyQueryRepo) Read(
 		entity, err := model.ToEntity()
 		if err != nil {
 			slog.Debug(
-				"SecureAccessKeyModelToEntityError",
+				"SecureAccessPublicKeyModelToEntityError",
 				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
 			)
 			continue
@@ -122,7 +122,7 @@ func (repo *SecureAccessKeyQueryRepo) ReadFirst(
 	}
 
 	if len(responseDto.SecureAccessPublicKeys) == 0 {
-		return secureAccessPublicKey, errors.New("SecureAccessKeyNotFound")
+		return secureAccessPublicKey, errors.New("SecureAccessPublicKeyNotFound")
 	}
 
 	return responseDto.SecureAccessPublicKeys[0], nil

@@ -47,12 +47,14 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 	}
 
 	secureAccessPublicKeys := []entity.SecureAccessPublicKey{}
-	for _, secureAccessKeyModel := range model.SecureAccessPublicKeys {
-		secureAccessKeyEntity, err := secureAccessKeyModel.ToEntity()
+	for _, secureAccessPublicKeyModel := range model.SecureAccessPublicKeys {
+		secureAccessPUblicKeyEntity, err := secureAccessPublicKeyModel.ToEntity()
 		if err != nil {
 			return accountEntity, err
 		}
-		secureAccessPublicKeys = append(secureAccessPublicKeys, secureAccessKeyEntity)
+		secureAccessPublicKeys = append(
+			secureAccessPublicKeys, secureAccessPUblicKeyEntity,
+		)
 	}
 
 	return entity.NewAccount(

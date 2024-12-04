@@ -121,44 +121,44 @@ func (controller *AccountController) Delete(c echo.Context) error {
 	)
 }
 
-// CreateSecureAccessKey    godoc
-// @Summary      CreateSecureAccessKey
-// @Description  Create a new secure access key.
+// CreateSecureAccessPublicKey    godoc
+// @Summary      CreateSecureAccessPublicKey
+// @Description  Create a new secure access public key.
 // @Tags         account
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createSecureAccessKey 	  body    dto.CreateSecureAccessKey  true  "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
-// @Success      201 {object} object{} "SecureAccessKeyCreated"
-// @Router       /v1/account/secure-access-key/ [post]
-func (controller *AccountController) CreateSecureAccessKey(c echo.Context) error {
+// @Param        createSecureAccessPublicKey 	  body    dto.CreateSecureAccessPublicKey  true  "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
+// @Success      201 {object} object{} "SecureAccessPublicKeyCreated"
+// @Router       /v1/account/secure-access-public-key/ [post]
+func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.CreateSecureAccessKey(requestBody),
+		c, controller.accountService.CreateSecureAccessPublicKey(requestBody),
 	)
 }
 
-// DeleteSecureAccessKey godoc
-// @Summary      DeleteSecureAccessKey
-// @Description  Delete a secure access key.
+// DeleteSecureAccessPublicKey godoc
+// @Summary      DeleteSecureAccessPublicKey
+// @Description  Delete a secure access public key.
 // @Tags         account
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        secureAccessKeyId 	  path   string  true  "SecureAccessKeyId to delete."
-// @Success      200 {object} object{} "SecureAccessKeyDeleted"
-// @Router       /v1/account/secure-access-key/{secureAccessKeyId}/ [delete]
-func (controller *AccountController) DeleteSecureAccessKey(c echo.Context) error {
+// @Param        secureAccessPublicKeyId 	  path   string  true  "SecureAccessPublicKeyId to delete."
+// @Success      200 {object} object{} "SecureAccessPublicKeyDeleted"
+// @Router       /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/ [delete]
+func (controller *AccountController) DeleteSecureAccessPublicKey(c echo.Context) error {
 	requestBody, err := apiHelper.ReadRequestBody(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.DeleteSecureAccessKey(requestBody),
+		c, controller.accountService.DeleteSecureAccessPublicKey(requestBody),
 	)
 }
