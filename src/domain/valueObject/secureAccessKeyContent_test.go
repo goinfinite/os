@@ -7,6 +7,8 @@ func TestSecureAccessKeyContent(t *testing.T) {
 		rawValidSecureAccessKeyContent := []interface{}{
 			"ssh-rsa c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U= myMachine@pop-os",
 			"ssh-rsa c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U=",
+			"ssh-ed25519 c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U= myMachine@pop-os",
+			"ssh-ed25519 c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U=",
 		}
 
 		for _, rawKeyContent := range rawValidSecureAccessKeyContent {
@@ -51,7 +53,7 @@ func TestSecureAccessKeyContent(t *testing.T) {
 			)
 		}
 
-		rawValidSecureAccessKeyContentWithoutName := "ssh-rsa c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U="
+		rawValidSecureAccessKeyContentWithoutName := "ssh-ed25519 c2VjdXJlIGFjY2Vzcy/BrZXkgY29udGV/udCB0ZXN0+U="
 		keyContentWithoutName, err := NewSecureAccessKeyContent(rawValidSecureAccessKeyContentWithoutName)
 		if err != nil {
 			t.Fatalf(

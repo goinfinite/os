@@ -8,7 +8,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
-const secureAccessKeyContentRegex string = `^(?:ssh-rsa) (?:[\w\/\+\=]+)(?: [\w@\-_]{6,32})?$`
+const secureAccessKeyContentRegex string = `^(?:ssh-(?:rsa|ed25519)) (?:[\w\/\+\=]+)(?: [\w@\-_]{6,32})?$`
 
 type SecureAccessKeyContent string
 
