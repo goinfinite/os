@@ -137,7 +137,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		"echo \"" + keyContentStr + "\" | ssh-keygen -lf /dev/stdin | awk '{print $2}'",
 	)
 	if err != nil {
-		return keyId, errors.New("FailToReadSecureAccessKeyFingerprint: " + err.Error())
+		return keyId, errors.New("ReadSecureAccessKeyFingerprintError: " + err.Error())
 	}
 	fingerPrint, err := valueObject.NewSecureAccessKeyFingerprint(rawFingerprint)
 	if err != nil {
