@@ -44,7 +44,7 @@ func (repo *AccountCmdRepo) Create(
 
 	_, err = infraHelper.RunCmd(
 		"useradd", "-m",
-		"-s", "/usr/sbin/nologin",
+		"-s", "/bin/bash",
 		"-p", string(passHash),
 		usernameStr,
 	)

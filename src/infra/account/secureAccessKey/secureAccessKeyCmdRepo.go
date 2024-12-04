@@ -61,27 +61,6 @@ func (repo *SecureAccessKeyCmdRepo) createSecureAccessKeysFileIfNotExists(
 	return nil
 }
 
-func (repo *SecureAccessKeyCmdRepo) allowAccountSecureRemoteConnection(
-	accountId valueObject.AccountId,
-) error {
-	accountUsername, err := infraHelper.RunCmdWithSubShell(
-		"awk -F: '$3 == " + accountId.String() +
-			" && $7 != \"/bin/bash\" {print $1}' /etc/passwd",
-	)
-	if err != nil {
-		return errors.New("ReadUnixUsernameFromFileError: " + err.Error())
-	}
-
-	_, err = infraHelper.RunCmdWithSubShell(
-		"chsh -s /bin/bash " + accountUsername,
-	)
-	if err != nil {
-		return errors.New("ChangeDefaultBashError: " + err.Error())
-	}
-
-	return nil
-}
-
 func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	accountId valueObject.AccountId,
 	accountUsername valueObject.Username,
@@ -150,11 +129,6 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 	)
 	if err != nil {
 		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
-	}
-
-	err = repo.allowAccountSecureRemoteConnection(accountEntity.Id)
-	if err != nil {
-		return keyId, err
 	}
 
 	secureAccessKeyModel := dbModel.NewSecureAccessKey(
