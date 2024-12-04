@@ -8,13 +8,13 @@ import (
 )
 
 type Account struct {
-	ID               uint64 `gorm:"primarykey"`
-	GroupId          uint64 `gorm:"not null"`
-	Username         string `gorm:"not null"`
-	KeyHash          *string
-	SecureAccessKeys []SecureAccessKey
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID                     uint64 `gorm:"primarykey"`
+	GroupId                uint64 `gorm:"not null"`
+	Username               string `gorm:"not null"`
+	KeyHash                *string
+	SecureAccessPublicKeys []SecureAccessPublicKey
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
 }
 
 func (Account) TableName() string {
@@ -46,17 +46,17 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
-	secureAccessKeys := []entity.SecureAccessKey{}
-	for _, secureAccessKeyModel := range model.SecureAccessKeys {
+	secureAccessPublicKeys := []entity.SecureAccessPublicKey{}
+	for _, secureAccessKeyModel := range model.SecureAccessPublicKeys {
 		secureAccessKeyEntity, err := secureAccessKeyModel.ToEntity()
 		if err != nil {
 			return accountEntity, err
 		}
-		secureAccessKeys = append(secureAccessKeys, secureAccessKeyEntity)
+		secureAccessPublicKeys = append(secureAccessPublicKeys, secureAccessKeyEntity)
 	}
 
 	return entity.NewAccount(
-		accountId, groupId, username, secureAccessKeys,
+		accountId, groupId, username, secureAccessPublicKeys,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

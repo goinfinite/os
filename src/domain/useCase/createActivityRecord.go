@@ -112,11 +112,11 @@ func (uc *CreateSecurityActivityRecord) DeleteAccount(deleteDto dto.DeleteAccoun
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) CreateSecureAccessKey(
-	createDto dto.CreateSecureAccessKey,
-	keyId valueObject.SecureAccessKeyId,
+func (uc *CreateSecurityActivityRecord) CreateSecureAccessPublicKey(
+	createDto dto.CreateSecureAccessPublicKey,
+	keyId valueObject.SecureAccessPublicKeyId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessKeyCreated")
+	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyCreated")
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
@@ -130,11 +130,11 @@ func (uc *CreateSecurityActivityRecord) CreateSecureAccessKey(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) DeleteSecureAccessKey(
-	deleteDto dto.DeleteSecureAccessKey,
+func (uc *CreateSecurityActivityRecord) DeleteSecureAccessPublicKey(
+	deleteDto dto.DeleteSecureAccessPublicKey,
 	accountId valueObject.AccountId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessKeyDeleted")
+	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyDeleted")
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,

@@ -6,6 +6,6 @@ import (
 )
 
 type SecureAccessKeyCmdRepo interface {
-	Create(dto.CreateSecureAccessKey) (valueObject.SecureAccessKeyId, error)
-	Delete(valueObject.SecureAccessKeyId) error
+	Create(dto.CreateSecureAccessPublicKey) (valueObject.SecureAccessPublicKeyId, error)
+	Delete(valueObject.SecureAccessPublicKeyId) error
 }

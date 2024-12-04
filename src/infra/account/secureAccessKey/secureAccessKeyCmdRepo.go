@@ -28,52 +28,52 @@ func NewSecureAccessKeyCmdRepo(
 	}
 }
 
-func (repo *SecureAccessKeyCmdRepo) createSecureAccessKeysFileIfNotExists(
+func (repo *SecureAccessKeyCmdRepo) createSecureAccessPublicKeysFileIfNotExists(
 	accountUsername valueObject.Username,
 ) error {
 	accountUsernameStr := accountUsername.String()
 
-	secureAccessKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
-	if !infraHelper.FileExists(secureAccessKeysDirPath) {
-		err := infraHelper.MakeDir(secureAccessKeysDirPath)
+	secureAccessPublicKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
+	if !infraHelper.FileExists(secureAccessPublicKeysDirPath) {
+		err := infraHelper.MakeDir(secureAccessPublicKeysDirPath)
 		if err != nil {
-			return errors.New("CreateSecureAccessKeysDirectoryError: " + err.Error())
+			return errors.New("CreateSecureAccessPublicKeysDirectoryError: " + err.Error())
 		}
 	}
 
-	secureAccessKeysFilePath := secureAccessKeysDirPath + "/authorized_keys"
-	if infraHelper.FileExists(secureAccessKeysFilePath) {
+	secureAccessPublicKeysFilePath := secureAccessPublicKeysDirPath + "/authorized_keys"
+	if infraHelper.FileExists(secureAccessPublicKeysFilePath) {
 		return nil
 	}
 
-	_, err := os.Create(secureAccessKeysFilePath)
+	_, err := os.Create(secureAccessPublicKeysFilePath)
 	if err != nil {
-		return errors.New("CreateSecureAccessKeysFileError: " + err.Error())
+		return errors.New("CreateSecureAccessPublicKeysFileError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"chown", "-R", accountUsernameStr, secureAccessKeysFilePath,
+		"chown", "-R", accountUsernameStr, secureAccessPublicKeysFilePath,
 	)
 	if err != nil {
-		return errors.New("ChownSecureAccessKeysFileError: " + err.Error())
+		return errors.New("ChownSecureAccessPublicKeysFileError: " + err.Error())
 	}
 
 	return nil
 }
 
-func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
+func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessPublicKeysFile(
 	accountId valueObject.AccountId,
 	accountUsername valueObject.Username,
 ) error {
 	keysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
 	if !infraHelper.FileExists(keysFilePath) {
-		err := repo.createSecureAccessKeysFileIfNotExists(accountUsername)
+		err := repo.createSecureAccessPublicKeysFileIfNotExists(accountUsername)
 		if err != nil {
 			return err
 		}
 	}
 
-	readRequestDto := dto.ReadSecureAccessKeysRequest{
+	readRequestDto := dto.ReadSecureAccessPublicKeysRequest{
 		Pagination: dto.Pagination{
 			ItemsPerPage: 1000,
 		},
@@ -85,28 +85,28 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 	}
 
 	keysFileContent := ""
-	for _, key := range keys.SecureAccessKeys {
+	for _, key := range keys.SecureAccessPublicKeys {
 		keysFileContent += key.Content.String() + " " + key.Name.String() + "\n"
 	}
 
 	shouldOverwrite := true
 	err = infraHelper.UpdateFile(keysFilePath, keysFileContent, shouldOverwrite)
 	if err != nil {
-		return errors.New("UpdateSecureAccessKeysFileContentError: " + err.Error())
+		return errors.New("UpdateSecureAccessPublicKeysFileContentError: " + err.Error())
 	}
 
 	return nil
 }
 
 func (repo *SecureAccessKeyCmdRepo) Create(
-	createDto dto.CreateSecureAccessKey,
-) (keyId valueObject.SecureAccessKeyId, err error) {
+	createDto dto.CreateSecureAccessPublicKey,
+) (keyId valueObject.SecureAccessPublicKeyId, err error) {
 	accountEntity, err := repo.accountQueryRepo.ReadById(createDto.AccountId)
 	if err != nil {
 		return keyId, errors.New("AccountNotFound")
 	}
 
-	err = repo.createSecureAccessKeysFileIfNotExists(accountEntity.Username)
+	err = repo.createSecureAccessPublicKeysFileIfNotExists(accountEntity.Username)
 	if err != nil {
 		return keyId, err
 	}
@@ -118,7 +118,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 	if err != nil {
 		return keyId, errors.New("ReadSecureAccessKeyFingerprintError: " + err.Error())
 	}
-	fingerPrint, err := valueObject.NewSecureAccessKeyFingerprint(rawFingerprint)
+	fingerPrint, err := valueObject.NewSecureAccessPublicKeyFingerprint(rawFingerprint)
 	if err != nil {
 		return keyId, err
 	}
@@ -131,7 +131,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
 	}
 
-	secureAccessKeyModel := dbModel.NewSecureAccessKey(
+	secureAccessKeyModel := dbModel.NewSecureAccessPublicKey(
 		0, accountEntity.Id.Uint64(), createDto.Name.String(),
 		createDto.Content.ReadWithoutKeyName(), fingerPrint.String(),
 	)
@@ -141,21 +141,21 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, createResult.Error
 	}
 
-	keyId, err = valueObject.NewSecureAccessKeyId(secureAccessKeyModel.ID)
+	keyId, err = valueObject.NewSecureAccessPublicKeyId(secureAccessKeyModel.ID)
 	if err != nil {
 		return keyId, err
 	}
 
-	return keyId, repo.recreateSecureAccessKeysFile(
+	return keyId, repo.recreateSecureAccessPublicKeysFile(
 		accountEntity.Id, accountEntity.Username,
 	)
 }
 
 func (repo *SecureAccessKeyCmdRepo) Delete(
-	secureAccessKeyId valueObject.SecureAccessKeyId,
+	secureAccessPublicKeyId valueObject.SecureAccessPublicKeyId,
 ) error {
-	readFirstRequestDto := dto.ReadSecureAccessKeysRequest{
-		SecureAccessKeyId: &secureAccessKeyId,
+	readFirstRequestDto := dto.ReadSecureAccessPublicKeysRequest{
+		SecureAccessPublicKeyId: &secureAccessPublicKeyId,
 	}
 	keyToDelete, err := repo.secureAccessKeyQueryRepo.ReadFirst(readFirstRequestDto)
 	if err != nil {
@@ -168,11 +168,11 @@ func (repo *SecureAccessKeyCmdRepo) Delete(
 	}
 
 	err = repo.persistentDbSvc.Handler.Delete(
-		dbModel.SecureAccessKey{}, secureAccessKeyId.Uint16(),
+		dbModel.SecureAccessPublicKey{}, secureAccessPublicKeyId.Uint16(),
 	).Error
 	if err != nil {
 		return err
 	}
 
-	return repo.recreateSecureAccessKeysFile(account.Id, account.Username)
+	return repo.recreateSecureAccessPublicKeysFile(account.Id, account.Username)
 }

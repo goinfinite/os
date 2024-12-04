@@ -39,8 +39,8 @@ func (repo *AccountQueryRepo) Read(
 	dbQuery := repo.persistentDbSvc.Handler.
 		Model(&model).
 		Where(&model)
-	if requestDto.ShouldIncludeSecureAccessKeys != nil && *requestDto.ShouldIncludeSecureAccessKeys {
-		dbQuery = dbQuery.Preload("SecureAccessKeys")
+	if requestDto.ShouldIncludeSecureAccessPublicKeys != nil && *requestDto.ShouldIncludeSecureAccessPublicKeys {
+		dbQuery = dbQuery.Preload("SecureAccessPublicKeys")
 	}
 
 	var itemsTotal int64

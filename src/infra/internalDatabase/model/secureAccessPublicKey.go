@@ -7,7 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-type SecureAccessKey struct {
+type SecureAccessPublicKey struct {
 	ID          uint16 `gorm:"primarykey"`
 	AccountId   uint64 `gorm:"not null"`
 	Name        string `gorm:"not null"`
@@ -17,16 +17,16 @@ type SecureAccessKey struct {
 	UpdatedAt   time.Time
 }
 
-func (SecureAccessKey) TableName() string {
+func (SecureAccessPublicKey) TableName() string {
 	return "secure_access_keys"
 }
 
-func NewSecureAccessKey(
+func NewSecureAccessPublicKey(
 	id uint16,
 	accountId uint64,
 	name, content, fingerprint string,
-) SecureAccessKey {
-	model := SecureAccessKey{
+) SecureAccessPublicKey {
+	model := SecureAccessPublicKey{
 		AccountId:   accountId,
 		Name:        name,
 		Content:     content,
@@ -40,35 +40,35 @@ func NewSecureAccessKey(
 	return model
 }
 
-func (model SecureAccessKey) ToEntity() (
-	secureAccessKeyEntity entity.SecureAccessKey, err error,
+func (model SecureAccessPublicKey) ToEntity() (
+	SecureAccessPublicKeyEntity entity.SecureAccessPublicKey, err error,
 ) {
-	id, err := valueObject.NewSecureAccessKeyId(model.ID)
+	id, err := valueObject.NewSecureAccessPublicKeyId(model.ID)
 	if err != nil {
-		return secureAccessKeyEntity, err
+		return SecureAccessPublicKeyEntity, err
 	}
 
 	accountId, err := valueObject.NewAccountId(model.AccountId)
 	if err != nil {
-		return secureAccessKeyEntity, err
+		return SecureAccessPublicKeyEntity, err
 	}
 
-	name, err := valueObject.NewSecureAccessKeyName(model.Name)
+	name, err := valueObject.NewSecureAccessPublicKeyName(model.Name)
 	if err != nil {
-		return secureAccessKeyEntity, err
+		return SecureAccessPublicKeyEntity, err
 	}
 
-	content, err := valueObject.NewSecureAccessKeyContent(model.Content)
+	content, err := valueObject.NewSecureAccessPublicKeyContent(model.Content)
 	if err != nil {
-		return secureAccessKeyEntity, err
+		return SecureAccessPublicKeyEntity, err
 	}
 
-	fingerprint, err := valueObject.NewSecureAccessKeyFingerprint(model.Fingerprint)
+	fingerprint, err := valueObject.NewSecureAccessPublicKeyFingerprint(model.Fingerprint)
 	if err != nil {
-		return secureAccessKeyEntity, err
+		return SecureAccessPublicKeyEntity, err
 	}
 
-	return entity.NewSecureAccessKey(
+	return entity.NewSecureAccessPublicKey(
 		id, accountId, name, content, fingerprint,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),

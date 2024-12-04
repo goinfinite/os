@@ -72,11 +72,11 @@ func (service *AccountService) Read(input map[string]interface{}) ServiceOutput 
 		usernamePtr = &username
 	}
 
-	shouldIncludeSecureAccessKeys := false
-	if input["shouldIncludeSecureAccessKeys"] != nil {
+	shouldIncludeSecureAccessPublicKeys := false
+	if input["shouldIncludeSecureAccessPublicKeys"] != nil {
 		var err error
-		shouldIncludeSecureAccessKeys, err = voHelper.InterfaceToBool(
-			input["shouldIncludeSecureAccessKeys"],
+		shouldIncludeSecureAccessPublicKeys, err = voHelper.InterfaceToBool(
+			input["shouldIncludeSecureAccessPublicKeys"],
 		)
 		if err != nil {
 			return NewServiceOutput(UserError, err)
@@ -127,10 +127,10 @@ func (service *AccountService) Read(input map[string]interface{}) ServiceOutput 
 	}
 
 	readRequestDto := dto.ReadAccountsRequest{
-		Pagination:                    paginationDto,
-		AccountId:                     idPtr,
-		AccountUsername:               usernamePtr,
-		ShouldIncludeSecureAccessKeys: &shouldIncludeSecureAccessKeys,
+		Pagination:                          paginationDto,
+		AccountId:                           idPtr,
+		AccountUsername:                     usernamePtr,
+		ShouldIncludeSecureAccessPublicKeys: &shouldIncludeSecureAccessPublicKeys,
 	}
 
 	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo, readRequestDto)
@@ -321,12 +321,12 @@ func (service *AccountService) CreateSecureAccessKey(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	keyContent, err := valueObject.NewSecureAccessKeyContent(input["content"])
+	keyContent, err := valueObject.NewSecureAccessPublicKeyContent(input["content"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	keyName, err := valueObject.NewSecureAccessKeyName(input["name"])
+	keyName, err := valueObject.NewSecureAccessPublicKeyName(input["name"])
 	if err != nil {
 		keyName, err = keyContent.ReadOnlyKeyName()
 		if err != nil {
@@ -355,11 +355,11 @@ func (service *AccountService) CreateSecureAccessKey(
 		}
 	}
 
-	createDto := dto.NewCreateSecureAccessKey(
+	createDto := dto.NewCreateSecureAccessPublicKey(
 		accountId, keyContent, keyName, operatorAccountId, operatorIpAddress,
 	)
 
-	err = useCase.CreateSecureAccessKey(
+	err = useCase.CreateSecureAccessPublicKey(
 		service.secureAccessKeyCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
@@ -383,7 +383,7 @@ func (service *AccountService) DeleteSecureAccessKey(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	keyId, err := valueObject.NewSecureAccessKeyId(input["secureAccessKeyId"])
+	keyId, err := valueObject.NewSecureAccessPublicKeyId(input["secureAccessKeyId"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
@@ -404,11 +404,11 @@ func (service *AccountService) DeleteSecureAccessKey(
 		}
 	}
 
-	deleteDto := dto.NewDeleteSecureAccessKey(
+	deleteDto := dto.NewDeleteSecureAccessPublicKey(
 		keyId, operatorAccountId, operatorIpAddress,
 	)
 
-	err = useCase.DeleteSecureAccessKey(
+	err = useCase.DeleteSecureAccessPublicKey(
 		service.secureAccessKeyQueryRepo, service.secureAccessKeyCmdRepo,
 		service.activityRecordCmdRepo, deleteDto,
 	)

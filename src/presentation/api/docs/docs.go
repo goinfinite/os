@@ -57,8 +57,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "ShouldIncludeSecureAccessKeys (this prop only works if OpenSSH service is installed)",
-                        "name": "shouldIncludeSecureAccessKeys",
+                        "description": "ShouldIncludeSecureAccessPublicKeys (this prop only works if OpenSSH service is installed)",
+                        "name": "shouldIncludeSecureAccessPublicKeys",
                         "in": "query"
                     },
                     {
@@ -3053,10 +3053,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "secureAccessKeys": {
+                "secureAccessPublicKeys": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.SecureAccessKey"
+                        "$ref": "#/definitions/entity.SecureAccessPublicKey"
                     }
                 },
                 "updatedAt": {
@@ -3551,7 +3551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.SecureAccessKey": {
+        "entity.SecureAccessPublicKey": {
             "type": "object",
             "properties": {
                 "accountId": {

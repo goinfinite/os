@@ -27,29 +27,29 @@ func TestSecureAccessKeyQueryRepo(t *testing.T) {
 		t.Fatalf("FailToCreateTestAccount")
 	}
 
-	t.Skip("SkipSecureAccessKeysTests")
+	t.Skip("SkipSecureAccessPublicKeysTests")
 
-	keyName, _ := valueObject.NewSecureAccessKeyName("testSecureAccessKey")
-	keyContent, _ := valueObject.NewSecureAccessKeyContent(
+	keyName, _ := valueObject.NewSecureAccessPublicKeyName("testSecureAccessPublicKey")
+	keyContent, _ := valueObject.NewSecureAccessPublicKeyContent(
 		"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+GDqLA2sGauzU5hUxBbBmm6FfeZpUbiX6IlQO9KqeqAsum+Efhvj+qpatM5PzMMwtlcFwDS5Y4RcX9uxE8IGsYiALRfnLAX5p73zrcrXamMJSx25rXAu/VJdmekxHbDgsBPyk6/4dfu+3uW7ka7HHhPytPIqW2qBuPkalJinc7qKEuXdkCyX8+8a+0uN8XodLipLJwU8A1VPvI9thYxITyHWZnXRnin0r/unHgLrg9bBILXZf0JRslelYdCvuCGnRKZfokh153shMZ63S+iV/Tohg2bOVxyz3HIQ983ga24uTFQhLpITMe9JEfq3pp2wcCE5hNFlNKyeDG8kwB+8V",
 	)
-	createDto := dto.NewCreateSecureAccessKey(
+	createDto := dto.NewCreateSecureAccessPublicKey(
 		accountId, keyContent, keyName, accountId, ipAddress,
 	)
 
 	secureAccessKeyCmdRepo := NewSecureAccessKeyCmdRepo(testHelpers.GetPersistentDbSvc())
 	keyId, err := secureAccessKeyCmdRepo.Create(createDto)
 	if err != nil {
-		t.Fatalf("Fail to create dummy SecureAccessKey to test")
+		t.Fatalf("Fail to create dummy SecureAccessPublicKey to test")
 	}
 
 	secureAccessKeyQueryRepo := NewSecureAccessKeyQueryRepo(testHelpers.GetPersistentDbSvc())
 
-	requestDto := dto.ReadSecureAccessKeysRequest{
-		AccountId:         accountId,
-		SecureAccessKeyId: &keyId,
+	requestDto := dto.ReadSecureAccessPublicKeysRequest{
+		AccountId:               accountId,
+		SecureAccessPublicKeyId: &keyId,
 	}
-	t.Run("ReadSecureAccessKeys", func(t *testing.T) {
+	t.Run("ReadSecureAccessPublicKeys", func(t *testing.T) {
 		responseDto, err := secureAccessKeyQueryRepo.Read(requestDto)
 		if err != nil {
 			t.Fatalf(
@@ -58,7 +58,7 @@ func TestSecureAccessKeyQueryRepo(t *testing.T) {
 			)
 		}
 
-		if len(responseDto.SecureAccessKeys) == 0 {
+		if len(responseDto.SecureAccessPublicKeys) == 0 {
 			t.Error("Expecting a keys list, but got an empty one")
 		}
 	})

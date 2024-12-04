@@ -101,7 +101,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.MarketplaceInstalledItem{},
 		&dbModel.ScheduledTask{},
 		&dbModel.ScheduledTaskTag{},
-		&dbModel.SecureAccessKey{},
+		&dbModel.SecureAccessPublicKey{},
 		&dbModel.VirtualHost{},
 	)
 	if err != nil {

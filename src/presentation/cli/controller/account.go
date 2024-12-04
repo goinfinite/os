@@ -22,7 +22,7 @@ func NewAccountController(
 
 func (controller *AccountController) Read() *cobra.Command {
 	var accountIdUint64 uint64
-	var accountUsernameStr, shouldIncludeSecureAccessKeysStr string
+	var accountUsernameStr, shouldIncludeSecureAccessPublicKeysStr string
 	var paginationPageNumberUint32 uint32
 	var paginationItemsPerPageUint16 uint16
 	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
@@ -32,7 +32,7 @@ func (controller *AccountController) Read() *cobra.Command {
 		Short: "GetAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"shouldIncludeSecureAccessKeys": shouldIncludeSecureAccessKeysStr,
+				"shouldIncludeSecureAccessPublicKeys": shouldIncludeSecureAccessPublicKeysStr,
 			}
 
 			if accountIdUint64 != 0 {
@@ -74,8 +74,8 @@ func (controller *AccountController) Read() *cobra.Command {
 		&accountUsernameStr, "account-username", "n", "", "AccountUsername",
 	)
 	cmd.Flags().StringVarP(
-		&shouldIncludeSecureAccessKeysStr, "should-include-secure-access-keys",
-		"s", "false", "ShouldIncludeSecureAccessKeys",
+		&shouldIncludeSecureAccessPublicKeysStr, "should-include-secure-access-keys",
+		"s", "false", "ShouldIncludeSecureAccessPublicKeys",
 	)
 	cmd.Flags().Uint32VarP(
 		&paginationPageNumberUint32, "page-number", "p", 0, "PageNumber (Pagination)",

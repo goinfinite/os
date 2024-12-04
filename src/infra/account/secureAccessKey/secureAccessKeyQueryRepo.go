@@ -25,16 +25,16 @@ func NewSecureAccessKeyQueryRepo(
 }
 
 func (repo *SecureAccessKeyQueryRepo) Read(
-	requestDto dto.ReadSecureAccessKeysRequest,
-) (responseDto dto.ReadSecureAccessKeysResponse, err error) {
-	model := dbModel.SecureAccessKey{
+	requestDto dto.ReadSecureAccessPublicKeysRequest,
+) (responseDto dto.ReadSecureAccessPublicKeysResponse, err error) {
+	model := dbModel.SecureAccessPublicKey{
 		AccountId: requestDto.AccountId.Uint64(),
 	}
-	if requestDto.SecureAccessKeyId != nil {
-		model.ID = requestDto.SecureAccessKeyId.Uint16()
+	if requestDto.SecureAccessPublicKeyId != nil {
+		model.ID = requestDto.SecureAccessPublicKeyId.Uint16()
 	}
-	if requestDto.SecureAccessKeyName != nil {
-		model.Name = requestDto.SecureAccessKeyName.String()
+	if requestDto.SecureAccessPublicKeyName != nil {
+		model.Name = requestDto.SecureAccessPublicKeyName.String()
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.
@@ -45,7 +45,7 @@ func (repo *SecureAccessKeyQueryRepo) Read(
 	err = dbQuery.Count(&itemsTotal).Error
 	if err != nil {
 		return responseDto, errors.New(
-			"CountSecureAccessKeysTotalError: " + err.Error(),
+			"CountSecureAccessPublicKeysTotalError: " + err.Error(),
 		)
 	}
 
@@ -70,13 +70,13 @@ func (repo *SecureAccessKeyQueryRepo) Read(
 		dbQuery = dbQuery.Order(orderStatement)
 	}
 
-	models := []dbModel.SecureAccessKey{}
+	models := []dbModel.SecureAccessPublicKey{}
 	err = dbQuery.Find(&models).Error
 	if err != nil {
-		return responseDto, errors.New("ReadSecureAccessKeysError: " + err.Error())
+		return responseDto, errors.New("ReadSecureAccessPublicKeysError: " + err.Error())
 	}
 
-	entities := []entity.SecureAccessKey{}
+	entities := []entity.SecureAccessPublicKey{}
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
@@ -103,27 +103,27 @@ func (repo *SecureAccessKeyQueryRepo) Read(
 		ItemsTotal:    &itemsTotalUint,
 	}
 
-	return dto.ReadSecureAccessKeysResponse{
-		Pagination:       responsePagination,
-		SecureAccessKeys: entities,
+	return dto.ReadSecureAccessPublicKeysResponse{
+		Pagination:             responsePagination,
+		SecureAccessPublicKeys: entities,
 	}, nil
 }
 
 func (repo *SecureAccessKeyQueryRepo) ReadFirst(
-	requestDto dto.ReadSecureAccessKeysRequest,
-) (secureAccessKey entity.SecureAccessKey, err error) {
+	requestDto dto.ReadSecureAccessPublicKeysRequest,
+) (secureAccessPublicKey entity.SecureAccessPublicKey, err error) {
 	requestDto.Pagination = dto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
-		return secureAccessKey, err
+		return secureAccessPublicKey, err
 	}
 
-	if len(responseDto.SecureAccessKeys) == 0 {
-		return secureAccessKey, errors.New("SecureAccessKeyNotFound")
+	if len(responseDto.SecureAccessPublicKeys) == 0 {
+		return secureAccessPublicKey, errors.New("SecureAccessKeyNotFound")
 	}
 
-	return responseDto.SecureAccessKeys[0], nil
+	return responseDto.SecureAccessPublicKeys[0], nil
 }

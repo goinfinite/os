@@ -30,7 +30,7 @@ func NewAccountController(
 // @Security     Bearer
 // @Param        id query  string  false  "Id"
 // @Param        username query  string  false  "Username"
-// @Param        shouldIncludeSecureAccessKeys query  bool  false  "ShouldIncludeSecureAccessKeys (this prop only works if OpenSSH service is installed)"
+// @Param        shouldIncludeSecureAccessPublicKeys query  bool  false  "ShouldIncludeSecureAccessPublicKeys (this prop only works if OpenSSH service is installed)"
 // @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
 // @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
 // @Param        sortBy query  string  false  "SortBy (Pagination)"

@@ -11,7 +11,7 @@ script AccountsIndexLocalState() {
 		Alpine.data('accounts', () => ({
 			// Primary states
 			account: {},
-			secureAccessKey: {},
+			secureAccessPublicKey: {},
 			resetPrimaryStates() {
 				this.account = {
 					id: '',
@@ -19,9 +19,9 @@ script AccountsIndexLocalState() {
 					username: '',
 					password: '',
 					apiKey: '',
-					secureAccessKeys: [],
+					secureAccessPublicKeys: [],
 				};
-				this.secureAccessKey = {
+				this.secureAccessPublicKey = {
 					id: '',
 					name: '',
 					content: '',
@@ -81,20 +81,20 @@ script AccountsIndexLocalState() {
 					},
 				);
 			},
-			isSecureAccessKeysModalOpen: false,
-			openSecureAccessKeysModal(id, username) {
+			isSecureAccessPublicKeysModalOpen: false,
+			openSecureAccessPublicKeysModal(id, username) {
 				this.resetPrimaryStates();
 
 				this.account.id = id;
 				this.account.username = username;
-				this.account.secureAccessKeys = JSON.parse(
-					document.getElementById('secureAccessKeys_' + id).textContent
+				this.account.secureAccessPublicKeys = JSON.parse(
+					document.getElementById('secureAccessPublicKeys_' + id).textContent
 				);
 
-				this.isSecureAccessKeysModalOpen = true;
+				this.isSecureAccessPublicKeysModalOpen = true;
 			},
-			closeSecureAccessKeysModal() {
-				this.isSecureAccessKeysModalOpen = false;
+			closeSecureAccessPublicKeysModal() {
+				this.isSecureAccessPublicKeysModalOpen = false;
 			},
 			isCreateSecureAccessKeyModalOpen: false,
 			openCreateSecureAccessKeyModal() {
@@ -105,8 +105,8 @@ script AccountsIndexLocalState() {
 			},
 			isDeleteSecureAccessKeyModalOpen: false,
 			openDeleteSecureAccessKeyModal(id, name) {
-				this.secureAccessKey.id = id;
-				this.secureAccessKey.name = name;
+				this.secureAccessPublicKey.id = id;
+				this.secureAccessPublicKey.name = name;
 				this.isDeleteSecureAccessKeyModalOpen = true;
 			},
 			closeDeleteSecureAccessKeyModal() {
@@ -115,7 +115,7 @@ script AccountsIndexLocalState() {
 			deleteSecureAccessKey() {
 				htmx.ajax(
 					'DELETE',
-					`/api/v1/account/secure-access-key/${this.secureAccessKey.id}/`,
+					`/api/v1/account/secure-access-key/${this.secureAccessPublicKey.id}/`,
 					{swap: 'none'},
 				);
 				this.$dispatch('delete:secure-access-key');
@@ -175,12 +175,12 @@ templ AccountsIndex(accounts []entity.Account) {
 			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
 			"account.username", "account.id",
 		)
-		@SecureAccessKeysModal()
+		@SecureAccessPublicKeysModal()
 		@CreateSecureAccessKeyModal()
 		@componentStructural.DeleteModal(
 			"isDeleteSecureAccessKeyModalOpen", "closeDeleteSecureAccessKeyModal()",
-			"deleteSecureAccessKey(); closeSecureAccessKeysModal()",
-			"secureAccessKey.name", "secureAccessKey.id",
+			"deleteSecureAccessKey(); closeSecureAccessPublicKeysModal()",
+			"secureAccessPublicKey.name", "secureAccessPublicKey.id",
 		)
 	</div>
 }
@@ -203,7 +203,7 @@ templ AccountsTable(accounts []entity.Account) {
 		</thead>
 		<tbody>
 			for _, account := range accounts {
-				@templ.JSONScript("secureAccessKeys_"+account.Id.String(), account.SecureAccessKeys)
+				@templ.JSONScript("secureAccessPublicKeys_"+account.Id.String(), account.SecureAccessPublicKeys)
 				<tr class="odd:bg-os-500 even:bg-os-300 border-b border-neutral-500 border-opacity-30 text-center">
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
@@ -221,7 +221,7 @@ templ AccountsTable(accounts []entity.Account) {
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-fingerprint", "blue-900", "blue-700",
-								"openSecureAccessKeysModal("+account.Id.String()+", '"+account.Username.String()+"')",
+								"openSecureAccessPublicKeysModal("+account.Id.String()+", '"+account.Username.String()+"')",
 								"view secure access keys", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
@@ -318,14 +318,14 @@ templ UpdateApiKeyModal() {
 	}
 }
 
-templ SecureAccessKeysList() {
+templ SecureAccessPublicKeysList() {
 	@componentStructural.Alert(
 		componentStructural.AlertTypeInfo,
 		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
 	)
 	<div class="mt-2">
 		<div id="account-secure-access-keys-list">
-			<template x-for="key of account.secureAccessKeys">
+			<template x-for="key of account.secureAccessPublicKeys">
 				<div class="bg-os-500 mt-2 flex rounded-md p-4">
 					<div class="w-90% flex-col">
 						<div class="flex items-center">
@@ -357,12 +357,12 @@ templ SecureAccessKeysList() {
 	</div>
 }
 
-templ SecureAccessKeysModal() {
+templ SecureAccessPublicKeysModal() {
 	@componentStructural.Modal(
-		"Secure Access Keys", "isSecureAccessKeysModalOpen", "closeSecureAccessKeysModal()",
+		"Secure Access Keys", "isSecureAccessPublicKeysModalOpen", "closeSecureAccessPublicKeysModal()",
 		"account.username",
 	) {
-		@SecureAccessKeysList()
+		@SecureAccessPublicKeysList()
 	}
 }
 
@@ -378,19 +378,19 @@ templ CreateSecureAccessKeyForm() {
 				Type:               "text",
 				Id:                 "name",
 				Label:              "Key name",
-				BindModelValuePath: "secureAccessKey.name",
+				BindModelValuePath: "secureAccessPublicKey.name",
 				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "content",
 				Label:              "Key content",
-				BindModelValuePath: "secureAccessKey.content",
+				BindModelValuePath: "secureAccessPublicKey.content",
 				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
 			})
 		</div>
 		@componentForm.SubmitButton(
 			"create-new-secure-access-key", "Create secure access key", "ph-check-fat",
-			"closeCreateSecureAccessKeyModal(); closeSecureAccessKeysModal()", false,
+			"closeCreateSecureAccessKeyModal(); closeSecureAccessPublicKeysModal()", false,
 		)
 	</form>
 }

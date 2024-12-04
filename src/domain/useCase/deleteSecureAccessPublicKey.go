@@ -8,28 +8,28 @@ import (
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
-func DeleteSecureAccessKey(
+func DeleteSecureAccessPublicKey(
 	secureAccessKeyQueryRepo repository.SecureAccessKeyQueryRepo,
 	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	deleteDto dto.DeleteSecureAccessKey,
+	deleteDto dto.DeleteSecureAccessPublicKey,
 ) error {
-	readRequestDto := dto.ReadSecureAccessKeysRequest{
-		SecureAccessKeyId: &deleteDto.Id,
+	readRequestDto := dto.ReadSecureAccessPublicKeysRequest{
+		SecureAccessPublicKeyId: &deleteDto.Id,
 	}
 	keyToDelete, err := secureAccessKeyQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return errors.New("SecureAccessKeyNotFound")
+		return errors.New("SecureAccessPublicKeyNotFound")
 	}
 
 	err = secureAccessKeyCmdRepo.Delete(keyToDelete.Id)
 	if err != nil {
-		slog.Error("DeleteSecureAccessKeyError", slog.Any("error", err))
-		return errors.New("DeleteSecureAccessKeyInfraError")
+		slog.Error("DeleteSecureAccessPublicKeyError", slog.Any("error", err))
+		return errors.New("DeleteSecureAccessPublicKeyInfraError")
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
-		DeleteSecureAccessKey(deleteDto, keyToDelete.AccountId)
+		DeleteSecureAccessPublicKey(deleteDto, keyToDelete.AccountId)
 
 	return nil
 }

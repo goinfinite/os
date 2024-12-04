@@ -27,18 +27,20 @@ func TestSecureAccessKeyCmdRepo(t *testing.T) {
 		t.Fatalf("FailToCreateTestAccount")
 	}
 
-	t.Skip("SkipSecureAccessKeysTests")
+	t.Skip("SkipSecureAccessPublicKeysTests")
 
-	var keyId valueObject.SecureAccessKeyId
+	var keyId valueObject.SecureAccessPublicKeyId
 
-	keyName, _ := valueObject.NewSecureAccessKeyName("testSecureAccessKey")
-	secureAccessKeyCmdRepo := NewSecureAccessKeyCmdRepo(testHelpers.GetPersistentDbSvc())
+	keyName, _ := valueObject.NewSecureAccessPublicKeyName("testSecureAccessPublicKey")
+	secureAccessKeyCmdRepo := NewSecureAccessKeyCmdRepo(
+		testHelpers.GetPersistentDbSvc(),
+	)
 
 	t.Run("CreateSecureAccessKey", func(t *testing.T) {
-		keyContent, _ := valueObject.NewSecureAccessKeyContent(
+		keyContent, _ := valueObject.NewSecureAccessPublicKeyContent(
 			"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+GDqLA2sGauzU5hUxBbBmm6FfeZpUbiX6IlQO9KqeqAsum+Efhvj+qpatM5PzMMwtlcFwDS5Y4RcX9uxE8IGsYiALRfnLAX5p73zrcrXamMJSx25rXAu/VJdmekxHbDgsBPyk6/4dfu+3uW7ka7HHhPytPIqW2qBuPkalJinc7qKEuXdkCyX8+8a+0uN8XodLipLJwU8A1VPvI9thYxITyHWZnXRnin0r/unHgLrg9bBILXZf0JRslelYdCvuCGnRKZfokh153shMZ63S+iV/Tohg2bOVxyz3HIQ983ga24uTFQhLpITMe9JEfq3pp2wcCE5hNFlNKyeDG8kwB+8V",
 		)
-		createDto := dto.NewCreateSecureAccessKey(
+		createDto := dto.NewCreateSecureAccessPublicKey(
 			accountId, keyContent, keyName, accountId, ipAddress,
 		)
 

@@ -6,10 +6,10 @@ import (
 )
 
 type ReadAccountsRequest struct {
-	Pagination                    Pagination             `json:"pagination"`
-	AccountId                     *valueObject.AccountId `json:"id,omitempty"`
-	AccountUsername               *valueObject.Username  `json:"username,omitempty"`
-	ShouldIncludeSecureAccessKeys *bool                  `json:"shouldIncludeSecureAccessKeys,omitempty"`
+	Pagination                          Pagination             `json:"pagination"`
+	AccountId                           *valueObject.AccountId `json:"id,omitempty"`
+	AccountUsername                     *valueObject.Username  `json:"username,omitempty"`
+	ShouldIncludeSecureAccessPublicKeys *bool                  `json:"shouldIncludeSecureAccessPublicKeys,omitempty"`
 }
 
 type ReadAccountsResponse struct {

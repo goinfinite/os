@@ -6,6 +6,6 @@ import (
 )
 
 type SecureAccessKeyQueryRepo interface {
-	Read(dto.ReadSecureAccessKeysRequest) (dto.ReadSecureAccessKeysResponse, error)
-	ReadFirst(dto.ReadSecureAccessKeysRequest) (entity.SecureAccessKey, error)
+	Read(dto.ReadSecureAccessPublicKeysRequest) (dto.ReadSecureAccessPublicKeysResponse, error)
+	ReadFirst(dto.ReadSecureAccessPublicKeysRequest) (entity.SecureAccessPublicKey, error)
 }

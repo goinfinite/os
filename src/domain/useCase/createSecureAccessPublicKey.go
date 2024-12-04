@@ -8,19 +8,19 @@ import (
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
-func CreateSecureAccessKey(
+func CreateSecureAccessPublicKey(
 	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	createDto dto.CreateSecureAccessKey,
+	createDto dto.CreateSecureAccessPublicKey,
 ) error {
 	keyId, err := secureAccessKeyCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateSecureAccessKeyError", slog.Any("error", err))
-		return errors.New("CreateSecureAccessKeyInfraError")
+		slog.Error("CreateSecureAccessPublicKeyError", slog.Any("error", err))
+		return errors.New("CreateSecureAccessPublicKeyInfraError")
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
-		CreateSecureAccessKey(createDto, keyId)
+		CreateSecureAccessPublicKey(createDto, keyId)
 
 	return nil
 }
