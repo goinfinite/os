@@ -87,7 +87,7 @@ func (repo *AccountCmdRepo) Create(
 }
 
 func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
-	account, err := repo.accountQueryRepo.ReadById(accountId)
+	accountEntity, err := repo.accountQueryRepo.ReadById(accountId)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountIdStr)
 	}
 
-	_, err = infraHelper.RunCmd("userdel", "-r", account.Username.String())
+	_, err = infraHelper.RunCmd("userdel", "-r", accountEntity.Username.String())
 	if err != nil {
 		return err
 	}

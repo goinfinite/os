@@ -122,12 +122,12 @@ func (repo *SecureAccessKeyCmdRepo) recreateSecureAccessKeysFile(
 func (repo *SecureAccessKeyCmdRepo) Create(
 	createDto dto.CreateSecureAccessKey,
 ) (keyId valueObject.SecureAccessKeyId, err error) {
-	account, err := repo.accountQueryRepo.ReadById(createDto.AccountId)
+	accountEntity, err := repo.accountQueryRepo.ReadById(createDto.AccountId)
 	if err != nil {
 		return keyId, errors.New("AccountNotFound")
 	}
 
-	err = repo.createSecureAccessKeysFileIfNotExists(account.Username)
+	err = repo.createSecureAccessKeysFileIfNotExists(accountEntity.Username)
 	if err != nil {
 		return keyId, err
 	}
@@ -145,20 +145,20 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"echo \"" + keyContentStr + "\" >> /home/" + account.Username.String() +
+		"echo \"" + keyContentStr + "\" >> /home/" + accountEntity.Username.String() +
 			"/.ssh/authorized_keys",
 	)
 	if err != nil {
 		return keyId, errors.New("FailToAddNewSecureAccessKeyToFile: " + err.Error())
 	}
 
-	err = repo.allowAccountSecureRemoteConnection(account.Id)
+	err = repo.allowAccountSecureRemoteConnection(accountEntity.Id)
 	if err != nil {
 		return keyId, err
 	}
 
 	secureAccessKeyModel := dbModel.NewSecureAccessKey(
-		0, account.Id.Uint64(), createDto.Name.String(),
+		0, accountEntity.Id.Uint64(), createDto.Name.String(),
 		createDto.Content.ReadWithoutKeyName(), fingerPrint.String(),
 	)
 
@@ -172,7 +172,9 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, err
 	}
 
-	return keyId, repo.recreateSecureAccessKeysFile(account.Id, account.Username)
+	return keyId, repo.recreateSecureAccessKeysFile(
+		accountEntity.Id, accountEntity.Username,
+	)
 }
 
 func (repo *SecureAccessKeyCmdRepo) Delete(
