@@ -5,31 +5,24 @@ document.addEventListener("alpine:init", () => {
     const loadingOverlayElement = document.getElementById("loading-overlay");
     loadingOverlayElement.classList.add("htmx-request");
 
-	try {
-		const response = await fetch(url, {
-			method: method,
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(payload),
-		});
-		const parsedResponse = await response.json()
-
-		loadingOverlayElement.classList.remove("htmx-request");
-
-		if (!response.ok) {
-			throw new Error(parsedResponse.body);
-		}
-
-		if (method.toUpperCase() !== "GET") {
-			Alpine.store("toast").displayToast(parsedResponse.body, "success");
-		}
-
-		return parsedResponse.body;
-	} catch (error) {
-		Alpine.store("toast").displayToast(error.message, "danger");
-	}
+    await fetch(url, {
+      method: method,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        loadingOverlayElement.classList.remove("htmx-request");
+        return response.json();
+      })
+      .then((parsedResponse) => {
+        Alpine.store("toast").displayToast(parsedResponse.body, "success");
+      })
+      .catch((parsedResponse) => {
+        Alpine.store("toast").displayToast(parsedResponse.body, "danger");
+      });
   }
 
   function createRandomPassword() {
