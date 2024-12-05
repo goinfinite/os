@@ -35,23 +35,23 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 ) error {
 	accountUsernameStr := accountUsername.String()
 
-	secureAccessPublicKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
-	err := infraHelper.MakeDir(secureAccessPublicKeysDirPath)
+	sshDirPath := "/home/" + accountUsernameStr + "/.ssh"
+	err := infraHelper.MakeDir(sshDirPath)
 	if err != nil {
-		return errors.New("CreateSecureAccessPublicKeysDirectoryError: " + err.Error())
+		return errors.New("CreateSshDirectoryError: " + err.Error())
 	}
 
-	secureAccessPublicKeysFilePath := secureAccessPublicKeysDirPath + "/authorized_keys"
-	_, err = os.Create(secureAccessPublicKeysFilePath)
+	authorizedKeysFilePath := sshDirPath + "/authorized_keys"
+	_, err = os.Create(authorizedKeysFilePath)
 	if err != nil {
-		return errors.New("CreateSecureAccessPublicKeysFileError: " + err.Error())
+		return errors.New("CreateAuthorizedKeysFileError: " + err.Error())
 	}
 
 	_, err = infraHelper.RunCmd(
-		"chown", "-R", accountUsernameStr, secureAccessPublicKeysFilePath,
+		"chown", "-R", accountUsernameStr, authorizedKeysFilePath,
 	)
 	if err != nil {
-		return errors.New("ChownSecureAccessPublicKeysFileError: " + err.Error())
+		return errors.New("ChownAuthorizedKeysFileError: " + err.Error())
 	}
 
 	return nil
@@ -237,9 +237,7 @@ func (repo *AccountCmdRepo) autoUpdateAuthorizedKeysFile(
 	shouldOverwrite := true
 	err = infraHelper.UpdateFile(authorizedKeysFilePath, keysFileContent, shouldOverwrite)
 	if err != nil {
-		return errors.New(
-			"UpdateSecureAccessPublicKeysFileContentError: " + err.Error(),
-		)
+		return errors.New("UpdateAuthorizedKeysFileContentError: " + err.Error())
 	}
 
 	return nil
