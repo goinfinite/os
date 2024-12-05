@@ -1,12 +1,17 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"errors"
+
+	"github.com/goinfinite/os/src/domain/valueObject"
+	"golang.org/x/crypto/ssh"
+)
 
 type SecureAccessPublicKey struct {
 	Id          valueObject.SecureAccessPublicKeyId          `json:"id"`
 	AccountId   valueObject.AccountId                        `json:"accountId"`
-	Name        valueObject.SecureAccessPublicKeyName        `json:"name"`
 	Content     valueObject.SecureAccessPublicKeyContent     `json:"-"`
+	Name        valueObject.SecureAccessPublicKeyName        `json:"name"`
 	Fingerprint valueObject.SecureAccessPublicKeyFingerprint `json:"fingerprint"`
 	CreatedAt   valueObject.UnixTime                         `json:"createdAt"`
 	UpdatedAt   valueObject.UnixTime                         `json:"updatedAt"`
@@ -15,11 +20,30 @@ type SecureAccessPublicKey struct {
 func NewSecureAccessPublicKey(
 	id valueObject.SecureAccessPublicKeyId,
 	accountId valueObject.AccountId,
-	name valueObject.SecureAccessPublicKeyName,
 	content valueObject.SecureAccessPublicKeyContent,
-	fingerprint valueObject.SecureAccessPublicKeyFingerprint,
+	namePtr *valueObject.SecureAccessPublicKeyName,
 	createdAt, updatedAt valueObject.UnixTime,
-) SecureAccessPublicKey {
+) (secureAccessPublicKey SecureAccessPublicKey, err error) {
+	contentBytes := []byte(content.String())
+	publicKey, publicKeyNameStr, _, _, err := ssh.ParseAuthorizedKey(contentBytes)
+	if err != nil {
+		return secureAccessPublicKey, errors.New("SecureAccessPublicKeyParseError")
+	}
+
+	if namePtr != nil {
+		publicKeyNameStr = namePtr.String()
+	}
+	name, err := valueObject.NewSecureAccessPublicKeyName(publicKeyNameStr)
+	if err != nil {
+		return secureAccessPublicKey, err
+	}
+
+	fingerprintStr := ssh.FingerprintSHA256(publicKey)
+	fingerprint, err := valueObject.NewSecureAccessPublicKeyFingerprint(fingerprintStr)
+	if err != nil {
+		return secureAccessPublicKey, err
+	}
+
 	return SecureAccessPublicKey{
 		Id:          id,
 		AccountId:   accountId,
@@ -28,5 +52,5 @@ func NewSecureAccessPublicKey(
 		Fingerprint: fingerprint,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
-	}
+	}, nil
 }

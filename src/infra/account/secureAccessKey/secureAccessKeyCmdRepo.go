@@ -111,23 +111,9 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 		return keyId, err
 	}
 
-	keyContentStr := createDto.Content.String()
-	rawFingerprint, err := infraHelper.RunCmdWithSubShell(
-		"echo \"" + keyContentStr + "\" | ssh-keygen -lf /dev/stdin | awk '{print $2}'",
-	)
-	if err != nil {
-		return keyId, errors.New(
-			"ReadSecureAccessPublicKeyFingerprintError: " + err.Error(),
-		)
-	}
-	fingerPrint, err := valueObject.NewSecureAccessPublicKeyFingerprint(rawFingerprint)
-	if err != nil {
-		return keyId, err
-	}
-
 	_, err = infraHelper.RunCmdWithSubShell(
-		"echo \"" + keyContentStr + "\" >> /home/" + accountEntity.Username.String() +
-			"/.ssh/authorized_keys",
+		"echo \"" + createDto.Content.String() + "\" >> /home/" +
+			accountEntity.Username.String() + "/.ssh/authorized_keys",
 	)
 	if err != nil {
 		return keyId, errors.New(
@@ -137,7 +123,7 @@ func (repo *SecureAccessKeyCmdRepo) Create(
 
 	secureAccessPublicKeyModel := dbModel.NewSecureAccessPublicKey(
 		0, accountEntity.Id.Uint64(), createDto.Name.String(),
-		createDto.Content.ReadWithoutKeyName(), fingerPrint.String(),
+		createDto.Content.ReadWithoutKeyName(),
 	)
 
 	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessPublicKeyModel)
