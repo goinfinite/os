@@ -222,7 +222,7 @@ templ AccountsTable(accounts []entity.Account) {
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-fingerprint", "blue-900", "blue-700",
 								"openSecureAccessPublicKeysModal("+account.Id.String()+", '"+account.Username.String()+"')",
-								"view secure access keys", "blue-500",
+								"view secure access public keys", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
@@ -321,7 +321,7 @@ templ UpdateApiKeyModal() {
 templ SecureAccessPublicKeysList() {
 	@componentStructural.Alert(
 		componentStructural.AlertTypeInfo,
-		"The management of these keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove keys, as they are used for SSH access.",
+		"The management of these public keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove public keys, as they are used for SSH access.",
 	)
 	<div class="mt-2">
 		<div id="account-secure-access-public-keys-list">
@@ -339,7 +339,7 @@ templ SecureAccessPublicKeysList() {
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
 								"openDeleteSecureAccessPublicKeyModal(key.id, key.name)",
-								"delete key", "red-500",
+								"delete public key", "red-500",
 							)
 						</div>
 					</div>
@@ -349,8 +349,9 @@ templ SecureAccessPublicKeysList() {
 		<div class="flex">
 			<div class="ml-auto mt-2">
 				@componentForm.SubmitButton(
-					"open-create-secure-access-public-key-modal", "Create secure access key",
-					"ph-fingerprint", "openCreateSecureAccessPublicKeyModal()", true,
+					"open-create-secure-access-public-key-modal",
+					"create secure access public key", "ph-fingerprint",
+					"openCreateSecureAccessPublicKeyModal()", true,
 				)
 			</div>
 		</div>
@@ -359,8 +360,8 @@ templ SecureAccessPublicKeysList() {
 
 templ SecureAccessPublicKeysModal() {
 	@componentStructural.Modal(
-		"Secure Access Keys", "isSecureAccessPublicKeysModalOpen", "closeSecureAccessPublicKeysModal()",
-		"account.username",
+		"Secure Access Public Keys", "isSecureAccessPublicKeysModalOpen",
+		"closeSecureAccessPublicKeysModal()", "account.username",
 	) {
 		@SecureAccessPublicKeysList()
 	}
@@ -389,8 +390,10 @@ templ CreateSecureAccessPublicKeyForm() {
 			})
 		</div>
 		@componentForm.SubmitButton(
-			"create-new-secure-access-public-key", "Create secure access key", "ph-check-fat",
-			"closeCreateSecureAccessPublicKeyModal(); closeSecureAccessPublicKeysModal()", false,
+			"create-new-secure-access-public-key", "create secure access public key",
+			"ph-check-fat",
+			"closeCreateSecureAccessPublicKeyModal(); closeSecureAccessPublicKeysModal()",
+			false,
 		)
 	</form>
 }
