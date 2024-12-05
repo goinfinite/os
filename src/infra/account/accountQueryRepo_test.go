@@ -15,11 +15,13 @@ func TestAccountQueryRepo(t *testing.T) {
 	persistentDbSvc := testHelpers.GetPersistentDbSvc()
 	accountQueryRepo := NewAccountQueryRepo(persistentDbSvc)
 
-	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+	id, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
-	t.Run("ReadValidAccounts", func(t *testing.T) {
+	addDummyUser()
+
+	t.Run("ReadValid", func(t *testing.T) {
 		requestDto := dto.ReadAccountsRequest{
-			AccountId: &accountId,
+			AccountId: &id,
 		}
 		_, err := accountQueryRepo.Read(requestDto)
 		if err != nil {
@@ -27,10 +29,24 @@ func TestAccountQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadValidAccountByUsername", func(t *testing.T) {
-		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
+	t.Run("ReadInvalid", func(t *testing.T) {
+		username, _ := valueObject.NewUsername("invalid")
+		requestDto := dto.ReadAccountsRequest{
+			AccountId: &id,
+		}
 
-		_, err := accountQueryRepo.ReadByUsername(username)
+		_, err := accountQueryRepo.ReadFirst(requestDto)
+		if err == nil {
+			t.Errorf("Expecting error for %s, but got nil", username.String())
+		}
+	})
+
+	t.Run("ReadFirstValid", func(t *testing.T) {
+		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
+		requestDto := dto.ReadAccountsRequest{
+			AccountUsername: &username,
+		}
+		_, err := accountQueryRepo.ReadFirst(requestDto)
 		if err != nil {
 			t.Errorf(
 				"Expecting no error for %s, but got %s", username.String(), err.Error(),
@@ -38,22 +54,17 @@ func TestAccountQueryRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("ReadValidAccountById", func(t *testing.T) {
-		_, err := accountQueryRepo.ReadById(accountId)
-		if err != nil {
-			t.Errorf(
-				"Expecting no error for %d, but got %s", accountId.Uint64(),
-				err.Error(),
-			)
-		}
-	})
-
-	t.Run("ReadInvalidAccount", func(t *testing.T) {
+	t.Run("ReadFirstInvalid", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("invalid")
+		requestDto := dto.ReadAccountsRequest{
+			AccountUsername: &username,
+		}
 
-		_, err := accountQueryRepo.ReadByUsername(username)
+		_, err := accountQueryRepo.ReadFirst(requestDto)
 		if err == nil {
 			t.Errorf("Expecting error for %s, but got nil", username.String())
 		}
 	})
+
+	deleteDummyUser()
 }

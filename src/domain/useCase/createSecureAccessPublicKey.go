@@ -9,11 +9,11 @@ import (
 )
 
 func CreateSecureAccessPublicKey(
-	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
+	accountCmdRepo repository.AccountCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateSecureAccessPublicKey,
 ) error {
-	keyId, err := secureAccessKeyCmdRepo.Create(createDto)
+	keyId, err := accountCmdRepo.CreateSecureAccessPublicKey(createDto)
 	if err != nil {
 		slog.Error("CreateSecureAccessPublicKeyError", slog.Any("error", err))
 		return errors.New("CreateSecureAccessPublicKeyInfraError")

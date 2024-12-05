@@ -53,9 +53,12 @@ func CreateSessionToken(
 		return accessToken, errors.New("InvalidCredentials")
 	}
 
-	accountEntity, err := accountQueryRepo.ReadByUsername(createDto.Username)
+	readRequestDto := dto.ReadAccountsRequest{
+		AccountUsername: &createDto.Username,
+	}
+	accountEntity, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return accessToken, errors.New("AccountNotFound")
+		return accessToken, err
 	}
 
 	recordCode, _ := valueObject.NewActivityRecordCode("LoginSuccessful")

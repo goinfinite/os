@@ -9,20 +9,22 @@ import (
 )
 
 func DeleteSecureAccessPublicKey(
-	secureAccessKeyQueryRepo repository.SecureAccessKeyQueryRepo,
-	secureAccessKeyCmdRepo repository.SecureAccessKeyCmdRepo,
+	accountQueryRepo repository.AccountQueryRepo,
+	accountCmdRepo repository.AccountCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteSecureAccessPublicKey,
 ) error {
 	readRequestDto := dto.ReadSecureAccessPublicKeysRequest{
 		SecureAccessPublicKeyId: &deleteDto.Id,
 	}
-	keyToDelete, err := secureAccessKeyQueryRepo.ReadFirst(readRequestDto)
+	keyToDelete, err := accountQueryRepo.ReadFirstSecureAccessPublicKey(
+		readRequestDto,
+	)
 	if err != nil {
 		return errors.New("SecureAccessPublicKeyNotFound")
 	}
 
-	err = secureAccessKeyCmdRepo.Delete(keyToDelete.Id)
+	err = accountCmdRepo.DeleteSecureAccessPublicKey(keyToDelete.Id)
 	if err != nil {
 		slog.Error("DeleteSecureAccessPublicKeyError", slog.Any("error", err))
 		return errors.New("DeleteSecureAccessPublicKeyInfraError")

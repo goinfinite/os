@@ -14,16 +14,19 @@ func UpdateAccount(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
 ) error {
-	_, err := accountQueryRepo.ReadById(updateDto.AccountId)
+	readRequestDto := dto.ReadAccountsRequest{
+		AccountId: &updateDto.AccountId,
+	}
+	_, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return errors.New("AccountNotFound")
+		return err
 	}
 
 	if updateDto.Password != nil {
 		err = accountCmdRepo.UpdatePassword(updateDto.AccountId, *updateDto.Password)
 		if err != nil {
 			slog.Error(
-				"UpdateAccountPasswordInfraError",
+				"UpdateAccountPasswordError",
 				slog.String("accountId", updateDto.AccountId.String()),
 				slog.Any("error", err),
 			)

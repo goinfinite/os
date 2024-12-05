@@ -30,6 +30,33 @@ func NewAccountCmdRepo(
 	}
 }
 
+func (repo *AccountCmdRepo) createAuthorizedKeysFile(
+	accountUsername valueObject.Username,
+) error {
+	accountUsernameStr := accountUsername.String()
+
+	secureAccessPublicKeysDirPath := "/home/" + accountUsernameStr + "/.ssh"
+	err := infraHelper.MakeDir(secureAccessPublicKeysDirPath)
+	if err != nil {
+		return errors.New("CreateSecureAccessPublicKeysDirectoryError: " + err.Error())
+	}
+
+	secureAccessPublicKeysFilePath := secureAccessPublicKeysDirPath + "/authorized_keys"
+	_, err = os.Create(secureAccessPublicKeysFilePath)
+	if err != nil {
+		return errors.New("CreateSecureAccessPublicKeysFileError: " + err.Error())
+	}
+
+	_, err = infraHelper.RunCmd(
+		"chown", "-R", accountUsernameStr, secureAccessPublicKeysFilePath,
+	)
+	if err != nil {
+		return errors.New("ChownSecureAccessPublicKeysFileError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo *AccountCmdRepo) Create(
 	createDto dto.CreateAccount,
 ) (accountId valueObject.AccountId, err error) {
@@ -50,6 +77,11 @@ func (repo *AccountCmdRepo) Create(
 	)
 	if err != nil {
 		return accountId, errors.New("UserAddFailed: " + err.Error())
+	}
+
+	err = repo.createAuthorizedKeysFile(createDto.Username)
+	if err != nil {
+		return accountId, err
 	}
 
 	userInfo, err := user.Lookup(usernameStr)
@@ -87,7 +119,10 @@ func (repo *AccountCmdRepo) Create(
 }
 
 func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
-	accountEntity, err := repo.accountQueryRepo.ReadById(accountId)
+	readFirstAccountRequestDto := dto.ReadAccountsRequest{
+		AccountId: &accountId,
+	}
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
 	if err != nil {
 		return err
 	}
@@ -124,12 +159,17 @@ func (repo *AccountCmdRepo) UpdatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	account, err := repo.accountQueryRepo.ReadById(accountId)
+	readFirstAccountRequestDto := dto.ReadAccountsRequest{
+		AccountId: &accountId,
+	}
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
 	if err != nil {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("usermod", "-p", string(passHash), account.Username.String())
+	_, err = infraHelper.RunCmd(
+		"usermod", "-p", string(passHash), accountEntity.Username.String(),
+	)
 	if err != nil {
 		return errors.New("UserModFailed: " + err.Error())
 	}
@@ -169,4 +209,112 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 	}
 
 	return apiKey, nil
+}
+
+func (repo *AccountCmdRepo) recreateSecureAccessPublicKeysFile(
+	accountId valueObject.AccountId,
+	accountUsername valueObject.Username,
+) error {
+	readPublicKeysRequestDto := dto.ReadSecureAccessPublicKeysRequest{
+		Pagination: dto.Pagination{
+			ItemsPerPage: 1000,
+		},
+		AccountId: accountId,
+	}
+	readPublicKeysResponseDto, err := repo.accountQueryRepo.ReadSecureAccessPublicKeys(
+		readPublicKeysRequestDto,
+	)
+	if err != nil {
+		return err
+	}
+
+	keysFileContent := ""
+	for _, key := range readPublicKeysResponseDto.SecureAccessPublicKeys {
+		keysFileContent += key.Content.String() + " " + key.Name.String() + "\n"
+	}
+
+	authorizedKeysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
+	shouldOverwrite := true
+	err = infraHelper.UpdateFile(authorizedKeysFilePath, keysFileContent, shouldOverwrite)
+	if err != nil {
+		return errors.New(
+			"UpdateSecureAccessPublicKeysFileContentError: " + err.Error(),
+		)
+	}
+
+	return nil
+}
+
+func (repo *AccountCmdRepo) CreateSecureAccessPublicKey(
+	createDto dto.CreateSecureAccessPublicKey,
+) (keyId valueObject.SecureAccessPublicKeyId, err error) {
+	readFirstAccountRequestDto := dto.ReadAccountsRequest{
+		AccountId: &createDto.AccountId,
+	}
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
+	if err != nil {
+		return keyId, errors.New("AccountNotFound")
+	}
+
+	_, err = infraHelper.RunCmdWithSubShell(
+		"echo \"" + createDto.Content.String() + "\" >> /home/" +
+			accountEntity.Username.String() + "/.ssh/authorized_keys",
+	)
+	if err != nil {
+		return keyId, errors.New(
+			"AddNewSecureAccessPublicKeyToFileError: " + err.Error(),
+		)
+	}
+
+	secureAccessPublicKeyModel := dbModel.NewSecureAccessPublicKey(
+		0, accountEntity.Id.Uint64(), createDto.Name.String(),
+		createDto.Content.ReadWithoutKeyName(),
+	)
+
+	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessPublicKeyModel)
+	if createResult.Error != nil {
+		return keyId, createResult.Error
+	}
+
+	keyId, err = valueObject.NewSecureAccessPublicKeyId(secureAccessPublicKeyModel.ID)
+	if err != nil {
+		return keyId, err
+	}
+
+	return keyId, repo.recreateSecureAccessPublicKeysFile(
+		accountEntity.Id, accountEntity.Username,
+	)
+}
+
+func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
+	secureAccessPublicKeyId valueObject.SecureAccessPublicKeyId,
+) error {
+	readFirstPublicKeyRequestDto := dto.ReadSecureAccessPublicKeysRequest{
+		SecureAccessPublicKeyId: &secureAccessPublicKeyId,
+	}
+	keyToDelete, err := repo.accountQueryRepo.ReadFirstSecureAccessPublicKey(
+		readFirstPublicKeyRequestDto,
+	)
+	if err != nil {
+		return errors.New("SecureAccessPublicKeyNotFound")
+	}
+
+	readFirstAccountRequestDto := dto.ReadAccountsRequest{
+		AccountId: &keyToDelete.AccountId,
+	}
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
+	if err != nil {
+		return errors.New("AccountNotFound")
+	}
+
+	err = repo.persistentDbSvc.Handler.Delete(
+		dbModel.SecureAccessPublicKey{}, secureAccessPublicKeyId.Uint16(),
+	).Error
+	if err != nil {
+		return err
+	}
+
+	return repo.recreateSecureAccessPublicKeysFile(
+		accountEntity.Id, accountEntity.Username,
+	)
 }

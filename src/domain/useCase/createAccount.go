@@ -14,14 +14,17 @@ func CreateAccount(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateAccount,
 ) error {
-	_, err := accountQueryRepo.ReadByUsername(createDto.Username)
+	readRequestDto := dto.ReadAccountsRequest{
+		AccountUsername: &createDto.Username,
+	}
+	_, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err == nil {
 		return errors.New("AccountAlreadyExists")
 	}
 
 	accountId, err := accountCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateAccountInfraError", slog.Any("error", err))
+		slog.Error("CreateAccountError", slog.Any("error", err))
 		return errors.New("CreateAccountInfraError")
 	}
 

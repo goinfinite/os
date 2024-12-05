@@ -8,7 +8,6 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
-	secureAccessKeyInfra "github.com/goinfinite/os/src/infra/account/secureAccessKey"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
@@ -19,13 +18,11 @@ var LocalOperatorAccountId, _ = valueObject.NewAccountId(0)
 var LocalOperatorIpAddress = valueObject.NewLocalhostIpAddress()
 
 type AccountService struct {
-	persistentDbSvc          *internalDbInfra.PersistentDatabaseService
-	accountQueryRepo         *accountInfra.AccountQueryRepo
-	accountCmdRepo           *accountInfra.AccountCmdRepo
-	secureAccessKeyQueryRepo *secureAccessKeyInfra.SecureAccessKeyQueryRepo
-	secureAccessKeyCmdRepo   *secureAccessKeyInfra.SecureAccessKeyCmdRepo
-	activityRecordCmdRepo    *activityRecordInfra.ActivityRecordCmdRepo
-	availabilityInspector    *sharedHelper.ServiceAvailabilityInspector
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	accountQueryRepo      *accountInfra.AccountQueryRepo
+	accountCmdRepo        *accountInfra.AccountCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
+	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
 }
 
 func NewAccountService(
@@ -33,15 +30,9 @@ func NewAccountService(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AccountService {
 	return &AccountService{
-		persistentDbSvc:  persistentDbSvc,
-		accountQueryRepo: accountInfra.NewAccountQueryRepo(persistentDbSvc),
-		accountCmdRepo:   accountInfra.NewAccountCmdRepo(persistentDbSvc),
-		secureAccessKeyQueryRepo: secureAccessKeyInfra.NewSecureAccessKeyQueryRepo(
-			persistentDbSvc,
-		),
-		secureAccessKeyCmdRepo: secureAccessKeyInfra.NewSecureAccessKeyCmdRepo(
-			persistentDbSvc,
-		),
+		persistentDbSvc:       persistentDbSvc,
+		accountQueryRepo:      accountInfra.NewAccountQueryRepo(persistentDbSvc),
+		accountCmdRepo:        accountInfra.NewAccountCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
 			persistentDbSvc,
@@ -360,7 +351,7 @@ func (service *AccountService) CreateSecureAccessPublicKey(
 	)
 
 	err = useCase.CreateSecureAccessPublicKey(
-		service.secureAccessKeyCmdRepo, service.activityRecordCmdRepo, createDto,
+		service.accountCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -411,7 +402,7 @@ func (service *AccountService) DeleteSecureAccessPublicKey(
 	)
 
 	err = useCase.DeleteSecureAccessPublicKey(
-		service.secureAccessKeyQueryRepo, service.secureAccessKeyCmdRepo,
+		service.accountQueryRepo, service.accountCmdRepo,
 		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
