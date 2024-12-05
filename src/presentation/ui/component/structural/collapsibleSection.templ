@@ -1,9 +1,17 @@
 package componentStructural
 
-templ CollapsibleSection(title, icon string) {
+templ CollapsibleSection(
+	title, icon string,
+	shouldAlreadyBeOpen bool,
+) {
 	<!-- CollapsibleSection -->
 	<section class="w-full rounded-md">
-		<details class="bg-os-500 group/collapsibleSection rounded-md p-3 group-open/collapsibleSection:bg-opacity-30">
+		<details
+			if shouldAlreadyBeOpen {
+				open
+			}
+			class="bg-os-500 group/collapsibleSection rounded-md p-3 group-open/collapsibleSection:bg-opacity-30"
+		>
 			<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open/collapsibleSection:text-opacity-100 group-hover/collapsibleSection:text-opacity-100 [&::-webkit-details-marker]:hidden">
 				<i class={ "ph-duotone " + icon + " mr-2 text-2xl" }></i>
 				<span class="font-bold">{ title }</span>
