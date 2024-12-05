@@ -203,8 +203,10 @@ templ AccountsTable(accounts []entity.Account) {
 		</thead>
 		<tbody>
 			for _, account := range accounts {
-				@templ.JSONScript("secureAccessPublicKeys_"+account.Id.String(), account.SecureAccessPublicKeys)
 				<tr class="odd:bg-os-500 even:bg-os-300 border-b border-neutral-500 border-opacity-30 text-center">
+					<th class="hidden">
+						@templ.JSONScript("secureAccessPublicKeys_"+account.Id.String(), account.SecureAccessPublicKeys)
+					</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-right">
