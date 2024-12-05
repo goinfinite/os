@@ -183,7 +183,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Create a new secure access key.",
+                "description": "Create a new secure access public key.",
                 "consumes": [
                     "application/json"
                 ],
@@ -193,21 +193,21 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "CreateSecureAccessKey",
+                "summary": "CreateSecureAccessPublicKey",
                 "parameters": [
                     {
                         "description": "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
-                        "name": "createSecureAccessKey",
+                        "name": "createSecureAccessPublicKey",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateSecureAccessKey"
+                            "$ref": "#/definitions/dto.CreateSecureAccessPublicKey"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "SecureAccessKeyCreated",
+                        "description": "SecureAccessPublicKeyCreated",
                         "schema": {
                             "type": "object"
                         }
@@ -215,14 +215,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/account/secure-access-public-key/{secureAccessKeyId}/": {
+        "/v1/account/secure-access-public-key/{secureAccessPublicKeyId}/": {
             "delete": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "Delete a secure access key.",
+                "description": "Delete a secure access public key.",
                 "consumes": [
                     "application/json"
                 ],
@@ -232,19 +232,19 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "DeleteSecureAccessKey",
+                "summary": "DeleteSecureAccessPublicKey",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "SecureAccessKeyId to delete.",
-                        "name": "secureAccessKeyId",
+                        "description": "SecureAccessPublicKeyId to delete.",
+                        "name": "secureAccessPublicKeyId",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "SecureAccessKeyDeleted",
+                        "description": "SecureAccessPublicKeyDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -2492,7 +2492,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateSecureAccessKey": {
+        "dto.CreateSecureAccessPublicKey": {
             "type": "object",
             "properties": {
                 "accountId": {
