@@ -62,7 +62,7 @@ func (model SecureAccessPublicKey) ToEntity() (
 	}
 
 	return entity.NewSecureAccessPublicKey(
-		id, accountId, content, &name,
+		id, accountId, content, name,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	)

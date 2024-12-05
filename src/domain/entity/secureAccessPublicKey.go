@@ -21,21 +21,13 @@ func NewSecureAccessPublicKey(
 	id valueObject.SecureAccessPublicKeyId,
 	accountId valueObject.AccountId,
 	content valueObject.SecureAccessPublicKeyContent,
-	namePtr *valueObject.SecureAccessPublicKeyName,
+	name valueObject.SecureAccessPublicKeyName,
 	createdAt, updatedAt valueObject.UnixTime,
 ) (secureAccessPublicKey SecureAccessPublicKey, err error) {
 	contentBytes := []byte(content.String())
-	publicKey, publicKeyNameStr, _, _, err := ssh.ParseAuthorizedKey(contentBytes)
+	publicKey, _, _, _, err := ssh.ParseAuthorizedKey(contentBytes)
 	if err != nil {
 		return secureAccessPublicKey, errors.New("SecureAccessPublicKeyParseError")
-	}
-
-	if namePtr != nil {
-		publicKeyNameStr = namePtr.String()
-	}
-	name, err := valueObject.NewSecureAccessPublicKeyName(publicKeyNameStr)
-	if err != nil {
-		return secureAccessPublicKey, err
 	}
 
 	fingerprintStr := ssh.FingerprintSHA256(publicKey)
