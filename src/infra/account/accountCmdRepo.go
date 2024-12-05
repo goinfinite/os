@@ -211,7 +211,7 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 	return apiKey, nil
 }
 
-func (repo *AccountCmdRepo) recreateSecureAccessPublicKeysFile(
+func (repo *AccountCmdRepo) autoUpdateAuthorizedKeysFile(
 	accountId valueObject.AccountId,
 	accountUsername valueObject.Username,
 ) error {
@@ -281,7 +281,7 @@ func (repo *AccountCmdRepo) CreateSecureAccessPublicKey(
 		return keyId, err
 	}
 
-	return keyId, repo.recreateSecureAccessPublicKeysFile(
+	return keyId, repo.autoUpdateAuthorizedKeysFile(
 		accountEntity.Id, accountEntity.Username,
 	)
 }
@@ -314,7 +314,7 @@ func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
 		return err
 	}
 
-	return repo.recreateSecureAccessPublicKeysFile(
+	return repo.autoUpdateAuthorizedKeysFile(
 		accountEntity.Id, accountEntity.Username,
 	)
 }
