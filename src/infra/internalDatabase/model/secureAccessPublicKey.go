@@ -39,31 +39,36 @@ func NewSecureAccessPublicKey(
 }
 
 func (model SecureAccessPublicKey) ToEntity() (
-	SecureAccessPublicKeyEntity entity.SecureAccessPublicKey, err error,
+	secureAccessPublicKeyEntity entity.SecureAccessPublicKey, err error,
 ) {
 	id, err := valueObject.NewSecureAccessPublicKeyId(model.ID)
 	if err != nil {
-		return SecureAccessPublicKeyEntity, err
+		return secureAccessPublicKeyEntity, err
 	}
 
 	accountId, err := valueObject.NewAccountId(model.AccountId)
 	if err != nil {
-		return SecureAccessPublicKeyEntity, err
-	}
-
-	name, err := valueObject.NewSecureAccessPublicKeyName(model.Name)
-	if err != nil {
-		return SecureAccessPublicKeyEntity, err
+		return secureAccessPublicKeyEntity, err
 	}
 
 	content, err := valueObject.NewSecureAccessPublicKeyContent(model.Content)
 	if err != nil {
-		return SecureAccessPublicKeyEntity, err
+		return secureAccessPublicKeyEntity, err
+	}
+
+	fingerprint, err := content.ReadFingerprint()
+	if err != nil {
+		return secureAccessPublicKeyEntity, err
+	}
+
+	name, err := valueObject.NewSecureAccessPublicKeyName(model.Name)
+	if err != nil {
+		return secureAccessPublicKeyEntity, err
 	}
 
 	return entity.NewSecureAccessPublicKey(
-		id, accountId, content, name,
+		id, accountId, content, fingerprint, name,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
-	)
+	), nil
 }
