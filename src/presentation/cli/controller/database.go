@@ -138,16 +138,16 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 }
 
 func (controller *DatabaseController) DeleteUser() *cobra.Command {
-	var dbTypeStr, dbNameStr, dbUserStr string
+	var dbTypeStr, dbNameStr, dbUsernameStr string
 
 	cmd := &cobra.Command{
 		Use:   "delete-user",
 		Short: "DeleteDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"dbType":   dbTypeStr,
-				"dbName":   dbNameStr,
-				"username": dbUserStr,
+				"dbType": dbTypeStr,
+				"dbName": dbNameStr,
+				"dbUser": dbUsernameStr,
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -160,7 +160,7 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 	cmd.MarkFlagRequired("db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "db-name", "n", "", "DatabaseName")
 	cmd.MarkFlagRequired("db-name")
-	cmd.Flags().StringVarP(&dbUserStr, "username", "u", "", "Username")
-	cmd.MarkFlagRequired("username")
+	cmd.Flags().StringVarP(&dbUsernameStr, "db-username", "u", "", "DatabaseUsername")
+	cmd.MarkFlagRequired("db-username")
 	return cmd
 }
