@@ -58,7 +58,7 @@ func CreateSessionToken(
 	}
 	accountEntity, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return accessToken, err
+		return accessToken, errors.New("AccountNotFound")
 	}
 
 	recordCode, _ := valueObject.NewActivityRecordCode("LoginSuccessful")

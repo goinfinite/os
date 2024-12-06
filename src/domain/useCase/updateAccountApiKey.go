@@ -20,7 +20,7 @@ func UpdateAccountApiKey(
 	}
 	_, err = accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return newKey, err
+		return newKey, errors.New("AccountNotFound")
 	}
 
 	newKey, err = accountCmdRepo.UpdateApiKey(updateDto.AccountId)

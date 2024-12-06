@@ -19,7 +19,7 @@ func DeleteAccount(
 	}
 	_, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return err
+		return errors.New("AccountNotFound")
 	}
 
 	err = accountCmdRepo.Delete(deleteDto.AccountId)

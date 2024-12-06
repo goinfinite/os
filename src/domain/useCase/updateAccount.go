@@ -19,7 +19,7 @@ func UpdateAccount(
 	}
 	_, err := accountQueryRepo.ReadFirst(readRequestDto)
 	if err != nil {
-		return err
+		return errors.New("AccountNotFound")
 	}
 
 	if updateDto.Password != nil {
