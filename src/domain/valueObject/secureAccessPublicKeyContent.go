@@ -2,13 +2,11 @@ package valueObject
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	"golang.org/x/crypto/ssh"
 )
-
-const SecureAccessPublicKeyContentRegex string = `^(?:ssh-(?:rsa|ed25519)) (?:[\w\/\+\=]+)(?: [\w@\-_]{6,32})?$`
 
 type SecureAccessPublicKeyContent string
 
@@ -20,8 +18,8 @@ func NewSecureAccessPublicKeyContent(
 		return keyContent, errors.New("SecureAccessPublicKeyContentMustBeString")
 	}
 
-	re := regexp.MustCompile(SecureAccessPublicKeyContentRegex)
-	if !re.MatchString(stringValue) {
+	_, _, _, _, err = ssh.ParseAuthorizedKey([]byte(stringValue))
+	if err != nil {
 		return keyContent, errors.New("InvalidSecureAccessPublicKeyContent")
 	}
 
