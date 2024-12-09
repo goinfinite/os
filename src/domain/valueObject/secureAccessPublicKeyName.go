@@ -7,7 +7,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
-const SecureAccessPublicKeyNameRegex string = `^[\w@\-_]{6,32}$`
+const SecureAccessPublicKeyNameRegex string = `^[A-Za-z0-9][\w@\-_]{5,32}$`
 
 type SecureAccessPublicKeyName string
 

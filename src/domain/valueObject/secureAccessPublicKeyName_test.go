@@ -23,7 +23,7 @@ func TestSecureAccessPublicKeyName(t *testing.T) {
 	t.Run("InvalidSecureAccessPublicKeyName", func(t *testing.T) {
 		rawInvalidSecureAccessPublicKeyName := []interface{}{
 			"", "that's not allowed, u know?", "maybe-with-#",
-			"thisIsAnEnormousNameToTestVoLength",
+			"thisIsAnEnormousNameToTestVoLength", "@name", "-name", "_name",
 		}
 
 		for _, rawKeyName := range rawInvalidSecureAccessPublicKeyName {
