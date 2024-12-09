@@ -131,7 +131,7 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 	requestDto dto.ReadSecureAccessPublicKeysRequest,
 ) (responseDto dto.ReadSecureAccessPublicKeysResponse, err error) {
 	model := dbModel.SecureAccessPublicKey{
-		AccountId: requestDto.AccountId.Uint64(),
+		AccountID: requestDto.AccountId.Uint64(),
 	}
 	if requestDto.SecureAccessPublicKeyId != nil {
 		model.ID = requestDto.SecureAccessPublicKeyId.Uint16()

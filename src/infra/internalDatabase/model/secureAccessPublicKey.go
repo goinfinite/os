@@ -9,7 +9,7 @@ import (
 
 type SecureAccessPublicKey struct {
 	ID        uint16 `gorm:"primarykey"`
-	AccountId uint64 `gorm:"not null"`
+	AccountID uint64 `gorm:"not null"`
 	Name      string `gorm:"not null"`
 	Content   string `gorm:"not null"`
 	CreatedAt time.Time
@@ -26,7 +26,7 @@ func NewSecureAccessPublicKey(
 	name, content string,
 ) SecureAccessPublicKey {
 	model := SecureAccessPublicKey{
-		AccountId: accountId,
+		AccountID: accountId,
 		Name:      name,
 		Content:   content,
 	}
@@ -46,7 +46,7 @@ func (model SecureAccessPublicKey) ToEntity() (
 		return secureAccessPublicKeyEntity, err
 	}
 
-	accountId, err := valueObject.NewAccountId(model.AccountId)
+	accountId, err := valueObject.NewAccountId(model.AccountID)
 	if err != nil {
 		return secureAccessPublicKeyEntity, err
 	}
