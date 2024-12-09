@@ -11,7 +11,6 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 )
 
 var LocalOperatorAccountId, _ = valueObject.NewAccountId(0)
@@ -22,7 +21,6 @@ type AccountService struct {
 	accountQueryRepo      *accountInfra.AccountQueryRepo
 	accountCmdRepo        *accountInfra.AccountCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
-	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
 }
 
 func NewAccountService(
@@ -34,9 +32,6 @@ func NewAccountService(
 		accountQueryRepo:      accountInfra.NewAccountQueryRepo(persistentDbSvc),
 		accountCmdRepo:        accountInfra.NewAccountCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
-		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
-			persistentDbSvc,
-		),
 	}
 }
 
@@ -301,11 +296,6 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 func (service *AccountService) CreateSecureAccessPublicKey(
 	input map[string]interface{},
 ) ServiceOutput {
-	serviceName, _ := valueObject.NewServiceName("openssh")
-	if !service.availabilityInspector.IsAvailable(serviceName) {
-		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
-	}
-
 	requiredParams := []string{"accountId", "content"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -363,11 +353,6 @@ func (service *AccountService) CreateSecureAccessPublicKey(
 func (service *AccountService) DeleteSecureAccessPublicKey(
 	input map[string]interface{},
 ) ServiceOutput {
-	serviceName, _ := valueObject.NewServiceName("openssh")
-	if !service.availabilityInspector.IsAvailable(serviceName) {
-		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
-	}
-
 	requiredParams := []string{"secureAccessPublicKeyId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
