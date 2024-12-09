@@ -4,18 +4,19 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
 func ReadAccounts(
 	accountQueryRepo repository.AccountQueryRepo,
-) ([]entity.Account, error) {
-	accountsList, err := accountQueryRepo.Read()
+	requestDto dto.ReadAccountsRequest,
+) (responseDto dto.ReadAccountsResponse, err error) {
+	responseDto, err = accountQueryRepo.Read(requestDto)
 	if err != nil {
 		slog.Error("ReadAccountsInfraError", slog.Any("error", err))
-		return accountsList, errors.New("ReadAccountsInfraError")
+		return responseDto, errors.New("ReadAccountsInfraError")
 	}
 
-	return accountsList, nil
+	return responseDto, nil
 }

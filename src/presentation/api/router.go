@@ -57,6 +57,12 @@ func (router Router) accountRoutes() {
 	accountGroup.POST("/", accountController.Create)
 	accountGroup.PUT("/", accountController.Update)
 	accountGroup.DELETE("/:accountId/", accountController.Delete)
+
+	secureAccessPublicKeyGroup := accountGroup.Group("/secure-access-public-key")
+	secureAccessPublicKeyGroup.POST("/", accountController.CreateSecureAccessPublicKey)
+	secureAccessPublicKeyGroup.DELETE(
+		"/:secureAccessPublicKeyId/", accountController.DeleteSecureAccessPublicKey,
+	)
 }
 
 func (router Router) cronRoutes() {

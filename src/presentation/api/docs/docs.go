@@ -42,14 +42,61 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "ReadAccounts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service is installed)",
+                        "name": "shouldIncludeSecureAccessPublicKeys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Account"
-                            }
+                            "$ref": "#/definitions/dto.ReadAccountsResponse"
                         }
                     }
                 }
@@ -107,7 +154,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "CreateNewAccount",
+                "summary": "CreateAccount",
                 "parameters": [
                     {
                         "description": "All props are required.",
@@ -122,6 +169,82 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "AccountCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/secure-access-public-key/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new secure access public key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "CreateSecureAccessPublicKey",
+                "parameters": [
+                    {
+                        "description": "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'.",
+                        "name": "createSecureAccessPublicKey",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateSecureAccessPublicKey"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "SecureAccessPublicKeyCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/secure-access-public-key/{secureAccessPublicKeyId}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a secure access public key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "DeleteSecureAccessPublicKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SecureAccessPublicKeyId to delete.",
+                        "name": "secureAccessPublicKeyId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecureAccessPublicKeyDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -2369,6 +2492,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateSecureAccessPublicKey": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "$ref": "#/definitions/valueObject.SecureAccessPublicKeyContent"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateSessionToken": {
             "type": "object",
             "properties": {
@@ -2597,6 +2734,20 @@ const docTemplate = `{
                 },
                 "sortDirection": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.ReadAccountsResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Account"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
                 }
             }
         },
@@ -2899,8 +3050,17 @@ const docTemplate = `{
                 "groupId": {
                     "type": "integer"
                 },
+                "homeDirectory": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "secureAccessPublicKeys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SecureAccessPublicKey"
+                    }
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -3394,6 +3554,29 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.SecureAccessPublicKey": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "fingerprint": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.SslCertificate": {
             "type": "object",
             "properties": {
@@ -3614,6 +3797,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "valueObject.SecureAccessPublicKeyContent": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "fingerprint": {
                     "type": "string"
                 }
             }

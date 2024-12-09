@@ -3,7 +3,7 @@ package presenter
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
@@ -25,16 +25,20 @@ func NewAccountsPresenter(
 }
 
 func (presenter *AccountsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.accountService.Read()
+	responseOutput := presenter.accountService.Read(
+		map[string]interface{}{
+			"shouldIncludeSecureAccessPublicKeys": true,
+		},
+	)
 	if responseOutput.Status != service.Success {
 		return nil
 	}
 
-	accounts, assertOk := responseOutput.Body.([]entity.Account)
+	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadAccountsResponse)
 	if !assertOk {
 		return nil
 	}
 
-	pageContent := page.AccountsIndex(accounts)
+	pageContent := page.AccountsIndex(typedOutputBody.Accounts)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

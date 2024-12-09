@@ -6,8 +6,12 @@ import (
 )
 
 type AccountCmdRepo interface {
-	Create(createAccount dto.CreateAccount) (valueObject.AccountId, error)
-	Delete(accountId valueObject.AccountId) error
-	UpdatePassword(accountId valueObject.AccountId, password valueObject.Password) error
-	UpdateApiKey(accountId valueObject.AccountId) (valueObject.AccessTokenStr, error)
+	Create(dto.CreateAccount) (valueObject.AccountId, error)
+	Delete(valueObject.AccountId) error
+	UpdatePassword(valueObject.AccountId, valueObject.Password) error
+	UpdateApiKey(valueObject.AccountId) (valueObject.AccessTokenStr, error)
+	CreateSecureAccessPublicKey(
+		dto.CreateSecureAccessPublicKey,
+	) (valueObject.SecureAccessPublicKeyId, error)
+	DeleteSecureAccessPublicKey(valueObject.SecureAccessPublicKeyId) error
 }
