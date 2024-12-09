@@ -51,7 +51,7 @@
                     },
                     {
                         "type": "boolean",
-                        "description": "ShouldIncludeSecureAccessPublicKeys (this prop only works if OpenSSH service is installed)",
+                        "description": "ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service is installed)",
                         "name": "shouldIncludeSecureAccessPublicKeys",
                         "in": "query"
                     },
@@ -2493,7 +2493,7 @@
                     "type": "integer"
                 },
                 "content": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.SecureAccessPublicKeyContent"
                 },
                 "name": {
                     "type": "string"
@@ -3043,6 +3043,9 @@
                 },
                 "groupId": {
                     "type": "integer"
+                },
+                "homeDirectory": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -3788,6 +3791,17 @@
                     "type": "integer"
                 },
                 "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "valueObject.SecureAccessPublicKeyContent": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "fingerprint": {
                     "type": "string"
                 }
             }

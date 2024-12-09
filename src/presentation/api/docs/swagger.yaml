@@ -158,7 +158,7 @@ definitions:
       accountId:
         type: integer
       content:
-        type: string
+        $ref: '#/definitions/valueObject.SecureAccessPublicKeyContent'
       name:
         type: string
     type: object
@@ -517,6 +517,8 @@ definitions:
         type: integer
       groupId:
         type: integer
+      homeDirectory:
+        type: string
       id:
         type: integer
       secureAccessPublicKeys:
@@ -1007,6 +1009,13 @@ definitions:
       protocol:
         type: string
     type: object
+  valueObject.SecureAccessPublicKeyContent:
+    properties:
+      content:
+        type: string
+      fingerprint:
+        type: string
+    type: object
   valueObject.ServiceMetrics:
     properties:
       cpuUsagePercent:
@@ -1055,8 +1064,8 @@ paths:
         in: query
         name: username
         type: string
-      - description: ShouldIncludeSecureAccessPublicKeys (this prop only works if
-          OpenSSH service is installed)
+      - description: ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service
+          is installed)
         in: query
         name: shouldIncludeSecureAccessPublicKeys
         type: boolean

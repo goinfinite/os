@@ -57,7 +57,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "ShouldIncludeSecureAccessPublicKeys (this prop only works if OpenSSH service is installed)",
+                        "description": "ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service is installed)",
                         "name": "shouldIncludeSecureAccessPublicKeys",
                         "in": "query"
                     },
@@ -2499,7 +2499,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "content": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.SecureAccessPublicKeyContent"
                 },
                 "name": {
                     "type": "string"
@@ -3049,6 +3049,9 @@ const docTemplate = `{
                 },
                 "groupId": {
                     "type": "integer"
+                },
+                "homeDirectory": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -3794,6 +3797,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "valueObject.SecureAccessPublicKeyContent": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "fingerprint": {
                     "type": "string"
                 }
             }
