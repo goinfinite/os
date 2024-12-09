@@ -29,7 +29,7 @@ func (controller *AccountController) Read() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "GetAccounts",
+		Short: "ReadAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
 				"shouldIncludeSecureAccessPublicKeys": shouldIncludeSecureAccessPublicKeysStr,
