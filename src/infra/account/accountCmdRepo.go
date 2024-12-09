@@ -33,10 +33,11 @@ func NewAccountCmdRepo(
 
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 	accountUsername valueObject.Username,
+	accountHomeDirectory valueObject.UnixFilePath,
 ) error {
 	accountUsernameStr := accountUsername.String()
 
-	sshDirPath := "/home/" + accountUsernameStr + "/.ssh"
+	sshDirPath := accountHomeDirectory.String() + "/.ssh"
 	err := infraHelper.MakeDir(sshDirPath)
 	if err != nil {
 		return errors.New("CreateSshDirectoryError: " + err.Error())
@@ -86,7 +87,7 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("UserAddFailed: " + err.Error())
 	}
 
-	err = repo.createAuthorizedKeysFile(createDto.Username)
+	err = repo.createAuthorizedKeysFile(createDto.Username, homeDirectory)
 	if err != nil {
 		return accountId, err
 	}
