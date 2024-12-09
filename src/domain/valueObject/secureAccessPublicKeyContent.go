@@ -51,7 +51,7 @@ func (vo SecureAccessPublicKeyContent) ReadFingerprint() (
 ) {
 	keyContentBytes := []byte(string(vo))
 	publicKey, _, _, _, _ := ssh.ParseAuthorizedKey(keyContentBytes)
-	fingerprintStr := ssh.FingerprintSHA256(publicKey)
+	keyFingerprintStr := ssh.FingerprintSHA256(publicKey)
 
-	return NewSecureAccessPublicKeyFingerprint(fingerprintStr)
+	return NewSecureAccessPublicKeyFingerprint(keyFingerprintStr)
 }
