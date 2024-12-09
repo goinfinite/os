@@ -105,7 +105,7 @@ templ PhpModulesCheckboxInputsSwitchToggles(phpConfigs *entity.PhpConfigs) {
 		for moduleIndex, moduleEntity := range phpConfigs.Modules {
 			@componentForm.CheckboxInputSwitchToggle(
 				"", moduleEntity.Name.String(),
-				"phpConfigs.modules["+strconv.FormatInt(int64(moduleIndex), 10)+"].status",
+				"phpConfigs.modules["+strconv.Itoa(moduleIndex)+"].status",
 				"",
 			)
 		}
@@ -134,12 +134,12 @@ templ PhpSettingsInputs(phpConfigs *entity.PhpConfigs) {
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               settingEntity.Value.GetType(),
 					Label:              settingEntity.Name.String(),
-					BindModelValuePath: "phpConfigs.settings[" + strconv.FormatInt(int64(settingIndex), 10) + "].value",
+					BindModelValuePath: "phpConfigs.settings[" + strconv.Itoa(settingIndex) + "].value",
 				})
 			} else {
 				@componentForm.SelectInput(
 					"", settingEntity.Name.String(),
-					"phpConfigs.settings["+strconv.FormatInt(int64(settingIndex), 10)+"].value",
+					"phpConfigs.settings["+strconv.Itoa(settingIndex)+"].value",
 					"", transformPhpSettingsOptionsIntoStringSlice(settingEntity.Options), false,
 				)
 			}
