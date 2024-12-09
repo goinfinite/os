@@ -235,7 +235,7 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 		return err
 	}
 
-	keysFileContent := ""
+	keysFileContent := "# Please, don't edit manually as this will be automatically recreated.\n\n"
 	for _, keyEntity := range readPublicKeysResponseDto.SecureAccessPublicKeys {
 		keysFileContent += keyEntity.Content.String() + " " +
 			keyEntity.Name.String() + "\n"
