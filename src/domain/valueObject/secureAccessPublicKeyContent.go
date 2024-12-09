@@ -8,10 +8,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type SecureAccessPublicKeyContent struct {
-	Content     string
-	Fingerprint string
-}
+type SecureAccessPublicKeyContent string
 
 func NewSecureAccessPublicKeyContent(
 	value interface{},
@@ -21,30 +18,27 @@ func NewSecureAccessPublicKeyContent(
 		return keyContent, errors.New("SecureAccessPublicKeyContentMustBeString")
 	}
 
-	publicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(stringValue))
+	_, _, _, _, err = ssh.ParseAuthorizedKey([]byte(stringValue))
 	if err != nil {
 		return keyContent, errors.New("InvalidSecureAccessPublicKeyContent")
 	}
 
-	return SecureAccessPublicKeyContent{
-		Content:     stringValue,
-		Fingerprint: ssh.FingerprintSHA256(publicKey),
-	}, nil
+	return SecureAccessPublicKeyContent(stringValue), nil
 }
 
 func (vo SecureAccessPublicKeyContent) String() string {
-	return string(vo.Content)
+	return string(vo)
 }
 
 func (vo SecureAccessPublicKeyContent) ReadWithoutKeyName() string {
-	keyContentParts := strings.Split(string(vo.Content), " ")
+	keyContentParts := strings.Split(string(vo), " ")
 	return keyContentParts[0] + " " + keyContentParts[1]
 }
 
 func (vo SecureAccessPublicKeyContent) ReadOnlyKeyName() (
 	keyName SecureAccessPublicKeyName, err error,
 ) {
-	keyContentParts := strings.Split(string(vo.Content), " ")
+	keyContentParts := strings.Split(string(vo), " ")
 	if len(keyContentParts) == 2 {
 		return keyName, errors.New("SecureAccessPublicKeyContentHasNoName")
 	}
@@ -55,5 +49,9 @@ func (vo SecureAccessPublicKeyContent) ReadOnlyKeyName() (
 func (vo SecureAccessPublicKeyContent) ReadFingerprint() (
 	SecureAccessPublicKeyFingerprint, error,
 ) {
-	return NewSecureAccessPublicKeyFingerprint(vo.Fingerprint)
+	keyContentBytes := []byte(string(vo))
+	publicKey, _, _, _, _ := ssh.ParseAuthorizedKey(keyContentBytes)
+	fingerprintStr := ssh.FingerprintSHA256(publicKey)
+
+	return NewSecureAccessPublicKeyFingerprint(fingerprintStr)
 }
