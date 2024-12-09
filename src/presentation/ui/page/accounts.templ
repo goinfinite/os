@@ -117,8 +117,9 @@ script AccountsIndexLocalState() {
 					'DELETE',
 					`/api/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
 					{swap: 'none'},
-				);
-				this.$dispatch('delete:secure-access-public-key');
+				).then(() => {
+				    this.$dispatch('delete:secure-access-public-key');
+				});
 				this.closeDeleteSecureAccessPublicKeyModal();
 			},
 			isDeleteAccountModalOpen: false,
@@ -135,8 +136,11 @@ script AccountsIndexLocalState() {
 				this.isDeleteAccountModalOpen = false;
 			},
 			deleteAccount() {
-				htmx.ajax('DELETE', `/api/v1/account/`, {swap: 'none'});
-				this.$dispatch('delete:account');
+				htmx.ajax(
+                    'DELETE', `/api/v1/account/`, {swap: 'none'},
+                ).then(() => {
+				    this.$dispatch('delete:account');
+				});
 				this.closeDeleteAccountModal();
 			},
 		}));
@@ -203,7 +207,7 @@ templ AccountsTable(accounts []entity.Account) {
 		</thead>
 		<tbody>
 			for _, account := range accounts {
-				<tr class="odd:bg-os-500 even:bg-os-300 border-b border-neutral-500 border-opacity-30 text-center">
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 					<th class="hidden">
 						@templ.JSONScript("secureAccessPublicKeys_"+account.Id.String(), account.SecureAccessPublicKeys)
 					</th>
@@ -323,7 +327,7 @@ templ UpdateApiKeyModal() {
 templ SecureAccessPublicKeysList() {
 	@componentStructural.Alert(
 		componentStructural.AlertTypeInfo,
-		"The management of these public keys will only be possible if the OpenSSH service is installed. Otherwise, you won't be able to add or remove public keys, as they are used for SSH access.",
+		"These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
 	)
 	<div class="mt-2">
 		<div id="account-secure-access-public-keys-list">
