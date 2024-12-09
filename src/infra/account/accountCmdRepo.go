@@ -218,9 +218,9 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 	return apiKey, nil
 }
 
-func (repo *AccountCmdRepo) autoUpdateAuthorizedKeysFile(
+func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 	accountId valueObject.AccountId,
-	accountUsername valueObject.Username,
+	accountHomeDirectory valueObject.UnixFilePath,
 ) error {
 	readPublicKeysRequestDto := dto.ReadSecureAccessPublicKeysRequest{
 		Pagination: dto.Pagination{
@@ -241,9 +241,11 @@ func (repo *AccountCmdRepo) autoUpdateAuthorizedKeysFile(
 			keyEntity.Name.String() + "\n"
 	}
 
-	authorizedKeysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
+	authorizedKeysFilePath := accountHomeDirectory.String() + "/.ssh/authorized_keys"
 	shouldOverwrite := true
-	err = infraHelper.UpdateFile(authorizedKeysFilePath, keysFileContent, shouldOverwrite)
+	err = infraHelper.UpdateFile(
+		authorizedKeysFilePath, keysFileContent, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("UpdateAuthorizedKeysFileContentError: " + err.Error())
 	}
@@ -262,24 +264,14 @@ func (repo *AccountCmdRepo) CreateSecureAccessPublicKey(
 		return keyId, errors.New("AccountNotFound")
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"echo \"" + createDto.Content.String() + "\" >> /home/" +
-			accountEntity.Username.String() + "/.ssh/authorized_keys",
-	)
-	if err != nil {
-		return keyId, errors.New(
-			"AddNewSecureAccessPublicKeyToFileError: " + err.Error(),
-		)
-	}
-
 	secureAccessPublicKeyModel := dbModel.NewSecureAccessPublicKey(
 		0, accountEntity.Id.Uint64(), createDto.Name.String(),
 		createDto.Content.ReadWithoutKeyName(),
 	)
 
-	createResult := repo.persistentDbSvc.Handler.Create(&secureAccessPublicKeyModel)
-	if createResult.Error != nil {
-		return keyId, createResult.Error
+	dbCreateResult := repo.persistentDbSvc.Handler.Create(&secureAccessPublicKeyModel)
+	if dbCreateResult.Error != nil {
+		return keyId, dbCreateResult.Error
 	}
 
 	keyId, err = valueObject.NewSecureAccessPublicKeyId(secureAccessPublicKeyModel.ID)
@@ -287,8 +279,8 @@ func (repo *AccountCmdRepo) CreateSecureAccessPublicKey(
 		return keyId, err
 	}
 
-	return keyId, repo.autoUpdateAuthorizedKeysFile(
-		accountEntity.Id, accountEntity.Username,
+	return keyId, repo.rebuildAuthorizedKeysFile(
+		accountEntity.Id, accountEntity.HomeDirectory,
 	)
 }
 
@@ -298,7 +290,7 @@ func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
 	readFirstPublicKeyRequestDto := dto.ReadSecureAccessPublicKeysRequest{
 		SecureAccessPublicKeyId: &secureAccessPublicKeyId,
 	}
-	keyToDelete, err := repo.accountQueryRepo.ReadFirstSecureAccessPublicKey(
+	keyEntity, err := repo.accountQueryRepo.ReadFirstSecureAccessPublicKey(
 		readFirstPublicKeyRequestDto,
 	)
 	if err != nil {
@@ -306,7 +298,7 @@ func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
 	}
 
 	readFirstAccountRequestDto := dto.ReadAccountsRequest{
-		AccountId: &keyToDelete.AccountId,
+		AccountId: &keyEntity.AccountId,
 	}
 	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
 	if err != nil {
@@ -320,7 +312,7 @@ func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
 		return err
 	}
 
-	return repo.autoUpdateAuthorizedKeysFile(
-		accountEntity.Id, accountEntity.Username,
+	return repo.rebuildAuthorizedKeysFile(
+		accountEntity.Id, accountEntity.HomeDirectory,
 	)
 }

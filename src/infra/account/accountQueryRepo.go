@@ -69,15 +69,15 @@ func (repo *AccountQueryRepo) Read(
 		dbQuery = dbQuery.Order(orderStatement)
 	}
 
-	models := []dbModel.Account{}
-	err = dbQuery.Find(&models).Error
+	accountModels := []dbModel.Account{}
+	err = dbQuery.Find(&accountModels).Error
 	if err != nil {
 		return responseDto, errors.New("ReadAccountsError: " + err.Error())
 	}
 
-	entities := []entity.Account{}
-	for _, model := range models {
-		entity, err := model.ToEntity()
+	accountEntities := []entity.Account{}
+	for _, model := range accountModels {
+		accountEntity, err := model.ToEntity()
 		if err != nil {
 			slog.Debug(
 				"AccountModelToEntityError", slog.Uint64("id", uint64(model.ID)),
@@ -86,7 +86,7 @@ func (repo *AccountQueryRepo) Read(
 			continue
 		}
 
-		entities = append(entities, entity)
+		accountEntities = append(accountEntities, accountEntity)
 	}
 
 	itemsTotalUint := uint64(itemsTotal)
@@ -104,7 +104,7 @@ func (repo *AccountQueryRepo) Read(
 
 	return dto.ReadAccountsResponse{
 		Pagination: responsePagination,
-		Accounts:   entities,
+		Accounts:   accountEntities,
 	}, nil
 }
 
@@ -173,15 +173,15 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 		dbQuery = dbQuery.Order(orderStatement)
 	}
 
-	models := []dbModel.SecureAccessPublicKey{}
-	err = dbQuery.Find(&models).Error
+	secureAccessKeysModels := []dbModel.SecureAccessPublicKey{}
+	err = dbQuery.Find(&secureAccessKeysModels).Error
 	if err != nil {
 		return responseDto, errors.New("ReadSecureAccessPublicKeysError: " + err.Error())
 	}
 
-	entities := []entity.SecureAccessPublicKey{}
-	for _, model := range models {
-		entity, err := model.ToEntity()
+	secureAccessKeysEntities := []entity.SecureAccessPublicKey{}
+	for _, model := range secureAccessKeysModels {
+		secureAccessKeysEntity, err := model.ToEntity()
 		if err != nil {
 			slog.Debug(
 				"SecureAccessPublicKeyModelToEntityError",
@@ -190,7 +190,9 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 			continue
 		}
 
-		entities = append(entities, entity)
+		secureAccessKeysEntities = append(
+			secureAccessKeysEntities, secureAccessKeysEntity,
+		)
 	}
 
 	itemsTotalUint := uint64(itemsTotal)
@@ -208,7 +210,7 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 
 	return dto.ReadSecureAccessPublicKeysResponse{
 		Pagination:             responsePagination,
-		SecureAccessPublicKeys: entities,
+		SecureAccessPublicKeys: secureAccessKeysEntities,
 	}, nil
 }
 
