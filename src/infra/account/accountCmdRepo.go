@@ -229,8 +229,9 @@ func (repo *AccountCmdRepo) autoUpdateAuthorizedKeysFile(
 	}
 
 	keysFileContent := ""
-	for _, key := range readPublicKeysResponseDto.SecureAccessPublicKeys {
-		keysFileContent += key.Content.String() + " " + key.Name.String() + "\n"
+	for _, keyEntity := range readPublicKeysResponseDto.SecureAccessPublicKeys {
+		keysFileContent += keyEntity.Content.String() + " " +
+			keyEntity.Name.String() + "\n"
 	}
 
 	authorizedKeysFilePath := "/home/" + accountUsername.String() + "/.ssh/authorized_keys"
