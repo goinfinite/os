@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -68,6 +69,12 @@ func (repo *AccountCmdRepo) Create(
 	}
 
 	usernameStr := createDto.Username.String()
+	homeDirectory, err := valueObject.NewUnixFilePath(
+		infraEnvs.UserDataBaseDirectory + "/" + usernameStr,
+	)
+	if err != nil {
+		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())
+	}
 
 	_, err = infraHelper.RunCmd(
 		"useradd", "-m",
@@ -101,8 +108,8 @@ func (repo *AccountCmdRepo) Create(
 
 	nowUnixTime := valueObject.NewUnixTimeNow()
 	accountEntity := entity.NewAccount(
-		accountId, groupId, createDto.Username, []entity.SecureAccessPublicKey{},
-		nowUnixTime, nowUnixTime,
+		accountId, groupId, createDto.Username, homeDirectory,
+		[]entity.SecureAccessPublicKey{}, nowUnixTime, nowUnixTime,
 	)
 
 	accountModel, err := dbModel.Account{}.ToModel(accountEntity)

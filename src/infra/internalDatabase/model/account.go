@@ -5,6 +5,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
 
 type Account struct {
@@ -12,6 +13,7 @@ type Account struct {
 	GroupId                uint64 `gorm:"not null"`
 	Username               string `gorm:"not null"`
 	KeyHash                *string
+	HomeDirectory          string `gorm:"not null"`
 	SecureAccessPublicKeys []SecureAccessPublicKey
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
@@ -23,10 +25,11 @@ func (Account) TableName() string {
 
 func (Account) ToModel(entity entity.Account) (model Account, err error) {
 	return Account{
-		ID:       entity.Id.Uint64(),
-		GroupId:  entity.GroupId.Uint64(),
-		Username: entity.Username.String(),
-		KeyHash:  nil,
+		ID:            entity.Id.Uint64(),
+		GroupId:       entity.GroupId.Uint64(),
+		Username:      entity.Username.String(),
+		KeyHash:       nil,
+		HomeDirectory: entity.HomeDirectory.String(),
 	}, nil
 }
 
@@ -46,6 +49,13 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
+	homeDirectory, err := valueObject.NewUnixFilePath(
+		infraEnvs.UserDataBaseDirectory + "/" + username.String(),
+	)
+	if err != nil {
+		return accountEntity, err
+	}
+
 	secureAccessPublicKeys := []entity.SecureAccessPublicKey{}
 	for _, secureAccessPublicKeyModel := range model.SecureAccessPublicKeys {
 		secureAccessPUblicKeyEntity, err := secureAccessPublicKeyModel.ToEntity()
@@ -58,7 +68,7 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 	}
 
 	return entity.NewAccount(
-		accountId, groupId, username, secureAccessPublicKeys,
+		accountId, groupId, username, homeDirectory, secureAccessPublicKeys,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
