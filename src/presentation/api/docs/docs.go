@@ -3571,6 +3571,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "specificType": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string"
                 }
