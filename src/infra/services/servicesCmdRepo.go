@@ -2,6 +2,7 @@ package servicesInfra
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -406,6 +407,13 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		"primaryHostname": primaryHostname.String(),
 	}
 
+	installedServiceNameStr := strings.ToLower(installedServiceName.String())
+	installablesAssetsDirPath := fmt.Sprintf(
+		"%s/%s/%s/assets", infraEnvs.InstallableServicesItemsDir,
+		installableService.Type.String(), installedServiceNameStr,
+	)
+	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
+
 	if createDto.StartupFile != nil {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
@@ -792,7 +800,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
-	_, err := os.Stat(infraEnvs.ServiceInstalledItemsDir)
+	_, err := os.Stat(infraEnvs.InstallableServicesItemsDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -808,7 +816,7 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.ServiceInstalledItemsDir + ";" +
+		"cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
 	)
 	return err

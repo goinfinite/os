@@ -8,7 +8,7 @@ const (
 	PersistentDatabaseFilePath   string = InfiniteOsMainDir + "/os.db"
 	TrailDatabaseFilePath        string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir   string = InfiniteOsMainDir + "/marketplace"
-	ServiceInstalledItemsDir     string = InfiniteOsMainDir + "/services"
+	InstallableServicesItemsDir  string = InfiniteOsMainDir + "/services"
 	PrimaryPublicDir             string = "/app/html"
 	VirtualHostsConfDir          string = "/app/conf/nginx"
 	PrimaryVhostFileName         string = "primary.conf"
