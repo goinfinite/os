@@ -1,23 +1,29 @@
 # Changelog
 
 ```log
+0.1.7 - 2024/X/X
+fix(front): install params section on marketplace deploy
+
+0.1.6 - -/-/-
+Nothing
+
 0.1.5 - 2024/X/X
 feat: add all missing security records to write ops
 fix: download files with more than 5MB in size
 fix: correctly mapping dataFieldName to ensure the marketplace item installation api route works as expected
 
-0.1.4 - 2024/X/X
+0.1.4 - 2024/12/09
 feat: move marketplace registry to its own git repository
 feat: move services registry to its own git repository
 
-0.1.3 - 2024/X/X
+0.1.3 - 2024/12/09
 feat: manage ssh keys for accounts
 feat: add all missing security records to write ops
 
-0.1.2 - 2024/X/X
+0.1.2 - 2024/10/26
 refactor(front): marketplace page with HTMX+Alpine.js
 
-0.1.1 - 2024/X/X
+0.1.1 - 2024/10/22
 refactor(front): accounts page with HTMX+Alpine.js
 
 0.1.0 - 2024/10/08
