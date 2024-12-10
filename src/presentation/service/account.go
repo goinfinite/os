@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -33,8 +35,91 @@ func NewAccountService(
 	}
 }
 
-func (service *AccountService) Read() ServiceOutput {
-	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo)
+func (service *AccountService) Read(input map[string]interface{}) ServiceOutput {
+	if input["id"] != nil {
+		input["accountId"] = input["id"]
+	}
+
+	var idPtr *valueObject.AccountId
+	if input["id"] != nil {
+		id, err := valueObject.NewAccountId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		idPtr = &id
+	}
+
+	var usernamePtr *valueObject.Username
+	if input["name"] != nil {
+		username, err := valueObject.NewUsername(input["username"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		usernamePtr = &username
+	}
+
+	shouldIncludeSecureAccessPublicKeys := false
+	if input["shouldIncludeSecureAccessPublicKeys"] != nil {
+		var err error
+		shouldIncludeSecureAccessPublicKeys, err = voHelper.InterfaceToBool(
+			input["shouldIncludeSecureAccessPublicKeys"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+	}
+
+	paginationDto := useCase.MarketplaceDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readRequestDto := dto.ReadAccountsRequest{
+		Pagination:                          paginationDto,
+		AccountId:                           idPtr,
+		AccountUsername:                     usernamePtr,
+		ShouldIncludeSecureAccessPublicKeys: &shouldIncludeSecureAccessPublicKeys,
+	}
+
+	accountsList, err := useCase.ReadAccounts(service.accountQueryRepo, readRequestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -206,4 +291,108 @@ func (service *AccountService) Delete(input map[string]interface{}) ServiceOutpu
 	}
 
 	return NewServiceOutput(Success, "AccountDeleted")
+}
+
+func (service *AccountService) CreateSecureAccessPublicKey(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"accountId", "content"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyContent, err := valueObject.NewSecureAccessPublicKeyContent(input["content"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyName, err := valueObject.NewSecureAccessPublicKeyName(input["name"])
+	if err != nil {
+		keyName, err = keyContent.ReadOnlyKeyName()
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	accountId, err := valueObject.NewAccountId(input["accountId"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateSecureAccessPublicKey(
+		accountId, keyContent, keyName, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.CreateSecureAccessPublicKey(
+		service.accountCmdRepo, service.activityRecordCmdRepo, createDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "SecureAccessPublicKeyCreated")
+}
+
+func (service *AccountService) DeleteSecureAccessPublicKey(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"secureAccessPublicKeyId"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	keyId, err := valueObject.NewSecureAccessPublicKeyId(
+		input["secureAccessPublicKeyId"],
+	)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteSecureAccessPublicKey(
+		keyId, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteSecureAccessPublicKey(
+		service.accountQueryRepo, service.accountCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, "SecureAccessPublicKeyDeleted")
 }

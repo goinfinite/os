@@ -12,7 +12,8 @@ feat: move marketplace registry to its own git repository
 feat: move services registry to its own git repository
 
 0.1.3 - 2024/X/X
-Nothing yet
+feat: manage ssh keys for accounts
+feat: add all missing security records to write ops
 
 0.1.2 - 2024/X/X
 refactor(front): marketplace page with HTMX+Alpine.js

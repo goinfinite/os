@@ -112,6 +112,42 @@ func (uc *CreateSecurityActivityRecord) DeleteAccount(deleteDto dto.DeleteAccoun
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) CreateSecureAccessPublicKey(
+	createDto dto.CreateSecureAccessPublicKey,
+	keyId valueObject.SecureAccessPublicKeyId,
+) {
+	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSecureAccessPublicKeySri(createDto.AccountId, keyId),
+		},
+		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteSecureAccessPublicKey(
+	deleteDto dto.DeleteSecureAccessPublicKey,
+	accountId valueObject.AccountId,
+) {
+	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyDeleted")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSecureAccessPublicKeySri(accountId, deleteDto.Id),
+		},
+		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) CreateCron(
 	createDto dto.CreateCron,
 	cronId valueObject.CronId,

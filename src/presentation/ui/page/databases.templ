@@ -225,7 +225,12 @@ templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 		hx-swap="none"
 	>
 		<div class="my-6">
-			@componentForm.InputField("text", "dbName", "Database Name", "database.name", false)
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "dbName",
+				Label:              "Database Name",
+				BindModelValuePath: "database.name",
+			})
 		</div>
 		@componentForm.DeactivatableSubmitButton(
 			"Create", "ph-check-fat", "closeCreateDatabaseModal()",
@@ -263,7 +268,12 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 				"dbName", "Database Name", "database.name", "",
 				getOnlyDatabasesNames(selectedDbOverview.Databases), true,
 			)
-			@componentForm.InputField("text", "username", "Username", "databaseUser.username", false)
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "username",
+				Label:              "Username",
+				BindModelValuePath: "databaseUser.username",
+			})
 			@componentForm.PasswordInput("password", "Password", "databaseUser.password")
 			if selectedDbOverview.Type.String() == "mariadb" {
 				<section class="mb-6 w-full rounded-md">
