@@ -38,7 +38,7 @@ podman exec os /bin/bash -c 'rm -f os && ln -s bin/os os && supervisorctl restar
 echo "=> Creating a development account..."
 podman exec os /bin/bash -c 'os account create -u dev -p 123456'
 
-if [ $1 == "ssh" ]; then
+if [[ ${1} == "ssh" ]]; then
   echo "=> Installing OpenSSH..."
   podman exec os /bin/bash -c 'os services create-installable -n openssh'
 fi
@@ -57,6 +57,8 @@ sleep 3
 stopDevBuild() {
   kill $airPid
   kill $podmanPid
+  podman stop os &>/dev/null
+  podman rm os &>/dev/null
   echo
   echo "=> Development build stopped."
   echo
