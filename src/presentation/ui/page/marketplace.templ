@@ -92,7 +92,12 @@ script MarketplaceIndexLocalState() {
 				);
 				this.marketplaceItem.id = catalogItemId;
 				this.marketplaceItem.name = catalogItemEntity.name;
-				this.marketplaceItem.dataFields = catalogItemEntity.dataFields;
+
+				for (const dataField of catalogItemEntity.dataFields) {
+					dataField.value = dataField.defaultValue;
+					this.marketplaceItem.dataFields.push(dataField);
+				}
+
 				this.isScheduleMarketplaceItemInstallationModalOpen = true;
 			},
 			closeScheduleMarketplaceItemInstallationModal() {
@@ -377,7 +382,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 								</template>
 								<template x-if="dataField.type === 'password'">
 									@componentForm.PasswordInputClientSide(
-										"dataField.label", "dataField.value",
+										"dataField.label", "dataField.value", true,
 									)
 								</template>
 								<template x-if="dataField.type === 'select'">
