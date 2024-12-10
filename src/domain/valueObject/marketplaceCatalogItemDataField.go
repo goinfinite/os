@@ -4,7 +4,7 @@ type MarketplaceCatalogItemDataField struct {
 	Name         DataFieldName          `json:"name"`
 	Label        DataFieldLabel         `json:"label"`
 	Type         DataFieldType          `json:"type"`
-	SpecificType *DataFieldSpecificType `json:"specificType"`
+	SpecificType *DataFieldSpecificType `json:"specificType,omitempty"`
 	DefaultValue *DataFieldValue        `json:"defaultValue,omitempty"`
 	Options      []DataFieldValue       `json:"options,omitempty"`
 	IsRequired   bool                   `json:"isRequired"`
