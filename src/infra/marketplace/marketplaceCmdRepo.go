@@ -93,6 +93,7 @@ func (repo *MarketplaceCmdRepo) installServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
+	itemName valueObject.MarketplaceItemName,
 	installDir valueObject.UnixFilePath,
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
@@ -107,6 +108,12 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 		"installTempDir":        installTempDirPath,
 		"installRandomPassword": dummyValueGenerator.GenPass(16),
 	}
+
+	itemNameStr := strings.ToLower(itemName.String())
+	catalogAssetsDirPath := fmt.Sprintf(
+		"%s/%s/assets", infraEnvs.MarketplaceCatalogItemsDir, itemNameStr,
+	)
+	dataMap["marketplaceCatalogItemAssetsDirPath"] = catalogAssetsDirPath
 
 	for key, value := range dataMap {
 		dataFieldKey, _ := valueObject.NewDataFieldName(key)
@@ -412,7 +419,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installDir, installUrlPath, installDto.Hostname, installUuid,
+		catalogItem.Name, installDir, installUrlPath, installDto.Hostname, installUuid,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -721,7 +728,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installedItem.InstallDirectory, installedItem.UrlPath,
+		installedItem.Name, installedItem.InstallDirectory, installedItem.UrlPath,
 		installedItem.Hostname, installedItem.InstallUuid,
 	)
 	err = repo.runCmdSteps("Uninstall", catalogItem.UninstallCmdSteps, systemDataFields)
