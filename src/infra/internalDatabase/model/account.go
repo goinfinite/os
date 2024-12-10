@@ -5,15 +5,18 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
 
 type Account struct {
-	ID        uint64 `gorm:"primarykey"`
-	GroupId   uint64 `gorm:"not null"`
-	Username  string `gorm:"not null"`
-	KeyHash   *string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID                     uint64 `gorm:"primarykey"`
+	GroupId                uint64 `gorm:"not null"`
+	Username               string `gorm:"not null"`
+	KeyHash                *string
+	HomeDirectory          string `gorm:"not null"`
+	SecureAccessPublicKeys []SecureAccessPublicKey
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
 }
 
 func (Account) TableName() string {
@@ -22,10 +25,11 @@ func (Account) TableName() string {
 
 func (Account) ToModel(entity entity.Account) (model Account, err error) {
 	return Account{
-		ID:       entity.Id.Uint64(),
-		GroupId:  entity.GroupId.Uint64(),
-		Username: entity.Username.String(),
-		KeyHash:  nil,
+		ID:            entity.Id.Uint64(),
+		GroupId:       entity.GroupId.Uint64(),
+		Username:      entity.Username.String(),
+		KeyHash:       nil,
+		HomeDirectory: entity.HomeDirectory.String(),
 	}, nil
 }
 
@@ -45,8 +49,26 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
+	homeDirectory, err := valueObject.NewUnixFilePath(
+		infraEnvs.UserDataBaseDirectory + "/" + username.String(),
+	)
+	if err != nil {
+		return accountEntity, err
+	}
+
+	secureAccessPublicKeys := []entity.SecureAccessPublicKey{}
+	for _, secureAccessPublicKeyModel := range model.SecureAccessPublicKeys {
+		secureAccessPUblicKeyEntity, err := secureAccessPublicKeyModel.ToEntity()
+		if err != nil {
+			return accountEntity, err
+		}
+		secureAccessPublicKeys = append(
+			secureAccessPublicKeys, secureAccessPUblicKeyEntity,
+		)
+	}
+
 	return entity.NewAccount(
-		accountId, groupId, username,
+		accountId, groupId, username, homeDirectory, secureAccessPublicKeys,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

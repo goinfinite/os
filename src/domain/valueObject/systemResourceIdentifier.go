@@ -48,6 +48,16 @@ func NewAccountSri(accountId AccountId) SystemResourceIdentifier {
 	)
 }
 
+func NewSecureAccessPublicKeySri(
+	accountId AccountId,
+	secureAccessPublicKeyId SecureAccessPublicKeyId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":secureAccessPublicKey/" +
+			secureAccessPublicKeyId.String(),
+	)
+}
+
 func NewCronSri(
 	accountId AccountId,
 	cronId CronId,

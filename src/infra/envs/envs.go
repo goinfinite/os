@@ -16,4 +16,5 @@ const (
 	PkiConfDir                   string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath string = "/usr/local/lsws/conf/httpd_config.conf"
 	AccessTokenCookieKey         string = "os-access-token"
+	UserDataBaseDirectory        string = "/home/"
 )

@@ -1,12 +1,17 @@
 package repository
 
 import (
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type AccountQueryRepo interface {
-	Read() ([]entity.Account, error)
-	ReadByUsername(username valueObject.Username) (entity.Account, error)
-	ReadById(accountId valueObject.AccountId) (entity.Account, error)
+	Read(dto.ReadAccountsRequest) (dto.ReadAccountsResponse, error)
+	ReadFirst(dto.ReadAccountsRequest) (entity.Account, error)
+	ReadSecureAccessPublicKeys(
+		dto.ReadSecureAccessPublicKeysRequest,
+	) (dto.ReadSecureAccessPublicKeysResponse, error)
+	ReadFirstSecureAccessPublicKey(
+		dto.ReadSecureAccessPublicKeysRequest,
+	) (entity.SecureAccessPublicKey, error)
 }

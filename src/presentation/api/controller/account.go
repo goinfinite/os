@@ -28,14 +28,29 @@ func NewAccountController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.Account
+// @Param        id query  string  false  "Id"
+// @Param        username query  string  false  "Username"
+// @Param        shouldIncludeSecureAccessPublicKeys query  bool  false  "ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service is installed)"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadAccountsResponse
 // @Router       /v1/account/ [get]
 func (controller *AccountController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.accountService.Read())
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.Read(requestBody),
+	)
 }
 
 // CreateAccount    godoc
-// @Summary      CreateNewAccount
+// @Summary      CreateAccount
 // @Description  Create a new account.
 // @Tags         account
 // @Accept       json
@@ -96,11 +111,54 @@ func (controller *AccountController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller *AccountController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"accountId": c.Param("accountId"),
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.accountService.Delete(requestBody),
+	)
+}
+
+// CreateSecureAccessPublicKey    godoc
+// @Summary      CreateSecureAccessPublicKey
+// @Description  Create a new secure access public key.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        createSecureAccessPublicKey 	  body    dto.CreateSecureAccessPublicKey  true  "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
+// @Success      201 {object} object{} "SecureAccessPublicKeyCreated"
+// @Router       /v1/account/secure-access-public-key/ [post]
+func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.CreateSecureAccessPublicKey(requestBody),
+	)
+}
+
+// DeleteSecureAccessPublicKey godoc
+// @Summary      DeleteSecureAccessPublicKey
+// @Description  Delete a secure access public key.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        secureAccessPublicKeyId 	  path   string  true  "SecureAccessPublicKeyId to delete."
+// @Success      200 {object} object{} "SecureAccessPublicKeyDeleted"
+// @Router       /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/ [delete]
+func (controller *AccountController) DeleteSecureAccessPublicKey(c echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestBody(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.accountService.DeleteSecureAccessPublicKey(requestBody),
 	)
 }

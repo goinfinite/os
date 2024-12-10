@@ -53,7 +53,9 @@ func TestAccountCmdRepo(t *testing.T) {
 	t.Run("AddValidAccount", func(t *testing.T) {
 		err := addDummyUser()
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for %d, but got %s", accountId.Uint64(), err.Error(),
+			)
 		}
 	})
 
@@ -75,7 +77,9 @@ func TestAccountCmdRepo(t *testing.T) {
 	t.Run("DeleteValidAccount", func(t *testing.T) {
 		err := deleteDummyUser()
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for %d, but got %s", accountId.Uint64(), err.Error(),
+			)
 		}
 	})
 
@@ -86,7 +90,10 @@ func TestAccountCmdRepo(t *testing.T) {
 
 		err := accountCmdRepo.UpdatePassword(accountId, newPassword)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for %s, but got %s", newPassword.String(),
+				err.Error(),
+			)
 		}
 	})
 
@@ -95,7 +102,9 @@ func TestAccountCmdRepo(t *testing.T) {
 
 		_, err := accountCmdRepo.UpdateApiKey(accountId)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Errorf(
+				"Expected no error for %d, but got %s", accountId.Uint64(), err.Error(),
+			)
 		}
 	})
 }
