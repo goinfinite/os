@@ -98,13 +98,14 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installHostname valueObject.Fqdn,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	dataMap := map[string]string{
 		"installDirectory":      installDir.String(),
 		"installUrlPath":        installUrlPath.String(),
 		"installHostname":       installHostname.String(),
 		"installUuid":           installUuid.String(),
 		"installTempDir":        installTempDirPath,
-		"installRandomPassword": infraHelper.GenPass(16),
+		"installRandomPassword": dummyValueGenerator.GenPass(16),
 	}
 
 	for key, value := range dataMap {

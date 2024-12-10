@@ -399,8 +399,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	stepsPlaceholders := map[string]string{
-		"randomPassword":  infraHelper.GenPass(16),
+		"randomPassword":  dummyValueGenerator.GenPass(16),
 		"version":         serviceVersion.String(),
 		"primaryHostname": primaryHostname.String(),
 	}
