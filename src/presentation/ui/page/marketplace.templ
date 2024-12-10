@@ -372,7 +372,11 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 			</div>
 			<template x-if="marketplaceItem.dataFields.length > 0">
 				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
-					<div class="grid grid-cols-2 gap-4">
+					@componentStructural.Alert(
+						componentStructural.AlertTypeWarning,
+						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+					)
+					<div class="grid grid-cols-2 gap-4 mt-2">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
 								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
