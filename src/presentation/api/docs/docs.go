@@ -3856,6 +3856,17 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.SecureAccessPublicKeyContent": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "fingerprint": {
+                    "type": "string"
+                }
+            }
+        },
         "valueObject.ServiceMetrics": {
             "type": "object",
             "properties": {

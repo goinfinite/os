@@ -1018,6 +1018,13 @@ definitions:
       protocol:
         type: string
     type: object
+  valueObject.SecureAccessPublicKeyContent:
+    properties:
+      content:
+        type: string
+      fingerprint:
+        type: string
+    type: object
   valueObject.ServiceMetrics:
     properties:
       cpuUsagePercent:
