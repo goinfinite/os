@@ -20,7 +20,7 @@ func NewCronCmdRepo() *CronCmdRepo {
 	}
 }
 
-func (repo *CronCmdRepo) updateCrontabFile(cronsList []entity.Cron) error {
+func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 	tmpCrontabFilePath := "/tmp/crontab"
 
 	if !infraHelper.FileExists(tmpCrontabFilePath) {
@@ -30,12 +30,13 @@ func (repo *CronCmdRepo) updateCrontabFile(cronsList []entity.Cron) error {
 		}
 	}
 
-	crontabContent := ""
-	for _, cron := range cronsList {
-		crontabContent += cron.String() + "\n"
+	crontabContent := "# Please, don't edit manually as this will be automatically recreated.\n\n"
+	for _, cronEntity := range cronsEntities {
+		crontabContent += cronEntity.String() + "\n"
 	}
 
-	err := infraHelper.UpdateFile(tmpCrontabFilePath, crontabContent, true)
+	shouldOverwrite := true
+	err := infraHelper.UpdateFile(tmpCrontabFilePath, crontabContent, shouldOverwrite)
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
@@ -65,8 +66,7 @@ func (repo *CronCmdRepo) Create(
 	if err != nil {
 		return cronId, errors.New("ReadCronsError: " + err.Error())
 	}
-
-	cronsList := readResponseDto.Crons
+	cronsEntities := readResponseDto.Crons
 
 	rawCronId := len(readResponseDto.Crons) + 1
 	cronId, err = valueObject.NewCronId(rawCronId)
@@ -77,9 +77,9 @@ func (repo *CronCmdRepo) Create(
 	newCron := entity.NewCron(
 		cronId, createDto.Schedule, createDto.Command, createDto.Comment,
 	)
-	cronsList = append(cronsList, newCron)
+	cronsEntities = append(cronsEntities, newCron)
 
-	return cronId, repo.updateCrontabFile(cronsList)
+	return cronId, repo.rebuildCrontab(cronsEntities)
 }
 
 func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
@@ -92,10 +92,10 @@ func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 	if err != nil {
 		return errors.New("ReadCronsError: " + err.Error())
 	}
-	crons := readResponseDto.Crons
+	cronsEntities := readResponseDto.Crons
 
 	desiredCronIndex := updateDto.Id.Uint64() - 1
-	desiredCron := crons[desiredCronIndex]
+	desiredCron := cronsEntities[desiredCronIndex]
 
 	schedule := desiredCron.Schedule
 	if updateDto.Schedule != nil {
@@ -112,16 +112,12 @@ func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 		comment = updateDto.Comment
 	}
 
-	id, err := valueObject.NewCronId(desiredCronIndex)
-	if err != nil {
-		return err
-	}
+	desiredCronWithUpdatedValues := entity.NewCron(
+		desiredCron.Id, schedule, command, comment,
+	)
+	cronsEntities[desiredCronIndex] = desiredCronWithUpdatedValues
 
-	desiredCronWithUpdatedValues := entity.NewCron(id, schedule, command, comment)
-
-	crons[desiredCronIndex] = desiredCronWithUpdatedValues
-
-	return repo.updateCrontabFile(crons)
+	return repo.rebuildCrontab(cronsEntities)
 }
 
 func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
@@ -134,13 +130,13 @@ func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	if err != nil {
 		return errors.New("ReadCronsError: " + err.Error())
 	}
+	cronsEntities := readResponseDto.Crons
+	cronEntityIndex := cronId.Uint64() - 1
 
-	desiredCronIndex := cronId.Uint64() - 1
-
-	cronsToKeep := append(
-		readResponseDto.Crons[:desiredCronIndex],
-		readResponseDto.Crons[desiredCronIndex+1:]...,
+	cronsEntitiesToKeep := append(
+		cronsEntities[:cronEntityIndex],
+		cronsEntities[cronEntityIndex+1:]...,
 	)
 
-	return repo.updateCrontabFile(cronsToKeep)
+	return repo.rebuildCrontab(cronsEntitiesToKeep)
 }
