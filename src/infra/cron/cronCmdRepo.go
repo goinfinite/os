@@ -30,7 +30,7 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 		}
 	}
 
-	crontabContent := "# Please, don't edit manually as this will be automatically recreated.\n\n"
+	crontabContent := ""
 	for _, cronEntity := range cronsEntities {
 		crontabContent += cronEntity.String() + "\n"
 	}

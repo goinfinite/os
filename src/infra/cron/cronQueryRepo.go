@@ -46,11 +46,11 @@ func (repo *CronQueryRepo) cronFactory(
 	var commentPtr *valueObject.CronComment
 	if cronNamedGroupMap["comment"] != "" {
 		commentWithoutLeadingHash := strings.Trim(cronNamedGroupMap["comment"], "#")
-		cronComment, err := valueObject.NewCronComment(commentWithoutLeadingHash)
+		comment, err := valueObject.NewCronComment(commentWithoutLeadingHash)
 		if err != nil {
 			return cron, err
 		}
-		commentPtr = &cronComment
+		commentPtr = &comment
 	}
 
 	return entity.NewCron(id, schedule, command, commentPtr), nil
