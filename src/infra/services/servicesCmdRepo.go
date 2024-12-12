@@ -331,12 +331,17 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(cmdStepStr, `%(.*?)%`)
+		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(
+			cmdStepStr, `%(\w{1,256})%`,
+		)
 
 		for _, stepPlaceholder := range stepPlaceholders {
 			placeholderValue, exists := placeholders[stepPlaceholder]
 			if !exists {
-				return nil, errors.New("MissingPlaceholder: " + stepPlaceholder)
+				slog.Debug(
+					"MissingPlaceholder", slog.String("placeholder", stepPlaceholder),
+				)
+				placeholderValue = ""
 			}
 
 			escapedPlaceholderValue := shellescape.Quote(placeholderValue)
@@ -806,10 +811,11 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 			return err
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(
-			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
-				"git clone https://github.com/goinfinite/os-services.git services",
+		repoCloneCmd := fmt.Sprintf(
+			"cd %s; git clone --single-branch --branch %s https://github.com/polillomm/os-services services",
+			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsVersion,
 		)
+		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
 		if err != nil {
 			return errors.New("CloneServicesItemsRepoError: " + err.Error())
 		}

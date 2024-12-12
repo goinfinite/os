@@ -169,11 +169,19 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
 		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
-			cmdStepStr, `%(.*?)%`,
+			cmdStepStr, `%(\w{1,256})%`,
 		)
 
 		for _, cmdStepDataPlaceholder := range cmdStepDataFieldPlaceholders {
-			dataFieldValue := dataFieldsMap[cmdStepDataPlaceholder]
+			dataFieldValue, exists := dataFieldsMap[cmdStepDataPlaceholder]
+			if !exists {
+				slog.Debug(
+					"MissingDataField",
+					slog.String("dataField", cmdStepDataPlaceholder),
+				)
+				dataFieldValue = ""
+			}
+
 			escapedDataFieldValue := shellescape.Quote(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
@@ -761,10 +769,11 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 			return err
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(
-			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
-				"git clone https://github.com/goinfinite/os-marketplace.git marketplace",
+		repoCloneCmd := fmt.Sprintf(
+			"cd %s; git clone --single-branch --branch %s https://github.com/polillomm/os-marketplace marketplace",
+			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsVersion,
 		)
+		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
 		if err != nil {
 			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
 		}
