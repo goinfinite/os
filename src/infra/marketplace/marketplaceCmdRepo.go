@@ -770,7 +770,7 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 		}
 
 		repoCloneCmd := fmt.Sprintf(
-			"cd %s; git clone --single-branch --branch %s https://github.com/polillomm/os-marketplace marketplace",
+			"cd %s; git clone --single-branch --branch %s https://github.com/goinfinite/os-marketplace marketplace",
 			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsVersion,
 		)
 		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
