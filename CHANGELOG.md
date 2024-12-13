@@ -12,11 +12,11 @@ feat: add all missing security records to write ops
 fix: download files with more than 5MB in size
 fix: correctly mapping dataFieldName to ensure the marketplace item installation api route works as expected
 
-0.1.4 - 2024/12/09
+0.1.4 - 2024/12/06
 feat: move marketplace registry to its own git repository
 feat: move services registry to its own git repository
 
-0.1.3 - 2024/12/09
+0.1.3 - 2024/12/06
 feat: manage ssh keys for accounts
 feat: add all missing security records to write ops
 
