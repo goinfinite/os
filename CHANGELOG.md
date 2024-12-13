@@ -4,8 +4,8 @@
 0.1.7 - 2024/X/X
 fix(front): install params section on marketplace deploy
 
-0.1.6 - -/-/-
-Nothing
+0.1.6 - 2024/X/X
+Nothing yet
 
 0.1.5 - 2024/X/X
 feat: add all missing security records to write ops
