@@ -33,14 +33,20 @@ func (repo *CronQueryRepo) cronFactory(
 		return cron, err
 	}
 
-	schedule, err := valueObject.NewCronSchedule(cronNamedGroupMap["frequency"])
-	if err != nil {
-		return cron, err
+	var schedule valueObject.CronSchedule
+	if _, exists := cronNamedGroupMap["frequency"]; exists {
+		schedule, err = valueObject.NewCronSchedule(cronNamedGroupMap["frequency"])
+		if err != nil {
+			return cron, err
+		}
 	}
 
-	command, err := valueObject.NewUnixCommand(cronNamedGroupMap["command"])
-	if err != nil {
-		return cron, err
+	var command valueObject.UnixCommand
+	if _, exists := cronNamedGroupMap["command"]; exists {
+		command, err = valueObject.NewUnixCommand(cronNamedGroupMap["command"])
+		if err != nil {
+			return cron, err
+		}
 	}
 
 	var commentPtr *valueObject.CronComment
@@ -59,7 +65,7 @@ func (repo *CronQueryRepo) cronFactory(
 func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
-	cronOut, err := infraHelper.RunCmd("crontab", "-l")
+	rawCronOutput, err := infraHelper.RunCmd("crontab", "-l")
 	if err != nil {
 		if strings.Contains(err.Error(), "no crontab") {
 			return crons, nil
@@ -67,7 +73,7 @@ func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 		return crons, errors.New("CrontabReadError: " + err.Error())
 	}
 
-	cronLines := strings.Split(cronOut, "\n")
+	cronLines := strings.Split(rawCronOutput, "\n")
 	if len(cronLines) == 0 {
 		return crons, nil
 	}
@@ -81,12 +87,12 @@ func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 			continue
 		}
 
-		cron, err := repo.cronFactory(cronIndex, cronLine)
+		cronEntity, err := repo.cronFactory(cronIndex, cronLine)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Int("index", cronIndex))
 			continue
 		}
-		crons = append(crons, cron)
+		crons = append(crons, cronEntity)
 	}
 
 	return crons, nil
@@ -95,13 +101,13 @@ func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 func (repo *CronQueryRepo) Read(
 	requestDto dto.ReadCronsRequest,
 ) (responseDto dto.ReadCronsResponse, err error) {
-	crons, err := repo.readCronsFromCrontab()
+	originalCronEntities, err := repo.readCronsFromCrontab()
 	if err != nil {
 		return responseDto, err
 	}
 
 	filteredCrons := []entity.Cron{}
-	for _, cron := range crons {
+	for _, cron := range originalCronEntities {
 		if requestDto.CronId != nil && *requestDto.CronId != cron.Id {
 			continue
 		}
