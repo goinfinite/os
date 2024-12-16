@@ -50,7 +50,7 @@ func (repo *CronQueryRepo) cronFactory(
 	}
 
 	var commentPtr *valueObject.CronComment
-	if cronNamedGroupMap["comment"] != "" {
+	if _, exists := cronNamedGroupMap["comment"]; exists {
 		commentWithoutLeadingHash := strings.Trim(cronNamedGroupMap["comment"], "#")
 		comment, err := valueObject.NewCronComment(commentWithoutLeadingHash)
 		if err != nil {
