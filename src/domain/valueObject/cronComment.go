@@ -14,10 +14,6 @@ func NewCronComment(value interface{}) (cronComment CronComment, err error) {
 		return cronComment, errors.New("CronCommentMustBeString")
 	}
 
-	if len(stringValue) < 2 {
-		return cronComment, errors.New("CronCommentIsTooShort")
-	}
-
 	if len(stringValue) > 512 {
 		return cronComment, errors.New("CronCommentIsTooLong")
 	}
