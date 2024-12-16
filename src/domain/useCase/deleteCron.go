@@ -22,12 +22,12 @@ func DeleteCron(
 		readFirstRequestDto := dto.ReadCronsRequest{
 			CronComment: deleteDto.Comment,
 		}
-		cron, err := cronQueryRepo.ReadFirst(readFirstRequestDto)
+		cronEntity, err := cronQueryRepo.ReadFirst(readFirstRequestDto)
 		if err != nil {
 			slog.Error("ReadCronToDeleteError", slog.Any("err", err))
 			return errors.New("ReadCronToDeleteInfraError")
 		}
-		deleteDto.Id = &cron.Id
+		deleteDto.Id = &cronEntity.Id
 	}
 
 	err := cronCmdRepo.Delete(*deleteDto.Id)
