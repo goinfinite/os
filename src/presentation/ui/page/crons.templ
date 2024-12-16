@@ -56,28 +56,39 @@ script CronsIndexLocalState() {
 				this.isCreateCronJobModalOpen = false;
 			},
 			isUpdateCronJobModalOpen: false,
-			openUpdateCronJobModal(id, schedule, command, comment) {
+			openUpdateCronJobModal(id) {
 				this.resetPrimaryStates();
 				this.resetAuxiliaryStates();
 
-				this.cron.id = id;
-				this.cron.schedule = schedule;
-				this.cron.command = command;
-				this.cron.comment = comment;
+				const cronEntity = JSON.parse(
+					document.getElementById('cronEntity_' + id).textContent
+				);
+				this.cron.id = cronEntity.id;
+				this.cron.schedule = cronEntity.schedule;
+				this.cron.command = cronEntity.command;
+				this.cron.comment = cronEntity.comment;
 
-				if (!schedule.includes('@')) {
-					this.cron.schedule = '@daily';
-					this.selectedScheduleType = 'custom';
-
-					const scheduleParts = schedule.split(' ');
-					this.customScheduleParts = {
-						minute: scheduleParts[0],
-						hour: scheduleParts[1],
-						day: scheduleParts[2],
-						month: scheduleParts[3],
-						weekday: scheduleParts[4],
-					};
+				if (cronEntity.schedule.includes('@')) {
+					this.isUpdateCronJobModalOpen = true;
+					return;
 				}
+
+				this.cron.schedule = '@daily';
+				this.selectedScheduleType = 'custom';
+
+				const scheduleParts = cronEntity.schedule.split(' ');
+				if (scheduleParts.length !== 5) {
+					this.isUpdateCronJobModalOpen = true;
+					return;
+				}
+
+				this.customScheduleParts = {
+					minute: scheduleParts[0],
+					hour: scheduleParts[1],
+					day: scheduleParts[2],
+					month: scheduleParts[3],
+					weekday: scheduleParts[4],
+				};
 
 				this.isUpdateCronJobModalOpen = true;
 			},
@@ -88,7 +99,12 @@ script CronsIndexLocalState() {
 			openDeleteCronJobModal(id) {
 				this.resetPrimaryStates();
 
-				this.cron.id = id;
+				const cronEntity = JSON.parse(
+					document.getElementById('cronEntity_' + id).textContent
+				);
+				this.cron.id = cronEntity.id;
+				this.cron.comment = cronEntity.comment;
+
 				this.isDeleteCronJobModalOpen = true;
 			},
 			closeDeleteCronJobModal() {
@@ -99,8 +115,9 @@ script CronsIndexLocalState() {
 					'DELETE',
 					'/api/v1/cron/' + this.cron.id + '/',
 					{swap: 'none'},
-				);
-				this.$dispatch('delete:cron');
+				).then(() => {
+					this.$dispatch('delete:cron');
+				});
 				this.closeDeleteCronJobModal();
 			},
 		}));
@@ -135,7 +152,7 @@ templ CronsIndex(crons []entity.Cron) {
 		@UpdateCronJobModal()
 		@componentStructural.DeleteModal(
 			"isDeleteCronJobModalOpen", "closeDeleteCronJobModal()", "deleteCronJob()",
-			"", "cron.id",
+			"cron.comment", "cron.id",
 		)
 	</div>
 }
@@ -158,25 +175,28 @@ templ CronsTable(crons []entity.Cron) {
 			</tr>
 		</thead>
 		<tbody>
-			for _, cron := range crons {
+			for _, cronEntity := range crons {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th scope="row" class="px-5 py-3 text-left font-normal">{ cron.Schedule.String() }</th>
-					<th scope="row" class="px-5 py-3 text-center font-normal">{ cron.Command.String() }</th>
+					<th class="hidden">
+						@templ.JSONScript("cronEntity_"+cronEntity.Id.String(), cronEntity)
+					</th>
+					<th scope="row" class="px-5 py-3 text-left font-normal">{ cronEntity.Schedule.String() }</th>
+					<th scope="row" class="px-5 py-3 text-center font-normal">{ cronEntity.Command.String() }</th>
 					<th scope="row" class="px-5 py-3 text-center font-normal">
-						if cron.Comment != nil {
-							{ cron.Comment.String() }
+						if cronEntity.Comment != nil {
+							{ cronEntity.Comment.String() }
 						}
 					</th>
 					<th scope="row" class="w-2/4 px-5 py-3 text-right">
 						<div class="inline-flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-pencil", "blue-900", "blue-700",
-								"openUpdateCronJobModal("+cron.Id.String()+", '"+cron.Schedule.String()+"', '"+cron.Command.String()+"', '"+cron.Comment.String()+"')",
+								"openUpdateCronJobModal("+cronEntity.Id.String()+")",
 								"update job", "blue-500",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
-								"openDeleteCronJobModal("+cron.Id.String()+")",
+								"openDeleteCronJobModal("+cronEntity.Id.String()+")",
 								"delete job", "red-500",
 							)
 						</div>
@@ -199,111 +219,96 @@ templ customScheduleInput() {
 			}
 		</div>
 	</div>
-	<div class="flex flex-row space-x-6 mt-8">
-		<div class="basis-1/2">
-			@componentForm.SelectInputWithLabelValuePairAndInputField(
-				"text", "", "Minute", "customScheduleParts.minute",
-				[]componentForm.SelectLabelValuePair{
-					{Label: "Custom", Value: ""},
-					{Label: "Every minute", Value: "*"},
-					{Label: "Every 5 minutes", Value: "*/5"},
-					{Label: "Every 10 minutes", Value: "*/10"},
-					{Label: "Every 15 minutes", Value: "*/15"},
-					{Label: "Every 30 minutes", Value: "*/30"},
-					{Label: "Every 45 minutes", Value: "*/45"},
-					{Label: "At minute 0", Value: "0"},
-					{Label: "At minute 5", Value: "5"},
-					{Label: "At minute 10", Value: "10"},
-					{Label: "At minute 15", Value: "15"},
-					{Label: "At minute 30", Value: "30"},
-					{Label: "At minute 45", Value: "45"},
-				},
-			)
-		</div>
-		<div class="basis-1/2">
-			@componentForm.SelectInputWithLabelValuePairAndInputField(
-				"text", "", "Hour", "customScheduleParts.hour",
-				[]componentForm.SelectLabelValuePair{
-					{Label: "Custom", Value: ""},
-					{Label: "Every hour", Value: "*"},
-					{Label: "Every 2 hour", Value: "*/2"},
-					{Label: "Every 6 hour", Value: "*/6"},
-					{Label: "Every 12 hour", Value: "*/12"},
-					{Label: "At midnight", Value: "0"},
-					{Label: "At 02h00 (2h00 AM)", Value: "2"},
-					{Label: "At 06h00 (6h00 AM)", Value: "6"},
-					{Label: "At midday", Value: "12"},
-					{Label: "At 14h00 (2h00 PM)", Value: "14"},
-					{Label: "At 18h00 (6h00 PM)", Value: "18"},
-				},
-			)
-		</div>
-	</div>
-	<div class="flex flex-row space-x-6 mt-4">
-		<div class="basis-1/2">
-			@componentForm.SelectInputWithLabelValuePairAndInputField(
-				"text", "", "Day", "customScheduleParts.day",
-				[]componentForm.SelectLabelValuePair{
-					{Label: "Custom", Value: ""},
-					{Label: "Every day", Value: "*"},
-					{Label: "Weekly", Value: "*/7"},
-					{Label: "Every 15 days", Value: "*/15"},
-					{Label: "Every 30 days", Value: "*/30"},
-					{Label: "At day 1", Value: "1"},
-					{Label: "At day 5", Value: "5"},
-					{Label: "At day 10", Value: "10"},
-					{Label: "At day 15", Value: "15"},
-					{Label: "At day 20", Value: "20"},
-					{Label: "At day 25", Value: "25"},
-					{Label: "At day 30", Value: "30"},
-				},
-			)
-		</div>
-		<div class="basis-1/2">
-			@componentForm.SelectInputWithLabelValuePairAndInputField(
-				"text", "", "Month", "customScheduleParts.month",
-				[]componentForm.SelectLabelValuePair{
-					{Label: "Custom", Value: ""},
-					{Label: "Every month", Value: "*"},
-					{Label: "Every 2 months", Value: "*/2"},
-					{Label: "Every 6 months", Value: "*/6"},
-					{Label: "Every year", Value: "*/12"},
-					{Label: "January", Value: "1"},
-					{Label: "February", Value: "2"},
-					{Label: "March", Value: "3"},
-					{Label: "April", Value: "4"},
-					{Label: "May", Value: "5"},
-					{Label: "June", Value: "6"},
-					{Label: "July", Value: "7"},
-					{Label: "August", Value: "8"},
-					{Label: "September", Value: "9"},
-					{Label: "October", Value: "10"},
-					{Label: "November", Value: "11"},
-					{Label: "December", Value: "12"},
-				},
-			)
-		</div>
-	</div>
-	<div class="flex flex-row space-x-6 mt-4">
-		<div class="basis-1/2">
-			@componentForm.SelectInputWithLabelValuePairAndInputField(
-				"text", "", "Week Day", "customScheduleParts.weekday",
-				[]componentForm.SelectLabelValuePair{
-					{Label: "Custom", Value: ""},
-					{Label: "Every day", Value: "*"},
-					{Label: "Monday to Friday", Value: "1-5"},
-					{Label: "Only weekends", Value: "6-0"},
-					{Label: "Every Monday", Value: "1"},
-					{Label: "Every Tuesday", Value: "2"},
-					{Label: "Every Wednesday", Value: "3"},
-					{Label: "Every Thursday", Value: "4"},
-					{Label: "Every Friday", Value: "5"},
-					{Label: "Every Saturday", Value: "6"},
-					{Label: "Every Sunday", Value: "7"},
-				},
-			)
-		</div>
-		<div class="basis-1/2"></div>
+	<div class="mt-6 grid grid-cols-2 gap-4">
+		@componentForm.SelectInputWithLabelValuePairAndInputField(
+			"text", "", "Minute", "customScheduleParts.minute",
+			[]componentForm.SelectLabelValuePair{
+				{Label: "Custom", Value: ""},
+				{Label: "Every minute", Value: "*"},
+				{Label: "Every 5 minutes", Value: "*/5"},
+				{Label: "Every 10 minutes", Value: "*/10"},
+				{Label: "Every 15 minutes", Value: "*/15"},
+				{Label: "Every 30 minutes", Value: "*/30"},
+				{Label: "Every 45 minutes", Value: "*/45"},
+				{Label: "At minute 0", Value: "0"},
+				{Label: "At minute 5", Value: "5"},
+				{Label: "At minute 10", Value: "10"},
+				{Label: "At minute 15", Value: "15"},
+				{Label: "At minute 30", Value: "30"},
+				{Label: "At minute 45", Value: "45"},
+			},
+		)
+		@componentForm.SelectInputWithLabelValuePairAndInputField(
+			"text", "", "Hour", "customScheduleParts.hour",
+			[]componentForm.SelectLabelValuePair{
+				{Label: "Custom", Value: ""},
+				{Label: "Every hour", Value: "*"},
+				{Label: "Every 2 hour", Value: "*/2"},
+				{Label: "Every 6 hour", Value: "*/6"},
+				{Label: "Every 12 hour", Value: "*/12"},
+				{Label: "At midnight", Value: "0"},
+				{Label: "At 02h00 (2h00 AM)", Value: "2"},
+				{Label: "At 06h00 (6h00 AM)", Value: "6"},
+				{Label: "At midday", Value: "12"},
+				{Label: "At 14h00 (2h00 PM)", Value: "14"},
+				{Label: "At 18h00 (6h00 PM)", Value: "18"},
+			},
+		)
+		@componentForm.SelectInputWithLabelValuePairAndInputField(
+			"text", "", "Day", "customScheduleParts.day",
+			[]componentForm.SelectLabelValuePair{
+				{Label: "Custom", Value: ""},
+				{Label: "Every day", Value: "*"},
+				{Label: "Weekly", Value: "*/7"},
+				{Label: "Every 15 days", Value: "*/15"},
+				{Label: "Every 30 days", Value: "*/30"},
+				{Label: "At day 1", Value: "1"},
+				{Label: "At day 5", Value: "5"},
+				{Label: "At day 10", Value: "10"},
+				{Label: "At day 15", Value: "15"},
+				{Label: "At day 20", Value: "20"},
+				{Label: "At day 25", Value: "25"},
+				{Label: "At day 30", Value: "30"},
+			},
+		)
+		@componentForm.SelectInputWithLabelValuePairAndInputField(
+			"text", "", "Month", "customScheduleParts.month",
+			[]componentForm.SelectLabelValuePair{
+				{Label: "Custom", Value: ""},
+				{Label: "Every month", Value: "*"},
+				{Label: "Every 2 months", Value: "*/2"},
+				{Label: "Every 6 months", Value: "*/6"},
+				{Label: "Every year", Value: "*/12"},
+				{Label: "January", Value: "1"},
+				{Label: "February", Value: "2"},
+				{Label: "March", Value: "3"},
+				{Label: "April", Value: "4"},
+				{Label: "May", Value: "5"},
+				{Label: "June", Value: "6"},
+				{Label: "July", Value: "7"},
+				{Label: "August", Value: "8"},
+				{Label: "September", Value: "9"},
+				{Label: "October", Value: "10"},
+				{Label: "November", Value: "11"},
+				{Label: "December", Value: "12"},
+			},
+		)
+		@componentForm.SelectInputWithLabelValuePairAndInputField(
+			"text", "", "Week Day", "customScheduleParts.weekday",
+			[]componentForm.SelectLabelValuePair{
+				{Label: "Custom", Value: ""},
+				{Label: "Every day", Value: "*"},
+				{Label: "Monday to Friday", Value: "1-5"},
+				{Label: "Only weekends", Value: "6-0"},
+				{Label: "Every Monday", Value: "1"},
+				{Label: "Every Tuesday", Value: "2"},
+				{Label: "Every Wednesday", Value: "3"},
+				{Label: "Every Thursday", Value: "4"},
+				{Label: "Every Friday", Value: "5"},
+				{Label: "Every Saturday", Value: "6"},
+				{Label: "Every Sunday", Value: "7"},
+			},
+		)
 	</div>
 }
 
@@ -333,7 +338,7 @@ templ CreateCronJobForm() {
 						{Label: "Daily", Value: "@daily"},
 						{Label: "Weekly", Value: "@weekly"},
 						{Label: "Monthly", Value: "@monthly"},
-						{Label: "Annualy", Value: "@annualy"},
+						{Label: "Annually", Value: "@annually"},
 						{Label: "Reboot", Value: "@reboot"},
 					}, false,
 				)
@@ -397,7 +402,7 @@ templ UpdateCronJobForm() {
 						{Label: "Daily", Value: "@daily"},
 						{Label: "Weekly", Value: "@weekly"},
 						{Label: "Monthly", Value: "@monthly"},
-						{Label: "Annualy", Value: "@annualy"},
+						{Label: "Annually", Value: "@annually"},
 						{Label: "Reboot", Value: "@reboot"},
 					}, false,
 				)
