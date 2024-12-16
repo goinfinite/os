@@ -343,8 +343,17 @@ templ CreateCronJobForm() {
 					@customScheduleInput()
 				</div>
 			</template>
-			@componentForm.TextArea("command", "Command", "cron.command", false)
-			@componentForm.InputField("text", "comment", "Comment", "cron.comment", false)
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "command",
+				Label:              "Command",
+				BindModelValuePath: "cron.command",
+			})
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "comment",
+				Label:              "Comment",
+				BindModelValuePath: "cron.comment",
+			})
 		</div>
 		@componentForm.SubmitButton(
 			"create-cron-job-button", "Schedule", "ph-clock-countdown",
@@ -398,8 +407,17 @@ templ UpdateCronJobForm() {
 					@customScheduleInput()
 				</div>
 			</template>
-			@componentForm.TextArea("command", "Command", "cron.command", false)
-			@componentForm.InputField("text", "comment", "Comment", "cron.comment", false)
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "command",
+				Label:              "Command",
+				BindModelValuePath: "cron.command",
+			})
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "comment",
+				Label:              "Comment",
+				BindModelValuePath: "cron.comment",
+			})
 		</div>
 		@componentForm.SubmitButton(
 			"update-cron-job-button", "Update", "ph-clock-countdown",
