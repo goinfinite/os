@@ -218,10 +218,6 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 		return err
 	}
 
-	if c.QueryParam("shouldUninstallServices") != "" {
-		requestInputData["shouldUninstallServices"] = c.QueryParam("shouldUninstallServices")
-	}
-
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.marketplaceService.DeleteInstalledItem(requestInputData, true),
 	)
