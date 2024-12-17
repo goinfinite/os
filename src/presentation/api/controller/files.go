@@ -470,12 +470,6 @@ func (controller *FilesController) Compress(c echo.Context) error {
 		}
 	}
 
-	if requestInputData["sourcePaths"] == nil {
-		if _, exists := requestInputData["sourcePath"]; exists {
-			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
-		}
-	}
-
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
 	_, isSourcePathsString := requestInputData["sourcePath"].(string)
