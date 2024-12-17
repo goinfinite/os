@@ -7,7 +7,7 @@ import (
 )
 
 script CronsIndexLocalState() {
-    document.addEventListener('alpine:init', () => {
+	document.addEventListener('alpine:init', () => {
 		Alpine.data('crons', () => ({
 			// Primary states
 			cron: {},
@@ -208,107 +208,109 @@ templ CronsTable(crons []entity.Cron) {
 }
 
 templ customScheduleInput() {
-	<div class="flex justify-center">
-		<div class="border-os-200 w-100 border-b-2 pb-2 text-3xl">
-			for _, customSchedulePart := range []string{"minute", "hour", "day", "month", "weekday"} {
-				<input
-					type="text"
-					class="-mt-3 w-20 bg-inherit text-center outline-none"
-					x-model:value={ "customScheduleParts." + customSchedulePart }
-				/>
-			}
+	<div>
+		<div class="flex justify-center">
+			<div class="border-os-200 w-100 border-b-2 pb-2 text-3xl">
+				for _, customSchedulePart := range []string{"minute", "hour", "day", "month", "weekday"} {
+					<input
+						type="text"
+						class="-mt-3 w-20 bg-inherit text-center outline-none"
+						x-model:value={ "customScheduleParts." + customSchedulePart }
+					/>
+				}
+			</div>
 		</div>
-	</div>
-	<div class="mt-6 grid grid-cols-2 gap-4">
-		@componentForm.SelectInputWithLabelValuePairAndInputField(
-			"text", "", "Minute", "customScheduleParts.minute",
-			[]componentForm.SelectLabelValuePair{
-				{Label: "Custom", Value: ""},
-				{Label: "Every minute", Value: "*"},
-				{Label: "Every 5 minutes", Value: "*/5"},
-				{Label: "Every 10 minutes", Value: "*/10"},
-				{Label: "Every 15 minutes", Value: "*/15"},
-				{Label: "Every 30 minutes", Value: "*/30"},
-				{Label: "Every 45 minutes", Value: "*/45"},
-				{Label: "At minute 0", Value: "0"},
-				{Label: "At minute 5", Value: "5"},
-				{Label: "At minute 10", Value: "10"},
-				{Label: "At minute 15", Value: "15"},
-				{Label: "At minute 30", Value: "30"},
-				{Label: "At minute 45", Value: "45"},
-			},
-		)
-		@componentForm.SelectInputWithLabelValuePairAndInputField(
-			"text", "", "Hour", "customScheduleParts.hour",
-			[]componentForm.SelectLabelValuePair{
-				{Label: "Custom", Value: ""},
-				{Label: "Every hour", Value: "*"},
-				{Label: "Every 2 hour", Value: "*/2"},
-				{Label: "Every 6 hour", Value: "*/6"},
-				{Label: "Every 12 hour", Value: "*/12"},
-				{Label: "At midnight", Value: "0"},
-				{Label: "At 02h00 (2h00 AM)", Value: "2"},
-				{Label: "At 06h00 (6h00 AM)", Value: "6"},
-				{Label: "At midday", Value: "12"},
-				{Label: "At 14h00 (2h00 PM)", Value: "14"},
-				{Label: "At 18h00 (6h00 PM)", Value: "18"},
-			},
-		)
-		@componentForm.SelectInputWithLabelValuePairAndInputField(
-			"text", "", "Day", "customScheduleParts.day",
-			[]componentForm.SelectLabelValuePair{
-				{Label: "Custom", Value: ""},
-				{Label: "Every day", Value: "*"},
-				{Label: "Weekly", Value: "*/7"},
-				{Label: "Every 15 days", Value: "*/15"},
-				{Label: "Every 30 days", Value: "*/30"},
-				{Label: "At day 1", Value: "1"},
-				{Label: "At day 5", Value: "5"},
-				{Label: "At day 10", Value: "10"},
-				{Label: "At day 15", Value: "15"},
-				{Label: "At day 20", Value: "20"},
-				{Label: "At day 25", Value: "25"},
-				{Label: "At day 30", Value: "30"},
-			},
-		)
-		@componentForm.SelectInputWithLabelValuePairAndInputField(
-			"text", "", "Month", "customScheduleParts.month",
-			[]componentForm.SelectLabelValuePair{
-				{Label: "Custom", Value: ""},
-				{Label: "Every month", Value: "*"},
-				{Label: "Every 2 months", Value: "*/2"},
-				{Label: "Every 6 months", Value: "*/6"},
-				{Label: "Every year", Value: "*/12"},
-				{Label: "January", Value: "1"},
-				{Label: "February", Value: "2"},
-				{Label: "March", Value: "3"},
-				{Label: "April", Value: "4"},
-				{Label: "May", Value: "5"},
-				{Label: "June", Value: "6"},
-				{Label: "July", Value: "7"},
-				{Label: "August", Value: "8"},
-				{Label: "September", Value: "9"},
-				{Label: "October", Value: "10"},
-				{Label: "November", Value: "11"},
-				{Label: "December", Value: "12"},
-			},
-		)
-		@componentForm.SelectInputWithLabelValuePairAndInputField(
-			"text", "", "Week Day", "customScheduleParts.weekday",
-			[]componentForm.SelectLabelValuePair{
-				{Label: "Custom", Value: ""},
-				{Label: "Every day", Value: "*"},
-				{Label: "Monday to Friday", Value: "1-5"},
-				{Label: "Only weekends", Value: "6-0"},
-				{Label: "Every Monday", Value: "1"},
-				{Label: "Every Tuesday", Value: "2"},
-				{Label: "Every Wednesday", Value: "3"},
-				{Label: "Every Thursday", Value: "4"},
-				{Label: "Every Friday", Value: "5"},
-				{Label: "Every Saturday", Value: "6"},
-				{Label: "Every Sunday", Value: "7"},
-			},
-		)
+		<div class="mt-6 grid grid-cols-2 gap-4">
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Minute", "customScheduleParts.minute",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every minute", Value: "*"},
+					{Label: "Every 5 minutes", Value: "*/5"},
+					{Label: "Every 10 minutes", Value: "*/10"},
+					{Label: "Every 15 minutes", Value: "*/15"},
+					{Label: "Every 30 minutes", Value: "*/30"},
+					{Label: "Every 45 minutes", Value: "*/45"},
+					{Label: "At minute 0", Value: "0"},
+					{Label: "At minute 5", Value: "5"},
+					{Label: "At minute 10", Value: "10"},
+					{Label: "At minute 15", Value: "15"},
+					{Label: "At minute 30", Value: "30"},
+					{Label: "At minute 45", Value: "45"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Hour", "customScheduleParts.hour",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every hour", Value: "*"},
+					{Label: "Every 2 hour", Value: "*/2"},
+					{Label: "Every 6 hour", Value: "*/6"},
+					{Label: "Every 12 hour", Value: "*/12"},
+					{Label: "At midnight", Value: "0"},
+					{Label: "At 02h00 (2h00 AM)", Value: "2"},
+					{Label: "At 06h00 (6h00 AM)", Value: "6"},
+					{Label: "At midday", Value: "12"},
+					{Label: "At 14h00 (2h00 PM)", Value: "14"},
+					{Label: "At 18h00 (6h00 PM)", Value: "18"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Day", "customScheduleParts.day",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every day", Value: "*"},
+					{Label: "Weekly", Value: "*/7"},
+					{Label: "Every 15 days", Value: "*/15"},
+					{Label: "Every 30 days", Value: "*/30"},
+					{Label: "At day 1", Value: "1"},
+					{Label: "At day 5", Value: "5"},
+					{Label: "At day 10", Value: "10"},
+					{Label: "At day 15", Value: "15"},
+					{Label: "At day 20", Value: "20"},
+					{Label: "At day 25", Value: "25"},
+					{Label: "At day 30", Value: "30"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Month", "customScheduleParts.month",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every month", Value: "*"},
+					{Label: "Every 2 months", Value: "*/2"},
+					{Label: "Every 6 months", Value: "*/6"},
+					{Label: "Every year", Value: "*/12"},
+					{Label: "January", Value: "1"},
+					{Label: "February", Value: "2"},
+					{Label: "March", Value: "3"},
+					{Label: "April", Value: "4"},
+					{Label: "May", Value: "5"},
+					{Label: "June", Value: "6"},
+					{Label: "July", Value: "7"},
+					{Label: "August", Value: "8"},
+					{Label: "September", Value: "9"},
+					{Label: "October", Value: "10"},
+					{Label: "November", Value: "11"},
+					{Label: "December", Value: "12"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Week Day", "customScheduleParts.weekday",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every day", Value: "*"},
+					{Label: "Monday to Friday", Value: "1-5"},
+					{Label: "Only weekends", Value: "6-0"},
+					{Label: "Every Monday", Value: "1"},
+					{Label: "Every Tuesday", Value: "2"},
+					{Label: "Every Wednesday", Value: "3"},
+					{Label: "Every Thursday", Value: "4"},
+					{Label: "Every Friday", Value: "5"},
+					{Label: "Every Saturday", Value: "6"},
+					{Label: "Every Sunday", Value: "7"},
+				},
+			)
+		</div>
 	</div>
 }
 
@@ -344,9 +346,7 @@ templ CreateCronJobForm() {
 				)
 			</template>
 			<template x-if="selectedScheduleType === 'custom'">
-				<div>
-					@customScheduleInput()
-				</div>
+				@customScheduleInput()
 			</template>
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "command",
@@ -408,9 +408,7 @@ templ UpdateCronJobForm() {
 				)
 			</template>
 			<template x-if="selectedScheduleType === 'custom'">
-				<div>
-					@customScheduleInput()
-				</div>
+				@customScheduleInput()
 			</template>
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "command",
