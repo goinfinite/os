@@ -39,7 +39,7 @@ func NewDatabaseController(
 // @Success      200 {array} entity.Database
 // @Router       /v1/database/{dbType}/ [get]
 func (controller *DatabaseController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (controller *DatabaseController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
 func (controller *DatabaseController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
 func (controller *DatabaseController) Delete(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func (controller *DatabaseController) parseUserPrivileges(rawPrivileges interfac
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
 func (controller *DatabaseController) CreateUser(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func (controller *DatabaseController) DeleteUser(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

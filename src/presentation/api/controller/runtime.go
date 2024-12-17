@@ -148,7 +148,7 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

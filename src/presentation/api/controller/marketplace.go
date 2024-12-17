@@ -48,7 +48,7 @@ func NewMarketplaceController(
 // @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func (controller *MarketplaceController) parseDataFields(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

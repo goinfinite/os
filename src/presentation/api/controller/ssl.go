@@ -91,7 +91,7 @@ func (controller *SslController) parseRawVhosts(
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (controller *SslController) Delete(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

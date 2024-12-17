@@ -49,7 +49,7 @@ func NewServicesController(
 // @Success      200 {object} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 // @Success      200 {object} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallablesItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func (controller *ServicesController) parseRawPortBindings(
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /v1/services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

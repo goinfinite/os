@@ -107,7 +107,7 @@ func (controller *ScheduledTaskController) Read(c echo.Context) error {
 // @Success      200 {object} object{} "ScheduledTaskUpdated"
 // @Router       /v1/scheduled-task/ [put]
 func (controller *ScheduledTaskController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

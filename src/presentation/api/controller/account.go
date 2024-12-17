@@ -39,7 +39,7 @@ func NewAccountController(
 // @Success      200 {object} dto.ReadAccountsResponse
 // @Router       /v1/account/ [get]
 func (controller *AccountController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (controller *AccountController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /v1/account/ [post]
 func (controller *AccountController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (controller *AccountController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "'AccountUpdated' message or new API key in string format"
 // @Router       /v1/account/ [put]
 func (controller *AccountController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (controller *AccountController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller *AccountController) Delete(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Success      201 {object} object{} "SecureAccessPublicKeyCreated"
 // @Router       /v1/account/secure-access-public-key/ [post]
 func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context)
 // @Success      200 {object} object{} "SecureAccessPublicKeyDeleted"
 // @Router       /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/ [delete]
 func (controller *AccountController) DeleteSecureAccessPublicKey(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

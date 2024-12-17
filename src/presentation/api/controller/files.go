@@ -43,7 +43,7 @@ func NewFilesController(
 // @Success      200 {array} entity.UnixFile
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (controller *FilesController) Read(c echo.Context) error {
 // @Router       /v1/files/ [post]
 func (controller *FilesController) Create(c echo.Context) error {
 	requiredParams := []string{"filePath"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (controller *FilesController) parseSourcePaths(
 // @Router       /v1/files/ [put]
 func (controller *FilesController) Update(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -299,7 +299,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 // @Router       /v1/files/copy/ [post]
 func (controller *FilesController) Copy(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func (controller *FilesController) Copy(c echo.Context) error {
 // @Router       /v1/files/delete/ [put]
 func (controller *FilesController) Delete(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -459,7 +459,7 @@ func (controller *FilesController) Delete(c echo.Context) error {
 // @Router       /v1/files/compress/ [post]
 func (controller *FilesController) Compress(c echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -562,7 +562,7 @@ func (controller *FilesController) Compress(c echo.Context) error {
 // @Router       /v1/files/extract/ [put]
 func (controller *FilesController) Extract(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -621,7 +621,7 @@ func (controller *FilesController) Extract(c echo.Context) error {
 // @Router       /v1/files/upload/ [post]
 func (controller *FilesController) Upload(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -691,7 +691,7 @@ func (controller *FilesController) Upload(c echo.Context) error {
 // @Success      200 {file} file
 // @Router       /v1/files/download/ [get]
 func (controller *FilesController) Download(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

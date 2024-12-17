@@ -33,7 +33,7 @@ func NewAuthenticationController(
 // @Failure      401 {object} string
 // @Router       /v1/auth/login/ [post]
 func (controller *AuthenticationController) Login(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

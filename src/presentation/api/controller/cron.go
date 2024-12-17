@@ -36,7 +36,7 @@ func NewCronController(
 // @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
 func (controller *CronController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (controller *CronController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
 func (controller *CronController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (controller *CronController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
 func (controller *CronController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (controller *CronController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func (controller *CronController) Delete(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}

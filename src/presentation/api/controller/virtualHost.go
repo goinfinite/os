@@ -44,7 +44,7 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /v1/vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
