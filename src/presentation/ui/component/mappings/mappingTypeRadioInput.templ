@@ -17,7 +17,7 @@ func transformMappingTypeIntoLabelFormat(mappingType string) string {
 
 templ MappingTypeRadioInput(id, label, bindModelPath string) {
 	<!-- MappingTypeSelectInput -->
-	<div class="space-x-3 -ml-1 -mb-3">
+	<div class="-mb-3 -ml-1 flex justify-start gap-4">
 		for _, mappingType := range valueObject.ValidMappingTargetTypes {
 			@componentForm.RadioInput(
 				"targetType", transformMappingTypeIntoLabelFormat(mappingType),
