@@ -33,12 +33,12 @@ func NewAuthenticationController(
 // @Failure      401 {object} string
 // @Router       /v1/auth/login/ [post]
 func (controller *AuthenticationController) Login(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWithIgnoreToastHeaderWrapper(
-		c, controller.authenticationService.Login(requestBody),
+		c, controller.authenticationService.Login(requestInputData),
 	)
 }

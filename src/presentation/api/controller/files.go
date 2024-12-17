@@ -43,12 +43,12 @@ func NewFilesController(
 // @Success      200 {array} entity.UnixFile
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
+	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -57,7 +57,7 @@ func (controller *FilesController) Read(c echo.Context) error {
 
 	filesList, err := useCase.ReadFiles(filesQueryRepo, sourcePath)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, filesList)
@@ -75,20 +75,20 @@ func (controller *FilesController) Read(c echo.Context) error {
 // @Router       /v1/files/ [post]
 func (controller *FilesController) Create(c echo.Context) error {
 	requiredParams := []string{"filePath"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	filePath, err := valueObject.NewUnixFilePath(requestBody["filePath"])
+	filePath, err := valueObject.NewUnixFilePath(requestInputData["filePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	fileTypeStr := "generic"
-	if requestBody["mimeType"] != nil {
-		fileTypeStr, err = voHelper.InterfaceToString(requestBody["mimeType"])
+	if requestInputData["mimeType"] != nil {
+		fileTypeStr, err = voHelper.InterfaceToString(requestInputData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -110,9 +110,9 @@ func (controller *FilesController) Create(c echo.Context) error {
 		successResponse = "DirectoryCreated"
 	}
 
-	if requestBody["permissions"] != nil {
+	if requestInputData["permissions"] != nil {
 		filePermissions, err = valueObject.NewUnixFilePermissions(
-			requestBody["permissions"],
+			requestInputData["permissions"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -120,14 +120,14 @@ func (controller *FilesController) Create(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -142,7 +142,7 @@ func (controller *FilesController) Create(c echo.Context) error {
 		controller.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, successResponse)
@@ -179,31 +179,31 @@ func (controller *FilesController) parseSourcePaths(
 // @Router       /v1/files/ [put]
 func (controller *FilesController) Update(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	_, isSourcePathsString := requestInputData["sourcePath"].(string)
 	if isSourcePathsString {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
+		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
 	}
 
-	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
+	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
 	if !assertOk {
 		return apiHelper.ResponseWrapper(
 			c, http.StatusBadRequest, "SourcePathMustBeArray",
@@ -216,9 +216,9 @@ func (controller *FilesController) Update(c echo.Context) error {
 	}
 
 	var destinationPathPtr *valueObject.UnixFilePath
-	if requestBody["destinationPath"] != nil {
+	if requestInputData["destinationPath"] != nil {
 		destinationPath, err := valueObject.NewUnixFilePath(
-			requestBody["destinationPath"],
+			requestInputData["destinationPath"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -227,9 +227,9 @@ func (controller *FilesController) Update(c echo.Context) error {
 	}
 
 	var permissionsPtr *valueObject.UnixFilePermissions
-	if requestBody["permissions"] != nil {
+	if requestInputData["permissions"] != nil {
 		permissions, err := valueObject.NewUnixFilePermissions(
-			requestBody["permissions"],
+			requestInputData["permissions"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -238,9 +238,9 @@ func (controller *FilesController) Update(c echo.Context) error {
 	}
 
 	var encodedContentPtr *valueObject.EncodedContent
-	if requestBody["encodedContent"] != nil {
+	if requestInputData["encodedContent"] != nil {
 		encodedContent, err := valueObject.NewEncodedContent(
-			requestBody["encodedContent"],
+			requestInputData["encodedContent"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -249,14 +249,14 @@ func (controller *FilesController) Update(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -272,7 +272,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 	)
 	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	httpStatus := http.StatusOK
@@ -299,26 +299,26 @@ func (controller *FilesController) Update(c echo.Context) error {
 // @Router       /v1/files/copy/ [post]
 func (controller *FilesController) Copy(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
+	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
+	destinationPath, err := valueObject.NewUnixFilePath(requestInputData["destinationPath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	shouldOverwrite := false
-	if requestBody["shouldOverwrite"] != nil {
+	if requestInputData["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = voHelper.InterfaceToBool(requestBody["shouldOverwrite"])
+		shouldOverwrite, err = voHelper.InterfaceToBool(requestInputData["shouldOverwrite"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidShouldOverwrite",
@@ -327,14 +327,14 @@ func (controller *FilesController) Copy(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -350,7 +350,7 @@ func (controller *FilesController) Copy(c echo.Context) error {
 		controller.activityRecordCmdRepo, copyDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FileCopied")
@@ -368,31 +368,31 @@ func (controller *FilesController) Copy(c echo.Context) error {
 // @Router       /v1/files/delete/ [put]
 func (controller *FilesController) Delete(c echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	_, isSourcePathsString := requestInputData["sourcePath"].(string)
 	if isSourcePathsString {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
+		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
 	}
 
-	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
+	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
 	if !assertOk {
 		return apiHelper.ResponseWrapper(
 			c, http.StatusBadRequest, "SourcePathMustBeArray",
@@ -405,9 +405,9 @@ func (controller *FilesController) Delete(c echo.Context) error {
 	}
 
 	hardDelete := false
-	if requestBody["hardDelete"] != nil {
+	if requestInputData["hardDelete"] != nil {
 		var err error
-		hardDelete, err = voHelper.InterfaceToBool(requestBody["hardDelete"])
+		hardDelete, err = voHelper.InterfaceToBool(requestInputData["hardDelete"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				c, http.StatusBadRequest, "InvalidHardDelete",
@@ -416,14 +416,14 @@ func (controller *FilesController) Delete(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -440,7 +440,7 @@ func (controller *FilesController) Delete(c echo.Context) error {
 
 	err = deleteUnixFiles.Execute(deleteDto)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusOK, "FilesDeleted")
@@ -459,31 +459,31 @@ func (controller *FilesController) Delete(c echo.Context) error {
 // @Router       /v1/files/compress/ [post]
 func (controller *FilesController) Compress(c echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	if requestBody["sourcePaths"] == nil {
-		if _, exists := requestBody["sourcePath"]; exists {
-			requestBody["sourcePaths"] = requestBody["sourcePath"]
+	if requestInputData["sourcePaths"] == nil {
+		if _, exists := requestInputData["sourcePath"]; exists {
+			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestBody["sourcePath"].(string)
+	_, isSourcePathsString := requestInputData["sourcePath"].(string)
 	if isSourcePathsString {
-		requestBody["sourcePaths"] = []interface{}{requestBody["sourcePath"]}
+		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
 	}
 
-	sourcePathsSlice, assertOk := requestBody["sourcePaths"].([]interface{})
+	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
 	if !assertOk {
 		return apiHelper.ResponseWrapper(
 			c, http.StatusBadRequest, "SourcePathMustBeArray",
@@ -495,15 +495,15 @@ func (controller *FilesController) Compress(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
+	destinationPath, err := valueObject.NewUnixFilePath(requestInputData["destinationPath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	var compressionUnixTypePtr *valueObject.UnixCompressionType
-	if requestBody["compressionType"] != nil {
+	if requestInputData["compressionType"] != nil {
 		compressionUnixType, err := valueObject.NewUnixCompressionType(
-			requestBody["compressionType"],
+			requestInputData["compressionType"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -512,14 +512,14 @@ func (controller *FilesController) Compress(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -535,7 +535,7 @@ func (controller *FilesController) Compress(c echo.Context) error {
 		controller.activityRecordCmdRepo, compressDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	httpStatus := http.StatusCreated
@@ -562,31 +562,31 @@ func (controller *FilesController) Compress(c echo.Context) error {
 // @Router       /v1/files/extract/ [put]
 func (controller *FilesController) Extract(c echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
+	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
+	destinationPath, err := valueObject.NewUnixFilePath(requestInputData["destinationPath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -601,7 +601,7 @@ func (controller *FilesController) Extract(c echo.Context) error {
 		controller.activityRecordCmdRepo, extractDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FilesExtracted")
@@ -621,21 +621,21 @@ func (controller *FilesController) Extract(c echo.Context) error {
 // @Router       /v1/files/upload/ [post]
 func (controller *FilesController) Upload(c echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	apiHelper.CheckMissingParams(requestBody, requiredParams)
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestBody["destinationPath"])
+	destinationPath, err := valueObject.NewUnixFilePath(requestInputData["destinationPath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	var filesToUpload []valueObject.FileStreamHandler
-	for _, requestBodyFile := range requestBody["files"].(map[string]*multipart.FileHeader) {
-		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestBodyFile)
+	for _, requestInputDataFile := range requestInputData["files"].(map[string]*multipart.FileHeader) {
+		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestInputDataFile)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
@@ -643,14 +643,14 @@ func (controller *FilesController) Upload(c echo.Context) error {
 	}
 
 	operatorAccountId, err := valueObject.NewAccountId(
-		requestBody["operatorAccountId"],
+		requestInputData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	operatorIpAddress, err := valueObject.NewIpAddress(
-		requestBody["operatorIpAddress"],
+		requestInputData["operatorIpAddress"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
@@ -665,7 +665,7 @@ func (controller *FilesController) Upload(c echo.Context) error {
 		controller.activityRecordCmdRepo, uploadDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err)
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
 	httpStatus := http.StatusCreated
@@ -691,12 +691,12 @@ func (controller *FilesController) Upload(c echo.Context) error {
 // @Success      200 {file} file
 // @Router       /v1/files/download/ [get]
 func (controller *FilesController) Download(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestBody["sourcePath"])
+	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}

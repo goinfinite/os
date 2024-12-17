@@ -36,12 +36,12 @@ func NewCronController(
 // @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
 func (controller *CronController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read(requestBody))
+	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read(requestInputData))
 }
 
 // CreateCron    godoc
@@ -55,13 +55,13 @@ func (controller *CronController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
 func (controller *CronController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Create(requestBody),
+		c, controller.cronService.Create(requestInputData),
 	)
 }
 
@@ -76,13 +76,13 @@ func (controller *CronController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
 func (controller *CronController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Update(requestBody),
+		c, controller.cronService.Update(requestInputData),
 	)
 }
 
@@ -97,12 +97,12 @@ func (controller *CronController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func (controller *CronController) Delete(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Delete(requestBody),
+		c, controller.cronService.Delete(requestInputData),
 	)
 }

@@ -1,7 +1,9 @@
 package apiController
 
 import (
+	"errors"
 	"log/slog"
+	"net/http"
 	"strings"
 	"time"
 
@@ -29,10 +31,16 @@ func NewScheduledTaskController(
 }
 
 func (controller *ScheduledTaskController) parseTaskTags(
-	rawTags string,
-) []valueObject.ScheduledTaskTag {
+	rawTags interface{},
+) ([]valueObject.ScheduledTaskTag, error) {
 	taskTags := []valueObject.ScheduledTaskTag{}
-	for rawTagIndex, rawTag := range strings.Split(rawTags, ";") {
+
+	rawTagsStr, assertOk := rawTags.(string)
+	if !assertOk {
+		return taskTags, errors.New("InvalidTaskTagsStructure")
+	}
+
+	for rawTagIndex, rawTag := range strings.Split(rawTagsStr, ";") {
 		taskTag, err := valueObject.NewScheduledTaskTag(rawTag)
 		if err != nil {
 			slog.Debug("InvalidTaskTag", slog.Int("tagIndex", rawTagIndex))
@@ -41,7 +49,7 @@ func (controller *ScheduledTaskController) parseTaskTags(
 		taskTags = append(taskTags, taskTag)
 	}
 
-	return taskTags
+	return taskTags, nil
 }
 
 // ReadScheduledTasks	 godoc
@@ -69,30 +77,21 @@ func (controller *ScheduledTaskController) parseTaskTags(
 // @Success      200 {object} dto.ReadScheduledTasksResponse
 // @Router       /v1/scheduled-task/ [get]
 func (controller *ScheduledTaskController) Read(c echo.Context) error {
-	requestBody := map[string]interface{}{}
-	queryParameters := []string{
-		"taskId", "taskName", "taskStatus", "taskTags",
-		"startedBeforeAt", "startedAfterAt",
-		"finishedBeforeAt", "finishedAfterAt",
-		"createdBeforeAt", "createdAfterAt",
-		"pageNumber", "itemsPerPage", "sortBy", "sortDirection", "lastSeenId",
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
-	for _, paramName := range queryParameters {
-		paramValue := c.QueryParam(paramName)
-		if paramValue == "" {
-			continue
-		}
 
-		if paramName != "taskTags" {
-			requestBody[paramName] = paramValue
-			continue
+	if _, exists := requestInputData["taskTags"]; exists {
+		taskTags, err := controller.parseTaskTags(requestInputData["taskTags"])
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
-
-		requestBody[paramName] = controller.parseTaskTags(paramValue)
+		requestInputData["taskTags"] = taskTags
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.scheduledTaskService.Read(requestBody),
+		c, controller.scheduledTaskService.Read(requestInputData),
 	)
 }
 
@@ -107,13 +106,13 @@ func (controller *ScheduledTaskController) Read(c echo.Context) error {
 // @Success      200 {object} object{} "ScheduledTaskUpdated"
 // @Router       /v1/scheduled-task/ [put]
 func (controller *ScheduledTaskController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.scheduledTaskService.Update(requestBody),
+		c, controller.scheduledTaskService.Update(requestInputData),
 	)
 }
 

@@ -49,13 +49,13 @@ func NewServicesController(
 // @Success      200 {object} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstalledItems(requestBody),
+		c, controller.servicesService.ReadInstalledItems(requestInputData),
 	)
 }
 
@@ -78,13 +78,13 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 // @Success      200 {object} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallablesItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstallableItems(requestBody),
+		c, controller.servicesService.ReadInstallableItems(requestInputData),
 	)
 }
 
@@ -171,33 +171,33 @@ func (controller *ServicesController) parseRawPortBindings(
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /v1/services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	rawEnvs := []string{}
-	if requestBody["envs"] != nil {
-		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
+	if requestInputData["envs"] != nil {
+		rawEnvs, err = controller.parseRawEnvs(requestInputData["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["envs"] = rawEnvs
+	requestInputData["envs"] = rawEnvs
 
 	rawPortBindings := []string{}
-	if requestBody["portBindings"] != nil {
+	if requestInputData["portBindings"] != nil {
 		rawPortBindings, err = controller.parseRawPortBindings(
-			requestBody["portBindings"],
+			requestInputData["portBindings"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["portBindings"] = rawPortBindings
+	requestInputData["portBindings"] = rawPortBindings
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.CreateInstallable(requestBody, true),
+		c, controller.servicesService.CreateInstallable(requestInputData, true),
 	)
 }
 
@@ -212,33 +212,33 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	rawEnvs := []string{}
-	if requestBody["envs"] != nil {
-		rawEnvs, err = controller.parseRawEnvs(requestBody["envs"])
+	if requestInputData["envs"] != nil {
+		rawEnvs, err = controller.parseRawEnvs(requestInputData["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["envs"] = rawEnvs
+	requestInputData["envs"] = rawEnvs
 
 	rawPortBindings := []string{}
-	if requestBody["portBindings"] != nil {
+	if requestInputData["portBindings"] != nil {
 		rawPortBindings, err = controller.parseRawPortBindings(
-			requestBody["portBindings"],
+			requestInputData["portBindings"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
 	}
-	requestBody["portBindings"] = rawPortBindings
+	requestInputData["portBindings"] = rawPortBindings
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.CreateCustom(requestBody),
+		c, controller.servicesService.CreateCustom(requestInputData),
 	)
 }
 
@@ -253,31 +253,31 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	if requestBody["envs"] != nil {
-		rawEnvs, err := controller.parseRawEnvs(requestBody["envs"])
+	if requestInputData["envs"] != nil {
+		rawEnvs, err := controller.parseRawEnvs(requestInputData["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
-		requestBody["envs"] = rawEnvs
+		requestInputData["envs"] = rawEnvs
 	}
 
-	if requestBody["portBindings"] != nil {
+	if requestInputData["portBindings"] != nil {
 		rawPortBindings, err := controller.parseRawPortBindings(
-			requestBody["portBindings"],
+			requestInputData["portBindings"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
-		requestBody["portBindings"] = rawPortBindings
+		requestInputData["portBindings"] = rawPortBindings
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.Update(requestBody),
+		c, controller.servicesService.Update(requestInputData),
 	)
 }
 
@@ -292,12 +292,13 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"name": c.Param("svcName"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.Delete(requestBody),
+		c, controller.servicesService.Delete(requestInputData),
 	)
 }
 
