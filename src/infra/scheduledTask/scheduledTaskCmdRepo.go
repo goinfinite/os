@@ -65,7 +65,7 @@ func (repo *ScheduledTaskCmdRepo) Update(
 	}
 
 	if updateDto.RunAt != nil {
-		updateMap["run_at"] = updateDto.RunAt.GetAsGoTime()
+		updateMap["run_at"] = updateDto.RunAt.ReadAsGoTime()
 	}
 
 	if len(updateMap) == 0 {
@@ -108,8 +108,8 @@ func (repo *ScheduledTaskCmdRepo) Run(
 
 	updateMap := map[string]interface{}{
 		"status":       finalStatus.String(),
-		"started_at":   startedAtUnixTime.GetAsGoTime(),
-		"finished_at":  finishedAtUnixTime.GetAsGoTime(),
+		"started_at":   startedAtUnixTime.ReadAsGoTime(),
+		"finished_at":  finishedAtUnixTime.ReadAsGoTime(),
 		"elapsed_secs": elapsedSecs,
 	}
 
