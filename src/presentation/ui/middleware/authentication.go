@@ -41,7 +41,7 @@ func getAccountIdFromAccessToken(
 }
 
 func shouldSkipUiAuthentication(req *http.Request) bool {
-	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login)/`)
+	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login|assets)/`)
 	return urlSkipRegex.MatchString(req.URL.Path)
 }
 
@@ -60,7 +60,7 @@ func Authentication(
 				rawAccessToken = accessTokenCookie.Value
 			}
 
-			loginPath := "/_/#/login"
+			loginPath := "/login/"
 
 			if rawAccessToken == "" {
 				rawAccessToken = c.Request().Header.Get("Authorization")
