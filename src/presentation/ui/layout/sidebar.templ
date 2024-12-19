@@ -39,7 +39,7 @@ templ Sidebar(currentUrl string) {
 	<script defer type="text/javascript">
 	function clearSession() {
 		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-		window.location.href = "/_/#/login";
+		window.location.href = "/login/";
 	}
 	function scrollToTop() {
 		const menu = document.getElementById("sidebarMenu");
