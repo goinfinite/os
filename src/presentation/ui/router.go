@@ -75,6 +75,13 @@ func (router *Router) databasesRoutes() {
 	databaseGroup.GET("/", databasesPresenter.Handler)
 }
 
+func (router *Router) loginRoutes() {
+	loginGroup := router.baseRoute.Group("/login")
+
+	loginPresenter := presenter.NewLoginPresenter()
+	loginGroup.GET("/", loginPresenter.Handler)
+}
+
 func (router *Router) mappingsRoutes() {
 	mappingsGroup := router.baseRoute.Group("/mappings")
 
@@ -160,6 +167,7 @@ func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
 	router.accountsRoutes()
 	router.databasesRoutes()
+	router.loginRoutes()
 	router.mappingsRoutes()
 	router.marketplaceRoutes()
 	router.runtimesRoutes()
