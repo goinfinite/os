@@ -39,7 +39,7 @@ func NewSetupController(
 // @Success      201 {object} object{} "FirstAccountCreated"
 // @Router       /v1/setup/ [post]
 func (controller *SetupController) Setup(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestBody, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
