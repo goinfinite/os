@@ -137,7 +137,7 @@ script AccountsIndexLocalState() {
 			},
 			deleteAccount() {
 				htmx.ajax(
-                    'DELETE', `/api/v1/account/`, {swap: 'none'},
+                    'DELETE', `/api/v1/account/` + this.account.id, {swap: 'none'},
                 ).then(() => {
 				    this.$dispatch('delete:account');
 				});
