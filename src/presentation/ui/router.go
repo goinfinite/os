@@ -78,7 +78,9 @@ func (router *Router) databasesRoutes() {
 func (router *Router) loginRoutes() {
 	loginGroup := router.baseRoute.Group("/login")
 
-	loginPresenter := presenter.NewLoginPresenter()
+	loginPresenter := presenter.NewLoginPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	loginGroup.GET("/", loginPresenter.Handler)
 }
 
