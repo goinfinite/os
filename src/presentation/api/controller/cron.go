@@ -13,15 +13,10 @@ type CronController struct {
 
 func NewCronController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) (*CronController, error) {
-	cronService, err := service.NewCronService(trailDbSvc)
-	if err != nil {
-		return nil, err
-	}
-
+) *CronController {
 	return &CronController{
-		cronService: cronService,
-	}, nil
+		cronService: service.NewCronService(trailDbSvc),
+	}
 }
 
 // ReadCrons	 godoc
@@ -31,14 +26,26 @@ func NewCronController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.Cron
+// @Param        id query  uint  false  "Id"
+// @Param        comment query  string  false  "Comment"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
 func (controller *CronController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read())
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read(requestInputData))
 }
 
 // CreateCron    godoc
-// @Summary      CreateNewCron
+// @Summary      CreateCron
 // @Description  Create a new cron.
 // @Tags         cron
 // @Accept       json
@@ -48,13 +55,13 @@ func (controller *CronController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
 func (controller *CronController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Create(requestBody),
+		c, controller.cronService.Create(requestInputData),
 	)
 }
 
@@ -69,13 +76,13 @@ func (controller *CronController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
 func (controller *CronController) Update(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Update(requestBody),
+		c, controller.cronService.Update(requestInputData),
 	)
 }
 
@@ -90,11 +97,12 @@ func (controller *CronController) Update(c echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func (controller *CronController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"id": c.Param("cronId"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Delete(requestBody),
+		c, controller.cronService.Delete(requestInputData),
 	)
 }

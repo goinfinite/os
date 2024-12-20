@@ -2,8 +2,11 @@ package cronInfra
 
 import (
 	"errors"
+	"log/slog"
+	"slices"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
@@ -13,58 +16,56 @@ import (
 type CronQueryRepo struct {
 }
 
-func (repo CronQueryRepo) cronFactory(
-	cronIndex int,
-	cronLine string,
-) (entity.Cron, error) {
-	cronRegex := `^(?P<frequency>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+) ?){5,7}))(?P<cmd>[^#\r\n]{1,1000})(?P<comment>#(.*)){0,1000}$`
-	namedGroupMap := voHelper.FindNamedGroupsMatches(cronRegex, cronLine)
-
-	var cron entity.Cron
-	id, err := valueObject.NewCronId(cronIndex)
-	if err != nil {
-		return cron, errors.New("CronIdError")
-	}
-
-	if namedGroupMap["frequency"] == "" {
-		return cron, errors.New("CronFrequencyError")
-	}
-	schedule, err := valueObject.NewCronSchedule(
-		strings.TrimSpace(namedGroupMap["frequency"]),
-	)
-	if err != nil {
-		return cron, errors.New("CronScheduleError")
-	}
-
-	if namedGroupMap["cmd"] == "" {
-		return cron, errors.New("CronCommandError")
-	}
-	cmd, err := valueObject.NewUnixCommand(
-		strings.TrimSpace(namedGroupMap["cmd"]),
-	)
-	if err != nil {
-		return cron, errors.New("CronCommandError")
-	}
-
-	var cronCommentPtr *valueObject.CronComment
-	if namedGroupMap["comment"] != "" {
-		commentWithoutLeadingHash := strings.Trim(namedGroupMap["comment"], "#")
-		cronComment, err := valueObject.NewCronComment(
-			strings.TrimSpace(commentWithoutLeadingHash),
-		)
-		if err != nil {
-			return cron, errors.New("CronCommentError")
-		}
-		cronCommentPtr = &cronComment
-	}
-
-	return entity.NewCron(id, schedule, cmd, cronCommentPtr), nil
+func NewCronQueryRepo() *CronQueryRepo {
+	return &CronQueryRepo{}
 }
 
-func (repo CronQueryRepo) Read() ([]entity.Cron, error) {
+func (repo *CronQueryRepo) cronFactory(
+	cronIndex int,
+	cronLine string,
+) (cron entity.Cron, err error) {
+	cronRegex := `^(?P<frequency>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+) ?){5,7}))(?P<command>[^#\r\n]{1,1000})(?P<comment>#(.*)){0,1000}$`
+	cronNamedGroupMap := voHelper.FindNamedGroupsMatches(cronRegex, cronLine)
+
+	rawId := cronIndex + 1
+	id, err := valueObject.NewCronId(rawId)
+	if err != nil {
+		return cron, err
+	}
+
+	var schedule valueObject.CronSchedule
+	if _, exists := cronNamedGroupMap["frequency"]; exists {
+		schedule, err = valueObject.NewCronSchedule(cronNamedGroupMap["frequency"])
+		if err != nil {
+			return cron, err
+		}
+	}
+
+	var command valueObject.UnixCommand
+	if _, exists := cronNamedGroupMap["command"]; exists {
+		command, err = valueObject.NewUnixCommand(cronNamedGroupMap["command"])
+		if err != nil {
+			return cron, err
+		}
+	}
+
+	var commentPtr *valueObject.CronComment
+	if _, exists := cronNamedGroupMap["comment"]; exists {
+		commentWithoutLeadingHash := strings.Trim(cronNamedGroupMap["comment"], "#")
+		comment, err := valueObject.NewCronComment(commentWithoutLeadingHash)
+		if err != nil {
+			return cron, err
+		}
+		commentPtr = &comment
+	}
+
+	return entity.NewCron(id, schedule, command, commentPtr), nil
+}
+
+func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
-	cronOut, err := infraHelper.RunCmd("crontab", "-l")
+	rawCronOutput, err := infraHelper.RunCmd("crontab", "-l")
 	if err != nil {
 		if strings.Contains(err.Error(), "no crontab") {
 			return crons, nil
@@ -72,7 +73,7 @@ func (repo CronQueryRepo) Read() ([]entity.Cron, error) {
 		return crons, errors.New("CrontabReadError: " + err.Error())
 	}
 
-	cronLines := strings.Split(cronOut, "\n")
+	cronLines := strings.Split(rawCronOutput, "\n")
 	if len(cronLines) == 0 {
 		return crons, nil
 	}
@@ -85,61 +86,105 @@ func (repo CronQueryRepo) Read() ([]entity.Cron, error) {
 		if strings.HasPrefix(cronLine, "#") {
 			continue
 		}
-		cronLineIndex := cronIndex + 1
-		cron, err := repo.cronFactory(cronLineIndex, cronLine)
+
+		cronEntity, err := repo.cronFactory(cronIndex, cronLine)
 		if err != nil {
+			slog.Debug(err.Error(), slog.Int("index", cronIndex))
 			continue
 		}
-		crons = append(crons, cron)
+		crons = append(crons, cronEntity)
 	}
 
 	return crons, nil
 }
 
-func (repo CronQueryRepo) ReadById(
-	cronId valueObject.CronId,
-) (cronEntity entity.Cron, err error) {
-	crons, err := repo.Read()
+func (repo *CronQueryRepo) Read(
+	requestDto dto.ReadCronsRequest,
+) (responseDto dto.ReadCronsResponse, err error) {
+	originalCronEntities, err := repo.readCronsFromCrontab()
 	if err != nil {
-		return cronEntity, err
+		return responseDto, err
 	}
 
-	if len(crons) == 0 {
-		return cronEntity, errors.New("CronNotFound")
-	}
-
-	cronIdStr := cronId.String()
-	for _, cron := range crons {
-		if cron.Id.String() != cronIdStr {
+	filteredCrons := []entity.Cron{}
+	for _, cron := range originalCronEntities {
+		if requestDto.CronId != nil && *requestDto.CronId != cron.Id {
 			continue
 		}
 
-		return cron, nil
+		if requestDto.CronComment != nil && requestDto.CronComment != cron.Comment {
+			continue
+		}
+
+		filteredCrons = append(filteredCrons, cron)
 	}
 
-	return cronEntity, errors.New("CronNotFound")
+	if len(filteredCrons) > int(requestDto.Pagination.ItemsPerPage) {
+		filteredCrons = filteredCrons[:requestDto.Pagination.ItemsPerPage]
+	}
+
+	sortDirectionStr := "asc"
+	if requestDto.Pagination.SortDirection != nil {
+		sortDirectionStr = requestDto.Pagination.SortDirection.String()
+	}
+
+	if requestDto.Pagination.SortBy != nil {
+		slices.SortStableFunc(filteredCrons, func(a, b entity.Cron) int {
+			firstElement := a
+			secondElement := b
+			if sortDirectionStr != "asc" {
+				firstElement = b
+				secondElement = a
+			}
+
+			switch requestDto.Pagination.SortBy.String() {
+			case "id":
+				if firstElement.Id.Uint64() < secondElement.Id.Uint64() {
+					return -1
+				}
+				if firstElement.Id.Uint64() > secondElement.Id.Uint64() {
+					return 1
+				}
+				return 0
+			case "comment":
+				return strings.Compare(
+					firstElement.Comment.String(), secondElement.Comment.String(),
+				)
+			default:
+				return 0
+			}
+		})
+	}
+
+	paginationDto := requestDto.Pagination
+
+	itemsTotal := uint64(len(filteredCrons))
+	paginationDto.ItemsTotal = &itemsTotal
+
+	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	paginationDto.PagesTotal = &pagesTotal
+
+	return dto.ReadCronsResponse{
+		Pagination: paginationDto,
+		Crons:      filteredCrons,
+	}, nil
 }
 
-func (repo CronQueryRepo) ReadByComment(
-	cronComment valueObject.CronComment,
-) (cronEntity entity.Cron, err error) {
-	crons, err := repo.Read()
+func (repo *CronQueryRepo) ReadFirst(
+	requestDto dto.ReadCronsRequest,
+) (cron entity.Cron, err error) {
+	requestDto.Pagination = dto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 1,
+	}
+	responseDto, err := repo.Read(requestDto)
 	if err != nil {
-		return cronEntity, err
+		return cron, err
 	}
 
-	if len(crons) == 0 {
-		return cronEntity, errors.New("CronNotFound")
+	if len(responseDto.Crons) == 0 {
+		return cron, errors.New("CronNotFound")
 	}
 
-	cronCommentStr := cronComment.String()
-	for _, cron := range crons {
-		if cron.Comment.String() != cronCommentStr {
-			continue
-		}
-
-		return cron, nil
-	}
-
-	return cronEntity, errors.New("CronNotFound")
+	return responseDto.Crons[0], nil
 }

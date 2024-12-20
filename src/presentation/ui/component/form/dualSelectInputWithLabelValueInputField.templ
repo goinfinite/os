@@ -1,0 +1,44 @@
+package componentForm
+
+templ DualSelectInputWithLabelValueInputField(
+	inputFieldType, id, label, bindModelPath string,
+	options []SelectLabelValuePair,
+) {
+	<!-- DualSelectInputWithLabelValueInputField -->
+	<div class="relative w-full">
+		<div class="hover:border-os-100 bg-os-300 border-os-200 focus-visible:border-os-50 rounded-md border">
+			<div class="flex flex-row items-center">
+				<div class="border-os-200 relative flex basis-1/3 items-center border-r">
+					<input
+						if id != "" {
+							name={ id }
+						}
+						type={ inputFieldType }
+						class="peer relative ml-1 block w-full rounded-r-md bg-inherit p-2.5 text-sm text-neutral-50 placeholder-neutral-400 outline-none duration-300"
+						x-model:value={ bindModelPath }
+					/>
+				</div>
+				<select
+					x-model={ bindModelPath }
+					placeholder={ label }
+					class="peer relative h-10 w-full appearance-none rounded-r-md bg-inherit px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+				>
+					for _, option := range options {
+						<option
+							class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
+							value={ option.Value }
+						>
+							{ option.Label }
+						</option>
+					}
+				</select>
+				<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
+			</div>
+		</div>
+		<label
+			class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+		>
+			{ label }
+		</label>
+	</div>
+}

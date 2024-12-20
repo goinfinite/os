@@ -1,9 +1,12 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	cronInfra "github.com/goinfinite/os/src/infra/cron"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -11,28 +14,90 @@ import (
 )
 
 type CronService struct {
-	cronQueryRepo         cronInfra.CronQueryRepo
+	cronQueryRepo         *cronInfra.CronQueryRepo
 	cronCmdRepo           *cronInfra.CronCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewCronService(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) (*CronService, error) {
-	cronCmdRepo, err := cronInfra.NewCronCmdRepo()
-	if err != nil {
-		return nil, err
-	}
-
+) *CronService {
 	return &CronService{
-		cronQueryRepo:         cronInfra.CronQueryRepo{},
-		cronCmdRepo:           cronCmdRepo,
+		cronQueryRepo:         cronInfra.NewCronQueryRepo(),
+		cronCmdRepo:           cronInfra.NewCronCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
-	}, nil
+	}
 }
 
-func (service *CronService) Read() ServiceOutput {
-	cronsList, err := useCase.ReadCrons(service.cronQueryRepo)
+func (service *CronService) Read(input map[string]interface{}) ServiceOutput {
+	var idPtr *valueObject.CronId
+	if input["id"] != nil {
+		id, err := valueObject.NewCronId(input["id"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		idPtr = &id
+	}
+
+	var commentPtr *valueObject.CronComment
+	if input["comment"] != nil {
+		slug, err := valueObject.NewCronComment(input["comment"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		commentPtr = &slug
+	}
+
+	paginationDto := useCase.MarketplaceDefaultPagination
+	if input["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+		}
+		paginationDto.PageNumber = pageNumber
+	}
+
+	if input["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+		}
+		paginationDto.ItemsPerPage = itemsPerPage
+	}
+
+	if input["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortBy = &sortBy
+	}
+
+	if input["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(
+			input["sortDirection"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.SortDirection = &sortDirection
+	}
+
+	if input["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		paginationDto.LastSeenId = &lastSeenId
+	}
+
+	readDto := dto.ReadCronsRequest{
+		Pagination:  paginationDto,
+		CronId:      idPtr,
+		CronComment: commentPtr,
+	}
+
+	cronsList, err := useCase.ReadCrons(service.cronQueryRepo, readDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -58,7 +123,7 @@ func (service *CronService) Create(input map[string]interface{}) ServiceOutput {
 	}
 
 	var commentPtr *valueObject.CronComment
-	if input["comment"] != nil {
+	if input["comment"] != nil && input["comment"] != "" {
 		comment, err := valueObject.NewCronComment(input["comment"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
@@ -168,8 +233,8 @@ func (service *CronService) Update(input map[string]interface{}) ServiceOutput {
 
 func (service *CronService) Delete(input map[string]interface{}) ServiceOutput {
 	var idPtr *valueObject.CronId
-	if input["id"] != nil {
-		id, err := valueObject.NewCronId(input["id"])
+	if input["cronId"] != nil {
+		id, err := valueObject.NewCronId(input["cronId"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}

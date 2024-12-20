@@ -158,7 +158,7 @@ definitions:
       accountId:
         type: integer
       content:
-        $ref: '#/definitions/valueObject.SecureAccessPublicKeyContent'
+        type: string
       name:
         type: string
     type: object
@@ -318,6 +318,15 @@ definitions:
       accounts:
         items:
           $ref: '#/definitions/entity.Account'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadCronsResponse:
+    properties:
+      crons:
+        items:
+          $ref: '#/definitions/entity.Cron'
         type: array
       pagination:
         $ref: '#/definitions/dto.Pagination'
@@ -1250,15 +1259,42 @@ paths:
       consumes:
       - application/json
       description: List crons.
+      parameters:
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Comment
+        in: query
+        name: comment
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.Cron'
-            type: array
+            $ref: '#/definitions/dto.ReadCronsResponse'
       security:
       - Bearer: []
       summary: ReadCrons
@@ -1284,7 +1320,7 @@ paths:
             type: object
       security:
       - Bearer: []
-      summary: CreateNewCron
+      summary: CreateCron
       tags:
       - cron
     put:

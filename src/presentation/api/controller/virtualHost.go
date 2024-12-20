@@ -44,13 +44,13 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /v1/vhosts/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Create(requestBody),
+		c, controller.virtualHostService.Create(requestInputData),
 	)
 }
 
@@ -65,12 +65,13 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /v1/vhosts/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"hostname": c.Param("hostname"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Delete(requestBody),
+		c, controller.virtualHostService.Delete(requestInputData),
 	)
 }
 
@@ -98,13 +99,13 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhosts/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.CreateMapping(requestBody),
+		c, controller.virtualHostService.CreateMapping(requestInputData),
 	)
 }
 
@@ -119,11 +120,12 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"id": c.Param("mappingId"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.DeleteMapping(requestBody),
+		c, controller.virtualHostService.DeleteMapping(requestInputData),
 	)
 }
