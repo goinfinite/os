@@ -13,9 +13,6 @@ script LoginLocalState() {
 			username: '',
 			password: '',
 			async createSessionToken() {
-				const loadingOverlayElement = document.getElementById("loading-overlay");
-				loadingOverlayElement.classList.add("htmx-request");
-
 				try {
 					const authResponse = await Infinite.JsonAjax("POST", "/api/v1/auth/login/", {
 						username: this.username,
