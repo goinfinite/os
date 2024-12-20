@@ -66,6 +66,13 @@ func (router *Router) accountsRoutes() {
 	accountGroup.GET("/", accountsPresenter.Handler)
 }
 
+func (router *Router) cronsRoutes() {
+	cronsGroup := router.baseRoute.Group("/crons")
+
+	cronsPresenter := presenter.NewCronsPresenter(router.trailDbSvc)
+	cronsGroup.GET("/", cronsPresenter.Handler)
+}
+
 func (router *Router) databasesRoutes() {
 	databaseGroup := router.baseRoute.Group("/databases")
 
@@ -158,6 +165,7 @@ func (router *Router) previousDashboardRoute() {
 
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
+	router.cronsRoutes()
 	router.accountsRoutes()
 	router.databasesRoutes()
 	router.mappingsRoutes()

@@ -30,7 +30,7 @@ func stringDotNotationToHierarchicalMap(
 	return hierarchicalMap
 }
 
-func ReadRequestBody(c echo.Context) (map[string]interface{}, error) {
+func ReadRequestInputData(c echo.Context) (map[string]interface{}, error) {
 	requestBody := map[string]interface{}{}
 
 	contentType := c.Request().Header.Get("Content-Type")

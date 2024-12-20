@@ -38,12 +38,13 @@ func NewRuntimeController(
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
 func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"hostname": c.Param("hostname"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.ReadPhpConfigs(requestBody),
+		c, controller.runtimeService.ReadPhpConfigs(requestInputData),
 	)
 }
 
@@ -148,29 +149,28 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
-	requestBody["hostname"] = c.Param("hostname")
 
-	if _, exists := requestBody["modules"]; exists {
-		phpModules, err := controller.parsePhpModules(requestBody["modules"])
+	if _, exists := requestInputData["modules"]; exists {
+		phpModules, err := controller.parsePhpModules(requestInputData["modules"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
-		requestBody["modules"] = phpModules
+		requestInputData["modules"] = phpModules
 	}
 
-	if _, exists := requestBody["settings"]; exists {
-		phpSettings, err := controller.parsePhpSettings(requestBody["settings"])
+	if _, exists := requestInputData["settings"]; exists {
+		phpSettings, err := controller.parsePhpSettings(requestInputData["settings"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
-		requestBody["settings"] = phpSettings
+		requestInputData["settings"] = phpSettings
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.UpdatePhpConfigs(requestBody),
+		c, controller.runtimeService.UpdatePhpConfigs(requestInputData),
 	)
 }

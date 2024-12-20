@@ -5,7 +5,7 @@
 fix(front): install params section on marketplace deploy
 
 0.1.6 - 2024/X/X
-Nothing yet
+refactor(front): crons page with HTMX+Alpine.js
 
 0.1.5 - 2024/12/06
 feat: add all missing security records to write ops
