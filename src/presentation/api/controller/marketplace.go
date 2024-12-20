@@ -48,13 +48,13 @@ func NewMarketplaceController(
 // @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadCatalog(requestBody),
+		c, controller.marketplaceService.ReadCatalog(requestInputData),
 	)
 }
 
@@ -146,27 +146,29 @@ func (controller *MarketplaceController) parseDataFields(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	possibleUrlPathKeys := []string{"urlPath", "directory", "installDirectory"}
 	for _, key := range possibleUrlPathKeys {
-		if requestBody[key] == nil {
+		if requestInputData[key] == nil {
 			continue
 		}
 
-		requestBody["urlPath"] = requestBody[key]
+		requestInputData["urlPath"] = requestInputData[key]
 		break
 	}
 
-	if requestBody["dataFields"] != nil {
-		requestBody["dataFields"] = controller.parseDataFields(requestBody["dataFields"])
+	if requestInputData["dataFields"] != nil {
+		requestInputData["dataFields"] = controller.parseDataFields(
+			requestInputData["dataFields"],
+		)
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.InstallCatalogItem(requestBody, true),
+		c, controller.marketplaceService.InstallCatalogItem(requestInputData, true),
 	)
 }
 
@@ -189,13 +191,13 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadInstalledItems(requestBody),
+		c, controller.marketplaceService.ReadInstalledItems(requestInputData),
 	)
 }
 
@@ -211,16 +213,13 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"installedId": c.Param("installedId"),
-	}
-
-	if c.QueryParam("shouldUninstallServices") != "" {
-		requestBody["shouldUninstallServices"] = c.QueryParam("shouldUninstallServices")
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.DeleteInstalledItem(requestBody, true),
+		c, controller.marketplaceService.DeleteInstalledItem(requestInputData, true),
 	)
 }
 

@@ -4,18 +4,24 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+var CronsDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
+
 func ReadCrons(
 	cronQueryRepo repository.CronQueryRepo,
-) ([]entity.Cron, error) {
-	cronsList, err := cronQueryRepo.Read()
+	requestDto dto.ReadCronsRequest,
+) (responseDto dto.ReadCronsResponse, err error) {
+	responseDto, err = cronQueryRepo.Read(requestDto)
 	if err != nil {
 		slog.Error("ReadCronsError", slog.Any("err", err))
-		return cronsList, errors.New("ReadCronsInfraError")
+		return responseDto, errors.New("ReadCronsInfraError")
 	}
 
-	return cronsList, err
+	return responseDto, err
 }

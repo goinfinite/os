@@ -39,13 +39,13 @@ func NewDatabaseController(
 // @Success      200 {array} entity.Database
 // @Router       /v1/database/{dbType}/ [get]
 func (controller *DatabaseController) Read(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Read(requestBody),
+		c, controller.dbService.Read(requestInputData),
 	)
 }
 
@@ -61,13 +61,13 @@ func (controller *DatabaseController) Read(c echo.Context) error {
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
 func (controller *DatabaseController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Create(requestBody),
+		c, controller.dbService.Create(requestInputData),
 	)
 }
 
@@ -83,13 +83,13 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
 func (controller *DatabaseController) Delete(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Delete(requestBody),
+		c, controller.dbService.Delete(requestInputData),
 	)
 }
 
@@ -135,24 +135,24 @@ func (controller *DatabaseController) parseUserPrivileges(rawPrivileges interfac
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
 func (controller *DatabaseController) CreateUser(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	rawPrivilegesSlice := []string{}
-	if requestBody["privileges"] != nil {
+	if requestInputData["privileges"] != nil {
 		rawPrivilegesSlice, err = controller.parseUserPrivileges(
-			requestBody["privileges"],
+			requestInputData["privileges"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestBody["privileges"] = rawPrivilegesSlice
+	requestInputData["privileges"] = rawPrivilegesSlice
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.CreateUser(requestBody),
+		c, controller.dbService.CreateUser(requestInputData),
 	)
 }
 
@@ -169,12 +169,12 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func (controller *DatabaseController) DeleteUser(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.DeleteUser(requestBody),
+		c, controller.dbService.DeleteUser(requestInputData),
 	)
 }

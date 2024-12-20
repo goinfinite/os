@@ -91,23 +91,23 @@ func (controller *SslController) parseRawVhosts(
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	rawVhosts, err := controller.parseRawVhosts(requestBody["virtualHosts"])
+	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
-	requestBody["virtualHosts"] = rawVhosts
+	requestInputData["virtualHosts"] = rawVhosts
 
-	if _, exists := requestBody["encodedCertificate"]; !exists {
-		if _, exists = requestBody["certificate"]; exists {
-			requestBody["encodedCertificate"] = requestBody["certificate"]
+	if _, exists := requestInputData["encodedCertificate"]; !exists {
+		if _, exists = requestInputData["certificate"]; exists {
+			requestInputData["encodedCertificate"] = requestInputData["certificate"]
 		}
 	}
-	encodedCert, err := valueObject.NewEncodedContent(requestBody["encodedCertificate"])
+	encodedCert, err := valueObject.NewEncodedContent(requestInputData["encodedCertificate"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -117,14 +117,14 @@ func (controller *SslController) Create(c echo.Context) error {
 			c, http.StatusBadRequest, "CannotDecodeSslCertificateContent",
 		)
 	}
-	requestBody["certificate"] = decodedCert
+	requestInputData["certificate"] = decodedCert
 
-	if _, exists := requestBody["encodedKey"]; !exists {
-		if _, exists = requestBody["key"]; exists {
-			requestBody["encodedKey"] = requestBody["key"]
+	if _, exists := requestInputData["encodedKey"]; !exists {
+		if _, exists = requestInputData["key"]; exists {
+			requestInputData["encodedKey"] = requestInputData["key"]
 		}
 	}
-	encodedKey, err := valueObject.NewEncodedContent(requestBody["encodedKey"])
+	encodedKey, err := valueObject.NewEncodedContent(requestInputData["encodedKey"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -134,10 +134,10 @@ func (controller *SslController) Create(c echo.Context) error {
 			c, http.StatusBadRequest, "CannotDecodeSslPrivateKeyContent",
 		)
 	}
-	requestBody["key"] = decodedKey
+	requestInputData["key"] = decodedKey
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.Create(requestBody),
+		c, controller.sslService.Create(requestInputData),
 	)
 }
 
@@ -152,12 +152,13 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(c echo.Context) error {
-	requestBody := map[string]interface{}{
-		"id": c.Param("sslPairId"),
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
 	}
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.Delete(requestBody),
+		c, controller.sslService.Delete(requestInputData),
 	)
 }
 
@@ -172,19 +173,19 @@ func (controller *SslController) Delete(c echo.Context) error {
 // @Success      200 {object} object{} "SslPairVhostsRemoved"
 // @Router       /v1/ssl/vhost/ [put]
 func (controller *SslController) DeleteVhosts(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestBody(c)
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
 
-	rawVhosts, err := controller.parseRawVhosts(requestBody["virtualHosts"])
+	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
-	requestBody["virtualHosts"] = rawVhosts
+	requestInputData["virtualHosts"] = rawVhosts
 
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.DeleteVhosts(requestBody),
+		c, controller.sslService.DeleteVhosts(requestInputData),
 	)
 }
 
