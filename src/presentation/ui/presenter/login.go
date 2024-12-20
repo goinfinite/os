@@ -3,21 +3,52 @@ package presenter
 import (
 	"net/http"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
 )
 
 type LoginPresenter struct {
+	accountService *service.AccountService
 }
 
-func NewLoginPresenter() *LoginPresenter {
-	return &LoginPresenter{}
+func NewLoginPresenter(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) *LoginPresenter {
+	return &LoginPresenter{
+		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
+	}
+}
+
+func (presenter *LoginPresenter) shouldRedirectToSetupPage() bool {
+	responseOutput := presenter.accountService.Read(map[string]interface{}{})
+	if responseOutput.Status != service.Success {
+		return false
+	}
+
+	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadAccountsResponse)
+	if !assertOk {
+		return false
+	}
+
+	if len(typedOutputBody.Accounts) > 0 {
+		return false
+	}
+
+	return true
 }
 
 func (presenter *LoginPresenter) Handler(c echo.Context) error {
+	if presenter.shouldRedirectToSetupPage() {
+		return c.Redirect(http.StatusFound, "/setup/")
+	}
+
 	rawAccessToken := c.QueryParam("accessToken")
 	if rawAccessToken != "" {
 		accessToken, err := valueObject.NewAccessTokenStr(rawAccessToken)
