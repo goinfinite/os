@@ -135,7 +135,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 	return itemMappings, nil
 }
 
-func (repo *MarketplaceQueryRepo) generateDataFieldDefaultValueBasedOnSpecificType(
+func (repo *MarketplaceQueryRepo) specificTypeDataFieldValueGenerator(
 	dataFieldSpecificType valueObject.DataFieldSpecificType,
 ) (valueObject.DataFieldValue, error) {
 	dummyValueGenerator := infraHelper.DummyValueGenerator{}
@@ -231,7 +231,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 		}
 
 		if fieldSpecificTypePtr != nil && defaultValuePtr == nil {
-			defaultValue, err := repo.generateDataFieldDefaultValueBasedOnSpecificType(
+			defaultValue, err := repo.specificTypeDataFieldValueGenerator(
 				*fieldSpecificTypePtr,
 			)
 			if err != nil {
