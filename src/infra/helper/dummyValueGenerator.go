@@ -37,6 +37,10 @@ func (helper *DummyValueGenerator) GenMailAddress(mailUsername *string) string {
 	randomMailAddressDomain := dummyMailAddressDomains[rand.Intn(len(dummyMailAddressDomains))]
 
 	if mailUsername == nil {
+		if helper.generatedUsername == "" {
+			helper.GenUsername()
+		}
+
 		mailUsername = &helper.generatedUsername
 	}
 
