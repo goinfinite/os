@@ -16,7 +16,7 @@ func CreateFirstAccount(
 ) error {
 	readRequestDto := dto.ReadAccountsRequest{}
 	_, err := accountQueryRepo.ReadFirst(readRequestDto)
-	if err != nil {
+	if err == nil {
 		return errors.New("AtLeastOneAccountAlreadyExists")
 	}
 
