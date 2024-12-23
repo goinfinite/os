@@ -118,6 +118,13 @@ func (router *Router) runtimesRoutes() {
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
 }
 
+func (router *Router) setupRoutes() {
+	setupGroup := router.baseRoute.Group("/setup")
+
+	setupPresenter := presenter.NewSetupPresenter()
+	setupGroup.GET("/", setupPresenter.Handler)
+}
+
 func (router *Router) sslsRoutes() {
 	sslsGroup := router.baseRoute.Group("/ssls")
 
@@ -181,6 +188,7 @@ func (router *Router) RegisterRoutes() {
 	router.mappingsRoutes()
 	router.marketplaceRoutes()
 	router.runtimesRoutes()
+	router.setupRoutes()
 	router.sslsRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
