@@ -93,19 +93,27 @@ func (repo *MarketplaceCmdRepo) installServices(
 }
 
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
+	itemName valueObject.MarketplaceItemName,
 	installDir valueObject.UnixFilePath,
 	installUrlPath valueObject.UrlPath,
 	installHostname valueObject.Fqdn,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	dataMap := map[string]string{
 		"installDirectory":      installDir.String(),
 		"installUrlPath":        installUrlPath.String(),
 		"installHostname":       installHostname.String(),
 		"installUuid":           installUuid.String(),
 		"installTempDir":        installTempDirPath,
-		"installRandomPassword": infraHelper.GenPass(16),
+		"installRandomPassword": dummyValueGenerator.GenPass(16),
 	}
+
+	itemNameStr := strings.ToLower(itemName.String())
+	catalogAssetsDirPath := fmt.Sprintf(
+		"%s/%s/assets", infraEnvs.MarketplaceCatalogItemsDir, itemNameStr,
+	)
+	dataMap["marketplaceCatalogItemAssetsDirPath"] = catalogAssetsDirPath
 
 	for key, value := range dataMap {
 		dataFieldKey, _ := valueObject.NewDataFieldName(key)
@@ -161,11 +169,19 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
 		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
-			cmdStepStr, `%(.*?)%`,
+			cmdStepStr, `%(\w{1,256})%`,
 		)
 
 		for _, cmdStepDataPlaceholder := range cmdStepDataFieldPlaceholders {
-			dataFieldValue := dataFieldsMap[cmdStepDataPlaceholder]
+			dataFieldValue, exists := dataFieldsMap[cmdStepDataPlaceholder]
+			if !exists {
+				slog.Debug(
+					"MissingDataField",
+					slog.String("dataField", cmdStepDataPlaceholder),
+				)
+				dataFieldValue = ""
+			}
+
 			escapedDataFieldValue := shellescape.Quote(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
@@ -411,7 +427,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installDir, installUrlPath, installDto.Hostname, installUuid,
+		catalogItem.Name, installDir, installUrlPath, installDto.Hostname, installUuid,
 	)
 	receivedDataFields := slices.Concat(installDto.DataFields, systemDataFields)
 
@@ -720,7 +736,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	systemDataFields := repo.parseSystemDataFields(
-		installedItem.InstallDirectory, installedItem.UrlPath,
+		installedItem.Name, installedItem.InstallDirectory, installedItem.UrlPath,
 		installedItem.Hostname, installedItem.InstallUuid,
 	)
 	err = repo.runCmdSteps("Uninstall", catalogItem.UninstallCmdSteps, systemDataFields)
@@ -753,10 +769,12 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 			return err
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(
-			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
-				"git clone https://github.com/goinfinite/os-marketplace.git marketplace",
+		repoCloneCmd := fmt.Sprintf(
+			"cd %s; git clone --single-branch --branch %s %s marketplace",
+			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsRepoUrl,
+			infraEnvs.MarketplaceCatalogItemsRepoBranch,
 		)
+		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
 		if err != nil {
 			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
 		}

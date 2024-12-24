@@ -92,7 +92,12 @@ script MarketplaceIndexLocalState() {
 				);
 				this.marketplaceItem.id = catalogItemId;
 				this.marketplaceItem.name = catalogItemEntity.name;
-				this.marketplaceItem.dataFields = catalogItemEntity.dataFields;
+
+				for (const dataField of catalogItemEntity.dataFields) {
+					dataField.value = dataField.defaultValue;
+					this.marketplaceItem.dataFields.push(dataField);
+				}
+
 				this.isScheduleMarketplaceItemInstallationModalOpen = true;
 			},
 			closeScheduleMarketplaceItemInstallationModal() {
@@ -366,8 +371,12 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 				</div>
 			</div>
 			<template x-if="marketplaceItem.dataFields.length > 0">
-				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly") {
-					<div class="grid grid-cols-2 gap-4">
+				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
+					@componentStructural.Alert(
+						componentStructural.AlertTypeWarning,
+						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+					)
+					<div class="grid grid-cols-2 gap-4 mt-2">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
 								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
@@ -377,7 +386,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 								</template>
 								<template x-if="dataField.type === 'password'">
 									@componentForm.PasswordInputClientSide(
-										"dataField.label", "dataField.value",
+										"dataField.label", "dataField.value", true,
 									)
 								</template>
 								<template x-if="dataField.type === 'select'">

@@ -988,6 +988,8 @@ definitions:
         items:
           type: string
         type: array
+      specificType:
+        type: string
       type:
         type: string
     type: object

@@ -244,7 +244,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 		return errors.New("CreateSslKeySymlinkError: " + err.Error())
 	}
 
-	return nil
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *SslCmdRepo) ReplaceWithValidSsl(replaceDto dto.ReplaceWithValidSsl) error {

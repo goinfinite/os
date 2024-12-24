@@ -2,6 +2,7 @@ package servicesInfra
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -330,12 +331,17 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(cmdStepStr, `%(.*?)%`)
+		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(
+			cmdStepStr, `%(\w{1,256})%`,
+		)
 
 		for _, stepPlaceholder := range stepPlaceholders {
 			placeholderValue, exists := placeholders[stepPlaceholder]
 			if !exists {
-				return nil, errors.New("MissingPlaceholder: " + stepPlaceholder)
+				slog.Debug(
+					"MissingPlaceholder", slog.String("placeholder", stepPlaceholder),
+				)
+				placeholderValue = ""
 			}
 
 			escapedPlaceholderValue := shellescape.Quote(placeholderValue)
@@ -399,11 +405,19 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	stepsPlaceholders := map[string]string{
-		"randomPassword":  infraHelper.GenPass(16),
+		"randomPassword":  dummyValueGenerator.GenPass(16),
 		"version":         serviceVersion.String(),
 		"primaryHostname": primaryHostname.String(),
 	}
+
+	installedServiceNameStr := strings.ToLower(installedServiceName.String())
+	installablesAssetsDirPath := fmt.Sprintf(
+		"%s/%s/%s/assets", infraEnvs.InstallableServicesItemsDir,
+		installableService.Type.String(), installedServiceNameStr,
+	)
+	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
 
 	if createDto.StartupFile != nil {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
@@ -791,23 +805,25 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
-	_, err := os.Stat(infraEnvs.ServiceInstalledItemsDir)
+	_, err := os.Stat(infraEnvs.InstallableServicesItemsDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
 
-		_, err = infraHelper.RunCmdWithSubShell(
-			"cd " + infraEnvs.InfiniteOsMainDir + ";" +
-				"git clone https://github.com/goinfinite/os-services.git services",
+		repoCloneCmd := fmt.Sprintf(
+			"cd %s; git clone --single-branch --branch %s %s services",
+			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoUrl,
+			infraEnvs.InstallableServicesItemsRepoBranch,
 		)
+		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
 		if err != nil {
 			return errors.New("CloneServicesItemsRepoError: " + err.Error())
 		}
 	}
 
 	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.ServiceInstalledItemsDir + ";" +
+		"cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
 	)
 	return err
