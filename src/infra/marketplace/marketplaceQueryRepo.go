@@ -135,6 +135,24 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 	return itemMappings, nil
 }
 
+func (repo *MarketplaceQueryRepo) specificTypeDataFieldValueGenerator(
+	dataFieldSpecificType valueObject.DataFieldSpecificType,
+) (valueObject.DataFieldValue, error) {
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+
+	var dummyValue string
+	switch dataFieldSpecificType.String() {
+	case "password":
+		dummyValue = dummyValueGenerator.GenPass(16)
+	case "username":
+		dummyValue = dummyValueGenerator.GenUsername()
+	case "email":
+		dummyValue = dummyValueGenerator.GenMailAddress(nil)
+	}
+
+	return valueObject.NewDataFieldValue(dummyValue)
+}
+
 func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 	catalogItemDataFieldsMap interface{},
 ) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
@@ -182,20 +200,20 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 			continue
 		}
 
-		isRequired := false
-		if rawItemDataFieldMap["isRequired"] != nil {
-			rawIsRequired, err := voHelper.InterfaceToBool(
-				rawItemDataFieldMap["isRequired"],
+		var fieldSpecificTypePtr *valueObject.DataFieldSpecificType
+		if rawItemDataFieldMap["specificType"] != nil {
+			rawFieldSpecificType := rawItemDataFieldMap["specificType"]
+			fieldSpecificType, err := valueObject.NewDataFieldSpecificType(
+				rawFieldSpecificType,
 			)
 			if err != nil {
 				slog.Debug(
-					"InvalidMarketplaceCatalogItemDataFieldIsRequired",
-					slog.Any("err", err), slog.Any("key", rawKey),
-					slog.Bool("isRequired", rawIsRequired),
+					err.Error(), slog.Any("key", rawKey),
+					slog.Any("specificType", rawFieldSpecificType),
 				)
 				continue
 			}
-			isRequired = rawIsRequired
+			fieldSpecificTypePtr = &fieldSpecificType
 		}
 
 		var defaultValuePtr *valueObject.DataFieldValue
@@ -210,6 +228,36 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 				continue
 			}
 			defaultValuePtr = &defaultValue
+		}
+
+		if fieldSpecificTypePtr != nil && defaultValuePtr == nil {
+			defaultValue, err := repo.specificTypeDataFieldValueGenerator(
+				*fieldSpecificTypePtr,
+			)
+			if err != nil {
+				slog.Debug(
+					err.Error(), slog.Any("key", rawKey),
+					slog.Any("specificType", fieldSpecificTypePtr.String()),
+				)
+				continue
+			}
+			defaultValuePtr = &defaultValue
+		}
+
+		isRequired := false
+		if rawItemDataFieldMap["isRequired"] != nil {
+			rawIsRequired, err := voHelper.InterfaceToBool(
+				rawItemDataFieldMap["isRequired"],
+			)
+			if err != nil {
+				slog.Debug(
+					"InvalidMarketplaceCatalogItemDataFieldIsRequired",
+					slog.Any("err", err), slog.Any("key", rawKey),
+					slog.Bool("isRequired", rawIsRequired),
+				)
+				continue
+			}
+			isRequired = rawIsRequired
 		}
 
 		if !isRequired && defaultValuePtr == nil {
@@ -244,7 +292,8 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 		}
 
 		itemDataField, err := valueObject.NewMarketplaceCatalogItemDataField(
-			key, label, fieldType, defaultValuePtr, options, isRequired,
+			key, label, fieldType, fieldSpecificTypePtr, defaultValuePtr, options,
+			isRequired,
 		)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("key", rawKey))

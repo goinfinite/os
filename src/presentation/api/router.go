@@ -178,6 +178,7 @@ func (router Router) sslRoutes() {
 	sslGroup.POST("/", sslController.Create)
 	sslGroup.DELETE("/:sslPairId/", sslController.Delete)
 	sslGroup.PUT("/vhost/", sslController.DeleteVhosts)
+
 	go sslController.SslCertificateWatchdog()
 }
 

@@ -678,7 +678,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 func (repo *ServicesQueryRepo) ReadInstallableItems(
 	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableItemsDto dto.ReadInstallableServicesItemsResponse, err error) {
-	_, err = os.Stat(infraEnvs.ServiceInstalledItemsDir)
+	_, err = os.Stat(infraEnvs.InstallableServicesItemsDir)
 	if err != nil {
 		servicesCmdRepo := NewServicesCmdRepo(repo.persistentDbSvc)
 		err = servicesCmdRepo.RefreshInstallableItems()
@@ -690,7 +690,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	}
 
 	rawInstallableFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.ServiceInstalledItemsDir + " -type f " +
+		"find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
 	)
