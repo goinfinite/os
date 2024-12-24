@@ -32,7 +32,7 @@ func (helper *DummyValueGenerator) GenUsername() string {
 
 func (helper *DummyValueGenerator) GenMailAddress(mailUsername *string) string {
 	dummyMailAddressDomains := []string{
-		"@enterprise.com", "@corporation.com", "@company.org",
+		"@republic.gov", "@senate.gov", "@empire.gov",
 	}
 	randomMailAddressDomain := dummyMailAddressDomains[rand.Intn(len(dummyMailAddressDomains))]
 
