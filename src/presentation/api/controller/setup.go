@@ -31,7 +31,7 @@ func NewSetupController(
 
 // SetupInfiniteOs godoc
 // @Summary      SetupInfiniteOs
-// @Description  Creates the first Infinite OS account without requiring authentication. This can only be used when the Infinite OS interface is accessed for the first time with no accounts created.
+// @Description  Creates the first Infinite OS account without requiring authentication.<br />This can only be used when the Infinite OS interface is accessed for the first time with no accounts created.
 // @Tags         setup
 // @Accept       json
 // @Produce      json
