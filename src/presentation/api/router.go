@@ -168,6 +168,15 @@ func (router Router) servicesRoutes() {
 	go servicesController.AutoRefreshServiceInstallableItems()
 }
 
+func (router Router) setupRoutes() {
+	setupGroup := router.baseRoute.Group("/v1/setup")
+	setupController := apiController.NewSetupController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+
+	setupGroup.POST("/", setupController.Setup)
+}
+
 func (router Router) sslRoutes() {
 	sslGroup := router.baseRoute.Group("/v1/ssl")
 	sslController := apiController.NewSslController(
@@ -213,6 +222,7 @@ func (router Router) RegisterRoutes() {
 	router.runtimeRoutes()
 	router.scheduledTaskRoutes()
 	router.servicesRoutes()
+	router.setupRoutes()
 	router.sslRoutes()
 	router.vhostsRoutes()
 }

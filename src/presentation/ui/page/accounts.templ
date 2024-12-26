@@ -137,7 +137,7 @@ script AccountsIndexLocalState() {
 			},
 			deleteAccount() {
 				htmx.ajax(
-                    'DELETE', `/api/v1/account/`, {swap: 'none'},
+                    'DELETE', `/api/v1/account/` + this.account.id, {swap: 'none'},
                 ).then(() => {
 				    this.$dispatch('delete:account');
 				});
@@ -256,7 +256,13 @@ templ CreateAccountForm() {
 				Label:              "Username",
 				BindModelValuePath: "account.username",
 			})
-			@componentForm.PasswordInput("password", "Password", "account.password")
+			@componentForm.PasswordInput(componentForm.PasswordInputDto{
+				Id:                                "password",
+				Label:                             "Password",
+				BindModelPath:                     "account.password",
+				ShouldIncludeGenRandomPassBtn:     true,
+				ShouldIncludePassStrengthCriteria: true,
+			})
 		</div>
 		@componentForm.SubmitButton(
 			"create-account-button", "Create", "ph-check-fat",
@@ -281,7 +287,13 @@ templ UpdatePasswordForm() {
 	>
 		<div class="mb-6">
 			<input type="hidden" name="id" x-bind:value="account.id"/>
-			@componentForm.PasswordInput("password", "Password", "account.password")
+			@componentForm.PasswordInput(componentForm.PasswordInputDto{
+				Id:                                "password",
+				Label:                             "Password",
+				BindModelPath:                     "account.password",
+				ShouldIncludeGenRandomPassBtn:     true,
+				ShouldIncludePassStrengthCriteria: true,
+			})
 		</div>
 		@componentForm.SubmitButton(
 			"update-account-password-button", "Update", "ph-key",

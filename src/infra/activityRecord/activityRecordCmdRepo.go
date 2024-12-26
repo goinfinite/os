@@ -95,10 +95,10 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecord) er
 	dbQuery := repo.trailDbSvc.Handler.Model(&deleteModel).Where(&deleteModel)
 
 	if deleteDto.CreatedBeforeAt != nil {
-		dbQuery.Where("created_at < ?", deleteDto.CreatedBeforeAt.GetAsGoTime())
+		dbQuery.Where("created_at < ?", deleteDto.CreatedBeforeAt.ReadAsGoTime())
 	}
 	if deleteDto.CreatedAfterAt != nil {
-		dbQuery.Where("created_at > ?", deleteDto.CreatedAfterAt.GetAsGoTime())
+		dbQuery.Where("created_at > ?", deleteDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
 	return dbQuery.Delete(&dbModel.ActivityRecord{}).Error

@@ -82,6 +82,15 @@ func (router *Router) databasesRoutes() {
 	databaseGroup.GET("/", databasesPresenter.Handler)
 }
 
+func (router *Router) loginRoutes() {
+	loginGroup := router.baseRoute.Group("/login")
+
+	loginPresenter := presenter.NewLoginPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+	loginGroup.GET("/", loginPresenter.Handler)
+}
+
 func (router *Router) mappingsRoutes() {
 	mappingsGroup := router.baseRoute.Group("/mappings")
 
@@ -107,6 +116,15 @@ func (router *Router) runtimesRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
+}
+
+func (router *Router) setupRoutes() {
+	setupGroup := router.baseRoute.Group("/setup")
+
+	setupPresenter := presenter.NewSetupPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+	setupGroup.GET("/", setupPresenter.Handler)
 }
 
 func (router *Router) sslsRoutes() {
@@ -168,9 +186,11 @@ func (router *Router) RegisterRoutes() {
 	router.cronsRoutes()
 	router.accountsRoutes()
 	router.databasesRoutes()
+	router.loginRoutes()
 	router.mappingsRoutes()
 	router.marketplaceRoutes()
 	router.runtimesRoutes()
+	router.setupRoutes()
 	router.sslsRoutes()
 
 	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {

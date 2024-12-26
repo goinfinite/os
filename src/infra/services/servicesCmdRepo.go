@@ -813,8 +813,8 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 
 		repoCloneCmd := fmt.Sprintf(
 			"cd %s; git clone --single-branch --branch %s %s services",
-			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoUrl,
-			infraEnvs.InstallableServicesItemsRepoBranch,
+			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoBranch,
+			infraEnvs.InstallableServicesItemsRepoUrl,
 		)
 		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
 		if err != nil {

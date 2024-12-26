@@ -39,19 +39,19 @@ func (vo UnixTime) Int64() int64 {
 	return time.Unix(int64(vo), 0).UTC().Unix()
 }
 
-func (vo UnixTime) GetRfcDate() string {
+func (vo UnixTime) ReadRfcDate() string {
 	return time.Unix(int64(vo), 0).UTC().Format(time.RFC3339)
 }
 
-func (vo UnixTime) GetDateOnly() string {
+func (vo UnixTime) ReadDateOnly() string {
 	return time.Unix(int64(vo), 0).UTC().Format("2006-01-02")
 }
 
-func (vo UnixTime) GetTimeOnly() string {
+func (vo UnixTime) ReadTimeOnly() string {
 	return time.Unix(int64(vo), 0).UTC().Format("15:04:05")
 }
 
-func (vo UnixTime) GetAsGoTime() time.Time {
+func (vo UnixTime) ReadAsGoTime() time.Time {
 	return time.Unix(int64(vo), 0).UTC()
 }
 

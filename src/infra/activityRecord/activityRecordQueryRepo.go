@@ -66,10 +66,10 @@ func (repo *ActivityRecordQueryRepo) Read(
 
 	dbQuery := repo.trailDbSvc.Handler.Model(&readModel).Where(&readModel)
 	if readDto.CreatedBeforeAt != nil {
-		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.ReadAsGoTime())
 	}
 	if readDto.CreatedAfterAt != nil {
-		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
 	activityRecordEventModels := []dbModel.ActivityRecord{}

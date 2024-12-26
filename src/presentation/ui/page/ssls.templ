@@ -170,8 +170,8 @@ templ SslsTable(sslPairs []entity.SslPair) {
 							@componentStructural.Tag("ph-network", "", vhostHostname.String(), "infinite-500")
 						}
 					</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.IssuedAt.GetDateOnly() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.ExpiresAt.GetDateOnly() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.IssuedAt.ReadDateOnly() }</th>
+					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.ExpiresAt.ReadDateOnly() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
 					<th scope="row" class="w-1/4 px-5 py-3 text-right">
 						<div class="inline-flex space-x-2">
