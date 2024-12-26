@@ -24,9 +24,9 @@ script SetupLocalState() {
 						password: this.password,
 					});
 
-                    if (!authResponse.tokenStr) {
-                        throw new Error("AccessTokenNotCreated")
-                    }
+					if (!authResponse.tokenStr) {
+						throw new Error("AccessTokenNotCreated")
+					}
 
 					Alpine.store("toast").displayToast("LoginSuccessful", "success");
 					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
