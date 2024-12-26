@@ -1943,6 +1943,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/setup/": {
+            "post": {
+                "description": "Creates the first Infinite OS account without requiring authentication.\u003cbr /\u003eThis can only be used when the Infinite OS interface is accessed for the first time with no accounts created.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "setup"
+                ],
+                "summary": "SetupInfiniteOs",
+                "parameters": [
+                    {
+                        "description": "CreateFirstAccount",
+                        "name": "createFirstAccount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "FirstAccountCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/ssl/": {
             "get": {
                 "security": [
@@ -3855,17 +3889,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "valueObject.SecureAccessPublicKeyContent": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "fingerprint": {
                     "type": "string"
                 }
             }
