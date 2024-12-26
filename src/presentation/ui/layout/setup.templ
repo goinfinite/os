@@ -24,6 +24,10 @@ script SetupLocalState() {
 						password: this.password,
 					});
 
+                    if (!authResponse.tokenStr) {
+                        throw new Error("AccessTokenNotCreated")
+                    }
+
 					Alpine.store("toast").displayToast("LoginSuccessful", "success");
 					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
 					window.location.href = "/_/#/overview/";
@@ -42,7 +46,7 @@ templ Setup() {
 	<html>
 		@HeadTag()
 		<body
-			class="bg-os-500 h-vh flex flex-col items-center justify-center bg-os-500 bg-cover bg-no-repeat text-neutral-50"
+			class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
 		>
 			@SetupLocalState()
 			@componentUtil.LoadingOverlay()
