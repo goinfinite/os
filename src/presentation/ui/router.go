@@ -121,7 +121,9 @@ func (router *Router) runtimesRoutes() {
 func (router *Router) setupRoutes() {
 	setupGroup := router.baseRoute.Group("/setup")
 
-	setupPresenter := presenter.NewSetupPresenter()
+	setupPresenter := presenter.NewSetupPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
 	setupGroup.GET("/", setupPresenter.Handler)
 }
 
