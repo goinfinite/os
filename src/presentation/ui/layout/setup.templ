@@ -32,7 +32,7 @@ script SetupLocalState() {
 					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
 					window.location.href = "/_/#/overview/";
 				} catch (error) {
-					loadingOverlayElement.classList.remove("htmx-request");
+					document.getElementById("loading-overlay").classList.remove("htmx-request");
 					Alpine.store("toast").displayToast(error.message, "danger");
 					return;
 				}
