@@ -65,6 +65,7 @@ document.addEventListener("alpine:init", () => {
 
 		if (shouldDisplayToast) {
         	Alpine.store("toast").displayToast(error.message, "danger");
+			return;
 		}
 		throw error;
     }
