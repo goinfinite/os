@@ -14,15 +14,16 @@ script SetupLocalState() {
 			password: '',
 			async setupInfiniteOsAndLogin() {
 				try {
+					const shouldDisplayToast = false;
 					await Infinite.JsonAjax("POST", "/api/v1/setup/", {
 						username: this.username,
 						password: this.password,
-					});
+					}, shouldDisplayToast);
 
 					const authResponse = await Infinite.JsonAjax("POST", "/api/v1/auth/login/", {
 						username: this.username,
 						password: this.password,
-					});
+					}, shouldDisplayToast);
 
 					if (!authResponse.tokenStr) {
 						throw new Error("AccessTokenNotCreated")
@@ -32,7 +33,6 @@ script SetupLocalState() {
 					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
 					window.location.href = "/_/#/overview/";
 				} catch (error) {
-					document.getElementById("loading-overlay").classList.remove("htmx-request");
 					Alpine.store("toast").displayToast(error.message, "danger");
 					return;
 				}

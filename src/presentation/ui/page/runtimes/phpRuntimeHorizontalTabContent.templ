@@ -25,13 +25,14 @@ script PhpRuntimeHorizontalTabContentLocalState() {
 				this.resetPrimaryStates();
 			},
 			async updatePhpConfigs() {
+				const shouldDisplayToast = true;
 				await Infinite.JsonAjax(
 					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
 					{
 						version: this.phpConfigs.version.value,
 						modules: this.phpConfigs.modules,
 						settings: this.phpConfigs.settings,
-					},
+					}, shouldDisplayToast,
 				);
 			},
 
