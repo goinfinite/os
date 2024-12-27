@@ -182,10 +182,10 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 				dataFieldValue = ""
 			}
 
-			escapedDataFieldValue := shellescape.Quote(dataFieldValue)
+			printableDataFieldValue := shellescape.StripUnsafe(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
-				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", escapedDataFieldValue,
+				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", printableDataFieldValue,
 			)
 			cmdStepStr = cmdStepWithDataFieldStr
 		}

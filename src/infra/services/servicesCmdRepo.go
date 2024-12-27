@@ -344,10 +344,10 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 				placeholderValue = ""
 			}
 
-			escapedPlaceholderValue := shellescape.Quote(placeholderValue)
+			printablePlaceholderValue := shellescape.StripUnsafe(placeholderValue)
 
 			cmdStepStr = strings.ReplaceAll(
-				cmdStepStr, "%"+stepPlaceholder+"%", escapedPlaceholderValue,
+				cmdStepStr, "%"+stepPlaceholder+"%", printablePlaceholderValue,
 			)
 		}
 
