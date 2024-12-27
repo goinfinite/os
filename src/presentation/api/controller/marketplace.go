@@ -77,10 +77,11 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 			continue
 		}
 
-		dataFieldsMapSlice = append(
-			dataFieldsMapSlice,
-			map[string]interface{}{rawDataFieldParts[0]: rawDataFieldParts[1]},
-		)
+		dataFieldMap := map[string]interface{}{
+			"name":  rawDataFieldParts[0],
+			"value": rawDataFieldParts[1],
+		}
+		dataFieldsMapSlice = append(dataFieldsMapSlice, dataFieldMap)
 	}
 
 	return dataFieldsMapSlice
