@@ -90,7 +90,7 @@ func (controller *AccountController) Update(c echo.Context) error {
 		requestInputData["shouldUpdateApiKey"],
 	)
 	if err == nil && shouldUpdateApiKey {
-		return apiHelper.ServiceResponseWithIgnoreToastHeaderWrapper(
+		return apiHelper.ServiceResponseWrapper(
 			c, controller.accountService.Update(requestInputData),
 		)
 	}
