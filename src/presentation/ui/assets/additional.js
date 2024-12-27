@@ -35,7 +35,7 @@ window.__unocss = {
 };
 
 document.addEventListener("alpine:init", () => {
-  async function jsonAjax(method, url, payload) {
+  async function jsonAjax(method, url, payload, shouldDisplayToast) {
     const loadingOverlayElement = document.getElementById("loading-overlay");
     loadingOverlayElement.classList.add("htmx-request");
 
@@ -56,10 +56,15 @@ document.addEventListener("alpine:init", () => {
             throw new Error(parsedResponse.body);
         }
 
-        Alpine.store("toast").displayToast(parsedResponse.body, "success");
+		if (shouldDisplayToast) {
+        	Alpine.store("toast").displayToast(parsedResponse.body, "success");
+		}
         return parsedResponse.body;
     } catch (error) {
-        Alpine.store("toast").displayToast(error.message, "danger");
+		if (shouldDisplayToast) {
+        	Alpine.store("toast").displayToast(error.message, "danger");
+		}
+		throw error;
     }
   }
 
