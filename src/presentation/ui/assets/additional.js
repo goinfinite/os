@@ -61,6 +61,8 @@ document.addEventListener("alpine:init", () => {
 		}
         return parsedResponse.body;
     } catch (error) {
+        loadingOverlayElement.classList.remove("htmx-request");
+
 		if (shouldDisplayToast) {
         	Alpine.store("toast").displayToast(error.message, "danger");
 		}
