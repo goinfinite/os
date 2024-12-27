@@ -24,11 +24,6 @@ script ToastGlobalState() {
 	document.addEventListener('htmx:afterRequest', (event) => {
 		const httpResponseObject = event.detail.xhr;
 
-		const shouldIgnoreToast = httpResponseObject.getResponseHeader("X-Ignore-Toast");
-		if (shouldIgnoreToast === 'true') {
-			return;
-		}
-
 		const contentType = httpResponseObject.getResponseHeader("Content-Type");
 		if (contentType !== 'application/json') {
 			return;
