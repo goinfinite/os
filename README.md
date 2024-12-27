@@ -1,8 +1,9 @@
 ```
-This project is under active development and is not ready for production use.
+This project is still under active development (alpha stage).
+Expect bugs early on. Create issues so they can be fixed.
 ```
 
-# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![Community](https://img.shields.io/badge/community-751A3D)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/go%20report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
+# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
 
 Infinite OS is a container operating system designed to allow you to deploy applications knowing little to nothing about containers. It comes with a user-friendly dashboard, REST API, and CLI for seamless container management.
 
@@ -10,7 +11,7 @@ A read-only demo of the dashboard is available at [https://os.demo.goinfinite.ne
 
 ## Running
 
-To run Infinite OS, you can pull the image from DockerHub and use the following command:
+To run Infinite OS you just need a single command:
 
 ```
 docker run --rm --name myapp-container \
@@ -19,20 +20,9 @@ docker run --rm --name myapp-container \
   -it docker.io/goinfinite/os:latest
 ```
 
-In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic.
+Then you'll be able to access the dashboard at `https://localhost:1618/_/` and the setup wizard will allow you to create a new account. Note that you may encounter an SSL warning due to the self-signed certificate, which you can ignore or replace with your own certificate later.
 
-You can customize the container name, vhost, and host ports as needed. The `--rm` flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
-
-After deploying the container, access the shell to create a new account with the following command:
-
-```
-docker exec -it myapp-container /bin/bash
-os account create -u admin -p admin
-```
-
-Once the account is created, you can access the dashboard at `https://localhost:1618/_/` and log in with the credentials you just set up. Note that you may encounter an SSL warning due to the self-signed certificate, which you can ignore or replace with your own certificate later.
-
-Through the dashboard, you can deploy applications using the Marketplace feature with just a few clicks. You can also use the CLI for deployments, such as:
+Using the dashboard you can deploy applications with the Marketplace feature in just a few clicks. You can also use the CLI for deployments, such as:
 
 ```
 os mktplace install -s wp \
@@ -40,6 +30,10 @@ os mktplace install -s wp \
   -f 'adminPassword:abc123' \
   -f 'adminMailAddress:user@example.com'
 ```
+
+In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic or [Infinite Ez](https://github.com/goinfinite/ez), our free and easy-to-use self-hosted PaaS solution.
+
+You can customize the container name, vhost, and host ports as needed. The `--rm` flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
 
 The API Swagger documentation is available at `https://localhost:1618/api/swagger/`.
 
@@ -50,40 +44,6 @@ Infinite OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes
 The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/9). You may create issues or pull requests to contribute to the project.
 
 In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
-
-To run this project during development you must install [Air](https://github.com/cosmtrek/air). Air is a tool that will watch for changes in the project and recompile it automatically.
-
-### Environment Variables
-
-You must have an `.env` file in the root of the git directory **during development**. You can use the `.env.example` file as a template. Air will read the `.env` file and use it to run the project during development.
-
-If you add a new env var that is required to run the apis, please add it to the `src/presentation/cli/checkEnvs.go` file.
-
-When running in production, the `/infinite/.env` file is only used if the environment variables weren't set in the system.
-
-### Unit Testing
-
-Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
-
-```
-podman build -t os-unit-test:latest -f Containerfile.test .
-podman run --rm -it os-unit-test:latest
-```
-
-Make sure you have the `.env` file in the root of the git directory before running the tests.
-
-Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
-
-```
-sudo mkdir /infinite
-sudo chown $(whoami):$(whoami) /infinite
-```
-
-### Dev Utils
-
-The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
-
-For instance there you'll find a `testHelpers.go` file that is used to read the `.env` during tests.
 
 ### Building
 
@@ -126,6 +86,30 @@ With this approach you don't need to rebuild the container every time you change
 1. You must run the script from the project's root directory;
 2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
 
+### Unit Testing
+
+Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
+
+```
+podman build -t os-unit-test:latest -f Containerfile.test .
+podman run --rm -it os-unit-test:latest
+```
+
+Make sure you have a `.env` file in the root of the git directory before running the tests.
+
+Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
+
+```
+sudo mkdir /infinite
+sudo chown $(whoami):$(whoami) /infinite
+```
+
+### Dev Utils
+
+The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
+
+For instance there you'll find a `testHelpers.go` file that is used to read the `.env` during tests.
+
 ### Web UIs
 
 This project has two web UIs, the previous Vue.js frontend and the new [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend. The Vue.js frontend is deprecated and will be removed in the future. It's available at `/_/` and the [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend is available at `/`.
@@ -157,7 +141,6 @@ hbenl.vscode-test-explorer
 ms-vscode.test-adapter-converter
 redhat.vscode-yaml
 streetsidesoftware.code-spell-checker
-streetsidesoftware.code-spell-checker-portuguese-brazilian
 timonwong.shellcheck
 ```
 
