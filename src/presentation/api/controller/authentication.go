@@ -38,7 +38,7 @@ func (controller *AuthenticationController) Login(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWithIgnoreToastHeaderWrapper(
+	return apiHelper.ServiceResponseWrapper(
 		c, controller.authenticationService.Login(requestInputData),
 	)
 }
