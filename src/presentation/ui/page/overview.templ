@@ -14,21 +14,6 @@ script OverviewIndexLocalState(
 		Alpine.data('marketplace', () => ({
 			// Primary States
 			marketplaceItem: {},
-			get hostnameWithTrailingSlash() {
-				return this.marketplaceItem.hostname + "/";
-			},
-			// Analisar esse método pra ver se não dá pra substituí-lo.
-			get dataFieldsAsString() {
-				let dataFieldsAsString = "";
-				for (let dataField of this.marketplaceItem.dataFields) {
-					if (!dataField.value) {
-						continue
-					}
-
-					dataFieldsAsString += dataField.name + ':' + dataField.value + ';';
-				}
-				return dataFieldsAsString.slice(0, -1);
-			},
 			resetPrimaryStates() {
 				this.marketplaceItem = {
 					id: '',
@@ -106,10 +91,10 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
 			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-				<th scope="col" class="w-10% px-5 py-3 text-left">Name</th>
-				<th scope="col" class="w-10% px-5 py-3">Type</th>
-				<th scope="col" class="w-10% px-5 py-3">Installation Directory</th>
-				<th scope="col" class="w-10% px-5 py-3">Created At</th>
+				<th scope="col" class="w-20% px-5 py-3 text-left">Name</th>
+				<th scope="col" class="w-15% px-5 py-3">Type</th>
+				<th scope="col" class="w-20% px-5 py-3">Installation Directory</th>
+				<th scope="col" class="w-15% px-5 py-3">Created At</th>
 				<th scope="col" class="flex justify-end py-3">
 					<div class="mr-2">
 						@componentForm.SubmitButton(
@@ -123,15 +108,15 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 		<tbody>
 			for _, installedItem := range installedItemsList {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th scope="row" class="w-10% px-5 py-3 text-left font-normal">
+					<th scope="row" class="px-5 py-3 text-left font-normal">
 						<div class="inline-flex items-center">
 							<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
 							{ installedItem.Name.String() }
 						</div>
 					</th>
-					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.Type.String() }</th>
-					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
-					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
+					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.Type.String() }</th>
+					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
+					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
 					<th scope="row" class="px-5 py-3 text-right font-normal">
 						<div class="inline-flex">
 							@componentStructural.CircularIconButtonWithTooltip(
