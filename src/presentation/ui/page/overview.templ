@@ -1,0 +1,148 @@
+package page
+
+import (
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+script OverviewIndexLocalState(
+	marketplaceInstalledItemsPageNumber uint32,
+) {
+    document.addEventListener('alpine:init', () => {
+		Alpine.data('marketplace', () => ({
+			// Primary States
+			marketplaceItem: {},
+			get hostnameWithTrailingSlash() {
+				return this.marketplaceItem.hostname + "/";
+			},
+			// Analisar esse método pra ver se não dá pra substituí-lo.
+			get dataFieldsAsString() {
+				let dataFieldsAsString = "";
+				for (let dataField of this.marketplaceItem.dataFields) {
+					if (!dataField.value) {
+						continue
+					}
+
+					dataFieldsAsString += dataField.name + ':' + dataField.value + ';';
+				}
+				return dataFieldsAsString.slice(0, -1);
+			},
+			resetPrimaryStates() {
+				this.marketplaceItem = {
+					id: '',
+					name: '',
+					hostname: '',
+					urlPath: '',
+					dataFields: [],
+				};
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Modal States
+			isUninstallMarketplaceItemModalOpen: false,
+			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
+				this.resetPrimaryStates();
+
+				this.marketplaceItem.id = installedItemId;
+				this.marketplaceItem.name = installedItemName;
+				this.isUninstallMarketplaceItemModalOpen = true;
+			},
+			closeUninstallMarketplaceItemModal() {
+				this.isUninstallMarketplaceItemModalOpen = false;
+			},
+			uninstallMarketplaceItem() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
+					{swap: 'none'},
+				);
+				this.$store.main.refreshScheduledTasksPopover()
+				this.$dispatch('uninstall:marketplace-item');
+				this.closeUninstallMarketplaceItemModal();
+			},
+		}));
+
+		Alpine.data('resourceUsage', () => ({
+			marketplaceInstalledItemsPageNumber,
+		}));
+
+		Alpine.data('services', () => ({
+			marketplaceInstalledItemsPageNumber,
+		}));
+	})
+}
+
+templ OverviewIndex(
+	marketplaceInstalledItemsResponseDto dto.ReadMarketplaceInstalledItemsResponse,
+) {
+	@OverviewIndexLocalState(marketplaceInstalledItemsResponseDto.Pagination.PageNumber)
+	<div class="flex flex-col">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Overview",
+				"Welcome! Take a quick peek at your installed services and marketplace items, as well as Infinite OS performance such as the server resource usage and system information.",
+				"ph-speedometer",
+			)
+		</div>
+		<div id="marketplace" class="card w-full" x-data="marketplace">
+			@InstalledMarketplaceItemsTable(
+				marketplaceInstalledItemsResponseDto.MarketplaceInstalledItems,
+			)
+			@componentStructural.ScheduleDeletionModal(
+				"isUninstallMarketplaceItemModalOpen",
+				"closeUninstallMarketplaceItemModal()",
+				"uninstallMarketplaceItem()",
+				"marketplaceItem.name", "marketplaceItem.id",
+			)
+		</div>
+	</div>
+}
+
+templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInstalledItem) {
+	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
+			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+				<th scope="col" class="w-10% px-5 py-3 text-left">Name</th>
+				<th scope="col" class="w-10% px-5 py-3">Type</th>
+				<th scope="col" class="w-10% px-5 py-3">Installation Directory</th>
+				<th scope="col" class="w-10% px-5 py-3">Created At</th>
+				<th scope="col" class="flex justify-end py-3">
+					<div class="mr-2">
+						@componentForm.SubmitButton(
+							"open-create-marketplace-catalog-item-button", "Open catalog",
+							"ph-storefront", "console.log('Open catalog')", false,
+						)
+					</div>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, installedItem := range installedItemsList {
+				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					<th scope="row" class="w-10% px-5 py-3 text-left font-normal">
+						<div class="inline-flex items-center">
+							<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
+							{ installedItem.Name.String() }
+						</div>
+					</th>
+					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.Type.String() }</th>
+					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
+					<th scope="row" class="w-25% px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
+					<th scope="row" class="px-5 py-3 text-right font-normal">
+						<div class="inline-flex">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
+								"Uninstall", "red-500",
+							)
+						</div>
+					</th>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
