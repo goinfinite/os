@@ -3,6 +3,8 @@
 ```log
 0.1.7 - 2024/X/X
 fix(front): install params section on marketplace deploy
+refactor(front): login page with HTMX+Alpine.js
+feat: /setup/ (api and front)
 
 0.1.6 - 2024/X/X
 refactor(front): crons page with HTMX+Alpine.js

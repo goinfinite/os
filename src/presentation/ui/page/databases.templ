@@ -274,7 +274,13 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 				Label:              "Username",
 				BindModelValuePath: "databaseUser.username",
 			})
-			@componentForm.PasswordInput("password", "Password", "databaseUser.password")
+			@componentForm.PasswordInput(componentForm.PasswordInputDto{
+				Id:                                "password",
+				Label:                             "Password",
+				BindModelPath:                     "databaseUser.password",
+				ShouldIncludeGenRandomPassBtn:     true,
+				ShouldIncludePassStrengthCriteria: true,
+			})
 			if selectedDbOverview.Type.String() == "mariadb" {
 				<section class="mb-6 w-full rounded-md">
 					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">

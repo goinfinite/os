@@ -1020,13 +1020,6 @@ definitions:
       protocol:
         type: string
     type: object
-  valueObject.SecureAccessPublicKeyContent:
-    properties:
-      content:
-        type: string
-      fingerprint:
-        type: string
-    type: object
   valueObject.ServiceMetrics:
     properties:
       cpuUsagePercent:
@@ -2286,6 +2279,30 @@ paths:
       summary: CreateInstallableService
       tags:
       - services
+  /v1/setup/:
+    post:
+      consumes:
+      - application/json
+      description: Creates the first Infinite OS account without requiring authentication.<br
+        />This can only be used when the Infinite OS interface is accessed for the
+        first time with no accounts created.
+      parameters:
+      - description: CreateFirstAccount
+        in: body
+        name: createFirstAccount
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccount'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: FirstAccountCreated
+          schema:
+            type: object
+      summary: SetupInfiniteOs
+      tags:
+      - setup
   /v1/ssl/:
     get:
       consumes:

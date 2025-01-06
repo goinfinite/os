@@ -190,7 +190,7 @@ templ MarketplaceInstalledItemsTable(
 						{ installedItem.Hostname.String() + installedItem.UrlPath.String() }
 					</th>
 					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
-					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.CreatedAt.GetDateOnly() }</th>
+					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
 					<th scope="row" class="w-1/6 px-5 py-3 text-right font-normal">
 						<div class="inline-flex">
 							@componentStructural.CircularIconButtonWithTooltip(

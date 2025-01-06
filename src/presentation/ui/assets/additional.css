@@ -13,7 +13,7 @@ h6 {
     word-spacing: -.1618rem;
 }
 
-.sidebar::-webkit-scrollbar {
+#sidebarMenu::-webkit-scrollbar {
 	width: 0;
 	height: 0;
 }

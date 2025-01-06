@@ -65,6 +65,17 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
 
+	isPrimaryVirtualHost := infraHelper.IsPrimaryVirtualHost(hostname)
+	if isPrimaryVirtualHost {
+		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
+		_, err = infraHelper.RunCmdWithSubShell(
+			"unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php",
+		)
+		if err != nil {
+			return errors.New("UpdatePhpCliVersionError: " + err.Error())
+		}
+	}
+
 	return repo.restartPhpWebserver()
 }
 

@@ -53,22 +53,22 @@ func (repo *ScheduledTaskQueryRepo) Read(
 			Where("scheduled_tasks_tags.tag IN (?)", tagsStrSlice)
 	}
 	if readDto.StartedBeforeAt != nil {
-		dbQuery = dbQuery.Where("started_at < ?", readDto.StartedBeforeAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("started_at < ?", readDto.StartedBeforeAt.ReadAsGoTime())
 	}
 	if readDto.StartedAfterAt != nil {
-		dbQuery = dbQuery.Where("started_at > ?", readDto.StartedAfterAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("started_at > ?", readDto.StartedAfterAt.ReadAsGoTime())
 	}
 	if readDto.FinishedBeforeAt != nil {
-		dbQuery = dbQuery.Where("finished_at < ?", readDto.FinishedBeforeAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("finished_at < ?", readDto.FinishedBeforeAt.ReadAsGoTime())
 	}
 	if readDto.FinishedAfterAt != nil {
-		dbQuery = dbQuery.Where("finished_at > ?", readDto.FinishedAfterAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("finished_at > ?", readDto.FinishedAfterAt.ReadAsGoTime())
 	}
 	if readDto.CreatedBeforeAt != nil {
-		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("created_at < ?", readDto.CreatedBeforeAt.ReadAsGoTime())
 	}
 	if readDto.CreatedAfterAt != nil {
-		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.GetAsGoTime())
+		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
 	var itemsTotal int64
