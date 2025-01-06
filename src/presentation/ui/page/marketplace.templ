@@ -410,7 +410,7 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 }
 
 templ ScheduleMarketplaceItemInstallationModal(vhostsHostnames []string) {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
 		"closeScheduleMarketplaceItemInstallationModal()", "marketplaceItem.name",
 	) {
