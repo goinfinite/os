@@ -83,8 +83,8 @@ script MarketplaceIndexLocalState() {
 			},
 
 			// Modal States
-			isScheduleMarketplaceItemInstallationModalOpen: false,
-			openScheduleMarketplaceItemInstallationModal(catalogItemId) {
+			isScheduleSelectedMarketplaceItemInstallationModalOpen: false,
+			openScheduleSelectedMarketplaceItemInstallationModal(catalogItemId) {
 				this.resetPrimaryStates();
 
 				const catalogItemEntity = JSON.parse(
@@ -98,10 +98,10 @@ script MarketplaceIndexLocalState() {
 					this.marketplaceItem.dataFields.push(dataField);
 				}
 
-				this.isScheduleMarketplaceItemInstallationModalOpen = true;
+				this.isScheduleSelectedMarketplaceItemInstallationModalOpen = true;
 			},
-			closeScheduleMarketplaceItemInstallationModal() {
-				this.isScheduleMarketplaceItemInstallationModalOpen = false;
+			closeScheduleSelectedMarketplaceItemInstallationModal() {
+				this.isScheduleSelectedMarketplaceItemInstallationModalOpen = false;
 			},
 			isUninstallMarketplaceItemModalOpen: false,
 			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
@@ -157,7 +157,7 @@ templ MarketplaceIndex(
 				"uninstallMarketplaceItem()",
 				"marketplaceItem.name", "marketplaceItem.id",
 			)
-			@ScheduleMarketplaceItemInstallationModal(vhostsHostnames)
+			@ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames)
 		</div>
 	</div>
 }
@@ -268,7 +268,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 				@componentForm.SubmitButton(
 					"install-"+item.Slugs[0].String()+"-marketplace-item",
 					"Install", "ph-arrow-line-down",
-					"openScheduleMarketplaceItemInstallationModal("+item.Id.String()+")",
+					"openScheduleSelectedMarketplaceItemInstallationModal("+item.Id.String()+")",
 					false,
 				)
 			</div>
@@ -341,7 +341,7 @@ templ MarketplaceCatalogItemCarouselImageLightbox() {
 	</div>
 }
 
-templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
+templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) {
 	<form
 		id="schedule-marketplace-item-installation-form"
 		hx-post="/api/v1/marketplace/catalog/"
@@ -404,16 +404,16 @@ templ ScheduleMarketplaceItemInstallationForm(vhostsHostnames []string) {
 		</div>
 		@componentForm.SubmitButton(
 			"install-marketplace-item-button", "Schedule installation",
-			"ph-queue", "closeScheduleMarketplaceItemInstallationModal()", false,
+			"ph-queue", "closeScheduleSelectedMarketplaceItemInstallationModal()", false,
 		)
 	</form>
 }
 
-templ ScheduleMarketplaceItemInstallationModal(vhostsHostnames []string) {
+templ ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames []string) {
 	@componentStructural.RegularModal(
-		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
-		"closeScheduleMarketplaceItemInstallationModal()", "marketplaceItem.name",
+		"Install marketplace item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
+		"closeScheduleSelectedMarketplaceItemInstallationModal()", "marketplaceItem.name",
 	) {
-		@ScheduleMarketplaceItemInstallationForm(vhostsHostnames)
+		@ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames)
 	}
 }
