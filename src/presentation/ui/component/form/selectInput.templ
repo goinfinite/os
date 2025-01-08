@@ -56,8 +56,9 @@ templ SelectInputClientSide(selectInputDto SelectInputClientSideDto) {
 			<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90" value="">--</option>
 			<template x-for={ "option in " + selectInputDto.BindOptions }>
 				<option
-					x-value="option"
+					:value="option"
 					x-text="option"
+					:selected={ "option == " + selectInputDto.BindModelPath }
 					class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
 				></option>
 			</template>
