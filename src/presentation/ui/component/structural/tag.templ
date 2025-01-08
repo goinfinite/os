@@ -18,3 +18,22 @@ templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 		</span>
 	</div>
 }
+
+templ TinyTag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
+	<!-- TinyTag -->
+	<div class={ "flex w-fit rounded-md ring-1.5 text-xs ring-" + tagColor }>
+		<div class={ "bg-" + tagColor + " flex items-center rounded-l-md" }>
+			<div class="flex items-center px-1 leading-normal">
+				if highlightedIcon != "" {
+					<i class={ "ph-bold " + highlightedIcon + " text-base" }></i>
+				}
+				if highlightedLabel != "" {
+					<span class="max-w-64 truncate">{ highlightedLabel }</span>
+				}
+			</div>
+		</div>
+		<span class={ "ring-" + tagColor + " leading-loose rounded-r-md px-1 ring-1 max-w-64 truncate text-xs" }>
+			@templ.Raw(tagValue)
+		</span>
+	</div>
+}
