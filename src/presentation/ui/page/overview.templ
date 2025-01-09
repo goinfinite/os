@@ -1,19 +1,31 @@
 package page
 
 import (
-	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
-script OverviewIndexLocalState(
-	marketplaceInstalledItemsPageNumber uint32,
-) {
+script OverviewIndexLocalState() {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
 			// Primary States
 			marketplaceItem: {},
+			get hostnameWithTrailingSlash() {
+				return this.marketplaceItem.hostname + "/";
+			},
+			get dataFieldsAsString() {
+				let dataFieldsAsString = "";
+				for (let dataField of this.marketplaceItem.dataFields) {
+					if (!dataField.value) {
+						continue
+					}
+
+					dataFieldsAsString += dataField.name + ':' + dataField.value + ';';
+				}
+				return dataFieldsAsString.slice(0, -1);
+			},
 			resetPrimaryStates() {
 				this.marketplaceItem = {
 					id: '',
@@ -27,7 +39,39 @@ script OverviewIndexLocalState(
 				this.resetPrimaryStates();
 			},
 
+			// Auxiliary States
+			selectedMarketplaceItemType: 'apps',
+			selectedMarketplaceItemId: 0,
+			updateSelectedMarketplaceItem(marketplaceItemId) {
+				this.selectedMarketplaceItemId = marketplaceItemId;
+
+				const catalogItemEntity = JSON.parse(
+					document.getElementById('marketplaceCatalogItem_'+marketplaceItemId).textContent
+				);
+				this.marketplaceItem.id = marketplaceItemId;
+				this.marketplaceItem.name = catalogItemEntity.name;
+
+				this.marketplaceItem.dataFields = [];
+				for (const dataField of catalogItemEntity.dataFields) {
+					dataField.value = dataField.defaultValue;
+					this.marketplaceItem.dataFields.push(dataField);
+				}
+			},
+			resetAuxiliaryStates() {
+				this.selectedMarketplaceItemType = 'apps';
+				this.selectedMarketplaceItemId = 0;
+			},
+
 			// Modal States
+			isScheduleMarketplaceItemInstallationModalOpen: false,
+			openScheduleMarketplaceItemInstallationModal() {
+				this.resetPrimaryStates();
+				this.resetAuxiliaryStates();
+				this.isScheduleMarketplaceItemInstallationModalOpen = true;
+			},
+			closeScheduleMarketplaceItemInstallationModal() {
+				this.isScheduleMarketplaceItemInstallationModalOpen = false;
+			},
 			isUninstallMarketplaceItemModalOpen: false,
 			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
 				this.resetPrimaryStates();
@@ -45,26 +89,24 @@ script OverviewIndexLocalState(
 					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
 					{swap: 'none'},
 				);
-				this.$store.main.refreshScheduledTasksPopover()
-				this.$dispatch('uninstall:marketplace-item');
+				this.$store.main.refreshScheduledTasksPopover();
 				this.closeUninstallMarketplaceItemModal();
 			},
 		}));
 
 		Alpine.data('resourceUsage', () => ({
-			marketplaceInstalledItemsPageNumber,
 		}));
 
 		Alpine.data('services', () => ({
-			marketplaceInstalledItemsPageNumber,
 		}));
 	})
 }
 
 templ OverviewIndex(
-	marketplaceInstalledItemsResponseDto dto.ReadMarketplaceInstalledItemsResponse,
+	vhostsHostnames []string,
+	marketplaceOverview MarketplaceOverview,
 ) {
-	@OverviewIndexLocalState(marketplaceInstalledItemsResponseDto.Pagination.PageNumber)
+	@OverviewIndexLocalState()
 	<div class="flex flex-col">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
@@ -74,14 +116,15 @@ templ OverviewIndex(
 			)
 		</div>
 		<div id="marketplace" class="card w-full" x-data="marketplace">
-			@InstalledMarketplaceItemsTable(
-				marketplaceInstalledItemsResponseDto.MarketplaceInstalledItems,
-			)
+			@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
 			@componentStructural.ScheduleDeletionModal(
 				"isUninstallMarketplaceItemModalOpen",
 				"closeUninstallMarketplaceItemModal()",
-				"uninstallMarketplaceItem()",
-				"marketplaceItem.name", "marketplaceItem.id",
+				"uninstallMarketplaceItem()", "marketplaceItem.name",
+				"marketplaceItem.id",
+			)
+			@ScheduleMarketplaceItemInstallationModal(
+				vhostsHostnames, marketplaceOverview.CatalogItemsList,
 			)
 		</div>
 	</div>
@@ -98,8 +141,8 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 				<th scope="col" class="flex justify-end py-3">
 					<div class="mr-2">
 						@componentForm.SubmitButton(
-							"open-create-marketplace-catalog-item-button", "Open catalog",
-							"ph-storefront", "console.log('Open catalog')", false,
+							"", "Install catalog item", "ph-storefront",
+							"openScheduleMarketplaceItemInstallationModal()", false,
 						)
 					</div>
 				</th>
@@ -130,4 +173,174 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 			}
 		</tbody>
 	</table>
+}
+
+templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalogItem) {
+	<div class="flex grid justify-center gap-x-14">
+		<!-- MarketplaceCatalogItemsCarousel JavaScript -->
+		@templ.JSONScript("marketplaceCatalogItem_"+catalogItemEntity.Id.String(), catalogItemEntity)
+		<!-- MarketplaceCatalogItemsCarousel HTML -->
+		<div
+			@click={ "updateSelectedMarketplaceItem(" + catalogItemEntity.Id.String() + ")" }
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
+		>
+			<img
+				src={ catalogItemEntity.AvatarUrl.String() }
+				alt={ catalogItemEntity.Name.String() + " Avatar" }
+				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
+				:class={ "{'sepia': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
+			/>
+			<div class="text-wrap mt-1 break-words text-center text-xs">
+				{ catalogItemEntity.Name.String() }
+			</div>
+			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
+				<div class="flex flex-row items-center gap-3">
+					<div class="basis-3/4 text-xs">
+						{ catalogItemEntity.Description.String() }
+					</div>
+					<div class="basis-1/4 space-y-1.5">
+						@componentStructural.TinyTag(
+							"ph-memory", "", catalogItemEntity.ManifestVersion.String(), "infinite-500",
+						)
+						@componentStructural.TinyTag(
+							"ph-hard-drives", "", catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(), "infinite-500",
+						)
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func transformMarketplaceCatalogItemsIntoCarouselItems(
+	catalogItems []entity.MarketplaceCatalogItem,
+) []templ.Component {
+	carouselItems := []templ.Component{}
+	for _, itemEntity := range catalogItems {
+		carouselItem := MarketplaceCatalogItemsCarousel(itemEntity)
+		carouselItems = append(carouselItems, carouselItem)
+	}
+
+	return carouselItems
+}
+
+templ ScheduleMarketplaceItemInstallationForm(
+	vhostsHostnames []string,
+	marketplaceCatalogItems CatalogItemsGroupedByType,
+) {
+	<form
+		id="schedule-marketplace-item-installation-form"
+		hx-post="/api/v1/marketplace/catalog/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="$store.main.refreshScheduledTasksPopover()"
+	>
+		<input type="hidden" name="id" :value="marketplaceItem.id"/>
+		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
+		<div class="my-6 space-y-2">
+			<div class="w-100% inline-flex space-x-2">
+				<div class="w-60%">
+					@componentForm.SelectInput(
+						"hostname", "Hostname", "marketplaceItem.hostname",
+						"", vhostsHostnames, true,
+					)
+				</div>
+				<div class="w-40%">
+					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+						Type:                "text",
+						Id:                  "urlPath",
+						Label:               "URL Path",
+						BindInputValuePath:  "marketplaceItem.urlPath",
+						BindPrefixValuePath: "hostnameWithTrailingSlash",
+						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					})
+				</div>
+			</div>
+			<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+				<div class="flex justify-stretch gap-4">
+					@componentStructural.VerticalTabHeader(
+						[]componentStructural.TabHeaderItem{
+							{Label: "Apps", Value: "apps"},
+							{Label: "Frameworks", Value: "frameworks"},
+							{Label: "Stacks", Value: "stacks"},
+						}, "selectedMarketplaceItemType",
+					)
+					<!-- MarketplaceVerticalTabContent -->
+					<div class="flex w-full justify-center">
+						<div x-show="selectedMarketplaceItemType === 'apps'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceAppItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Apps),
+								4,
+							)
+						</div>
+						<div x-show="selectedMarketplaceItemType === 'frameworks'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceFrameworksItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Frameworks),
+								4,
+							)
+						</div>
+						<div x-show="selectedMarketplaceItemType === 'stacks'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceStacksItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Stacks),
+								4,
+							)
+						</div>
+					</div>
+				</div>
+			</div>
+			<template x-if="marketplaceItem.dataFields.length > 0">
+				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
+					@componentStructural.Alert(
+						componentStructural.AlertTypeWarning,
+						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+					)
+					<div class="mt-6 grid grid-cols-2 gap-4">
+						<template x-for="dataField in marketplaceItem.dataFields">
+							<div>
+								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
+									@componentForm.InputFieldClientSide(
+										"dataField.type", "dataField.label", "dataField.value",
+									)
+								</template>
+								<template x-if="dataField.type === 'password'">
+									@componentForm.PasswordInputClientSide(
+										"dataField.label", "dataField.value", true,
+									)
+								</template>
+								<template x-if="dataField.type === 'select'">
+									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+										BindLabel:     "dataField.label",
+										BindModelPath: "dataField.value",
+										BindOptions:   "dataField.options",
+									})
+								</template>
+							</div>
+						</template>
+					</div>
+				}
+			</template>
+		</div>
+		@componentForm.SubmitButton(
+			"install-marketplace-item-button", "Schedule installation",
+			"ph-queue", "closeScheduleMarketplaceItemInstallationModal()", false,
+		)
+	</form>
+}
+
+templ ScheduleMarketplaceItemInstallationModal(
+	vhostsHostnames []string,
+	marketplaceCatalogItems CatalogItemsGroupedByType,
+) {
+	@componentStructural.RegularModal(
+		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
+		"closeScheduleMarketplaceItemInstallationModal()", "",
+	) {
+		@ScheduleMarketplaceItemInstallationForm(
+			vhostsHostnames, marketplaceCatalogItems,
+		)
+	}
 }
