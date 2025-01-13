@@ -135,7 +135,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
 			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
 				<th scope="col" class="w-20% px-5 py-3 text-left">Name</th>
-				<th scope="col" class="w-15% px-5 py-3">Type</th>
+				<th scope="col" class="w-15% px-5 py-3">Type/Installation Path</th>
 				<th scope="col" class="w-20% px-5 py-3">Installation Directory</th>
 				<th scope="col" class="w-15% px-5 py-3">Created At</th>
 				<th scope="col" class="flex justify-end py-3">
@@ -157,7 +157,13 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 							{ installedItem.Name.String() }
 						</div>
 					</th>
-					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.Type.String() }</th>
+					<th scope="row" class="flex justify-center px-5 py-3 font-normal">
+						@componentStructural.Tag(
+							"", installedItem.Type.String(),
+							installedItem.Hostname.String()+installedItem.UrlPath.String(),
+							"infinite-500",
+						)
+					</th>
 					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
 					<th scope="row" class="px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
 					<th scope="row" class="px-5 py-3 text-right font-normal">
