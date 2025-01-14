@@ -1,10 +1,12 @@
 package page
 
 import (
+	"fmt"
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"math"
 )
 
 script OverviewIndexLocalState() {
@@ -105,6 +107,7 @@ script OverviewIndexLocalState() {
 templ OverviewIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
+	o11yOverview entity.O11yOverview,
 ) {
 	@OverviewIndexLocalState()
 	<div class="flex flex-col">
@@ -115,17 +118,22 @@ templ OverviewIndex(
 				"ph-speedometer",
 			)
 		</div>
-		<div id="marketplace" class="card w-full" x-data="marketplace">
-			@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
-			@componentStructural.ScheduleDeletionModal(
-				"isUninstallMarketplaceItemModalOpen",
-				"closeUninstallMarketplaceItemModal()",
-				"uninstallMarketplaceItem()", "marketplaceItem.name",
-				"marketplaceItem.id",
-			)
-			@ScheduleMarketplaceItemInstallationModal(
-				vhostsHostnames, marketplaceOverview.CatalogItemsList,
-			)
+		<div class="space-y-5">
+			<div id="marketplace" class="card w-full" x-data="marketplace">
+				@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
+				@componentStructural.ScheduleDeletionModal(
+					"isUninstallMarketplaceItemModalOpen",
+					"closeUninstallMarketplaceItemModal()",
+					"uninstallMarketplaceItem()", "marketplaceItem.name",
+					"marketplaceItem.id",
+				)
+				@ScheduleMarketplaceItemInstallationModal(
+					vhostsHostnames, marketplaceOverview.CatalogItemsList,
+				)
+			</div>
+			<div id="system-info" class="card w-full">
+				@SystemInfoTableAndGraphic(o11yOverview)
+			</div>
 		</div>
 	</div>
 }
@@ -209,12 +217,16 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 						{ catalogItemEntity.Description.String() }
 					</div>
 					<div class="basis-1/4 space-y-1.5">
-						@componentStructural.TinyTag(
-							"ph-memory", "", catalogItemEntity.ManifestVersion.String(), "infinite-500",
-						)
-						@componentStructural.TinyTag(
-							"ph-hard-drives", "", catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(), "infinite-500",
-						)
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-memory",
+							TagValue:        catalogItemEntity.ManifestVersion.String(),
+							TagColor:        "infinite-500",
+						})
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-hard-drives",
+							TagValue:        catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
+							TagColor:        "infinite-500",
+						})
 					</div>
 				</div>
 			</div>
@@ -352,4 +364,73 @@ templ ScheduleMarketplaceItemInstallationModal(
 			vhostsHostnames, marketplaceCatalogItems,
 		)
 	}
+}
+
+func transformUptimeSecsIntoHumanReadable(uptimeSecs uint64) string {
+	uptimeHours := uptimeSecs / 3600
+	uptimeMinutes := (uptimeSecs % 3600) / 60
+	uptimeSeconds := uptimeSecs % 60
+
+	return fmt.Sprintf("%dh %dm %ds", uptimeHours, uptimeMinutes, uptimeSeconds)
+}
+
+func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) string {
+	cpuFrequency = math.Round(cpuFrequency/1000*10) / 10
+	return fmt.Sprintf("%.0f CPU %.1f GHz", cpuCores, cpuFrequency)
+}
+
+templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
+	<div class="bg-os-800 mb-4 rounded-md p-5">
+		<h2 class="mb-2 text-2xl">System Information</h2>
+		<div class="flex space-x-3">
+			<!-- Observability Table -->
+			<div class="bg-os-500 max-[35%] min-h-56 min-w-[35%] space-y-2 rounded p-3">
+				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
+					<span>Hostname</span>
+					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
+				</div>
+				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
+					<span>Uptime</span>
+					<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+				</div>
+				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
+					<span>Hardware Specs</span>
+					<div class="space-y-2">
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon:    "ph-cpu",
+								TagValue:           transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+								TagColor:           "infinite-500",
+								InfoTooltipContent: "Total number of CPU cores and frequency.",
+							})
+						</div>
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon:    "ph-memory",
+								TagValue:           o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+								TagColor:           "infinite-500",
+								InfoTooltipContent: "Total amount of physical memory.",
+							})
+						</div>
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon:    "ph-sim-card",
+								TagValue:           o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+								TagColor:           "infinite-500",
+								InfoTooltipContent: "Total amount of storage.",
+							})
+						</div>
+					</div>
+				</div>
+				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
+					<span>Public IP Address</span>
+					<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
+				</div>
+			</div>
+			<!-- Resource Usage Graphic -->
+			<div class="w-full flex-col space-y-3">
+				<p>Graphic here...</p>
+			</div>
+		</div>
+	</div>
 }
