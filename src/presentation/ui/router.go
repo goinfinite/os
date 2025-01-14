@@ -113,7 +113,7 @@ func (router *Router) overviewRoutes() {
 	overviewGroup := router.baseRoute.Group("/overview")
 
 	overviewPresenter := presenter.NewOverviewPresenter(
-		router.persistentDbSvc, router.trailDbSvc,
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	overviewGroup.GET("/", overviewPresenter.Handler)
 }
