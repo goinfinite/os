@@ -19,21 +19,34 @@ templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 	</div>
 }
 
-templ TinyTag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
+type TinyTagDto struct {
+	HighlightedIcon    string
+	HighlightedLabel   string
+	TagValue           string
+	TagColor           string
+	InfoTooltipContent string
+}
+
+templ TinyTag(tinyTagDto TinyTagDto) {
 	<!-- TinyTag -->
-	<div class={ "flex w-fit rounded-md ring-1.5 text-xs ring-" + tagColor }>
-		<div class={ "bg-" + tagColor + " flex items-center rounded-l-md" }>
+	<div class={ "flex w-fit rounded-md ring-1.5 text-xs ring-" + tinyTagDto.TagColor }>
+		<div class={ "group/tinyTag bg-" + tinyTagDto.TagColor + " flex items-center rounded-l-md" }>
 			<div class="flex items-center px-1 leading-normal">
-				if highlightedIcon != "" {
-					<i class={ "ph-bold " + highlightedIcon + " text-base" }></i>
+				if tinyTagDto.HighlightedIcon != "" {
+					<i class={ "ph-bold " + tinyTagDto.HighlightedIcon + " text-base" }></i>
 				}
-				if highlightedLabel != "" {
-					<span class="max-w-64 truncate">{ highlightedLabel }</span>
+				if tinyTagDto.HighlightedLabel != "" {
+					<span class="max-w-64 truncate">{ tinyTagDto.HighlightedLabel }</span>
 				}
 			</div>
+			if tinyTagDto.InfoTooltipContent != "" {
+				<div class="invisible absolute mb-2 w-max -translate-x-1/2 -translate-y-8 rounded-md bg-cyan-900 p-2 text-xs text-white shadow-lg group-hover/tinyTag:visible group-hover/tinyTag:block">
+					{ tinyTagDto.InfoTooltipContent }
+				</div>
+			}
 		</div>
-		<span class={ "ring-" + tagColor + " leading-loose rounded-r-md px-1 ring-1 max-w-64 truncate text-xs" }>
-			@templ.Raw(tagValue)
+		<span class={ "ring-" + tinyTagDto.TagColor + " leading-loose rounded-r-md px-1 ring-1 max-w-64 truncate text-xs" }>
+			@templ.Raw(tinyTagDto.TagValue)
 		</span>
 	</div>
 }
