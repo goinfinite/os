@@ -7,6 +7,7 @@ import (
 	"os"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
@@ -35,7 +36,8 @@ func HttpServerInit(
 	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 	ui.UiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 
-	httpServer := http.Server{Addr: ":1618", Handler: e}
+	osApiHttpPublicPortWithColon := ":" + infraEnvs.InfiniteOsApiHttpPublicPort
+	httpServer := http.Server{Addr: osApiHttpPublicPortWithColon, Handler: e}
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 
@@ -57,7 +59,7 @@ func HttpServerInit(
 		}
 	}
 
-	osBanner := `Infinite OS server started on [::]:1618! 🎉`
+	osBanner := `Infinite OS server started on [::]` + osApiHttpPublicPortWithColon + `! 🎉`
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
 	o11yOverview, err := o11yQueryRepo.ReadOverview()
@@ -69,7 +71,7 @@ func HttpServerInit(
 
 		osBanner = `
         INFINITE
-    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:1618! ` + devModeStr + `        
+    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]` + osApiHttpPublicPortWithColon + `! ` + devModeStr + `        
   ▄██▀    ▀██▄██    ▀█   |
   ██▀      ▀█████▄       |  🏠 Primary Hostname: ` + o11yOverview.Hostname.String() + `
   ██        ██ ▀█████▄   |  ⏰ Uptime: ` + o11yOverview.UptimeRelative.String() + `

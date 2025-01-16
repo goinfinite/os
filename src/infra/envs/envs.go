@@ -5,6 +5,7 @@ const (
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
+	InfiniteOsApiHttpPublicPort        string = "1618"
 	PersistentDatabaseFilePath         string = InfiniteOsMainDir + "/os.db"
 	TrailDatabaseFilePath              string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir         string = InfiniteOsMainDir + "/marketplace"
