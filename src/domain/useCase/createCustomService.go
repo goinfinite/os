@@ -75,6 +75,10 @@ func CreateCustomService(
 		createDto.Version = &defaultVersion
 	}
 
+	if createDto.Type.String() == "system" {
+		return errors.New("SystemServiceCannotBeCreated")
+	}
+
 	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
 		slog.Error("CreateCustomServiceError", slog.Any("error", err))
