@@ -247,15 +247,15 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 			},
 
 			// Modal States
-			isScheduleServiceInstallationModalOpen: false,
-			openScheduleServiceInstallationModal() {
+			isServiceInstallationModalOpen: false,
+			openServiceInstallationModal() {
 				this.resetPrimaryStates();
 				this.resetAuxiliaryStates();
 
-				this.isScheduleServiceInstallationModalOpen = true;
+				this.isServiceInstallationModalOpen = true;
 			},
-			closeScheduleServiceInstallationModal() {
-				this.isScheduleServiceInstallationModalOpen = false;
+			closeServiceInstallationModal() {
+				this.isServiceInstallationModalOpen = false;
 			},
 			async installService() {
 				const serviceInstallationParamsWithoutEmptyValues = {};
@@ -272,7 +272,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					serviceInstallationParamsWithoutEmptyValues[paramName] = installationParam;
 				}
 
-				this.closeScheduleServiceInstallationModal();
+				this.closeServiceInstallationModal();
 
 				const shouldDisplayToast = true;
 				await Infinite.JsonAjax(
@@ -409,7 +409,7 @@ templ OverviewIndex(
 			</div>
 			<div id="services" class="card w-full" x-data="services">
 				@InstalledServicesItemsTable(servicesOverview.InstalledServicesResponseDto)
-				@ScheduleServiceInstallationModal(servicesOverview.InstallableServices)
+				@ServiceInstallationModal(servicesOverview.InstallableServices)
 				@UpdateInstalledServiceModal()
 				@componentStructural.DeleteModal(
 					"isUninstallServiceModalOpen", "closeUninstallServiceModal()",
@@ -753,8 +753,8 @@ templ InstalledServicesItemsTable(
 						<th scope="col" class="flex justify-end py-3">
 							<div class="mr-2">
 								@componentForm.SubmitButton(
-									"", "Schedule service installation", "ph-queue",
-									"openScheduleServiceInstallationModal()", false,
+									"", "Install service", "ph-arrow-line-down",
+									"openServiceInstallationModal()", false,
 								)
 							</div>
 						</th>
@@ -939,13 +939,13 @@ func transformInstallableServicesIntoCarouselItems(
 	return carouselItems
 }
 
-templ ScheduleServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
+templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
 	<form @submit.prevent="$store.main.refreshScheduledTasksPopover()">
 		<div class="-mt-4 mb-4 flex justify-start gap-4">
 			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
 			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
 		</div>
-		<template x-if="targetServiceType == 'installables'">
+		<template x-if="targetServiceType === 'installables'">
 			<div>
 				<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
 					@componentForm.SelectInput(
@@ -1054,7 +1054,7 @@ templ ScheduleServiceInstallationForm(installableServices InstallableServicesGro
 				</template>
 			</div>
 		</template>
-		<template x-if="targetServiceType == 'custom'">
+		<template x-if="targetServiceType === 'custom'">
 			<div class="mt-4 grid grid-rows-3 gap-3">
 				<div class="grid grid-cols-2 gap-2">
 					@componentForm.InputField(componentForm.InputFieldDto{
@@ -1144,21 +1144,29 @@ templ ScheduleServiceInstallationForm(installableServices InstallableServicesGro
 				</div>
 			}
 		</div>
-		@componentForm.SubmitButton(
-			"schedule-service-installation-button", "Schedule installation",
-			"ph-queue", "installService()", false,
-		)
+		<template x-if="targetServiceType !== 'custom'">
+			@componentForm.SubmitButton(
+				"schedule-service-installation-button", "Schedule installation",
+				"ph-queue", "installService()", false,
+			)
+		</template>
+		<template x-if="targetServiceType === 'custom'">
+			@componentForm.SubmitButton(
+				"install-service-button", "Install", "ph-arrow-line-down",
+				"installService()", false,
+			)
+		</template>
 	</form>
 }
 
-templ ScheduleServiceInstallationModal(
+templ ServiceInstallationModal(
 	installableServices InstallableServicesGroupedByType,
 ) {
 	@componentStructural.RegularModal(
-		"Install service", "isScheduleServiceInstallationModalOpen",
-		"closeScheduleServiceInstallationModal()", "",
+		"Install service", "isServiceInstallationModalOpen",
+		"closeServiceInstallationModal()", "",
 	) {
-		@ScheduleServiceInstallationForm(installableServices)
+		@ServiceInstallationForm(installableServices)
 	}
 }
 
