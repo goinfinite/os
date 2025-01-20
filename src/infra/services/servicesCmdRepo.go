@@ -752,9 +752,11 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.Stop(serviceEntity.Name)
-	if err != nil {
-		return err
+	if serviceEntity.Status.String() != "stopped" {
+		err = repo.Stop(serviceEntity.Name)
+		if err != nil {
+			return err
+		}
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
