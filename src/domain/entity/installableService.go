@@ -10,6 +10,7 @@ type InstallableService struct {
 	StartCmd           valueObject.UnixCommand            `json:"startCmd"`
 	Description        valueObject.ServiceDescription     `json:"description"`
 	Versions           []valueObject.ServiceVersion       `json:"versions"`
+	AvatarUrl          *valueObject.Url                   `json:"avatarUrl"`
 	Envs               []valueObject.ServiceEnv           `json:"envs"`
 	PortBindings       []valueObject.PortBinding          `json:"portBindings"`
 	StopCmdSteps       []valueObject.UnixCommand          `json:"-"`
@@ -26,7 +27,6 @@ type InstallableService struct {
 	LogOutputPath      *valueObject.UnixFilePath          `json:"logOutputPath"`
 	LogErrorPath       *valueObject.UnixFilePath          `json:"logErrorPath"`
 	EstimatedSizeBytes *valueObject.Byte                  `json:"estimatedSizeBytes"`
-	AvatarUrl          *valueObject.Url                   `json:"avatarUrl"`
 }
 
 func NewInstallableService(
@@ -37,6 +37,7 @@ func NewInstallableService(
 	startCmd valueObject.UnixCommand,
 	description valueObject.ServiceDescription,
 	versions []valueObject.ServiceVersion,
+	avatarUrl *valueObject.Url,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, installSteps, uninstallSteps []valueObject.UnixCommand,
@@ -45,7 +46,6 @@ func NewInstallableService(
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *valueObject.UnixFilePath,
 	estimatedSizeBytes *valueObject.Byte,
-	avatarUrl *valueObject.Url,
 ) InstallableService {
 	return InstallableService{
 		ManifestVersion:    manifestVersion,
@@ -55,6 +55,7 @@ func NewInstallableService(
 		StartCmd:           startCmd,
 		Description:        description,
 		Versions:           versions,
+		AvatarUrl:          avatarUrl,
 		Envs:               envs,
 		PortBindings:       portBindings,
 		StopCmdSteps:       stopSteps,
@@ -71,6 +72,5 @@ func NewInstallableService(
 		LogOutputPath:      logOutputPath,
 		LogErrorPath:       logErrorPath,
 		EstimatedSizeBytes: estimatedSizeBytes,
-		AvatarUrl:          avatarUrl,
 	}
 }

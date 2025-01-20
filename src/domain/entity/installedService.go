@@ -9,6 +9,7 @@ type InstalledService struct {
 	Version           valueObject.ServiceVersion `json:"version"`
 	Status            valueObject.ServiceStatus  `json:"status"`
 	StartCmd          valueObject.UnixCommand    `json:"startCmd"`
+	AvatarUrl         *valueObject.Url           `json:"avatarUrl"`
 	Envs              []valueObject.ServiceEnv   `json:"envs"`
 	PortBindings      []valueObject.PortBinding  `json:"portBindings"`
 	StopCmdSteps      []valueObject.UnixCommand  `json:"stopCmdSteps"`
@@ -36,6 +37,7 @@ func NewInstalledService(
 	version valueObject.ServiceVersion,
 	startCmd valueObject.UnixCommand,
 	status valueObject.ServiceStatus,
+	avatarUrl *valueObject.Url,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
@@ -54,6 +56,7 @@ func NewInstalledService(
 		Version:           version,
 		StartCmd:          startCmd,
 		Status:            status,
+		AvatarUrl:         avatarUrl,
 		Envs:              envs,
 		PortBindings:      portBindings,
 		StopCmdSteps:      stopSteps,
