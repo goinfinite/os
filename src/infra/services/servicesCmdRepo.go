@@ -782,6 +782,15 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return nil
 	}
 
+	if serviceEntity.Nature.String() == "multi" {
+		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
+		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
+		if err != nil {
+			return err
+		}
+		name = nameWithoutHash
+	}
+
 	readInstallableDto := dto.ReadInstallableServicesItemsRequest{
 		ServiceName: &name,
 	}
