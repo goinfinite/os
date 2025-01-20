@@ -480,12 +480,17 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	installedServiceModel := dbModel.NewInstalledService(
 		installedServiceName.String(), installableService.Nature.String(),
 		installableService.Type.String(), serviceVersion.String(),
-		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
+		usableStartCmd.String(), nil, createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
 		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
 		createDto.MaxStartRetries, nil, nil,
 	)
+
+	if installableService.AvatarUrl != nil {
+		avatarUrlStr := installableService.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
+	}
 
 	if installableService.ExecUser != nil {
 		execUserStr := installableService.ExecUser.String()
@@ -530,13 +535,18 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 
 	installedServiceModel := dbModel.NewInstalledService(
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
-		createDto.Version.String(), createDto.StartCmd.String(), createDto.Envs,
-		createDto.PortBindings, createDto.StopCmdSteps, createDto.PreStartCmdSteps,
-		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps,
-		createDto.PostStopCmdSteps, nil, nil, nil, createDto.AutoStart,
-		createDto.AutoRestart, createDto.TimeoutStartSecs, createDto.MaxStartRetries,
-		nil, nil,
+		createDto.Version.String(), createDto.StartCmd.String(), nil,
+		createDto.Envs, createDto.PortBindings, createDto.StopCmdSteps,
+		createDto.PreStartCmdSteps, createDto.PostStartCmdSteps,
+		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil,
+		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
+		createDto.MaxStartRetries, nil, nil,
 	)
+
+	if createDto.AvatarUrl != nil {
+		avatarUrlStr := createDto.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
+	}
 
 	if createDto.ExecUser != nil {
 		execUserStr := createDto.ExecUser.String()
