@@ -2,14 +2,34 @@ package page
 
 import (
 	"fmt"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"math"
 )
 
-script OverviewIndexLocalState() {
+type InstallableServicesGroupedByType struct {
+	Application []entity.InstallableService
+	Runtime     []entity.InstallableService
+	Database    []entity.InstallableService
+	Webserver   []entity.InstallableService
+	Mom         []entity.InstallableService
+	Monitoring  []entity.InstallableService
+	Logging     []entity.InstallableService
+	Security    []entity.InstallableService
+	Backup      []entity.InstallableService
+	Other       []entity.InstallableService
+}
+
+type ServicesOverview struct {
+	InstalledServicesResponseDto dto.ReadInstalledServicesItemsResponse
+	InstallableServices          InstallableServicesGroupedByType
+}
+
+script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
     document.addEventListener('alpine:init', () => {
 		Alpine.data('marketplace', () => ({
 			// Primary States
@@ -100,6 +120,256 @@ script OverviewIndexLocalState() {
 		}));
 
 		Alpine.data('services', () => ({
+			// Primary States
+			service: {},
+			resetPrimaryStates() {
+				this.service = {
+					name: '',
+					version: '',
+					envs: [],
+					portBindings: [],
+					startupFile: '',
+					autoStart: '',
+					timeoutStartSecs: '',
+					autoRestart: '',
+					maxStartRetries: '',
+					autoCreateMapping: '',
+					startCmd: '',
+					avatarUrl: '',
+					execUser: '',
+					workingDirectory: '',
+					logOutputPath: '',
+					logErrorPath: '',
+				};
+			},
+			init() {
+				this.resetPrimaryStates();
+			},
+
+			// Auxiliary States
+			installedServicesFilters: {
+				name: '',
+				nature: '',
+				type: '',
+				status: '',
+			},
+			installedServicesPagination: {
+				pageNumber: installedServicesCurrentPageNumber,
+				itemsPerPage: 5,
+			},
+			reloadInstalledServicesTable() {
+				queryParams = new URLSearchParams();
+				queryParams.set('installedServicesPageNumber', this.installedServicesPagination.pageNumber);
+				queryParams.set('installedServicesItemsPerPage', this.installedServicesPagination.itemsPerPage);
+
+				for (let [filterKey, filterValue] of Object.entries(this.installedServicesFilters)) {
+					filterValue = filterValue.trim();
+					if (filterValue === '') {
+						continue;
+					}
+					const filterKeyCapitalized = filterKey.charAt(0).toUpperCase() + filterKey.slice(1);
+					queryParams.set('installedServices'+filterKeyCapitalized, filterValue);
+				}
+
+				htmx.ajax(
+					'GET', '/overview/?' + queryParams.toString(),
+					{
+						select: '#installed-services-table',
+						target: '#installed-services-table',
+						indicator: '#loading-overlay',
+						swap: 'outerHTML transition:true'
+					},
+				);
+			},
+			targetServiceType: 'installables',
+			selectedInstallableServiceType: 'application',
+			selectedInstallableServiceName: '',
+			selectedInstallableServiceAvailableVersions: [],
+			updateSelectedInstallableService(installableServiceName) {
+				this.selectedInstallableServiceName = installableServiceName;
+
+				const installableService = JSON.parse(
+					document.getElementById('installableServiceEntity_'+installableServiceName).textContent
+				);
+
+				this.service.name = installableServiceName;
+				this.service.version = installableService.versions[0];
+				this.service.envs = installableService.envs;
+				this.service.portBindings = installableService.portBindings;
+
+				this.selectedInstallableServiceAvailableVersions = installableService.versions;
+			},
+			updateContainerStatus(newStatus) {
+				return htmx.ajax(
+					'PUT', '/api/v1/services/',
+					{
+						swap: 'none',
+						values: {
+							name: this.service.name,
+							status: newStatus,
+						}
+					},
+				);
+			},
+			restartService(name) {
+				this.service.name = name;
+				this.updateContainerStatus('restart').then(() => {
+					this.$dispatch('update:service');
+				});
+			},
+			pauseService(name) {
+				this.service.name = name;
+				this.updateContainerStatus('pause').then(() => {
+					this.$dispatch('update:service');
+				});
+			},
+			startService(name) {
+				this.service.name = name;
+				this.updateContainerStatus('start').then(() => {
+					this.$dispatch('update:service');
+				});
+			},
+			resetAuxiliaryStates() {
+				this.installedServicesFilters = {
+					name: '',
+					nature: '',
+					type: '',
+					status: '',
+				};
+				this.installedServicesPagination = {
+					pageNumber: installedServicesCurrentPageNumber,
+					itemsPerPage: 5,
+				};
+				this.targetServiceType = 'installables';
+				this.selectedInstallableServiceType = 'application';
+				this.selectedInstallableServiceName = '';
+				this.selectedInstallableServiceAvailableVersions = [];
+			},
+
+			// Modal States
+			isScheduleServiceInstallationModalOpen: false,
+			openScheduleServiceInstallationModal() {
+				this.resetPrimaryStates();
+				this.resetAuxiliaryStates();
+
+				this.isScheduleServiceInstallationModalOpen = true;
+			},
+			closeScheduleServiceInstallationModal() {
+				this.isScheduleServiceInstallationModalOpen = false;
+			},
+			async installService() {
+				const serviceInstallationParamsWithoutEmptyValues = {};
+				for (const paramName of Object.keys(this.service)) {
+					const installationParam = this.service[paramName];
+					if (installationParam === null) {
+						continue
+					}
+
+					if (installationParam.length === 0) {
+						continue
+					}
+
+					serviceInstallationParamsWithoutEmptyValues[paramName] = installationParam;
+				}
+
+				this.closeScheduleServiceInstallationModal();
+
+				const shouldDisplayToast = true;
+				await Infinite.JsonAjax(
+					'POST', '/api/v1/services/' + this.targetServiceType + '/',
+					serviceInstallationParamsWithoutEmptyValues, shouldDisplayToast,
+				);
+
+				this.$store.main.refreshScheduledTasksPopover();
+			},
+			isUpdateInstalledServiceModalOpen: false,
+			openUpdateInstalledServiceModal(installedServiceName) {
+				this.resetPrimaryStates();
+				this.resetAuxiliaryStates();
+
+				const installedServiceEntity = JSON.parse(
+					document.getElementById('installedServiceEntity_'+installedServiceName).textContent
+				);
+				this.service = Object.assign({}, installedServiceEntity);
+				console.log(installedServiceEntity);
+
+				this.service.envs = [];
+				for (const serviceEnv of installedServiceEntity.envs) {
+					const serviceEnvParts = serviceEnv.split('=');
+					if (serviceEnvParts.length !== 2) {
+						continue
+					}
+
+					this.service.envs.push({
+						key: serviceEnvParts[0],
+						value: serviceEnvParts[1],
+					});
+				}
+
+				if (this.service.nature !== 'custom') {
+					if (this.service.nature === 'multi') {
+						installedServiceName = installedServiceName.split('_')[0];
+					}
+
+					const installableServiceEntity = JSON.parse(
+						document.getElementById('installableServiceEntity_'+installedServiceName).textContent
+					);
+					this.selectedInstallableServiceAvailableVersions = installableServiceEntity.versions;
+				}
+
+				this.isUpdateInstalledServiceModalOpen = true;
+			},
+			closeUpdateInstalledServiceModal() {
+				this.isUpdateInstalledServiceModalOpen = false;
+			},
+			async updateService() {
+				const serviceParamsToUpdateWithoutEmptyValues = {};
+				for (const paramName of Object.keys(this.service)) {
+					if (paramName === 'status') {
+						continue
+					}
+
+					const serviceParamToUpdate = this.service[paramName];
+					if (serviceParamToUpdate === null) {
+						continue
+					}
+
+					if (serviceParamToUpdate.length === 0) {
+						continue
+					}
+
+					serviceParamsToUpdateWithoutEmptyValues[paramName] = serviceParamToUpdate;
+				}
+
+				this.closeUpdateInstalledServiceModal();
+
+				const shouldDisplayToast = true;
+				await Infinite.JsonAjax(
+					'PUT', '/api/v1/services/',
+					serviceParamsToUpdateWithoutEmptyValues, shouldDisplayToast,
+				);
+				this.$dispatch('update:service');
+			},
+			isUninstallServiceModalOpen: false,
+			openUninstallServiceModal(name) {
+				this.resetPrimaryStates();
+
+				this.service.name = name
+				this.isUninstallServiceModalOpen = true;
+			},
+			closeUninstallServiceModal() {
+				this.isUninstallServiceModalOpen = false;
+			},
+			uninstallService() {
+				htmx.ajax(
+					'DELETE',
+					'/api/v1/services/' + this.service.name + '/',
+					{swap: 'none'},
+				).then(() => {
+					this.$dispatch('delete:service');
+				});
+				this.closeUninstallServiceModal();
+			},
 		}));
 	})
 }
@@ -108,8 +378,11 @@ templ OverviewIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
 	o11yOverview entity.O11yOverview,
+	servicesOverview ServicesOverview,
 ) {
-	@OverviewIndexLocalState()
+	@OverviewIndexLocalState(
+		int(servicesOverview.InstalledServicesResponseDto.Pagination.PageNumber),
+	)
 	<div class="flex flex-col">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
@@ -134,6 +407,15 @@ templ OverviewIndex(
 			<div id="system-info" class="card w-full">
 				@SystemInfoTableAndGraphic(o11yOverview)
 			</div>
+			<div id="services" class="card w-full" x-data="services">
+				@InstalledServicesItemsTable(servicesOverview.InstalledServicesResponseDto)
+				@ScheduleServiceInstallationModal(servicesOverview.InstallableServices)
+				@UpdateInstalledServiceModal()
+				@componentStructural.DeleteModal(
+					"isUninstallServiceModalOpen", "closeUninstallServiceModal()",
+					"uninstallService()", "service.name", "",
+				)
+			</div>
 		</div>
 	</div>
 }
@@ -151,7 +433,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 					<th scope="col" class="flex justify-end py-3">
 						<div class="mr-2">
 							@componentForm.SubmitButton(
-								"", "Install catalog item", "ph-storefront",
+								"", "Schedule catalog item installation", "ph-queue",
 								"openScheduleMarketplaceItemInstallationModal()", false,
 							)
 						</div>
@@ -160,14 +442,14 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 			</thead>
 			<tbody>
 				for _, installedItem := range installedItemsList {
-					<tr class="odd:bg-os-200 even:bg-os-400 border-b border-neutral-500 border-opacity-30 text-center">
+					<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
 						<th scope="row" class="px-5 py-3 text-left font-normal">
 							<div class="inline-flex items-center">
 								<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
 								{ installedItem.Name.String() }
 							</div>
 						</th>
-						<th scope="row" class="flex justify-center px-5 py-3 font-normal">
+						<th scope="row" class="flex content-center justify-center px-5 py-3 font-normal">
 							@componentStructural.Tag(
 								"", installedItem.Type.String(),
 								installedItem.Hostname.String()+installedItem.UrlPath.String(),
@@ -185,6 +467,11 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 								)
 							</div>
 						</th>
+					</tr>
+				}
+				if len(installedItemsList) == 0 {
+					<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20">
+						<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No marketplace items installed yet.</td>
 					</tr>
 				}
 			</tbody>
@@ -250,6 +537,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 	vhostsHostnames []string,
 	marketplaceCatalogItems CatalogItemsGroupedByType,
 ) {
+	<!-- ScheduleMarketplaceItemInstallationForm -->
 	<form
 		id="schedule-marketplace-item-installation-form"
 		hx-post="/api/v1/marketplace/catalog/"
@@ -380,6 +668,7 @@ func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) s
 }
 
 templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
+	<!-- SystemInfoTableAndGraphic -->
 	<div class="bg-os-800 mb-4 rounded-md p-5">
 		<h2 class="mb-2 text-2xl">System Information</h2>
 		<div class="flex space-x-3">
@@ -398,26 +687,23 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 					<div class="space-y-2">
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon:    "ph-cpu",
-								TagValue:           transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
-								TagColor:           "infinite-500",
-								InfoTooltipContent: "Total number of CPU cores and frequency.",
+								HighlightedIcon: "ph-cpu",
+								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+								TagColor:        "infinite-500",
 							})
 						</div>
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon:    "ph-memory",
-								TagValue:           o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
-								TagColor:           "infinite-500",
-								InfoTooltipContent: "Total amount of physical memory.",
+								HighlightedIcon: "ph-memory",
+								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+								TagColor:        "infinite-500",
 							})
 						</div>
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon:    "ph-sim-card",
-								TagValue:           o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
-								TagColor:           "infinite-500",
-								InfoTooltipContent: "Total amount of storage.",
+								HighlightedIcon: "ph-sim-card",
+								TagValue:        o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+								TagColor:        "infinite-500",
 							})
 						</div>
 					</div>
@@ -433,4 +719,580 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 			</div>
 		</div>
 	</div>
+}
+
+templ InstalledServicesItemsTable(
+	installedServicesResponseDto dto.ReadInstalledServicesItemsResponse,
+) {
+	<!-- InstalledServicesItemsTable -->
+	<div class="bg-os-800 p-5">
+		<h2 class="mb-2 text-2xl">Services</h2>
+		<div
+			id="installed-services-table"
+			hx-get="/overview/"
+			hx-trigger="update:service from:window delay:250ms, delete:service from:window delay:250ms"
+			hx-select="#installed-services-table"
+			hx-target="#installed-services-table"
+			hx-swap="outerHTML transition:true"
+			@update:installed-services-pagination="reloadInstalledServicesTable()"
+			@update:installed-services-record-filters="reloadInstalledServicesTable()"
+		>
+			<div class="bg-os-800 border-b border-neutral-500 border-opacity-90 p-2">
+				@componentStructural.RecordFilters("installed-services", "installedServicesFilters")
+			</div>
+			<table
+				class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out"
+			>
+				<thead class="bg-os-500 text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="w-[25%] overflow-x-hidden p-3 text-left">Service</th>
+						<th scope="col" class="w-[10%] overflow-x-hidden py-3">Status</th>
+						<th scope="col" class="w-[10%] overflow-x-hidden py-3">CPU</th>
+						<th scope="col" class="w-[10%] overflow-x-hidden py-3">RAM</th>
+						<th scope="col" class="w-[25%] overflow-x-hidden py-3">Port Bindings</th>
+						<th scope="col" class="flex justify-end py-3">
+							<div class="mr-2">
+								@componentForm.SubmitButton(
+									"", "Schedule service installation", "ph-queue",
+									"openScheduleServiceInstallationModal()", false,
+								)
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
+						<td class="hidden">
+							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
+						</td>
+						<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
+							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
+							<td class="w-[25%] overflow-x-hidden px-3 py-2 text-left">
+								<div class="grid grid-rows-2 gap-1">
+									<div class="inline-flex items-center">
+										<img
+											class="mr-2 h-10 w-10 rounded-full"
+											if installedServiceEntity.AvatarUrl != nil {
+												src={ installedServiceEntity.AvatarUrl.String() }
+											} else {
+												src="/assets/default-avatar.jpg"
+											}
+										/>
+										{ installedServiceEntity.Name.String() }
+									</div>
+									<div class="inline-flex items-center space-x-2">
+										@componentStructural.TinyTag(componentStructural.TinyTagDto{
+											HighlightedLabel: "Type",
+											TagValue:         installedServiceEntity.Type.String(),
+											TagColor:         "infinite-500",
+										})
+										@componentStructural.TinyTag(componentStructural.TinyTagDto{
+											HighlightedLabel: "Version",
+											TagValue:         installedServiceEntity.Version.String(),
+											TagColor:         "infinite-500",
+										})
+										@componentStructural.TinyTag(componentStructural.TinyTagDto{
+											HighlightedLabel: "Nature",
+											TagValue:         installedServiceEntity.Nature.String(),
+											TagColor:         "infinite-500",
+										})
+									</div>
+								</div>
+							</td>
+							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+								{ installedServiceEntity.Status.String() }
+							</td>
+							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+								if installedServiceEntity.Metrics != nil {
+									@componentMisc.ProgressBar(
+										uint8(installedServiceEntity.Metrics.CpuUsagePercent),
+										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent)+"%",
+									)
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+								if installedServiceEntity.Metrics != nil {
+									@componentMisc.ProgressBar(
+										uint8(installedServiceEntity.Metrics.MemUsagePercent),
+										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent)+"%",
+									)
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td class="w-[25%] overflow-x-hidden px-3 py-2">
+								if installedServiceEntity.PortBindings != nil && len(installedServiceEntity.PortBindings) > 0 {
+									@componentStructural.PortBindingsTable(installedServiceEntity.PortBindings)
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td class="px-3 py-2">
+								<div class="flex justify-end space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-arrow-clockwise", "blue-900", "blue-700",
+										"restartService('"+installedServiceEntity.Name.String()+"')",
+										"Restart", "blue-500",
+									)
+									if installedServiceEntity.Type.String() != "system" {
+										switch installedServiceEntity.Status.String() {
+											case "running":
+												@componentStructural.CircularIconButtonWithTooltip(
+													"ph-pause", "blue-900", "blue-700",
+													"pauseService('"+installedServiceEntity.Name.String()+"')",
+													"Pause", "blue-500",
+												)
+											case "stopped":
+												@componentStructural.CircularIconButtonWithTooltip(
+													"ph-play", "blue-900", "blue-700",
+													"startService('"+installedServiceEntity.Name.String()+"')",
+													"Start", "blue-500",
+												)
+										}
+										if installedServiceEntity.Nature.String() != "solo" {
+											@componentStructural.CircularIconButtonWithTooltip(
+												"ph-gear", "blue-900", "blue-700",
+												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",
+												"Edit", "blue-500",
+											)
+										}
+										@componentStructural.CircularIconButtonWithTooltip(
+											"ph-trash", "red-800", "red-600",
+											"openUninstallServiceModal('"+installedServiceEntity.Name.String()+"')",
+											"Uninstall", "red-500",
+										)
+									}
+								</div>
+							</td>
+						</tr>
+					}
+					if len(installedServicesResponseDto.InstalledServicesWithMetrics) == 0 {
+						<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20 text-center">
+							<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No services installed yet.</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="bg-os-800 border-t border-neutral-500 border-opacity-90 p-3">
+				@componentStructural.Pagination(
+					"installed-services", installedServicesResponseDto.Pagination,
+					"installedServicesPagination.pageNumber", "installedServicesPagination.itemsPerPage",
+				)
+			</div>
+		</div>
+	</div>
+}
+
+templ InstallableServiceItemsCarousel(installableServiceEntity entity.InstallableService) {
+	<div class="flex grid justify-center gap-x-14">
+		<!-- InstallableServicesCarousel JavaScript -->
+		@templ.JSONScript("installableServiceEntity_"+installableServiceEntity.Name.String(), installableServiceEntity)
+		<!-- InstallableServicesCarousel HTML -->
+		<div
+			@click={ "updateSelectedInstallableService('" + installableServiceEntity.Name.String() + "')" }
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
+		>
+			<img
+				src={ installableServiceEntity.AvatarUrl.String() }
+				alt={ installableServiceEntity.Name.String() + " Avatar" }
+				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
+				:class={ "{'sepia': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
+			/>
+			<div class="text-wrap mt-1 break-words text-center text-xs">
+				{ installableServiceEntity.Name.String() }
+			</div>
+			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
+				<div class="flex flex-row items-center gap-3">
+					<div class="basis-3/4 text-xs">
+						{ installableServiceEntity.Description.String() }
+					</div>
+					<div class="basis-1/4 space-y-1.5">
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-memory",
+							TagValue:        installableServiceEntity.ManifestVersion.String(),
+							TagColor:        "infinite-500",
+						})
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-hard-drives",
+							TagValue:        installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
+							TagColor:        "infinite-500",
+						})
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func transformInstallableServicesIntoCarouselItems(
+	installableServices []entity.InstallableService,
+) []templ.Component {
+	carouselItems := []templ.Component{}
+	for _, itemEntity := range installableServices {
+		carouselItem := InstallableServiceItemsCarousel(itemEntity)
+		carouselItems = append(carouselItems, carouselItem)
+	}
+
+	return carouselItems
+}
+
+templ ScheduleServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
+	<form @submit.prevent="$store.main.refreshScheduledTasksPopover()">
+		<div class="-mt-4 mb-4 flex justify-start gap-4">
+			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
+			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
+		</div>
+		<template x-if="targetServiceType == 'installables'">
+			<div>
+				<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+					@componentForm.SelectInput(
+						"", "Service Type", "selectedInstallableServiceType", "",
+						valueObject.ValidServiceTypes, false,
+					)
+					<!-- InstallableServicesCarousel -->
+					<div class="flex w-full justify-center">
+						<div x-show="selectedInstallableServiceType === 'application'">
+							@componentMisc.MultiItemCarousel(
+								"installableApplicationServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Application),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'runtime'">
+							@componentMisc.MultiItemCarousel(
+								"installableRuntimeServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Runtime),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'database'">
+							@componentMisc.MultiItemCarousel(
+								"installableDatabaseServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Database),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'webserver'">
+							@componentMisc.MultiItemCarousel(
+								"installableWebserverServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Webserver),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'monitoring'">
+							@componentMisc.MultiItemCarousel(
+								"installableMonitoringServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Monitoring),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'mom'">
+							@componentMisc.MultiItemCarousel(
+								"installableMomServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Mom),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'logging'">
+							@componentMisc.MultiItemCarousel(
+								"installableLoggingServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Logging),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'security'">
+							@componentMisc.MultiItemCarousel(
+								"installableSecurityServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Security),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'backup'">
+							@componentMisc.MultiItemCarousel(
+								"installableBackupServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Backup),
+								7,
+							)
+						</div>
+						<div x-show="selectedInstallableServiceType === 'other'">
+							@componentMisc.MultiItemCarousel(
+								"installableOtherServicesCarousel",
+								transformInstallableServicesIntoCarouselItems(installableServices.Other),
+								7,
+							)
+						</div>
+					</div>
+				</div>
+				<template x-if="selectedInstallableServiceName !== ''">
+					<div class="mt-4 grid grid-rows-2 gap-2">
+						<div class="grid grid-cols-3 gap-2">
+							@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+								BindLabel:     "'Version'",
+								BindModelPath: "service.version",
+								BindOptions:   "selectedInstallableServiceAvailableVersions",
+							})
+							@componentForm.InputField(componentForm.InputFieldDto{
+								Type:               "number",
+								Label:              "Timeout Start Secs",
+								BindModelValuePath: "service.timeoutStartSecs",
+							})
+							@componentForm.InputField(componentForm.InputFieldDto{
+								Type:               "number",
+								Label:              "Max Start Retries",
+								BindModelValuePath: "service.maxStartRetries",
+							})
+						</div>
+						<div class="grid grid-cols-3 place-items-center gap-2">
+							@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
+							@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
+							@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+						</div>
+					</div>
+				</template>
+			</div>
+		</template>
+		<template x-if="targetServiceType == 'custom'">
+			<div class="mt-4 grid grid-rows-3 gap-3">
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Name",
+						BindModelValuePath: "service.name",
+					})
+					@componentForm.SelectInput(
+						"", "Type", "service.type", "", valueObject.ValidServiceTypes,
+						true,
+					)
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Start Command",
+						BindModelValuePath: "service.startCmd",
+						InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Avatar URL",
+						BindModelValuePath: "service.avatarUrl",
+					})
+				</div>
+				<div class="grid grid-cols-3 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Exec User",
+						BindModelValuePath: "service.execUser",
+						InfoTooltipContent: "Unix user that will be used to execute your service commands.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Timeout Start Secs",
+						BindModelValuePath: "service.timeoutStartSecs",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Max Start Retries",
+						BindModelValuePath: "service.maxStartRetries",
+					})
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Output Path",
+						BindModelValuePath: "service.logOutputPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service output logs.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Error Path",
+						BindModelValuePath: "service.logErrorPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service error logs.",
+					})
+				</div>
+				<div class="grid grid-cols-3 place-items-center gap-2">
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+				</div>
+			</div>
+		</template>
+		<div class="my-4">
+			@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+				<div class="flex w-full flex-col gap-6">
+					@componentForm.MultiColumnRepeatableFieldset(
+						"envs", "Environment Variables", "", "service.envs",
+						[]componentForm.RepeatableField{
+							{InputType: "text", Id: "key", Label: "Key"},
+							{InputType: "text", Id: "value", Label: "Value"},
+						},
+					)
+					@componentForm.MultiColumnRepeatableFieldset(
+						"portBindings", "Port Bindings", "",
+						"service.portBindings", []componentForm.RepeatableField{
+							{InputType: "text", Id: "publicPort", Label: "Public Port"},
+							{
+								InputType: "select",
+								Id:        "protocol",
+								Label:     "Protocol",
+								Options:   valueObject.ValidNetworkProtocols,
+							},
+						},
+					)
+				</div>
+			}
+		</div>
+		@componentForm.SubmitButton(
+			"schedule-service-installation-button", "Schedule installation",
+			"ph-queue", "installService()", false,
+		)
+	</form>
+}
+
+templ ScheduleServiceInstallationModal(
+	installableServices InstallableServicesGroupedByType,
+) {
+	@componentStructural.RegularModal(
+		"Install service", "isScheduleServiceInstallationModalOpen",
+		"closeScheduleServiceInstallationModal()", "",
+	) {
+		@ScheduleServiceInstallationForm(installableServices)
+	}
+}
+
+templ UpdateInstalledServiceForm() {
+	<form @submit.prevent="">
+		<template x-if="service.nature !== 'custom'">
+			<div>
+				<div class="mt-4 grid grid-rows-2 gap-2">
+					<div class="grid grid-cols-3 gap-2">
+						@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+							BindLabel:     "'Version'",
+							BindModelPath: "service.version",
+							BindOptions:   "selectedInstallableServiceAvailableVersions",
+						})
+						@componentForm.InputField(componentForm.InputFieldDto{
+							Type:               "number",
+							Label:              "Timeout Start Secs",
+							BindModelValuePath: "service.timeoutStartSecs",
+						})
+						@componentForm.InputField(componentForm.InputFieldDto{
+							Type:               "number",
+							Label:              "Max Start Retries",
+							BindModelValuePath: "service.maxStartRetries",
+						})
+					</div>
+					<div class="grid grid-cols-2 place-items-center gap-2">
+						@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
+						@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
+					</div>
+				</div>
+			</div>
+		</template>
+		<template x-if="service.nature === 'custom'">
+			<div class="mt-4 grid grid-rows-3 gap-3">
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Name",
+						BindModelValuePath: "service.name",
+					})
+					@componentForm.SelectInput(
+						"", "Type", "service.type", "", valueObject.ValidServiceTypes,
+						true,
+					)
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Start Command",
+						BindModelValuePath: "service.startCmd",
+						InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Avatar URL",
+						BindModelValuePath: "service.avatarUrl",
+					})
+				</div>
+				<div class="grid grid-cols-3 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Exec User",
+						BindModelValuePath: "service.execUser",
+						InfoTooltipContent: "Unix user that will be used to execute your service commands.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Timeout Start Secs",
+						BindModelValuePath: "service.timeoutStartSecs",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Max Start Retries",
+						BindModelValuePath: "service.maxStartRetries",
+					})
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Output Path",
+						BindModelValuePath: "service.logOutputPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service output logs.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Error Path",
+						BindModelValuePath: "service.logErrorPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service error logs.",
+					})
+				</div>
+				<div class="grid grid-cols-3 place-items-center gap-2">
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
+					@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+				</div>
+			</div>
+		</template>
+		<div class="my-4">
+			@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+				<div class="flex w-full flex-col gap-6">
+					@componentForm.MultiColumnRepeatableFieldset(
+						"envs", "Environment Variables", "", "service.envs",
+						[]componentForm.RepeatableField{
+							{InputType: "text", Id: "key", Label: "Key"},
+							{InputType: "text", Id: "value", Label: "Value"},
+						},
+					)
+					@componentForm.MultiColumnRepeatableFieldset(
+						"portBindings", "Port Bindings", "", "service.portBindings",
+						[]componentForm.RepeatableField{
+							{InputType: "text", Id: "port", Label: "Port"},
+							{
+								InputType: "select",
+								Id:        "protocol",
+								Label:     "Protocol",
+								Options:   valueObject.ValidNetworkProtocols,
+							},
+						},
+					)
+				</div>
+			}
+		</div>
+		@componentForm.SubmitButton(
+			"update-installed-service-button", "Update service",
+			"ph-check-fat", "updateService()", false,
+		)
+	</form>
+}
+
+templ UpdateInstalledServiceModal() {
+	@componentStructural.RegularModal(
+		"Update service", "isUpdateInstalledServiceModalOpen",
+		"closeUpdateInstalledServiceModal()", "service.name",
+	) {
+		@UpdateInstalledServiceForm()
+	}
 }
