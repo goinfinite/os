@@ -1,0 +1,80 @@
+package componentStructural
+
+templ RecordFilters(componentId, filtersBindPath string) {
+	<!-- RecordFilters -->
+	<div class="flex flex-row items-center justify-start gap-1.5">
+		<div class="flex flex-row flex-wrap items-center gap-2">
+			<template x-for={ "(filterKey, filterIndex) in Object.keys(" + filtersBindPath + ")" }>
+				<!-- FilterField -->
+				<div
+					class="bg-os-400 flex flex-row items-center gap-1.5 rounded-xl p-2"
+					x-data="{selectedFilterKey: filterKey}"
+					x-show={ filtersBindPath + "[filterKey] !== ''" }
+				>
+					<div class="relative w-full">
+						<select
+							x-model="selectedFilterKey"
+							x-init={ "$watch('selectedFilterKey', (newFilterKey, oldFilterKey) => { if (newFilterKey !== oldFilterKey) { " + filtersBindPath + "[oldFilterKey] = '';" + filtersBindPath + "[newFilterKey] = ' '} })" }
+							placeholder="filter"
+							class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 h-7.5 peer relative w-full appearance-none rounded-md border px-3 text-[13px] leading-normal text-neutral-100 placeholder-transparent outline-none transition-all"
+						>
+							<template x-for={ "remainingFilterKey in Object.keys(" + filtersBindPath + ")" }>
+								<option
+									class="bg-os-500 checked:bg-infinite-500 bg-opacity-90"
+									:value="remainingFilterKey"
+									x-text="remainingFilterKey"
+									:selected={ "remainingFilterKey === selectedFilterKey" }
+								></option>
+							</template>
+						</select>
+						<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-55% to-transparent to-55% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100">
+							filter
+						</label>
+						<i class="ph-bold ph-caret-down pointer-events-none absolute right-2 top-3 text-xs"></i>
+					</div>
+					<div class="flex w-full flex-row items-center gap-1.5">
+						<input
+							type="text"
+							x-model:value={ filtersBindPath + "[selectedFilterKey]" }
+							class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-7.5 min-w-38 peer relative w-full rounded-md border px-1.5 text-[13px] text-neutral-100 placeholder-transparent outline-none transition-all"
+						/>
+						<button
+							type="button"
+							class="bg-os-500 hover:bg-os-300 flex h-6 items-center rounded-lg p-1.5 leading-none"
+							@click={ filtersBindPath + "[selectedFilterKey] = ''" }
+						>
+							<i class="ph-bold ph-x text-[10px]"></i>
+						</button>
+					</div>
+				</div>
+			</template>
+		</div>
+		<button
+			type="button"
+			class="bg-os-400 hover:bg-os-300 h-6.5 flex items-center rounded-lg p-1.5 leading-none"
+			x-show={ "!Object.values(" + filtersBindPath + ").every((value) => value !== '')" }
+			@click={ "Object.keys(" + filtersBindPath + ").some((filterKey) => { if (" + filtersBindPath + "[filterKey] === '') { " + filtersBindPath + "[filterKey] = ' '; return true; } })" }
+		>
+			<i class="ph-bold ph-plus text-xs" x-show={ "Object.values(" + filtersBindPath + ").some((value) => value !== '')" }></i>
+			<i class="ph-bold ph-funnel text-xs" x-show={ "Object.values(" + filtersBindPath + ").every((value) => value === '')" }></i>
+		</button>
+		<button
+			type="button"
+			class="flex h-7 flex-row items-center rounded-md bg-cyan-900 px-2 text-sm leading-none hover:bg-cyan-700"
+			@click={ "$dispatch('update:" + componentId + "-record-filters')" }
+			x-show={ "Object.values(" + filtersBindPath + ").some((value) => value !== '')" }
+		>
+			<i class="ph-duotone ph-funnel text-md mr-1 align-middle"></i>
+			apply
+		</button>
+		<button
+			type="button"
+			class="flex h-7 flex-row items-center rounded-md bg-yellow-900 px-2 text-sm leading-none hover:bg-yellow-700"
+			@click={ "Object.keys(" + filtersBindPath + ").forEach((filterKey) => { " + filtersBindPath + "[filterKey] = '' }); $dispatch('update:" + componentId + "-record-filters')" }
+			x-show={ "Object.values(" + filtersBindPath + ").some((value) => value !== '')" }
+		>
+			<i class="ph-duotone ph-broom text-md mr-1 align-middle"></i>
+			clear all
+		</button>
+	</div>
+}
