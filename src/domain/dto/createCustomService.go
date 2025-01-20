@@ -14,6 +14,7 @@ type CreateCustomService struct {
 	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
 	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
 	Version           *valueObject.ServiceVersion `json:"version"`
+	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
 	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
 	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
 	AutoStart         *bool                       `json:"autoStart"`
@@ -35,6 +36,7 @@ func NewCreateCustomService(
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
+	avatarUrl *valueObject.Url,
 	execUser *valueObject.UnixUsername,
 	workingDirectory *valueObject.UnixFilePath,
 	autoStart, autoRestart *bool,
@@ -56,6 +58,7 @@ func NewCreateCustomService(
 		PreStopCmdSteps:   preStopSteps,
 		PostStopCmdSteps:  postStopSteps,
 		Version:           version,
+		AvatarUrl:         avatarUrl,
 		ExecUser:          execUser,
 		WorkingDirectory:  workingDirectory,
 		AutoStart:         autoStart,
