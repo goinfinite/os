@@ -385,7 +385,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
 		createDto.Name, err = valueObject.NewServiceName(
-			createDto.Name.String() + "-" + startupFileHash,
+			createDto.Name.String() + "_" + startupFileHash,
 		)
 		if err != nil {
 			return installedServiceName, errors.New(
