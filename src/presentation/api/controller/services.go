@@ -88,27 +88,51 @@ func (controller *ServicesController) ReadInstallablesItems(c echo.Context) erro
 	)
 }
 
-func (controller *ServicesController) parseRawEnvs(envs interface{}) ([]string, error) {
-	rawEnvs := []string{}
-	rawEnvsSlice, assertOk := envs.([]interface{})
-	if !assertOk {
-		rawEnvUnique, assertOk := envs.(string)
-		if !assertOk {
-			return rawEnvs, errors.New("EnvsMustBeStringOrStringSlice")
-		}
-		rawEnvsSlice = []interface{}{rawEnvUnique}
+func (controller *ServicesController) parseRawEnvs(envsUnknownType any) ([]string, error) {
+	rawEnvsStringSlice, assertOk := envsUnknownType.([]string)
+	if assertOk {
+		return rawEnvsStringSlice, nil
 	}
 
-	for _, rawEnv := range rawEnvsSlice {
-		rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
+	rawEnvsMap := map[string]interface{}{}
+	switch envsValues := envsUnknownType.(type) {
+	case []string:
+		return envsValues, nil
+	case string:
+		return []string{envsValues}, nil
+	case []interface{}:
+		for _, envInterface := range envsValues {
+			envMap, assertOk := envInterface.(map[string]interface{})
+			if !assertOk {
+				slog.Debug("InvalidEnvStructure", slog.Any("envVar", envMap["key"]))
+				continue
+			}
+
+			envMapKeyNameStr, err := voHelper.InterfaceToString(envMap["key"])
+			if err != nil {
+				slog.Debug(err.Error(), slog.Any("envVar", envMap["key"]))
+				continue
+			}
+			rawEnvsMap[envMapKeyNameStr] = envMap["value"]
+		}
+	case map[string]interface{}:
+		rawEnvsMap = envsValues
+	default:
+		return []string{}, errors.New("EnvsMustBeStringOrStringSliceOrMapOrMapSlice")
+	}
+
+	rawEnvsStrSlice := []string{}
+	for mapPropName, mapPropValue := range rawEnvsMap {
+		mapPropValueStr, err := voHelper.InterfaceToString(mapPropValue)
 		if err != nil {
-			slog.Debug(err.Error(), slog.Any("env", rawEnv))
+			slog.Debug("InvalidEnvValue", slog.Any("envVar", mapPropName))
 			continue
 		}
-		rawEnvs = append(rawEnvs, rawEnvStr)
+
+		rawEnvsStrSlice = append(rawEnvsStrSlice, mapPropName+"="+mapPropValueStr)
 	}
 
-	return rawEnvs, nil
+	return rawEnvsStrSlice, nil
 }
 
 func (controller *ServicesController) parseRawPortBindings(
