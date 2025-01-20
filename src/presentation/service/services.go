@@ -486,6 +486,15 @@ func (service *ServicesService) CreateCustom(
 		versionPtr = &version
 	}
 
+	var avatarUrlPtr *valueObject.Url
+	if input["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		avatarUrlPtr = &avatarUrl
+	}
+
 	portBindings := []valueObject.PortBinding{}
 	if _, exists := input["portBindings"]; exists {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
@@ -529,8 +538,8 @@ func (service *ServicesService) CreateCustom(
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, []valueObject.ServiceEnv{}, portBindings,
-		nil, nil, nil, nil, nil, versionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
-		&autoCreateMapping, operatorAccountId, operatorIpAddress,
+		nil, nil, nil, nil, nil, versionPtr, avatarUrlPtr, nil, nil, nil, nil, nil,
+		nil, nil, nil, &autoCreateMapping, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
@@ -655,13 +664,13 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 }
 
 func (service *ServicesService) Delete(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"name"}
+	requiredParams := []string{"svcName"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	name, err := valueObject.NewServiceName(input["name"])
+	name, err := valueObject.NewServiceName(input["svcName"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
