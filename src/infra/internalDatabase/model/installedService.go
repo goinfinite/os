@@ -97,8 +97,12 @@ func (InstalledService) JoinCmdSteps(cmdSteps []valueObject.UnixCommand) string 
 
 func (InstalledService) SplitCmdSteps(cmdStepsStr string) []valueObject.UnixCommand {
 	rawCmdStepsList := strings.Split(cmdStepsStr, "\n")
-	var cmdSteps []valueObject.UnixCommand
+	cmdSteps := []valueObject.UnixCommand{}
 	for stepIndex, rawCmdStep := range rawCmdStepsList {
+		if len(rawCmdStep) == 0 {
+			continue
+		}
+
 		cmdStep, err := valueObject.NewUnixCommand(rawCmdStep)
 		if err != nil {
 			log.Printf("[index %d] %s", stepIndex, err)
@@ -119,8 +123,12 @@ func (InstalledService) JoinEnvs(envs []valueObject.ServiceEnv) string {
 
 func (InstalledService) SplitEnvs(envsStr string) []valueObject.ServiceEnv {
 	rawEnvsList := strings.Split(envsStr, ";")
-	var envs []valueObject.ServiceEnv
+	envs := []valueObject.ServiceEnv{}
 	for envIndex, rawEnv := range rawEnvsList {
+		if len(rawEnv) == 0 {
+			continue
+		}
+
 		env, err := valueObject.NewServiceEnv(rawEnv)
 		if err != nil {
 			log.Printf("[index %d] %s", envIndex, err)
@@ -141,8 +149,12 @@ func (InstalledService) JoinPortBindings(portBindings []valueObject.PortBinding)
 
 func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.PortBinding {
 	rawPortBindingsList := strings.Split(portBindingsStr, ";")
-	var portBindings []valueObject.PortBinding
+	portBindings := []valueObject.PortBinding{}
 	for portIndex, rawPortBinding := range rawPortBindingsList {
+		if len(rawPortBinding) == 0 {
+			continue
+		}
+
 		portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 		if err != nil {
 			log.Printf("[index %d] %s", portIndex, err)
