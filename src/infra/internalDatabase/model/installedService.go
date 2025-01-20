@@ -16,6 +16,7 @@ type InstalledService struct {
 	Type              string `gorm:"not null"`
 	Version           string `gorm:"not null"`
 	StartCmd          string `gorm:"not null"`
+	AvatarUrl         *string
 	Envs              *string
 	PortBindings      *string
 	StopCmdSteps      *string
@@ -41,30 +42,35 @@ func (InstalledService) TableName() string {
 }
 
 func (InstalledService) InitialEntries() (entries []interface{}, err error) {
+	osApiAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/os-api/assets/avatar.jpg"
 	osWorkingDirectory := "/infinite"
 	osLogOutputPath := "/dev/stdout"
 	osLogErrorPath := "/dev/stderr"
-	osApiPortBindings := "1618/http"
+	osApiPortBindings := infraEnvs.InfiniteOsApiHttpPublicPort + "/http"
 	osApiService := InstalledService{
 		Name:             "os-api",
 		Nature:           "solo",
 		Type:             "system",
 		Version:          infraEnvs.InfiniteOsVersion,
 		StartCmd:         infraEnvs.InfiniteOsBinary + " serve",
+		AvatarUrl:        &osApiAvatarUrl,
 		PortBindings:     &osApiPortBindings,
 		WorkingDirectory: &osWorkingDirectory,
 		LogOutputPath:    &osLogOutputPath,
 		LogErrorPath:     &osLogErrorPath,
 	}
 
+	cronAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/cron/assets/avatar.jpg"
 	cronService := InstalledService{
-		Name:     "cron",
-		Nature:   "solo",
-		Type:     "system",
-		Version:  "3.0",
-		StartCmd: "/usr/sbin/cron -f",
+		Name:      "cron",
+		Nature:    "solo",
+		Type:      "system",
+		Version:   "3.0",
+		StartCmd:  "/usr/sbin/cron -f",
+		AvatarUrl: &cronAvatarUrl,
 	}
 
+	nginxAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/nginx/assets/avatar.jpg"
 	nginxPortBindings := "80/http;443/https"
 	nginxAutoStart := false
 	nginxService := InstalledService{
@@ -73,6 +79,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Type:         "system",
 		Version:      "1.24.0",
 		StartCmd:     "/usr/sbin/nginx",
+		AvatarUrl:    &nginxAvatarUrl,
 		PortBindings: &nginxPortBindings,
 		AutoStart:    &nginxAutoStart,
 	}
@@ -148,10 +155,14 @@ func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.
 
 func NewInstalledService(
 	name, nature, serviceType, version, startCmd string,
-	envs []valueObject.ServiceEnv, portBindings []valueObject.PortBinding,
+	avatarUrl *string,
+	envs []valueObject.ServiceEnv,
+	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
-	execUser, workingDirectory, startupFile *string, autoStart, autoRestart *bool,
-	timeoutStartSecs, maxStartRetries *uint, logOutputPath, logErrorPath *string,
+	execUser, workingDirectory, startupFile *string,
+	autoStart, autoRestart *bool,
+	timeoutStartSecs, maxStartRetries *uint,
+	logOutputPath, logErrorPath *string,
 ) InstalledService {
 	var envsPtr *string
 	if len(envs) > 0 {
@@ -201,6 +212,7 @@ func NewInstalledService(
 		Type:              serviceType,
 		Version:           version,
 		StartCmd:          startCmd,
+		AvatarUrl:         avatarUrl,
 		Envs:              envsPtr,
 		PortBindings:      portBindingsPtr,
 		StopCmdSteps:      stopStepsPtr,
@@ -248,37 +260,46 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	status, _ := valueObject.NewServiceStatus("running")
 
-	var envs []valueObject.ServiceEnv
+	var avatarUrlPtr *valueObject.Url
+	if model.AvatarUrl != nil {
+		avatarUrl, err := valueObject.NewUrl(*model.AvatarUrl)
+		if err != nil {
+			return serviceEntity, err
+		}
+		avatarUrlPtr = &avatarUrl
+	}
+
+	envs := []valueObject.ServiceEnv{}
 	if model.Envs != nil {
 		envs = model.SplitEnvs(*model.Envs)
 	}
 
-	var portBindings []valueObject.PortBinding
+	portBindings := []valueObject.PortBinding{}
 	if model.PortBindings != nil {
 		portBindings = model.SplitPortBindings(*model.PortBindings)
 	}
 
-	var stopCmdSteps []valueObject.UnixCommand
+	stopCmdSteps := []valueObject.UnixCommand{}
 	if model.StopCmdSteps != nil {
 		stopCmdSteps = model.SplitCmdSteps(*model.StopCmdSteps)
 	}
 
-	var preStartCmdSteps []valueObject.UnixCommand
+	preStartCmdSteps := []valueObject.UnixCommand{}
 	if model.PreStartCmdSteps != nil {
 		preStartCmdSteps = model.SplitCmdSteps(*model.PreStartCmdSteps)
 	}
 
-	var postStartCmdSteps []valueObject.UnixCommand
+	postStartCmdSteps := []valueObject.UnixCommand{}
 	if model.PostStartCmdSteps != nil {
 		postStartCmdSteps = model.SplitCmdSteps(*model.PostStartCmdSteps)
 	}
 
-	var preStopCmdSteps []valueObject.UnixCommand
+	preStopCmdSteps := []valueObject.UnixCommand{}
 	if model.PreStopCmdSteps != nil {
 		preStopCmdSteps = model.SplitCmdSteps(*model.PreStopCmdSteps)
 	}
 
-	var postStopCmdSteps []valueObject.UnixCommand
+	postStopCmdSteps := []valueObject.UnixCommand{}
 	if model.PostStopCmdSteps != nil {
 		postStopCmdSteps = model.SplitCmdSteps(*model.PostStopCmdSteps)
 	}
@@ -349,10 +370,11 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 	}
 
 	return entity.NewInstalledService(
-		name, nature, serviceType, version, startCmd, status, envs, portBindings,
-		stopCmdSteps, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps, postStopCmdSteps,
-		execUserPtr, workingDirectoryPtr, startupFilePtr, autoStart, autoRestart,
-		timeoutStartSecs, maxStartRetries, logOutputPathPtr, logErrorPathPtr,
+		name, nature, serviceType, version, startCmd, status, avatarUrlPtr, envs,
+		portBindings, stopCmdSteps, preStartCmdSteps, postStartCmdSteps,
+		preStopCmdSteps, postStopCmdSteps, execUserPtr, workingDirectoryPtr,
+		startupFilePtr, autoStart, autoRestart, timeoutStartSecs, maxStartRetries,
+		logOutputPathPtr, logErrorPathPtr,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
