@@ -39,24 +39,19 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 	installableServicesList []entity.InstallableService,
 ) page.InstallableServicesGroupedByType {
 	installableServicesGroupedByType := page.InstallableServicesGroupedByType{
-		Application: []entity.InstallableService{},
-		Runtime:     []entity.InstallableService{},
-		Database:    []entity.InstallableService{},
-		Webserver:   []entity.InstallableService{},
-		Mom:         []entity.InstallableService{},
-		Monitoring:  []entity.InstallableService{},
-		Logging:     []entity.InstallableService{},
-		Security:    []entity.InstallableService{},
-		Backup:      []entity.InstallableService{},
-		Other:       []entity.InstallableService{},
+		Runtime:    []entity.InstallableService{},
+		Database:   []entity.InstallableService{},
+		Webserver:  []entity.InstallableService{},
+		Mom:        []entity.InstallableService{},
+		Monitoring: []entity.InstallableService{},
+		Logging:    []entity.InstallableService{},
+		Security:   []entity.InstallableService{},
+		Backup:     []entity.InstallableService{},
+		Other:      []entity.InstallableService{},
 	}
 
 	for _, item := range installableServicesList {
 		switch item.Type.String() {
-		case "application":
-			installableServicesGroupedByType.Application = append(
-				installableServicesGroupedByType.Application, item,
-			)
 		case "runtime":
 			installableServicesGroupedByType.Runtime = append(
 				installableServicesGroupedByType.Runtime, item,

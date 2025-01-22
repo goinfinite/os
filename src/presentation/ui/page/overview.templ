@@ -12,16 +12,15 @@ import (
 )
 
 type InstallableServicesGroupedByType struct {
-	Application []entity.InstallableService
-	Runtime     []entity.InstallableService
-	Database    []entity.InstallableService
-	Webserver   []entity.InstallableService
-	Mom         []entity.InstallableService
-	Monitoring  []entity.InstallableService
-	Logging     []entity.InstallableService
-	Security    []entity.InstallableService
-	Backup      []entity.InstallableService
-	Other       []entity.InstallableService
+	Runtime    []entity.InstallableService
+	Database   []entity.InstallableService
+	Webserver  []entity.InstallableService
+	Mom        []entity.InstallableService
+	Monitoring []entity.InstallableService
+	Logging    []entity.InstallableService
+	Security   []entity.InstallableService
+	Backup     []entity.InstallableService
+	Other      []entity.InstallableService
 }
 
 type ServicesOverview struct {
@@ -85,14 +84,14 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 			},
 
 			// Modal States
-			isScheduleMarketplaceItemInstallationModalOpen: false,
-			openScheduleMarketplaceItemInstallationModal() {
+			isMarketplaceItemInstallationModalOpen: false,
+			openMarketplaceItemInstallationModal() {
 				this.resetPrimaryStates();
 				this.resetAuxiliaryStates();
-				this.isScheduleMarketplaceItemInstallationModalOpen = true;
+				this.isMarketplaceItemInstallationModalOpen = true;
 			},
-			closeScheduleMarketplaceItemInstallationModal() {
-				this.isScheduleMarketplaceItemInstallationModalOpen = false;
+			closeMarketplaceItemInstallationModal() {
+				this.isMarketplaceItemInstallationModalOpen = false;
 			},
 			isUninstallMarketplaceItemModalOpen: false,
 			openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
@@ -182,7 +181,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 				);
 			},
 			targetServiceType: 'installables',
-			selectedInstallableServiceType: 'application',
+			selectedInstallableServiceType: 'runtime',
 			selectedInstallableServiceName: '',
 			selectedInstallableServiceAvailableVersions: [],
 			updateSelectedInstallableService(installableServiceName) {
@@ -241,7 +240,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					itemsPerPage: 5,
 				};
 				this.targetServiceType = 'installables';
-				this.selectedInstallableServiceType = 'application';
+				this.selectedInstallableServiceType = 'runtime';
 				this.selectedInstallableServiceName = '';
 				this.selectedInstallableServiceAvailableVersions = [];
 			},
@@ -280,6 +279,10 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					serviceInstallationParamsWithoutEmptyValues, shouldDisplayToast,
 				);
 
+				if (this.targetServiceType == "custom") {
+					return this.$dispatch('install:custom-service');
+				}
+
 				this.$store.main.refreshScheduledTasksPopover();
 			},
 			isUpdateInstalledServiceModalOpen: false,
@@ -291,7 +294,6 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					document.getElementById('installedServiceEntity_'+installedServiceName).textContent
 				);
 				this.service = Object.assign({}, installedServiceEntity);
-				console.log(installedServiceEntity);
 
 				this.service.envs = [];
 				for (const serviceEnv of installedServiceEntity.envs) {
@@ -433,8 +435,8 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 					<th scope="col" class="flex justify-end py-3">
 						<div class="mr-2">
 							@componentForm.SubmitButton(
-								"", "Schedule catalog item installation", "ph-queue",
-								"openScheduleMarketplaceItemInstallationModal()", false,
+								"", "Install catalog item", "ph-arrow-line-down",
+								"openMarketplaceItemInstallationModal()", false,
 							)
 						</div>
 					</th>
@@ -449,12 +451,14 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 								{ installedItem.Name.String() }
 							</div>
 						</th>
-						<th scope="row" class="flex content-center justify-center px-5 py-3 font-normal">
-							@componentStructural.Tag(
-								"", installedItem.Type.String(),
-								installedItem.Hostname.String()+installedItem.UrlPath.String(),
-								"infinite-500",
-							)
+						<th scope="row" class="px-5 py-3 font-normal">
+							<div class="flex items-center justify-center">
+								@componentStructural.Tag(
+									"", installedItem.Type.String(),
+									installedItem.Hostname.String()+installedItem.UrlPath.String(),
+									"infinite-500",
+								)
+							</div>
 						</th>
 						<th scope="row" class="px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
 						<th scope="row" class="px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
@@ -576,7 +580,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 						}, "selectedMarketplaceItemType",
 					)
 					<!-- MarketplaceVerticalTabContent -->
-					<div class="flex w-full justify-center">
+					<div class="flex w-full justify-center px-5">
 						<div x-show="selectedMarketplaceItemType === 'apps'">
 							@componentMisc.MultiItemCarousel(
 								"marketplaceAppItemsCarousel",
@@ -635,7 +639,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 		</div>
 		@componentForm.SubmitButton(
 			"install-marketplace-item-button", "Schedule installation",
-			"ph-queue", "closeScheduleMarketplaceItemInstallationModal()", false,
+			"ph-queue", "closeMarketplaceItemInstallationModal()", false,
 		)
 	</form>
 }
@@ -645,8 +649,8 @@ templ ScheduleMarketplaceItemInstallationModal(
 	marketplaceCatalogItems CatalogItemsGroupedByType,
 ) {
 	@componentStructural.RegularModal(
-		"Install marketplace item", "isScheduleMarketplaceItemInstallationModalOpen",
-		"closeScheduleMarketplaceItemInstallationModal()", "",
+		"Install marketplace item", "isMarketplaceItemInstallationModalOpen",
+		"closeMarketplaceItemInstallationModal()", "",
 	) {
 		@ScheduleMarketplaceItemInstallationForm(
 			vhostsHostnames, marketplaceCatalogItems,
@@ -664,7 +668,7 @@ func transformUptimeSecsIntoHumanReadable(uptimeSecs uint64) string {
 
 func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) string {
 	cpuFrequency = math.Round(cpuFrequency/1000*10) / 10
-	return fmt.Sprintf("%.0f CPU %.1f GHz", cpuCores, cpuFrequency)
+	return fmt.Sprintf("%.0f CPU @ %.1f GHz", cpuCores, cpuFrequency)
 }
 
 templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
@@ -730,7 +734,7 @@ templ InstalledServicesItemsTable(
 		<div
 			id="installed-services-table"
 			hx-get="/overview/"
-			hx-trigger="update:service from:window delay:250ms, delete:service from:window delay:250ms"
+			hx-trigger="install:custom-service from:window delay:250ms, update:service from:window delay:250ms, delete:service from:window delay:250ms"
 			hx-select="#installed-services-table"
 			hx-target="#installed-services-table"
 			hx-swap="outerHTML transition:true"
@@ -781,21 +785,21 @@ templ InstalledServicesItemsTable(
 										{ installedServiceEntity.Name.String() }
 									</div>
 									<div class="inline-flex items-center space-x-2">
-										@componentStructural.TinyTag(componentStructural.TinyTagDto{
-											HighlightedLabel: "Type",
-											TagValue:         installedServiceEntity.Type.String(),
-											TagColor:         "infinite-500",
-										})
-										@componentStructural.TinyTag(componentStructural.TinyTagDto{
-											HighlightedLabel: "Version",
-											TagValue:         installedServiceEntity.Version.String(),
-											TagColor:         "infinite-500",
-										})
-										@componentStructural.TinyTag(componentStructural.TinyTagDto{
-											HighlightedLabel: "Nature",
-											TagValue:         installedServiceEntity.Nature.String(),
-											TagColor:         "infinite-500",
-										})
+										@componentStructural.TagWithFilter(
+											"", "tag", installedServiceEntity.Type.String(),
+											installedServiceEntity.Type.String(), "installedServicesFilters['type']",
+											"infinite-500",
+										)
+										@componentStructural.TagWithFilter(
+											"", "version", installedServiceEntity.Version.String(),
+											installedServiceEntity.Version.String(), "installedServicesFilters['version']",
+											"infinite-500",
+										)
+										@componentStructural.TagWithFilter(
+											"", "nature", installedServiceEntity.Nature.String(),
+											installedServiceEntity.Nature.String(), "installedServicesFilters['nature']",
+											"infinite-500",
+										)
 									</div>
 								</div>
 							</td>
@@ -832,30 +836,30 @@ templ InstalledServicesItemsTable(
 							<td class="px-3 py-2">
 								<div class="flex justify-end space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-arrow-clockwise", "blue-900", "blue-700",
+										"ph-arrow-clockwise", "os-200", "os-300",
 										"restartService('"+installedServiceEntity.Name.String()+"')",
-										"Restart", "blue-500",
+										"Restart", "os-200",
 									)
 									if installedServiceEntity.Type.String() != "system" {
 										switch installedServiceEntity.Status.String() {
 											case "running":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-pause", "blue-900", "blue-700",
+													"ph-pause", "os-200", "os-300",
 													"pauseService('"+installedServiceEntity.Name.String()+"')",
-													"Pause", "blue-500",
+													"Pause", "os-200",
 												)
 											case "stopped":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-play", "blue-900", "blue-700",
+													"ph-play", "os-200", "os-300",
 													"startService('"+installedServiceEntity.Name.String()+"')",
-													"Start", "blue-500",
+													"Start", "os-200",
 												)
 										}
 										if installedServiceEntity.Nature.String() != "solo" {
 											@componentStructural.CircularIconButtonWithTooltip(
-												"ph-gear", "blue-900", "blue-700",
+												"ph-gear", "os-200", "os-300",
 												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",
-												"Edit", "blue-500",
+												"Edit", "os-200",
 											)
 										}
 										@componentStructural.CircularIconButtonWithTooltip(
@@ -912,11 +916,6 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 					<div class="basis-1/4 space-y-1.5">
 						@componentStructural.TinyTag(componentStructural.TinyTagDto{
 							HighlightedIcon: "ph-memory",
-							TagValue:        installableServiceEntity.ManifestVersion.String(),
-							TagColor:        "infinite-500",
-						})
-						@componentStructural.TinyTag(componentStructural.TinyTagDto{
-							HighlightedIcon: "ph-hard-drives",
 							TagValue:        installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
 							TagColor:        "infinite-500",
 						})
@@ -940,7 +939,7 @@ func transformInstallableServicesIntoCarouselItems(
 }
 
 templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
-	<form @submit.prevent="$store.main.refreshScheduledTasksPopover()">
+	<form @submit.prevent="">
 		<div class="-mt-4 mb-4 flex justify-start gap-4">
 			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
 			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
@@ -954,13 +953,6 @@ templ ServiceInstallationForm(installableServices InstallableServicesGroupedByTy
 					)
 					<!-- InstallableServicesCarousel -->
 					<div class="flex w-full justify-center">
-						<div x-show="selectedInstallableServiceType === 'application'">
-							@componentMisc.MultiItemCarousel(
-								"installableApplicationServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Application),
-								7,
-							)
-						</div>
 						<div x-show="selectedInstallableServiceType === 'runtime'">
 							@componentMisc.MultiItemCarousel(
 								"installableRuntimeServicesCarousel",
@@ -1147,12 +1139,13 @@ templ ServiceInstallationForm(installableServices InstallableServicesGroupedByTy
 		<template x-if="targetServiceType !== 'custom'">
 			@componentForm.SubmitButton(
 				"schedule-service-installation-button", "Schedule installation",
-				"ph-queue", "installService()", false,
+				"ph-queue", "installService()",
+				false,
 			)
 		</template>
 		<template x-if="targetServiceType === 'custom'">
 			@componentForm.SubmitButton(
-				"install-service-button", "Install", "ph-arrow-line-down",
+				"install-service-button", "Install immediately", "ph-arrow-line-down",
 				"installService()", false,
 			)
 		</template>

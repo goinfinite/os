@@ -11,7 +11,7 @@ import (
 type ServiceType string
 
 var ValidServiceTypes = []string{
-	"application", "runtime", "database", "webserver", "mom", "monitoring",
+	"runtime", "database", "webserver", "mom", "monitoring",
 	"logging", "security", "backup", "system", "other",
 }
 
