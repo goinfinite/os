@@ -19,24 +19,31 @@ templ Tag(highlightedIcon, highlightedLabel, tagValue, tagColor string) {
 	</div>
 }
 
-templ TagWithFilter(
-	highlightedIcon, highlightedLabel, tagValue, filterValue, filterBindPath, tagColor string,
-) {
+type TagWithFilterDto struct {
+	HighlightedIcon  string
+	HighlightedLabel string
+	TagValue         string
+	TagColor         string
+	FilterValue      string
+	FilterBindPath   string
+}
+
+templ TagWithFilter(tagWithFilterDto TagWithFilterDto) {
 	<!-- TagWithFilter -->
-	<div class={ "flex rounded-md border-solid border-2.5 border-" + tagColor + " text-sm" }>
-		<div class={ "bg-" + tagColor + " flex items-center" }>
+	<div class={ "flex rounded-md border-solid border-2.5 border-" + tagWithFilterDto.TagColor + " text-sm" }>
+		<div class={ "bg-" + tagWithFilterDto.TagColor + " flex items-center" }>
 			<div class="flex items-center px-1">
-				if highlightedIcon != "" {
-					<i class={ "ph-duotone " + highlightedIcon + " text-lg" }></i>
+				if tagWithFilterDto.HighlightedIcon != "" {
+					<i class={ "ph-duotone " + tagWithFilterDto.HighlightedIcon + " text-lg" }></i>
 				}
-				if highlightedLabel != "" {
-					<span class="max-w-64 truncate">{ highlightedLabel }</span>
+				if tagWithFilterDto.HighlightedLabel != "" {
+					<span class="max-w-64 truncate">{ tagWithFilterDto.HighlightedLabel }</span>
 				}
 			</div>
 		</div>
-		<span class={ "leading-normal ring-" + tagColor + " ring-offset-" + tagColor + " rounded-md px-1 py-0.5 ring-1 ring-offset-1 max-w-64 truncate" }>
-			@templ.Raw(tagValue)
-			<i class="bg-os-200 ph-bold ph-funnel hover:bg-infinite-200 ml-1 cursor-pointer rounded-xl p-1 text-[10px] transition-all" @click={ filterBindPath + " = '" + filterValue + "'" }></i>
+		<span class={ "leading-normal ring-" + tagWithFilterDto.TagColor + " ring-offset-" + tagWithFilterDto.TagColor + " rounded-md px-1 py-0.5 ring-1 ring-offset-1 max-w-64 truncate" }>
+			@templ.Raw(tagWithFilterDto.TagValue)
+			<i class="bg-os-200 ph-bold ph-funnel hover:bg-infinite-200 ml-1 cursor-pointer rounded-xl p-1 text-[10px] transition-all" @click={ tagWithFilterDto.FilterBindPath + " = '" + tagWithFilterDto.FilterValue + "'" }></i>
 		</span>
 	</div>
 }
