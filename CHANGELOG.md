@@ -1,12 +1,15 @@
 # Changelog
 
 ```log
-0.1.7 - 2024/X/X
+0.1.8 - 2025/01/24
+refactor(front): overview page with HTMX+Alpine.js
+
+0.1.7 - 2025/01/06
 fix(front): install params section on marketplace deploy
 refactor(front): login page with HTMX+Alpine.js
 feat: /setup/ (api and front)
 
-0.1.6 - 2024/X/X
+0.1.6 - 2024/12/23
 refactor(front): crons page with HTMX+Alpine.js
 
 0.1.5 - 2024/12/06
