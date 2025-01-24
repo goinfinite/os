@@ -734,13 +734,15 @@ templ ScheduleMarketplaceItemInstallationForm(
 			</div>
 			<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
 				<div class="flex justify-stretch gap-4">
-					@componentStructural.VerticalTabHeader(
-						[]componentStructural.TabHeaderItem{
-							{Label: "Apps", Value: "apps"},
-							{Label: "Frameworks", Value: "frameworks"},
-							{Label: "Stacks", Value: "stacks"},
-						}, "selectedMarketplaceItemType",
-					)
+					<div>
+						@componentStructural.VerticalTabHeader(
+							[]componentStructural.TabHeaderItem{
+								{Label: "Apps", Value: "apps"},
+								{Label: "Frameworks", Value: "frameworks"},
+								{Label: "Stacks", Value: "stacks"},
+							}, "selectedMarketplaceItemType",
+						)
+					</div>
 					<!-- MarketplaceVerticalTabContent -->
 					<div class="bg-os-400 flex w-full justify-center rounded-lg px-5 py-2.5">
 						<div x-show="selectedMarketplaceItemType === 'apps'">
