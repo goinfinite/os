@@ -116,6 +116,166 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 		}));
 
 		Alpine.data('resourceUsage', () => ({
+			// Auxiliary States
+			refreshIntervalSecs: 20,
+			async updateResourceUsageCharts(chartInstance) {
+				const o11yCurrentUsageResource = await fetch('/api/v1/o11y/overview/', {
+					method: 'GET',
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/json',
+					},
+				})
+					.then((apiResponse) => {
+						if (!apiResponse.ok) {
+							throw new Error('BadHttpResponseCode: ' + apiResponse.status);
+						}
+
+						return apiResponse.json();
+					})
+					.then((jsonResponse) => jsonResponse.body.currentUsage)
+					.catch((error) => {
+						console.error('ReadO11yOverviewError: ' + error);
+						return [];
+					});
+
+				const nowDate = new Date();
+				const formattedTime = nowDate.toLocaleTimeString(
+					'pt-BR',
+					{ hour: '2-digit', minute: '2-digit', second: '2-digit' },
+				);
+				const newChartValue = vega.changeset().insert({
+					time: formattedTime,
+					cpuUsagePercent: o11yCurrentUsageResource.cpuUsagePercent / 100,
+					memUsagePercent: o11yCurrentUsageResource.memUsagePercent / 100,
+					storageUsagePercent: o11yCurrentUsageResource.storageUsage / 100,
+				});
+				chartInstance.change('resourceUsage', newChartValue).run();
+
+				const currentDomain = chartInstance.scale('x').domain();
+				const currentTime = nowDate.getTime();
+				const lastFiveMinutes = currentTime - (5 * 60 * 1000);
+				chartInstance.scale('x').domain([lastFiveMinutes, currentTime]).run();
+			},
+
+			init() {
+				const chartConfig = {
+					$schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+					data: { name: 'resourceUsage' },
+					background: null,
+					autosize: { type: 'fit', resize: true },
+					width: 'container',
+					height: 'container',
+					encoding: {
+						x: {
+							field: 'time',
+							type: 'ordinal',
+							axis: {
+								title: null,
+								labelColor: '#FFFFFF',
+								labelAngle: 0,
+								labelFontWeight: 'bold',
+								grid: true,
+								gridOpacity: 0.1
+							}
+						}
+					},
+					transform: [{ fold: ['cpuUsagePercent', 'memUsagePercent', 'storageUsagePercent'] }],
+					layer: [
+						{
+							encoding: {
+								y: {
+									field: 'value',
+									type: 'quantitative',
+									axis: {
+										title: null,
+										labelColor: '#FFFFFF',
+										labelFontWeight: 'bold',
+										grid: true,
+										gridOpacity: 0.1,
+										format: '.0%',
+										orient: 'right',
+										tickCount: 6
+									},
+									scale: { domain: [0, 1] },
+									stack: null
+								},
+								color: {
+									field: 'key',
+									type: 'nominal',
+									scale: { range: ['#4A44F2', '#797FF2', '#2A2C59'] },
+									legend: null
+								}
+							},
+							layer: [
+								{
+									mark: {
+										type: 'area',
+										line: true,
+										gradient: 'linear',
+										stops: [
+											{ offset: 0, color: '#A7793E' },
+											{ offset: 0, color: 'purple' }
+										]
+									}
+								},
+								{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
+							]
+						},
+						{
+							mark: 'rule',
+							transform: [{ pivot: 'key', value: 'value', groupby: ['time'] }],
+							encoding: {
+								stroke: { value: '#FFFFFF' },
+								strokeOpacity: { value: 0.2 },
+								strokeWidth: { value: 2 },
+								opacity: {
+									value: 0,
+									condition: { value: 1, param: 'hover', empty: false }
+								},
+								tooltip: [
+									{
+										field: 'cpuUsagePercent',
+										type: 'quantitative',
+										format: '.0%',
+										title: 'CPU Usage'
+									},
+									{
+										field: 'memUsagePercent',
+										type: 'quantitative',
+										format: '.0%',
+										title: 'Memory Usage'
+									},
+									{
+										field: 'storageUsagePercent',
+										type: 'quantitative',
+										format: '.0%',
+										title: 'Storage Usage'
+									}
+								]
+							},
+							params: [
+								{
+									name: 'hover',
+									select: {
+										type: 'point',
+										fields: ['time'],
+										nearest: true,
+										on: 'pointerover',
+										clear: 'pointerout'
+									}
+								}
+							]
+						}
+					]
+				};
+				vegaEmbed('#cpuAndMemoryUsageChart', chartConfig, { actions: false })
+					.then((chartInstance) => {
+						setInterval(() => {
+							this.updateResourceUsageCharts(chartInstance.view);
+						}, parseInt(this.refreshIntervalSecs) * 1000);
+					});
+			}
 		}));
 
 		Alpine.data('services', () => ({
@@ -406,7 +566,7 @@ templ OverviewIndex(
 					vhostsHostnames, marketplaceOverview.CatalogItemsList,
 				)
 			</div>
-			<div id="system-info" class="card w-full">
+			<div id="system-info" class="card w-full" x-data="resourceUsage">
 				@SystemInfoTableAndGraphic(o11yOverview)
 			</div>
 			<div id="services" class="card w-full" x-data="services">
@@ -424,14 +584,16 @@ templ OverviewIndex(
 
 templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInstalledItem) {
 	<div class="bg-os-800 p-5">
-		<h2 class="mb-2 text-2xl">Marketplace</h2>
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("Marketplace", "", "ph-storefront")
+		</div>
 		<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 			<thead class="bg-os-500 text-xs uppercase text-neutral-400">
 				<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-					<th scope="col" class="w-20% px-5 py-3 text-left">Name</th>
-					<th scope="col" class="w-15% px-5 py-3">Type/Installation Path</th>
-					<th scope="col" class="w-20% px-5 py-3">Installation Directory</th>
-					<th scope="col" class="w-15% px-5 py-3">Created At</th>
+					<th scope="col" class="w-[20%] px-5 py-3 text-left">Name</th>
+					<th scope="col" class="w-[15%] px-5 py-3">Type/Installation Path</th>
+					<th scope="col" class="w-[20%] px-5 py-3">Installation Directory</th>
+					<th scope="col" class="w-[15%] px-5 py-3">Created At</th>
 					<th scope="col" class="flex justify-end py-3">
 						<div class="mr-2">
 							@componentForm.SubmitButton(
@@ -580,7 +742,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 						}, "selectedMarketplaceItemType",
 					)
 					<!-- MarketplaceVerticalTabContent -->
-					<div class="flex w-full justify-center px-5">
+					<div class="bg-os-400 flex w-full justify-center rounded-lg px-5 py-2.5">
 						<div x-show="selectedMarketplaceItemType === 'apps'">
 							@componentMisc.MultiItemCarousel(
 								"marketplaceAppItemsCarousel",
@@ -674,7 +836,9 @@ func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) s
 templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 	<!-- SystemInfoTableAndGraphic -->
 	<div class="bg-os-800 mb-4 rounded-md p-5">
-		<h2 class="mb-2 text-2xl">System Information</h2>
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
+		</div>
 		<div class="flex space-x-3">
 			<!-- Observability Table -->
 			<div class="bg-os-500 max-[35%] min-h-56 min-w-[35%] space-y-2 rounded p-3">
@@ -718,8 +882,24 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 				</div>
 			</div>
 			<!-- Resource Usage Graphic -->
-			<div class="w-full flex-col space-y-3">
-				<p>Graphic here...</p>
+			<div class="bg-os-500 w-full rounded py-3">
+				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#4A44F2] bg-[#2C2891]"></span>
+						CPU Usage (%)
+					</div>
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#797FF2] bg-[#484C91]"></span>
+						Memory Usage (%)
+					</div>
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#353A8C] bg-[#212347]"></span>
+						Storage Usage (%)
+					</div>
+				</div>
+				<div class="flex h-full w-full justify-center">
+					<div id="cpuAndMemoryUsageChart" class="h-[90%] w-[95%]"></div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -730,7 +910,9 @@ templ InstalledServicesItemsTable(
 ) {
 	<!-- InstalledServicesItemsTable -->
 	<div class="bg-os-800 p-5">
-		<h2 class="mb-2 text-2xl">Services</h2>
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("Services", "", "ph-package")
+		</div>
 		<div
 			id="installed-services-table"
 			hx-get="/overview/"
@@ -744,16 +926,14 @@ templ InstalledServicesItemsTable(
 			<div class="bg-os-800 border-b border-neutral-500 border-opacity-90 p-2">
 				@componentStructural.RecordFilters("installed-services", "installedServicesFilters")
 			</div>
-			<table
-				class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out"
-			>
+			<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 				<thead class="bg-os-500 text-xs uppercase text-neutral-400">
 					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-						<th scope="col" class="w-[25%] overflow-x-hidden p-3 text-left">Service</th>
-						<th scope="col" class="w-[10%] overflow-x-hidden py-3">Status</th>
-						<th scope="col" class="w-[10%] overflow-x-hidden py-3">CPU</th>
-						<th scope="col" class="w-[10%] overflow-x-hidden py-3">RAM</th>
-						<th scope="col" class="w-[25%] overflow-x-hidden py-3">Port Bindings</th>
+						<th scope="col" class="px5 w-[25%] py-3 text-left">Service</th>
+						<th scope="col" class="px5 w-[10%] py-3">Status</th>
+						<th scope="col" class="px5 w-[10%] py-3">CPU</th>
+						<th scope="col" class="px5 w-[10%] py-3">RAM</th>
+						<th scope="col" class="px5 w-[25%] py-3">Port Bindings</th>
 						<th scope="col" class="flex justify-end py-3">
 							<div class="mr-2">
 								@componentForm.SubmitButton(
@@ -766,12 +946,11 @@ templ InstalledServicesItemsTable(
 				</thead>
 				<tbody>
 					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
-						<td class="hidden">
-							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
-						</td>
 						<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
-							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
-							<td class="w-[25%] overflow-x-hidden px-3 py-2 text-left">
+							<td class="hidden">
+								@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
+							</td>
+							<td class="overflow-x-hidden px-3 py-2 text-left">
 								<div class="grid grid-rows-2 gap-1">
 									<div class="inline-flex items-center">
 										<img
@@ -784,29 +963,32 @@ templ InstalledServicesItemsTable(
 										/>
 										{ installedServiceEntity.Name.String() }
 									</div>
-									<div class="inline-flex items-center space-x-2">
-										@componentStructural.TagWithFilter(
-											"", "tag", installedServiceEntity.Type.String(),
-											installedServiceEntity.Type.String(), "installedServicesFilters['type']",
-											"infinite-500",
-										)
-										@componentStructural.TagWithFilter(
+									<div class="mt-1 flex flex-wrap items-center justify-normal gap-2">
+										@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+											HighlightedLabel: "type",
+											TagValue:         installedServiceEntity.Type.String(),
+											TagColor:         "infinite-500",
+											FilterValue:      installedServiceEntity.Type.String(),
+											FilterBindPath:   "installedServicesFilters['type']",
+										})
+										@componentStructural.Tag(
 											"", "version", installedServiceEntity.Version.String(),
-											installedServiceEntity.Version.String(), "installedServicesFilters['version']",
 											"infinite-500",
 										)
-										@componentStructural.TagWithFilter(
-											"", "nature", installedServiceEntity.Nature.String(),
-											installedServiceEntity.Nature.String(), "installedServicesFilters['nature']",
-											"infinite-500",
-										)
+										@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+											HighlightedLabel: "nature",
+											TagValue:         installedServiceEntity.Nature.String(),
+											TagColor:         "infinite-500",
+											FilterValue:      installedServiceEntity.Nature.String(),
+											FilterBindPath:   "installedServicesFilters['nature']",
+										})
 									</div>
 								</div>
 							</td>
-							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+							<td class="overflow-x-hidden px-3 py-2">
 								{ installedServiceEntity.Status.String() }
 							</td>
-							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
 									@componentMisc.ProgressBar(
 										uint8(installedServiceEntity.Metrics.CpuUsagePercent),
@@ -816,7 +998,7 @@ templ InstalledServicesItemsTable(
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
-							<td class="w-[10%] overflow-x-hidden px-3 py-2">
+							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
 									@componentMisc.ProgressBar(
 										uint8(installedServiceEntity.Metrics.MemUsagePercent),
@@ -826,7 +1008,7 @@ templ InstalledServicesItemsTable(
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
-							<td class="w-[25%] overflow-x-hidden px-3 py-2">
+							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.PortBindings != nil && len(installedServiceEntity.PortBindings) > 0 {
 									@componentStructural.PortBindingsTable(installedServiceEntity.PortBindings)
 								} else {
@@ -938,140 +1120,173 @@ func transformInstallableServicesIntoCarouselItems(
 	return carouselItems
 }
 
-templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
-	<form @submit.prevent="">
-		<div class="-mt-4 mb-4 flex justify-start gap-4">
-			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
-			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
-		</div>
-		<template x-if="targetServiceType === 'installables'">
-			<div>
-				<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
-					@componentForm.SelectInput(
-						"", "Service Type", "selectedInstallableServiceType", "",
-						valueObject.ValidServiceTypes, false,
-					)
-					<!-- InstallableServicesCarousel -->
-					<div class="flex w-full justify-center">
-						<div x-show="selectedInstallableServiceType === 'runtime'">
-							@componentMisc.MultiItemCarousel(
-								"installableRuntimeServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Runtime),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'database'">
-							@componentMisc.MultiItemCarousel(
-								"installableDatabaseServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Database),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'webserver'">
-							@componentMisc.MultiItemCarousel(
-								"installableWebserverServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Webserver),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'monitoring'">
-							@componentMisc.MultiItemCarousel(
-								"installableMonitoringServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Monitoring),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'mom'">
-							@componentMisc.MultiItemCarousel(
-								"installableMomServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Mom),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'logging'">
-							@componentMisc.MultiItemCarousel(
-								"installableLoggingServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Logging),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'security'">
-							@componentMisc.MultiItemCarousel(
-								"installableSecurityServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Security),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'backup'">
-							@componentMisc.MultiItemCarousel(
-								"installableBackupServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Backup),
-								7,
-							)
-						</div>
-						<div x-show="selectedInstallableServiceType === 'other'">
-							@componentMisc.MultiItemCarousel(
-								"installableOtherServicesCarousel",
-								transformInstallableServicesIntoCarouselItems(installableServices.Other),
-								7,
-							)
-						</div>
-					</div>
-				</div>
-				<template x-if="selectedInstallableServiceName !== ''">
-					<div class="mt-4 grid grid-rows-2 gap-2">
-						<div class="grid grid-cols-3 gap-2">
-							@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-								BindLabel:     "'Version'",
-								BindModelPath: "service.version",
-								BindOptions:   "selectedInstallableServiceAvailableVersions",
-							})
-							@componentForm.InputField(componentForm.InputFieldDto{
-								Type:               "number",
-								Label:              "Timeout Start Secs",
-								BindModelValuePath: "service.timeoutStartSecs",
-							})
-							@componentForm.InputField(componentForm.InputFieldDto{
-								Type:               "number",
-								Label:              "Max Start Retries",
-								BindModelValuePath: "service.maxStartRetries",
-							})
-						</div>
-						<div class="grid grid-cols-3 place-items-center gap-2">
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
-						</div>
-					</div>
-				</template>
+templ InstallableServiceInstallationForm(
+	installableServices InstallableServicesGroupedByType,
+) {
+	<!-- InstallableServiceInstallationForm -->
+	<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+		@componentForm.SelectInput(
+			"", "Service Type", "selectedInstallableServiceType", "",
+			valueObject.ValidServiceTypes, false,
+		)
+		<!-- InstallableServicesCarousel -->
+		<div class="bg-os-400 flex w-full justify-center rounded-lg p-4">
+			<div x-show="selectedInstallableServiceType === 'runtime'">
+				@componentMisc.MultiItemCarousel(
+					"installableRuntimeServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Runtime),
+					7,
+				)
 			</div>
-		</template>
-		<template x-if="targetServiceType === 'custom'">
-			<div class="mt-4 grid grid-rows-3 gap-3">
-				<div class="grid grid-cols-2 gap-2">
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Name",
-						BindModelValuePath: "service.name",
-					})
-					@componentForm.SelectInput(
-						"", "Type", "service.type", "", valueObject.ValidServiceTypes,
-						true,
-					)
-				</div>
-				<div class="grid grid-cols-2 gap-2">
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Start Command",
-						BindModelValuePath: "service.startCmd",
-						InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
-					})
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Avatar URL",
-						BindModelValuePath: "service.avatarUrl",
-					})
-				</div>
+			<div x-show="selectedInstallableServiceType === 'database'">
+				@componentMisc.MultiItemCarousel(
+					"installableDatabaseServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Database),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'webserver'">
+				@componentMisc.MultiItemCarousel(
+					"installableWebserverServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Webserver),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'monitoring'">
+				@componentMisc.MultiItemCarousel(
+					"installableMonitoringServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Monitoring),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'mom'">
+				@componentMisc.MultiItemCarousel(
+					"installableMomServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Mom),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'logging'">
+				@componentMisc.MultiItemCarousel(
+					"installableLoggingServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Logging),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'security'">
+				@componentMisc.MultiItemCarousel(
+					"installableSecurityServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Security),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'backup'">
+				@componentMisc.MultiItemCarousel(
+					"installableBackupServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Backup),
+					7,
+				)
+			</div>
+			<div x-show="selectedInstallableServiceType === 'other'">
+				@componentMisc.MultiItemCarousel(
+					"installableOtherServicesCarousel",
+					transformInstallableServicesIntoCarouselItems(installableServices.Other),
+					7,
+				)
+			</div>
+		</div>
+	</div>
+	<template x-if="selectedInstallableServiceName !== ''">
+		<div class="mt-4 grid grid-rows-2 gap-2">
+			<div class="grid grid-cols-3 gap-2">
+				@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+					BindLabel:     "'Version'",
+					BindModelPath: "service.version",
+					BindOptions:   "selectedInstallableServiceAvailableVersions",
+				})
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "number",
+					Label:              "Timeout Start Secs",
+					BindModelValuePath: "service.timeoutStartSecs",
+				})
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "number",
+					Label:              "Max Start Retries",
+					BindModelValuePath: "service.maxStartRetries",
+				})
+			</div>
+			<div class="grid grid-cols-3 place-items-center gap-2">
+				@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
+				@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
+				@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+			</div>
+		</div>
+	</template>
+	<div class="my-4">
+		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+			<div class="flex w-full flex-col gap-6">
+				@componentForm.MultiColumnRepeatableFieldset(
+					"envs", "Environment Variables", "", "service.envs",
+					[]componentForm.RepeatableField{
+						{InputType: "text", Id: "key", Label: "Key"},
+						{InputType: "text", Id: "value", Label: "Value"},
+					},
+				)
+				@componentForm.MultiColumnRepeatableFieldset(
+					"portBindings", "Port Bindings", "",
+					"service.portBindings", []componentForm.RepeatableField{
+						{InputType: "text", Id: "publicPort", Label: "Public Port"},
+						{
+							InputType: "select",
+							Id:        "protocol",
+							Label:     "Protocol",
+							Options:   valueObject.ValidNetworkProtocols,
+						},
+					},
+				)
+			</div>
+		}
+	</div>
+	@componentForm.SubmitButton(
+		"schedule-service-installation-button", "Schedule installation",
+		"ph-queue", "installService()",
+		false,
+	)
+}
+
+templ CustomServiceInstallationForm() {
+	<!-- CustomServiceInstallationForm -->
+	<div class="grid grid-rows-2 gap-2">
+		<div class="grid grid-cols-2 gap-x-2">
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Label:              "Name",
+				BindModelValuePath: "service.name",
+			})
+			@componentForm.SelectInput(
+				"", "Type", "service.type", "", valueObject.ValidServiceTypes,
+				true,
+			)
+		</div>
+		<div class="flex justify-center">
+			<div class="w-2/3">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Label:              "Start Command",
+					BindModelValuePath: "service.startCmd",
+					InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+				})
+			</div>
+		</div>
+	</div>
+	<div class="my-4">
+		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+			<div class="flex w-full flex-col gap-4">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Label:              "Avatar URL",
+					BindModelValuePath: "service.avatarUrl",
+				})
 				<div class="grid grid-cols-3 gap-2">
 					@componentForm.InputField(componentForm.InputFieldDto{
 						Type:               "text",
@@ -1109,46 +1324,46 @@ templ ServiceInstallationForm(installableServices InstallableServicesGroupedByTy
 					@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
 					@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
 				</div>
+				@componentForm.MultiColumnRepeatableFieldset(
+					"envs", "Environment Variables", "", "service.envs",
+					[]componentForm.RepeatableField{
+						{InputType: "text", Id: "key", Label: "Key"},
+						{InputType: "text", Id: "value", Label: "Value"},
+					},
+				)
+				@componentForm.MultiColumnRepeatableFieldset(
+					"portBindings", "Port Bindings", "",
+					"service.portBindings", []componentForm.RepeatableField{
+						{InputType: "text", Id: "publicPort", Label: "Public Port"},
+						{
+							InputType: "select",
+							Id:        "protocol",
+							Label:     "Protocol",
+							Options:   valueObject.ValidNetworkProtocols,
+						},
+					},
+				)
 			</div>
-		</template>
-		<div class="my-4">
-			@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
-				<div class="flex w-full flex-col gap-6">
-					@componentForm.MultiColumnRepeatableFieldset(
-						"envs", "Environment Variables", "", "service.envs",
-						[]componentForm.RepeatableField{
-							{InputType: "text", Id: "key", Label: "Key"},
-							{InputType: "text", Id: "value", Label: "Value"},
-						},
-					)
-					@componentForm.MultiColumnRepeatableFieldset(
-						"portBindings", "Port Bindings", "",
-						"service.portBindings", []componentForm.RepeatableField{
-							{InputType: "text", Id: "publicPort", Label: "Public Port"},
-							{
-								InputType: "select",
-								Id:        "protocol",
-								Label:     "Protocol",
-								Options:   valueObject.ValidNetworkProtocols,
-							},
-						},
-					)
-				</div>
-			}
+		}
+	</div>
+	@componentForm.SubmitButton(
+		"install-service-button", "Install immediately", "ph-arrow-line-down",
+		"installService()", false,
+	)
+}
+
+templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
+	<form @submit.prevent="">
+		<div class="-mt-4 mb-4 flex justify-start gap-4">
+			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
+			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
 		</div>
-		<template x-if="targetServiceType !== 'custom'">
-			@componentForm.SubmitButton(
-				"schedule-service-installation-button", "Schedule installation",
-				"ph-queue", "installService()",
-				false,
-			)
-		</template>
-		<template x-if="targetServiceType === 'custom'">
-			@componentForm.SubmitButton(
-				"install-service-button", "Install immediately", "ph-arrow-line-down",
-				"installService()", false,
-			)
-		</template>
+		<div x-show="targetServiceType === 'installables'">
+			@InstallableServiceInstallationForm(installableServices)
+		</div>
+		<div x-show="targetServiceType === 'custom'">
+			@CustomServiceInstallationForm()
+		</div>
 	</form>
 }
 
