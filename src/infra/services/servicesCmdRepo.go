@@ -378,7 +378,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableService.Nature.String() == "multi" {
 		if createDto.StartupFile == nil {
 			if installableService.StartupFile == nil {
-				return installedServiceName, errors.New("MissingStartupFile")
+				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
 			}
 			createDto.StartupFile = installableService.StartupFile
 		}
