@@ -241,9 +241,6 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	requestDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
 	model := dbModel.InstalledService{}
-	if requestDto.ServiceName != nil {
-		model.Name = requestDto.ServiceName.String()
-	}
 	if requestDto.ServiceNature != nil {
 		model.Nature = requestDto.ServiceNature.String()
 	}
@@ -262,6 +259,11 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}
 
 	dbQuery = dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
+	if requestDto.ServiceName != nil {
+		serviceNameLike := "%" + requestDto.ServiceName.String() + "%"
+		dbQuery = dbQuery.Where("name LIKE ?", serviceNameLike)
+	}
+
 	if requestDto.Pagination.LastSeenId == nil {
 		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
 		dbQuery = dbQuery.Offset(offset)
