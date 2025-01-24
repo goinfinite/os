@@ -137,13 +137,21 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					.then((jsonResponse) => jsonResponse.body.currentUsage)
 					.catch((error) => {
 						console.error('ReadO11yOverviewError: ' + error);
-						return [];
+						return null;
 					});
 
-				const nowDate = new Date();
-				const formattedTime = nowDate.toLocaleTimeString(
-					'pt-BR',
-					{ hour: '2-digit', minute: '2-digit', second: '2-digit' },
+				if (!o11yCurrentUsageResource) {
+					return;
+				}
+
+				const currentChartData = chartInstance.data('resourceUsage');
+				if (currentChartData.length >= 15) {
+					const removedOldestValue = vega.changeset().remove(currentChartData[0]);
+					chartInstance.change('resourceUsage', removedOldestValue).run();
+				}
+
+				const formattedTime = new Date().toLocaleTimeString(
+					'pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' },
 				);
 				const newChartValue = vega.changeset().insert({
 					time: formattedTime,
@@ -152,11 +160,6 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					storageUsagePercent: o11yCurrentUsageResource.storageUsage / 100,
 				});
 				chartInstance.change('resourceUsage', newChartValue).run();
-
-				const currentDomain = chartInstance.scale('x').domain();
-				const currentTime = nowDate.getTime();
-				const lastFiveMinutes = currentTime - (5 * 60 * 1000);
-				chartInstance.scale('x').domain([lastFiveMinutes, currentTime]).run();
 			},
 
 			init() {
