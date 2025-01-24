@@ -318,6 +318,19 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		entities[entityIndex].Status = stoppedStatus
 	}
 
+	if requestDto.ServiceStatus != nil {
+		filteredEntities := []entity.InstalledService{}
+		for _, entity := range entities {
+			if entity.Status.String() != requestDto.ServiceStatus.String() {
+				continue
+			}
+
+			filteredEntities = append(filteredEntities, entity)
+		}
+
+		entities = filteredEntities
+	}
+
 	itemsTotalUint := uint64(itemsTotal)
 	pagesTotal := uint32(
 		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),

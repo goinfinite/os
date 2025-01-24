@@ -65,6 +65,15 @@ func (service *ServicesService) ReadInstalledItems(
 		naturePtr = &nature
 	}
 
+	var statusPtr *valueObject.ServiceStatus
+	if input["status"] != nil {
+		status, err := valueObject.NewServiceStatus(input["status"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		statusPtr = &status
+	}
+
 	var typePtr *valueObject.ServiceType
 	if input["type"] != nil {
 		itemType, err := valueObject.NewServiceType(input["type"])
@@ -131,6 +140,7 @@ func (service *ServicesService) ReadInstalledItems(
 		ServiceName:          namePtr,
 		ServiceNature:        naturePtr,
 		ServiceType:          typePtr,
+		ServiceStatus:        statusPtr,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
 
