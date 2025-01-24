@@ -49,7 +49,7 @@ func (presenter *MarketplacePresenter) ReadVhostsHostnames() ([]string, error) {
 	return vhostHostnames, nil
 }
 
-func (presenter *MarketplacePresenter) CatalogItemsGroupedByTypeFactory(
+func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	catalogItemsList []entity.MarketplaceCatalogItem,
 ) page.CatalogItemsGroupedByType {
 	appCatalogItems := []entity.MarketplaceCatalogItem{}
@@ -111,7 +111,7 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 	return page.MarketplaceOverview{
 		ListType:           listType,
 		InstalledItemsList: installedItemsList,
-		CatalogItemsList:   presenter.CatalogItemsGroupedByTypeFactory(catalogItemsList),
+		CatalogItemsList:   presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
 	}, nil
 }
 
