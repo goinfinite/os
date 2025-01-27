@@ -36,8 +36,10 @@ func HttpServerInit(
 	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 	ui.UiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
 
-	osApiHttpPublicPortWithColon := ":" + infraEnvs.InfiniteOsApiHttpPublicPort
-	httpServer := http.Server{Addr: osApiHttpPublicPortWithColon, Handler: e}
+	httpServer := http.Server{
+		Addr:    ":" + infraEnvs.InfiniteOsApiHttpPublicPort,
+		Handler: e,
+	}
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 
@@ -59,7 +61,7 @@ func HttpServerInit(
 		}
 	}
 
-	osBanner := `Infinite OS server started on [::]` + osApiHttpPublicPortWithColon + `! 🎉`
+	osBanner := `Infinite OS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! 🎉`
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
 	o11yOverview, err := o11yQueryRepo.ReadOverview()
@@ -71,7 +73,7 @@ func HttpServerInit(
 
 		osBanner = `
         INFINITE
-    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]` + osApiHttpPublicPortWithColon + `! ` + devModeStr + `        
+    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! ` + devModeStr + `        
   ▄██▀    ▀██▄██    ▀█   |
   ██▀      ▀█████▄       |  🏠 Primary Hostname: ` + o11yOverview.Hostname.String() + `
   ██        ██ ▀█████▄   |  ⏰ Uptime: ` + o11yOverview.UptimeRelative.String() + `
