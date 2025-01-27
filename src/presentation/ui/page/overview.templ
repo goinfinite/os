@@ -13,15 +13,10 @@ import (
 )
 
 type InstallableServicesGroupedByType struct {
-	Runtime    []entity.InstallableService
-	Database   []entity.InstallableService
-	Webserver  []entity.InstallableService
-	Mom        []entity.InstallableService
-	Monitoring []entity.InstallableService
-	Logging    []entity.InstallableService
-	Security   []entity.InstallableService
-	Backup     []entity.InstallableService
-	Other      []entity.InstallableService
+	Runtime   []entity.InstallableService
+	Database  []entity.InstallableService
+	Webserver []entity.InstallableService
+	Other     []entity.InstallableService
 }
 
 type ServicesOverview struct {
@@ -1133,10 +1128,16 @@ templ InstallableServiceForm(
 	<!-- InstallableServiceForm -->
 	if installableServices != nil {
 		<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
-			@componentForm.SelectInput(
-				"", "Service Type", "selectedInstallableServiceType", "",
-				valueObject.ValidServiceTypes, false,
-			)
+			<div class="flex justify-center gap-4">
+				for _, serviceType := range valueObject.ValidServiceTypes {
+					if serviceType != "system" {
+						@componentForm.RadioInput(
+							"targetType", serviceType, serviceType,
+							"selectedInstallableServiceType",
+						)
+					}
+				}
+			</div>
 			<!-- InstallableServicesCarousel -->
 			<div class="bg-os-400 flex w-full justify-center rounded-lg p-4">
 				<div x-show="selectedInstallableServiceType === 'runtime'">
@@ -1160,41 +1161,6 @@ templ InstallableServiceForm(
 						7,
 					)
 				</div>
-				<div x-show="selectedInstallableServiceType === 'monitoring'">
-					@componentMisc.MultiItemCarousel(
-						"installableMonitoringServicesCarousel",
-						transformInstallableServicesIntoCarouselItems(installableServices.Monitoring),
-						7,
-					)
-				</div>
-				<div x-show="selectedInstallableServiceType === 'mom'">
-					@componentMisc.MultiItemCarousel(
-						"installableMomServicesCarousel",
-						transformInstallableServicesIntoCarouselItems(installableServices.Mom),
-						7,
-					)
-				</div>
-				<div x-show="selectedInstallableServiceType === 'logging'">
-					@componentMisc.MultiItemCarousel(
-						"installableLoggingServicesCarousel",
-						transformInstallableServicesIntoCarouselItems(installableServices.Logging),
-						7,
-					)
-				</div>
-				<div x-show="selectedInstallableServiceType === 'security'">
-					@componentMisc.MultiItemCarousel(
-						"installableSecurityServicesCarousel",
-						transformInstallableServicesIntoCarouselItems(installableServices.Security),
-						7,
-					)
-				</div>
-				<div x-show="selectedInstallableServiceType === 'backup'">
-					@componentMisc.MultiItemCarousel(
-						"installableBackupServicesCarousel",
-						transformInstallableServicesIntoCarouselItems(installableServices.Backup),
-						7,
-					)
-				</div>
 				<div x-show="selectedInstallableServiceType === 'other'">
 					@componentMisc.MultiItemCarousel(
 						"installableOtherServicesCarousel",
@@ -1203,6 +1169,11 @@ templ InstallableServiceForm(
 					)
 				</div>
 			</div>
+			@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+				BindLabel:     "'Version'",
+				BindModelPath: "service.version",
+				BindOptions:   "selectedInstallableServiceAvailableVersions",
+			})
 		</div>
 	}
 	<div class="my-4">
@@ -1212,12 +1183,7 @@ templ InstallableServiceForm(
 					x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
 				>
 					<div class="mt-4 grid grid-rows-2 gap-2">
-						<div class="grid grid-cols-3 gap-2">
-							@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-								BindLabel:     "'Version'",
-								BindModelPath: "service.version",
-								BindOptions:   "selectedInstallableServiceAvailableVersions",
-							})
+						<div class="grid grid-cols-2 gap-2">
 							@componentForm.InputField(componentForm.InputFieldDto{
 								Type:               "number",
 								Label:              "Timeout Start Secs",

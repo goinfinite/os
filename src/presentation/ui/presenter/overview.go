@@ -39,15 +39,10 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 	installableServicesList []entity.InstallableService,
 ) page.InstallableServicesGroupedByType {
 	installableServicesGroupedByType := page.InstallableServicesGroupedByType{
-		Runtime:    []entity.InstallableService{},
-		Database:   []entity.InstallableService{},
-		Webserver:  []entity.InstallableService{},
-		Mom:        []entity.InstallableService{},
-		Monitoring: []entity.InstallableService{},
-		Logging:    []entity.InstallableService{},
-		Security:   []entity.InstallableService{},
-		Backup:     []entity.InstallableService{},
-		Other:      []entity.InstallableService{},
+		Runtime:   []entity.InstallableService{},
+		Database:  []entity.InstallableService{},
+		Webserver: []entity.InstallableService{},
+		Other:     []entity.InstallableService{},
 	}
 
 	for _, item := range installableServicesList {
@@ -63,26 +58,6 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 		case "webserver":
 			installableServicesGroupedByType.Webserver = append(
 				installableServicesGroupedByType.Webserver, item,
-			)
-		case "mom":
-			installableServicesGroupedByType.Mom = append(
-				installableServicesGroupedByType.Mom, item,
-			)
-		case "monitoring":
-			installableServicesGroupedByType.Monitoring = append(
-				installableServicesGroupedByType.Monitoring, item,
-			)
-		case "logging":
-			installableServicesGroupedByType.Logging = append(
-				installableServicesGroupedByType.Logging, item,
-			)
-		case "security":
-			installableServicesGroupedByType.Security = append(
-				installableServicesGroupedByType.Security, item,
-			)
-		case "backup":
-			installableServicesGroupedByType.Backup = append(
-				installableServicesGroupedByType.Backup, item,
 			)
 		case "other":
 			installableServicesGroupedByType.Other = append(
