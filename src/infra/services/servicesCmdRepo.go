@@ -788,7 +788,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
 		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
 		if err != nil {
-			return err
+			return errors.New("CreateCustomServiceMultiNameError: " + err.Error())
 		}
 		name = nameWithoutHash
 	}
