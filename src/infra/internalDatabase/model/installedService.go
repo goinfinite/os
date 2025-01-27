@@ -42,7 +42,7 @@ func (InstalledService) TableName() string {
 }
 
 func (InstalledService) InitialEntries() (entries []interface{}, err error) {
-	osApiAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/os-api/assets/avatar.jpg"
+	osApiAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/os-api/assets/avatar.jpg"
 	osWorkingDirectory := "/infinite"
 	osLogOutputPath := "/dev/stdout"
 	osLogErrorPath := "/dev/stderr"
@@ -60,7 +60,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		LogErrorPath:     &osLogErrorPath,
 	}
 
-	cronAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/cron/assets/avatar.jpg"
+	cronAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/cron/assets/avatar.jpg"
 	cronService := InstalledService{
 		Name:      "cron",
 		Nature:    "solo",
@@ -70,7 +70,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		AvatarUrl: &cronAvatarUrl,
 	}
 
-	nginxAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/feat/add-system-services-assets/system/nginx/assets/avatar.jpg"
+	nginxAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/nginx/assets/avatar.jpg"
 	nginxPortBindings := "80/http;443/https"
 	nginxAutoStart := false
 	nginxService := InstalledService{
