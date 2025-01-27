@@ -1,7 +1,7 @@
 package dbModel
 
 import (
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -105,7 +105,7 @@ func (InstalledService) SplitCmdSteps(cmdStepsStr string) []valueObject.UnixComm
 
 		cmdStep, err := valueObject.NewUnixCommand(rawCmdStep)
 		if err != nil {
-			log.Printf("[index %d] %s", stepIndex, err)
+			slog.Debug(err.Error(), slog.Int("stepIndex", stepIndex))
 			continue
 		}
 		cmdSteps = append(cmdSteps, cmdStep)
@@ -131,7 +131,7 @@ func (InstalledService) SplitEnvs(envsStr string) []valueObject.ServiceEnv {
 
 		env, err := valueObject.NewServiceEnv(rawEnv)
 		if err != nil {
-			log.Printf("[index %d] %s", envIndex, err)
+			slog.Debug(err.Error(), slog.Int("envIndex", envIndex))
 			continue
 		}
 		envs = append(envs, env)
@@ -157,7 +157,7 @@ func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.
 
 		portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 		if err != nil {
-			log.Printf("[index %d] %s", portIndex, err)
+			slog.Debug(err.Error(), slog.Int("portIndex", portIndex))
 			continue
 		}
 		portBindings = append(portBindings, portBinding)
