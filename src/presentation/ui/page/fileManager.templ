@@ -1,0 +1,23 @@
+package page
+
+import componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+
+script FileManagerIndexLocalState() {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('fileManager', () => ({}));
+	});
+}
+
+templ FileManagerIndex() {
+	@FileManagerIndexLocalState()
+	<div x-data="fileManager">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"File Manager", "", "ph-files",
+				)
+			</div>
+		</div>
+		<div id="file-manager-page-content"></div>
+	</div>
+}
