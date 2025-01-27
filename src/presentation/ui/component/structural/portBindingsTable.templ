@@ -20,7 +20,7 @@ templ PortBindingsTable(portBindings []valueObject.PortBinding) {
 			<tbody>
 				for bindingIndex, portBinding := range portBindings {
 					<tr
-						x-show={ "isExpanded || " + strconv.FormatInt(int64(bindingIndex), 10) + " < 3" }
+						x-show={ "isExpanded || " + strconv.Itoa(bindingIndex) + " < 3" }
 						class="odd:bg-os-300 even:bg-os-400 border-b border-neutral-500 border-opacity-30 text-center text-xs last:border-b-0"
 					>
 						<td class="w-[20%] py-1.5">{ portBinding.Port.String() }</td>
