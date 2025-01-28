@@ -35,7 +35,7 @@ window.__unocss = {
 };
 
 document.addEventListener("alpine:init", () => {
-  async function jsonAjax(method, url, payload, shouldDisplayToast) {
+  async function jsonAjax(method, url, payload, shouldDisplayToast = true) {
     const loadingOverlayElement = document.getElementById("loading-overlay");
     loadingOverlayElement.classList.add("htmx-request");
 
