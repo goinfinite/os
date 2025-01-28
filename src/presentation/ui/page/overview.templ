@@ -105,9 +105,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					'DELETE',
 					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
 					{swap: 'none'},
-				).then(() => {
-					this.$store.main.refreshScheduledTasksPopover();
-				});
+				).then(() => this.$store.main.refreshScheduledTasksPopover());
 				this.closeUninstallMarketplaceItemModal();
 			},
 		}));
@@ -358,35 +356,14 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 
 				this.selectedInstallableServiceAvailableVersions = installableService.versions;
 			},
-			updateContainerStatus(newStatus) {
+			updateServiceStatus(name, status) {
 				return htmx.ajax(
 					'PUT', '/api/v1/services/',
 					{
 						swap: 'none',
-						values: {
-							name: this.service.name,
-							status: newStatus,
-						}
+						values: { name: name, status: status }
 					},
 				);
-			},
-			restartService(name) {
-				this.service.name = name;
-				this.updateContainerStatus('restart').then(() => {
-					this.$dispatch('update:service');
-				});
-			},
-			pauseService(name) {
-				this.service.name = name;
-				this.updateContainerStatus('pause').then(() => {
-					this.$dispatch('update:service');
-				});
-			},
-			startService(name) {
-				this.service.name = name;
-				this.updateContainerStatus('start').then(() => {
-					this.$dispatch('update:service');
-				});
 			},
 			resetAuxiliaryStates() {
 				this.installedServicesFilters = {
@@ -436,17 +413,15 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 				Infinite.JsonAjax(
 					'POST', '/api/v1/services/' + this.targetServiceType + '/',
 					serviceInstallationParamsWithoutEmptyValues,
-				).then(() => {
-					if (this.targetServiceType == "custom") {
-						return this.$dispatch('install:custom-service');
-					}
+				)
+					.then(() => {
+						if (this.targetServiceType == "custom") {
+							return this.$dispatch('install:custom-service');
+						}
 
-					this.$store.main.refreshScheduledTasksPopover();
-				})
-				.catch((error) => {
-					throw new Error('InstallServiceError: ' + error);
-					return null;
-				});
+						this.$store.main.refreshScheduledTasksPopover();
+					})
+					.catch((error) => throw new Error('InstallServiceError: ' + error.message));
 			},
 			isUpdateInstalledServiceModalOpen: false,
 			parseInstalledServiceEnvs(installedServiceEnvs) {
@@ -512,12 +487,12 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 
 				this.closeUpdateInstalledServiceModal();
 
-				const shouldDisplayToast = true;
-				await Infinite.JsonAjax(
+				Infinite.JsonAjax(
 					'PUT', '/api/v1/services/',
-					serviceParamsToUpdateWithoutEmptyValues, shouldDisplayToast,
-				);
-				this.$dispatch('update:service');
+					serviceParamsToUpdateWithoutEmptyValues,
+				)
+					.then(() => this.$dispatch('update:service'))
+					.catch((error) => throw new Error('UpdateServiceError: ' + error.message));
 			},
 			isUninstallServiceModalOpen: false,
 			openUninstallServiceModal(name) {
@@ -534,9 +509,8 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					'DELETE',
 					'/api/v1/services/' + this.service.name + '/',
 					{swap: 'none'},
-				).then(() => {
-					this.$dispatch('delete:service');
-				});
+				).then(() => this.$dispatch('delete:service'));
+
 				this.closeUninstallServiceModal();
 			},
 		}));
@@ -556,7 +530,7 @@ templ OverviewIndex(
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
 				"Overview",
-				"Welcome! Take a quick peek at your installed services and marketplace items, as well as Infinite OS performance such as the server resource usage and system information.",
+				"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
 				"ph-speedometer",
 			)
 		</div>
@@ -1028,7 +1002,7 @@ templ InstalledServicesItemsTable(
 								<div class="flex justify-end space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-arrow-clockwise", "os-200", "os-300",
-										"restartService('"+installedServiceEntity.Name.String()+"')",
+										"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'restart')",
 										"Restart", "os-200",
 									)
 									if installedServiceEntity.Type.String() != "system" {
@@ -1036,13 +1010,13 @@ templ InstalledServicesItemsTable(
 											case "running":
 												@componentStructural.CircularIconButtonWithTooltip(
 													"ph-pause", "os-200", "os-300",
-													"pauseService('"+installedServiceEntity.Name.String()+"')",
+													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
 													"Pause", "os-200",
 												)
 											case "stopped":
 												@componentStructural.CircularIconButtonWithTooltip(
 													"ph-play", "os-200", "os-300",
-													"startService('"+installedServiceEntity.Name.String()+"')",
+													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",
 													"Start", "os-200",
 												)
 										}
