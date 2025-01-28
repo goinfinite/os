@@ -9,7 +9,6 @@ type InstalledService struct {
 	Version           valueObject.ServiceVersion `json:"version"`
 	Status            valueObject.ServiceStatus  `json:"status"`
 	StartCmd          valueObject.UnixCommand    `json:"startCmd"`
-	AvatarUrl         *valueObject.Url           `json:"avatarUrl"`
 	Envs              []valueObject.ServiceEnv   `json:"envs"`
 	PortBindings      []valueObject.PortBinding  `json:"portBindings"`
 	StopCmdSteps      []valueObject.UnixCommand  `json:"stopCmdSteps"`
@@ -26,6 +25,7 @@ type InstalledService struct {
 	MaxStartRetries   *uint                      `json:"maxStartRetries"`
 	LogOutputPath     *valueObject.UnixFilePath  `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath  `json:"logErrorPath"`
+	AvatarUrl         *valueObject.Url           `json:"avatarUrl"`
 	CreatedAt         valueObject.UnixTime       `json:"createdAt"`
 	UpdatedAt         valueObject.UnixTime       `json:"updatedAt"`
 }
@@ -37,7 +37,6 @@ func NewInstalledService(
 	version valueObject.ServiceVersion,
 	startCmd valueObject.UnixCommand,
 	status valueObject.ServiceStatus,
-	avatarUrl *valueObject.Url,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
@@ -46,6 +45,7 @@ func NewInstalledService(
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	avatarUrl *valueObject.Url,
 	createdAt valueObject.UnixTime,
 	updatedAt valueObject.UnixTime,
 ) InstalledService {
@@ -56,7 +56,6 @@ func NewInstalledService(
 		Version:           version,
 		StartCmd:          startCmd,
 		Status:            status,
-		AvatarUrl:         avatarUrl,
 		Envs:              envs,
 		PortBindings:      portBindings,
 		StopCmdSteps:      stopSteps,
@@ -73,6 +72,7 @@ func NewInstalledService(
 		MaxStartRetries:   maxStartRetries,
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
+		AvatarUrl:         avatarUrl,
 		CreatedAt:         createdAt,
 		UpdatedAt:         updatedAt,
 	}

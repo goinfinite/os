@@ -486,15 +486,6 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	var avatarUrlPtr *valueObject.Url
-	if serviceMap["avatarUrl"] != nil {
-		avatarUrl, err := valueObject.NewUrl(serviceMap["avatarUrl"])
-		if err != nil {
-			return installableService, err
-		}
-		avatarUrlPtr = &avatarUrl
-	}
-
 	envs := []valueObject.ServiceEnv{}
 	if serviceMap["envs"] != nil {
 		envsMap, assertOk := serviceMap["envs"].([]interface{})
@@ -681,12 +672,21 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		estimatedSizeBytesPtr = &estimatedSizeBytes
 	}
 
+	var avatarUrlPtr *valueObject.Url
+	if serviceMap["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(serviceMap["avatarUrl"])
+		if err != nil {
+			return installableService, err
+		}
+		avatarUrlPtr = &avatarUrl
+	}
+
 	return entity.NewInstallableService(
 		manifestVersion, name, nature, serviceType, startCommand, description, versions,
-		avatarUrlPtr, envs, portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps,
+		envs, portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps,
 		uninstallFilePaths, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
 		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr,
-		logOutputPathPtr, logErrorPathPtr, estimatedSizeBytesPtr,
+		logOutputPathPtr, logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
 	), nil
 }
 

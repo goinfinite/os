@@ -16,7 +16,6 @@ type InstalledService struct {
 	Type              string `gorm:"not null"`
 	Version           string `gorm:"not null"`
 	StartCmd          string `gorm:"not null"`
-	AvatarUrl         *string
 	Envs              *string
 	PortBindings      *string
 	StopCmdSteps      *string
@@ -33,6 +32,7 @@ type InstalledService struct {
 	MaxStartRetries   *uint
 	LogOutputPath     *string
 	LogErrorPath      *string
+	AvatarUrl         *string
 	CreatedAt         time.Time `gorm:"not null"`
 	UpdatedAt         time.Time `gorm:"not null"`
 }
@@ -53,11 +53,11 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Type:             "system",
 		Version:          infraEnvs.InfiniteOsVersion,
 		StartCmd:         infraEnvs.InfiniteOsBinary + " serve",
-		AvatarUrl:        &osApiAvatarUrl,
 		PortBindings:     &osApiPortBindings,
 		WorkingDirectory: &osWorkingDirectory,
 		LogOutputPath:    &osLogOutputPath,
 		LogErrorPath:     &osLogErrorPath,
+		AvatarUrl:        &osApiAvatarUrl,
 	}
 
 	cronAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/cron/assets/avatar.jpg"
@@ -79,9 +79,9 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		Type:         "system",
 		Version:      "1.24.0",
 		StartCmd:     "/usr/sbin/nginx",
-		AvatarUrl:    &nginxAvatarUrl,
 		PortBindings: &nginxPortBindings,
 		AutoStart:    &nginxAutoStart,
+		AvatarUrl:    &nginxAvatarUrl,
 	}
 
 	return []interface{}{osApiService, cronService, nginxService}, nil
@@ -382,11 +382,11 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 	}
 
 	return entity.NewInstalledService(
-		name, nature, serviceType, version, startCmd, status, avatarUrlPtr, envs,
+		name, nature, serviceType, version, startCmd, status, envs,
 		portBindings, stopCmdSteps, preStartCmdSteps, postStartCmdSteps,
 		preStopCmdSteps, postStopCmdSteps, execUserPtr, workingDirectoryPtr,
 		startupFilePtr, autoStart, autoRestart, timeoutStartSecs, maxStartRetries,
-		logOutputPathPtr, logErrorPathPtr,
+		logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

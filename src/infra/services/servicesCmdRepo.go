@@ -487,11 +487,6 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		createDto.MaxStartRetries, nil, nil,
 	)
 
-	if installableService.AvatarUrl != nil {
-		avatarUrlStr := installableService.AvatarUrl.String()
-		installedServiceModel.AvatarUrl = &avatarUrlStr
-	}
-
 	if installableService.ExecUser != nil {
 		execUserStr := installableService.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
@@ -515,6 +510,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableService.LogErrorPath != nil {
 		logErrorPathStr := installableService.LogErrorPath.String()
 		installedServiceModel.LogErrorPath = &logErrorPathStr
+	}
+
+	if installableService.AvatarUrl != nil {
+		avatarUrlStr := installableService.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 
 	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error

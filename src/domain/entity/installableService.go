@@ -10,7 +10,6 @@ type InstallableService struct {
 	StartCmd           valueObject.UnixCommand            `json:"startCmd"`
 	Description        valueObject.ServiceDescription     `json:"description"`
 	Versions           []valueObject.ServiceVersion       `json:"versions"`
-	AvatarUrl          *valueObject.Url                   `json:"avatarUrl"`
 	Envs               []valueObject.ServiceEnv           `json:"envs"`
 	PortBindings       []valueObject.PortBinding          `json:"portBindings"`
 	StopCmdSteps       []valueObject.UnixCommand          `json:"-"`
@@ -26,6 +25,7 @@ type InstallableService struct {
 	StartupFile        *valueObject.UnixFilePath          `json:"startupFile"`
 	LogOutputPath      *valueObject.UnixFilePath          `json:"logOutputPath"`
 	LogErrorPath       *valueObject.UnixFilePath          `json:"logErrorPath"`
+	AvatarUrl          *valueObject.Url                   `json:"avatarUrl"`
 	EstimatedSizeBytes *valueObject.Byte                  `json:"estimatedSizeBytes"`
 }
 
@@ -37,7 +37,6 @@ func NewInstallableService(
 	startCmd valueObject.UnixCommand,
 	description valueObject.ServiceDescription,
 	versions []valueObject.ServiceVersion,
-	avatarUrl *valueObject.Url,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, installSteps, uninstallSteps []valueObject.UnixCommand,
@@ -45,6 +44,7 @@ func NewInstallableService(
 	preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	avatarUrl *valueObject.Url,
 	estimatedSizeBytes *valueObject.Byte,
 ) InstallableService {
 	return InstallableService{
@@ -55,7 +55,6 @@ func NewInstallableService(
 		StartCmd:           startCmd,
 		Description:        description,
 		Versions:           versions,
-		AvatarUrl:          avatarUrl,
 		Envs:               envs,
 		PortBindings:       portBindings,
 		StopCmdSteps:       stopSteps,
@@ -71,6 +70,7 @@ func NewInstallableService(
 		StartupFile:        startupFile,
 		LogOutputPath:      logOutputPath,
 		LogErrorPath:       logErrorPath,
+		AvatarUrl:          avatarUrl,
 		EstimatedSizeBytes: estimatedSizeBytes,
 	}
 }
