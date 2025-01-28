@@ -14,7 +14,6 @@ type CreateCustomService struct {
 	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
 	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
 	Version           *valueObject.ServiceVersion `json:"version"`
-	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
 	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
 	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
 	AutoStart         *bool                       `json:"autoStart"`
@@ -23,6 +22,7 @@ type CreateCustomService struct {
 	MaxStartRetries   *uint                       `json:"maxStartRetries"`
 	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
+	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
 	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
 	OperatorAccountId valueObject.AccountId       `json:"-"`
 	OperatorIpAddress valueObject.IpAddress       `json:"-"`
@@ -36,12 +36,12 @@ func NewCreateCustomService(
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
-	avatarUrl *valueObject.Url,
 	execUser *valueObject.UnixUsername,
 	workingDirectory *valueObject.UnixFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	avatarUrl *valueObject.Url,
 	autoCreateMapping *bool,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,

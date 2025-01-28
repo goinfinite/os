@@ -638,9 +638,9 @@ func (service *ServicesService) CreateCustom(
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
-		versionPtr, avatarUrlPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
+		versionPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
-		&autoCreateMapping, operatorAccountId, operatorIpAddress,
+		avatarUrlPtr, &autoCreateMapping, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
