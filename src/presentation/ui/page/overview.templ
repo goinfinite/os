@@ -105,8 +105,9 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					'DELETE',
 					'/api/v1/marketplace/installed/' + this.marketplaceItem.id + '/',
 					{swap: 'none'},
-				);
-				this.$store.main.refreshScheduledTasksPopover();
+				).then(() => {
+					this.$store.main.refreshScheduledTasksPopover();
+				});
 				this.closeUninstallMarketplaceItemModal();
 			},
 		}));
@@ -415,7 +416,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 			closeServiceInstallationModal() {
 				this.isServiceInstallationModalOpen = false;
 			},
-			async installService() {
+			installService() {
 				const serviceInstallationParamsWithoutEmptyValues = {};
 				for (const paramName of Object.keys(this.service)) {
 					const installationParam = this.service[paramName];
@@ -432,19 +433,37 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 
 				this.closeServiceInstallationModal();
 
-				const shouldDisplayToast = true;
-				await Infinite.JsonAjax(
+				Infinite.JsonAjax(
 					'POST', '/api/v1/services/' + this.targetServiceType + '/',
-					serviceInstallationParamsWithoutEmptyValues, shouldDisplayToast,
-				);
+					serviceInstallationParamsWithoutEmptyValues,
+				).then(() => {
+					if (this.targetServiceType == "custom") {
+						return this.$dispatch('install:custom-service');
+					}
 
-				if (this.targetServiceType == "custom") {
-					return this.$dispatch('install:custom-service');
-				}
-
-				this.$store.main.refreshScheduledTasksPopover();
+					this.$store.main.refreshScheduledTasksPopover();
+				})
+				.catch((error) => {
+					throw new Error('InstallServiceError: ' + error);
+					return null;
+				});
 			},
 			isUpdateInstalledServiceModalOpen: false,
+			parseInstalledServiceEnvs(installedServiceEnvs) {
+				const serviceEnvs = []
+				for (const serviceEnv of installedServiceEnvs) {
+					const serviceEnvParts = serviceEnv.split('=');
+					if (serviceEnvParts.length !== 2) {
+						continue
+					}
+
+					serviceEnvs.push({
+						key: serviceEnvParts[0],
+						value: serviceEnvParts[1],
+					});
+				}
+				return serviceEnvs
+			},
 			openUpdateInstalledServiceModal(installedServiceName) {
 				this.resetPrimaryStates();
 				this.resetAuxiliaryStates();
@@ -454,18 +473,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 				);
 				this.service = Object.assign({}, installedServiceEntity);
 
-				this.service.envs = [];
-				for (const serviceEnv of installedServiceEntity.envs) {
-					const serviceEnvParts = serviceEnv.split('=');
-					if (serviceEnvParts.length !== 2) {
-						continue
-					}
-
-					this.service.envs.push({
-						key: serviceEnvParts[0],
-						value: serviceEnvParts[1],
-					});
-				}
+				this.service.envs = this.parseInstalledServiceEnvs(installedServiceEntity.envs);
 
 				if (this.service.nature !== 'custom') {
 					if (this.service.nature === 'multi') {
