@@ -356,12 +356,12 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 
 				this.selectedInstallableServiceAvailableVersions = installableService.versions;
 			},
-			updateServiceStatus(name, status) {
+			updateServiceStatus(serviceName, desiredStatus) {
 				return htmx.ajax(
 					'PUT', '/api/v1/services/',
 					{
 						swap: 'none',
-						values: { name: name, status: status }
+						values: { name: serviceName, status: desiredStatus }
 					},
 				);
 			},
