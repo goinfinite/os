@@ -16,8 +16,8 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	"github.com/iancoleman/strcase"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -249,43 +249,22 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(&model).Where(&model)
-
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
-	if err != nil {
-		return installedItemsDto, errors.New(
-			"CountInstalledServicesItemsTotalError: " + err.Error(),
-		)
-	}
-
-	dbQuery = dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
 	if requestDto.ServiceName != nil {
 		serviceNameLike := "%" + requestDto.ServiceName.String() + "%"
 		dbQuery = dbQuery.Where("name LIKE ?", serviceNameLike)
 	}
 
-	if requestDto.Pagination.LastSeenId == nil {
-		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
-	}
-	if requestDto.Pagination.SortBy != nil {
-		orderStatement := requestDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if requestDto.Pagination.SortDirection != nil {
-			orderStatement += " " + requestDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination,
+	)
+	if err != nil {
+		return installedItemsDto, errors.New(
+			"PaginationQueryBuilderError: " + err.Error(),
+		)
 	}
 
 	resultModels := []dbModel.InstalledService{}
-	err = dbQuery.Find(&resultModels).Error
+	err = paginatedDbQuery.Find(&resultModels).Error
 	if err != nil {
 		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
 	}
@@ -331,21 +310,17 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		}
 
 		entities = filteredEntities
-	}
 
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
-	)
+		itemsTotal := uint64(len(filteredEntities))
+		responsePagination.ItemsTotal = &itemsTotal
+
+		pagesTotal := uint32(
+			math.Ceil(float64(itemsTotal) / float64(responsePagination.ItemsPerPage)),
+		)
+		responsePagination.PagesTotal = &pagesTotal
+	}
 	responseDto := dto.ReadInstalledServicesItemsResponse{
-		Pagination: dto.Pagination{
-			PageNumber:    requestDto.Pagination.PageNumber,
-			ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-			SortBy:        requestDto.Pagination.SortBy,
-			SortDirection: requestDto.Pagination.SortDirection,
-			PagesTotal:    &pagesTotal,
-			ItemsTotal:    &itemsTotalUint,
-		},
+		Pagination: responsePagination,
 	}
 
 	if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
