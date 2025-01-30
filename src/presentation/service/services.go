@@ -279,39 +279,19 @@ func (service *ServicesService) CreateInstallable(
 
 	envs := []valueObject.ServiceEnv{}
 	if input["envs"] != nil {
-		rawEnvs, assertOk := input["envs"].([]string)
+		var assertOk bool
+		envs, assertOk = input["envs"].([]valueObject.ServiceEnv)
 		if !assertOk {
-			return NewServiceOutput(UserError, "EnvsMustBeStringArray")
-		}
-
-		for _, rawEnv := range rawEnvs {
-			env, err := valueObject.NewServiceEnv(rawEnv)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("env", rawEnv))
-				continue
-			}
-			envs = append(envs, env)
+			return NewServiceOutput(UserError, "InvalidServiceEnvs")
 		}
 	}
 
 	portBindings := []valueObject.PortBinding{}
 	if input["portBindings"] != nil {
-		rawPortBindings, assertOk := input["portBindings"].([]string)
+		var assertOk bool
+		portBindings, assertOk = input["portBindings"].([]valueObject.PortBinding)
 		if !assertOk {
-			return NewServiceOutput(UserError, "PortBindingsMustBeStringArray")
-		}
-
-		for _, rawPortBinding := range rawPortBindings {
-			if len(rawPortBinding) == 0 {
-				continue
-			}
-
-			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
-				continue
-			}
-			portBindings = append(portBindings, portBinding)
+			return NewServiceOutput(UserError, "InvalidPortBindings")
 		}
 	}
 
