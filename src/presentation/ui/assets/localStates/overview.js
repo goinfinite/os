@@ -292,21 +292,12 @@ document.addEventListener('alpine:init', () => {
 			itemsPerPage: 5,
 		},
 		reloadInstalledServicesTable() {
-			queryParams = new URLSearchParams();
-			queryParams.set('installedServicesPageNumber', this.installedServicesPagination.pageNumber);
-			queryParams.set('installedServicesItemsPerPage', this.installedServicesPagination.itemsPerPage);
-
-			for (let [filterKey, filterValue] of Object.entries(this.installedServicesFilters)) {
-				filterValue = filterValue.trim();
-				if (filterValue === '') {
-					continue;
-				}
-				const filterKeyCapitalized = filterKey.charAt(0).toUpperCase() + filterKey.slice(1);
-				queryParams.set('installedServices'+filterKeyCapitalized, filterValue);
-			}
+			const filterQueryParams = Infinite.CreateFilterQueryParams(
+				this.installedServicesFilters, this.installedServicesPagination
+			);
 
 			htmx.ajax(
-				'GET', '/overview/?' + queryParams.toString(),
+				'GET', '/overview/?' + filterQueryParams.toString(),
 				{
 					select: '#installed-services-table',
 					target: '#installed-services-table',
