@@ -362,25 +362,20 @@ document.addEventListener('alpine:init', () => {
 			this.isServiceInstallationModalOpen = false;
 		},
 		installService() {
-			const serviceInstallationParamsWithoutEmptyValues = {};
-			for (const paramName of Object.keys(this.service)) {
-				const installationParam = this.service[paramName];
-				if (installationParam === null) {
-					continue
+			const serviceInstallationAttributes = Object.assign({}, this.service);
+			for (const [serviceAttrName, serviceAttrValue] of Object.entries(serviceInstallationAttributes)) {
+				if (serviceAttrValue.length !== 0) {
+					continue;
 				}
 
-				if (installationParam.length === 0) {
-					continue
-				}
-
-				serviceInstallationParamsWithoutEmptyValues[paramName] = installationParam;
+				delete serviceInstallationAttributes[serviceAttrName];
 			}
 
 			this.closeServiceInstallationModal();
 
 			Infinite.JsonAjax(
 				'POST', '/api/v1/services/' + this.targetServiceType + '/',
-				serviceInstallationParamsWithoutEmptyValues,
+				serviceInstallationAttributes,
 			)
 				.then(() => {
 					if (this.targetServiceType == "custom") {
@@ -437,29 +432,24 @@ document.addEventListener('alpine:init', () => {
 			this.isUpdateInstalledServiceModalOpen = false;
 		},
 		async updateService() {
-			const serviceParamsToUpdateWithoutEmptyValues = {};
-			for (const paramName of Object.keys(this.service)) {
-				if (paramName === 'status') {
-					continue
+			const serviceAttributesToUpdate = Object.assign({}, this.service);
+			for (const [serviceAttrName, serviceAttrValue] of Object.entries(serviceAttributesToUpdate)) {
+				if (serviceAttrName === 'status') {
+					continue;
 				}
 
-				const serviceParamToUpdate = this.service[paramName];
-				if (serviceParamToUpdate === null) {
-					continue
+				if (serviceAttrValue.length !== 0) {
+					continue;
 				}
 
-				if (serviceParamToUpdate.length === 0) {
-					continue
-				}
-
-				serviceParamsToUpdateWithoutEmptyValues[paramName] = serviceParamToUpdate;
+				delete serviceAttributesToUpdate[serviceAttrName];
 			}
 
 			this.closeUpdateInstalledServiceModal();
 
 			Infinite.JsonAjax(
 				'PUT', '/api/v1/services/',
-				serviceParamsToUpdateWithoutEmptyValues,
+				serviceAttributesToUpdate,
 			)
 				.then(() => this.$dispatch('update:service'))
 				.catch((error) => {
