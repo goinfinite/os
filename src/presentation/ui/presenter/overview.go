@@ -72,46 +72,42 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	responseDto dto.ReadInstalledServicesItemsResponse, err error,
 ) {
-	installedServicesPageNumber := uint16(0)
-	installedServicesPageNumberQueryParam := c.QueryParam("installedServicesPageNumber")
-	if installedServicesPageNumberQueryParam != "" {
-		installedServicesPageNumber, _ = voHelper.InterfaceToUint16(
-			installedServicesPageNumberQueryParam,
-		)
+	pageNumber := uint16(0)
+	pageNumberQueryParam := c.QueryParam("pageNumber")
+	if pageNumberQueryParam != "" {
+		pageNumber, _ = voHelper.InterfaceToUint16(pageNumberQueryParam)
 	}
 
-	installedServicesItemsPerPage := uint16(5)
-	installedServicesItemsPerPageQueryParam := c.QueryParam("installedServicesItemsPerPage")
-	if installedServicesItemsPerPageQueryParam != "" {
-		installedServicesItemsPerPage, _ = voHelper.InterfaceToUint16(
-			installedServicesItemsPerPageQueryParam,
-		)
+	itemsPerPage := uint16(5)
+	itemsPerPageQueryParam := c.QueryParam("itemsPerPage")
+	if itemsPerPageQueryParam != "" {
+		itemsPerPage, _ = voHelper.InterfaceToUint16(itemsPerPageQueryParam)
 	}
 
 	readInstalledServicesRequestBody := map[string]interface{}{
-		"pageNumber":           installedServicesPageNumber,
-		"itemsPerPage":         installedServicesItemsPerPage,
+		"pageNumber":           pageNumber,
+		"itemsPerPage":         itemsPerPage,
 		"shouldIncludeMetrics": true,
 	}
 
-	installedServicesNameQueryParam := c.QueryParam("installedServicesName")
-	if installedServicesNameQueryParam != "" {
-		readInstalledServicesRequestBody["name"] = installedServicesNameQueryParam
+	nameQueryParam := c.QueryParam("name")
+	if nameQueryParam != "" {
+		readInstalledServicesRequestBody["name"] = nameQueryParam
 	}
 
-	installedServicesNatureQueryParam := c.QueryParam("installedServicesNature")
-	if installedServicesNatureQueryParam != "" {
-		readInstalledServicesRequestBody["nature"] = installedServicesNatureQueryParam
+	natureQueryParam := c.QueryParam("nature")
+	if natureQueryParam != "" {
+		readInstalledServicesRequestBody["nature"] = natureQueryParam
 	}
 
-	installedServicesTypeQueryParam := c.QueryParam("installedServicesType")
-	if installedServicesTypeQueryParam != "" {
-		readInstalledServicesRequestBody["type"] = installedServicesTypeQueryParam
+	typeQueryParam := c.QueryParam("type")
+	if typeQueryParam != "" {
+		readInstalledServicesRequestBody["type"] = typeQueryParam
 	}
 
-	installedServicesStatusQueryParam := c.QueryParam("installedServicesStatus")
-	if installedServicesStatusQueryParam != "" {
-		readInstalledServicesRequestBody["status"] = installedServicesStatusQueryParam
+	statusQueryParam := c.QueryParam("status")
+	if statusQueryParam != "" {
+		readInstalledServicesRequestBody["status"] = statusQueryParam
 	}
 
 	installedItemsResponseOutput := presenter.servicesService.ReadInstalledItems(
