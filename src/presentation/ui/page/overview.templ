@@ -421,7 +421,9 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 
 						this.$store.main.refreshScheduledTasksPopover();
 					})
-					.catch((error) => throw new Error('InstallServiceError: ' + error.message));
+					.catch((error) => {
+						throw new Error('InstallServiceError: ' + error.message)
+					});
 			},
 			isUpdateInstalledServiceModalOpen: false,
 			parseInstalledServiceEnvs(installedServiceEnvs) {
@@ -433,7 +435,7 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					}
 
 					serviceEnvs.push({
-						key: serviceEnvParts[0],
+						name: serviceEnvParts[0],
 						value: serviceEnvParts[1],
 					});
 				}
@@ -492,7 +494,9 @@ script OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
 					serviceParamsToUpdateWithoutEmptyValues,
 				)
 					.then(() => this.$dispatch('update:service'))
-					.catch((error) => throw new Error('UpdateServiceError: ' + error.message));
+					.catch((error) => {
+						throw new Error('UpdateServiceError: ' + error.message)
+					});
 			},
 			isUninstallServiceModalOpen: false,
 			openUninstallServiceModal(name) {
@@ -1187,14 +1191,14 @@ templ InstallableServiceForm(
 				@componentForm.MultiColumnRepeatableFieldset(
 					"envs", "Environment Variables", "", "service.envs",
 					[]componentForm.RepeatableField{
-						{InputType: "text", Id: "key", Label: "Key"},
+						{InputType: "text", Id: "name", Label: "Name"},
 						{InputType: "text", Id: "value", Label: "Value"},
 					},
 				)
 				@componentForm.MultiColumnRepeatableFieldset(
 					"portBindings", "Port Bindings", "",
 					"service.portBindings", []componentForm.RepeatableField{
-						{InputType: "text", Id: "publicPort", Label: "Public Port"},
+						{InputType: "text", Id: "port", Label: "Public Port"},
 						{
 							InputType: "select",
 							Id:        "protocol",
@@ -1286,14 +1290,14 @@ templ CustomServiceForm(
 				@componentForm.MultiColumnRepeatableFieldset(
 					"envs", "Environment Variables", "", "service.envs",
 					[]componentForm.RepeatableField{
-						{InputType: "text", Id: "key", Label: "Key"},
+						{InputType: "text", Id: "name", Label: "Name"},
 						{InputType: "text", Id: "value", Label: "Value"},
 					},
 				)
 				@componentForm.MultiColumnRepeatableFieldset(
 					"portBindings", "Port Bindings", "",
 					"service.portBindings", []componentForm.RepeatableField{
-						{InputType: "text", Id: "publicPort", Label: "Public Port"},
+						{InputType: "text", Id: "port", Label: "Public Port"},
 						{
 							InputType: "select",
 							Id:        "protocol",
