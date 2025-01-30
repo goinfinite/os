@@ -167,7 +167,6 @@ func (InstalledService) SplitPortBindings(portBindingsStr string) []valueObject.
 
 func NewInstalledService(
 	name, nature, serviceType, version, startCmd string,
-	avatarUrl *string,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
@@ -175,6 +174,7 @@ func NewInstalledService(
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *string,
+	avatarUrl *string,
 ) InstalledService {
 	var envsPtr *string
 	if len(envs) > 0 {
@@ -224,7 +224,6 @@ func NewInstalledService(
 		Type:              serviceType,
 		Version:           version,
 		StartCmd:          startCmd,
-		AvatarUrl:         avatarUrl,
 		Envs:              envsPtr,
 		PortBindings:      portBindingsPtr,
 		StopCmdSteps:      stopStepsPtr,
@@ -241,6 +240,7 @@ func NewInstalledService(
 		MaxStartRetries:   maxStartRetries,
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
+		AvatarUrl:         avatarUrl,
 	}
 }
 
@@ -271,15 +271,6 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 	}
 
 	status, _ := valueObject.NewServiceStatus("running")
-
-	var avatarUrlPtr *valueObject.Url
-	if model.AvatarUrl != nil {
-		avatarUrl, err := valueObject.NewUrl(*model.AvatarUrl)
-		if err != nil {
-			return serviceEntity, err
-		}
-		avatarUrlPtr = &avatarUrl
-	}
 
 	envs := []valueObject.ServiceEnv{}
 	if model.Envs != nil {
@@ -379,6 +370,15 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 			return serviceEntity, err
 		}
 		logErrorPathPtr = &logErrorPath
+	}
+
+	var avatarUrlPtr *valueObject.Url
+	if model.AvatarUrl != nil {
+		avatarUrl, err := valueObject.NewUrl(*model.AvatarUrl)
+		if err != nil {
+			return serviceEntity, err
+		}
+		avatarUrlPtr = &avatarUrl
 	}
 
 	return entity.NewInstalledService(
