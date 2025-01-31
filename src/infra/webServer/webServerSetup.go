@@ -111,7 +111,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	nginxAutoStart := true
 	updateServiceDto := dto.NewUpdateService(
 		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil,
+		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
 		service.LocalOperatorAccountId, service.LocalOperatorIpAddress,
 	)
 	err = servicesCmdRepo.Update(updateServiceDto)

@@ -480,11 +480,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	installedServiceModel := dbModel.NewInstalledService(
 		installedServiceName.String(), installableService.Nature.String(),
 		installableService.Type.String(), serviceVersion.String(),
-		usableStartCmd.String(), nil, createDto.Envs, createDto.PortBindings,
+		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
 		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries, nil, nil,
+		createDto.MaxStartRetries, nil, nil, nil,
 	)
 
 	if installableService.ExecUser != nil {
@@ -535,18 +535,13 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 
 	installedServiceModel := dbModel.NewInstalledService(
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
-		createDto.Version.String(), createDto.StartCmd.String(), nil,
+		createDto.Version.String(), createDto.StartCmd.String(),
 		createDto.Envs, createDto.PortBindings, createDto.StopCmdSteps,
 		createDto.PreStartCmdSteps, createDto.PostStartCmdSteps,
 		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries, nil, nil,
+		createDto.MaxStartRetries, nil, nil, nil,
 	)
-
-	if createDto.AvatarUrl != nil {
-		avatarUrlStr := createDto.AvatarUrl.String()
-		installedServiceModel.AvatarUrl = &avatarUrlStr
-	}
 
 	if createDto.ExecUser != nil {
 		execUserStr := createDto.ExecUser.String()
@@ -566,6 +561,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	if createDto.LogErrorPath != nil {
 		logErrorPathStr := createDto.LogErrorPath.String()
 		installedServiceModel.LogErrorPath = &logErrorPathStr
+	}
+
+	if createDto.AvatarUrl != nil {
+		avatarUrlStr := createDto.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 
 	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
@@ -723,6 +723,11 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	if updateDto.LogErrorPath != nil {
 		logErrorPathStr := updateDto.LogErrorPath.String()
 		updateMap["log_error_path"] = &logErrorPathStr
+	}
+
+	if updateDto.AvatarUrl != nil && serviceEntity.Nature.String() == "custom" {
+		avatarUrlStr := updateDto.AvatarUrl.String()
+		updateMap["avatar_url"] = &avatarUrlStr
 	}
 
 	err = repo.persistentDbSvc.Handler.

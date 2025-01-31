@@ -786,6 +786,15 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		logErrorPathPtr = &logErrorPath
 	}
 
+	var avatarUrlPtr *valueObject.Url
+	if input["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		avatarUrlPtr = &avatarUrl
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -806,7 +815,7 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		name, typePtr, versionPtr, statusPtr, startCmdPtr, envs, portBindings, nil,
 		nil, nil, nil, nil, nil, nil, startupFilePtr, autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
-		operatorAccountId, operatorIpAddress,
+		avatarUrlPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateService(
