@@ -480,15 +480,6 @@ func (service *ServicesService) CreateCustom(
 		versionPtr = &version
 	}
 
-	var avatarUrlPtr *valueObject.Url
-	if input["avatarUrl"] != nil {
-		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-		avatarUrlPtr = &avatarUrl
-	}
-
 	var execUserPtr *valueObject.UnixUsername
 	if input["execUser"] != nil {
 		execUser, err := valueObject.NewUnixUsername(input["execUser"])
@@ -590,6 +581,15 @@ func (service *ServicesService) CreateCustom(
 			return NewServiceOutput(UserError, err.Error())
 		}
 		logErrorPathPtr = &logErrorPath
+	}
+
+	var avatarUrlPtr *valueObject.Url
+	if input["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		avatarUrlPtr = &avatarUrl
 	}
 
 	autoCreateMapping := true
