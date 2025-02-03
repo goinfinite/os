@@ -830,13 +830,13 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 }
 
 func (service *ServicesService) Delete(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"svcName"}
+	requiredParams := []string{"name"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	name, err := valueObject.NewServiceName(input["svcName"])
+	name, err := valueObject.NewServiceName(input["name"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}

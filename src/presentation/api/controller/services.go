@@ -368,6 +368,7 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	requestInputData["name"] = requestInputData["svcName"]
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.Delete(requestInputData),
