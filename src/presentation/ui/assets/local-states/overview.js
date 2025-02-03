@@ -178,22 +178,12 @@ document.addEventListener('alpine:init', () => {
 							color: {
 								field: 'key',
 								type: 'nominal',
-								scale: { range: ['#4A44F2', '#797FF2', '#2A2C59'] },
+								scale: { range: ['#F6FF00', '#1AFF00', '#2323FF'] },
 								legend: null
 							}
 						},
 						layer: [
-							{
-								mark: {
-									type: 'area',
-									line: true,
-									gradient: 'linear',
-									stops: [
-										{ offset: 0, color: '#A7793E' },
-										{ offset: 0, color: 'purple' }
-									]
-								}
-							},
+							{ mark: { type: 'area', line: true } },
 							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
 						]
 					},
