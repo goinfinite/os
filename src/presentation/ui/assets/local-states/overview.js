@@ -89,7 +89,7 @@ document.addEventListener('alpine:init', () => {
 
 	Alpine.data('resourceUsage', () => ({
 		// Auxiliary States
-		refreshIntervalSecs: 20,
+		refreshIntervalSecs: 5,
 		async updateResourceUsageCharts(chartInstance) {
 			const o11yCurrentUsageResource = await fetch('/api/v1/o11y/overview/', {
 				method: 'GET',
@@ -178,7 +178,7 @@ document.addEventListener('alpine:init', () => {
 							color: {
 								field: 'key',
 								type: 'nominal',
-								scale: { range: ['#1AFF00', '#F6FF00', '#2323FF'] },
+								scale: { range: ['#F22E4F', '#BF2188', '#7227A3'] },
 								legend: null
 							}
 						},
