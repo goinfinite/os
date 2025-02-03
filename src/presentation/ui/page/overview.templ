@@ -24,26 +24,14 @@ type ServicesOverview struct {
 	InstallableServices          InstallableServicesGroupedByType
 }
 
-templ OverviewIndexLocalState(installedServicesCurrentPageNumber int) {
-	<!-- Overview LocalState -->
-	<data
-		id="installedServicesCurrentPageNumber"
-		class="hidden"
-		value={ strconv.Itoa(installedServicesCurrentPageNumber) }
-	></data>
-	<!-- Overview JavaScript -->
-	<script src="/assets/local-states/overview.js"></script>
-}
-
 templ OverviewIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
 	o11yOverview entity.O11yOverview,
 	servicesOverview ServicesOverview,
 ) {
-	@OverviewIndexLocalState(
-		int(servicesOverview.InstalledServicesResponseDto.Pagination.PageNumber),
-	)
+	<!-- Overview JavaScript -->
+	<script src="/assets/local-states/overview.js"></script>
 	<!-- Overview HTML -->
 	<div class="flex flex-col">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -564,6 +552,11 @@ templ InstalledServicesItemsTable(
 				</tbody>
 			</table>
 			<div class="bg-os-800 border-t border-neutral-500 border-opacity-90 p-3">
+				<data
+					id="installedServicesCurrentPageNumber"
+					class="hidden"
+					value={ strconv.Itoa(int(installedServicesResponseDto.Pagination.PageNumber)) }
+				></data>
 				@componentStructural.Pagination(
 					"installed-services", installedServicesResponseDto.Pagination,
 					"installedServicesPagination.pageNumber", "installedServicesPagination.itemsPerPage",
