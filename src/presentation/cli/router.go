@@ -166,7 +166,7 @@ func (router *Router) scheduledTaskRoutes() {
 func (router Router) serveRoutes() {
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
-		Short: "Start Infinite OS HTTPS server (port 1618)",
+		Short: "Start Infinite OS HTTPS server (port " + infraEnvs.InfiniteOsApiHttpPublicPort + ")",
 		Run: func(cmd *cobra.Command, args []string) {
 			presentation.HttpServerInit(
 				router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,

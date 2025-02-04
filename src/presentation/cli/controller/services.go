@@ -1,9 +1,11 @@
 package cliController
 
 import (
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -207,7 +209,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			if len(envsSlice) > 0 {
-				requestBody["envs"] = envsSlice
+				requestBody["envs"] = sharedHelper.StringSliceValueObjectParser(
+					envsSlice, valueObject.NewServiceEnv,
+				)
 			}
 
 			if versionStr != "" {
@@ -219,7 +223,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			if len(portBindingsSlice) > 0 {
-				requestBody["portBindings"] = portBindingsSlice
+				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
+					portBindingsSlice, valueObject.NewPortBinding,
+				)
 			}
 
 			if timeoutStartSecsInt != 0 {

@@ -44,6 +44,8 @@ definitions:
         type: boolean
       autoStart:
         type: boolean
+      avatarUrl:
+        type: string
       envs:
         items:
           type: string
@@ -235,6 +237,8 @@ definitions:
         type: boolean
       autoStart:
         type: boolean
+      avatarUrl:
+        type: string
       createdAt:
         type: integer
       envs:
@@ -623,6 +627,8 @@ definitions:
         type: boolean
       autoStart:
         type: boolean
+      avatarUrl:
+        type: string
       createdAt:
         type: integer
       envs:
@@ -1052,7 +1058,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.1.5
+  version: 0.1.8
 paths:
   /v1/account/:
     get:

@@ -245,7 +245,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 }
 
 templ ImportSslCertificateModal(vhostsHostnames []string) {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Import SSL certificate", "isImportSslCertificateModalOpen",
 		"closeImportSslCertificateModal()", "",
 	) {
@@ -254,7 +254,7 @@ templ ImportSslCertificateModal(vhostsHostnames []string) {
 }
 
 templ ViewPemFilesModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"PEM files", "isViewPemFilesModalOpen",
 		"closeViewPemFilesModal()", "",
 	) {
@@ -301,7 +301,7 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 }
 
 templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Remove virtual hosts hostnames", "isRemoveVirtualHostsHostnamesModalOpen",
 		"closeRemoveVirtualHostsHostnamesModal()", "",
 	) {

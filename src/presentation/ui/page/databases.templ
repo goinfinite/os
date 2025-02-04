@@ -240,7 +240,7 @@ templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 }
 
 templ CreateDatabaseModal(selectedDbType valueObject.DatabaseType) {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()", "",
 	) {
 		@CreateDatabaseForm(selectedDbType)
@@ -304,7 +304,7 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 templ CreateDatabaseUserModal(
 	selectedDbOverview presenterDto.DatabaseOverview,
 ) {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Create Database User", "isCreateDatabaseUserModalOpen",
 		"closeCreateDatabaseUserModal()", "",
 	) {

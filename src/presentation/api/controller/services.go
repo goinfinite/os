@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -88,76 +90,146 @@ func (controller *ServicesController) ReadInstallablesItems(c echo.Context) erro
 	)
 }
 
-func (controller *ServicesController) parseRawEnvs(envs interface{}) ([]string, error) {
-	rawEnvs := []string{}
-	rawEnvsSlice, assertOk := envs.([]interface{})
-	if !assertOk {
-		rawEnvUnique, assertOk := envs.(string)
-		if !assertOk {
-			return rawEnvs, errors.New("EnvsMustBeStringOrStringSlice")
-		}
-		rawEnvsSlice = []interface{}{rawEnvUnique}
-	}
+func (controller *ServicesController) transformRawEnvsInterfaceSliceToMap(
+	rawEnvsInterface []interface{},
+) map[string]interface{} {
+	rawEnvsMap := map[string]interface{}{}
 
-	for _, rawEnv := range rawEnvsSlice {
-		rawEnvStr, err := voHelper.InterfaceToString(rawEnv)
-		if err != nil {
-			slog.Debug(err.Error(), slog.Any("env", rawEnv))
+	for rawEnvIndex, rawEnvInterface := range rawEnvsInterface {
+		rawEnvMap, assertOk := rawEnvInterface.(map[string]interface{})
+		if !assertOk {
+			slog.Debug("InvalidEnvStructure", slog.Int("envIndex", rawEnvIndex))
 			continue
 		}
-		rawEnvs = append(rawEnvs, rawEnvStr)
+
+		envVarNameStr, err := voHelper.InterfaceToString(rawEnvMap["name"])
+		if err != nil {
+			slog.Debug("EnvVarNameMustBeString", slog.Int("envIndex", rawEnvIndex))
+			continue
+		}
+		rawEnvsMap[envVarNameStr] = rawEnvMap["value"]
 	}
 
-	return rawEnvs, nil
+	return rawEnvsMap
+}
+
+func (controller *ServicesController) parseRawEnvs(
+	rawEnvsUnknownType any,
+) ([]valueObject.ServiceEnv, error) {
+	serviceEnvs := []valueObject.ServiceEnv{}
+
+	rawEnvsMap := map[string]interface{}{}
+	switch rawEnvsValues := rawEnvsUnknownType.(type) {
+	case string, []string:
+		return sharedHelper.StringSliceValueObjectParser(
+			rawEnvsValues, valueObject.NewServiceEnv,
+		), nil
+	case []interface{}:
+		rawEnvsMap = controller.transformRawEnvsInterfaceSliceToMap(rawEnvsValues)
+	case map[string]interface{}:
+		rawEnvsMap = rawEnvsValues
+	default:
+		return serviceEnvs, errors.New("EnvsMustBeStringOrStringSliceOrMapOrMapSlice")
+	}
+
+	for envVarName, envVarValue := range rawEnvsMap {
+		envValueStr, err := voHelper.InterfaceToString(envVarValue)
+		if err != nil {
+			slog.Debug("InvalidServiceEnvValue", slog.Any("envVarName", envVarName))
+			continue
+		}
+
+		serviceEnvStr := envVarName + "=" + envValueStr
+		serviceEnv, err := valueObject.NewServiceEnv(serviceEnvStr)
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("envVarName", envVarName))
+			continue
+		}
+
+		serviceEnvs = append(serviceEnvs, serviceEnv)
+	}
+
+	return serviceEnvs, nil
+}
+
+func (controller *ServicesController) transformRawPortBindingsInterfaceSliceToMap(
+	rawPortBindingsInterface []interface{},
+) map[string]interface{} {
+	rawPortBindingsMap := map[string]interface{}{}
+
+	for rawPortBindingIndex, rawPortBindingInterface := range rawPortBindingsInterface {
+		rawPortBindingMap, assertOk := rawPortBindingInterface.(map[string]interface{})
+		if !assertOk {
+			slog.Debug(
+				"InvalidPortBindingStructure",
+				slog.Int("portBindingIndex", rawPortBindingIndex),
+			)
+			continue
+		}
+
+		portStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
+		if err != nil {
+			slog.Debug(
+				"PortBindingPortBeString",
+				slog.Int("portBindingIndex", rawPortBindingIndex),
+			)
+			continue
+		}
+		rawPortBindingsMap[portStr] = rawPortBindingMap["protocol"]
+	}
+
+	return rawPortBindingsMap
 }
 
 func (controller *ServicesController) parseRawPortBindings(
-	bindings interface{},
-) ([]string, error) {
-	rawPortBindings := []string{}
-	rawPortBindingsSlice, assertOk := bindings.([]interface{})
-	if !assertOk {
-		rawPortBindingUnique, assertOk := bindings.(map[string]interface{})
-		if !assertOk {
-			return rawPortBindings, errors.New("PortBindingsMustBeMapOrMapSlice")
-		}
-		rawPortBindingsSlice = []interface{}{rawPortBindingUnique}
+	rawPortBindingsUnknownType any,
+) ([]valueObject.PortBinding, error) {
+	portBindings := []valueObject.PortBinding{}
+
+	rawPortBindingsInterfaceSlice := []interface{}{}
+	switch rawPortBindingsValues := rawPortBindingsUnknownType.(type) {
+	case string, []string:
+		return sharedHelper.StringSliceValueObjectParser(
+			rawPortBindingsValues, valueObject.NewPortBinding,
+		), nil
+	case []interface{}:
+		rawPortBindingsInterfaceSlice = rawPortBindingsValues
+	case map[string]interface{}:
+		rawPortBindingsInterfaceSlice = []interface{}{rawPortBindingsValues}
+	default:
+		return portBindings, errors.New(
+			"PortBindingsMustBeStringOrStringSliceOrMapOrMapSlice",
+		)
 	}
 
-	for _, rawPortBinding := range rawPortBindingsSlice {
-		rawPortBindingMap, assertOk := rawPortBinding.(map[string]interface{})
-		if !assertOk {
-			slog.Debug(
-				"InvalidPortBindingStructure", slog.Any("portBinding", rawPortBinding),
-			)
-			continue
-		}
+	rawPortBindingsMap := controller.transformRawPortBindingsInterfaceSliceToMap(
+		rawPortBindingsInterfaceSlice,
+	)
 
-		rawPortStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
+	rawPortBindingIndex := -1
+	for port, protocol := range rawPortBindingsMap {
+		rawPortBindingIndex++
+
+		protocolStr, err := voHelper.InterfaceToString(protocol)
 		if err != nil {
-			slog.Debug(err.Error(), slog.Any("port", rawPortBindingMap["port"]))
+			slog.Debug(
+				"InvalidPortBindingProtocol",
+				slog.Int("portBindingIndex", rawPortBindingIndex),
+			)
 			continue
 		}
 
-		rawPortBindingStr := rawPortStr
-
-		if _, protocolInputExists := rawPortBindingMap["protocol"]; protocolInputExists {
-			rawProtocolStr, err := voHelper.InterfaceToString(
-				rawPortBindingMap["protocol"],
-			)
-			if err != nil {
-				slog.Debug(err.Error(), slog.Any(
-					"protocol", rawPortBindingMap["protocol"]),
-				)
-				continue
-			}
-			rawPortBindingStr += "/" + rawProtocolStr
+		portBindingStr := port + "/" + protocolStr
+		portBinding, err := valueObject.NewPortBinding(portBindingStr)
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("port", port))
+			continue
 		}
 
-		rawPortBindings = append(rawPortBindings, rawPortBindingStr)
+		portBindings = append(portBindings, portBinding)
 	}
 
-	return rawPortBindings, nil
+	return portBindings, nil
 }
 
 // CreateInstallableService godoc
@@ -176,25 +248,25 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 		return err
 	}
 
-	rawEnvs := []string{}
+	envs := []valueObject.ServiceEnv{}
 	if requestInputData["envs"] != nil {
-		rawEnvs, err = controller.parseRawEnvs(requestInputData["envs"])
+		envs, err = controller.parseRawEnvs(requestInputData["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestInputData["envs"] = rawEnvs
+	requestInputData["envs"] = envs
 
-	rawPortBindings := []string{}
+	portBindings := []valueObject.PortBinding{}
 	if requestInputData["portBindings"] != nil {
-		rawPortBindings, err = controller.parseRawPortBindings(
+		portBindings, err = controller.parseRawPortBindings(
 			requestInputData["portBindings"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestInputData["portBindings"] = rawPortBindings
+	requestInputData["portBindings"] = portBindings
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.CreateInstallable(requestInputData, true),
@@ -217,25 +289,25 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 		return err
 	}
 
-	rawEnvs := []string{}
+	envs := []valueObject.ServiceEnv{}
 	if requestInputData["envs"] != nil {
-		rawEnvs, err = controller.parseRawEnvs(requestInputData["envs"])
+		envs, err = controller.parseRawEnvs(requestInputData["envs"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
-	requestInputData["envs"] = rawEnvs
+	requestInputData["envs"] = envs
 
-	rawPortBindings := []string{}
+	portBindings := []valueObject.PortBinding{}
 	if requestInputData["portBindings"] != nil {
-		rawPortBindings, err = controller.parseRawPortBindings(
+		portBindings, err = controller.parseRawPortBindings(
 			requestInputData["portBindings"],
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
 		}
 	}
-	requestInputData["portBindings"] = rawPortBindings
+	requestInputData["portBindings"] = portBindings
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.CreateCustom(requestInputData),
@@ -296,6 +368,7 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	requestInputData["name"] = requestInputData["svcName"]
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.servicesService.Delete(requestInputData),

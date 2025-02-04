@@ -22,6 +22,7 @@ type CreateCustomService struct {
 	MaxStartRetries   *uint                       `json:"maxStartRetries"`
 	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
+	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
 	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
 	OperatorAccountId valueObject.AccountId       `json:"-"`
 	OperatorIpAddress valueObject.IpAddress       `json:"-"`
@@ -40,6 +41,7 @@ func NewCreateCustomService(
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	avatarUrl *valueObject.Url,
 	autoCreateMapping *bool,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
@@ -64,6 +66,7 @@ func NewCreateCustomService(
 		MaxStartRetries:   maxStartRetries,
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
+		AvatarUrl:         avatarUrl,
 		AutoCreateMapping: autoCreateMapping,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,

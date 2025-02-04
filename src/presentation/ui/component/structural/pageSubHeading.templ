@@ -1,0 +1,14 @@
+package componentStructural
+
+templ PageSubHeading(subHeading string, description string, icon string) {
+	<!-- Page SubHeading -->
+	<div>
+		<span class="align-center flex items-center text-2xl">
+			<i class={ "ph-duotone " + icon + " text-2xl mr-1 p-1.5 bg-os-800 rounded-xl" }></i>
+			<h2>{ subHeading }</h2>
+		</span>
+		if description != "" {
+			<p class="text-md mb-2">{ description }</p>
+		}
+	</div>
+}

@@ -65,6 +65,15 @@ func (service *ServicesService) ReadInstalledItems(
 		naturePtr = &nature
 	}
 
+	var statusPtr *valueObject.ServiceStatus
+	if input["status"] != nil {
+		status, err := valueObject.NewServiceStatus(input["status"])
+		if err != nil {
+			return NewServiceOutput(UserError, err)
+		}
+		statusPtr = &status
+	}
+
 	var typePtr *valueObject.ServiceType
 	if input["type"] != nil {
 		itemType, err := valueObject.NewServiceType(input["type"])
@@ -131,6 +140,7 @@ func (service *ServicesService) ReadInstalledItems(
 		ServiceName:          namePtr,
 		ServiceNature:        naturePtr,
 		ServiceType:          typePtr,
+		ServiceStatus:        statusPtr,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
 
@@ -269,35 +279,19 @@ func (service *ServicesService) CreateInstallable(
 
 	envs := []valueObject.ServiceEnv{}
 	if input["envs"] != nil {
-		rawEnvs, assertOk := input["envs"].([]string)
+		var assertOk bool
+		envs, assertOk = input["envs"].([]valueObject.ServiceEnv)
 		if !assertOk {
-			return NewServiceOutput(UserError, "EnvsMustBeStringArray")
-		}
-
-		for _, rawEnv := range rawEnvs {
-			env, err := valueObject.NewServiceEnv(rawEnv)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("env", rawEnv))
-				continue
-			}
-			envs = append(envs, env)
+			return NewServiceOutput(UserError, "InvalidServiceEnvs")
 		}
 	}
 
 	portBindings := []valueObject.PortBinding{}
 	if input["portBindings"] != nil {
-		rawPortBindings, assertOk := input["portBindings"].([]string)
+		var assertOk bool
+		portBindings, assertOk = input["portBindings"].([]valueObject.PortBinding)
 		if !assertOk {
-			return NewServiceOutput(UserError, "PortBindingsMustBeStringArray")
-		}
-
-		for _, rawPortBinding := range rawPortBindings {
-			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
-				continue
-			}
-			portBindings = append(portBindings, portBinding)
+			return NewServiceOutput(UserError, "InvalidPortBindings")
 		}
 	}
 
@@ -486,6 +480,32 @@ func (service *ServicesService) CreateCustom(
 		versionPtr = &version
 	}
 
+	var execUserPtr *valueObject.UnixUsername
+	if input["execUser"] != nil {
+		execUser, err := valueObject.NewUnixUsername(input["execUser"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		execUserPtr = &execUser
+	}
+
+	envs := []valueObject.ServiceEnv{}
+	if input["envs"] != nil {
+		rawEnvs, assertOk := input["envs"].([]string)
+		if !assertOk {
+			return NewServiceOutput(UserError, "EnvsMustBeStringArray")
+		}
+
+		for _, rawEnv := range rawEnvs {
+			env, err := valueObject.NewServiceEnv(rawEnv)
+			if err != nil {
+				slog.Debug(err.Error(), slog.String("env", rawEnv))
+				continue
+			}
+			envs = append(envs, env)
+		}
+	}
+
 	portBindings := []valueObject.PortBinding{}
 	if _, exists := input["portBindings"]; exists {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
@@ -494,6 +514,10 @@ func (service *ServicesService) CreateCustom(
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
+			if len(rawPortBinding) == 0 {
+				continue
+			}
+
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
 				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
@@ -501,6 +525,71 @@ func (service *ServicesService) CreateCustom(
 			}
 			portBindings = append(portBindings, portBinding)
 		}
+	}
+
+	var autoStartPtr *bool
+	if input["autoStart"] != nil {
+		autoStart, err := voHelper.InterfaceToBool(input["autoStart"])
+		if err != nil {
+			return NewServiceOutput(UserError, "AutoStartMustBeBool")
+		}
+		autoStartPtr = &autoStart
+	}
+
+	var timeoutStartSecsPtr *uint
+	if input["timeoutStartSecs"] != nil {
+		timeoutStartSecs, err := voHelper.InterfaceToUint(input["timeoutStartSecs"])
+		if err != nil {
+			return NewServiceOutput(UserError, "TimeoutStartSecsMustBeUint")
+		}
+		timeoutStartSecsPtr = &timeoutStartSecs
+	}
+
+	var autoRestartPtr *bool
+	if input["autoRestart"] != nil {
+		autoRestart, err := voHelper.InterfaceToBool(
+			input["autoRestart"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "AutoRestartMustBeBool")
+		}
+		autoRestartPtr = &autoRestart
+	}
+
+	var maxStartRetriesPtr *uint
+	if input["maxStartRetries"] != nil {
+		maxStartRetries, err := voHelper.InterfaceToUint(input["maxStartRetries"])
+		if err != nil {
+			return NewServiceOutput(UserError, "MaxStartRetriesMustBeUint")
+		}
+		maxStartRetriesPtr = &maxStartRetries
+	}
+
+	var logOutputPathPtr *valueObject.UnixFilePath
+	if input["logOutputPath"] != nil {
+		logOutputPath, err := valueObject.NewUnixFilePath(input["logOutputPath"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		logOutputPathPtr = &logOutputPath
+	}
+
+	var logErrorPathPtr *valueObject.UnixFilePath
+	if input["logErrorPath"] != nil {
+		logErrorPath, err := valueObject.NewUnixFilePath(input["logErrorPath"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		logErrorPathPtr = &logErrorPath
+	}
+
+	var avatarUrlPtr *valueObject.Url
+	if input["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		avatarUrlPtr = &avatarUrl
 	}
 
 	autoCreateMapping := true
@@ -528,9 +617,10 @@ func (service *ServicesService) CreateCustom(
 	}
 
 	createCustomDto := dto.NewCreateCustomService(
-		name, svcType, startCmd, []valueObject.ServiceEnv{}, portBindings,
-		nil, nil, nil, nil, nil, versionPtr, nil, nil, nil, nil, nil, nil, nil, nil,
-		&autoCreateMapping, operatorAccountId, operatorIpAddress,
+		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
+		versionPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
+		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
+		avatarUrlPtr, &autoCreateMapping, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
@@ -595,6 +685,23 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		versionPtr = &version
 	}
 
+	envs := []valueObject.ServiceEnv{}
+	if input["envs"] != nil {
+		rawEnvs, assertOk := input["envs"].([]string)
+		if !assertOk {
+			return NewServiceOutput(UserError, "EnvsMustBeStringArray")
+		}
+
+		for _, rawEnv := range rawEnvs {
+			env, err := valueObject.NewServiceEnv(rawEnv)
+			if err != nil {
+				slog.Debug(err.Error(), slog.String("env", rawEnv))
+				continue
+			}
+			envs = append(envs, env)
+		}
+	}
+
 	portBindings := []valueObject.PortBinding{}
 	if _, exists := input["portBindings"]; exists {
 		rawPortBindings, assertOk := input["portBindings"].([]string)
@@ -603,6 +710,10 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
+			if len(rawPortBinding) == 0 {
+				continue
+			}
+
 			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
 			if err != nil {
 				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
@@ -619,6 +730,69 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 			return NewServiceOutput(UserError, err.Error())
 		}
 		startupFilePtr = &startupFile
+	}
+
+	var autoStartPtr *bool
+	if input["autoStart"] != nil {
+		autoStart, err := voHelper.InterfaceToBool(input["autoStart"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		autoStartPtr = &autoStart
+	}
+
+	var autoRestartPtr *bool
+	if input["autoRestart"] != nil {
+		autoRestart, err := voHelper.InterfaceToBool(input["autoRestart"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		autoRestartPtr = &autoRestart
+	}
+
+	var timeoutStartSecsPtr *uint
+	if input["timeoutStartSecs"] != nil {
+		timeoutStartSecs, err := voHelper.InterfaceToUint(input["timeoutStartSecs"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		timeoutStartSecsPtr = &timeoutStartSecs
+	}
+
+	var maxStartRetriesPtr *uint
+	if input["maxStartRetries"] != nil {
+		maxStartRetries, err := voHelper.InterfaceToUint(input["maxStartRetries"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		maxStartRetriesPtr = &maxStartRetries
+	}
+
+	var logOutputPathPtr *valueObject.UnixFilePath
+	if input["logOutputPath"] != nil {
+		logOutputPath, err := valueObject.NewUnixFilePath(input["logOutputPath"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		logOutputPathPtr = &logOutputPath
+	}
+
+	var logErrorPathPtr *valueObject.UnixFilePath
+	if input["logErrorPath"] != nil {
+		logErrorPath, err := valueObject.NewUnixFilePath(input["logErrorPath"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		logErrorPathPtr = &logErrorPath
+	}
+
+	var avatarUrlPtr *valueObject.Url
+	if input["avatarUrl"] != nil {
+		avatarUrl, err := valueObject.NewUrl(input["avatarUrl"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		avatarUrlPtr = &avatarUrl
 	}
 
 	operatorAccountId := LocalOperatorAccountId
@@ -638,9 +812,10 @@ func (service *ServicesService) Update(input map[string]interface{}) ServiceOutp
 	}
 
 	updateDto := dto.NewUpdateService(
-		name, typePtr, versionPtr, statusPtr, startCmdPtr, nil, portBindings, nil,
-		nil, nil, nil, nil, nil, nil, startupFilePtr, nil, nil, nil, nil, nil, nil,
-		operatorAccountId, operatorIpAddress,
+		name, typePtr, versionPtr, statusPtr, startCmdPtr, envs, portBindings, nil,
+		nil, nil, nil, nil, nil, nil, startupFilePtr, autoStartPtr, autoRestartPtr,
+		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
+		avatarUrlPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateService(
