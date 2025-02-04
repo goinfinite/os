@@ -89,7 +89,7 @@ document.addEventListener('alpine:init', () => {
 
 	Alpine.data('resourceUsage', () => ({
 		// Auxiliary States
-		refreshIntervalSecs: 5,
+		refreshIntervalSecs: 20,
 		async updateResourceUsageCharts(chartInstance) {
 			const o11yCurrentUsageResource = await fetch('/api/v1/o11y/overview/', {
 				method: 'GET',
