@@ -200,6 +200,11 @@ document.addEventListener('alpine:init', () => {
 							},
 							tooltip: [
 								{
+									field: 'time',
+									type: 'ordinal',
+									title: 'Time'
+								},
+								{
 									field: 'cpuUsagePercent',
 									type: 'quantitative',
 									format: '.0%',
