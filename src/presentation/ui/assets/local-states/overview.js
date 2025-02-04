@@ -321,7 +321,7 @@ document.addEventListener('alpine:init', () => {
 					swap: 'none',
 					values: { name: serviceName, status: desiredStatus }
 				},
-			);
+			).then(() => this.$dispatch('update:service'));;
 		},
 		resetAuxiliaryStates() {
 			this.installedServicesFilters = {
