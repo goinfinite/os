@@ -178,7 +178,7 @@ document.addEventListener('alpine:init', () => {
 							color: {
 								field: 'key',
 								type: 'nominal',
-								scale: { range: ['#F22E4F', '#BF2188', '#7227A3'] },
+								scale: { range: ['#145952', '#E89500', '#281B86'] },
 								legend: null
 							}
 						},
