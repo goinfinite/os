@@ -516,15 +516,15 @@ templ InstalledServicesItemsTable(
 										switch installedServiceEntity.Status.String() {
 											case "running":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-pause", "os-200", "os-300",
+													"ph-pause", "yellow-900", "yellow-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
-													"Pause", "os-200",
+													"Pause", "yellow-700",
 												)
 											case "stopped":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-play", "os-200", "os-300",
+													"ph-play", "cyan-900", "cyan-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",
-													"Start", "os-200",
+													"Start", "cyan-700",
 												)
 										}
 										if installedServiceEntity.Nature.String() != "solo" {
