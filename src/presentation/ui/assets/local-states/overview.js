@@ -158,6 +158,7 @@ document.addEventListener('alpine:init', () => {
 				transform: [{ fold: ['cpuUsagePercent', 'memUsagePercent', 'storageUsagePercent'] }],
 				layer: [
 					{
+						transform: [{ filter: { field: 'key', oneOf: ['cpuUsagePercent', 'memUsagePercent'] } }],
 						encoding: {
 							y: {
 								field: 'value',
@@ -178,12 +179,23 @@ document.addEventListener('alpine:init', () => {
 							color: {
 								field: 'key',
 								type: 'nominal',
-								scale: { range: ['#145952', '#E89500', '#281B86'] },
+								scale: { range: ['#281B86', '#145952', '#E89500'] },
 								legend: null
 							}
 						},
 						layer: [
 							{ mark: { type: 'area', line: true } },
+							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
+						]
+					},
+					{
+						transform: [{ filter: { field: 'key', equal: 'storageUsagePercent' } }],
+						encoding: {
+							y: { field: 'value', type: 'quantitative' },
+							color: { field: 'key', type: 'nominal', legend: null }
+						},
+						layer: [
+							{ mark: { type: 'line', strokeWidth: 2 } },
 							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
 						]
 					},
