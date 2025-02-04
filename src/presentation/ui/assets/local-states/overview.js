@@ -253,6 +253,8 @@ document.addEventListener('alpine:init', () => {
 			};
 			vegaEmbed('#cpuAndMemoryUsageChart', chartConfig, { actions: false })
 				.then((chartInstance) => {
+					setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+
 					setInterval(() => {
 						this.updateResourceUsageCharts(chartInstance.view);
 					}, parseInt(this.refreshIntervalSecs) * 1000);
