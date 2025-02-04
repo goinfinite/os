@@ -345,15 +345,15 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 					<div class="space-y-2">
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-cpu",
-								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+								HighlightedIcon: "ph-memory",
+								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
 								TagColor:        "infinite-500",
 							})
 						</div>
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-memory",
-								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+								HighlightedIcon: "ph-cpu",
+								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
 								TagColor:        "infinite-500",
 							})
 						</div>
