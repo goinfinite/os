@@ -18,17 +18,4 @@ func TestServiceType(t *testing.T) {
 			}
 		}
 	})
-
-	t.Run("InvalidServiceTypees", func(t *testing.T) {
-		invalidServiceTypes := []interface{}{
-			"framework", "erp", "crm", "ai", "cloud",
-		}
-
-		for _, serviceType := range invalidServiceTypes {
-			_, err := NewServiceType(serviceType)
-			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", serviceType)
-			}
-		}
-	})
 }

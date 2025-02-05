@@ -25,8 +25,8 @@ type InstallableService struct {
 	StartupFile        *valueObject.UnixFilePath          `json:"startupFile"`
 	LogOutputPath      *valueObject.UnixFilePath          `json:"logOutputPath"`
 	LogErrorPath       *valueObject.UnixFilePath          `json:"logErrorPath"`
-	EstimatedSizeBytes *valueObject.Byte                  `json:"estimatedSizeBytes"`
 	AvatarUrl          *valueObject.Url                   `json:"avatarUrl"`
+	EstimatedSizeBytes *valueObject.Byte                  `json:"estimatedSizeBytes"`
 }
 
 func NewInstallableService(
@@ -44,8 +44,8 @@ func NewInstallableService(
 	preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *valueObject.UnixFilePath,
-	estimatedSizeBytes *valueObject.Byte,
 	avatarUrl *valueObject.Url,
+	estimatedSizeBytes *valueObject.Byte,
 ) InstallableService {
 	return InstallableService{
 		ManifestVersion:    manifestVersion,
@@ -70,7 +70,7 @@ func NewInstallableService(
 		StartupFile:        startupFile,
 		LogOutputPath:      logOutputPath,
 		LogErrorPath:       logErrorPath,
-		EstimatedSizeBytes: estimatedSizeBytes,
 		AvatarUrl:          avatarUrl,
+		EstimatedSizeBytes: estimatedSizeBytes,
 	}
 }

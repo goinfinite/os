@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.5"
+        "version": "0.1.8"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -2395,6 +2395,9 @@
                 "autoStart": {
                     "type": "boolean"
                 },
+                "avatarUrl": {
+                    "type": "string"
+                },
                 "envs": {
                     "type": "array",
                     "items": {
@@ -2687,6 +2690,9 @@
                 },
                 "autoStart": {
                     "type": "boolean"
+                },
+                "avatarUrl": {
+                    "type": "string"
                 },
                 "createdAt": {
                     "type": "integer"
@@ -3280,6 +3286,9 @@
                 },
                 "autoStart": {
                     "type": "boolean"
+                },
+                "avatarUrl": {
+                    "type": "string"
                 },
                 "createdAt": {
                     "type": "integer"

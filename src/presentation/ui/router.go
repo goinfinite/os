@@ -116,6 +116,15 @@ func (router *Router) marketplaceRoutes() {
 	marketplaceGroup.GET("/", marketplacePresenter.Handler)
 }
 
+func (router *Router) overviewRoutes() {
+	overviewGroup := router.baseRoute.Group("/overview")
+
+	overviewPresenter := presenter.NewOverviewPresenter(
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
+	)
+	overviewGroup.GET("/", overviewPresenter.Handler)
+}
+
 func (router *Router) runtimesRoutes() {
 	runtimesGroup := router.baseRoute.Group("/runtimes")
 
@@ -197,6 +206,7 @@ func (router *Router) RegisterRoutes() {
 	router.loginRoutes()
 	router.mappingsRoutes()
 	router.marketplaceRoutes()
+	router.overviewRoutes()
 	router.runtimesRoutes()
 	router.setupRoutes()
 	router.sslsRoutes()

@@ -108,11 +108,12 @@ func (repo *CronQueryRepo) Read(
 
 	filteredCrons := []entity.Cron{}
 	for _, cron := range originalCronEntities {
-		if requestDto.CronId != nil && *requestDto.CronId != cron.Id {
+		if requestDto.CronId != nil && requestDto.CronId.Uint64() != cron.Id.Uint64() {
 			continue
 		}
 
-		if requestDto.CronComment != nil && requestDto.CronComment != cron.Comment {
+		hasCronCommentToFilter := requestDto.CronComment != nil && cron.Comment != nil
+		if hasCronCommentToFilter && requestDto.CronComment.String() != cron.Comment.String() {
 			continue
 		}
 

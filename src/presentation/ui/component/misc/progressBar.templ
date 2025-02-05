@@ -22,7 +22,7 @@ func progressBarCssClassesFactory(completionRate uint8) string {
 }
 
 templ ProgressBar(completionRate uint8, label string) {
-	<div class="bg-os-300 relative flex h-5 w-20 items-center rounded-sm">
+	<div class="bg-os-300 relative m-auto flex h-5 w-20 items-center rounded-sm">
 		if label != "" {
 			<div class="bg-os-700 absolute left-1/2 -translate-x-1/2 transform rounded-sm bg-opacity-75 px-1 text-xs text-neutral-50">
 				{ label }

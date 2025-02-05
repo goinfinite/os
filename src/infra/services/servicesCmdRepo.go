@@ -378,14 +378,14 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableService.Nature.String() == "multi" {
 		if createDto.StartupFile == nil {
 			if installableService.StartupFile == nil {
-				return installedServiceName, errors.New("MissingStartupFile")
+				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
 			}
 			createDto.StartupFile = installableService.StartupFile
 		}
 
 		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
 		createDto.Name, err = valueObject.NewServiceName(
-			createDto.Name.String() + "-" + startupFileHash,
+			createDto.Name.String() + "_" + startupFileHash,
 		)
 		if err != nil {
 			return installedServiceName, errors.New(
@@ -484,7 +484,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
 		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
-		createDto.MaxStartRetries, nil, nil,
+		createDto.MaxStartRetries, nil, nil, nil,
 	)
 
 	if installableService.ExecUser != nil {
@@ -512,6 +512,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installedServiceModel.LogErrorPath = &logErrorPathStr
 	}
 
+	if installableService.AvatarUrl != nil {
+		avatarUrlStr := installableService.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
+	}
+
 	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
 		return installedServiceName, err
@@ -530,12 +535,12 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 
 	installedServiceModel := dbModel.NewInstalledService(
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
-		createDto.Version.String(), createDto.StartCmd.String(), createDto.Envs,
-		createDto.PortBindings, createDto.StopCmdSteps, createDto.PreStartCmdSteps,
-		createDto.PostStartCmdSteps, createDto.PreStopCmdSteps,
-		createDto.PostStopCmdSteps, nil, nil, nil, createDto.AutoStart,
-		createDto.AutoRestart, createDto.TimeoutStartSecs, createDto.MaxStartRetries,
-		nil, nil,
+		createDto.Version.String(), createDto.StartCmd.String(),
+		createDto.Envs, createDto.PortBindings, createDto.StopCmdSteps,
+		createDto.PreStartCmdSteps, createDto.PostStartCmdSteps,
+		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil,
+		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
+		createDto.MaxStartRetries, nil, nil, nil,
 	)
 
 	if createDto.ExecUser != nil {
@@ -556,6 +561,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	if createDto.LogErrorPath != nil {
 		logErrorPathStr := createDto.LogErrorPath.String()
 		installedServiceModel.LogErrorPath = &logErrorPathStr
+	}
+
+	if createDto.AvatarUrl != nil {
+		avatarUrlStr := createDto.AvatarUrl.String()
+		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 
 	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
@@ -715,6 +725,11 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["log_error_path"] = &logErrorPathStr
 	}
 
+	if updateDto.AvatarUrl != nil && serviceEntity.Nature.String() == "custom" {
+		avatarUrlStr := updateDto.AvatarUrl.String()
+		updateMap["avatar_url"] = &avatarUrlStr
+	}
+
 	err = repo.persistentDbSvc.Handler.
 		Model(&installedServiceModel).
 		Where("name = ?", updateDto.Name.String()).
@@ -742,9 +757,11 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.Stop(serviceEntity.Name)
-	if err != nil {
-		return err
+	if serviceEntity.Status.String() != "stopped" {
+		err = repo.Stop(serviceEntity.Name)
+		if err != nil {
+			return err
+		}
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
@@ -770,6 +787,15 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 	if serviceEntity.Nature.String() == "custom" {
 		return nil
+	}
+
+	if serviceEntity.Nature.String() == "multi" {
+		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
+		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
+		if err != nil {
+			return errors.New("CreateCustomServiceMultiNameError: " + err.Error())
+		}
+		name = nameWithoutHash
 	}
 
 	readInstallableDto := dto.ReadInstallableServicesItemsRequest{

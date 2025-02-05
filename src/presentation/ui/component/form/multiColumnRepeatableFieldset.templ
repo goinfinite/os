@@ -1,0 +1,138 @@
+package componentForm
+
+type RepeatableField struct {
+	InputType string
+	Id        string
+	Label     string
+	Options   []string
+}
+
+script MultiColumnRepeatableFieldsetLocalState(id string) {
+	document.addEventListener('alpine:init', () => {
+		Alpine.data(id+'MultiColumnRepeatableFieldset', () => ({
+			newFieldset: {},
+			registeredFieldsets: [],
+			registeredFieldsetsFlattened: '',
+			flattenRegisteredFieldsets() {
+				let fieldsetsStr = "";
+
+				this.registeredFieldsets.forEach((registeredFieldset) => {
+					let fieldsetStr = "";
+
+					for (const [key, value] of Object.entries(registeredFieldset)) {
+						fieldsetStr += value + "|";
+					}
+
+					fieldsetStrWithoutLastPipe = fieldsetStr.slice(0, -1);
+					fieldsetsStr += fieldsetStrWithoutLastPipe + ";";
+				});
+
+				if (fieldsetsStr.length > 0) {
+					fieldsetsStrWithoutLastSemicolon = fieldsetsStr.slice(0, -1);
+					fieldsetsStr = fieldsetsStrWithoutLastSemicolon;
+				}
+
+				this.registeredFieldsetsFlattened = fieldsetsStr;
+			},
+			createFieldset() {
+				if (Object.keys(this.newFieldset).length === 0) {
+					return;
+				}
+
+				this.registeredFieldsets.push(this.newFieldset);
+				this.newFieldset = {};
+			},
+			removeRegisteredFieldset(id) {
+				this.registeredFieldsets.splice(id, 1);
+			},
+			resetState() {
+				this.newFieldSet = {};
+				this.registeredFieldsets = [];
+			},
+			init() {
+				this.resetState();
+				document.addEventListener('clear:component-state', () => {
+					this.resetState();
+				});
+			},
+		}));
+	});
+}
+
+templ MultiColumnRepeatableFieldset(
+	id, title, description, bindValuePath string,
+	repeatableFields []RepeatableField,
+) {
+	<!-- MultiColumnRepeatableFieldset JavaScript -->
+	@MultiColumnRepeatableFieldsetLocalState(id)
+	<!-- MultiColumnRepeatableFieldset HTML -->
+	<div
+		class="bg-os-400 flex flex-col gap-6 rounded-md p-4"
+		x-data={ id + "MultiColumnRepeatableFieldset" }
+		x-init={ "$watch('" + bindValuePath + "', value => {registeredFieldsets = value; flattenRegisteredFieldsets()})" }
+	>
+		<input type="hidden" id={ id } name={ id } x-model:value="registeredFieldsetsFlattened"/>
+		<div>
+			<p class="text-md font-bold">{ title }</p>
+			if description != "" {
+				<p class="mt-1 text-sm">{ description }</p>
+			}
+		</div>
+		<div
+			x-show="registeredFieldsets.length > 0"
+			class="flex w-full flex-col gap-3 opacity-70"
+		>
+			<template x-for="(registeredFieldset, fieldsetIndex) in registeredFieldsets">
+				<div class="flex flex-row items-center gap-3 px-2">
+					<template x-for="(fieldValue, fieldLabel) in registeredFieldset">
+						<div class="relative w-full">
+							<input
+								type="text"
+								x-model:value="fieldValue"
+								:placeholder="fieldLabel"
+								formnovalidate
+								readonly
+								class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-not-allowed rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+							/>
+							<label
+								x-text="fieldLabel"
+								class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
+							></label>
+						</div>
+					</template>
+					<button
+						type="button"
+						@click={ "removeRegisteredFieldset(fieldsetIndex); " + bindValuePath + " = registeredFieldsets" }
+						class="min-w-9 h-9 rounded-sm bg-red-900 leading-none hover:bg-red-700"
+					>
+						<i class="ph-bold ph-trash text-xl"></i>
+					</button>
+				</div>
+			</template>
+		</div>
+		<div class="flex flex-row items-center gap-3">
+			for _, repeatableField := range repeatableFields {
+				switch repeatableField.InputType {
+					case "select":
+						@SelectInput(
+							"", repeatableField.Label, "newFieldset['"+repeatableField.Id+"']", "",
+							repeatableField.Options, true,
+						)
+					case "text":
+						@InputField(InputFieldDto{
+							Type:               repeatableField.InputType,
+							Label:              repeatableField.Label,
+							BindModelValuePath: "newFieldset['" + repeatableField.Id + "']",
+						})
+				}
+			}
+			<button
+				type="button"
+				@click={ "createFieldset(); " + bindValuePath + " = registeredFieldsets" }
+				class="bg-infinite-500 hover:bg-infinite-300 min-w-9 h-9 rounded-sm leading-none"
+			>
+				<i class="ph-bold ph-plus text-xl"></i>
+			</button>
+		</div>
+	</div>
+}

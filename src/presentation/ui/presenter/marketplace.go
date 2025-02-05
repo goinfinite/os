@@ -29,7 +29,7 @@ func NewMarketplacePresenter(
 	}
 }
 
-func (presenter *MarketplacePresenter) readVhostsHostnames() ([]string, error) {
+func (presenter *MarketplacePresenter) ReadVhostsHostnames() ([]string, error) {
 	vhostHostnames := []string{}
 
 	responseOutput := presenter.virtualHostService.Read()
@@ -73,11 +73,11 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	}
 }
 
-func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType string) (
+func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType string) (
 	overview page.MarketplaceOverview, err error,
 ) {
 	installedItemsList := []entity.MarketplaceInstalledItem{}
-	if listType == "installed" {
+	if listType == "installed" || listType == "all" {
 		responseOutput := presenter.marketplaceService.ReadInstalledItems(
 			map[string]interface{}{},
 		)
@@ -93,7 +93,7 @@ func (presenter *MarketplacePresenter) marketplaceOverviewFactory(listType strin
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
-	if listType == "catalog" {
+	if listType == "catalog" || listType == "all" {
 		responseOutput := presenter.marketplaceService.ReadCatalog(
 			map[string]interface{}{},
 		)
@@ -125,13 +125,13 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		}
 	}
 
-	vhostsHostnames, err := presenter.readVhostsHostnames()
+	vhostsHostnames, err := presenter.ReadVhostsHostnames()
 	if err != nil {
 		slog.Error(err.Error())
 		return nil
 	}
 
-	marketplaceOverview, err := presenter.marketplaceOverviewFactory(listType)
+	marketplaceOverview, err := presenter.MarketplaceOverviewFactory(listType)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil

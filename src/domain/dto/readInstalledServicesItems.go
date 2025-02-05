@@ -9,6 +9,7 @@ type ReadInstalledServicesItemsRequest struct {
 	Pagination           Pagination                 `json:"pagination"`
 	ServiceName          *valueObject.ServiceName   `json:"serviceName,omitempty"`
 	ServiceNature        *valueObject.ServiceNature `json:"serviceNature,omitempty"`
+	ServiceStatus        *valueObject.ServiceStatus `json:"serviceStatus,omitempty"`
 	ServiceType          *valueObject.ServiceType   `json:"serviceType,omitempty"`
 	ShouldIncludeMetrics *bool                      `json:"shouldIncludeMetrics,omitempty"`
 }
@@ -17,6 +18,7 @@ type ReadFirstInstalledServiceItemsRequest struct {
 	Pagination    Pagination                 `json:"pagination"`
 	ServiceName   *valueObject.ServiceName   `json:"serviceName,omitempty"`
 	ServiceNature *valueObject.ServiceNature `json:"serviceNature,omitempty"`
+	ServiceStatus *valueObject.ServiceStatus `json:"serviceStatus,omitempty"`
 	ServiceType   *valueObject.ServiceType   `json:"serviceType,omitempty"`
 }
 

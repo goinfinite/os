@@ -272,7 +272,7 @@ templ CreateAccountForm() {
 }
 
 templ CreateAccountModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Create Account", "isCreateAccountModalOpen", "closeCreateAccountModal()", "",
 	) {
 		@CreateAccountForm()
@@ -303,7 +303,7 @@ templ UpdatePasswordForm() {
 }
 
 templ UpdatePasswordModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Update Password", "isUpdatePasswordModalOpen", "closeUpdatePasswordModal()",
 		"account.id",
 	) {
@@ -328,7 +328,7 @@ templ UpdateApiKeyContent() {
 }
 
 templ UpdateApiKeyModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Update Api Key", "isUpdateApiKeyModalOpen", "closeUpdateApiKeyModal()",
 		"account.username",
 	) {
@@ -377,7 +377,7 @@ templ SecureAccessPublicKeysList() {
 }
 
 templ SecureAccessPublicKeysModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Secure Access Public Keys", "isSecureAccessPublicKeysModalOpen",
 		"closeSecureAccessPublicKeysModal()", "account.username",
 	) {
@@ -417,7 +417,7 @@ templ CreateSecureAccessPublicKeyForm() {
 }
 
 templ CreateSecureAccessPublicKeyModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Create Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
 		"closeCreateSecureAccessPublicKeyModal()", "account.username",
 	) {

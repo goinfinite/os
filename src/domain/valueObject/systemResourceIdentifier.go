@@ -8,7 +8,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 )
 
-const systemResourceIdentifierRegex string = `^sri://(?P<accountId>[\d]{1,64}):(?P<resourceType>[a-zA-Z0-9][\w\-]{1,128})\/(?P<resourceId>[a-zA-Z0-9][\w\.\-]{0,256}|\*)$`
+const systemResourceIdentifierRegex string = `^sri://(?P<accountId>[\d]{1,64}):(?P<resourceType>[a-zA-Z0-9][\w\-]{1,256})\/(?P<resourceId>[a-zA-Z-0-9\*][\w\.\-]{0,512})$`
 
 type SystemResourceIdentifier string
 
@@ -177,15 +177,6 @@ func NewMappingSri(
 ) SystemResourceIdentifier {
 	return NewSystemResourceIdentifierIgnoreError(
 		"sri://" + accountId.String() + ":mapping/" + mappingId.String(),
-	)
-}
-
-func NewUnixFileSri(
-	accountId AccountId,
-	unixFilePath UnixFilePath,
-) SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
-		"sri://" + accountId.String() + ":unixFile/" + unixFilePath.String(),
 	)
 }
 

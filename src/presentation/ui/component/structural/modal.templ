@@ -1,7 +1,7 @@
 package componentStructural
 
-templ Modal(title, isOpenState, closeModalFunction, elementIdStatePath string) {
-	<!-- Modal -->
+templ RegularModal(title, isOpenState, closeModalFunction, elementIdStatePath string) {
+	<!-- RegularModal -->
 	<div
 		x-show={ isOpenState }
 		x-transition:enter="transition ease-out duration-500"

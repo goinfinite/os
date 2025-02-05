@@ -25,6 +25,7 @@ type InstalledService struct {
 	MaxStartRetries   *uint                      `json:"maxStartRetries"`
 	LogOutputPath     *valueObject.UnixFilePath  `json:"logOutputPath"`
 	LogErrorPath      *valueObject.UnixFilePath  `json:"logErrorPath"`
+	AvatarUrl         *valueObject.Url           `json:"avatarUrl"`
 	CreatedAt         valueObject.UnixTime       `json:"createdAt"`
 	UpdatedAt         valueObject.UnixTime       `json:"updatedAt"`
 }
@@ -44,6 +45,7 @@ func NewInstalledService(
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
+	avatarUrl *valueObject.Url,
 	createdAt valueObject.UnixTime,
 	updatedAt valueObject.UnixTime,
 ) InstalledService {
@@ -70,6 +72,7 @@ func NewInstalledService(
 		MaxStartRetries:   maxStartRetries,
 		LogOutputPath:     logOutputPath,
 		LogErrorPath:      logErrorPath,
+		AvatarUrl:         avatarUrl,
 		CreatedAt:         createdAt,
 		UpdatedAt:         updatedAt,
 	}

@@ -10,10 +10,7 @@ import (
 
 type ServiceType string
 
-var ValidServiceTypes = []string{
-	"application", "runtime", "database", "webserver", "mom", "monitoring",
-	"logging", "security", "backup", "system", "other",
-}
+var ValidServiceTypes = []string{"runtime", "database", "webserver", "system", "other"}
 
 func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
@@ -23,7 +20,7 @@ func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
 	stringValue = strings.ToLower(stringValue)
 
 	if !slices.Contains(ValidServiceTypes, stringValue) {
-		return serviceType, errors.New("InvalidServiceType")
+		stringValue = "other"
 	}
 
 	return ServiceType(stringValue), nil

@@ -13,6 +13,9 @@ templ InputField(inputDto InputFieldDto) {
 	<div class="relative w-full">
 		<input
 			type={ inputDto.Type }
+			if inputDto.Type == "number" {
+				min="0"
+			}
 			if inputDto.Id != "" {
 				name={ inputDto.Id }
 			}

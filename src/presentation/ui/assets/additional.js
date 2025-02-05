@@ -35,7 +35,7 @@ window.__unocss = {
 };
 
 document.addEventListener("alpine:init", () => {
-  async function jsonAjax(method, url, payload, shouldDisplayToast) {
+  async function jsonAjax(method, url, payload, shouldDisplayToast = true) {
     const loadingOverlayElement = document.getElementById("loading-overlay");
     loadingOverlayElement.classList.add("htmx-request");
 
@@ -88,8 +88,29 @@ document.addEventListener("alpine:init", () => {
     return passwordContent;
   }
 
+  function createFilterQueryParams(filtersObject, paginationObject) {
+    const queryParams = new URLSearchParams();
+
+    const filtersAndPaginationObject = { ...filtersObject, ...paginationObject };
+    for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
+      if (typeof value === 'number') {
+        queryParams.set(key, value);
+        continue;
+      }
+
+      const trimValue = value.trim();
+      if (trimValue === '') {
+          continue;
+      }
+      queryParams.set(key, trimValue);
+    }
+
+    return queryParams;
+  }
+
   window.Infinite = {
     JsonAjax: jsonAjax,
-    CreateRandomPassword: createRandomPassword
+    CreateRandomPassword: createRandomPassword,
+    CreateFilterQueryParams: createFilterQueryParams
   }
 });

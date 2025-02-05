@@ -368,7 +368,7 @@ templ CreateCronJobForm() {
 }
 
 templ CreateCronJobModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Create Job", "isCreateCronJobModalOpen", "closeCreateCronJobModal()", "",
 	) {
 		@CreateCronJobForm()
@@ -430,7 +430,7 @@ templ UpdateCronJobForm() {
 }
 
 templ UpdateCronJobModal() {
-	@componentStructural.Modal(
+	@componentStructural.RegularModal(
 		"Update Job", "isUpdateCronJobModalOpen", "closeUpdateCronJobModal()",
 		"cron.id",
 	) {
