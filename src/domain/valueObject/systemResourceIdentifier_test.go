@@ -11,7 +11,7 @@ func TestSystemResourceIdentifier(t *testing.T) {
 			"sri://1000:marketplaceInstalledItem/1", "sri://1:phpRuntime/local.os",
 			"sri://10:installableService/node", "sri://100:customService/node-e87qxc21",
 			"sri://1000:installedService/1", "sri://1:ssl/1", "sri://10:virtualHost/local.os",
-			"sri://100:mapping/1", "sri://1000:unixFile//app/.trash",
+			"sri://100:mapping/1",
 		}
 
 		for _, identifier := range validSystemResourceIdentifier {
@@ -26,7 +26,7 @@ func TestSystemResourceIdentifier(t *testing.T) {
 
 	t.Run("InvalidSystemResourceIdentifier", func(t *testing.T) {
 		invalidSystemResourceIdentifier := []interface{}{
-			"", "sri://0:/", true, 1000,
+			"", "sri://0:/", true, 1000, "sri://1000:unixFile//app/.trash",
 		}
 
 		for _, identifier := range invalidSystemResourceIdentifier {

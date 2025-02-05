@@ -584,15 +584,10 @@ func (uc *CreateSecurityActivityRecord) CreateUnixFile(createDto dto.CreateUnixF
 
 	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCreated")
 	createRecordDto := dto.CreateActivityRecord{
-		RecordLevel: uc.recordLevel,
-		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewUnixFileSri(operatorAccountId, createDto.FilePath),
-		},
-		RecordDetails: map[string]interface{}{
-			"permissions": createDto.Permissions,
-			"mimeType":    createDto.MimeType,
-		},
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		RecordDetails:     createDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
@@ -607,17 +602,11 @@ func (uc *CreateSecurityActivityRecord) DeleteUnixFiles(deleteDto dto.DeleteUnix
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		RecordDetails:     map[string]bool{"shouldHardDelete": deleteDto.HardDelete},
+		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		RecordDetails:     deleteDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
-
-	affectedResources := []valueObject.SystemResourceIdentifier{}
-	for _, fileToDelete := range deleteDto.SourcePaths {
-		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
-		affectedResources = append(affectedResources, unixFileSri)
-	}
-	createRecordDto.AffectedResources = affectedResources
 
 	uc.createActivityRecord(createRecordDto)
 }
@@ -629,18 +618,15 @@ func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnix
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		RecordDetails:     updateDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
-	affectedResources := []valueObject.SystemResourceIdentifier{}
-	for _, fileToDelete := range updateDto.SourcePaths {
-		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
-		affectedResources = append(affectedResources, unixFileSri)
+	details := map[string]interface{}{
+		"sourcePaths": updateDto.SourcePaths,
 	}
-	createRecordDto.AffectedResources = affectedResources
-
-	details := map[string]interface{}{}
 	if updateDto.DestinationPath != nil {
 		details["destinationPath"] = updateDto.DestinationPath
 	}
@@ -660,15 +646,10 @@ func (uc *CreateSecurityActivityRecord) CopyUnixFile(copyDto dto.CopyUnixFile) {
 
 	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCopied")
 	createRecordDto := dto.CreateActivityRecord{
-		RecordLevel: uc.recordLevel,
-		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewUnixFileSri(operatorAccountId, copyDto.SourcePath),
-		},
-		RecordDetails: map[string]interface{}{
-			"destinationPath": copyDto.DestinationPath,
-			"shouldOverwrite": copyDto.ShouldOverwrite,
-		},
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		RecordDetails:     copyDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &copyDto.OperatorIpAddress,
 	}
@@ -683,22 +664,13 @@ func (uc *CreateSecurityActivityRecord) CompressUnixFile(
 
 	recordCode, _ := valueObject.NewActivityRecordCode("UnixFilesCompressed")
 	createRecordDto := dto.CreateActivityRecord{
-		RecordLevel: uc.recordLevel,
-		RecordCode:  recordCode,
-		RecordDetails: map[string]interface{}{
-			"destinationPath": compressDto.DestinationPath,
-			"compressionType": compressDto.CompressionType,
-		},
+		RecordLevel:       uc.recordLevel,
+		RecordCode:        recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		RecordDetails:     compressDto,
 		OperatorAccountId: &operatorAccountId,
 		OperatorIpAddress: &compressDto.OperatorIpAddress,
 	}
-
-	affectedResources := []valueObject.SystemResourceIdentifier{}
-	for _, fileToDelete := range compressDto.SourcePaths {
-		unixFileSri := valueObject.NewUnixFileSri(operatorAccountId, fileToDelete)
-		affectedResources = append(affectedResources, unixFileSri)
-	}
-	createRecordDto.AffectedResources = affectedResources
 
 	uc.createActivityRecord(createRecordDto)
 }
