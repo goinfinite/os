@@ -195,7 +195,7 @@ document.addEventListener('alpine:init', () => {
 							color: { field: 'key', type: 'nominal', legend: null }
 						},
 						layer: [
-							{ mark: { type: 'line', strokeWidth: 2 } },
+							{ mark: { type: 'line', strokeWidth: 2, strokeDash: [6, 6] } },
 							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
 						]
 					},
