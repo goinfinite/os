@@ -179,7 +179,7 @@ document.addEventListener('alpine:init', () => {
 							color: {
 								field: 'key',
 								type: 'nominal',
-								scale: { range: ['#281B86', '#145952', '#E89500'] },
+								scale: { range: ['#145952', '#E89500', '#281B86'] },
 								legend: null
 							}
 						},
@@ -195,7 +195,7 @@ document.addEventListener('alpine:init', () => {
 							color: { field: 'key', type: 'nominal', legend: null }
 						},
 						layer: [
-							{ mark: { type: 'line', strokeWidth: 2, strokeDash: [6, 6] } },
+							{ mark: { type: 'line', strokeWidth: 3, strokeDash: [6, 6] } },
 							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
 						]
 					},
