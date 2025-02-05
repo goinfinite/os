@@ -64,7 +64,7 @@ func HttpServerInit(
 	osBanner := `Infinite OS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! 🎉`
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
-	o11yOverview, err := o11yQueryRepo.ReadOverview()
+	o11yOverview, err := o11yQueryRepo.ReadOverview(false)
 	if err == nil {
 		devModeStr := ""
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {

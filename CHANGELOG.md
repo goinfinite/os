@@ -4,6 +4,7 @@
 0.1.8 - 2025/01/24
 refactor(front): overview page with HTMX+Alpine.js
 feat: add time to the overview chart tooltip
+feat: allow for o11y overview without resource usage
 fix: file manager download files bug
 fix: update service table on events
 fix: fix start/stop button colors

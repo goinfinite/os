@@ -357,7 +357,9 @@ func (repo *O11yQueryRepo) getCurrentResourceUsage() (
 	), nil
 }
 
-func (repo *O11yQueryRepo) ReadOverview() (o11yOverview entity.O11yOverview, err error) {
+func (repo *O11yQueryRepo) ReadOverview(
+	withResourceUsage bool,
+) (o11yOverview entity.O11yOverview, err error) {
 	hostnameStr, err := os.Hostname()
 	if err != nil {
 		hostnameStr = "localhost"
@@ -396,12 +398,16 @@ func (repo *O11yQueryRepo) ReadOverview() (o11yOverview entity.O11yOverview, err
 		return o11yOverview, errors.New("ReadHardwareSpecsFailed: " + err.Error())
 	}
 
-	currentResourceUsage, err := repo.getCurrentResourceUsage()
-	if err != nil {
-		return o11yOverview, errors.New("ReadCurrentResourceUsageFailed: " + err.Error())
+	resourceUsage := valueObject.CurrentResourceUsage{}
+	if withResourceUsage {
+		currentResourceUsage, err := repo.getCurrentResourceUsage()
+		if err != nil {
+			return o11yOverview, errors.New("ReadCurrentResourceUsageFailed: " + err.Error())
+		}
+		resourceUsage = currentResourceUsage
 	}
 
 	return entity.NewO11yOverview(
-		hostname, uptimeSecs, uptimeRelative, publicIpAddress, hardwareSpecs, currentResourceUsage,
+		hostname, uptimeSecs, uptimeRelative, publicIpAddress, hardwareSpecs, resourceUsage,
 	), nil
 }

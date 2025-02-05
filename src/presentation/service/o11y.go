@@ -21,7 +21,7 @@ func NewO11yService(
 func (service *O11yService) ReadOverview() ServiceOutput {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(service.transientDbSvc)
 
-	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo)
+	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo, true)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
