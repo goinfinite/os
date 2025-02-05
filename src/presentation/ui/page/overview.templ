@@ -345,15 +345,15 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 					<div class="space-y-2">
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-cpu",
-								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+								HighlightedIcon: "ph-memory",
+								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
 								TagColor:        "infinite-500",
 							})
 						</div>
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-memory",
-								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+								HighlightedIcon: "ph-cpu",
+								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
 								TagColor:        "infinite-500",
 							})
 						</div>
@@ -516,15 +516,15 @@ templ InstalledServicesItemsTable(
 										switch installedServiceEntity.Status.String() {
 											case "running":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-pause", "os-200", "os-300",
+													"ph-pause", "yellow-900", "yellow-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
-													"Pause", "os-200",
+													"Pause", "yellow-700",
 												)
 											case "stopped":
 												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-play", "os-200", "os-300",
+													"ph-play", "cyan-900", "cyan-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",
-													"Start", "os-200",
+													"Start", "cyan-700",
 												)
 										}
 										if installedServiceEntity.Nature.String() != "solo" {

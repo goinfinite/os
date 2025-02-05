@@ -158,6 +158,7 @@ document.addEventListener('alpine:init', () => {
 				transform: [{ fold: ['cpuUsagePercent', 'memUsagePercent', 'storageUsagePercent'] }],
 				layer: [
 					{
+						transform: [{ filter: { field: 'key', oneOf: ['cpuUsagePercent', 'memUsagePercent'] } }],
 						encoding: {
 							y: {
 								field: 'value',
@@ -188,6 +189,17 @@ document.addEventListener('alpine:init', () => {
 						]
 					},
 					{
+						transform: [{ filter: { field: 'key', equal: 'storageUsagePercent' } }],
+						encoding: {
+							y: { field: 'value', type: 'quantitative' },
+							color: { field: 'key', type: 'nominal', legend: null }
+						},
+						layer: [
+							{ mark: { type: 'line', strokeWidth: 3, strokeDash: [6, 6] } },
+							{ mark: 'point', transform: [{ filter: { param: 'hover', empty: false } }] }
+						]
+					},
+					{
 						mark: 'rule',
 						transform: [{ pivot: 'key', value: 'value', groupby: ['time'] }],
 						encoding: {
@@ -199,6 +211,11 @@ document.addEventListener('alpine:init', () => {
 								condition: { value: 1, param: 'hover', empty: false }
 							},
 							tooltip: [
+								{
+									field: 'time',
+									type: 'ordinal',
+									title: 'Time'
+								},
 								{
 									field: 'cpuUsagePercent',
 									type: 'quantitative',
@@ -236,6 +253,8 @@ document.addEventListener('alpine:init', () => {
 			};
 			vegaEmbed('#cpuAndMemoryUsageChart', chartConfig, { actions: false })
 				.then((chartInstance) => {
+					setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+
 					setInterval(() => {
 						this.updateResourceUsageCharts(chartInstance.view);
 					}, parseInt(this.refreshIntervalSecs) * 1000);
@@ -321,7 +340,7 @@ document.addEventListener('alpine:init', () => {
 					swap: 'none',
 					values: { name: serviceName, status: desiredStatus }
 				},
-			);
+			).then(() => this.$dispatch('update:service'));;
 		},
 		resetAuxiliaryStates() {
 			this.installedServicesFilters = {
