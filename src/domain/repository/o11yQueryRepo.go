@@ -5,5 +5,5 @@ import (
 )
 
 type O11yQueryRepo interface {
-	ReadOverview() (entity.O11yOverview, error)
+	ReadOverview(withResourceUsage bool) (entity.O11yOverview, error)
 }

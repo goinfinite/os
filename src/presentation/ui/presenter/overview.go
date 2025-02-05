@@ -165,7 +165,7 @@ func (presenter *OverviewPresenter) Handler(c echo.Context) error {
 	}
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(presenter.transientDbSvc)
-	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo)
+	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo, false)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil

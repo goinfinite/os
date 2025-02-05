@@ -18,7 +18,7 @@ func TestGetOverview(t *testing.T) {
 	o11yQueryRepo := NewO11yQueryRepo(transientDbSvc)
 
 	t.Run("GetOverview", func(t *testing.T) {
-		_, err := o11yQueryRepo.ReadOverview()
+		_, err := o11yQueryRepo.ReadOverview(true)
 		if err != nil {
 			t.Errorf("Expected nil, got %s", err.Error())
 		}

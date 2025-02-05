@@ -132,7 +132,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 	defaultLogPrefix := "WsOnStartupSetup"
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
-	containerResources, err := o11yQueryRepo.ReadOverview()
+	containerResources, err := o11yQueryRepo.ReadOverview(false)
 	if err != nil {
 		log.Fatalf("%sGetContainerResourcesFailed", defaultLogPrefix)
 	}
