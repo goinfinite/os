@@ -1,0 +1,20 @@
+package componentStructural
+
+templ ResponsibleRoundedSquareButton(
+	icon, textContent, defaultColor, hoverColor, onClick, maxResolutionToResize string,
+) {
+	<!-- ResponsibleRoundedSquareButton -->
+	<div class="group/responsibleRoundedSquareButton relative w-fit">
+		<button
+			type="button"
+			@click={ onClick }
+			class={ "inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-" + defaultColor + " text-center hover:bg-" + hoverColor }
+		>
+			<i class={ "ph-duotone " + icon + " text-xl" }></i>
+			<span class={ "font-medium max-[" + maxResolutionToResize + "]:hidden" }>{ textContent }</span>
+			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover/responsibleRoundedSquareButton:max-[" + maxResolutionToResize + "]:block group-hover/responsibleRoundedSquareButton:max-[" + maxResolutionToResize + "]:-translate-y-0.5 group-hover/responsibleRoundedSquareButton:max-[" + maxResolutionToResize + "]:visible p-1.5 bg-" + hoverColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
+				{ textContent }
+			</div>
+		</button>
+	</div>
+}
