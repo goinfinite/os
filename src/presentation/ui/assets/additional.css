@@ -1,5 +1,5 @@
 body {
-    font-family: "Lato", sans-serif;
+  font-family: "Lato", sans-serif;
 }
 
 h1,
@@ -8,12 +8,21 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Julius Sans One", sans-serif;
-    text-shadow: -1px 0 0 #fff;
-    word-spacing: -.1618rem;
+  font-family: "Julius Sans One", sans-serif;
+  text-shadow: -1px 0 0 #fff;
+  word-spacing: -0.1618rem;
 }
 
 #sidebarMenu::-webkit-scrollbar {
-	width: 0;
-	height: 0;
+  width: 0;
+  height: 0;
+}
+
+#vg-tooltip-element.dark-theme {
+  background-color: rgba(26, 45, 56, 0.9);
+  border: none;
+}
+
+#vg-tooltip-element table tr td.value {
+  font-weight: bold;
 }

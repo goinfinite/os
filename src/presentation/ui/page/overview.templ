@@ -329,9 +329,9 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 		<div class="mb-2">
 			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
 		</div>
-		<div class="flex space-x-3">
+		<div class="grid grid-cols-3 gap-3">
 			<!-- Observability Table -->
-			<div class="bg-os-500 max-[35%] min-h-56 min-w-[35%] space-y-2 rounded p-3">
+			<div class="bg-os-500 space-y-1.5 rounded p-3">
 				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
 					<span>Hostname</span>
 					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
@@ -372,23 +372,23 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 				</div>
 			</div>
 			<!-- Resource Usage Graphic -->
-			<div class="bg-os-500 w-full rounded py-3">
+			<div class="bg-os-500 col-span-2 rounded px-4 pb-2 pt-4">
 				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
 					<div class="flex flex-row items-center gap-1">
 						<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
-						CPU Usage (%)
+						Memory Usage (%)
 					</div>
 					<div class="flex flex-row items-center gap-1">
 						<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
-						Memory Usage (%)
+						CPU Usage (%)
 					</div>
 					<div class="flex flex-row items-center gap-1">
 						<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
 						Storage Usage (%)
 					</div>
 				</div>
-				<div class="flex h-full w-full justify-center">
-					<div id="cpuAndMemoryUsageChart" class="h-[90%] w-[95%]"></div>
+				<div class="h-64 w-full p-2">
+					<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
 				</div>
 			</div>
 		</div>
