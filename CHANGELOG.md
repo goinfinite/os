@@ -3,12 +3,13 @@
 ```log
 0.1.8 - 2025/01/24
 refactor(front): overview page with HTMX+Alpine.js
-fix: restart or any service status update requires an event dispatch to reload the services table
-fix: stop button should be yellow, and the start button should be blue
-fix: implement sidebar routing from the legacy cron page to the new page on click
-feat: add the time to the tooltip
-refact: replace the storage usage area chart with a line chart
-fix: SRI VO doesn't recognize unixFile constructor
+feat: add time to the overview chart tooltip
+fix: file manager download files bug
+fix: update service table on events
+fix: fix start/stop button colors
+fix: cron routing from previous ui
+fix: replace the storage usage area chart with a line chart
+fix: remove unixFile SRI and use record details instead
 fix: reorder the OS system info tags
 
 0.1.7 - 2025/01/06
