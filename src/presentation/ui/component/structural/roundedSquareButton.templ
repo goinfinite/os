@@ -8,7 +8,7 @@ templ RoundedSquareButton(
 		<button
 			type="button"
 			@click={ onClick }
-			class={ "inline-flex items-center p-2.5 rounded-md bg-" + defaultColor + " text-center hover:bg-" + hoverColor }
+			class={ "inline-flex items-center p-2 rounded-md bg-" + defaultColor + " text-center hover:bg-" + hoverColor }
 		>
 			<i class={ "ph-duotone " + icon + " text-xl" }></i>
 			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover/roundedSquareButton:block group-hover/roundedSquareButton:-translate-y-0.5 group-hover/roundedSquareButton:visible p-1.5 bg-" + hoverColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
