@@ -291,7 +291,9 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			if len(envsSlice) > 0 {
-				requestBody["envs"] = envsSlice
+				requestBody["envs"] = sharedHelper.StringSliceValueObjectParser(
+					envsSlice, valueObject.NewServiceEnv,
+				)
 			}
 
 			if versionStr != "" {
@@ -299,7 +301,9 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			if len(portBindingsSlice) > 0 {
-				requestBody["portBindings"] = portBindingsSlice
+				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
+					portBindingsSlice, valueObject.NewPortBinding,
+				)
 			}
 
 			if timeoutStartSecsInt != 0 {
