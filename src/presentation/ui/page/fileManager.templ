@@ -14,6 +14,204 @@ templ FileManagerIndex() {
 				)
 			</div>
 		</div>
-		<div id="file-manager-page-content"></div>
+		<div id="file-manager-page-content">
+			@FilesExplorerTable()
+		</div>
+	</div>
+}
+
+templ FilesExplorerSearchBar(id, name, icon, tooltipText, bindModelValuePath, onClick string) {
+	<div class="relative h-[90%] w-full">
+		<input
+			type="text"
+			name={ name }
+			if bindModelValuePath != "" {
+				x-model:value={ bindModelValuePath }
+			}
+			autocomplete="off"
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-full w-full rounded-l-md border pl-8 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		/>
+		<div class="absolute left-2.5 top-1/2 z-10 w-fit -translate-y-1/2">
+			<i class={ "ph-duotone " + icon }></i>
+		</div>
+		<div class={ "group/fileExplorerSearchBar_" + id + " absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2" }>
+			<i class="ph-duotone ph-info cursor-help"></i>
+			<div class={ "invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-os-200 p-2 text-xs text-white shadow-lg group-hover/fileExplorerSearchBar_" + id + ":visible group-hover/fileExplorerSearchBar_" + id + ":block" }>
+				{ tooltipText }
+			</div>
+		</div>
+	</div>
+	<button
+		type="button"
+		@click={ onClick }
+		class="bg-os-400 border-os-200 hover:border-os-100 hover:bg-os-200 inline-flex h-[90%] items-center rounded-r-md border-y border-r p-2 text-center"
+	>
+		<i class="ph-duotone ph-arrow-right text-xl"></i>
+	</button>
+}
+
+templ FilesExplorerTable() {
+	<!-- FilesExplorerTable -->
+	<div class="bg-os-800 grid grid-rows-2 gap-y-2 rounded p-3">
+		<!-- FilesExplorerTable Buttons Header -->
+		<div class="grid grid-cols-4 gap-3">
+			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-file-plus",
+					TextContent:             "Add File",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Add file')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-folder-plus",
+					TextContent:             "Add Folder",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Add folder')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-upload-simple",
+					TextContent:             "Upload",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Upload')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+			</div>
+			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-code",
+					TextContent:             "Edit Code",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Edit code')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-copy",
+					TextContent:             "Copy",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Copy')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-arrow-square-out",
+					TextContent:             "Move",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Move')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-download-simple",
+					TextContent:             "Download",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Download')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-pencil-line",
+					TextContent:             "Rename",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Rename')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-trash",
+					TextContent:             "Delete",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Delete')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+			</div>
+			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-folder-lock",
+					TextContent:             "Permissions",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Permissions')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-box-arrow-down",
+					TextContent:             "Compress",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Compress')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-box-arrow-up",
+					TextContent:             "Extract",
+					DefaultColor:            "os-500",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Extract')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+			</div>
+		</div>
+		<!-- FilesExplorerTable Search Bars Header -->
+		<div class="grid grid-cols-4 gap-2">
+			<div class="flex items-center justify-center gap-1 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-house",
+					TextContent:             "Home",
+					DefaultColor:            "os-400",
+					HoverColor:              "os-200",
+					OnClick:                 "console.log('Home')",
+					HideTextBelowBreakpoint: "1720px",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrow-left",
+					TooltipText:  "Back",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "console.log('Back')",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrow-right",
+					TooltipText:  "Forward",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "console.log('Forward')",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrow-up",
+					TooltipText:  "Back Level",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "console.log('Back Level')",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrows-clockwise",
+					TooltipText:  "Reload",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "console.log('Reload')",
+				})
+			</div>
+			<div class="col-span-2 flex items-center justify-center rounded p-2">
+				@FilesExplorerSearchBar(
+					"searchSourcePath", "sourcePath", "ph-folder",
+					"This is a source path search bar", "",
+					"console.log('Search Source Path')",
+				)
+			</div>
+			<div class="flex justify-center rounded p-2">
+				@FilesExplorerSearchBar(
+					"searchFileName", "fileName", "ph-magnifying-glass",
+					"This is a file name search bar", "",
+					"console.log('Search File Name')",
+				)
+			</div>
+		</div>
 	</div>
 }
