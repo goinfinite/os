@@ -1,3 +1,8 @@
 document.addEventListener("alpine:init", () => {
-  Alpine.data("fileManager", () => ({}));
+  Alpine.data("fileManager", () => ({
+    searchBarFilter: {
+      sourcePath: "",
+      fileName: "",
+    },
+  }));
 });

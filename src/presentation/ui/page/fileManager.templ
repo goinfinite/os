@@ -201,14 +201,14 @@ templ FilesExplorerTable() {
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"searchSourcePath", "sourcePath", "ph-folder",
-					"This is a source path search bar", "",
+					"This is a source path search bar", "searchBarFilter.sourcePath",
 					"console.log('Search Source Path')",
 				)
 			</div>
 			<div class="flex justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"searchFileName", "fileName", "ph-magnifying-glass",
-					"This is a file name search bar", "",
+					"This is a file name search bar", "searchBarFilter.fileName",
 					"console.log('Search File Name')",
 				)
 			</div>
