@@ -11,16 +11,22 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 type FilesCmdRepo struct {
-	filesQueryRepo FilesQueryRepo
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	filesQueryRepo  FilesQueryRepo
 }
 
-func NewFilesCmdRepo() FilesCmdRepo {
+func NewFilesCmdRepo(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) FilesCmdRepo {
 	return FilesCmdRepo{
-		filesQueryRepo: FilesQueryRepo{},
+		persistentDbSvc: persistentDbSvc,
+		filesQueryRepo:  FilesQueryRepo{},
 	}
 }
 
@@ -181,6 +187,25 @@ func (repo FilesCmdRepo) Compress(
 	return compressionProcessReport, nil
 }
 
+func (repo FilesCmdRepo) updateFileOwner(
+	filePath valueObject.UnixFilePath,
+	ownerAccountId valueObject.AccountId,
+) error {
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(repo.persistentDbSvc)
+	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountId: &ownerAccountId,
+	})
+	if err != nil {
+		return errors.New("OwnerAccountNotFound")
+	}
+
+	accountUsernameStr := accountEntity.Username.String()
+	fileOwner := accountUsernameStr + ":" + accountUsernameStr
+	chownCmd := fmt.Sprintf("chown %s %s", fileOwner, filePath.String())
+	_, err = infraHelper.RunCmdWithSubShell(chownCmd)
+	return err
+}
+
 func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	filePathStr := createDto.FilePath.String()
 
@@ -191,6 +216,11 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 
 	if !createDto.MimeType.IsDir() {
 		_, err := os.Create(filePathStr)
+		if err != nil {
+			return err
+		}
+
+		err = repo.updateFileOwner(createDto.FilePath, createDto.OperatorAccountId)
 		if err != nil {
 			return err
 		}
@@ -206,7 +236,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return err
 	}
 
-	return nil
+	return repo.updateFileOwner(createDto.FilePath, createDto.OperatorAccountId)
 }
 
 func (repo FilesCmdRepo) Delete(unixFilePath valueObject.UnixFilePath) error {
