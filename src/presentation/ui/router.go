@@ -217,6 +217,6 @@ func (router *Router) RegisterRoutes() {
 			return c.NoContent(http.StatusNotFound)
 		}
 
-		return c.Redirect(http.StatusTemporaryRedirect, "/_/")
+		return c.Redirect(http.StatusTemporaryRedirect, "/overview/")
 	})
 }

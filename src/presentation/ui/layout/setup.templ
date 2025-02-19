@@ -31,7 +31,7 @@ script SetupLocalState() {
 
 					Alpine.store("toast").displayToast("LoginSuccessful", "success");
 					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
-					window.location.href = "/_/#/overview/";
+					window.location.href = "/overview/";
 				} catch (error) {
 					Alpine.store("toast").displayToast(error.message, "danger");
 					return;

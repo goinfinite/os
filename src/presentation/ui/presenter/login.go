@@ -62,7 +62,7 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 				Path:    "/",
 				Expires: sessionCookieExpiresIn.ReadAsGoTime(),
 			})
-			return c.Redirect(http.StatusFound, "/_/#/overview")
+			return c.Redirect(http.StatusFound, "/overview/")
 		}
 	}
 
