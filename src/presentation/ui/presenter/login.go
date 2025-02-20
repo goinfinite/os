@@ -69,6 +69,6 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return layout.Login().
+	return layout.LoginLayout().
 		Render(c.Request().Context(), c.Response().Writer)
 }

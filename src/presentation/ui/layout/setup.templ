@@ -6,56 +6,20 @@ import (
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 )
 
-script SetupLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('setup', () => ({
-			accessTokenKey: 'os-access-token',
-			username: '',
-			password: '',
-			async setupInfiniteOsAndLogin() {
-				try {
-					const shouldDisplayToast = false;
-					await Infinite.JsonAjax("POST", "/api/v1/setup/", {
-						username: this.username,
-						password: this.password,
-					}, shouldDisplayToast);
-
-					const authResponse = await Infinite.JsonAjax("POST", "/api/v1/auth/login/", {
-						username: this.username,
-						password: this.password,
-					}, shouldDisplayToast);
-
-					if (!authResponse.tokenStr) {
-						throw new Error("AccessTokenNotCreated")
-					}
-
-					Alpine.store("toast").displayToast("LoginSuccessful", "success");
-					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
-					window.location.href = "/overview/";
-				} catch (error) {
-					Alpine.store("toast").displayToast(error.message, "danger");
-					return;
-				}
-			}
-		}));
-	});
-}
-
-templ Setup() {
+templ SetupLayout() {
 	<!DOCTYPE html>
 	<html>
 		@HeadTag()
+		<!-- Setup Layout JavaScript -->
+		<script src="/assets/local-states/layout/setup.js"></script>
+		<!-- Setup Layout HTML -->
 		<body
+			x-data="setup"
 			class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
 		>
-			@SetupLocalState()
 			@componentUtil.LoadingOverlay()
 			<div>
-				<a
-					href="https://goinfinite.net/os/"
-					target="_blank"
-					class="mb-4 flex w-[120px] gap-2 hover:opacity-90"
-				>
+				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
 					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
 					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
 				</a>
