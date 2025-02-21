@@ -9,66 +9,13 @@ import (
 	"strconv"
 )
 
-script PhpRuntimeHorizontalTabContentLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('php', () => ({
-			// Primary States
-			phpConfigs: {},
-			resetPrimaryStates() {
-				phpConfigsElement = document.getElementById('phpConfigs');
-				if (!phpConfigsElement) {
-					return;
-				}
-				this.phpConfigs = JSON.parse(phpConfigsElement.textContent);
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-			async updatePhpConfigs() {
-				await Infinite.JsonAjax(
-					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
-					{
-						version: this.phpConfigs.version.value,
-						modules: this.phpConfigs.modules,
-						settings: this.phpConfigs.settings,
-					},
-				);
-			},
-
-			// Auxiliary States
-			selectedPhpVerticalTab: 'modules',
-
-			// Modal States
-			isUpdatePhpVersionModalOpen: false,
-			openUpdatePhpVersionModal() {
-				this.isUpdatePhpVersionModalOpen = true;
-			},
-			closeUpdatePhpVersionModal() {
-				this.isUpdatePhpVersionModalOpen = false;
-			},
-			updatePhpVersion() {
-				this.closeUpdatePhpVersionModal();
-				htmx.ajax(
-					'PUT', '/api/v1/runtime/php/' + this.vhostHostname + '/',
-					{
-						swap: 'none',
-						values: { version: this.phpConfigs.version.value },
-					},
-				).then(() => {
-					this.$dispatch('refresh:runtimes-page-content');
-				});
-			},
-		}));
-	});
-}
-
 templ PhpRuntimeHorizontalTabContent(
 	runtimeOverview presenterDto.RuntimeOverview,
 	vhostsHostnames []string,
 ) {
-	<!-- PhpRuntimeHorizontalTabContent JavaScript -->
-	@PhpRuntimeHorizontalTabContentLocalState()
-	<!-- PhpRuntimeHorizontalTabContent HTML -->
+	<!-- PhpRuntimeHorizontalTabContent Page JavaScript -->
+	<script src="/assets/local-states/page/runtimes/phpRuntimeHorizontalTabContent.js"></script>
+	<!-- PhpRuntimeHorizontalTabContent Page HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">
 			if runtimeOverview.IsInstalled {
@@ -244,6 +191,7 @@ templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
 }
 
 templ UpdatePhpVersionWarningContent() {
+	<!-- UpdatePhpVersionWarningContent -->
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Do you really want to change the PHP version?
 	</h3>

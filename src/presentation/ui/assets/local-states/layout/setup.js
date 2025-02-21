@@ -37,9 +37,9 @@ document.addEventListener("alpine:init", () => {
             window.location.href = "/overview/";
           });
         })
-        .catch((error) => {
-          Alpine.store("toast").displayToast(error.message, "danger");
-        });
+        .catch((error) =>
+          Alpine.store("toast").displayToast(error.message, "danger")
+        );
     },
   }));
 });

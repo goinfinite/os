@@ -6,149 +6,10 @@ import (
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
-script AccountsIndexLocalState() {
-    document.addEventListener('alpine:init', () => {
-		Alpine.data('accounts', () => ({
-			// Primary states
-			account: {},
-			secureAccessPublicKey: {},
-			resetPrimaryStates() {
-				this.account = {
-					id: '',
-					groupId: '',
-					username: '',
-					password: '',
-					apiKey: '',
-					secureAccessPublicKeys: [],
-				};
-				this.secureAccessPublicKey = {
-					id: '',
-					name: '',
-					content: '',
-				};
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-
-			// Modal states
-			isCreateAccountModalOpen: false,
-			openCreateAccountModal() {
-				this.resetPrimaryStates();
-
-				this.isCreateAccountModalOpen = true;
-			},
-			closeCreateAccountModal() {
-				this.isCreateAccountModalOpen = false;
-			},
-			isUpdatePasswordModalOpen: false,
-			openUpdatePasswordModal(id) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.isUpdatePasswordModalOpen = true;
-			},
-			closeUpdatePasswordModal() {
-				this.isUpdatePasswordModalOpen = false;
-			},
-			isUpdateApiKeyModalOpen: false,
-			openUpdateApiKeyModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.isUpdateApiKeyModalOpen = true;
-			},
-			closeUpdateApiKeyModal() {
-				this.isUpdateApiKeyModalOpen = false;
-				this.account.apiKey = '';
-			},
-			updateApiKey() {
-				htmx.ajax(
-					'PUT', '/api/v1/account/',
-					{
-						swap: 'none',
-						values: { id: this.account.id, shouldUpdateApiKey: true },
-						handler: (_, responseEvent) => {
-							const httpResponseObject = responseEvent.xhr;
-							if (httpResponseObject.status !== 200) {
-								return;
-							}
-
-							const responseData = JSON.parse(httpResponseObject.response);
-							this.account.apiKey = responseData.body;
-						}
-					},
-				);
-			},
-			isSecureAccessPublicKeysModalOpen: false,
-			openSecureAccessPublicKeysModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.account.secureAccessPublicKeys = JSON.parse(
-					document.getElementById('secureAccessPublicKeys_' + id).textContent
-				);
-
-				this.isSecureAccessPublicKeysModalOpen = true;
-			},
-			closeSecureAccessPublicKeysModal() {
-				this.isSecureAccessPublicKeysModalOpen = false;
-			},
-			isCreateSecureAccessPublicKeyModalOpen: false,
-			openCreateSecureAccessPublicKeyModal() {
-				this.isCreateSecureAccessPublicKeyModalOpen = true;
-			},
-			closeCreateSecureAccessPublicKeyModal() {
-				this.isCreateSecureAccessPublicKeyModalOpen = false;
-			},
-			isDeleteSecureAccessPublicKeyModalOpen: false,
-			openDeleteSecureAccessPublicKeyModal(id, name) {
-				this.secureAccessPublicKey.id = id;
-				this.secureAccessPublicKey.name = name;
-				this.isDeleteSecureAccessPublicKeyModalOpen = true;
-			},
-			closeDeleteSecureAccessPublicKeyModal() {
-				this.isDeleteSecureAccessPublicKeyModalOpen = false;
-			},
-			deleteSecureAccessPublicKey() {
-				htmx.ajax(
-					'DELETE',
-					`/api/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
-					{swap: 'none'},
-				).then(() => {
-				    this.$dispatch('delete:secure-access-public-key');
-				});
-				this.closeDeleteSecureAccessPublicKeyModal();
-			},
-			isDeleteAccountModalOpen: false,
-			openDeleteAccountModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.isDeleteAccountModalOpen = true;
-			},
-			closeDeleteAccountModal() {
-				this.resetPrimaryStates();
-
-				this.isDeleteAccountModalOpen = false;
-			},
-			deleteAccount() {
-				htmx.ajax(
-                    'DELETE', `/api/v1/account/` + this.account.id, {swap: 'none'},
-                ).then(() => {
-				    this.$dispatch('delete:account');
-				});
-				this.closeDeleteAccountModal();
-			},
-		}));
-	});
-}
-
 templ AccountsIndex(accounts []entity.Account) {
-	@AccountsIndexLocalState()
+	<!-- Accounts Page JavaScript -->
+	<script src="/assets/local-states/page/accounts.js"></script>
+	<!-- Accounts Page HTML -->
 	<div x-data="accounts">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
@@ -190,7 +51,9 @@ templ AccountsIndex(accounts []entity.Account) {
 }
 
 templ AccountsTable(accounts []entity.Account) {
+	<!-- AccountsTable -->
 	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+		<!-- AccountsTable Header -->
 		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
 			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
 				<th scope="col" class="w-2/7 px-5 py-3 text-left">Username(s)</th>
@@ -206,6 +69,7 @@ templ AccountsTable(accounts []entity.Account) {
 			</tr>
 		</thead>
 		<tbody>
+			<!-- AccountsTable Items -->
 			for _, account := range accounts {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 					<th class="hidden">
@@ -244,6 +108,7 @@ templ AccountsTable(accounts []entity.Account) {
 }
 
 templ CreateAccountForm() {
+	<!-- CreateAccountForm -->
 	<form
 		hx-post="/api/v1/account/"
 		hx-indicator="#loading-overlay"
@@ -280,6 +145,7 @@ templ CreateAccountModal() {
 }
 
 templ UpdatePasswordForm() {
+	<!-- UpdatePasswordForm -->
 	<form
 		hx-put="/api/v1/account/"
 		hx-indicator="#loading-overlay"
@@ -312,6 +178,7 @@ templ UpdatePasswordModal() {
 }
 
 templ UpdateApiKeyContent() {
+	<!-- UpdateApiKeyContent -->
 	<div class="mb-6">
 		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
 		<div x-show="account.apiKey !== ''">
@@ -337,6 +204,7 @@ templ UpdateApiKeyModal() {
 }
 
 templ SecureAccessPublicKeysList() {
+	<!-- SecureAccessPublicKeysList -->
 	@componentStructural.Alert(
 		componentStructural.AlertTypeInfo,
 		"These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
@@ -386,6 +254,7 @@ templ SecureAccessPublicKeysModal() {
 }
 
 templ CreateSecureAccessPublicKeyForm() {
+	<!-- CreateSecureAccessPublicKeyForm -->
 	<form
 		hx-post="/api/v1/account/secure-access-public-key"
 		hx-indicator="#loading-overlay"
