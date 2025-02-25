@@ -29,6 +29,7 @@ type ProgressBarInputDto struct {
 }
 
 templ ProgressBar(inputDto ProgressBarInputDto) {
+	<!-- ProgressBar -->
 	<div class={ "bg-" + inputDto.ComponentColor + " relative m-auto flex h-5 w-20 items-center rounded-sm" }>
 		if inputDto.Label != "" {
 			<div class={ "bg-" + inputDto.LabelBackgroundColor + " absolute left-1/2 -translate-x-1/2 transform rounded-sm bg-opacity-75 px-1 my-1 text-xs text-neutral-50" }>
