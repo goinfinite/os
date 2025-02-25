@@ -21,13 +21,20 @@ func progressBarCssClassesFactory(completionRate uint8) string {
 	return baseClasses + " " + bgClass
 }
 
-templ ProgressBar(completionRate uint8, label string) {
-	<div class="bg-os-300 relative m-auto flex h-5 w-20 items-center rounded-sm">
-		if label != "" {
-			<div class="bg-os-700 absolute left-1/2 -translate-x-1/2 transform rounded-sm bg-opacity-75 px-1 text-xs text-neutral-50">
-				{ label }
+type ProgressBarInputDto struct {
+	ComponentColor       string
+	CompletionRate       uint8
+	Label                string
+	LabelBackgroundColor string
+}
+
+templ ProgressBar(inputDto ProgressBarInputDto) {
+	<div class={ "bg-" + inputDto.ComponentColor + " relative m-auto flex h-5 w-20 items-center rounded-sm" }>
+		if inputDto.Label != "" {
+			<div class={ "bg-" + inputDto.LabelBackgroundColor + " absolute left-1/2 -translate-x-1/2 transform rounded-sm bg-opacity-75 px-1 my-1 text-xs text-neutral-50" }>
+				{ inputDto.Label }
 			</div>
 		}
-		<div class={ progressBarCssClassesFactory(completionRate) }></div>
+		<div class={ progressBarCssClassesFactory(inputDto.CompletionRate) }></div>
 	</div>
 }

@@ -94,7 +94,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 			</thead>
 			<tbody>
 				for _, installedItem := range installedItemsList {
-					<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
+					<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
 						<th scope="row" class="px-5 py-3 text-left font-normal">
 							<div class="inline-flex items-center">
 								<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
@@ -436,7 +436,7 @@ templ InstalledServicesItemsTable(
 				</thead>
 				<tbody>
 					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
-						<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
+						<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
 							<td class="hidden">
 								@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
 							</td>
@@ -480,20 +480,24 @@ templ InstalledServicesItemsTable(
 							</td>
 							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(
-										uint8(installedServiceEntity.Metrics.CpuUsagePercent),
-										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent)+"%",
-									)
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.CpuUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
 								} else {
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
 							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(
-										uint8(installedServiceEntity.Metrics.MemUsagePercent),
-										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent)+"%",
-									)
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.MemUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
 								} else {
 									<span class="text-center text-slate-500">--</span>
 								}

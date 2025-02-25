@@ -58,16 +58,17 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 			{Label: "PostgreSQL", Icon: "ph-database", Value: "postgresql"},
 		}, selectedDbOverview.Type.String(), "changeSelectedDatabaseType",
 	)
-	<!-- DatabaseTabs HorizontalTab Items -->
+	<!-- DatabasesTabs HorizontalTab Table -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
 		<div class="bg-os-500 space-y-3 rounded-b-lg rounded-r-lg px-4 pt-2">
 			if selectedDbOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+					<!-- DatabasesTabs Table Header -->
 					<thead class="text-xs uppercase text-neutral-400">
 						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-							<th scope="col" class="w-1/7 px-5 py-3 text-left">Name</th>
-							<th scope="col" class="w-2/7 px-5 py-3 text-center">User(s)</th>
-							<th scope="col" class="w-1/7 px-5 py-3 text-left">Size</th>
+							<th scope="col" class="w-1/6 px-5 py-3 text-left">Name</th>
+							<th scope="col" class="w-2/6 px-5 py-3 text-center">User(s)</th>
+							<th scope="col" class="w-1/6 px-5 py-3 text-center">Size</th>
 							<th scope="col" class="flex justify-end space-x-2 px-5 py-3">
 								@componentForm.SubmitButton(
 									"create-user-button", "Create user", "ph-user-plus",
@@ -81,10 +82,11 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 						</tr>
 					</thead>
 					<tbody>
+						<!-- DatabasesTabs Table Items -->
 						for _, database := range selectedDbOverview.Databases {
-							<tr class="bg-os-800 text-white">
-								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-left">
+							<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+								<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
+								<th scope="row" class="w-2/6 px-5 py-3 text-center">
 									<div class="bg-os-500 max-h-75 rounded-md px-2.5 py-1">
 										for _, user := range database.Users {
 											<div class="bg-os-800 my-1.5 flex items-center justify-between rounded-md p-3">
@@ -100,8 +102,8 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 										}
 									</div>
 								</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Size.String() }</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-right">
+								<th scope="row" class="w-1/6 px-5 py-3 text-center font-normal">{ database.Size.String() }</th>
+								<th scope="row" class="px-5 py-3 text-right">
 									<div class="inline-flex">
 										@componentStructural.CircularIconButtonWithTooltip(
 											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",

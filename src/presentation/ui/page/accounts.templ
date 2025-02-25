@@ -75,7 +75,7 @@ templ AccountsTable(accountsEntities []entity.Account) {
 				<tbody>
 					<!-- AccountsTable Items -->
 					for _, accountEntity := range accountsEntities {
-						<tr class="odd:bg-os-400 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
+						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 							<th class="hidden">
 								@templ.JSONScript("secureAccessPublicKeys_"+accountEntity.Id.String(), accountEntity.SecureAccessPublicKeys)
 							</th>
@@ -98,19 +98,19 @@ templ AccountsTable(accountsEntities []entity.Account) {
 							<th scope="row" class="px-5 py-3 text-right">
 								<div class="inline-flex space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-lock-key", "os-200", "os-300",
+										"ph-lock-key", "os-200", "os-100",
 										"openUpdatePasswordModal("+accountEntity.Id.String()+")",
-										"update password", "os-200",
+										"update password", "os-100",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-key", "os-200", "os-300",
+										"ph-key", "os-200", "os-100",
 										"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-										"update api key", "os-200",
+										"update api key", "os-100",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-fingerprint", "os-200", "os-300",
+										"ph-fingerprint", "os-200", "os-100",
 										"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-										"view secure access public keys", "os-200",
+										"view secure access public keys", "os-100",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-trash", "red-800", "red-600",

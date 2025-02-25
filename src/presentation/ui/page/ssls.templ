@@ -48,53 +48,60 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 }
 
 templ SslsTable(sslPairs []entity.SslPair) {
-	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
-			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-				<th scope="col" class="w-1/7 px-5 py-3 text-left">Virtual Hosts Hostnames</th>
-				<th scope="col" class="w-1/7 px-5 py-3 text-left">Issued At</th>
-				<th scope="col" class="w-1/7 px-5 py-3 text-left">Expires At</th>
-				<th scope="col" class="w-1/7 px-5 py-3 text-left">Certificate Authority</th>
-				<th scope="col" class="w-1/7 px-5 py-3"></th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, sslPair := range sslPairs {
-				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th scope="row" class="w-1/4 space-y-2 px-5 py-3 text-left">
-						for _, vhostHostname := range sslPair.VirtualHostsHostnames {
-							@componentStructural.Tag("ph-network", "", vhostHostname.String(), "infinite-500")
-						}
-					</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.IssuedAt.ReadDateOnly() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.ExpiresAt.ReadDateOnly() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-right">
-						<div class="inline-flex space-x-2">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-file-magnifying-glass", "blue-900", "blue-700",
-								"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
-								"view PEM files", "blue-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-network-slash", "red-800", "red-600",
-								"openRemoveVirtualHostsHostnamesModal('"+sslPair.Id.String()+"')",
-								"remove virtual hosts hostnames", "red-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-swap", "red-800", "red-600",
-								"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
-								"swap to self-signed", "red-500",
-							)
-						</div>
-					</th>
-				</tr>
-			}
-		</tbody>
-	</table>
+	<!-- SslsTable -->
+	<div class="bg-os-800 rounded-md p-4">
+		<div class="bg-os-500 space-y-3 rounded-md p-4">
+			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+				<!-- SslsTable Header -->
+				<thead class="text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="w-1/5 px-5 py-3 text-left">Virtual Hosts Hostnames</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">Issued At</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">Expires At</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">Certificate Authority</th>
+						<th scope="col" class="w-1/5 px-5 py-3"></th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, sslPair := range sslPairs {
+						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+							<th scope="row" class="w-1/6 space-y-2 px-5 py-3 text-left">
+								for _, vhostHostname := range sslPair.VirtualHostsHostnames {
+									@componentStructural.Tag("ph-network", "", vhostHostname.String(), "infinite-500")
+								}
+							</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.IssuedAt.ReadDateOnly() }</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.ExpiresAt.ReadDateOnly() }</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-right">
+								<div class="inline-flex space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-file-magnifying-glass", "os-200", "os-100",
+										"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
+										"view PEM files", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-network-slash", "red-800", "red-600",
+										"openRemoveVirtualHostsHostnamesModal('"+sslPair.Id.String()+"')",
+										"remove virtual hosts hostnames", "red-500",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-swap", "red-800", "red-600",
+										"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
+										"swap to self-signed", "red-500",
+									)
+								</div>
+							</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 }
 
 templ ImportSslCertificateForm(vhostsHostnames []string) {
+	<!-- ImportSslCertificateForm -->
 	<form
 		id="import-ssl-certificate-form"
 		hx-post="/api/v1/ssl/"
@@ -150,6 +157,7 @@ templ ImportSslCertificateModal(vhostsHostnames []string) {
 }
 
 templ ViewPemFilesModal() {
+	<!-- ViewPemFilesModal -->
 	@componentStructural.RegularModal(
 		"PEM files", "isViewPemFilesModalOpen",
 		"closeViewPemFilesModal()", "",
@@ -175,6 +183,7 @@ templ ViewPemFilesModal() {
 }
 
 templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
+	<!-- RemoveVirtualHostsHostnamesForm -->
 	<form
 		id="remove-virtual-hosts-hostnames-form"
 		hx-put="/api/v1/ssl/vhost/"
@@ -206,6 +215,7 @@ templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
 }
 
 templ SwapToSelfSignedCriticalWarningContent() {
+	<!-- SwapToSelfSignedCriticalWarningContent -->
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
 		Are you sure you want to swap SSL certificate?
 	</h3>
