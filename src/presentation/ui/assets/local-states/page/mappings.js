@@ -61,6 +61,30 @@ document.addEventListener("alpine:init", () => {
 
       return this.virtualHost.hostname == "";
     },
+    async readOnlyServiceNames() {
+      try {
+        const shouldDisplayToast = false;
+        const servicesResponseDto = await Infinite.JsonAjax(
+          "GET",
+          "/api/v1/services/",
+          {},
+          shouldDisplayToast
+        );
+
+        const serviceNames = [];
+        for (const service of servicesResponseDto.installedServices) {
+          serviceNames.push(service.name);
+        }
+
+        return serviceNames;
+      } catch (error) {
+        console.error(error.message);
+        Alpine.store("toast").displayToast(
+          "ReadOnlyServiceNamesError",
+          "danger"
+        );
+      }
+    },
 
     // Modal states
     isCreateVhostModalOpen: false,

@@ -172,15 +172,6 @@ templ CreateVhostModal() {
 	}
 }
 
-func getOnlyServiceNames() []string {
-	onlyServiceNames := []string{}
-	for serviceName := range valueObject.NativeSvcNamesWithAliases {
-		onlyServiceNames = append(onlyServiceNames, serviceName)
-	}
-
-	return onlyServiceNames
-}
-
 templ CreateMappingForm(vhostsHostnames []string) {
 	<!-- CreateMappingForm -->
 	<form
@@ -209,10 +200,12 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
-				@componentForm.SelectInput(
-					"targetValue", "Service Name", "mapping.targetValue", "",
-					getOnlyServiceNames(), true,
-				)
+				@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+					BindLabel:                "'Service Name'",
+					BindModelPath:            "mapping.targetValue",
+					BindOptions:              "await readOnlyServiceNames()",
+					ShouldIncludeBlankOption: true,
+				})
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'url'">
