@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.1.9 - 2025/XX/XX
+fix(front): file manager permissions and account sudoers
+
 0.1.8 - 2025/01/24
 refactor(front): overview page with HTMX+Alpine.js
 feat: add time to the overview chart tooltip
