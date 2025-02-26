@@ -14,5 +14,6 @@ type FilesCmdRepo interface {
 	Move(dto.MoveUnixFile) error
 	UpdateContent(dto.UpdateUnixFileContent) error
 	UpdatePermissions(dto.UpdateUnixFilePermissions) error
+	UpdateOwnership(dto.UpdateUnixFileOwnership) error
 	Upload(dto.UploadUnixFiles) (dto.UploadProcessReport, error)
 }

@@ -187,25 +187,6 @@ func (repo FilesCmdRepo) Compress(
 	return compressionProcessReport, nil
 }
 
-func (repo FilesCmdRepo) updateFileOwner(
-	filePath valueObject.UnixFilePath,
-	ownerAccountId valueObject.AccountId,
-) error {
-	accountQueryRepo := accountInfra.NewAccountQueryRepo(repo.persistentDbSvc)
-	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
-		AccountId: &ownerAccountId,
-	})
-	if err != nil {
-		return errors.New("OwnerAccountNotFound")
-	}
-
-	accountUsernameStr := accountEntity.Username.String()
-	fileOwner := accountUsernameStr + ":" + accountUsernameStr
-	chownCmd := fmt.Sprintf("chown %s %s", fileOwner, filePath.String())
-	_, err = infraHelper.RunCmdWithSubShell(chownCmd)
-	return err
-}
-
 func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	filePathStr := createDto.FilePath.String()
 
@@ -214,29 +195,46 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return errors.New("PathAlreadyExists")
 	}
 
-	if !createDto.MimeType.IsDir() {
-		_, err := os.Create(filePathStr)
-		if err != nil {
-			return err
-		}
-
-		err = repo.updateFileOwner(createDto.FilePath, createDto.OperatorAccountId)
-		if err != nil {
-			return err
-		}
-
-		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-			createDto.FilePath, createDto.Permissions,
-		)
-		return repo.UpdatePermissions(updatePermissionsDto)
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(repo.persistentDbSvc)
+	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountId: &createDto.OperatorAccountId,
+	})
+	if err != nil {
+		return errors.New("OwnerAccountNotFound")
 	}
+	accountUsernameStr := accountEntity.Username.String()
 
-	err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
+	fileOwnerStr := accountUsernameStr + ":" + accountUsernameStr
+	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnerStr)
 	if err != nil {
 		return err
 	}
 
-	return repo.updateFileOwner(createDto.FilePath, createDto.OperatorAccountId)
+	updateFileOwnerDto := dto.NewUpdateUnixFileOwnership(createDto.FilePath, fileOwner)
+
+	if createDto.MimeType.IsDir() {
+		err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
+		if err != nil {
+			return err
+		}
+
+		return repo.UpdateOwnership(updateFileOwnerDto)
+	}
+
+	_, err = os.Create(filePathStr)
+	if err != nil {
+		return err
+	}
+
+	err = repo.UpdateOwnership(updateFileOwnerDto)
+	if err != nil {
+		return err
+	}
+
+	updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
+		createDto.FilePath, createDto.Permissions,
+	)
+	return repo.UpdatePermissions(updatePermissionsDto)
 }
 
 func (repo FilesCmdRepo) Delete(unixFilePath valueObject.UnixFilePath) error {
@@ -365,6 +363,27 @@ func (repo FilesCmdRepo) UpdatePermissions(
 		updatePermissionsDto.SourcePath.String(),
 		updatePermissionsDto.Permissions.GetFileMode(),
 	)
+}
+
+func (repo FilesCmdRepo) UpdateOwnership(
+	updateOwnershipDto dto.UpdateUnixFileOwnership,
+) error {
+	sourcePath := updateOwnershipDto.SourcePath
+	_, err := repo.filesQueryRepo.Read(sourcePath)
+	if err != nil {
+		return errors.New("FileNotFound")
+	}
+
+	chownCmd := fmt.Sprintf(
+		"chown %s %s",
+		updateOwnershipDto.Ownership.String(), sourcePath.String(),
+	)
+	_, err = infraHelper.RunCmdWithSubShell(chownCmd)
+	if err != nil {
+		return errors.New("UpdateFileOwnershipError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo FilesCmdRepo) Upload(

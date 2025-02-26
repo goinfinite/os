@@ -249,6 +249,17 @@ func (controller *FilesController) Update(c echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
+	var ownershipPtr *valueObject.UnixFileOwnership
+	if requestInputData["ownership"] != nil {
+		ownership, err := valueObject.NewUnixFileOwnership(
+			requestInputData["ownership"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		ownershipPtr = &ownership
+	}
+
 	operatorAccountId, err := valueObject.NewAccountId(
 		requestInputData["operatorAccountId"],
 	)
@@ -265,7 +276,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 
 	updateUnixFileDto := dto.NewUpdateUnixFiles(
 		sourcePaths, destinationPathPtr, permissionsPtr, encodedContentPtr,
-		operatorAccountId, operatorIpAddress,
+		ownershipPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(

@@ -84,6 +84,21 @@ func (uc UpdateUnixFiles) updateFileContent(
 	return nil
 }
 
+func (uc UpdateUnixFiles) updateFileOwnership(
+	sourcePath valueObject.UnixFilePath,
+	ownership valueObject.UnixFileOwnership,
+) error {
+	updateOwnershipDto := dto.NewUpdateUnixFileOwnership(sourcePath, ownership)
+
+	err := uc.filesCmdRepo.UpdateOwnership(updateOwnershipDto)
+	if err != nil {
+		slog.Error("UpdateFileOwnershipError", slog.Any("err", err))
+		return errors.New("UpdateFileOwnershipInfraError")
+	}
+
+	return nil
+}
+
 func (uc UpdateUnixFiles) Execute(
 	updateDto dto.UpdateUnixFiles,
 ) (dto.UpdateProcessReport, error) {
@@ -99,6 +114,21 @@ func (uc UpdateUnixFiles) Execute(
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
 					slog.Error("AddUpdatePermissionsFailureError", slog.Any("err", err))
+				}
+
+				updateProcessReport.FailedPathsWithReason = append(
+					updateProcessReport.FailedPathsWithReason, updateFailure,
+				)
+				continue
+			}
+		}
+
+		if updateDto.Ownership != nil {
+			err := uc.updateFileOwnership(sourcePath, *updateDto.Ownership)
+			if err != nil {
+				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
+				if err != nil {
+					slog.Error("AddUpdateOwnershipFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
