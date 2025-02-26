@@ -7,7 +7,7 @@ func TestMarketplaceItemName(t *testing.T) {
 		validMarketplaceItemNames := []interface{}{
 			"wordpress", "WordPress", "opencart", "OpenCart", "Magento", "magento",
 			"Joomla", "joomla", "Drupal", "drupal", "Supabase", "supabase",
-			"Laravel", "laravel", "rabbitmq", "RabbitMQ",
+			"Laravel", "laravel", "rabbitmq", "RabbitMQ", "n8n",
 		}
 
 		for _, name := range validMarketplaceItemNames {

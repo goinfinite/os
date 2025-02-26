@@ -9,7 +9,7 @@ import (
 
 type MarketplaceItemName string
 
-const marketplaceItemNameRegexExpression = `^\p{L}[\p{L}\'\ \-]{3,30}$`
+const marketplaceItemNameRegexExpression = `^\p{L}[\p{L}0-9\'\ \-]{1,30}$`
 
 func NewMarketplaceItemName(value interface{}) (
 	marketplaceItemName MarketplaceItemName, err error,
