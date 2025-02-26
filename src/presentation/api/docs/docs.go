@@ -3103,6 +3103,9 @@ const docTemplate = `{
                 "encodedContent": {
                     "type": "string"
                 },
+                "fixPermissions": {
+                    "type": "boolean"
+                },
                 "ownership": {
                     "type": "string"
                 },
