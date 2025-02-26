@@ -419,7 +419,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	)
 	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
 
-	if createDto.StartupFile != nil {
+	if createDto.StartupFile != nil && installableService.Nature.String() != "solo" {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
@@ -497,7 +497,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
 	}
 
-	if createDto.StartupFile != nil {
+	if createDto.StartupFile != nil && installableService.Nature.String() != "solo" {
 		startupFileStr := createDto.StartupFile.String()
 		installedServiceModel.StartupFile = &startupFileStr
 	}
@@ -639,7 +639,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["version"] = updateDto.Version.String()
 	}
 
-	if updateDto.StartupFile != nil {
+	if updateDto.StartupFile != nil && serviceEntity.Nature.String() != "solo" {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
@@ -694,7 +694,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["working_directory"] = &workingDirectoryStr
 	}
 
-	if updateDto.StartupFile != nil {
+	if updateDto.StartupFile != nil && serviceEntity.Nature.String() != "solo" {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
