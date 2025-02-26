@@ -278,7 +278,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 					})
 				</div>
 			</div>
-			<template x-if="marketplaceItem.dataFields.length > 0">
+			<template x-if="marketplaceItem.id !== ''">
 				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
 					@componentStructural.Alert(
 						componentStructural.AlertTypeWarning,
@@ -306,6 +306,13 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 								</template>
 							</div>
 						</template>
+						@componentForm.InputField(componentForm.InputFieldDto{
+							Id:                 "scheduledInstallTimeoutSecs",
+							Type:               "number",
+							Label:              "Scheduled Install Timeout Secs",
+							BindModelValuePath: "marketplaceItem.scheduledInstallTimeoutSecs",
+							InfoTooltipContent: "Time limit for the scheduled marketplace item installation to execute. If exceeded, the installation is aborted.",
+						})
 					</div>
 				}
 			</template>
