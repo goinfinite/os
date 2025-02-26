@@ -268,13 +268,13 @@ func (service *VirtualHostService) CreateMapping(
 func (service *VirtualHostService) DeleteMapping(
 	input map[string]interface{},
 ) ServiceOutput {
-	requiredParams := []string{"id"}
+	requiredParams := []string{"mappingId"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	id, err := valueObject.NewMappingId(input["id"])
+	id, err := valueObject.NewMappingId(input["mappingId"])
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
