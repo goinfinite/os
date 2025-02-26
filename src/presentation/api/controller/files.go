@@ -260,6 +260,17 @@ func (controller *FilesController) Update(c echo.Context) error {
 		ownershipPtr = &ownership
 	}
 
+	var fixPermissionsPtr *bool
+	if requestInputData["fixPermissions"] != nil {
+		fixPermissions, err := voHelper.InterfaceToBool(
+			requestInputData["fixPermissions"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		fixPermissionsPtr = &fixPermissions
+	}
+
 	operatorAccountId, err := valueObject.NewAccountId(
 		requestInputData["operatorAccountId"],
 	)
@@ -276,7 +287,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 
 	updateUnixFileDto := dto.NewUpdateUnixFiles(
 		sourcePaths, destinationPathPtr, permissionsPtr, encodedContentPtr,
-		ownershipPtr, operatorAccountId, operatorIpAddress,
+		ownershipPtr, fixPermissionsPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(

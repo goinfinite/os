@@ -53,22 +53,6 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 	return nil
 }
 
-func (uc UpdateUnixFiles) moveFile(
-	sourcePath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
-) error {
-	shouldOverwrite := false
-	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
-
-	err := uc.filesCmdRepo.Move(moveDto)
-	if err != nil {
-		slog.Error("MoveFileError", slog.Any("err", err))
-		return errors.New("MoveFileInfraError")
-	}
-
-	return nil
-}
-
 func (uc UpdateUnixFiles) updateFileContent(
 	sourcePath valueObject.UnixFilePath,
 	encodedContent valueObject.EncodedContent,
@@ -94,6 +78,34 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 	if err != nil {
 		slog.Error("UpdateFileOwnershipError", slog.Any("err", err))
 		return errors.New("UpdateFileOwnershipInfraError")
+	}
+
+	return nil
+}
+
+func (uc UpdateUnixFiles) fixFilePermissions(
+	sourcePath valueObject.UnixFilePath,
+) error {
+	err := uc.filesCmdRepo.FixPermissions(sourcePath)
+	if err != nil {
+		slog.Error("FixFilePermissionsError", slog.Any("err", err))
+		return errors.New("FixFilePermissionsInfraError")
+	}
+
+	return nil
+}
+
+func (uc UpdateUnixFiles) moveFile(
+	sourcePath valueObject.UnixFilePath,
+	destinationPath valueObject.UnixFilePath,
+) error {
+	shouldOverwrite := false
+	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
+
+	err := uc.filesCmdRepo.Move(moveDto)
+	if err != nil {
+		slog.Error("MoveFileError", slog.Any("err", err))
+		return errors.New("MoveFileInfraError")
 	}
 
 	return nil
@@ -144,6 +156,21 @@ func (uc UpdateUnixFiles) Execute(
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
 					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
+				}
+
+				updateProcessReport.FailedPathsWithReason = append(
+					updateProcessReport.FailedPathsWithReason, updateFailure,
+				)
+				continue
+			}
+		}
+
+		if updateDto.FixPermissions != nil {
+			err := uc.fixFilePermissions(sourcePath)
+			if err != nil {
+				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
+				if err != nil {
+					slog.Error("AddMoveFailureError", slog.Any("err", err))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(

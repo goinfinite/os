@@ -351,36 +351,66 @@ func (repo FilesCmdRepo) UpdateContent(
 	)
 }
 
-func (repo FilesCmdRepo) UpdatePermissions(
-	updatePermissionsDto dto.UpdateUnixFilePermissions,
-) error {
-	_, err := repo.filesQueryRepo.Read(updatePermissionsDto.SourcePath)
-	if err != nil {
-		return err
-	}
-
-	return os.Chmod(
-		updatePermissionsDto.SourcePath.String(),
-		updatePermissionsDto.Permissions.GetFileMode(),
-	)
-}
-
 func (repo FilesCmdRepo) UpdateOwnership(
 	updateOwnershipDto dto.UpdateUnixFileOwnership,
 ) error {
-	sourcePath := updateOwnershipDto.SourcePath
-	_, err := repo.filesQueryRepo.Read(sourcePath)
-	if err != nil {
+	sourcePathStr := updateOwnershipDto.SourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
 		return errors.New("FileNotFound")
 	}
 
 	chownCmd := fmt.Sprintf(
 		"chown %s %s",
-		updateOwnershipDto.Ownership.String(), sourcePath.String(),
+		updateOwnershipDto.Ownership.String(), sourcePathStr,
 	)
-	_, err = infraHelper.RunCmdWithSubShell(chownCmd)
+	_, err := infraHelper.RunCmdWithSubShell(chownCmd)
 	if err != nil {
 		return errors.New("UpdateFileOwnershipError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo FilesCmdRepo) UpdatePermissions(
+	updatePermissionsDto dto.UpdateUnixFilePermissions,
+) error {
+	sourcePathStr := updatePermissionsDto.SourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
+		return errors.New("FileNotFound")
+	}
+
+	return os.Chmod(sourcePathStr, updatePermissionsDto.Permissions.GetFileMode())
+}
+
+func (repo FilesCmdRepo) FixPermissions(sourcePath valueObject.UnixFilePath) error {
+	sourcePathStr := sourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
+		return errors.New("FileNotFound")
+	}
+
+	permissionsStr := "755"
+	if sourcePathStr == "/app/html" {
+		permissionsStr = "777"
+	}
+
+	fixPermissionsCmd := fmt.Sprintf(
+		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod 644 {} \\;",
+		sourcePathStr, permissionsStr, sourcePathStr,
+	)
+	_, err := infraHelper.RunCmdWithSubShell(fixPermissionsCmd)
+	if err != nil {
+		return errors.New("FixPermissionsError: " + err.Error())
+	}
+
+	if sourcePathStr == "/app" {
+		chownRecursively := true
+		chownSymlinksToo := false
+		err := infraHelper.UpdatePermissionsForWebServerUse(
+			"/app", chownRecursively, chownSymlinksToo,
+		)
+		if err != nil {
+			return errors.New("FixAppDirOwnershipError: " + err.Error())
+		}
 	}
 
 	return nil

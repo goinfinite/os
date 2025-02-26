@@ -8,6 +8,7 @@ type UpdateUnixFiles struct {
 	Permissions       *valueObject.UnixFilePermissions `json:"permissions"`
 	EncodedContent    *valueObject.EncodedContent      `json:"encodedContent"`
 	Ownership         *valueObject.UnixFileOwnership   `json:"ownership"`
+	FixPermissions    *bool                            `json:"fixPermissions"`
 	OperatorAccountId valueObject.AccountId            `json:"-"`
 	OperatorIpAddress valueObject.IpAddress            `json:"-"`
 }
@@ -18,6 +19,7 @@ func NewUpdateUnixFiles(
 	permissions *valueObject.UnixFilePermissions,
 	encodedContent *valueObject.EncodedContent,
 	ownership *valueObject.UnixFileOwnership,
+	fixPermissions *bool,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) UpdateUnixFiles {
@@ -27,6 +29,7 @@ func NewUpdateUnixFiles(
 		Permissions:       permissions,
 		EncodedContent:    encodedContent,
 		Ownership:         ownership,
+		FixPermissions:    fixPermissions,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,
 	}
