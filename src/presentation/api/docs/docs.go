@@ -2367,6 +2367,9 @@ const docTemplate = `{
         "dto.CreateAccount": {
             "type": "object",
             "properties": {
+                "isSupermanAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2536,6 +2539,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "scheduledInstallTimeoutSecs": {
+                    "type": "integer"
+                },
                 "startupFile": {
                     "type": "string"
                 },
@@ -2678,6 +2684,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "scheduledInstallTimeoutSecs": {
                     "type": "integer"
                 },
                 "slug": {
@@ -2928,6 +2937,9 @@ const docTemplate = `{
                 "accountId": {
                     "type": "integer"
                 },
+                "isSupermanAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2998,6 +3010,9 @@ const docTemplate = `{
                 },
                 "autoStart": {
                     "type": "boolean"
+                },
+                "avatarUrl": {
+                    "type": "string"
                 },
                 "envs": {
                     "type": "array",
@@ -3088,6 +3103,9 @@ const docTemplate = `{
                 "encodedContent": {
                     "type": "string"
                 },
+                "ownership": {
+                    "type": "string"
+                },
                 "permissions": {
                     "type": "string"
                 },
@@ -3150,6 +3168,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "isSuperAdmin": {
+                    "type": "boolean"
                 },
                 "secureAccessPublicKeys": {
                     "type": "array",

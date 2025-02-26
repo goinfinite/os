@@ -2361,6 +2361,9 @@
         "dto.CreateAccount": {
             "type": "object",
             "properties": {
+                "isSupermanAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2530,6 +2533,9 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "scheduledInstallTimeoutSecs": {
+                    "type": "integer"
+                },
                 "startupFile": {
                     "type": "string"
                 },
@@ -2672,6 +2678,9 @@
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "scheduledInstallTimeoutSecs": {
                     "type": "integer"
                 },
                 "slug": {
@@ -2922,6 +2931,9 @@
                 "accountId": {
                     "type": "integer"
                 },
+                "isSupermanAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2992,6 +3004,9 @@
                 },
                 "autoStart": {
                     "type": "boolean"
+                },
+                "avatarUrl": {
+                    "type": "string"
                 },
                 "envs": {
                     "type": "array",
@@ -3082,6 +3097,9 @@
                 "encodedContent": {
                     "type": "string"
                 },
+                "ownership": {
+                    "type": "string"
+                },
                 "permissions": {
                     "type": "string"
                 },
@@ -3144,6 +3162,9 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "isSuperAdmin": {
+                    "type": "boolean"
                 },
                 "secureAccessPublicKeys": {
                     "type": "array",

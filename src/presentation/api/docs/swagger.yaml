@@ -22,6 +22,8 @@ definitions:
     type: object
   dto.CreateAccount:
     properties:
+      isSupermanAdmin:
+        type: boolean
       password:
         type: string
       username:
@@ -133,6 +135,8 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      scheduledInstallTimeoutSecs:
+        type: integer
       startupFile:
         type: string
       timeoutStartSecs:
@@ -225,6 +229,8 @@ definitions:
       hostname:
         type: string
       id:
+        type: integer
+      scheduledInstallTimeoutSecs:
         type: integer
       slug:
         type: string
@@ -388,6 +394,8 @@ definitions:
     properties:
       accountId:
         type: integer
+      isSupermanAdmin:
+        type: boolean
       password:
         type: string
       shouldUpdateApiKey:
@@ -434,6 +442,8 @@ definitions:
         type: boolean
       autoStart:
         type: boolean
+      avatarUrl:
+        type: string
       envs:
         items:
           type: string
@@ -493,6 +503,8 @@ definitions:
         type: string
       encodedContent:
         type: string
+      ownership:
+        type: string
       permissions:
         type: string
       sourcePaths:
@@ -534,6 +546,8 @@ definitions:
         type: string
       id:
         type: integer
+      isSuperAdmin:
+        type: boolean
       secureAccessPublicKeys:
         items:
           $ref: '#/definitions/entity.SecureAccessPublicKey'
