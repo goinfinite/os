@@ -257,7 +257,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 					</div>
 				</div>
 			</div>
-			<template x-if="marketplaceItem.dataFields.length > 0">
+			<template x-if="marketplaceItem.id !== ''">
 				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
 					@componentStructural.Alert(
 						componentStructural.AlertTypeWarning,
@@ -285,6 +285,13 @@ templ ScheduleMarketplaceItemInstallationForm(
 								</template>
 							</div>
 						</template>
+						@componentForm.InputField(componentForm.InputFieldDto{
+							Id:                 "scheduledInstallTimeoutSecs",
+							Type:               "number",
+							Label:              "Scheduled Install Timeout Secs",
+							BindModelValuePath: "marketplaceItem.scheduledInstallTimeoutSecs",
+							InfoTooltipContent: "Time limit for the scheduled marketplace item installation to execute. If exceeded, the installation is aborted.",
+						})
 					</div>
 				}
 			</template>
@@ -685,7 +692,7 @@ templ InstallableServiceForm(
 					x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
 				>
 					<div class="mt-4 grid grid-rows-2 gap-2">
-						<div class="grid grid-cols-2 gap-2">
+						<div class="grid grid-cols-3 gap-2">
 							@componentForm.InputField(componentForm.InputFieldDto{
 								Type:               "number",
 								Label:              "Timeout Start Secs",
@@ -695,6 +702,12 @@ templ InstallableServiceForm(
 								Type:               "number",
 								Label:              "Max Start Retries",
 								BindModelValuePath: "service.maxStartRetries",
+							})
+							@componentForm.InputField(componentForm.InputFieldDto{
+								Type:               "number",
+								Label:              "Scheduled Install Timeout Secs",
+								BindModelValuePath: "service.scheduledInstallTimeoutSecs",
+								InfoTooltipContent: "Time limit for the scheduled service installation to execute. If exceeded, the installation is aborted.",
 							})
 						</div>
 						<div class="grid grid-cols-3 place-items-center gap-2">

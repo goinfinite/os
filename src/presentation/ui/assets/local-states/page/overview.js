@@ -27,6 +27,7 @@ document.addEventListener("alpine:init", () => {
         hostname: "",
         urlPath: "",
         dataFields: [],
+        scheduledInstallTimeoutSecs: 600,
       };
     },
     init() {
@@ -311,6 +312,7 @@ document.addEventListener("alpine:init", () => {
         autoRestart: "",
         maxStartRetries: "",
         autoCreateMapping: "",
+        scheduledInstallTimeoutSecs: 600,
         startCmd: "",
         avatarUrl: "",
         execUser: "",
