@@ -236,17 +236,22 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 
 	chownRecursively := true
 	chownSymlinksToo := true
-	err := infraHelper.UpdatePermissionsForWebServerUse(
+	err := infraHelper.UpdateOwnershipForWebServerUse(
 		targetDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownError (" + targetDirStr + "): " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		`find ` + targetDirStr + ` -type d -exec chmod 755 {} \; && find ` +
-			targetDirStr + ` -type f -exec chmod 644 {} \;`,
+	dirDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
+	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
+
+	updatePrivilegesCmd := fmt.Sprintf(
+		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s",
+		targetDirStr, dirDefaultPermissions.String(), targetDirStr,
+		fileDefaultPermissions.String(),
 	)
+	_, err = infraHelper.RunCmdWithSubShell(updatePrivilegesCmd)
 	if err != nil {
 		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}

@@ -2,7 +2,7 @@ package infraHelper
 
 import "strings"
 
-func UpdatePermissionsForWebServerUse(
+func UpdateOwnershipForWebServerUse(
 	filePath string, isRecursive bool, shouldIncludeSymlink bool,
 ) error {
 	flags := []string{}
