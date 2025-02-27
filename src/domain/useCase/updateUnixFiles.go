@@ -165,7 +165,7 @@ func (uc UpdateUnixFiles) Execute(
 			}
 		}
 
-		if updateDto.FixPermissions != nil {
+		if updateDto.ShouldFixPermissions != nil {
 			err := uc.fixFilePermissions(sourcePath)
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
