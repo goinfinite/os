@@ -10,15 +10,18 @@ import (
 )
 
 type UpdateUnixFiles struct {
+	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
+	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
+		filesQueryRepo:        filesQueryRepo,
 		filesCmdRepo:          filesCmdRepo,
 		activityRecordCmdRepo: activityRecordCmdRepo,
 	}
@@ -86,7 +89,23 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 func (uc UpdateUnixFiles) fixFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 ) error {
-	err := uc.filesCmdRepo.FixPermissions(sourcePath)
+	_, err := uc.filesQueryRepo.ReadFirst(sourcePath)
+	if err != nil {
+		return errors.New("FileOrDirectoryNotFound")
+	}
+	sourcePathStr := sourcePath.String()
+
+	dirPermissions := valueObject.NewUnixDirDefaultPermissions()
+	if sourcePathStr == "/app/html" {
+		dirPermissions, _ = valueObject.NewUnixFilePermissions("777")
+	}
+
+	filePermissions := valueObject.NewUnixFileDefaultPermissions()
+
+	fixPermissionsDto := dto.NewFixUnixFilePermissions(
+		sourcePath, dirPermissions, filePermissions,
+	)
+	err = uc.filesCmdRepo.FixPermissions(fixPermissionsDto)
 	if err != nil {
 		slog.Error("FixFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("FixFilePermissionsInfraError")

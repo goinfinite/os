@@ -382,20 +382,14 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	return os.Chmod(sourcePathStr, updatePermissionsDto.Permissions.GetFileMode())
 }
 
-func (repo FilesCmdRepo) FixPermissions(sourcePath valueObject.UnixFilePath) error {
-	sourcePathStr := sourcePath.String()
-	if !infraHelper.FileExists(sourcePathStr) {
-		return errors.New("FileNotFound")
-	}
-
-	permissionsStr := "755"
-	if sourcePathStr == "/app/html" {
-		permissionsStr = "777"
-	}
-
+func (repo FilesCmdRepo) FixPermissions(
+	fixPermissionsDto dto.FixUnixFilePermissions,
+) error {
+	sourcePathStr := fixPermissionsDto.SourcePath.String()
 	fixPermissionsCmd := fmt.Sprintf(
-		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod 644 {} \\;",
-		sourcePathStr, permissionsStr, sourcePathStr,
+		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
+		sourcePathStr, fixPermissionsDto.DirectoryPermissions.String(), sourcePathStr,
+		fixPermissionsDto.FilePermissions.String(),
 	)
 	_, err := infraHelper.RunCmdWithSubShell(fixPermissionsCmd)
 	if err != nil {
@@ -405,7 +399,7 @@ func (repo FilesCmdRepo) FixPermissions(sourcePath valueObject.UnixFilePath) err
 	if sourcePathStr == "/app" {
 		chownRecursively := true
 		chownSymlinksToo := false
-		err := infraHelper.UpdatePermissionsForWebServerUse(
+		err := infraHelper.UpdateOwnershipForWebServerUse(
 			"/app", chownRecursively, chownSymlinksToo,
 		)
 		if err != nil {

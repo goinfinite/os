@@ -105,9 +105,9 @@ func (controller *FilesController) Create(c echo.Context) error {
 
 	successResponse := "FileCreated"
 
-	filePermissions, _ := valueObject.NewUnixFilePermissions("0644")
+	filePermissions := valueObject.NewUnixFileDefaultPermissions()
 	if fileType.IsDir() {
-		filePermissions, _ = valueObject.NewUnixFilePermissions("0755")
+		filePermissions = valueObject.NewUnixDirDefaultPermissions()
 		successResponse = "DirectoryCreated"
 	}
 
@@ -291,7 +291,8 @@ func (controller *FilesController) Update(c echo.Context) error {
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(
-		controller.filesCmdRepo, controller.activityRecordCmdRepo,
+		controller.filesQueryRepo, controller.filesCmdRepo,
+		controller.activityRecordCmdRepo,
 	)
 	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
