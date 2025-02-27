@@ -252,7 +252,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 			if err != nil {
 				slog.Debug(
 					"InvalidMarketplaceCatalogItemDataFieldIsRequired",
-					slog.Any("err", err), slog.Any("key", rawKey),
+					slog.String("err", err.Error()), slog.Any("key", rawKey),
 					slog.Bool("isRequired", rawIsRequired),
 				)
 				continue
@@ -583,7 +583,8 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		if err != nil {
 			slog.Debug(
 				"CatalogMarketplaceItemFactoryError",
-				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
+				slog.String("filePath", itemFilePath.String()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -622,7 +623,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			slog.Debug(
 				"CreateNewCatalogMarketplaceItemIdError",
 				slog.String("itemName", catalogItem.Name.String()),
-				slog.Any("err", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

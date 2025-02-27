@@ -166,7 +166,7 @@ func (repo FilesQueryRepo) Read(
 			if err != nil {
 				slog.Error(
 					"FileToFactoryError", slog.String("filePath", filePath.String()),
-					slog.Any("err", err),
+					slog.String("err", err.Error()),
 				)
 				continue
 			}
@@ -191,7 +191,7 @@ func (repo FilesQueryRepo) Read(
 		if err != nil {
 			slog.Error(
 				"UnixFileFactoryError", slog.String("filePath", filePath.String()),
-				slog.Any("err", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

@@ -711,7 +711,8 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		if err != nil {
 			slog.Debug(
 				"CatalogMarketplaceItemFactoryError",
-				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
+				slog.String("filePath", itemFilePath.String()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

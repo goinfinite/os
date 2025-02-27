@@ -15,7 +15,7 @@ func CreateCron(
 ) error {
 	cronId, err := cronCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateCronError", slog.Any("err", err))
+		slog.Error("CreateCronError", slog.String("err", err.Error()))
 		return errors.New("CreateCronInfraError")
 	}
 

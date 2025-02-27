@@ -73,7 +73,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 				deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress,
 			)
 			if err != nil {
-				slog.Debug("FailedToCleanTrash", slog.Any("err", err))
+				slog.Debug("FailedToCleanTrash", slog.String("err", err.Error()))
 			}
 
 			fileToDeleteAfterTrashPathIndex := fileToDeleteIndex + 1
@@ -109,7 +109,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 		for _, fileToDelete := range deleteDto.SourcePaths {
 			err := uc.filesCmdRepo.Delete(fileToDelete)
 			if err != nil {
-				slog.Debug("DeleteFileError", slog.Any("err", err))
+				slog.Debug("DeleteFileError", slog.String("err", err.Error()))
 				continue
 			}
 		}
@@ -135,7 +135,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 			slog.Debug(
 				"MoveUnixFileToTrashError",
 				slog.String("fileToMoveToTrash", fileToMoveToTrash.String()),
-				slog.Any("err", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

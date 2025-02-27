@@ -41,7 +41,7 @@ func UploadUnixFiles(
 
 	uploadProcessReport, err := filesCmdRepo.Upload(uploadDto)
 	if err != nil {
-		slog.Error("UploadUnixFileError", slog.Any("err", err))
+		slog.Error("UploadUnixFileError", slog.String("err", err.Error()))
 		return uploadProcessReport, errors.New("UploadUnixFileInfraError")
 	}
 

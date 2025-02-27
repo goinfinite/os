@@ -98,7 +98,7 @@ func (repo *AccountCmdRepo) Create(
 	if createDto.IsSuperAdmin {
 		err := repo.addAccountToSudoers(createDto.Username)
 		if err != nil {
-			slog.Debug("AddAccountToSudoersError", slog.Any("err", err))
+			slog.Debug("AddAccountToSudoersError", slog.String("err", err.Error()))
 		}
 	}
 

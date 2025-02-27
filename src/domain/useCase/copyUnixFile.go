@@ -16,7 +16,7 @@ func CopyUnixFile(
 ) error {
 	err := filesCmdRepo.Copy(copyDto)
 	if err != nil {
-		slog.Error("CopyUnixFileInfraError", slog.Any("err", err))
+		slog.Error("CopyUnixFileInfraError", slog.String("err", err.Error()))
 		return errors.New("CopyUnixFileInfraError")
 	}
 

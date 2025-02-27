@@ -21,7 +21,7 @@ func DeleteSslPairVhosts(
 
 	err = sslCmdRepo.DeleteSslPairVhosts(deleteDto)
 	if err != nil {
-		slog.Error("DeleteSslPairVhostsError", slog.Any("err", err))
+		slog.Error("DeleteSslPairVhostsError", slog.String("err", err.Error()))
 		return errors.New("DeleteSslPairVhostsInfraError")
 	}
 

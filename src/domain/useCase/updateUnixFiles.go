@@ -46,7 +46,7 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 
 	err := uc.filesCmdRepo.UpdatePermissions(updatePermissions)
 	if err != nil {
-		slog.Error("UpdateFilePermissionsError", slog.Any("err", err))
+		slog.Error("UpdateFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("UpdateFilePermissionsInfraError")
 	}
 
@@ -61,7 +61,7 @@ func (uc UpdateUnixFiles) updateFileContent(
 
 	err := uc.filesCmdRepo.UpdateContent(updateContentDto)
 	if err != nil {
-		slog.Error("UpdateFileContentError", slog.Any("err", err))
+		slog.Error("UpdateFileContentError", slog.String("err", err.Error()))
 		return errors.New("UpdateFileContentInfraError")
 	}
 
@@ -76,7 +76,7 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 
 	err := uc.filesCmdRepo.UpdateOwnership(updateOwnershipDto)
 	if err != nil {
-		slog.Error("UpdateFileOwnershipError", slog.Any("err", err))
+		slog.Error("UpdateFileOwnershipError", slog.String("err", err.Error()))
 		return errors.New("UpdateFileOwnershipInfraError")
 	}
 
@@ -88,7 +88,7 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 ) error {
 	err := uc.filesCmdRepo.FixPermissions(sourcePath)
 	if err != nil {
-		slog.Error("FixFilePermissionsError", slog.Any("err", err))
+		slog.Error("FixFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("FixFilePermissionsInfraError")
 	}
 
@@ -104,7 +104,7 @@ func (uc UpdateUnixFiles) moveFile(
 
 	err := uc.filesCmdRepo.Move(moveDto)
 	if err != nil {
-		slog.Error("MoveFileError", slog.Any("err", err))
+		slog.Error("MoveFileError", slog.String("err", err.Error()))
 		return errors.New("MoveFileInfraError")
 	}
 
@@ -125,7 +125,10 @@ func (uc UpdateUnixFiles) Execute(
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddUpdatePermissionsFailureError", slog.Any("err", err))
+					slog.Error(
+						"AddUpdatePermissionsFailureError",
+						slog.String("err", err.Error()),
+					)
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -140,7 +143,10 @@ func (uc UpdateUnixFiles) Execute(
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddUpdateOwnershipFailureError", slog.Any("err", err))
+					slog.Error(
+						"AddUpdateOwnershipFailureError",
+						slog.String("err", err.Error()),
+					)
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -155,7 +161,10 @@ func (uc UpdateUnixFiles) Execute(
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddUpdateContentFailureError", slog.Any("err", err))
+					slog.Error(
+						"AddUpdateContentFailureError",
+						slog.String("err", err.Error()),
+					)
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -170,7 +179,7 @@ func (uc UpdateUnixFiles) Execute(
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddMoveFailureError", slog.Any("err", err))
+					slog.Error("AddMoveFailureError", slog.String("err", err.Error()))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
@@ -185,7 +194,7 @@ func (uc UpdateUnixFiles) Execute(
 			if err != nil {
 				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
 				if err != nil {
-					slog.Error("AddMoveFailureError", slog.Any("err", err))
+					slog.Error("AddMoveFailureError", slog.String("err", err.Error()))
 				}
 
 				updateProcessReport.FailedPathsWithReason = append(
