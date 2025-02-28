@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func UpdateService(
@@ -26,7 +27,7 @@ func UpdateService(
 		return err
 	}
 
-	isSoloService := serviceEntity.Nature.String() == "solo"
+	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
 	isSystemService := serviceEntity.Type.String() == "system"
 	shouldUpdateStatus := updateDto.Status != nil
 	if (isSoloService || isSystemService) && !shouldUpdateStatus {

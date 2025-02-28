@@ -2,7 +2,6 @@ package accountInfra
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/user"
@@ -34,8 +33,7 @@ func NewAccountCmdRepo(
 }
 
 func (repo *AccountCmdRepo) addAccountToSudoers(accountName valueObject.Username) error {
-	addAccountToSudoersCmd := fmt.Sprintf("usermod -G sudo %s", accountName.String())
-	_, err := infraHelper.RunCmdWithSubShell(addAccountToSudoersCmd)
+	_, err := infraHelper.RunCmd("usermod", "-G", "sudo", accountName.String())
 	return err
 }
 
@@ -183,10 +181,9 @@ func (repo *AccountCmdRepo) updatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	updateAccountPasswordCmd := fmt.Sprintf(
-		"usermod -p %s %s", string(passHash), accountEntity.Username.String(),
+	_, err = infraHelper.RunCmd(
+		"usermod", "-p", string(passHash), accountEntity.Username.String(),
 	)
-	_, err = infraHelper.RunCmdWithSubShell(updateAccountPasswordCmd)
 	return err
 }
 

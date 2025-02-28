@@ -1,7 +1,6 @@
 package filesInfra
 
 import (
-	"fmt"
 	"os/user"
 	"testing"
 
@@ -13,7 +12,7 @@ func TestFilesCmdRepo(t *testing.T) {
 	filesCmdRepo := FilesCmdRepo{}
 
 	currentUser, _ := user.Current()
-	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
+	fileBasePathStr := "/home/" + currentUser.Username
 
 	filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
 	operatorAccountId, _ := valueObject.NewAccountId(0)

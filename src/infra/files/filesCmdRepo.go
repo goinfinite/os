@@ -359,11 +359,9 @@ func (repo FilesCmdRepo) UpdateOwnership(
 		return errors.New("FileNotFound")
 	}
 
-	chownCmd := fmt.Sprintf(
-		"chown %s %s",
-		updateOwnershipDto.Ownership.String(), sourcePathStr,
+	_, err := infraHelper.RunCmd(
+		"chown", updateOwnershipDto.Ownership.String(), sourcePathStr,
 	)
-	_, err := infraHelper.RunCmdWithSubShell(chownCmd)
 	if err != nil {
 		return errors.New("UpdateFileOwnershipError: " + err.Error())
 	}
@@ -376,7 +374,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 ) error {
 	sourcePathStr := updatePermissionsDto.SourcePath.String()
 	if !infraHelper.FileExists(sourcePathStr) {
-		return errors.New("FileNotFound")
+		return errors.New("FileOrDirNotFound")
 	}
 
 	return os.Chmod(sourcePathStr, updatePermissionsDto.Permissions.GetFileMode())

@@ -538,7 +538,7 @@ templ InstalledServicesItemsTable(
 													"Start", "cyan-700",
 												)
 										}
-										if installedServiceEntity.Nature.String() != "solo" {
+										if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
 											@componentStructural.CircularIconButtonWithTooltip(
 												"ph-gear", "os-200", "os-300",
 												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",

@@ -375,7 +375,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	if installableService.Nature.String() == "multi" {
+	if installableService.Nature == valueObject.ServiceNatureMulti {
 		if createDto.StartupFile == nil {
 			if installableService.StartupFile == nil {
 				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
@@ -419,7 +419,8 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	)
 	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
 
-	if createDto.StartupFile != nil && installableService.Nature.String() != "solo" {
+	isSoloService := installableService.Nature == valueObject.ServiceNatureSolo
+	if createDto.StartupFile != nil && isSoloService {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
@@ -497,7 +498,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
 	}
 
-	if createDto.StartupFile != nil && installableService.Nature.String() != "solo" {
+	if createDto.StartupFile != nil && isSoloService {
 		startupFileStr := createDto.StartupFile.String()
 		installedServiceModel.StartupFile = &startupFileStr
 	}
@@ -639,7 +640,8 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["version"] = updateDto.Version.String()
 	}
 
-	if updateDto.StartupFile != nil && serviceEntity.Nature.String() != "solo" {
+	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
+	if updateDto.StartupFile != nil && isSoloService {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
@@ -694,7 +696,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["working_directory"] = &workingDirectoryStr
 	}
 
-	if updateDto.StartupFile != nil && serviceEntity.Nature.String() != "solo" {
+	if updateDto.StartupFile != nil && isSoloService {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
@@ -725,7 +727,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["log_error_path"] = &logErrorPathStr
 	}
 
-	if updateDto.AvatarUrl != nil && serviceEntity.Nature.String() == "custom" {
+	if updateDto.AvatarUrl != nil && serviceEntity.Nature == valueObject.ServiceNatureCustom {
 		avatarUrlStr := updateDto.AvatarUrl.String()
 		updateMap["avatar_url"] = &avatarUrlStr
 	}
@@ -785,11 +787,11 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	if serviceEntity.Nature.String() == "custom" {
+	if serviceEntity.Nature == valueObject.ServiceNatureCustom {
 		return nil
 	}
 
-	if serviceEntity.Nature.String() == "multi" {
+	if serviceEntity.Nature == valueObject.ServiceNatureMulti {
 		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
 		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
 		if err != nil {
