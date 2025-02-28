@@ -357,16 +357,6 @@ func (service *ServicesService) CreateInstallable(
 		}
 	}
 
-	installTimeoutSecs := uint16(600)
-	if input["scheduledInstallTimeoutSecs"] != nil {
-		installTimeoutSecs, err = voHelper.InterfaceToUint16(
-			input["scheduledInstallTimeoutSecs"],
-		)
-		if err != nil {
-			return NewServiceOutput(UserError, "InvalidScheduledInstallTimeoutSecs")
-		}
-	}
-
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " services create-installable"
 		installParams := []string{
@@ -423,9 +413,10 @@ func (service *ServicesService) CreateInstallable(
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("services")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
+		timeoutSecs := uint16(1800)
 
 		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
-			taskName, taskCmd, taskTags, &installTimeoutSecs, nil,
+			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)

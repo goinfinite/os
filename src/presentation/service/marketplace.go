@@ -192,16 +192,6 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 	}
 
-	installTimeoutSecs := uint16(600)
-	if input["scheduledInstallTimeoutSecs"] != nil {
-		installTimeoutSecs, err = voHelper.InterfaceToUint16(
-			input["scheduledInstallTimeoutSecs"],
-		)
-		if err != nil {
-			return NewServiceOutput(UserError, "InvalidScheduledInstallTimeoutSecs")
-		}
-	}
-
 	if shouldSchedule {
 		cliCmd := infraEnvs.InfiniteOsBinary + " mktplace install"
 		installParams := []string{
@@ -232,9 +222,10 @@ func (service *MarketplaceService) InstallCatalogItem(
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
+		timeoutSecs := uint16(1800)
 
 		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
-			taskName, taskCmd, taskTags, &installTimeoutSecs, nil,
+			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)

@@ -306,13 +306,6 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 								</template>
 							</div>
 						</template>
-						@componentForm.InputField(componentForm.InputFieldDto{
-							Id:                 "scheduledInstallTimeoutSecs",
-							Type:               "number",
-							Label:              "Scheduled Install Timeout Secs",
-							BindModelValuePath: "marketplaceItem.scheduledInstallTimeoutSecs",
-							InfoTooltipContent: "Time limit for the scheduled marketplace item installation to execute. If exceeded, the installation is aborted.",
-						})
 					</div>
 				}
 			</template>

@@ -195,7 +195,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var nameStr, versionStr, startupFileStr, autoStartStr, autoRestartStr,
 		autoCreateMappingStr string
 	var envsSlice, portBindingsSlice []string
-	var timeoutStartSecsInt, maxStartRetriesInt, scheduledInstallTimeoutSecsInt int
+	var timeoutStartSecsInt, maxStartRetriesInt int
 
 	cmd := &cobra.Command{
 		Use:   "create-installable",
@@ -236,10 +236,6 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				requestBody["maxStartRetries"] = uint(maxStartRetriesInt)
 			}
 
-			if scheduledInstallTimeoutSecsInt != 0 {
-				requestBody["scheduledInstallTimeoutSecs"] = scheduledInstallTimeoutSecsInt
-			}
-
 			cliHelper.ServiceResponseWrapper(
 				controller.servicesService.CreateInstallable(requestBody, false),
 			)
@@ -271,10 +267,6 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(
 		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
-	)
-	cmd.Flags().IntVarP(
-		&scheduledInstallTimeoutSecsInt, "scheduled-install-timeout-secs", "t", 0,
-		"ScheduledInstallTimeoutSecs",
 	)
 	return cmd
 }

@@ -151,7 +151,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	var catalogIdInt int
 	var slugStr, urlPathStr string
 	var dataFieldsStr []string
-	var scheduledInstallTimeoutSecsInt int
 
 	cmd := &cobra.Command{
 		Use:   "install",
@@ -177,10 +176,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 				requestBody["urlPath"] = urlPathStr
 			}
 
-			if scheduledInstallTimeoutSecsInt != 0 {
-				requestBody["scheduledInstallTimeoutSecs"] = scheduledInstallTimeoutSecsInt
-			}
-
 			cliHelper.ServiceResponseWrapper(
 				controller.marketplaceService.InstallCatalogItem(requestBody, false),
 			)
@@ -194,10 +189,6 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 	cmd.Flags().StringSliceVarP(
 		&dataFieldsStr, "data-fields", "f", []string{},
 		"InstallationDataFields (key:value)",
-	)
-	cmd.Flags().IntVarP(
-		&scheduledInstallTimeoutSecsInt, "scheduled-install-timeout-secs", "t", 0,
-		"ScheduledInstallTimeoutSecs",
 	)
 	return cmd
 }

@@ -23,7 +23,6 @@ document.addEventListener("alpine:init", () => {
         hostname: "",
         urlPath: "",
         dataFields: [],
-        scheduledInstallTimeoutSecs: 600,
       };
     },
     init() {
