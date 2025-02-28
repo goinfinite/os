@@ -6,27 +6,22 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/user"
 	"slices"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	accountInfra "github.com/goinfinite/os/src/infra/account"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
 type FilesCmdRepo struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	filesQueryRepo  FilesQueryRepo
+	filesQueryRepo FilesQueryRepo
 }
 
-func NewFilesCmdRepo(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-) FilesCmdRepo {
+func NewFilesCmdRepo() FilesCmdRepo {
 	return FilesCmdRepo{
-		persistentDbSvc: persistentDbSvc,
-		filesQueryRepo:  FilesQueryRepo{},
+		filesQueryRepo: FilesQueryRepo{},
 	}
 }
 
@@ -195,16 +190,12 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return errors.New("PathAlreadyExists")
 	}
 
-	accountQueryRepo := accountInfra.NewAccountQueryRepo(repo.persistentDbSvc)
-	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
-		AccountId: &createDto.OperatorAccountId,
-	})
+	unixUser, err := user.LookupId(createDto.OperatorAccountId.String())
 	if err != nil {
-		return errors.New("OwnerAccountNotFound")
+		return errors.New("AccountNotFound")
 	}
-	accountUsernameStr := accountEntity.Username.String()
 
-	fileOwnerStr := accountUsernameStr + ":" + accountUsernameStr
+	fileOwnerStr := unixUser.Username + ":" + unixUser.Username
 	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnerStr)
 	if err != nil {
 		return err

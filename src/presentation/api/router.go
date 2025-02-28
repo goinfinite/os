@@ -93,9 +93,7 @@ func (router Router) databaseRoutes() {
 func (router Router) filesRoutes() {
 	filesGroup := router.baseRoute.Group("/v1/files")
 
-	filesController := apiController.NewFilesController(
-		router.persistentDbSvc, router.trailDbSvc,
-	)
+	filesController := apiController.NewFilesController(router.trailDbSvc)
 
 	filesGroup.GET("/", filesController.Read)
 	filesGroup.POST("/", filesController.Create)

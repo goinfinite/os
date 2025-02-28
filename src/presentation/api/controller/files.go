@@ -23,12 +23,11 @@ type FilesController struct {
 }
 
 func NewFilesController(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *FilesController {
 	return &FilesController{
 		filesQueryRepo:        filesInfra.FilesQueryRepo{},
-		filesCmdRepo:          filesInfra.NewFilesCmdRepo(persistentDbSvc),
+		filesCmdRepo:          filesInfra.NewFilesCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
