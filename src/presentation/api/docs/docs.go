@@ -2367,7 +2367,7 @@ const docTemplate = `{
         "dto.CreateAccount": {
             "type": "object",
             "properties": {
-                "isSupermanAdmin": {
+                "isSuperAdmin": {
                     "type": "boolean"
                 },
                 "password": {
@@ -2937,7 +2937,7 @@ const docTemplate = `{
                 "accountId": {
                     "type": "integer"
                 },
-                "isSupermanAdmin": {
+                "isSuperAdmin": {
                     "type": "boolean"
                 },
                 "password": {

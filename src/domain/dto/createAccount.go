@@ -5,7 +5,7 @@ import "github.com/goinfinite/os/src/domain/valueObject"
 type CreateAccount struct {
 	Username          valueObject.Username  `json:"username"`
 	Password          valueObject.Password  `json:"password"`
-	IsSuperAdmin      bool                  `json:"isSupermanAdmin"`
+	IsSuperAdmin      bool                  `json:"isSuperAdmin"`
 	OperatorAccountId valueObject.AccountId `json:"-"`
 	OperatorIpAddress valueObject.IpAddress `json:"-"`
 }
