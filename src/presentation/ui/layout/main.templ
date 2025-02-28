@@ -1,6 +1,10 @@
 package layout
 
-import componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject/helper"
+	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+	"os"
+)
 
 templ HeadTag() {
 	<head>
@@ -44,6 +48,9 @@ templ MainLayout(pageContent templ.Component, currentUrl string) {
 		@HeadTag()
 		<!-- Main Layout JavaScript -->
 		<script src="/assets/global-states/layout/main.js"></script>
+		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+			@templ.JSFuncCall("devWsHotReload")
+		}
 		<!-- Main Layout HTML -->
 		<body class="bg-os-500 flex text-white">
 			@componentUtil.LoadingOverlay()
