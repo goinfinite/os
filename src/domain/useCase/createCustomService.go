@@ -75,7 +75,7 @@ func CreateCustomService(
 		createDto.Version = &defaultVersion
 	}
 
-	if createDto.Type.String() == "system" {
+	if createDto.Type == valueObject.SystemServiceType {
 		return errors.New("SystemServiceCannotBeCreated")
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
@@ -46,20 +47,20 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 	}
 
 	for _, item := range installableServicesList {
-		switch item.Type.String() {
-		case "runtime":
+		switch item.Type {
+		case valueObject.RuntimeServiceType:
 			installableServicesGroupedByType.Runtime = append(
 				installableServicesGroupedByType.Runtime, item,
 			)
-		case "database":
+		case valueObject.DatabaseServiceType:
 			installableServicesGroupedByType.Database = append(
 				installableServicesGroupedByType.Database, item,
 			)
-		case "webserver":
+		case valueObject.WebServerServiceType:
 			installableServicesGroupedByType.Webserver = append(
 				installableServicesGroupedByType.Webserver, item,
 			)
-		case "other":
+		case valueObject.OtherServiceType:
 			installableServicesGroupedByType.Other = append(
 				installableServicesGroupedByType.Other, item,
 			)

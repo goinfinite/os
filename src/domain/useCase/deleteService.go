@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func DeleteService(
@@ -25,8 +26,7 @@ func DeleteService(
 		return err
 	}
 
-	isSystemService := serviceEntity.Type.String() == "system"
-	if isSystemService {
+	if serviceEntity.Type == valueObject.SystemServiceType {
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 

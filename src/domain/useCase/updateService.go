@@ -28,7 +28,7 @@ func UpdateService(
 	}
 
 	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
-	isSystemService := serviceEntity.Type.String() == "system"
+	isSystemService := serviceEntity.Type == valueObject.SystemServiceType
 	shouldUpdateStatus := updateDto.Status != nil
 	if (isSoloService || isSystemService) && !shouldUpdateStatus {
 		return errors.New("OnlyStatusUpdateAllowed")

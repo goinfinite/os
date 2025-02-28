@@ -10,7 +10,18 @@ import (
 
 type ServiceType string
 
-var ValidServiceTypes = []string{"runtime", "database", "webserver", "system", "other"}
+const (
+	RuntimeServiceType   ServiceType = "runtime"
+	DatabaseServiceType  ServiceType = "database"
+	WebServerServiceType ServiceType = "webserver"
+	SystemServiceType    ServiceType = "system"
+	OtherServiceType     ServiceType = "other"
+)
+
+var ValidServiceTypes = []string{
+	RuntimeServiceType.String(), DatabaseServiceType.String(),
+	WebServerServiceType.String(), SystemServiceType.String(), OtherServiceType.String(),
+}
 
 func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
