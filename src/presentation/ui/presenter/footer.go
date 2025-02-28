@@ -68,6 +68,6 @@ func (presenter *FooterPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return layout.FooterLayout(o11yOverviewEntity, tasksResponseDto.Tasks).
+	return layout.Footer(o11yOverviewEntity, tasksResponseDto.Tasks).
 		Render(c.Request().Context(), c.Response().Writer)
 }

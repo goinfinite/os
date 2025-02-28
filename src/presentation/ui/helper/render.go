@@ -12,7 +12,7 @@ func Render(c echo.Context, pageContent templ.Component, statusCode int) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 	currentUrl := c.Request().URL.String()
 
-	return layout.MainLayout(pageContent, currentUrl).Render(
+	return layout.Main(pageContent, currentUrl).Render(
 		c.Request().Context(),
 		c.Response().Writer,
 	)

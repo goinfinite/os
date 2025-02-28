@@ -41,6 +41,6 @@ func (presenter *SetupPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return layout.SetupLayout().
+	return layout.Setup().
 		Render(c.Request().Context(), c.Response().Writer)
 }
