@@ -2471,7 +2471,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "version": {
                     "type": "string"
@@ -2538,9 +2538,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
-                },
-                "scheduledInstallTimeoutSecs": {
-                    "type": "integer"
                 },
                 "startupFile": {
                     "type": "string"
@@ -2686,9 +2683,6 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "scheduledInstallTimeoutSecs": {
-                    "type": "integer"
-                },
                 "slug": {
                     "type": "string"
                 },
@@ -2737,7 +2731,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -2788,7 +2782,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -3084,7 +3078,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "version": {
                     "type": "string"
@@ -3103,14 +3097,14 @@ const docTemplate = `{
                 "encodedContent": {
                     "type": "string"
                 },
-                "fixPermissions": {
-                    "type": "boolean"
-                },
                 "ownership": {
                     "type": "string"
                 },
                 "permissions": {
                     "type": "string"
+                },
+                "shouldFixPermissions": {
+                    "type": "boolean"
                 },
                 "sourcePaths": {
                     "type": "array",
@@ -3280,7 +3274,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -3295,7 +3289,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "versions": {
                     "type": "array",
@@ -3345,7 +3339,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -3396,7 +3390,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -3956,6 +3950,36 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "valueObject.ServiceNature": {
+            "type": "string",
+            "enum": [
+                "solo",
+                "multi",
+                "custom"
+            ],
+            "x-enum-varnames": [
+                "ServiceNatureSolo",
+                "ServiceNatureMulti",
+                "ServiceNatureCustom"
+            ]
+        },
+        "valueObject.ServiceType": {
+            "type": "string",
+            "enum": [
+                "runtime",
+                "database",
+                "webserver",
+                "system",
+                "other"
+            ],
+            "x-enum-varnames": [
+                "RuntimeServiceType",
+                "DatabaseServiceType",
+                "WebServerServiceType",
+                "SystemServiceType",
+                "OtherServiceType"
+            ]
         }
     },
     "securityDefinitions": {

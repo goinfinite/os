@@ -3,19 +3,18 @@ package dto
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type CreateInstallableService struct {
-	Name                        valueObject.ServiceName     `json:"name"`
-	Envs                        []valueObject.ServiceEnv    `json:"envs"`
-	PortBindings                []valueObject.PortBinding   `json:"portBindings"`
-	Version                     *valueObject.ServiceVersion `json:"version"`
-	StartupFile                 *valueObject.UnixFilePath   `json:"startupFile"`
-	AutoStart                   *bool                       `json:"autoStart"`
-	TimeoutStartSecs            *uint                       `json:"timeoutStartSecs"`
-	AutoRestart                 *bool                       `json:"autoRestart"`
-	MaxStartRetries             *uint                       `json:"maxStartRetries"`
-	AutoCreateMapping           *bool                       `json:"autoCreateMapping"`
-	ScheduledInstallTimeoutSecs *uint                       `json:"scheduledInstallTimeoutSecs"`
-	OperatorAccountId           valueObject.AccountId       `json:"-"`
-	OperatorIpAddress           valueObject.IpAddress       `json:"-"`
+	Name              valueObject.ServiceName     `json:"name"`
+	Envs              []valueObject.ServiceEnv    `json:"envs"`
+	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
+	Version           *valueObject.ServiceVersion `json:"version"`
+	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
+	AutoStart         *bool                       `json:"autoStart"`
+	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
+	AutoRestart       *bool                       `json:"autoRestart"`
+	MaxStartRetries   *uint                       `json:"maxStartRetries"`
+	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
+	OperatorAccountId valueObject.AccountId       `json:"-"`
+	OperatorIpAddress valueObject.IpAddress       `json:"-"`
 }
 
 func NewCreateInstallableService(
