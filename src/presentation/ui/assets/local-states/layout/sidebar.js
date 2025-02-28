@@ -13,11 +13,12 @@ document.addEventListener("alpine:init", () => {
     toggleScrollButtonDisplay() {
       const menu = document.getElementById("sidebarMenu");
       const scrollButton = document.getElementById("scrollButton");
+
+      let scrollButtonDisplay = "none";
       if (menu.scrollTop > 0) {
-        scrollButton.style.display = "flex";
-      } else {
-        scrollButton.style.display = "none";
+        scrollButtonDisplay = "flex";
       }
+      scrollButton.style.display = scrollButtonDisplay;
     },
   }));
 });
