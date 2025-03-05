@@ -594,6 +594,16 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	installTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["installTimeoutSecs"] != nil {
+		installTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["installTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	var execUserPtr *valueObject.UnixUsername
 	if serviceMap["execUser"] != nil {
 		execUser, err := valueObject.NewUnixUsername(serviceMap["execUser"])
@@ -661,10 +671,11 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	return entity.NewInstallableService(
 		manifestVersion, name, nature, serviceType, startCommand, description, versions,
-		envs, portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps,
-		uninstallFilePaths, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
-		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr,
-		logOutputPathPtr, logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
+		envs, portBindings, stopCmdSteps, installTimeoutSecs, installCmdSteps,
+		uninstallCmdSteps, uninstallFilePaths, preStartCmdSteps, postStartCmdSteps,
+		preStopCmdSteps, postStopCmdSteps, execUserPtr, workingDirectoryPtr,
+		startupFilePtr, logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
+		estimatedSizeBytesPtr,
 	), nil
 }
 

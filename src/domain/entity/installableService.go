@@ -13,6 +13,7 @@ type InstallableService struct {
 	Envs               []valueObject.ServiceEnv           `json:"envs"`
 	PortBindings       []valueObject.PortBinding          `json:"portBindings"`
 	StopCmdSteps       []valueObject.UnixCommand          `json:"-"`
+	InstallTimeoutSecs valueObject.UnixTime               `json:"installTimeoutSecs"`
 	InstallCmdSteps    []valueObject.UnixCommand          `json:"-"`
 	UninstallCmdSteps  []valueObject.UnixCommand          `json:"-"`
 	UninstallFilePaths []valueObject.UnixFilePath         `json:"-"`
@@ -39,7 +40,9 @@ func NewInstallableService(
 	versions []valueObject.ServiceVersion,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopSteps, installSteps, uninstallSteps []valueObject.UnixCommand,
+	stopSteps []valueObject.UnixCommand,
+	installTimeoutSecs valueObject.UnixTime,
+	installSteps, uninstallSteps []valueObject.UnixCommand,
 	uninstallFilePaths []valueObject.UnixFilePath,
 	preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
@@ -58,6 +61,7 @@ func NewInstallableService(
 		Envs:               envs,
 		PortBindings:       portBindings,
 		StopCmdSteps:       stopSteps,
+		InstallTimeoutSecs: installTimeoutSecs,
 		InstallCmdSteps:    installSteps,
 		UninstallCmdSteps:  uninstallSteps,
 		UninstallFilePaths: uninstallFilePaths,
