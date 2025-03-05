@@ -201,8 +201,8 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return errors.New("AccountNotFound")
 	}
 
-	fileOwnerStr := unixUser.Username + ":" + unixUser.Username
-	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnerStr)
+	fileOwnershipStr := unixUser.Username + ":" + unixUser.Username
+	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnershipStr)
 	if err != nil {
 		return err
 	}
