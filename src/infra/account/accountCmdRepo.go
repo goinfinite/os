@@ -33,7 +33,10 @@ func NewAccountCmdRepo(
 }
 
 func (repo *AccountCmdRepo) addAccountToSudoers(accountName valueObject.Username) error {
-	_, err := infraHelper.RunCmd("usermod", "-G", "sudo", accountName.String())
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "usermod",
+		Args:    []string{"-G", "sudo", accountName.String()},
+	})
 	return err
 }
 
@@ -55,9 +58,10 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 		return errors.New("CreateAuthorizedKeysFileError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"chown", "-R", accountUsernameStr, authorizedKeysFilePath,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "chown",
+		Args:    []string{"-R", accountUsernameStr, authorizedKeysFilePath},
+	})
 	if err != nil {
 		return errors.New("ChownAuthorizedKeysFileError: " + err.Error())
 	}
@@ -83,12 +87,10 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"useradd", "-m",
-		"-s", "/bin/bash",
-		"-p", string(passHash),
-		usernameStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "useradd",
+		Args:    []string{"-m", "-s", "/bin/bash", "-p", string(passHash), usernameStr},
+	})
 	if err != nil {
 		return accountId, errors.New("UserAddFailed: " + err.Error())
 	}
@@ -151,12 +153,21 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 
 	accountIdStr := accountId.String()
 
-	_, err = infraHelper.RunCmd("pgrep", "-u", accountIdStr)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "pgrep",
+		Args:    []string{"-u", accountIdStr},
+	})
 	if err == nil {
-		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountIdStr)
+		_, _ = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command: "pkill",
+			Args:    []string{"-9", "-U", accountIdStr},
+		})
 	}
 
-	_, err = infraHelper.RunCmd("userdel", "-r", accountEntity.Username.String())
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "userdel",
+		Args:    []string{"-r", accountEntity.Username.String()},
+	})
 	if err != nil {
 		return err
 	}
@@ -181,9 +192,10 @@ func (repo *AccountCmdRepo) updatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"usermod", "-p", string(passHash), accountEntity.Username.String(),
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "usermod",
+		Args:    []string{"-p", string(passHash), accountEntity.Username.String()},
+	})
 	return err
 }
 

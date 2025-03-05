@@ -28,9 +28,12 @@ func NewAuthQueryRepo(
 }
 
 func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
-	storedPassHash, err := infraHelper.RunCmdWithSubShell(
-		"getent shadow " + createDto.Username.String() + " | awk -F: '{print $2}'",
-	)
+	readStoredPassHashCmd := "getent shadow " + createDto.Username.String() +
+		" | awk -F: '{print $2}'"
+	storedPassHash, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               readStoredPassHashCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		slog.Debug(
 			"GetentShadowError",

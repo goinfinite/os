@@ -12,7 +12,10 @@ func GetPrimaryVirtualHost() (valueObject.Fqdn, error) {
 	primaryVhostStr := os.Getenv("PRIMARY_VHOST")
 	if primaryVhostStr == "" {
 		var err error
-		primaryVhostStr, err = RunCmd("hostname", "-f")
+		primaryVhostStr, err = RunCmd(RunCmdConfigs{
+			Command: "hostname",
+			Args:    []string{"-f"},
+		})
 		if err != nil {
 			return primaryVhost, err
 		}

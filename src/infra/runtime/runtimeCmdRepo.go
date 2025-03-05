@@ -58,9 +58,12 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	}
 
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
-	_, err = infraHelper.RunCmdWithSubShell(
-		"sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine + "/g' " + phpConfFilePath.String(),
-	)
+	updatePhpVersionCmd := "sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine +
+		"/g' " + phpConfFilePath.String()
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               updatePhpVersionCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
@@ -68,9 +71,11 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	isPrimaryVirtualHost := infraHelper.IsPrimaryVirtualHost(hostname)
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
-		_, err = infraHelper.RunCmdWithSubShell(
-			"unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php",
-		)
+		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php"
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command:               updatePhpCliVersionCmd,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return errors.New("UpdatePhpCliVersionError: " + err.Error())
 		}
@@ -97,9 +102,13 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
 		}
 
-		_, err := infraHelper.RunCmd(
-			"sed", "-i", "s|"+settingName+" .*|"+settingName+" "+settingValue+"|g", phpConfigFilePathStr,
-		)
+		_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command: "sed",
+			Args: []string{
+				"-i", "s|" + settingName + " .*|" + settingName + " " + settingValue + "|g",
+				phpConfigFilePathStr,
+			},
+		})
 		if err != nil {
 			slog.Debug(
 				"UpdatePhpSettingFailed",
@@ -169,9 +178,10 @@ func (repo *RuntimeCmdRepo) EnablePhpModule(
 		return errors.New("InstallModuleFailed: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("InstallPeclModuleFailed: " + err.Error())
 	}
@@ -291,9 +301,12 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 	}
 
 	hostnameStr := hostname.String()
-	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "s/goinfinite.local/"+hostnameStr+"/g", phpConfFilePathStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "sed",
+		Args: []string{
+			"-ie", "s/goinfinite.local/" + hostnameStr + "/g", phpConfFilePathStr,
+		},
+	})
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
 	}
@@ -318,10 +331,13 @@ virtualhost ` + hostname.String() + ` {
 
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
-	_, err = infraHelper.RunCmd(
-		"sed", "-ie", "/"+listenerMapRegex+"/a"+newListenerMapLine,
-		infraEnvs.PhpWebserverMainConfFilePath,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "sed",
+		Args: []string{
+			"-ie", "/" + listenerMapRegex + "/a" + newListenerMapLine,
+			infraEnvs.PhpWebserverMainConfFilePath,
+		},
+	})
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())
 	}

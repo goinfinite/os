@@ -150,9 +150,10 @@ func (repo FilesQueryRepo) Read(
 		filesToFactoryWithoutSourcePath := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutSourcePath
 
-		rawDirectoryFiles, err := infraHelper.RunCmd(
-			"find", "-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n",
-		)
+		rawDirectoryFiles, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command: "find",
+			Args:    []string{"-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n"},
+		})
 		if err != nil {
 			return unixFileList, errors.New("ReadDirectoryError: " + err.Error())
 		}

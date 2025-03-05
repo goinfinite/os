@@ -118,9 +118,11 @@ func (repo *ServicesQueryRepo) readPidMetrics(
 func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
-	rawStoppedServices, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'",
-	)
+	readStoppedServicesCmd := SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'"
+	rawStoppedServices, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               readStoppedServicesCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return stoppedServicesNames, err
 	}
@@ -157,9 +159,10 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		serviceNameStr := installedService.Name.String()
 
-		supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
-			SupervisorCtlBin + " status " + serviceNameStr,
-		)
+		supervisorStatus, _ := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command:               SupervisorCtlBin + " status " + serviceNameStr,
+			ShouldRunWithSubShell: true,
+		})
 		if len(supervisorStatus) == 0 {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
@@ -679,11 +682,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
+	rawInstallableFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return installableItemsDto, errors.New(
 			"ReadInstallableFilesError: " + err.Error(),

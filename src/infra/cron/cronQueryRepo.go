@@ -65,7 +65,10 @@ func (repo *CronQueryRepo) cronFactory(
 func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
-	rawCronOutput, err := infraHelper.RunCmd("crontab", "-l")
+	rawCronOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "crontab",
+		Args:    []string{"-l"},
+	})
 	if err != nil {
 		if strings.Contains(err.Error(), "no crontab") {
 			return crons, nil

@@ -552,11 +552,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
+	rawCatalogFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}

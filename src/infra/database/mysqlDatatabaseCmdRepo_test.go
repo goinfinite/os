@@ -13,7 +13,10 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	_, err := infraHelper.RunCmd("mysqld_safe", "&")
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "mysqld_safe",
+		Args:    []string{"&"},
+	})
 	if err != nil {
 		t.Error("Error starting command")
 	}

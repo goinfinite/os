@@ -96,7 +96,10 @@ func (repo *ScheduledTaskCmdRepo) Run(
 	startedAtUnixTime := valueObject.NewUnixTimeNow()
 
 	cmdWithTimeout := "timeout --kill-after=10s " + timeoutStr + " " + pendingTask.Command.String()
-	rawOutput, rawError := infraHelper.RunCmdWithSubShell(cmdWithTimeout)
+	rawOutput, rawError := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               cmdWithTimeout,
+		ShouldRunWithSubShell: true,
+	})
 
 	finalStatus, _ := valueObject.NewScheduledTaskStatus("completed")
 	if rawError != nil {
