@@ -45,7 +45,9 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
-	updatePermissions := dto.NewUpdateUnixFilePermissions(sourcePath, permissions)
+	updatePermissions := dto.NewUpdateUnixFilePermissions(
+		sourcePath, permissions, nil,
+	)
 
 	err := uc.filesCmdRepo.UpdatePermissions(updatePermissions)
 	if err != nil {
@@ -93,22 +95,34 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 	if err != nil {
 		return errors.New("FileOrDirectoryNotFound")
 	}
-	sourcePathStr := sourcePath.String()
-
-	dirPermissions := valueObject.NewUnixDirDefaultPermissions()
-	if sourcePathStr == "/app/html" {
-		dirPermissions, _ = valueObject.NewUnixFilePermissions("777")
-	}
 
 	filePermissions := valueObject.NewUnixFileDefaultPermissions()
 
-	fixPermissionsDto := dto.NewFixUnixFilePermissions(
-		sourcePath, dirPermissions, filePermissions,
+	dirPermissions := valueObject.NewUnixDirDefaultPermissions()
+	if sourcePath.String() == "/app/html" {
+		dirPermissions, _ = valueObject.NewUnixFilePermissions("777")
+	}
+
+	updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
+		sourcePath, filePermissions, &dirPermissions,
 	)
-	err = uc.filesCmdRepo.FixPermissions(fixPermissionsDto)
+
+	err = uc.filesCmdRepo.UpdatePermissions(updatePermissionsDto)
 	if err != nil {
 		slog.Error("FixFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("FixFilePermissionsInfraError")
+	}
+
+	if updatePermissionsDto.SourcePath.String() == "/app" {
+		defaultOwnership := valueObject.NewUnixFileDefaultOwnership()
+		updateOwnershipDto := dto.NewUpdateUnixFileOwnership(
+			sourcePath, defaultOwnership,
+		)
+
+		err = uc.filesCmdRepo.UpdateOwnership(updateOwnershipDto)
+		if err != nil {
+			return errors.New("FixAppDirOwnershipError: " + err.Error())
+		}
 	}
 
 	return nil

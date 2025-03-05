@@ -229,7 +229,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	}
 
 	updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-		createDto.FilePath, createDto.Permissions,
+		createDto.FilePath, createDto.Permissions, nil,
 	)
 	return repo.UpdatePermissions(updatePermissionsDto)
 }
@@ -378,35 +378,23 @@ func (repo FilesCmdRepo) UpdatePermissions(
 		return errors.New("FileOrDirNotFound")
 	}
 
-	return os.Chmod(sourcePathStr, updatePermissionsDto.Permissions.GetFileMode())
-}
+	updatePermissionsCmd := "find " + sourcePathStr + " -exec chmod " +
+		updatePermissionsDto.FilePermissions.String() + " {} \\;"
 
-func (repo FilesCmdRepo) FixPermissions(
-	fixPermissionsDto dto.FixUnixFilePermissions,
-) error {
-	sourcePathStr := fixPermissionsDto.SourcePath.String()
-	fixPermissionsCmd := fmt.Sprintf(
-		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
-		sourcePathStr, fixPermissionsDto.DirectoryPermissions.String(), sourcePathStr,
-		fixPermissionsDto.FilePermissions.String(),
-	)
+	if updatePermissionsDto.DirectoryPermissions != nil {
+		updatePermissionsCmd = fmt.Sprintf(
+			"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
+			sourcePathStr, updatePermissionsDto.DirectoryPermissions.String(), sourcePathStr,
+			updatePermissionsDto.FilePermissions.String(),
+		)
+	}
+
 	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
-		Command:               fixPermissionsCmd,
+		Command:               updatePermissionsCmd,
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil {
-		return errors.New("FixPermissionsError: " + err.Error())
-	}
-
-	if sourcePathStr == "/app" {
-		chownRecursively := true
-		chownSymlinksToo := false
-		err := infraHelper.UpdateOwnershipForWebServerUse(
-			"/app", chownRecursively, chownSymlinksToo,
-		)
-		if err != nil {
-			return errors.New("FixAppDirOwnershipError: " + err.Error())
-		}
+		return errors.New("UpdatePermissionsError: " + err.Error())
 	}
 
 	return nil
