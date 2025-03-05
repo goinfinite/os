@@ -477,7 +477,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemInstallTimeoutSecs, _ := valueObject.NewUnixTime(5)
+	itemInstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
 	if itemMap["installTimeoutSecs"] != nil {
 		itemInstallTimeoutSecs, err = valueObject.NewUnixTime(
 			itemMap["installTimeoutSecs"],
