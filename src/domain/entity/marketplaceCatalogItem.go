@@ -14,6 +14,7 @@ type MarketplaceCatalogItem struct {
 	Services           []valueObject.ServiceNameWithVersion          `json:"services"`
 	Mappings           []valueObject.MarketplaceItemMapping          `json:"mappings"`
 	DataFields         []valueObject.MarketplaceCatalogItemDataField `json:"dataFields"`
+	InstallTimeoutSecs valueObject.UnixTime                          `json:"installTimeoutSecs"`
 	InstallCmdSteps    []valueObject.UnixCommand                     `json:"-"`
 	UninstallCmdSteps  []valueObject.UnixCommand                     `json:"-"`
 	UninstallFileNames []valueObject.UnixFileName                    `json:"-"`
@@ -32,6 +33,7 @@ func NewMarketplaceCatalogItem(
 	services []valueObject.ServiceNameWithVersion,
 	mappings []valueObject.MarketplaceItemMapping,
 	dataFields []valueObject.MarketplaceCatalogItemDataField,
+	installTimeoutSecs valueObject.UnixTime,
 	installCmdSteps []valueObject.UnixCommand,
 	uninstallCmdSteps []valueObject.UnixCommand,
 	uninstallFileNames []valueObject.UnixFileName,
@@ -49,6 +51,7 @@ func NewMarketplaceCatalogItem(
 		Services:           services,
 		Mappings:           mappings,
 		DataFields:         dataFields,
+		InstallTimeoutSecs: installTimeoutSecs,
 		InstallCmdSteps:    installCmdSteps,
 		UninstallCmdSteps:  uninstallCmdSteps,
 		UninstallFileNames: uninstallFileNames,

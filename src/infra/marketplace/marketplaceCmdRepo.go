@@ -1,6 +1,7 @@
 package marketplaceInfra
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -8,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
@@ -203,7 +205,23 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	stepType string,
 	catalogCmdSteps []valueObject.UnixCommand,
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
+	installTimeoutSecs *valueObject.UnixTime,
 ) error {
+	if stepType == "Install" && installTimeoutSecs == nil {
+		return errors.New("InstallStepsNeedsInstallTimeoutSecs")
+	}
+
+	runCmdConfigs := infraHelper.RunCmdConfigs{ShouldRunWithSubShell: true}
+	if installTimeoutSecs != nil {
+		installationTimeLimit := time.Duration(installTimeoutSecs.Int64()) * time.Second
+		installContext, cancelInstallContext := context.WithTimeout(
+			context.Background(), installationTimeLimit,
+		)
+		defer cancelInstallContext()
+
+		runCmdConfigs.CmdContext = installContext
+	}
+
 	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
 		catalogCmdSteps, receivedDataFields,
 	)
@@ -216,10 +234,8 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 
 		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
 
-		stepOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
-			Command:               stepStr,
-			ShouldRunWithSubShell: true,
-		})
+		runCmdConfigs.Command = stepStr
+		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
 			combinedOutput := stepOutput + " " + err.Error()
@@ -250,7 +266,7 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
 
 	updatePrivilegesCmd := fmt.Sprintf(
-		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s",
+		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
 		targetDirStr, dirDefaultPermissions.String(), targetDirStr,
 		fileDefaultPermissions.String(),
 	)
@@ -463,7 +479,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps("Install", catalogItem.InstallCmdSteps, receivedDataFields)
+	err = repo.runCmdSteps(
+		"Install", catalogItem.InstallCmdSteps, receivedDataFields,
+		&catalogItem.InstallTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
@@ -766,7 +785,9 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		installedItem.Name, installedItem.Type, installedItem.InstallDirectory,
 		installedItem.UrlPath, installedItem.Hostname, installedItem.InstallUuid,
 	)
-	err = repo.runCmdSteps("Uninstall", catalogItem.UninstallCmdSteps, systemDataFields)
+	err = repo.runCmdSteps(
+		"Uninstall", catalogItem.UninstallCmdSteps, systemDataFields, nil,
+	)
 	if err != nil {
 		return err
 	}

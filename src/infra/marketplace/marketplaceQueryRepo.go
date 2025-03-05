@@ -477,6 +477,16 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
+	itemInstallTimeoutSecs, _ := valueObject.NewUnixTime(5)
+	if itemMap["installTimeoutSecs"] != nil {
+		itemInstallTimeoutSecs, err = valueObject.NewUnixTime(
+			itemMap["installTimeoutSecs"],
+		)
+		if err != nil {
+			return catalogItem, err
+		}
+	}
+
 	itemInstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
 		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
@@ -532,9 +542,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	return entity.NewMarketplaceCatalogItem(
 		itemManifestVersion, itemId, itemSlugs, itemName, itemType, itemDescription,
-		itemServices, itemMappings, itemDataFields, itemInstallCmdSteps,
-		itemUninstallCmdSteps, itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl,
-		itemScreenshotUrls,
+		itemServices, itemMappings, itemDataFields, itemInstallTimeoutSecs,
+		itemInstallCmdSteps, itemUninstallCmdSteps, itemUninstallFileNames,
+		estimatedSizeBytes, itemAvatarUrl, itemScreenshotUrls,
 	), nil
 }
 
