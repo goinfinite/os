@@ -15,14 +15,13 @@ type MysqlDatabaseQueryRepo struct {
 }
 
 func MysqlCmd(cmd string) (string, error) {
-	return infraHelper.RunCmd(
-		"mysql",
-		"--defaults-file=/root/.my.cnf",
-		"--skip-column-names",
-		"--silent",
-		"--execute",
-		cmd,
-	)
+	return infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "mysql",
+		Args: []string{
+			"--defaults-file=/root/.my.cnf", "--skip-column-names", "--silent",
+			"--execute", cmd,
+		},
+	})
 }
 
 func (repo MysqlDatabaseQueryRepo) getDatabaseNames() ([]valueObject.DatabaseName, error) {

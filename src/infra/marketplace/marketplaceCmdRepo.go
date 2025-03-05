@@ -216,7 +216,10 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 
 		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
 
-		stepOutput, err := infraHelper.RunCmdWithSubShell(stepStr)
+		stepOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command:               stepStr,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
 			combinedOutput := stepOutput + " " + err.Error()
@@ -251,7 +254,10 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 		targetDirStr, dirDefaultPermissions.String(), targetDirStr,
 		fileDefaultPermissions.String(),
 	)
-	_, err = infraHelper.RunCmdWithSubShell(updatePrivilegesCmd)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               updatePrivilegesCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}
@@ -462,7 +468,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirPath)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "rm",
+		Args:    []string{"-rf", installTempDirPath},
+	})
 	if err != nil {
 		return errors.New("DeleteTmpDirectoryError: " + err.Error())
 	}
@@ -514,7 +523,10 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
 		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
 	)
-	_, err := infraHelper.RunCmdWithSubShell(moveCmd)
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               moveCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -558,9 +570,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	}
 	installedItemRealRootDirPathStr := installedItemRealRootDirPath.String()
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String(),
-	)
+	softDeleteCmd := "mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String()
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               softDeleteCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("SoftDeleteItemFilesError: " + err.Error())
 	}
@@ -570,17 +584,19 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + installedItemRealRootDirPathStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               "rm -rf " + installedItemRealRootDirPathStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteItemRealRootPathError: " + err.Error())
 	}
 
 	itemAliasesRootDirStr := installedItem.InstallDirectory.String()
-	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + itemAliasesRootDirStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               "rm -rf " + itemAliasesRootDirStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteItemAliasesRootDirError: " + err.Error())
 	}
@@ -599,7 +615,10 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("RestoreUnfamiliarFilesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + unfamiliarFilesBackupDirStr)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               "rm -rf " + unfamiliarFilesBackupDirStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteUnfamiliarFilesBackupDirError: " + err.Error())
 	}
@@ -782,15 +801,19 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsRepoBranch,
 			infraEnvs.MarketplaceCatalogItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			Command:               repoCloneCmd,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
 		}
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }

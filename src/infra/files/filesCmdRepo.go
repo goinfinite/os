@@ -64,24 +64,25 @@ func (repo FilesCmdRepo) uploadSingleFile(
 }
 
 func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
-	fileToCopyExists := infraHelper.FileExists(copyDto.SourcePath.String())
+	sourcePathStr := copyDto.SourcePath.String()
+	fileToCopyExists := infraHelper.FileExists(sourcePathStr)
 	if !fileToCopyExists {
 		return errors.New("FileToCopyNotFound")
 	}
 
+	destinationPathStr := copyDto.DestinationPath.String()
 	if !copyDto.ShouldOverwrite {
-		destinationPathExists := infraHelper.FileExists(
-			copyDto.DestinationPath.String(),
-		)
+		destinationPathExists := infraHelper.FileExists(destinationPathStr)
 		if destinationPathExists {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 	}
 
-	_, err := infraHelper.RunCmdWithSubShell(
-		"rsync -avq " + copyDto.SourcePath.String() + " " +
-			copyDto.DestinationPath.String(),
-	)
+	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationPathStr
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               copyCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -149,10 +150,15 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	filesToCompress := strings.Join(existingFiles, " ")
-	_, err = infraHelper.RunCmdWithSubShell(
-		compressionBinary + " " + compressionBinaryFlag + " " +
-			newDestinationPath.String() + " " + filesToCompress,
+	compressCmd := fmt.Sprintf(
+		"%s %s %s %s",
+		compressionBinary, compressionBinaryFlag,
+		newDestinationPath.String(), filesToCompress,
 	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               compressCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return compressionProcessReport, err
 	}
@@ -282,7 +288,10 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressBinary, compressBinaryFlag, fileToExtract.String(),
 		compressDestinationFlag, destinationPath.String(),
 	)
-	_, err = infraHelper.RunCmdWithSubShell(compressCmd)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               compressCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -350,9 +359,10 @@ func (repo FilesCmdRepo) UpdateOwnership(
 		return errors.New("FileNotFound")
 	}
 
-	_, err := infraHelper.RunCmd(
-		"chown", updateOwnershipDto.Ownership.String(), sourcePathStr,
-	)
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command: "chown",
+		Args:    []string{updateOwnershipDto.Ownership.String(), sourcePathStr},
+	})
 	if err != nil {
 		return errors.New("UpdateFileOwnershipError: " + err.Error())
 	}
@@ -380,7 +390,10 @@ func (repo FilesCmdRepo) FixPermissions(
 		sourcePathStr, fixPermissionsDto.DirectoryPermissions.String(), sourcePathStr,
 		fixPermissionsDto.FilePermissions.String(),
 	)
-	_, err := infraHelper.RunCmdWithSubShell(fixPermissionsCmd)
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		Command:               fixPermissionsCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("FixPermissionsError: " + err.Error())
 	}

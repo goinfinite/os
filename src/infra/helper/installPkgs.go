@@ -7,7 +7,10 @@ import (
 )
 
 func InstallPkgs(packages []string) error {
-	_, err := RunCmd("apt-get", "update", "-qq")
+	_, err := RunCmd(RunCmdConfigs{
+		Command: "apt-get",
+		Args:    []string{"update", "-qq"},
+	})
 	if err != nil {
 		return errors.New("UpdateRepositoriesFailed")
 	}
@@ -20,7 +23,10 @@ func InstallPkgs(packages []string) error {
 	var installErr error
 	nAttempts := 3
 	for i := 0; i < nAttempts; i++ {
-		_, err := RunCmd("apt-get", installPackages...)
+		_, err := RunCmd(RunCmdConfigs{
+			Command: "apt-get",
+			Args:    installPackages,
+		})
 		if err == nil {
 			break
 		}
