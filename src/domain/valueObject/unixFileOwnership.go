@@ -38,6 +38,10 @@ func NewUnixFileOwnership(
 	return UnixFileOwnership(fileOwnershipStr), nil
 }
 
+func NewUnixFileDefaultOwnership() UnixFileOwnership {
+	return UnixFileOwnership("nobody:nogroup")
+}
+
 func (vo UnixFileOwnership) String() string {
 	return string(vo)
 }
