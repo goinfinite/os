@@ -26,7 +26,7 @@ func DeleteService(
 		return err
 	}
 
-	if serviceEntity.Type == valueObject.SystemServiceType {
+	if serviceEntity.Type == valueObject.ServiceTypeSystem {
 		return errors.New("SystemServicesCannotBeUninstalled")
 	}
 

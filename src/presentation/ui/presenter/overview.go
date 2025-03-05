@@ -48,19 +48,19 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 
 	for _, item := range installableServicesList {
 		switch item.Type {
-		case valueObject.RuntimeServiceType:
+		case valueObject.ServiceTypeRuntime:
 			installableServicesGroupedByType.Runtime = append(
 				installableServicesGroupedByType.Runtime, item,
 			)
-		case valueObject.DatabaseServiceType:
+		case valueObject.ServiceTypeDatabase:
 			installableServicesGroupedByType.Database = append(
 				installableServicesGroupedByType.Database, item,
 			)
-		case valueObject.WebServerServiceType:
+		case valueObject.ServiceTypeWebServer:
 			installableServicesGroupedByType.Webserver = append(
 				installableServicesGroupedByType.Webserver, item,
 			)
-		case valueObject.OtherServiceType:
+		case valueObject.ServiceTypeOther:
 			installableServicesGroupedByType.Other = append(
 				installableServicesGroupedByType.Other, item,
 			)
