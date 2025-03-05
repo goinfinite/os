@@ -11,17 +11,17 @@ import (
 type ServiceType string
 
 const (
-	ServiceTypeRuntime   ServiceType = "runtime"
 	ServiceTypeDatabase  ServiceType = "database"
-	ServiceTypeWebServer ServiceType = "webserver"
-	ServiceTypeSystem    ServiceType = "system"
 	ServiceTypeOther     ServiceType = "other"
+	ServiceTypeRuntime   ServiceType = "runtime"
+	ServiceTypeSystem    ServiceType = "system"
+	ServiceTypeWebServer ServiceType = "webserver"
 )
 
 var ValidServiceTypes = []string{
-	ServiceTypeRuntime.String(), ServiceTypeDatabase.String(),
-	ServiceTypeWebServer.String(), ServiceTypeSystem.String(),
-	ServiceTypeOther.String(),
+	ServiceTypeDatabase.String(), ServiceTypeOther.String(),
+	ServiceTypeRuntime.String(), ServiceTypeOther.String(),
+	ServiceTypeWebServer.String(),
 }
 
 func NewServiceType(value interface{}) (serviceType ServiceType, err error) {

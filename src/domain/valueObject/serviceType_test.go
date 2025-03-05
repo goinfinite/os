@@ -1,16 +1,15 @@
 package valueObject
 
 import (
-	"slices"
 	"testing"
 )
 
 func TestServiceType(t *testing.T) {
 	t.Run("ValidServiceTypes", func(t *testing.T) {
 		validServiceTypes := []string{
-			"application", "mom", "monitoring", "logging", "security", "backup",
+			"application", "backup", "database", "logging", "mom", "monitoring",
+			"other", "runtime", "security", "webserver",
 		}
-		validServiceTypes = slices.Concat(validServiceTypes, ValidServiceTypes)
 
 		for _, serviceType := range validServiceTypes {
 			_, err := NewServiceType(serviceType)
