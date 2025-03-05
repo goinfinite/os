@@ -7,7 +7,7 @@ func TestMarketplaceItemName(t *testing.T) {
 		validMarketplaceItemNames := []interface{}{
 			"wordpress", "WordPress", "opencart", "OpenCart", "Magento", "magento",
 			"Joomla", "joomla", "Drupal", "drupal", "Supabase", "supabase",
-			"Laravel", "laravel", "rabbitmq", "RabbitMQ", "n8n",
+			"Laravel", "laravel", "rabbitmq", "RabbitMQ", "n8n", "1stService",
 		}
 
 		for _, name := range validMarketplaceItemNames {
@@ -21,7 +21,7 @@ func TestMarketplaceItemName(t *testing.T) {
 	t.Run("InvalidMarketplaceItemName", func(t *testing.T) {
 		invalidMarketplaceItemNames := []interface{}{
 			"", ".", "..", "/", "A very long name without any reason just for the test",
-			"<root>",
+			"<root>", "ôpencart", "#agento",
 		}
 
 		for _, name := range invalidMarketplaceItemNames {
