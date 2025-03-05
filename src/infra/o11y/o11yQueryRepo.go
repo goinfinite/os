@@ -392,7 +392,7 @@ func (repo *O11yQueryRepo) ReadOverview(
 
 	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
-		slog.Debug("ReadServerPublicIpAddressError", slog.Any("error", err))
+		slog.Debug("ReadServerPublicIpAddressError", slog.String("err", err.Error()))
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 

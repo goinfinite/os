@@ -11,6 +11,6 @@ const RefreshMarketplaceCatalogItemsAmountPerDay int = 1
 func RefreshMarketplaceCatalogItems(marketplaceCmdRepo repository.MarketplaceCmdRepo) {
 	err := marketplaceCmdRepo.RefreshCatalogItems()
 	if err != nil {
-		slog.Error("RefreshMarketplaceCatalogItemsError", slog.Any("error", err))
+		slog.Error("RefreshMarketplaceCatalogItemsError", slog.String("err", err.Error()))
 	}
 }

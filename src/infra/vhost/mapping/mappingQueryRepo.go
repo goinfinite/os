@@ -61,7 +61,7 @@ func (repo *MappingQueryRepo) ReadByHostname(
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			slog.Error("ModelToEntityError", slog.Any("error", err))
+			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
 			continue
 		}
 
@@ -86,7 +86,7 @@ func (repo *MappingQueryRepo) ReadByServiceName(
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			slog.Error("ModelToEntityError", slog.Any("error", err))
+			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
 			continue
 		}
 
@@ -111,7 +111,7 @@ func (repo *MappingQueryRepo) ReadWithMappings() (
 			slog.Error(
 				"ReadMappingsError",
 				slog.String("vhostHostname", vhost.Hostname.String()),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

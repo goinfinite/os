@@ -278,7 +278,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		if err != nil {
 			slog.Debug(
 				"InstalledServiceItemModelToEntityError",
-				slog.String("name", resultModel.Name), slog.Any("error", err),
+				slog.String("name", resultModel.Name), slog.String("err", err.Error()),
 			)
 			continue
 		}

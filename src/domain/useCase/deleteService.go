@@ -32,13 +32,13 @@ func DeleteService(
 
 	err = mappingCmdRepo.DeleteAuto(deleteDto.Name)
 	if err != nil {
-		slog.Error("DeleteAutoMappingError", slog.Any("error", err))
+		slog.Error("DeleteAutoMappingError", slog.String("err", err.Error()))
 		return errors.New("DeleteAutoMappingsInfraError")
 	}
 
 	err = servicesCmdRepo.Delete(deleteDto.Name)
 	if err != nil {
-		slog.Error("DeleteServiceError", slog.Any("error", err))
+		slog.Error("DeleteServiceError", slog.String("err", err.Error()))
 		return errors.New("DeleteServiceInfraError")
 	}
 

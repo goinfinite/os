@@ -81,7 +81,7 @@ func (repo *AccountQueryRepo) Read(
 		if err != nil {
 			slog.Debug(
 				"AccountModelToEntityError", slog.Uint64("id", uint64(model.ID)),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -185,7 +185,7 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 		if err != nil {
 			slog.Debug(
 				"SecureAccessPublicKeyModelToEntityError",
-				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
+				slog.Uint64("id", uint64(model.ID)), slog.String("err", err.Error()),
 			)
 			continue
 		}

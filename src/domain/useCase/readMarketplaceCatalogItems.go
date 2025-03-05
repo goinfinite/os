@@ -19,7 +19,7 @@ func ReadMarketplaceCatalogItems(
 ) (responseDto dto.ReadMarketplaceCatalogItemsResponse, err error) {
 	responseDto, err = marketplaceQueryRepo.ReadCatalogItems(requestDto)
 	if err != nil {
-		slog.Error("ReadMarketplaceCatalogItemsError", slog.Any("error", err))
+		slog.Error("ReadMarketplaceCatalogItemsError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadMarketplaceCatalogItemsInfraError")
 	}
 

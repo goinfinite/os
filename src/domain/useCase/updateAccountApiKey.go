@@ -28,7 +28,7 @@ func UpdateAccountApiKey(
 		slog.Error(
 			"UpdateAccountApiKeyError",
 			slog.String("accountId", updateDto.AccountId.String()),
-			slog.Any("error", err),
+			slog.String("err", err.Error()),
 		)
 		return newKey, errors.New("UpdateAccountApiKeyInfraError")
 	}

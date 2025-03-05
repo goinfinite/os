@@ -27,7 +27,7 @@ func UpdateAccount(
 		slog.Error(
 			"UpdateAccount",
 			slog.String("accountId", updateDto.AccountId.String()),
-			slog.Any("error", err),
+			slog.String("err", err.Error()),
 		)
 		return errors.New("UpdateAccountInfraError")
 	}

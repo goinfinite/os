@@ -27,7 +27,7 @@ func CreateInstallableService(
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
 	if err != nil {
-		slog.Error("CreateInstallableServiceError", slog.Any("error", err))
+		slog.Error("CreateInstallableServiceError", slog.String("err", err.Error()))
 		return errors.New("CreateInstallableServiceInfraError")
 	}
 
@@ -39,7 +39,7 @@ func CreateInstallableService(
 		readFirstInstalledRequestDto,
 	)
 	if err != nil {
-		slog.Error("GetServiceByNameError", slog.Any("error", err))
+		slog.Error("GetServiceByNameError", slog.String("err", err.Error()))
 		return errors.New("GetServiceByNameInfraError")
 	}
 

@@ -24,7 +24,7 @@ func CreateAccount(
 
 	accountId, err := accountCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateAccountError", slog.Any("error", err))
+		slog.Error("CreateAccountError", slog.String("err", err.Error()))
 		return errors.New("CreateAccountInfraError")
 	}
 

@@ -47,7 +47,7 @@ func UpdateService(
 
 	err = servicesCmdRepo.Update(updateDto)
 	if err != nil {
-		slog.Error("UpdateServiceError", slog.Any("error", err))
+		slog.Error("UpdateServiceError", slog.String("err", err.Error()))
 		return errors.New("UpdateServiceInfraError")
 	}
 
@@ -61,7 +61,7 @@ func UpdateService(
 		updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
 	)
 	if err != nil {
-		slog.Error("RecreateMappingError", slog.Any("error", err))
+		slog.Error("RecreateMappingError", slog.String("err", err.Error()))
 	}
 
 	return nil

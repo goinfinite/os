@@ -49,14 +49,14 @@ func HttpServerInit(
 	if !infraHelper.FileExists(certFile) {
 		err := infraHelper.MakeDir(pkiDir)
 		if err != nil {
-			slog.Error("MakePkiDirFailed", slog.Any("error", err))
+			slog.Error("MakePkiDirFailed", slog.String("err", err.Error()))
 			os.Exit(1)
 		}
 
 		aliases := []string{"localhost", "127.0.0.1"}
 		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", aliases)
 		if err != nil {
-			slog.Error("GenerateSelfSignedCertFailed", slog.Any("error", err))
+			slog.Error("GenerateSelfSignedCertFailed", slog.String("err", err.Error()))
 			os.Exit(1)
 		}
 	}
@@ -86,7 +86,7 @@ func HttpServerInit(
 
 	err = httpServer.ListenAndServeTLS(certFile, keyFile)
 	if err != http.ErrServerClosed {
-		slog.Error("HttpServerError", slog.Any("error", err))
+		slog.Error("HttpServerError", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 }

@@ -40,7 +40,7 @@ func UpdateScheduledTask(
 
 	err = scheduledTaskCmdRepo.Update(updateDto)
 	if err != nil {
-		slog.Error("UpdateScheduledTaskInfraError", slog.Any("error", err))
+		slog.Error("UpdateScheduledTaskInfraError", slog.String("err", err.Error()))
 		return errors.New("UpdateScheduledTaskInfraError")
 	}
 

@@ -38,7 +38,7 @@ func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 		slog.Debug(
 			"GetentShadowError",
 			slog.String("username", createDto.Username.String()),
-			slog.Any("error", err),
+			slog.String("err", err.Error()),
 		)
 		return false
 	}

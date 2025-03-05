@@ -46,7 +46,7 @@ var assetsFiles embed.FS
 func (router *Router) assetsRoute() {
 	assetsFs, err := fs.Sub(assetsFiles, "assets")
 	if err != nil {
-		slog.Error("ReadAssetsFilesError", slog.Any("error", err))
+		slog.Error("ReadAssetsFilesError", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	assetsFileServer := http.FileServer(http.FS(assetsFs))
@@ -179,7 +179,7 @@ func (router *Router) fragmentRoutes() {
 func (router *Router) previousDashboardRoute() {
 	dashFilesFs, err := fs.Sub(previousDashFiles, "dist")
 	if err != nil {
-		slog.Error("ReadPreviousDashFilesError", slog.Any("error", err))
+		slog.Error("ReadPreviousDashFilesError", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	dashFileServer := http.FileServer(http.FS(dashFilesFs))

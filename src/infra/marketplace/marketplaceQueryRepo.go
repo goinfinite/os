@@ -807,7 +807,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		if err != nil {
 			slog.Debug(
 				"MarketplaceInstalledItemModelToEntityError",
-				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
+				slog.Uint64("id", uint64(model.ID)), slog.String("err", err.Error()),
 			)
 			continue
 		}

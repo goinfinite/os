@@ -14,7 +14,7 @@ func ReadMarketplaceInstalledItems(
 ) (responseDto dto.ReadMarketplaceInstalledItemsResponse, err error) {
 	responseDto, err = marketplaceQueryRepo.ReadInstalledItems(requestDto)
 	if err != nil {
-		slog.Error("ReadMarketplaceInstalledItemsError", slog.Any("error", err))
+		slog.Error("ReadMarketplaceInstalledItemsError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadMarketplaceInstalledItemsInfraError")
 	}
 

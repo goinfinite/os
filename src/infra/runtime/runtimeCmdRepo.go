@@ -114,7 +114,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 				"UpdatePhpSettingFailed",
 				slog.String("settingName", settingName),
 				slog.String("settingValue", settingValue),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

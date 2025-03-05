@@ -21,7 +21,7 @@ func CreateDatabase(
 
 	err = dbCmdRepo.Create(createDto.DatabaseName)
 	if err != nil {
-		slog.Error("CreateDatabaseError", slog.Any("error", err))
+		slog.Error("CreateDatabaseError", slog.String("err", err.Error()))
 		return errors.New("CreateDatabaseInfraError")
 	}
 

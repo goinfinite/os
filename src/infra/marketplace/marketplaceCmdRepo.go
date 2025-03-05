@@ -356,7 +356,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
 		if err != nil {
-			slog.Debug("CreateItemMappingError", slog.Any("error", err))
+			slog.Debug("CreateItemMappingError", slog.String("err", err.Error()))
 			continue
 		}
 
@@ -733,7 +733,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	for _, unusedService := range unusedServiceNames {
 		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
-			slog.Debug("UninstallUnusedServiceError", slog.Any("error", err))
+			slog.Debug("UninstallUnusedServiceError", slog.String("err", err.Error()))
 			continue
 		}
 	}
@@ -760,7 +760,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 			slog.Debug(
 				"DeleteMappingError",
 				slog.String("mappingPath", installedItemMapping.Path.String()),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
