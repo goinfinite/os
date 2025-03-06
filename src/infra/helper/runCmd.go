@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-const CommandDeadlineExceededError string = "CommandDeadlineExceeded"
+const commandDeadlineExceededError string = "CommandDeadlineExceeded"
 
 func IsRunCmdTimeout(err error) bool {
-	return strings.Contains(err.Error(), CommandDeadlineExceededError)
+	return strings.Contains(err.Error(), commandDeadlineExceededError)
 }
 
 type CmdError struct {
@@ -29,35 +29,31 @@ type RunCmdConfigs struct {
 	Command               string
 	Args                  []string
 	ShouldRunWithSubShell bool
-	ExecutionTimeout      uint64
+	ExecutionTimeoutSecs  uint64
 }
 
 func prepareCmdExecutor(
 	runConfigs RunCmdConfigs,
 ) (*exec.Cmd, *bytes.Buffer, *bytes.Buffer) {
-	command := runConfigs.Command
 	args := runConfigs.Args
+	command := runConfigs.Command
 	if runConfigs.ShouldRunWithSubShell {
-		subShellCommand := "bash"
-
-		argsStr := strings.Join(args, " ")
-		subShellArgs := []string{
-			"-c", "source /etc/profile; " + command + " " + argsStr,
+		args = []string{
+			"-c", "source /etc/profile; " + command + " " + strings.Join(args, " "),
 		}
-
-		command = subShellCommand
-		args = subShellArgs
+		command = "bash"
 	}
 
-	if runConfigs.ExecutionTimeout > 0 {
-		timeoutCommand := "timeout"
-		timeoutArgs := []string{
-			strconv.FormatUint(runConfigs.ExecutionTimeout, 10), command,
-		}
-
-		command = timeoutCommand
-		args = slices.Concat(timeoutArgs, args)
+	executionTimeoutSecs := uint64(1800)
+	if runConfigs.ExecutionTimeoutSecs > 0 && runConfigs.ExecutionTimeoutSecs <= executionTimeoutSecs {
+		executionTimeoutSecs = runConfigs.ExecutionTimeoutSecs
 	}
+
+	args = slices.Concat(
+		[]string{strconv.FormatUint(runConfigs.ExecutionTimeoutSecs, 10), command},
+		args,
+	)
+	command = "timeout"
 
 	cmdExecutor := exec.Command(command, args...)
 
@@ -80,7 +76,7 @@ func RunCmd(runConfigs RunCmdConfigs) (string, error) {
 		if exitErr, assertOk := err.(*exec.ExitError); assertOk {
 			stdErrStr := stderrBytesBuffer.String()
 			if exitErr.ExitCode() == 124 {
-				stdErrStr = CommandDeadlineExceededError
+				stdErrStr = commandDeadlineExceededError
 			}
 
 			return stdoutStr, &CmdError{
