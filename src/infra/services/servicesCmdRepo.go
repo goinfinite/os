@@ -72,7 +72,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
 			errorMessage := stepOutput + " " + err.Error()
-			if strings.Contains(err.Error(), infraHelper.CommandDeadlineExceededError) {
+			if infraHelper.IsRunCmdTimeout(err) {
 				errorMessage = "ServiceInstallTimeoutExceeded"
 			}
 

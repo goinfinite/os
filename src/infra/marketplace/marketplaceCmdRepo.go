@@ -238,9 +238,13 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
-			combinedOutput := stepOutput + " " + err.Error()
+			errorMessage := stepOutput + " " + err.Error()
+			if infraHelper.IsRunCmdTimeout(err) {
+				errorMessage = "MarketplaceItemInstallTimeoutExceeded"
+			}
+
 			return errors.New(
-				stepType + "CmdStepError (" + stepIndexStr + "): " + combinedOutput,
+				stepType + "CmdStepError (" + stepIndexStr + "): " + errorMessage,
 			)
 		}
 	}

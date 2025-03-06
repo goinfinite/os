@@ -10,6 +10,10 @@ import (
 
 const CommandDeadlineExceededError string = "CommandDeadlineExceeded"
 
+func IsRunCmdTimeout(err error) bool {
+	return strings.Contains(err.Error(), CommandDeadlineExceededError)
+}
+
 type CmdError struct {
 	StdErr   string `json:"stdErr"`
 	ExitCode int    `json:"exitCode"`
