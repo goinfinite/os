@@ -504,6 +504,16 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	stopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["stopTimeoutSecs"] != nil {
+		stopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["stopTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	stopCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
@@ -514,10 +524,30 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	installTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["installTimeoutSecs"] != nil {
+		installTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["installTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	installCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
 			"Install", serviceMap["installCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	uninstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["uninstallTimeoutSecs"] != nil {
+		uninstallTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["uninstallTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
@@ -554,10 +584,30 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	preStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["preStartTimeoutSecs"] != nil {
+		preStartTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["preStartTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	preStartCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
 			"PreStart", serviceMap["preStartCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	postStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["postStartTimeoutSecs"] != nil {
+		postStartTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["postStartTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
@@ -574,6 +624,16 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	preStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["preStopTimeoutSecs"] != nil {
+		preStopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["preStopTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	preStopCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
@@ -584,20 +644,20 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	postStopCmdSteps := []valueObject.UnixCommand{}
-	if serviceMap["postStopCmdSteps"] != nil {
-		postStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStop", serviceMap["postStopCmdSteps"],
+	postStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["postStopTimeoutSecs"] != nil {
+		postStopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["postStopTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
 		}
 	}
 
-	installTimeoutSecs, _ := valueObject.NewUnixTime(600)
-	if serviceMap["installTimeoutSecs"] != nil {
-		installTimeoutSecs, err = valueObject.NewUnixTime(
-			serviceMap["installTimeoutSecs"],
+	postStopCmdSteps := []valueObject.UnixCommand{}
+	if serviceMap["postStopCmdSteps"] != nil {
+		postStopCmdSteps, err = repo.parseManifestCmdSteps(
+			"PostStop", serviceMap["postStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -671,11 +731,12 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	return entity.NewInstallableService(
 		manifestVersion, name, nature, serviceType, startCommand, description, versions,
-		envs, portBindings, stopCmdSteps, installTimeoutSecs, installCmdSteps,
-		uninstallCmdSteps, uninstallFilePaths, preStartCmdSteps, postStartCmdSteps,
-		preStopCmdSteps, postStopCmdSteps, execUserPtr, workingDirectoryPtr,
-		startupFilePtr, logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
-		estimatedSizeBytesPtr,
+		envs, portBindings, stopTimeoutSecs, stopCmdSteps, installTimeoutSecs,
+		installCmdSteps, uninstallTimeoutSecs, uninstallCmdSteps, uninstallFilePaths,
+		preStartTimeoutSecs, preStartCmdSteps, postStartTimeoutSecs, postStartCmdSteps,
+		preStopTimeoutSecs, preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
+		logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
 	), nil
 }
 

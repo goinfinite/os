@@ -201,61 +201,49 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	stepType string,
+	stepsType string,
 	steps []valueObject.UnixCommand,
-	installTimeoutSecs *valueObject.UnixTime,
+	overallExecutionTimeoutSecs valueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
 
-	hasInstallTimeoutSecs := installTimeoutSecs != nil
-	if stepType == "Install" && !hasInstallTimeoutSecs {
-		return errors.New("InstallStepsNeedsInstallTimeoutSecs")
-	}
-
-	executionTimeoutSecs := uint64(0)
-	if hasInstallTimeoutSecs {
-		executionTimeoutSecs = uint64(installTimeoutSecs.Int64())
-	}
+	overallExecutionTimeoutSecsUint := uint64(overallExecutionTimeoutSecs.Int64())
 	runCmdConfigs := infraHelper.RunCmdConfigs{
 		ShouldRunWithSubShell: true,
-		ExecutionTimeout:      executionTimeoutSecs,
+		ExecutionTimeoutSecs:  overallExecutionTimeoutSecsUint,
 	}
 
-	remainingTime := executionTimeoutSecs
+	overallExecutionRemainingTime := overallExecutionTimeoutSecsUint
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
-		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
+		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
 
 		runCmdConfigs.Command = stepStr
 
 		executionTimeStart := time.Now()
 		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			errorMessage := stepOutput + " " + err.Error()
+			errorMessage := stepOutput + " | " + err.Error()
 			if infraHelper.IsRunCmdTimeout(err) {
-				errorMessage = "MarketplaceItemInstallTimeoutExceeded"
+				errorMessage = "MarketplaceItem" + stepsType + "TimeoutExceeded"
 			}
 
-			return errors.New(
-				stepType + "CmdStepError (" + stepIndexStr + "): " + errorMessage,
+			return fmt.Errorf(
+				"%sCmdStepError (%s): %s",
+				stepsType, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
 
-		if !hasInstallTimeoutSecs {
-			continue
+		executionElapsedTimeSecs := uint64(time.Since(executionTimeStart).Seconds())
+		overallExecutionRemainingTime = overallExecutionRemainingTime - executionElapsedTimeSecs
+		if overallExecutionRemainingTime == 0 {
+			return errors.New("MarketplaceItem" + stepsType + "TimeoutExceeded")
 		}
 
-		elapsedTimeSecs := uint64(time.Since(executionTimeStart).Seconds())
-		remainingTime = remainingTime - elapsedTimeSecs
-		if remainingTime == 0 {
-			return errors.New("ServiceInstallTimeoutExceeded")
-		}
-
-		runCmdConfigs.ExecutionTimeout = remainingTime
+		runCmdConfigs.ExecutionTimeoutSecs = overallExecutionRemainingTime
 	}
 
 	return nil
@@ -500,7 +488,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	err = repo.runCmdSteps(
-		"Install", usableInstallCmdSteps, &catalogItem.InstallTimeoutSecs,
+		"Install", usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return err
@@ -811,7 +799,9 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps("Uninstall", usableInstallCmdSteps, nil)
+	err = repo.runCmdSteps(
+		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
