@@ -2,13 +2,14 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
 templ CronsIndex(crons []entity.Cron) {
 	<!-- Crons Page JavaScript -->
-	<script src="/assets/local-states/page/crons.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/crons.js" }></script>
 	<!-- Crons Page HTML -->
 	<div x-data="crons">
 		<div class="mb-6 flex flex-row items-center justify-between">

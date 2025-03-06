@@ -23,4 +23,6 @@ const (
 	AccessTokenCookieKey               string = "os-access-token"
 	UserDataBaseDirectory              string = "/home"
 	DefaultPrimaryVhost                string = "goinfinite.local"
+	LocalStatesAssetsPath              string = "/assets/local-states"
+	GlobalStatesAssetsPath             string = "/assets/global-states"
 )

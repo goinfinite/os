@@ -13,7 +13,7 @@ templ MappingsIndex(
 	vhostsHostnames []string,
 ) {
 	<!-- Mappings Page JavaScript -->
-	<script src="/assets/local-states/page/mappings.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
 	<!-- Mappings Page HTML -->
 	<div x-data="mappings">
 		<div class="mb-6 flex flex-row items-center justify-between gap-3">

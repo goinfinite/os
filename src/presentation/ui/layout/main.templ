@@ -2,6 +2,7 @@ package layout
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject/helper"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 	"os"
 )
@@ -47,7 +48,7 @@ templ Main(pageContent templ.Component, currentUrl string) {
 	<html>
 		@HeadTag()
 		<!-- Main Layout JavaScript -->
-		<script src="/assets/global-states/layout/main.js"></script>
+		<script src={ infraEnvs.GlobalStatesAssetsPath + "/layout/main.js" }></script>
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			@templ.JSFuncCall("devWsHotReload")
 		}

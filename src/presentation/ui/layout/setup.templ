@@ -11,7 +11,7 @@ templ Setup() {
 	<html>
 		@HeadTag()
 		<!-- Setup Layout JavaScript -->
-		<script src="/assets/local-states/layout/setup.js"></script>
+		<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/setup.js" }></script>
 		<!-- Setup Layout HTML -->
 		<body
 			x-data="setup"

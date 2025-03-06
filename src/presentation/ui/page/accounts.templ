@@ -2,13 +2,14 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
 templ AccountsIndex(accountsEntities []entity.Account) {
 	<!-- Accounts Page JavaScript -->
-	<script src="/assets/local-states/page/accounts.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/accounts.js" }></script>
 	<!-- Accounts Page HTML -->
 	<div x-data="accounts">
 		<div class="mb-6 flex flex-row items-center justify-between">

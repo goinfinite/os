@@ -36,7 +36,7 @@ func sidebarItemsGetter(currentUrl string) []SidebarItem {
 
 templ Sidebar(currentUrl string) {
 	<!-- Sidebar Layout JavaScript -->
-	<script src="/assets/local-states/layout/sidebar.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
 	<!-- Sidebar Layout HTML -->
 	<sidebar
 		id="sidebar"

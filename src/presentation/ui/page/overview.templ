@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -31,7 +32,7 @@ templ OverviewIndex(
 	servicesOverview ServicesOverview,
 ) {
 	<!-- Overview Page JavaScript -->
-	<script src="/assets/local-states/page/overview.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/overview.js" }></script>
 	<!-- Overview Page HTML -->
 	<div class="flex flex-col">
 		<div class="mb-6 flex flex-row items-center justify-between">

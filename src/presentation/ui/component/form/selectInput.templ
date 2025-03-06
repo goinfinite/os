@@ -1,5 +1,7 @@
 package componentForm
 
+import "github.com/goinfinite/os/src/infra/envs"
+
 templ SelectInput(
 	id, label, bindModelPath, onSelect string,
 	options []string,
@@ -129,7 +131,7 @@ templ MultiSelectInput(
 	options []string,
 ) {
 	<!-- MultiSelectInput JavaScript -->
-	<script src="/assets/local-states/component/form/multiSelectInput.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/component/form/multiSelectInput.js" }></script>
 	<!-- MultiSelectInput HTML -->
 	<div
 		class="relative w-full"

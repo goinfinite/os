@@ -1,6 +1,7 @@
 package page
 
 import (
+	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	pageRuntimes "github.com/goinfinite/os/src/presentation/ui/page/runtimes"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
@@ -11,7 +12,7 @@ templ RuntimesIndex(
 	vhostsHostnames []string,
 ) {
 	<!-- Runtimes Page JavaScript -->
-	<script src="/assets/local-states/page/runtimes.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/runtimes.js" }></script>
 	<!-- Runtimes Page HTML -->
 	<data id="selectedVhostHostname" class="hidden" value={ runtimeOverview.VirtualHostHostname.String() }></data>
 	<data id="selectedRuntimeType" class="hidden" value={ runtimeOverview.Type.String() }></data>

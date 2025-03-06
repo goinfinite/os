@@ -11,7 +11,7 @@ templ Login() {
 	<html>
 		@HeadTag()
 		<!-- Login Layout JavaScript -->
-		<script src="/assets/local-states/layout/login.js"></script>
+		<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/login.js" }></script>
 		<!-- Login Layout HTML -->
 		<body class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50">
 			@componentUtil.LoadingOverlay()
