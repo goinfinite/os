@@ -116,6 +116,9 @@ document.addEventListener("alpine:init", () => {
   }
 
   window.Infinite = {
+    Envs: {
+      AccessTokenCookieKey: "os-access-token",
+    },
     JsonAjax: jsonAjax,
     CreateRandomPassword: createRandomPassword,
     CreateFilterQueryParams: createFilterQueryParams,

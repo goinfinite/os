@@ -1,9 +1,7 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("sidebar", () => ({
-    clearSession(accessTokenCookieKey) {
-      document.cookie =
-        accessTokenCookieKey +
-        "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    clearSession() {
+      document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       window.location.href = "/login/";
     },
     scrollToTop() {

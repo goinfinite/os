@@ -1,6 +1,5 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("login", () => ({
-    accessTokenKey: "os-access-token",
     username: "",
     password: "",
     createSessionToken() {
@@ -16,8 +15,7 @@ document.addEventListener("alpine:init", () => {
       )
         .then((authResponse) => {
           Alpine.store("toast").displayToast("LoginSuccessful", "success");
-          document.cookie =
-            this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
+          document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/`;
           window.location.href = "/overview/";
         })
         .catch((error) =>
@@ -25,9 +23,7 @@ document.addEventListener("alpine:init", () => {
         );
     },
     init() {
-      document.cookie =
-        this.accessTokenKey +
-        "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     },
   }));
 });

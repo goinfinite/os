@@ -1,6 +1,5 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("setup", () => ({
-    accessTokenKey: "os-access-token",
     username: "",
     password: "",
     setupInfiniteOsAndLogin() {
@@ -32,8 +31,7 @@ document.addEventListener("alpine:init", () => {
             }
 
             Alpine.store("toast").displayToast("LoginSuccessful", "success");
-            document.cookie =
-              this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
+            document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/`;
             window.location.href = "/overview/";
           });
         })

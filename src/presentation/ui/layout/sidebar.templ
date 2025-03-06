@@ -51,7 +51,7 @@ templ Sidebar(currentUrl string) {
 		</div>
 		<button
 			type="button"
-			@click={ "clearSession('" + infraEnvs.AccessTokenCookieKey + "')" }
+			@click="clearSession()"
 			class="hover:bg-infinite-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
 		>
 			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
