@@ -1,9 +1,9 @@
 package servicesInfra
 
 import (
-	"context"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -47,27 +47,29 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 		return nil
 	}
 
-	if stepType == "Install" && installTimeoutSecs == nil {
+	hasInstallTimeoutSecs := installTimeoutSecs != nil
+	if stepType == "Install" && !hasInstallTimeoutSecs {
 		return errors.New("InstallStepsNeedsInstallTimeoutSecs")
 	}
 
-	runCmdConfigs := infraHelper.RunCmdConfigs{ShouldRunWithSubShell: true}
-	if installTimeoutSecs != nil {
-		installationTimeLimit := time.Duration(installTimeoutSecs.Int64()) * time.Second
-		installContext, cancelInstallContext := context.WithTimeout(
-			context.Background(), installationTimeLimit,
-		)
-		defer cancelInstallContext()
-
-		runCmdConfigs.CmdContext = installContext
+	executionTimeoutSecs := uint64(0)
+	if hasInstallTimeoutSecs {
+		executionTimeoutSecs = uint64(installTimeoutSecs.Int64())
+	}
+	runCmdConfigs := infraHelper.RunCmdConfigs{
+		ShouldRunWithSubShell: true,
+		ExecutionTimeout:      executionTimeoutSecs,
 	}
 
+	remainingTime := executionTimeoutSecs
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
 		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
 
 		runCmdConfigs.Command = stepStr
+
+		executionTimeStart := time.Now()
 		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
@@ -80,6 +82,18 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 				stepType + "CmdStepError (" + stepIndexStr + "): " + errorMessage,
 			)
 		}
+
+		if !hasInstallTimeoutSecs {
+			continue
+		}
+
+		elapsedTimeSecs := uint64(time.Since(executionTimeStart).Seconds())
+		remainingTime = remainingTime - elapsedTimeSecs
+		if remainingTime == 0 {
+			return errors.New("ServiceInstallTimeoutExceeded")
+		}
+
+		runCmdConfigs.ExecutionTimeout = remainingTime
 	}
 
 	time.Sleep(1 * time.Second)
@@ -470,6 +484,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
+	log.Printf("InstalledServiceName: %s", installedServiceName.String())
 	err = repo.runCmdSteps(
 		"Install", usableInstallCmdSteps, &installableService.InstallTimeoutSecs,
 	)

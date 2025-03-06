@@ -1,7 +1,6 @@
 package marketplaceInfra
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -203,38 +202,36 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
 	stepType string,
-	catalogCmdSteps []valueObject.UnixCommand,
-	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
+	steps []valueObject.UnixCommand,
 	installTimeoutSecs *valueObject.UnixTime,
 ) error {
-	if stepType == "Install" && installTimeoutSecs == nil {
+	if len(steps) == 0 {
+		return nil
+	}
+
+	hasInstallTimeoutSecs := installTimeoutSecs != nil
+	if stepType == "Install" && !hasInstallTimeoutSecs {
 		return errors.New("InstallStepsNeedsInstallTimeoutSecs")
 	}
 
-	runCmdConfigs := infraHelper.RunCmdConfigs{ShouldRunWithSubShell: true}
-	if installTimeoutSecs != nil {
-		installationTimeLimit := time.Duration(installTimeoutSecs.Int64()) * time.Second
-		installContext, cancelInstallContext := context.WithTimeout(
-			context.Background(), installationTimeLimit,
-		)
-		defer cancelInstallContext()
-
-		runCmdConfigs.CmdContext = installContext
+	executionTimeoutSecs := uint64(0)
+	if hasInstallTimeoutSecs {
+		executionTimeoutSecs = uint64(installTimeoutSecs.Int64())
+	}
+	runCmdConfigs := infraHelper.RunCmdConfigs{
+		ShouldRunWithSubShell: true,
+		ExecutionTimeout:      executionTimeoutSecs,
 	}
 
-	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
-		catalogCmdSteps, receivedDataFields,
-	)
-	if err != nil {
-		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
-	}
-
-	for stepIndex, cmdStep := range preparedCmdSteps {
-		stepStr := cmdStep.String()
+	remainingTime := executionTimeoutSecs
+	for stepIndex, step := range steps {
+		stepStr := step.String()
 
 		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
 
 		runCmdConfigs.Command = stepStr
+
+		executionTimeStart := time.Now()
 		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
 			stepIndexStr := strconv.Itoa(stepIndex)
@@ -247,6 +244,18 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 				stepType + "CmdStepError (" + stepIndexStr + "): " + errorMessage,
 			)
 		}
+
+		if !hasInstallTimeoutSecs {
+			continue
+		}
+
+		elapsedTimeSecs := uint64(time.Since(executionTimeStart).Seconds())
+		remainingTime = remainingTime - elapsedTimeSecs
+		if remainingTime == 0 {
+			return errors.New("ServiceInstallTimeoutExceeded")
+		}
+
+		runCmdConfigs.ExecutionTimeout = remainingTime
 	}
 
 	return nil
@@ -483,9 +492,15 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
 
+	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
+		catalogItem.InstallCmdSteps, receivedDataFields,
+	)
+	if err != nil {
+		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	}
+
 	err = repo.runCmdSteps(
-		"Install", catalogItem.InstallCmdSteps, receivedDataFields,
-		&catalogItem.InstallTimeoutSecs,
+		"Install", usableInstallCmdSteps, &catalogItem.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return err
@@ -789,9 +804,14 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		installedItem.Name, installedItem.Type, installedItem.InstallDirectory,
 		installedItem.UrlPath, installedItem.Hostname, installedItem.InstallUuid,
 	)
-	err = repo.runCmdSteps(
-		"Uninstall", catalogItem.UninstallCmdSteps, systemDataFields, nil,
+	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
+		catalogItem.UninstallCmdSteps, systemDataFields,
 	)
+	if err != nil {
+		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	}
+
+	err = repo.runCmdSteps("Uninstall", usableInstallCmdSteps, nil)
 	if err != nil {
 		return err
 	}

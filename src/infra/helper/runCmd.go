@@ -2,9 +2,10 @@ package infraHelper
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"os/exec"
+	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -28,7 +29,7 @@ type RunCmdConfigs struct {
 	Command               string
 	Args                  []string
 	ShouldRunWithSubShell bool
-	CmdContext            context.Context
+	ExecutionTimeout      uint64
 }
 
 func prepareCmdExecutor(
@@ -38,16 +39,27 @@ func prepareCmdExecutor(
 	args := runConfigs.Args
 	if runConfigs.ShouldRunWithSubShell {
 		subShellCommand := "bash"
-		subShellArgs := []string{"-c", "source /etc/profile; " + command}
+
+		argsStr := strings.Join(args, " ")
+		subShellArgs := []string{
+			"-c", "source /etc/profile; " + command + " " + argsStr,
+		}
 
 		command = subShellCommand
 		args = subShellArgs
 	}
 
-	cmdExecutor := exec.Command(command, args...)
-	if runConfigs.CmdContext != nil {
-		cmdExecutor = exec.CommandContext(runConfigs.CmdContext, command, args...)
+	if runConfigs.ExecutionTimeout > 0 {
+		timeoutCommand := "timeout"
+		timeoutArgs := []string{
+			strconv.FormatUint(runConfigs.ExecutionTimeout, 10), command,
+		}
+
+		command = timeoutCommand
+		args = slices.Concat(timeoutArgs, args)
 	}
+
+	cmdExecutor := exec.Command(command, args...)
 
 	var stdoutBytesBuffer, stderrBytesBuffer bytes.Buffer
 	cmdExecutor.Stdout = &stdoutBytesBuffer
@@ -64,19 +76,15 @@ func RunCmd(runConfigs RunCmdConfigs) (string, error) {
 	err := cmdExecutor.Run()
 	stdoutStr := strings.TrimSpace(stdoutBytesBuffer.String())
 
-	if runConfigs.CmdContext != nil {
-		if runConfigs.CmdContext.Err() == context.DeadlineExceeded {
-			return stdoutStr, &CmdError{
-				StdErr:   CommandDeadlineExceededError,
-				ExitCode: 124,
-			}
-		}
-	}
-
 	if err != nil {
 		if exitErr, assertOk := err.(*exec.ExitError); assertOk {
+			stdErrStr := stderrBytesBuffer.String()
+			if exitErr.ExitCode() == 124 {
+				stdErrStr = CommandDeadlineExceededError
+			}
+
 			return stdoutStr, &CmdError{
-				StdErr:   stderrBytesBuffer.String(),
+				StdErr:   stdErrStr,
 				ExitCode: exitErr.ExitCode(),
 			}
 		}
