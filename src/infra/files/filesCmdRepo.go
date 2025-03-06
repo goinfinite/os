@@ -424,7 +424,7 @@ func (repo FilesCmdRepo) Upload(
 		if err != nil {
 			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
 			if err != nil {
-				slog.Debug("AddUploadFailureError", slog.String("err", err.Error()))
+				slog.Debug("ReportUploadFailureError", slog.String("err", err.Error()))
 			}
 
 			uploadProcessReport.FailedNamesWithReason = append(
