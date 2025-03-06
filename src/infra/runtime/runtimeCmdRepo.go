@@ -304,7 +304,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
 		Command: "sed",
 		Args: []string{
-			"-ie", "s/goinfinite.local/" + hostnameStr + "/g", phpConfFilePathStr,
+			"-ie", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + hostnameStr + "/g", phpConfFilePathStr,
 		},
 	})
 	if err != nil {

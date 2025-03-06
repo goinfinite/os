@@ -81,7 +81,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
 		Command: "sed",
 		Args: []string{
-			"-i", "s/goinfinite.local/" + primaryVhostStr + "/g", primaryConfFilePath,
+			"-i", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryVhostStr + "/g", primaryConfFilePath,
 		},
 	})
 	if err != nil {
