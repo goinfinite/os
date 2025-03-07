@@ -290,8 +290,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(
-		controller.filesQueryRepo, controller.filesCmdRepo,
-		controller.activityRecordCmdRepo,
+		controller.filesCmdRepo, controller.activityRecordCmdRepo,
 	)
 	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {

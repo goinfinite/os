@@ -7,21 +7,19 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
 
 type UpdateUnixFiles struct {
-	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
-	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
-		filesQueryRepo:        filesQueryRepo,
 		filesCmdRepo:          filesCmdRepo,
 		activityRecordCmdRepo: activityRecordCmdRepo,
 	}
@@ -91,15 +89,15 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 func (uc UpdateUnixFiles) fixFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 ) error {
-	_, err := uc.filesQueryRepo.ReadFirst(sourcePath)
-	if err != nil {
+	sourcePathStr := sourcePath.String()
+	if infraHelper.FileExists(sourcePathStr) {
 		return errors.New("FileOrDirectoryNotFound")
 	}
 
 	filePermissions := valueObject.NewUnixFileDefaultPermissions()
 
 	dirPermissions := valueObject.NewUnixDirDefaultPermissions()
-	if sourcePath.String() == "/app/html" {
+	if sourcePathStr == "/app/html" {
 		dirPermissions, _ = valueObject.NewUnixFilePermissions("777")
 	}
 
@@ -107,7 +105,7 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 		sourcePath, filePermissions, &dirPermissions,
 	)
 
-	err = uc.filesCmdRepo.UpdatePermissions(updatePermissionsDto)
+	err := uc.filesCmdRepo.UpdatePermissions(updatePermissionsDto)
 	if err != nil {
 		slog.Error("FixFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("FixFilePermissionsInfraError")
