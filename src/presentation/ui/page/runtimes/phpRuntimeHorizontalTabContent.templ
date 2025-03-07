@@ -51,11 +51,10 @@ templ PhpModulesCheckboxInputsSwitchToggles(phpConfigs *entity.PhpConfigs) {
 		// the position of the entities will also be the same. Since we need Alpine to
 		// control the state of the checkboxes, we have to use the index as the key.
 		for moduleIndex, moduleEntity := range phpConfigs.Modules {
-			@componentForm.CheckboxInputSwitchToggle(
-				"", moduleEntity.Name.String(),
-				"phpConfigs.modules["+strconv.Itoa(moduleIndex)+"].status",
-				"",
-			)
+			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+				Label:         moduleEntity.Name.String(),
+				BindModelPath: "phpConfigs.modules[" + strconv.Itoa(moduleIndex) + "].status",
+			})
 		}
 	</div>
 }

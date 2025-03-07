@@ -699,9 +699,18 @@ templ InstallableServiceForm(
 							})
 						</div>
 						<div class="grid grid-cols-3 place-items-center gap-2">
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Label:         "Auto Restart",
+								BindModelPath: "service.autoRestart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Id:            "Auto Start",
+								BindModelPath: "service.autoStart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Id:            "Auto Create Mapping",
+								BindModelPath: "service.autoCreateMapping",
+							})
 						</div>
 					</div>
 				</template>
@@ -800,9 +809,18 @@ templ CustomServiceForm(
 					})
 				</div>
 				<div class="grid grid-cols-3 place-items-center gap-2">
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Label:         "Auto Restart",
+						BindModelPath: "service.autoRestart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "Auto Start",
+						BindModelPath: "service.autoStart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "Auto Create Mapping",
+						BindModelPath: "service.autoCreateMapping",
+					})
 				</div>
 				@componentForm.MultiColumnRepeatableFieldset(
 					"envs", "Environment Variables", "", "service.envs",
