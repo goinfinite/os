@@ -41,19 +41,19 @@ func NewServicesCmdRepo(
 func (repo *ServicesCmdRepo) runCmdSteps(
 	stepsType string,
 	steps []valueObject.UnixCommand,
-	overallExecutionTimeoutSecs valueObject.UnixTime,
+	overallExecTimeoutSecs valueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
 
-	overallExecutionTimeoutSecsUint := uint64(overallExecutionTimeoutSecs.Int64())
+	overallExecTimeoutSecsUint := uint64(overallExecTimeoutSecs.Int64())
 	runCmdConfigs := infraHelper.RunCmdConfigs{
 		ShouldRunWithSubShell: true,
-		ExecutionTimeoutSecs:  overallExecutionTimeoutSecsUint,
+		ExecutionTimeoutSecs:  overallExecTimeoutSecsUint,
 	}
 
-	overallExecutionRemainingTime := overallExecutionTimeoutSecsUint
+	overallExecRemainingTime := overallExecTimeoutSecsUint
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
@@ -61,7 +61,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 
 		runCmdConfigs.Command = stepStr
 
-		executionTimeStart := time.Now()
+		execTimeStart := time.Now()
 		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
@@ -75,13 +75,13 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 			)
 		}
 
-		executionElapsedTimeSecs := uint64(time.Since(executionTimeStart).Seconds())
-		overallExecutionRemainingTime = overallExecutionRemainingTime - executionElapsedTimeSecs
-		if overallExecutionRemainingTime == 0 {
+		stepExecElapsedTimeSecs := uint64(time.Since(execTimeStart).Seconds())
+		overallExecRemainingTime = overallExecRemainingTime - stepExecElapsedTimeSecs
+		if overallExecRemainingTime == 0 {
 			return errors.New("Service" + stepsType + "TimeoutExceeded")
 		}
 
-		runCmdConfigs.ExecutionTimeoutSecs = overallExecutionRemainingTime
+		runCmdConfigs.ExecutionTimeoutSecs = overallExecRemainingTime
 	}
 
 	time.Sleep(1 * time.Second)
