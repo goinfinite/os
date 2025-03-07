@@ -3,7 +3,6 @@ package servicesInfra
 import (
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -482,7 +481,6 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	log.Printf("InstalledServiceName: %s", installedServiceName.String())
 	err = repo.runCmdSteps(
 		"Install", usableInstallCmdSteps, installableService.InstallTimeoutSecs,
 	)
