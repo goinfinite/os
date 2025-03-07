@@ -200,7 +200,7 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 	}
 
 	var passwordPtr *valueObject.Password
-	if input["password"] != nil {
+	if input["password"] != nil && input["password"] != "" {
 		password, err := valueObject.NewPassword(input["password"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
