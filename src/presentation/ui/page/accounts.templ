@@ -193,11 +193,9 @@ templ UpdateAccountForm() {
 			})
 			<div class="flex justify-end">
 				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-					Id:             "isSuperAdmin",
-					Label:          "Super Admin",
-					BindModelPath:  "account.isSuperAdmin",
-					CustomValue:    "true",
-					UncheckedValue: "false",
+					Id:            "isSuperAdmin",
+					Label:         "Super Admin",
+					BindModelPath: "account.isSuperAdmin",
 				})
 			</div>
 		</div>
