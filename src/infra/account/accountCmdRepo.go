@@ -36,7 +36,7 @@ func (repo *AccountCmdRepo) switchAccountSudoPrivileges(
 	accountName valueObject.Username,
 	isAccountMustBeSuperAdmin bool,
 ) error {
-	runCmdSettings := infraHelper.RunCmdConfigs{
+	runCmdSettings := infraHelper.RunCmdSettings{
 		Command: "usermod",
 		Args:    []string{"-G", "sudo", accountName.String()},
 	}
@@ -67,7 +67,7 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 		return errors.New("CreateAuthorizedKeysFileError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "chown",
 		Args:    []string{"-R", accountUsernameStr, authorizedKeysFilePath},
 	})
@@ -96,7 +96,7 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "useradd",
 		Args:    []string{"-m", "-s", "/bin/bash", "-p", string(passHash), usernameStr},
 	})
@@ -165,18 +165,18 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 
 	accountIdStr := accountId.String()
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "pgrep",
 		Args:    []string{"-u", accountIdStr},
 	})
 	if err == nil {
-		_, _ = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, _ = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command: "pkill",
 			Args:    []string{"-9", "-U", accountIdStr},
 		})
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "userdel",
 		Args:    []string{"-r", accountEntity.Username.String()},
 	})
@@ -204,7 +204,7 @@ func (repo *AccountCmdRepo) updatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "usermod",
 		Args:    []string{"-p", string(passHash), accountEntity.Username.String()},
 	})

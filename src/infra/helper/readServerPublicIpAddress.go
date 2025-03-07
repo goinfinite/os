@@ -9,12 +9,12 @@ import (
 
 func ReadServerPublicIpAddress() (ipAddress valueObject.IpAddress, err error) {
 	digCmd := "dig +short TXT"
-	rawRecord, err := RunCmd(RunCmdConfigs{
+	rawRecord, err := RunCmd(RunCmdSettings{
 		Command:               digCmd + " o-o.myaddr.l.google.com @ns1.google.com",
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil || rawRecord == "" {
-		rawRecord, err = RunCmd(RunCmdConfigs{
+		rawRecord, err = RunCmd(RunCmdSettings{
 			Command:               digCmd + " CH whoami.cloudflare @1.1.1.1",
 			ShouldRunWithSubShell: true,
 		})

@@ -572,7 +572,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	rawCatalogFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",

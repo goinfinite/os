@@ -23,7 +23,7 @@ func UpdateOwnershipForWebServerUse(
 	params = append(params, filePath)
 
 	paramsStr := strings.Join(params, " ")
-	_, err := RunCmd(RunCmdConfigs{
+	_, err := RunCmd(RunCmdSettings{
 		Command:               "chown " + flagsStr + " " + paramsStr,
 		ShouldRunWithSubShell: true,
 	})

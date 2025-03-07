@@ -7,7 +7,7 @@ import (
 )
 
 func ReloadWebServer() error {
-	wsConfigTestResult, err := RunCmd(RunCmdConfigs{
+	wsConfigTestResult, err := RunCmd(RunCmdSettings{
 		Command: "/usr/sbin/nginx",
 		Args:    []string{"-t"},
 	})
@@ -21,7 +21,7 @@ func ReloadWebServer() error {
 		}
 	}
 
-	_, err = RunCmd(RunCmdConfigs{
+	_, err = RunCmd(RunCmdSettings{
 		Command: "/usr/sbin/nginx",
 		Args:    []string{"-s", "reload", "-c", "/etc/nginx/nginx.conf"},
 	})

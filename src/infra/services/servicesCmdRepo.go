@@ -48,7 +48,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 	}
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
-	runCmdConfigs := infraHelper.RunCmdConfigs{
+	runCmdSettings := infraHelper.RunCmdSettings{
 		ShouldRunWithSubShell: true,
 		ExecutionTimeoutSecs:  totalExecTimeoutSecsUint,
 	}
@@ -59,10 +59,10 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 
 		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
 
-		runCmdConfigs.Command = stepStr
+		runCmdSettings.Command = stepStr
 
 		execTimeStart := time.Now()
-		stepOutput, err := infraHelper.RunCmd(runCmdConfigs)
+		stepOutput, err := infraHelper.RunCmd(runCmdSettings)
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
 			if infraHelper.IsRunCmdTimeout(err) {
@@ -81,7 +81,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 			return errors.New("Service" + stepsType + "TimeoutExceeded")
 		}
 
-		runCmdConfigs.ExecutionTimeoutSecs = totalExecRemainingTime
+		runCmdSettings.ExecutionTimeoutSecs = totalExecRemainingTime
 	}
 
 	time.Sleep(1 * time.Second)
@@ -108,7 +108,7 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	startOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	startOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               SupervisorCtlBin + " start " + serviceNameStr,
 		ShouldRunWithSubShell: true,
 	})
@@ -118,7 +118,7 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 			return errors.New("SupervisorStartError: " + combinedOutput)
 		}
 
-		addOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		addOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command:               SupervisorCtlBin + " add " + serviceNameStr,
 			ShouldRunWithSubShell: true,
 		})
@@ -153,7 +153,7 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return err
 	}
 
-	stopOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	stopOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
 		ShouldRunWithSubShell: true,
 	})
@@ -303,7 +303,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return err
 	}
 
-	reReadOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	reReadOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               SupervisorCtlBin + " reread",
 		ShouldRunWithSubShell: true,
 	})
@@ -344,7 +344,7 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	serviceName valueObject.ServiceName, execUser valueObject.UnixUsername,
 ) error {
 	execUserStr := execUser.String()
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "id",
 		Args:    []string{execUserStr},
 	})
@@ -355,7 +355,7 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command: "chown",
 			Args:    []string{"-R", execUserStr, defaultDirPath},
 		})
@@ -816,7 +816,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	removeOutput, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	removeOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               SupervisorCtlBin + " remove " + serviceNameStr,
 		ShouldRunWithSubShell: true,
 	})
@@ -873,7 +873,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 		slog.Debug("RemovingFilePath", slog.String("filePath", filePathStr))
 
-		_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command: "rm",
 			Args:    []string{"-rf", filePathStr},
 		})
@@ -900,7 +900,7 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoBranch,
 			infraEnvs.InstallableServicesItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command:               repoCloneCmd,
 			ShouldRunWithSubShell: true,
 		})
@@ -909,7 +909,7 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 		}
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
 		ShouldRunWithSubShell: true,

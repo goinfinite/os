@@ -60,7 +60,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
 	updatePhpVersionCmd := "sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine +
 		"/g' " + phpConfFilePath.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               updatePhpVersionCmd,
 		ShouldRunWithSubShell: true,
 	})
@@ -72,7 +72,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php"
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command:               updatePhpCliVersionCmd,
 			ShouldRunWithSubShell: true,
 		})
@@ -102,7 +102,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
 		}
 
-		_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command: "sed",
 			Args: []string{
 				"-i", "s|" + settingName + " .*|" + settingName + " " + settingValue + "|g",
@@ -178,7 +178,7 @@ func (repo *RuntimeCmdRepo) EnablePhpModule(
 		return errors.New("InstallModuleFailed: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
 		ShouldRunWithSubShell: true,
 	})
@@ -301,7 +301,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 	}
 
 	hostnameStr := hostname.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-ie", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + hostnameStr + "/g", phpConfFilePathStr,
@@ -331,7 +331,7 @@ virtualhost ` + hostname.String() + ` {
 
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-ie", "/" + listenerMapRegex + "/a" + newListenerMapLine,

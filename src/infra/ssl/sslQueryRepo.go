@@ -124,7 +124,7 @@ func (repo SslQueryRepo) sslPairFactory(
 func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	crtFilePathsStr, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	crtFilePathsStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
 		ShouldRunWithSubShell: true,

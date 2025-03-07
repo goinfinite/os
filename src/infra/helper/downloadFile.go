@@ -6,7 +6,7 @@ import (
 )
 
 func DownloadFile(url string, filePath string) error {
-	_, err := RunCmd(RunCmdConfigs{
+	_, err := RunCmd(RunCmdSettings{
 		Command: "wget",
 		Args:    []string{"-q", "--no-check-certificate", "-O", filePath, url},
 	})

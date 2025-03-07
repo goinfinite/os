@@ -3,7 +3,7 @@ package infraHelper
 import "errors"
 
 func ValidateWebServerConfig() error {
-	_, err := RunCmd(RunCmdConfigs{
+	_, err := RunCmd(RunCmdSettings{
 		Command:               "nginx -t",
 		ShouldRunWithSubShell: true,
 	})

@@ -100,7 +100,7 @@ func CreateSelfSignedSsl(
 
 	generateSelfSignedSslCmd := "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout " +
 		vhostCertKeyFilePath + " -out " + vhostCertFilePath + " -config " + confTempFilePath
-	_, err = RunCmd(RunCmdConfigs{
+	_, err = RunCmd(RunCmdSettings{
 		Command:               generateSelfSignedSslCmd,
 		ShouldRunWithSubShell: true,
 	})

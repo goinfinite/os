@@ -119,7 +119,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
 	readStoppedServicesCmd := SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'"
-	rawStoppedServices, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	rawStoppedServices, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               readStoppedServicesCmd,
 		ShouldRunWithSubShell: true,
 	})
@@ -159,7 +159,7 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		serviceNameStr := installedService.Name.String()
 
-		supervisorStatus, _ := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		supervisorStatus, _ := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command:               SupervisorCtlBin + " status " + serviceNameStr,
 			ShouldRunWithSubShell: true,
 		})
@@ -754,7 +754,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	rawInstallableFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",

@@ -46,7 +46,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "awk",
 		Args: []string{
 			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
@@ -81,7 +81,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 		return phpVersion, err
 	}
 
-	currentPhpVersionStr, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	currentPhpVersionStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "awk",
 		Args: []string{
 			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
@@ -107,7 +107,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
-	timezonesRaw, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	timezonesRaw, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "php",
 		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
 	})
@@ -216,7 +216,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 		return phpSettings, err
 	}
 
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-n",
@@ -244,7 +244,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
-	activeModuleList, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	activeModuleList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
 		Args:    []string{"-m"},
 	})

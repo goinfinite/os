@@ -33,7 +33,7 @@ func NewO11yQueryRepo(
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 	nowEpoch := valueObject.NewUnixTimeNow()
-	rawFirstPidEpoch, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	rawFirstPidEpoch, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               "stat -c '%Y' /proc/1",
 		ShouldRunWithSubShell: true,
 	})

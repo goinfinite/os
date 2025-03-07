@@ -46,7 +46,7 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 	}
 
 	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-i", "-e", "s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN=" + desiredChildProcessesStr + ";/g",
@@ -78,7 +78,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	log.Print("UpdatingPrimaryVirtualHost...")
 
 	primaryConfFilePath := "/app/conf/nginx/primary.conf"
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-i", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryVhostStr + "/g", primaryConfFilePath,
@@ -90,7 +90,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingDhParams...")
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "openssl",
 		Args: []string{
 			"dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
@@ -131,7 +131,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	// Do not write any code after this as supervisorctl reload will restart
 	// the OS API and any remaining code will not be executed.
-	_, _ = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, _ = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "supervisorctl",
 		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
 	})
@@ -150,7 +150,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 	cpuCoresStr := strconv.FormatInt(int64(math.Ceil(cpuCores)), 10)
 
 	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	workerCount, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	workerCount, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "awk",
 		Args:    []string{"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath},
 	})
@@ -185,7 +185,7 @@ func (ws *WebServerSetup) OnStartSetup() {
 
 	log.Print("UpdatingNginxWorkersCount...")
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
 			"-i", "-e", "s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",

@@ -25,7 +25,7 @@ func (e *CmdError) Error() string {
 	return string(jsonError)
 }
 
-type RunCmdConfigs struct {
+type RunCmdSettings struct {
 	Command               string
 	Args                  []string
 	ShouldRunWithSubShell bool
@@ -33,7 +33,7 @@ type RunCmdConfigs struct {
 }
 
 func prepareCmdExecutor(
-	runConfigs RunCmdConfigs,
+	runConfigs RunCmdSettings,
 ) (*exec.Cmd, *bytes.Buffer, *bytes.Buffer) {
 	args := runConfigs.Args
 	command := runConfigs.Command
@@ -66,7 +66,7 @@ func prepareCmdExecutor(
 	return cmdExecutor, &stdoutBytesBuffer, &stderrBytesBuffer
 }
 
-func RunCmd(runConfigs RunCmdConfigs) (string, error) {
+func RunCmd(runConfigs RunCmdSettings) (string, error) {
 	cmdExecutor, stdoutBytesBuffer, stderrBytesBuffer := prepareCmdExecutor(runConfigs)
 
 	err := cmdExecutor.Run()

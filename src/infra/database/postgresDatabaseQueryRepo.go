@@ -22,7 +22,7 @@ func PostgresqlCmd(cmd string, dbName *string) (string, error) {
 		psqlArgs = append(psqlArgs, psqlDbToConnect...)
 	}
 
-	return infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "psql",
 		Args:    psqlArgs,
 	})

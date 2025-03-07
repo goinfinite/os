@@ -174,13 +174,13 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 		hashUrlFull := "https://" + vhostNameStr + hashUrlPath
 		curlBaseCmd := "curl -skLm 10 "
 		sniFlag := "--resolve " + vhostNameStr + ":443:" + serverPublicIpAddressStr
-		ownershipHashFound, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+		ownershipHashFound, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command:               curlBaseCmd + sniFlag + " " + hashUrlFull,
 			ShouldRunWithSubShell: true,
 		})
 		if err != nil {
 			hashUrlFull = "https://" + serverPublicIpAddressStr + hashUrlPath
-			ownershipHashFound, err = infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+			ownershipHashFound, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 				Command:               curlBaseCmd + "-H \"Host: " + vhostNameStr + "\" " + hashUrlFull,
 				ShouldRunWithSubShell: true,
 			})
@@ -224,7 +224,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 		certbotCmd += " -d " + functionalHostname.String()
 	}
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               certbotCmd,
 		ShouldRunWithSubShell: true,
 	})
