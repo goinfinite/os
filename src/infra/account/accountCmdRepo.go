@@ -32,11 +32,20 @@ func NewAccountCmdRepo(
 	}
 }
 
-func (repo *AccountCmdRepo) addAccountToSudoers(accountName valueObject.Username) error {
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdConfigs{
+func (repo *AccountCmdRepo) switchAccountSudoPrivileges(
+	accountName valueObject.Username,
+	isAccountMustBeSuperAdmin bool,
+) error {
+	runCmdSettings := infraHelper.RunCmdConfigs{
 		Command: "usermod",
 		Args:    []string{"-G", "sudo", accountName.String()},
-	})
+	}
+	if !isAccountMustBeSuperAdmin {
+		runCmdSettings.Command = "deluser"
+		runCmdSettings.Args = []string{accountName.String(), "sudo"}
+	}
+
+	_, err := infraHelper.RunCmd(runCmdSettings)
 	return err
 }
 
@@ -96,7 +105,10 @@ func (repo *AccountCmdRepo) Create(
 	}
 
 	if createDto.IsSuperAdmin {
-		err := repo.addAccountToSudoers(createDto.Username)
+		isAccountMustBeSuperAdmin := true
+		err := repo.switchAccountSudoPrivileges(
+			createDto.Username, isAccountMustBeSuperAdmin,
+		)
 		if err != nil {
 			slog.Debug("AddAccountToSudoersError", slog.String("err", err.Error()))
 		}
@@ -208,11 +220,16 @@ func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 		return err
 	}
 
+	updateMap := map[string]interface{}{"updated_at": time.Now()}
 	if updateDto.IsSuperAdmin != nil {
-		err := repo.addAccountToSudoers(accountEntity.Username)
+		err := repo.switchAccountSudoPrivileges(
+			accountEntity.Username, *updateDto.IsSuperAdmin,
+		)
 		if err != nil {
-			return errors.New("AddAccountToSudoersError: " + err.Error())
+			return errors.New("SwitchAccountSudoPrivilegesError: " + err.Error())
 		}
+
+		updateMap["is_super_admin"] = *updateDto.IsSuperAdmin
 	}
 
 	if updateDto.Password != nil {
@@ -222,11 +239,10 @@ func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 		}
 	}
 
-	accountModel := dbModel.Account{ID: accountEntity.Id.Uint64()}
 	return repo.persistentDbSvc.Handler.
-		Model(&accountModel).
-		Update("updated_at", time.Now()).
-		Error
+		Model(&dbModel.Account{}).
+		Where("id = ?", accountEntity.Id).
+		Updates(updateMap).Error
 }
 
 func (repo *AccountCmdRepo) UpdateApiKey(
