@@ -2,7 +2,7 @@ package componentStructural
 
 templ WarningModal(
 	isOpenState, closeFunction, declineButtonLabel, confirmFunction, confirmButtonId,
-	confirmButtonIcon, confirmButonLabel string,
+	confirmButtonIcon, confirmButtonLabel string,
 ) {
 	<!-- WarningModal -->
 	<div
@@ -43,7 +43,7 @@ templ WarningModal(
 					@click={ confirmFunction }
 					class="w-full rounded-md border-none bg-amber-600 p-3 text-center text-base font-bold lowercase leading-none text-white hover:bg-amber-500"
 				>
-					<i class={ "ph-duotone " + confirmButtonIcon + " mr-1 align-middle text-xl" }></i>{ confirmButonLabel }
+					<i class={ "ph-duotone " + confirmButtonIcon + " mr-1 align-middle text-xl" }></i>{ confirmButtonLabel }
 				</button>
 			</div>
 		</div>

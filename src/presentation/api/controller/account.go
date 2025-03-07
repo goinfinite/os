@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
@@ -84,15 +83,6 @@ func (controller *AccountController) Update(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
-	}
-
-	shouldUpdateApiKey, err := voHelper.InterfaceToBool(
-		requestInputData["shouldUpdateApiKey"],
-	)
-	if err == nil && shouldUpdateApiKey {
-		return apiHelper.ServiceResponseWrapper(
-			c, controller.accountService.Update(requestInputData),
-		)
 	}
 
 	return apiHelper.ServiceResponseWrapper(

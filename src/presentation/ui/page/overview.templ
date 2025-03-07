@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -30,9 +31,9 @@ templ OverviewIndex(
 	o11yOverview entity.O11yOverview,
 	servicesOverview ServicesOverview,
 ) {
-	<!-- Overview JavaScript -->
-	<script src="/assets/local-states/overview.js"></script>
-	<!-- Overview HTML -->
+	<!-- Overview Page JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/overview.js" }></script>
+	<!-- Overview Page HTML -->
 	<div class="flex flex-col">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
@@ -94,7 +95,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 			</thead>
 			<tbody>
 				for _, installedItem := range installedItemsList {
-					<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
+					<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
 						<th scope="row" class="px-5 py-3 text-left font-normal">
 							<div class="inline-flex items-center">
 								<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
@@ -257,7 +258,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 					</div>
 				</div>
 			</div>
-			<template x-if="marketplaceItem.dataFields.length > 0">
+			<template x-if="marketplaceItem.id !== ''">
 				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
 					@componentStructural.Alert(
 						componentStructural.AlertTypeWarning,
@@ -436,7 +437,7 @@ templ InstalledServicesItemsTable(
 				</thead>
 				<tbody>
 					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
-						<tr class="odd:bg-os-500 even:bg-os-700 border-b border-neutral-500 border-opacity-30 text-center">
+						<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
 							<td class="hidden">
 								@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
 							</td>
@@ -480,20 +481,24 @@ templ InstalledServicesItemsTable(
 							</td>
 							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(
-										uint8(installedServiceEntity.Metrics.CpuUsagePercent),
-										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent)+"%",
-									)
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.CpuUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
 								} else {
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
 							<td class="overflow-x-hidden px-3 py-2">
 								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(
-										uint8(installedServiceEntity.Metrics.MemUsagePercent),
-										fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent)+"%",
-									)
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.MemUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
 								} else {
 									<span class="text-center text-slate-500">--</span>
 								}
@@ -527,7 +532,7 @@ templ InstalledServicesItemsTable(
 													"Start", "cyan-700",
 												)
 										}
-										if installedServiceEntity.Nature.String() != "solo" {
+										if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
 											@componentStructural.CircularIconButtonWithTooltip(
 												"ph-gear", "os-200", "os-300",
 												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",
@@ -694,9 +699,18 @@ templ InstallableServiceForm(
 							})
 						</div>
 						<div class="grid grid-cols-3 place-items-center gap-2">
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
-							@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Label:         "Auto Restart",
+								BindModelPath: "service.autoRestart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Id:            "Auto Start",
+								BindModelPath: "service.autoStart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Id:            "Auto Create Mapping",
+								BindModelPath: "service.autoCreateMapping",
+							})
 						</div>
 					</div>
 				</template>
@@ -795,9 +809,18 @@ templ CustomServiceForm(
 					})
 				</div>
 				<div class="grid grid-cols-3 place-items-center gap-2">
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Restart", "service.autoRestart", "")
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Start", "service.autoStart", "")
-					@componentForm.CheckboxInputSwitchToggle("", "Auto Create Mapping", "service.autoCreateMapping", "")
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Label:         "Auto Restart",
+						BindModelPath: "service.autoRestart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "Auto Start",
+						BindModelPath: "service.autoStart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "Auto Create Mapping",
+						BindModelPath: "service.autoCreateMapping",
+					})
 				</div>
 				@componentForm.MultiColumnRepeatableFieldset(
 					"envs", "Environment Variables", "", "service.envs",

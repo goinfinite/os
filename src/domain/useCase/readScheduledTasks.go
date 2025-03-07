@@ -19,7 +19,7 @@ func ReadScheduledTasks(
 ) (responseDto dto.ReadScheduledTasksResponse, err error) {
 	responseDto, err = scheduledTaskQueryRepo.Read(readDto)
 	if err != nil {
-		slog.Error("ReadTasksInfraError", slog.Any("error", err))
+		slog.Error("ReadTasksInfraError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadTasksInfraError")
 	}
 

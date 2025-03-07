@@ -31,7 +31,7 @@ func (uc *CreateSecurityActivityRecord) createActivityRecord(
 		slog.Debug(
 			"CreateSecurityActivityRecordError",
 			slog.Any("createDto", createDto),
-			slog.Any("error", err),
+			slog.String("err", err.Error()),
 		)
 	}
 }

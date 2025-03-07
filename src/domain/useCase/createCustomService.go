@@ -27,7 +27,7 @@ func createFirstMapping(
 		primaryVhost.Hostname,
 	)
 	if err != nil {
-		slog.Error("ReadPrimaryVhostMappingsError", slog.Any("error", err))
+		slog.Error("ReadPrimaryVhostMappingsError", slog.String("err", err.Error()))
 		return errors.New("ReadPrimaryVhostMappingsInfraError")
 	}
 	if len(primaryVhostMappings) != 0 {
@@ -46,7 +46,7 @@ func createFirstMapping(
 
 	_, err = mappingCmdRepo.Create(createMappingDto)
 	if err != nil {
-		slog.Error("CreateServiceMappingError", slog.Any("error", err))
+		slog.Error("CreateServiceMappingError", slog.String("err", err.Error()))
 		return errors.New("CreateServiceMappingInfraError")
 	}
 
@@ -75,13 +75,13 @@ func CreateCustomService(
 		createDto.Version = &defaultVersion
 	}
 
-	if createDto.Type.String() == "system" {
+	if createDto.Type == valueObject.ServiceTypeSystem {
 		return errors.New("SystemServiceCannotBeCreated")
 	}
 
 	err = servicesCmdRepo.CreateCustom(createDto)
 	if err != nil {
-		slog.Error("CreateCustomServiceError", slog.Any("error", err))
+		slog.Error("CreateCustomServiceError", slog.String("err", err.Error()))
 		return errors.New("CreateCustomServiceInfraError")
 	}
 

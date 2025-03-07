@@ -3,114 +3,17 @@ package page
 import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentDatabases "github.com/goinfinite/os/src/presentation/ui/component/databases"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 )
 
-script DatabasesIndexLocalState() {
-    document.addEventListener('alpine:init', () => {
-		Alpine.data('databases', () => ({
-			// Primary states
-			database: {},
-			databaseUser: {},
-			resetPrimaryStates() {
-				this.database = {
-					'name': '',
-					'size': ''
-				}
-				this.databaseUser = {
-					'username': '',
-					'password': '',
-					'privileges': []
-				}
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-
-			// Auxiliary states
-			changeSelectedDatabaseType(databaseType) {
-				htmx.ajax(
-					'GET',
-					'/databases/?dbType=' + databaseType,
-					{
-						select: '#databases-page-content',
-						target: '#databases-page-content',
-						swap: 'outerHTML transition:true'
-					},
-				);
-			},
-			get shouldDisableCreateDatabaseSubmitButton() {
-				return this.database.name == ''
-			},
-			get shouldDisableCreateDatabaseUserSubmitButton() {
-				return this.database.name == '' || this.databaseUser.username == '' || this.databaseUser.password == ''
-			},
-
-			// Modal states
-			isCreateDatabaseModalOpen: false,
-			openCreateDatabaseModal() {
-				this.resetPrimaryStates();                                                                                                                                                                                                  
-
-				this.isCreateDatabaseModalOpen = true;
-			},
-			closeCreateDatabaseModal() {
-				this.isCreateDatabaseModalOpen = false;
-			},
-			isDeleteDatabaseModalOpen: false,
-			openDeleteDatabaseModal(databaseName) {
-				this.resetPrimaryStates();
-
-				this.database.name = databaseName;
-				this.isDeleteDatabaseModalOpen = true;
-			},
-			closeDeleteDatabaseModal() {
-				this.isDeleteDatabaseModalOpen = false;
-			},
-			deleteDatabaseElement(databaseType) {
-				htmx.ajax(
-					'DELETE',
-					'/api/v1/database/' + databaseType + '/' + this.database.name + '/',
-					{swap: 'none'},
-				);
-				this.closeDeleteDatabaseModal();
-			},
-			isCreateDatabaseUserModalOpen: false,
-			openCreateDatabaseUserModal() {
-				this.resetPrimaryStates();
-
-				this.isCreateDatabaseUserModalOpen = true;
-			},
-			closeCreateDatabaseUserModal() {
-				this.isCreateDatabaseUserModalOpen = false;
-			},
-			isDeleteDatabaseUserModalOpen: false,
-			openDeleteDatabaseUserModal(databaseName, databaseUsername) {
-				this.resetPrimaryStates();
-
-				this.database.name = databaseName;
-				this.databaseUser.username = databaseUsername;
-				this.isDeleteDatabaseUserModalOpen = true;
-			},
-			closeDeleteDatabaseUserModal() {
-				this.isDeleteDatabaseUserModalOpen = false;
-			},
-			deleteDatabaseUserElement(databaseType) {
-				htmx.ajax(
-					'DELETE',
-					'/api/v1/database/' + databaseType + '/' + this.database.name + '/user/' + this.databaseUser.username + '/',
-					{swap: 'none'},
-				);
-				this.closeDeleteDatabaseUserModal();
-			},
-		}))
-	})
-}
-
 templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
-	@DatabasesIndexLocalState()
+	<!-- Databases Page JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/databases.js" }></script>
+	<!-- Databases Page HTML -->
 	<div class="flex flex-col" x-data="databases">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
@@ -148,22 +51,25 @@ templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
 }
 
 templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
+	<!-- DatabasesTabs -->
+	<!-- DatabasesTabs HorizontalTab Header -->
 	@componentStructural.HorizontalTabHeader(
 		[]componentStructural.TabHeaderItem{
 			{Label: "MySQL/MariaDB/Percona", Icon: "ph-database", Value: "mariadb"},
 			{Label: "PostgreSQL", Icon: "ph-database", Value: "postgresql"},
 		}, selectedDbOverview.Type.String(), "changeSelectedDatabaseType",
 	)
-	<!-- DatabaseTabContent -->
+	<!-- DatabasesTabs HorizontalTab Table -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4">
 		<div class="bg-os-500 space-y-3 rounded-b-lg rounded-r-lg px-4 pt-2">
 			if selectedDbOverview.IsInstalled {
 				<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+					<!-- DatabasesTabs Table Header -->
 					<thead class="text-xs uppercase text-neutral-400">
 						<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-							<th scope="col" class="w-1/7 px-5 py-3 text-left">Name</th>
-							<th scope="col" class="w-2/7 px-5 py-3 text-center">User(s)</th>
-							<th scope="col" class="w-1/7 px-5 py-3 text-left">Size</th>
+							<th scope="col" class="w-1/6 px-5 py-3 text-left">Name</th>
+							<th scope="col" class="w-2/6 px-5 py-3 text-center">User(s)</th>
+							<th scope="col" class="w-1/6 px-5 py-3 text-center">Size</th>
 							<th scope="col" class="flex justify-end space-x-2 px-5 py-3">
 								@componentForm.SubmitButton(
 									"create-user-button", "Create user", "ph-user-plus",
@@ -177,10 +83,11 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 						</tr>
 					</thead>
 					<tbody>
+						<!-- DatabasesTabs Table Items -->
 						for _, database := range selectedDbOverview.Databases {
-							<tr class="bg-os-800 text-white">
-								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-left">
+							<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+								<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
+								<th scope="row" class="w-2/6 px-5 py-3 text-center">
 									<div class="bg-os-500 max-h-75 rounded-md px-2.5 py-1">
 										for _, user := range database.Users {
 											<div class="bg-os-800 my-1.5 flex items-center justify-between rounded-md p-3">
@@ -196,8 +103,8 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 										}
 									</div>
 								</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ database.Size.String() }</th>
-								<th scope="row" class="w-1/4 px-5 py-3 text-right">
+								<th scope="row" class="w-1/6 px-5 py-3 text-center font-normal">{ database.Size.String() }</th>
+								<th scope="row" class="px-5 py-3 text-right">
 									<div class="inline-flex">
 										@componentStructural.CircularIconButtonWithTooltip(
 											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
@@ -218,6 +125,7 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 }
 
 templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
+	<!-- CreateDatabaseForm -->
 	<form
 		id="create-database-form"
 		hx-post={ "/api/v1/database/" + selectedDbType.String() }
@@ -257,6 +165,7 @@ func getOnlyDatabasesNames(selectedDbDatabases []entity.Database) []string {
 }
 
 templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
+	<!-- CreateDatabaseUserForm -->
 	<form
 		id="create-database-user-form"
 		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }

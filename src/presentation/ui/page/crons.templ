@@ -2,130 +2,15 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
-script CronsIndexLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('crons', () => ({
-			// Primary states
-			cron: {},
-			resetPrimaryStates() {
-				this.cron = {
-					id: '',
-					schedule: '@daily',
-					command: '',
-					comment: '',
-				}
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-
-			// Auxiliary states
-			selectedScheduleType: "predefined",
-			customScheduleParts: {},
-			get customSchedule() {
-				return `${this.customScheduleParts.minute} ` +
-					`${this.customScheduleParts.hour} ` +
-					`${this.customScheduleParts.day} ` +
-					`${this.customScheduleParts.month} ` +
-					`${this.customScheduleParts.weekday}`;
-			},
-			resetAuxiliaryStates() {
-				this.selectedScheduleType = "predefined";
-				this.customScheduleParts = {
-					minute: '*',
-					hour: '*',
-					day: '*',
-					month: '*',
-					weekday: '*',
-				};
-			},
-
-			// Modal states
-			isCreateCronJobModalOpen: false,
-			openCreateCronJobModal() {
-				this.resetPrimaryStates();
-				this.resetAuxiliaryStates();
-
-				this.isCreateCronJobModalOpen = true;
-			},
-			closeCreateCronJobModal() {
-				this.isCreateCronJobModalOpen = false;
-			},
-			isUpdateCronJobModalOpen: false,
-			openUpdateCronJobModal(id) {
-				this.resetPrimaryStates();
-				this.resetAuxiliaryStates();
-
-				const cronEntity = JSON.parse(
-					document.getElementById('cronEntity_' + id).textContent
-				);
-				this.cron.id = cronEntity.id;
-				this.cron.schedule = cronEntity.schedule;
-				this.cron.command = cronEntity.command;
-				this.cron.comment = cronEntity.comment;
-
-				if (cronEntity.schedule.includes('@')) {
-					this.isUpdateCronJobModalOpen = true;
-					return;
-				}
-
-				this.cron.schedule = '@daily';
-				this.selectedScheduleType = 'custom';
-
-				const scheduleParts = cronEntity.schedule.split(' ');
-				if (scheduleParts.length !== 5) {
-					this.isUpdateCronJobModalOpen = true;
-					return;
-				}
-
-				this.customScheduleParts = {
-					minute: scheduleParts[0],
-					hour: scheduleParts[1],
-					day: scheduleParts[2],
-					month: scheduleParts[3],
-					weekday: scheduleParts[4],
-				};
-
-				this.isUpdateCronJobModalOpen = true;
-			},
-			closeUpdateCronJobModal() {
-				this.isUpdateCronJobModalOpen = false;
-			},
-			isDeleteCronJobModalOpen: false,
-			openDeleteCronJobModal(id) {
-				this.resetPrimaryStates();
-
-				const cronEntity = JSON.parse(
-					document.getElementById('cronEntity_' + id).textContent
-				);
-				this.cron.id = cronEntity.id;
-				this.cron.comment = cronEntity.comment;
-
-				this.isDeleteCronJobModalOpen = true;
-			},
-			closeDeleteCronJobModal() {
-				this.isDeleteCronJobModalOpen = false;
-			},
-			deleteCronJob() {
-				htmx.ajax(
-					'DELETE',
-					'/api/v1/cron/' + this.cron.id + '/',
-					{swap: 'none'},
-				).then(() => {
-					this.$dispatch('delete:cron');
-				});
-				this.closeDeleteCronJobModal();
-			},
-		}));
-	});
-}
-
 templ CronsIndex(crons []entity.Cron) {
-	@CronsIndexLocalState()
+	<!-- Crons Page JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/crons.js" }></script>
+	<!-- Crons Page HTML -->
 	<div x-data="crons">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
@@ -158,56 +43,64 @@ templ CronsIndex(crons []entity.Cron) {
 }
 
 templ CronsTable(crons []entity.Cron) {
-	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
-			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-				<th scope="col" class="w-2/10 px-5 py-3 text-left">Schedule(s)</th>
-				<th scope="col" class="w-3/10 px-5 py-3 text-center">Command(s)</th>
-				<th scope="col" class="w-2/10 px-5 py-3 text-center">Comment(s)</th>
-				<th scope="col" class="flex justify-end py-3">
-					<div class="mr-2 w-2/4">
-						@componentForm.SubmitButton(
-							"open-create-cron-job-form-button", "Schedule new job",
-							"ph-clock-clockwise", "openCreateCronJobModal()", false,
-						)
-					</div>
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, cronEntity := range crons {
-				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th class="hidden">
-						@templ.JSONScript("cronEntity_"+cronEntity.Id.String(), cronEntity)
-					</th>
-					<th scope="row" class="px-5 py-3 text-left font-normal">{ cronEntity.Schedule.String() }</th>
-					<th scope="row" class="px-5 py-3 text-center font-normal">{ cronEntity.Command.String() }</th>
-					<th scope="row" class="px-5 py-3 text-center font-normal">
-						if cronEntity.Comment != nil {
-							{ cronEntity.Comment.String() }
-						}
-					</th>
-					<th scope="row" class="w-2/4 px-5 py-3 text-right">
-						<div class="inline-flex space-x-2">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-pencil", "blue-900", "blue-700",
-								"openUpdateCronJobModal("+cronEntity.Id.String()+")",
-								"update job", "blue-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openDeleteCronJobModal("+cronEntity.Id.String()+")",
-								"delete job", "red-500",
-							)
-						</div>
-					</th>
-				</tr>
-			}
-		</tbody>
-	</table>
+	<!-- CronsTable -->
+	<div class="bg-os-800 rounded-md p-4">
+		<div class="bg-os-500 space-y-3 rounded-md p-4">
+			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+				<!-- CronsTable Header -->
+				<thead class="text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="w-1/8 px-5 py-3 text-left">Schedule(s)</th>
+						<th scope="col" class="w-3/8 px-5 py-3 text-center">Command(s)</th>
+						<th scope="col" class="w-2/8 px-5 py-3 text-center">Comment(s)</th>
+						<th scope="col" class="flex justify-end py-3">
+							<div class="mr-2">
+								@componentForm.SubmitButton(
+									"open-create-cron-job-form-button", "Schedule new job",
+									"ph-clock-clockwise", "openCreateCronJobModal()", true,
+								)
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- CronsTable Items -->
+					for _, cronEntity := range crons {
+						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+							<th class="hidden">
+								@templ.JSONScript("cronEntity_"+cronEntity.Id.String(), cronEntity)
+							</th>
+							<th scope="row" class="w-1/8 px-5 py-3 text-left font-normal">{ cronEntity.Schedule.String() }</th>
+							<th scope="row" class="w-3/8 px-5 py-3 text-center font-normal">{ cronEntity.Command.String() }</th>
+							<th scope="row" class="w-2/8 px-5 py-3 text-center font-normal">
+								if cronEntity.Comment != nil {
+									{ cronEntity.Comment.String() }
+								}
+							</th>
+							<th scope="row" class="w-2/4 px-5 py-3 text-right">
+								<div class="inline-flex space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-pencil", "os-200", "os-100",
+										"openUpdateCronJobModal("+cronEntity.Id.String()+")",
+										"update job", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-trash", "red-800", "red-600",
+										"openDeleteCronJobModal("+cronEntity.Id.String()+")",
+										"delete job", "red-500",
+									)
+								</div>
+							</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 }
 
 templ customScheduleInput() {
+	<!-- CustomScheduleInput -->
 	<div>
 		<div class="flex justify-center">
 			<div class="border-os-200 w-100 border-b-2 pb-2 text-3xl">
@@ -315,6 +208,7 @@ templ customScheduleInput() {
 }
 
 templ CreateCronJobForm() {
+	<!-- CreateCronJobForm -->
 	<form
 		hx-post="/api/v1/cron/"
 		hx-indicator="#loading-overlay"
@@ -376,6 +270,7 @@ templ CreateCronJobModal() {
 }
 
 templ UpdateCronJobForm() {
+	<!-- UpdateCronJobForm -->
 	<form
 		hx-put="/api/v1/cron/"
 		hx-indicator="#loading-overlay"

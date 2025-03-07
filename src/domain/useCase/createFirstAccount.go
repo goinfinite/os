@@ -22,7 +22,7 @@ func CreateFirstAccount(
 
 	accountId, err := accountCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateFirstAccountError", slog.Any("error", err))
+		slog.Error("CreateFirstAccountError", slog.String("err", err.Error()))
 		return errors.New("CreateFirstAccountInfraError")
 	}
 

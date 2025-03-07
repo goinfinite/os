@@ -12,9 +12,15 @@ func DnsLookup(recordName string, recordType *string) ([]string, error) {
 
 	digCmd := "dig +short " + recordTypeStr + " " + recordName
 
-	rawRecords, err := RunCmdWithSubShell(digCmd + " @dns.google")
+	rawRecords, err := RunCmd(RunCmdSettings{
+		Command:               digCmd + " @dns.google",
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil || rawRecords == "" {
-		rawRecords, err = RunCmdWithSubShell(digCmd + " @security-filter-dns.cleanbrowsing.org")
+		rawRecords, err = RunCmd(RunCmdSettings{
+			Command:               digCmd + " @security-filter-dns.cleanbrowsing.org",
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return resourceRecords, err
 		}

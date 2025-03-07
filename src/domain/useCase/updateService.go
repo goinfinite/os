@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func UpdateService(
@@ -26,8 +27,8 @@ func UpdateService(
 		return err
 	}
 
-	isSoloService := serviceEntity.Nature.String() == "solo"
-	isSystemService := serviceEntity.Type.String() == "system"
+	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
+	isSystemService := serviceEntity.Type == valueObject.ServiceTypeSystem
 	shouldUpdateStatus := updateDto.Status != nil
 	if (isSoloService || isSystemService) && !shouldUpdateStatus {
 		return errors.New("OnlyStatusUpdateAllowed")
@@ -46,7 +47,7 @@ func UpdateService(
 
 	err = servicesCmdRepo.Update(updateDto)
 	if err != nil {
-		slog.Error("UpdateServiceError", slog.Any("error", err))
+		slog.Error("UpdateServiceError", slog.String("err", err.Error()))
 		return errors.New("UpdateServiceInfraError")
 	}
 
@@ -60,7 +61,7 @@ func UpdateService(
 		updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
 	)
 	if err != nil {
-		slog.Error("RecreateMappingError", slog.Any("error", err))
+		slog.Error("RecreateMappingError", slog.String("err", err.Error()))
 	}
 
 	return nil

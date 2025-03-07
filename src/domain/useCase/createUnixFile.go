@@ -16,7 +16,7 @@ func CreateUnixFile(
 ) error {
 	err := filesCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateUnixFileInfraError", slog.Any("err", err))
+		slog.Error("CreateUnixFileInfraError", slog.String("err", err.Error()))
 		return errors.New("CreateUnixFileInfraError")
 	}
 

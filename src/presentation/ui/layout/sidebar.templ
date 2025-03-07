@@ -35,45 +35,23 @@ func sidebarItemsGetter(currentUrl string) []SidebarItem {
 }
 
 templ Sidebar(currentUrl string) {
-	<!-- Sidebar JavaScript -->
-	<script defer type="text/javascript">
-	function clearSession() {
-		document.cookie = "os-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-		window.location.href = "/login/";
-	}
-	function scrollToTop() {
-		const menu = document.getElementById("sidebarMenu");
-		menu.scrollTo({ top: 0, behavior: 'smooth' });
-	}
-	function toggleScrollButtonDisplay() {
-		const menu = document.getElementById("sidebarMenu");
-		const scrollButton = document.getElementById("scrollButton");
-		if (menu.scrollTop > 0) {
-			scrollButton.style.display = 'flex';
-		} else {
-			scrollButton.style.display = 'none';
-		}
-	}
-	</script>
-	<!-- Sidebar HTML -->
-	<sidebar id="sidebar" class="bg-os-900 w-30 z-1 flex h-screen flex-col items-center">
+	<!-- Sidebar Layout JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
+	<!-- Sidebar Layout HTML -->
+	<sidebar
+		id="sidebar"
+		x-data="sidebar"
+		class="bg-os-900 w-30 z-1 flex h-screen flex-col items-center"
+	>
 		<div class="my-7">
-			<a
-				href="https://goinfinite.net/os/"
-				target="_blank"
-				class="mx-auto mb-2 flex w-[80px] max-w-[80px] items-center justify-center"
-			>
-				<img
-					src="/assets/os-logo.svg"
-					alt="Infinite OS"
-					class="fill-white"
-				/>
+			<a href="https://goinfinite.net/os/" target="_blank" class="mx-auto mb-2 flex w-[80px] max-w-[80px] items-center justify-center">
+				<img src="/assets/os-logo.svg" alt="Infinite OS" class="fill-white"/>
 			</a>
 			<p class="text-center text-xs">v{ infraEnvs.InfiniteOsVersion }</p>
 		</div>
 		<button
 			type="button"
-			onclick="clearSession()"
+			@click="clearSession()"
 			class="hover:bg-infinite-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
 		>
 			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
@@ -81,12 +59,17 @@ templ Sidebar(currentUrl string) {
 		</button>
 		<button
 			id="scrollButton"
-			onclick="scrollToTop()"
+			@click="scrollToTop()"
 			class="hover:bg-infinite-500 mt-2 hidden rounded-full border border-neutral-500 bg-transparent p-2 transition-all hover:border-transparent"
 		>
 			<i class="ph-duotone ph-arrow-fat-up block"></i>
 		</button>
-		<div id="sidebarMenu" onscroll="toggleScrollButtonDisplay()" class="scrollbar-hide hover:scrollbar-show mt-2 w-full flex-1 overflow-y-auto">
+		<!-- SidebarMenu -->
+		<div
+			id="sidebarMenu"
+			@scroll="toggleScrollButtonDisplay()"
+			class="scrollbar-hide hover:scrollbar-show mt-2 w-full flex-1 overflow-y-auto"
+		>
 			<ul>
 				for _, item := range sidebarItemsGetter(currentUrl) {
 					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>

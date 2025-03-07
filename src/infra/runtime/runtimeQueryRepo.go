@@ -46,10 +46,12 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
-	output, err := infraHelper.RunCmd(
-		"awk", "/extprocessor lsphp/{print $2}",
-		infraEnvs.PhpWebserverMainConfFilePath,
-	)
+	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "awk",
+		Args: []string{
+			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
+		},
+	})
 	if err != nil {
 		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -79,11 +81,13 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 		return phpVersion, err
 	}
 
-	currentPhpVersionStr, err := infraHelper.RunCmd(
-		"awk",
-		"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-		vhostPhpConfFilePath.String(),
-	)
+	currentPhpVersionStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "awk",
+		Args: []string{
+			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
+			vhostPhpConfFilePath.String(),
+		},
+	})
 	if err != nil {
 		return phpVersion, errors.New("GetCurrentPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -103,9 +107,10 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
-	timezonesRaw, err := infraHelper.RunCmd(
-		"php", "-r", "echo json_encode(DateTimeZone::listIdentifiers());",
-	)
+	timezonesRaw, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "php",
+		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
+	})
 	if err != nil {
 		return timezones, errors.New("GetPhpTimezonesFailed: " + err.Error())
 	}
@@ -211,11 +216,15 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 		return phpSettings, err
 	}
 
-	output, err := infraHelper.RunCmd(
-		"sed", "-n",
-		"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-		vhostPhpConfFilePath.String(),
-	)
+	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "sed",
+		Args: []string{
+			"-n",
+			"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; " +
+				"s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
+			vhostPhpConfFilePath.String(),
+		},
+	})
 	if err != nil || output == "" {
 		return phpSettings, errors.New("GetPhpSettingsFailed: " + err.Error())
 	}
@@ -235,9 +244,10 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
-	activeModuleList, err := infraHelper.RunCmd(
-		"/usr/local/lsws/lsphp"+version.GetWithoutDots()+"/bin/php", "-m",
-	)
+	activeModuleList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
+		Args:    []string{"-m"},
+	})
 	if err != nil {
 		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}

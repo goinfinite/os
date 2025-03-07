@@ -2,7 +2,7 @@ package infraHelper
 
 import "strings"
 
-func UpdatePermissionsForWebServerUse(
+func UpdateOwnershipForWebServerUse(
 	filePath string, isRecursive bool, shouldIncludeSymlink bool,
 ) error {
 	flags := []string{}
@@ -23,7 +23,10 @@ func UpdatePermissionsForWebServerUse(
 	params = append(params, filePath)
 
 	paramsStr := strings.Join(params, " ")
-	_, err := RunCmdWithSubShell("chown " + flagsStr + " " + paramsStr)
+	_, err := RunCmd(RunCmdSettings{
+		Command:               "chown " + flagsStr + " " + paramsStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return err
 	}

@@ -13,6 +13,7 @@ type FilesCmdRepo interface {
 	Extract(dto.ExtractUnixFiles) error
 	Move(dto.MoveUnixFile) error
 	UpdateContent(dto.UpdateUnixFileContent) error
+	UpdateOwnership(dto.UpdateUnixFileOwnership) error
 	UpdatePermissions(dto.UpdateUnixFilePermissions) error
 	Upload(dto.UploadUnixFiles) (dto.UploadProcessReport, error)
 }

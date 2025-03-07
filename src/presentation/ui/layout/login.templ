@@ -6,50 +6,17 @@ import (
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 )
 
-script LoginLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('login', () => ({
-			accessTokenKey: 'os-access-token',
-			username: '',
-			password: '',
-			async createSessionToken() {
-				try {
-					const shouldDisplayToast = false;
-					const authResponse = await Infinite.JsonAjax("POST", "/api/v1/auth/login/", {
-						username: this.username,
-						password: this.password,
-					}, shouldDisplayToast);
-
-					Alpine.store("toast").displayToast("LoginSuccessful", "success");
-					document.cookie = this.accessTokenKey + "=" + authResponse.tokenStr + "; path=/";
-					window.location.href = "/overview/";
-				} catch (error) {
-					Alpine.store("toast").displayToast(error.message, "danger");
-					return;
-				}
-			},
-			init() {
-				document.cookie = this.accessTokenKey + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-			},
-		}));
-	});
-}
-
 templ Login() {
 	<!DOCTYPE html>
 	<html>
 		@HeadTag()
-		<body
-			class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
-		>
-			@LoginLocalState()
+		<!-- Login Layout JavaScript -->
+		<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/login.js" }></script>
+		<!-- Login Layout HTML -->
+		<body class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50">
 			@componentUtil.LoadingOverlay()
 			<div>
-				<a
-					href="https://goinfinite.net/os/"
-					target="_blank"
-					class="mb-4 flex w-[120px] gap-2 hover:opacity-90"
-				>
+				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
 					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
 					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
 				</a>

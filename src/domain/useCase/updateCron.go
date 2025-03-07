@@ -26,7 +26,7 @@ func UpdateCron(
 
 	err = cronCmdRepo.Update(updateDto)
 	if err != nil {
-		slog.Error("UpdateCronError", slog.Any("err", err))
+		slog.Error("UpdateCronError", slog.String("err", err.Error()))
 		return errors.New("UpdateCronInfraError")
 	}
 

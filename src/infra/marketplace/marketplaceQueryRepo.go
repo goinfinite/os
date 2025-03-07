@@ -252,7 +252,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 			if err != nil {
 				slog.Debug(
 					"InvalidMarketplaceCatalogItemDataFieldIsRequired",
-					slog.Any("err", err), slog.Any("key", rawKey),
+					slog.String("err", err.Error()), slog.Any("key", rawKey),
 					slog.Bool("isRequired", rawIsRequired),
 				)
 				continue
@@ -477,10 +477,30 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
+	itemInstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if itemMap["installTimeoutSecs"] != nil {
+		itemInstallTimeoutSecs, err = valueObject.NewUnixTime(
+			itemMap["installTimeoutSecs"],
+		)
+		if err != nil {
+			return catalogItem, err
+		}
+	}
+
 	itemInstallCmdSteps := []valueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
 		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
 			itemMap["installCmdSteps"],
+		)
+		if err != nil {
+			return catalogItem, err
+		}
+	}
+
+	itemUninstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if itemMap["uninstallTimeoutSecs"] != nil {
+		itemUninstallTimeoutSecs, err = valueObject.NewUnixTime(
+			itemMap["uninstallTimeoutSecs"],
 		)
 		if err != nil {
 			return catalogItem, err
@@ -532,9 +552,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	return entity.NewMarketplaceCatalogItem(
 		itemManifestVersion, itemId, itemSlugs, itemName, itemType, itemDescription,
-		itemServices, itemMappings, itemDataFields, itemInstallCmdSteps,
-		itemUninstallCmdSteps, itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl,
-		itemScreenshotUrls,
+		itemServices, itemMappings, itemDataFields, itemInstallTimeoutSecs,
+		itemInstallCmdSteps, itemUninstallTimeoutSecs, itemUninstallCmdSteps,
+		itemUninstallFileNames, estimatedSizeBytes, itemAvatarUrl, itemScreenshotUrls,
 	), nil
 }
 
@@ -552,11 +572,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
+	rawCatalogFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}
@@ -583,7 +604,8 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		if err != nil {
 			slog.Debug(
 				"CatalogMarketplaceItemFactoryError",
-				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
+				slog.String("filePath", itemFilePath.String()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -622,7 +644,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 			slog.Debug(
 				"CreateNewCatalogMarketplaceItemIdError",
 				slog.String("itemName", catalogItem.Name.String()),
-				slog.Any("err", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -795,7 +817,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		if err != nil {
 			slog.Debug(
 				"MarketplaceInstalledItemModelToEntityError",
-				slog.Uint64("id", uint64(model.ID)), slog.Any("error", err),
+				slog.Uint64("id", uint64(model.ID)), slog.String("err", err.Error()),
 			)
 			continue
 		}

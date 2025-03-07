@@ -14,7 +14,7 @@ func ReadInstalledServices(
 ) (responseDto dto.ReadInstalledServicesItemsResponse, err error) {
 	responseDto, err = servicesQueryRepo.ReadInstalledItems(requestDto)
 	if err != nil {
-		slog.Error("ReadInstalledServicesError", slog.Any("error", err))
+		slog.Error("ReadInstalledServicesError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadInstalledServicesInfraError")
 	}
 

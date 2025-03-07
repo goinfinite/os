@@ -110,7 +110,7 @@ func (repo *ScheduledTaskQueryRepo) Read(
 			slog.Debug(
 				"ModelToEntityError",
 				slog.Uint64("id", scheduledTaskModel.ID),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

@@ -413,10 +413,10 @@ func (service *ServicesService) CreateInstallable(
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("services")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
-		timeoutSeconds := uint16(600)
+		timeoutSecs := uint16(1800)
 
 		scheduledTaskCreateDto := dto.NewCreateScheduledTask(
-			taskName, taskCmd, taskTags, &timeoutSeconds, nil,
+			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)

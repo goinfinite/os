@@ -15,7 +15,7 @@ func CreateSecureAccessPublicKey(
 ) error {
 	keyId, err := accountCmdRepo.CreateSecureAccessPublicKey(createDto)
 	if err != nil {
-		slog.Error("CreateSecureAccessPublicKeyError", slog.Any("error", err))
+		slog.Error("CreateSecureAccessPublicKeyError", slog.String("err", err.Error()))
 		return errors.New("CreateSecureAccessPublicKeyInfraError")
 	}
 

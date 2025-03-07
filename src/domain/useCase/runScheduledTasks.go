@@ -24,7 +24,7 @@ func RunScheduledTasks(
 
 	responseDto, err := scheduledTaskQueryRepo.Read(readDto)
 	if err != nil {
-		slog.Error("ReadPendingScheduledTasksError", slog.Any("error", err))
+		slog.Error("ReadPendingScheduledTasksError", slog.String("err", err.Error()))
 		return
 	}
 
@@ -49,7 +49,7 @@ func RunScheduledTasks(
 			slog.Error(
 				"RunScheduledTaskError",
 				slog.Uint64("scheduledTaskId", pendingTask.Id.Uint64()),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

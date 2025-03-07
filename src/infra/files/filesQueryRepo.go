@@ -150,9 +150,10 @@ func (repo FilesQueryRepo) Read(
 		filesToFactoryWithoutSourcePath := filesToFactory[1:]
 		filesToFactory = filesToFactoryWithoutSourcePath
 
-		rawDirectoryFiles, err := infraHelper.RunCmd(
-			"find", "-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n",
-		)
+		rawDirectoryFiles, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command: "find",
+			Args:    []string{"-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n"},
+		})
 		if err != nil {
 			return unixFileList, errors.New("ReadDirectoryError: " + err.Error())
 		}
@@ -166,7 +167,7 @@ func (repo FilesQueryRepo) Read(
 			if err != nil {
 				slog.Error(
 					"FileToFactoryError", slog.String("filePath", filePath.String()),
-					slog.Any("err", err),
+					slog.String("err", err.Error()),
 				)
 				continue
 			}
@@ -191,7 +192,7 @@ func (repo FilesQueryRepo) Read(
 		if err != nil {
 			slog.Error(
 				"UnixFileFactoryError", slog.String("filePath", filePath.String()),
-				slog.Any("err", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

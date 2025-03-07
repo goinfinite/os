@@ -14,7 +14,7 @@ func ReadAccounts(
 ) (responseDto dto.ReadAccountsResponse, err error) {
 	responseDto, err = accountQueryRepo.Read(requestDto)
 	if err != nil {
-		slog.Error("ReadAccountsInfraError", slog.Any("error", err))
+		slog.Error("ReadAccountsInfraError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadAccountsInfraError")
 	}
 

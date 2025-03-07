@@ -2,6 +2,7 @@ package accountInfra
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"os/user"
 	"time"
@@ -31,6 +32,23 @@ func NewAccountCmdRepo(
 	}
 }
 
+func (repo *AccountCmdRepo) switchAccountSudoPrivileges(
+	accountName valueObject.Username,
+	isAccountMustBeSuperAdmin bool,
+) error {
+	runCmdSettings := infraHelper.RunCmdSettings{
+		Command: "usermod",
+		Args:    []string{"-G", "sudo", accountName.String()},
+	}
+	if !isAccountMustBeSuperAdmin {
+		runCmdSettings.Command = "deluser"
+		runCmdSettings.Args = []string{accountName.String(), "sudo"}
+	}
+
+	_, err := infraHelper.RunCmd(runCmdSettings)
+	return err
+}
+
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 	accountUsername valueObject.Username,
 	accountHomeDirectory valueObject.UnixFilePath,
@@ -49,9 +67,10 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 		return errors.New("CreateAuthorizedKeysFileError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"chown", "-R", accountUsernameStr, authorizedKeysFilePath,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "chown",
+		Args:    []string{"-R", accountUsernameStr, authorizedKeysFilePath},
+	})
 	if err != nil {
 		return errors.New("ChownAuthorizedKeysFileError: " + err.Error())
 	}
@@ -77,14 +96,22 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(
-		"useradd", "-m",
-		"-s", "/bin/bash",
-		"-p", string(passHash),
-		usernameStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "useradd",
+		Args:    []string{"-m", "-s", "/bin/bash", "-p", string(passHash), usernameStr},
+	})
 	if err != nil {
 		return accountId, errors.New("UserAddFailed: " + err.Error())
+	}
+
+	if createDto.IsSuperAdmin {
+		isAccountMustBeSuperAdmin := true
+		err := repo.switchAccountSudoPrivileges(
+			createDto.Username, isAccountMustBeSuperAdmin,
+		)
+		if err != nil {
+			slog.Debug("AddAccountToSudoersError", slog.String("err", err.Error()))
+		}
 	}
 
 	err = repo.createAuthorizedKeysFile(createDto.Username, homeDirectory)
@@ -110,6 +137,7 @@ func (repo *AccountCmdRepo) Create(
 	nowUnixTime := valueObject.NewUnixTimeNow()
 	accountEntity := entity.NewAccount(
 		accountId, groupId, createDto.Username, homeDirectory,
+		createDto.IsSuperAdmin,
 		[]entity.SecureAccessPublicKey{}, nowUnixTime, nowUnixTime,
 	)
 
@@ -137,12 +165,21 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 
 	accountIdStr := accountId.String()
 
-	_, err = infraHelper.RunCmd("pgrep", "-u", accountIdStr)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "pgrep",
+		Args:    []string{"-u", accountIdStr},
+	})
 	if err == nil {
-		_, _ = infraHelper.RunCmd("pkill", "-9", "-U", accountIdStr)
+		_, _ = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command: "pkill",
+			Args:    []string{"-9", "-U", accountIdStr},
+		})
 	}
 
-	_, err = infraHelper.RunCmd("userdel", "-r", accountEntity.Username.String())
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "userdel",
+		Args:    []string{"-r", accountEntity.Username.String()},
+	})
 	if err != nil {
 		return err
 	}
@@ -157,8 +194,8 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 	return nil
 }
 
-func (repo *AccountCmdRepo) UpdatePassword(
-	accountId valueObject.AccountId, password valueObject.Password,
+func (repo *AccountCmdRepo) updatePassword(
+	accountEntity entity.Account, password valueObject.Password,
 ) error {
 	passHash, err := bcrypt.GenerateFromPassword(
 		[]byte(password.String()), bcrypt.DefaultCost,
@@ -167,26 +204,45 @@ func (repo *AccountCmdRepo) UpdatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "usermod",
+		Args:    []string{"-p", string(passHash), accountEntity.Username.String()},
+	})
+	return err
+}
+
+func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 	readFirstAccountRequestDto := dto.ReadAccountsRequest{
-		AccountId: &accountId,
+		AccountId: &updateDto.AccountId,
 	}
 	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
 	if err != nil {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd(
-		"usermod", "-p", string(passHash), accountEntity.Username.String(),
-	)
-	if err != nil {
-		return errors.New("UserModFailed: " + err.Error())
+	updateMap := map[string]interface{}{"updated_at": time.Now()}
+	if updateDto.IsSuperAdmin != nil {
+		err := repo.switchAccountSudoPrivileges(
+			accountEntity.Username, *updateDto.IsSuperAdmin,
+		)
+		if err != nil {
+			return errors.New("SwitchAccountSudoPrivilegesError: " + err.Error())
+		}
+
+		updateMap["is_super_admin"] = *updateDto.IsSuperAdmin
 	}
 
-	accountModel := dbModel.Account{ID: accountId.Uint64()}
+	if updateDto.Password != nil {
+		err := repo.updatePassword(accountEntity, *updateDto.Password)
+		if err != nil {
+			return errors.New("UpdateAccountPasswordError: " + err.Error())
+		}
+	}
+
 	return repo.persistentDbSvc.Handler.
-		Model(&accountModel).
-		Update("updated_at", time.Now()).
-		Error
+		Model(&dbModel.Account{}).
+		Where("id = ?", accountEntity.Id).
+		Updates(updateMap).Error
 }
 
 func (repo *AccountCmdRepo) UpdateApiKey(

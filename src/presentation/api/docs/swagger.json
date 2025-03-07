@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.8"
+        "version": "0.1.9"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -2361,6 +2361,9 @@
         "dto.CreateAccount": {
             "type": "object",
             "properties": {
+                "isSuperAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2462,7 +2465,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "version": {
                     "type": "string"
@@ -2722,7 +2725,7 @@
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -2773,7 +2776,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -2922,6 +2925,9 @@
                 "accountId": {
                     "type": "integer"
                 },
+                "isSuperAdmin": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -2993,6 +2999,9 @@
                 "autoStart": {
                     "type": "boolean"
                 },
+                "avatarUrl": {
+                    "type": "string"
+                },
                 "envs": {
                     "type": "array",
                     "items": {
@@ -3063,7 +3072,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "version": {
                     "type": "string"
@@ -3082,8 +3091,14 @@
                 "encodedContent": {
                     "type": "string"
                 },
+                "ownership": {
+                    "type": "string"
+                },
                 "permissions": {
                     "type": "string"
+                },
+                "shouldFixPermissions": {
+                    "type": "boolean"
                 },
                 "sourcePaths": {
                     "type": "array",
@@ -3144,6 +3159,9 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "isSuperAdmin": {
+                    "type": "boolean"
                 },
                 "secureAccessPublicKeys": {
                     "type": "array",
@@ -3250,7 +3268,7 @@
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -3265,7 +3283,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "versions": {
                     "type": "array",
@@ -3315,7 +3333,7 @@
                     "type": "string"
                 },
                 "nature": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceNature"
                 },
                 "portBindings": {
                     "type": "array",
@@ -3366,7 +3384,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.ServiceType"
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -3926,6 +3944,36 @@
                     "type": "string"
                 }
             }
+        },
+        "valueObject.ServiceNature": {
+            "type": "string",
+            "enum": [
+                "solo",
+                "multi",
+                "custom"
+            ],
+            "x-enum-varnames": [
+                "ServiceNatureSolo",
+                "ServiceNatureMulti",
+                "ServiceNatureCustom"
+            ]
+        },
+        "valueObject.ServiceType": {
+            "type": "string",
+            "enum": [
+                "runtime",
+                "database",
+                "webserver",
+                "system",
+                "other"
+            ],
+            "x-enum-varnames": [
+                "RuntimeServiceType",
+                "DatabaseServiceType",
+                "WebServerServiceType",
+                "SystemServiceType",
+                "OtherServiceType"
+            ]
         }
     },
     "securityDefinitions": {

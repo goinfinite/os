@@ -35,7 +35,7 @@ func NewSystemResourceIdentifierIgnoreError(value interface{}) SystemResourceIde
 	sri, err := NewSystemResourceIdentifier(value)
 	if err != nil {
 		panicMessage := "UnexpectedSystemResourceIdentifierCreationError"
-		slog.Debug(panicMessage, slog.Any("value", value), slog.Any("error", err))
+		slog.Debug(panicMessage, slog.Any("value", value), slog.String("err", err.Error()))
 		panic(panicMessage)
 	}
 

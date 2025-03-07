@@ -63,7 +63,7 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		rawDatabaseType,
 	)
 	if err != nil {
-		slog.Error("GetDatabaseOverviewByTypeError", slog.Any("error", err))
+		slog.Error("GetDatabaseOverviewByTypeError", slog.String("err", err.Error()))
 		return nil
 	}
 

@@ -118,9 +118,11 @@ func (repo *ServicesQueryRepo) readPidMetrics(
 func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
-	rawStoppedServices, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'",
-	)
+	readStoppedServicesCmd := SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'"
+	rawStoppedServices, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               readStoppedServicesCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return stoppedServicesNames, err
 	}
@@ -157,9 +159,10 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		serviceNameStr := installedService.Name.String()
 
-		supervisorStatus, _ := infraHelper.RunCmdWithSubShell(
-			SupervisorCtlBin + " status " + serviceNameStr,
-		)
+		supervisorStatus, _ := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command:               SupervisorCtlBin + " status " + serviceNameStr,
+			ShouldRunWithSubShell: true,
+		})
 		if len(supervisorStatus) == 0 {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
@@ -275,7 +278,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		if err != nil {
 			slog.Debug(
 				"InstalledServiceItemModelToEntityError",
-				slog.String("name", resultModel.Name), slog.Any("error", err),
+				slog.String("name", resultModel.Name), slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -501,6 +504,16 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	stopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["stopTimeoutSecs"] != nil {
+		stopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["stopTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	stopCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
@@ -511,10 +524,30 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	installTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["installTimeoutSecs"] != nil {
+		installTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["installTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	installCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
 			"Install", serviceMap["installCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	uninstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["uninstallTimeoutSecs"] != nil {
+		uninstallTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["uninstallTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
@@ -551,10 +584,30 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	preStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["preStartTimeoutSecs"] != nil {
+		preStartTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["preStartTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	preStartCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
 			"PreStart", serviceMap["preStartCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	postStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["postStartTimeoutSecs"] != nil {
+		postStartTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["postStartTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
@@ -571,10 +624,30 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
+	preStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["preStopTimeoutSecs"] != nil {
+		preStopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["preStopTimeoutSecs"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
 	preStopCmdSteps := []valueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
 			"PreStop", serviceMap["preStopCmdSteps"],
+		)
+		if err != nil {
+			return installableService, err
+		}
+	}
+
+	postStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	if serviceMap["postStopTimeoutSecs"] != nil {
+		postStopTimeoutSecs, err = valueObject.NewUnixTime(
+			serviceMap["postStopTimeoutSecs"],
 		)
 		if err != nil {
 			return installableService, err
@@ -658,10 +731,12 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	return entity.NewInstallableService(
 		manifestVersion, name, nature, serviceType, startCommand, description, versions,
-		envs, portBindings, stopCmdSteps, installCmdSteps, uninstallCmdSteps,
-		uninstallFilePaths, preStartCmdSteps, postStartCmdSteps, preStopCmdSteps,
-		postStopCmdSteps, execUserPtr, workingDirectoryPtr, startupFilePtr,
-		logOutputPathPtr, logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
+		envs, portBindings, stopTimeoutSecs, stopCmdSteps, installTimeoutSecs,
+		installCmdSteps, uninstallTimeoutSecs, uninstallCmdSteps, uninstallFilePaths,
+		preStartTimeoutSecs, preStartCmdSteps, postStartTimeoutSecs, postStartCmdSteps,
+		preStopTimeoutSecs, preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
+		logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
 	), nil
 }
 
@@ -679,11 +754,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
+	rawInstallableFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return installableItemsDto, errors.New(
 			"ReadInstallableFilesError: " + err.Error(),
@@ -711,7 +787,8 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		if err != nil {
 			slog.Debug(
 				"CatalogMarketplaceItemFactoryError",
-				slog.String("filePath", itemFilePath.String()), slog.Any("err", err),
+				slog.String("filePath", itemFilePath.String()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

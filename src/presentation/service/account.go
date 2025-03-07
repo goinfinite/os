@@ -144,6 +144,14 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	isSuperAdmin := false
+	if input["isSuperAdmin"] != nil {
+		isSuperAdmin, err = voHelper.InterfaceToBool(input["isSuperAdmin"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -161,7 +169,7 @@ func (service *AccountService) Create(input map[string]interface{}) ServiceOutpu
 	}
 
 	createDto := dto.NewCreateAccount(
-		username, password, operatorAccountId, operatorIpAddress,
+		username, password, isSuperAdmin, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.CreateAccount(
@@ -192,12 +200,21 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 	}
 
 	var passwordPtr *valueObject.Password
-	if input["password"] != nil {
+	if input["password"] != nil && input["password"] != "" {
 		password, err := valueObject.NewPassword(input["password"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
 		passwordPtr = &password
+	}
+
+	var isSuperAdminPtr *bool
+	if input["isSuperAdmin"] != nil {
+		isSuperAdmin, err := voHelper.InterfaceToBool(input["isSuperAdmin"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		isSuperAdminPtr = &isSuperAdmin
 	}
 
 	var shouldUpdateApiKeyPtr *bool
@@ -226,8 +243,8 @@ func (service *AccountService) Update(input map[string]interface{}) ServiceOutpu
 	}
 
 	updateDto := dto.NewUpdateAccount(
-		accountId, passwordPtr, shouldUpdateApiKeyPtr, operatorAccountId,
-		operatorIpAddress,
+		accountId, passwordPtr, isSuperAdminPtr, shouldUpdateApiKeyPtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	if updateDto.ShouldUpdateApiKey != nil && *updateDto.ShouldUpdateApiKey {

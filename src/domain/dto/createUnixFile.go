@@ -17,9 +17,9 @@ func NewCreateUnixFile(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) CreateUnixFile {
-	permissions, _ := valueObject.NewUnixFilePermissions("644")
+	permissions := valueObject.NewUnixFileDefaultPermissions()
 	if mimeType.IsDir() {
-		permissions, _ = valueObject.NewUnixFilePermissions("755")
+		permissions = valueObject.NewUnixDirDefaultPermissions()
 	}
 
 	if permissionsPtr != nil {

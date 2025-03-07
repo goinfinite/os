@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/user"
 	"slices"
 	"strings"
 
@@ -63,24 +64,25 @@ func (repo FilesCmdRepo) uploadSingleFile(
 }
 
 func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
-	fileToCopyExists := infraHelper.FileExists(copyDto.SourcePath.String())
+	sourcePathStr := copyDto.SourcePath.String()
+	fileToCopyExists := infraHelper.FileExists(sourcePathStr)
 	if !fileToCopyExists {
 		return errors.New("FileToCopyNotFound")
 	}
 
+	destinationPathStr := copyDto.DestinationPath.String()
 	if !copyDto.ShouldOverwrite {
-		destinationPathExists := infraHelper.FileExists(
-			copyDto.DestinationPath.String(),
-		)
+		destinationPathExists := infraHelper.FileExists(destinationPathStr)
 		if destinationPathExists {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 	}
 
-	_, err := infraHelper.RunCmdWithSubShell(
-		"rsync -avq " + copyDto.SourcePath.String() + " " +
-			copyDto.DestinationPath.String(),
-	)
+	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationPathStr
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               copyCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -148,10 +150,15 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	filesToCompress := strings.Join(existingFiles, " ")
-	_, err = infraHelper.RunCmdWithSubShell(
-		compressionBinary + " " + compressionBinaryFlag + " " +
-			newDestinationPath.String() + " " + filesToCompress,
+	compressCmd := fmt.Sprintf(
+		"%s %s %s %s",
+		compressionBinary, compressionBinaryFlag,
+		newDestinationPath.String(), filesToCompress,
 	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               compressCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return compressionProcessReport, err
 	}
@@ -189,24 +196,42 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return errors.New("PathAlreadyExists")
 	}
 
-	if !createDto.MimeType.IsDir() {
-		_, err := os.Create(filePathStr)
-		if err != nil {
-			return err
-		}
-
-		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-			createDto.FilePath, createDto.Permissions,
-		)
-		return repo.UpdatePermissions(updatePermissionsDto)
+	unixUser, err := user.LookupId(createDto.OperatorAccountId.String())
+	if err != nil {
+		return errors.New("AccountNotFound")
 	}
 
-	err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
+	fileOwnershipStr := unixUser.Username + ":" + unixUser.Username
+	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnershipStr)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	updateFileOwnerDto := dto.NewUpdateUnixFileOwnership(createDto.FilePath, fileOwner)
+
+	if createDto.MimeType.IsDir() {
+		err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
+		if err != nil {
+			return err
+		}
+
+		return repo.UpdateOwnership(updateFileOwnerDto)
+	}
+
+	_, err = os.Create(filePathStr)
+	if err != nil {
+		return err
+	}
+
+	err = repo.UpdateOwnership(updateFileOwnerDto)
+	if err != nil {
+		return err
+	}
+
+	updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
+		createDto.FilePath, createDto.Permissions, nil,
+	)
+	return repo.UpdatePermissions(updatePermissionsDto)
 }
 
 func (repo FilesCmdRepo) Delete(unixFilePath valueObject.UnixFilePath) error {
@@ -263,7 +288,10 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressBinary, compressBinaryFlag, fileToExtract.String(),
 		compressDestinationFlag, destinationPath.String(),
 	)
-	_, err = infraHelper.RunCmdWithSubShell(compressCmd)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               compressCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -323,18 +351,53 @@ func (repo FilesCmdRepo) UpdateContent(
 	)
 }
 
+func (repo FilesCmdRepo) UpdateOwnership(
+	updateOwnershipDto dto.UpdateUnixFileOwnership,
+) error {
+	sourcePathStr := updateOwnershipDto.SourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
+		return errors.New("FileNotFound")
+	}
+
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "chown",
+		Args:    []string{updateOwnershipDto.Ownership.String(), sourcePathStr},
+	})
+	if err != nil {
+		return errors.New("UpdateFileOwnershipError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (repo FilesCmdRepo) UpdatePermissions(
 	updatePermissionsDto dto.UpdateUnixFilePermissions,
 ) error {
-	_, err := repo.filesQueryRepo.Read(updatePermissionsDto.SourcePath)
-	if err != nil {
-		return err
+	sourcePathStr := updatePermissionsDto.SourcePath.String()
+	if !infraHelper.FileExists(sourcePathStr) {
+		return errors.New("FileOrDirNotFound")
 	}
 
-	return os.Chmod(
-		updatePermissionsDto.SourcePath.String(),
-		updatePermissionsDto.Permissions.GetFileMode(),
-	)
+	updatePermissionsCmd := "find " + sourcePathStr + " -exec chmod " +
+		updatePermissionsDto.FilePermissions.String() + " {} \\;"
+
+	if updatePermissionsDto.DirectoryPermissions != nil {
+		updatePermissionsCmd = fmt.Sprintf(
+			"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
+			sourcePathStr, updatePermissionsDto.DirectoryPermissions.String(), sourcePathStr,
+			updatePermissionsDto.FilePermissions.String(),
+		)
+	}
+
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               updatePermissionsCmd,
+		ShouldRunWithSubShell: true,
+	})
+	if err != nil {
+		return errors.New("UpdatePermissionsError: " + err.Error())
+	}
+
+	return nil
 }
 
 func (repo FilesCmdRepo) Upload(
@@ -361,7 +424,7 @@ func (repo FilesCmdRepo) Upload(
 		if err != nil {
 			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
 			if err != nil {
-				slog.Debug("AddUploadFailureError", slog.Any("err", err))
+				slog.Debug("ReportUploadFailureError", slog.String("err", err.Error()))
 			}
 
 			uploadProcessReport.FailedNamesWithReason = append(

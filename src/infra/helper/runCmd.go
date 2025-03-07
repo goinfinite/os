@@ -4,41 +4,88 @@ import (
 	"bytes"
 	"encoding/json"
 	"os/exec"
+	"slices"
+	"strconv"
 	"strings"
 )
 
-type CommandError struct {
+const commandDeadlineExceededError string = "CommandDeadlineExceeded"
+
+func IsRunCmdTimeout(err error) bool {
+	return strings.Contains(err.Error(), commandDeadlineExceededError)
+}
+
+type CmdError struct {
 	StdErr   string `json:"stdErr"`
 	ExitCode int    `json:"exitCode"`
 }
 
-func (e *CommandError) Error() string {
+func (e *CmdError) Error() string {
 	jsonError, _ := json.Marshal(e)
 	return string(jsonError)
 }
 
-func RunCmd(command string, args ...string) (string, error) {
-	var stdout, stderr bytes.Buffer
-	cmdObj := exec.Command(command, args...)
-	cmdObj.Stdout = &stdout
-	cmdObj.Stderr = &stderr
-	cmdObj.Env = append(cmdObj.Environ(), "DEBIAN_FRONTEND=noninteractive")
+type RunCmdSettings struct {
+	Command               string
+	Args                  []string
+	ShouldRunWithSubShell bool
+	ExecutionTimeoutSecs  uint64
+}
 
-	err := cmdObj.Run()
-	stdOut := strings.TrimSpace(stdout.String())
+func prepareCmdExecutor(
+	runConfigs RunCmdSettings,
+) (*exec.Cmd, *bytes.Buffer, *bytes.Buffer) {
+	args := runConfigs.Args
+	command := runConfigs.Command
+	if runConfigs.ShouldRunWithSubShell {
+		args = []string{
+			"-c", "source /etc/profile; " + command + " " + strings.Join(args, " "),
+		}
+		command = "bash"
+	}
+
+	executionTimeoutSecs := uint64(1800)
+	if runConfigs.ExecutionTimeoutSecs > 0 && runConfigs.ExecutionTimeoutSecs <= executionTimeoutSecs {
+		executionTimeoutSecs = runConfigs.ExecutionTimeoutSecs
+	}
+
+	args = slices.Concat(
+		[]string{strconv.FormatUint(runConfigs.ExecutionTimeoutSecs, 10), command},
+		args,
+	)
+	command = "timeout"
+
+	cmdExecutor := exec.Command(command, args...)
+
+	var stdoutBytesBuffer, stderrBytesBuffer bytes.Buffer
+	cmdExecutor.Stdout = &stdoutBytesBuffer
+	cmdExecutor.Stderr = &stderrBytesBuffer
+
+	cmdExecutor.Env = append(cmdExecutor.Environ(), "DEBIAN_FRONTEND=noninteractive")
+
+	return cmdExecutor, &stdoutBytesBuffer, &stderrBytesBuffer
+}
+
+func RunCmd(runConfigs RunCmdSettings) (string, error) {
+	cmdExecutor, stdoutBytesBuffer, stderrBytesBuffer := prepareCmdExecutor(runConfigs)
+
+	err := cmdExecutor.Run()
+	stdoutStr := strings.TrimSpace(stdoutBytesBuffer.String())
+
 	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return stdOut, &CommandError{
-				StdErr:   stderr.String(),
+		if exitErr, assertOk := err.(*exec.ExitError); assertOk {
+			stdErrStr := stderrBytesBuffer.String()
+			if exitErr.ExitCode() == 124 {
+				stdErrStr = commandDeadlineExceededError
+			}
+
+			return stdoutStr, &CmdError{
+				StdErr:   stdErrStr,
 				ExitCode: exitErr.ExitCode(),
 			}
 		}
-		return stdOut, err
+		return stdoutStr, err
 	}
 
-	return stdOut, nil
-}
-
-func RunCmdWithSubShell(command string) (string, error) {
-	return RunCmd("bash", "-c", "source /etc/profile; "+command)
+	return stdoutStr, nil
 }

@@ -11,30 +11,35 @@ import (
 )
 
 type InstalledService struct {
-	Name              string `gorm:"primarykey;not null"`
-	Nature            string `gorm:"not null"`
-	Type              string `gorm:"not null"`
-	Version           string `gorm:"not null"`
-	StartCmd          string `gorm:"not null"`
-	Envs              *string
-	PortBindings      *string
-	StopCmdSteps      *string
-	PreStartCmdSteps  *string
-	PostStartCmdSteps *string
-	PreStopCmdSteps   *string
-	PostStopCmdSteps  *string
-	ExecUser          *string
-	WorkingDirectory  *string
-	StartupFile       *string
-	AutoStart         *bool
-	AutoRestart       *bool
-	TimeoutStartSecs  *uint
-	MaxStartRetries   *uint
-	LogOutputPath     *string
-	LogErrorPath      *string
-	AvatarUrl         *string
-	CreatedAt         time.Time `gorm:"not null"`
-	UpdatedAt         time.Time `gorm:"not null"`
+	Name                 string `gorm:"primarykey;not null"`
+	Nature               string `gorm:"not null"`
+	Type                 string `gorm:"not null"`
+	Version              string `gorm:"not null"`
+	StartCmd             string `gorm:"not null"`
+	Envs                 *string
+	PortBindings         *string
+	StopTimeoutSecs      int64
+	StopCmdSteps         *string
+	PreStartTimeoutSecs  int64
+	PreStartCmdSteps     *string
+	PostStartTimeoutSecs int64
+	PostStartCmdSteps    *string
+	PreStopTimeoutSecs   int64
+	PreStopCmdSteps      *string
+	PostStopTimeoutSecs  int64
+	PostStopCmdSteps     *string
+	ExecUser             *string
+	WorkingDirectory     *string
+	StartupFile          *string
+	AutoStart            *bool
+	AutoRestart          *bool
+	TimeoutStartSecs     *uint
+	MaxStartRetries      *uint
+	LogOutputPath        *string
+	LogErrorPath         *string
+	AvatarUrl            *string
+	CreatedAt            time.Time `gorm:"not null"`
+	UpdatedAt            time.Time `gorm:"not null"`
 }
 
 func (InstalledService) TableName() string {
@@ -282,9 +287,19 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		portBindings = model.SplitPortBindings(*model.PortBindings)
 	}
 
+	stopTimeoutSecs, err := valueObject.NewUnixTime(model.StopTimeoutSecs)
+	if err != nil {
+		return serviceEntity, err
+	}
+
 	stopCmdSteps := []valueObject.UnixCommand{}
 	if model.StopCmdSteps != nil {
 		stopCmdSteps = model.SplitCmdSteps(*model.StopCmdSteps)
+	}
+
+	preStartTimeoutSecs, err := valueObject.NewUnixTime(model.PreStartTimeoutSecs)
+	if err != nil {
+		return serviceEntity, err
 	}
 
 	preStartCmdSteps := []valueObject.UnixCommand{}
@@ -292,14 +307,29 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		preStartCmdSteps = model.SplitCmdSteps(*model.PreStartCmdSteps)
 	}
 
+	postStartTimeoutSecs, err := valueObject.NewUnixTime(model.PostStartTimeoutSecs)
+	if err != nil {
+		return serviceEntity, err
+	}
+
 	postStartCmdSteps := []valueObject.UnixCommand{}
 	if model.PostStartCmdSteps != nil {
 		postStartCmdSteps = model.SplitCmdSteps(*model.PostStartCmdSteps)
 	}
 
+	preStopTimeoutSecs, err := valueObject.NewUnixTime(model.PreStopTimeoutSecs)
+	if err != nil {
+		return serviceEntity, err
+	}
+
 	preStopCmdSteps := []valueObject.UnixCommand{}
 	if model.PreStopCmdSteps != nil {
 		preStopCmdSteps = model.SplitCmdSteps(*model.PreStopCmdSteps)
+	}
+
+	postStopTimeoutSecs, err := valueObject.NewUnixTime(model.PostStopTimeoutSecs)
+	if err != nil {
+		return serviceEntity, err
 	}
 
 	postStopCmdSteps := []valueObject.UnixCommand{}
@@ -383,10 +413,11 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	return entity.NewInstalledService(
 		name, nature, serviceType, version, startCmd, status, envs,
-		portBindings, stopCmdSteps, preStartCmdSteps, postStartCmdSteps,
-		preStopCmdSteps, postStopCmdSteps, execUserPtr, workingDirectoryPtr,
-		startupFilePtr, autoStart, autoRestart, timeoutStartSecs, maxStartRetries,
-		logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
+		portBindings, stopTimeoutSecs, stopCmdSteps, preStartTimeoutSecs,
+		preStartCmdSteps, postStartTimeoutSecs, postStartCmdSteps, preStopTimeoutSecs,
+		preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps, execUserPtr,
+		workingDirectoryPtr, startupFilePtr, autoStart, autoRestart, timeoutStartSecs,
+		maxStartRetries, logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

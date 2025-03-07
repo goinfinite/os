@@ -41,7 +41,10 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("crontab " + tmpCrontabFilePath)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               "crontab " + tmpCrontabFilePath,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return err
 	}

@@ -31,6 +31,14 @@ func NewUnixFilePermissions(value interface{}) (
 	return UnixFilePermissions(stringValue), nil
 }
 
+func NewUnixFileDefaultPermissions() UnixFilePermissions {
+	return UnixFilePermissions("644")
+}
+
+func NewUnixDirDefaultPermissions() UnixFilePermissions {
+	return UnixFilePermissions("755")
+}
+
 func (vo UnixFilePermissions) GetFileMode() fs.FileMode {
 	intValue, _ := strconv.ParseInt(string(vo), 8, 64)
 	return fs.FileMode(intValue)

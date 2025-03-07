@@ -26,3 +26,27 @@ h6 {
 #vg-tooltip-element table tr td.value {
   font-weight: bold;
 }
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background-color:rgba(255, 255, 255, 0.15);
+	border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color:rgba(255, 255, 255, 0.25);
+	border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color:rgba(255, 255, 255, 0.25);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

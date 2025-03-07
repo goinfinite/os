@@ -100,15 +100,16 @@ func (controller *AccountController) Read() *cobra.Command {
 }
 
 func (controller *AccountController) Create() *cobra.Command {
-	var usernameStr, passwordStr string
+	var usernameStr, passwordStr, isSuperAdminStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"username": usernameStr,
-				"password": passwordStr,
+				"username":     usernameStr,
+				"password":     passwordStr,
+				"isSuperAdmin": isSuperAdminStr,
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -121,12 +122,15 @@ func (controller *AccountController) Create() *cobra.Command {
 	cmd.MarkFlagRequired("username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.MarkFlagRequired("password")
+	cmd.Flags().StringVarP(
+		&isSuperAdminStr, "is-super-admin", "s", "false", "IsSuperAdmin",
+	)
 	return cmd
 }
 
 func (controller *AccountController) Update() *cobra.Command {
 	var accountIdUint64 uint64
-	var usernameStr, passwordStr, shouldUpdateApiKeyStr string
+	var usernameStr, passwordStr, isSuperAdminStr, shouldUpdateApiKeyStr string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -148,6 +152,10 @@ func (controller *AccountController) Update() *cobra.Command {
 				requestBody["password"] = passwordStr
 			}
 
+			if isSuperAdminStr != "" {
+				requestBody["isSuperAdmin"] = isSuperAdminStr
+			}
+
 			cliHelper.ServiceResponseWrapper(
 				controller.accountService.Update(requestBody),
 			)
@@ -157,6 +165,7 @@ func (controller *AccountController) Update() *cobra.Command {
 	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
+	cmd.Flags().StringVarP(&isSuperAdminStr, "is-super-admin", "s", "", "IsSuperAdmin")
 	cmd.Flags().StringVarP(
 		&shouldUpdateApiKeyStr, "update-api-key", "k", "false", "ShouldUpdateApiKey",
 	)

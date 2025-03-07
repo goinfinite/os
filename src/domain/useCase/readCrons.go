@@ -19,7 +19,7 @@ func ReadCrons(
 ) (responseDto dto.ReadCronsResponse, err error) {
 	responseDto, err = cronQueryRepo.Read(requestDto)
 	if err != nil {
-		slog.Error("ReadCronsError", slog.Any("err", err))
+		slog.Error("ReadCronsError", slog.String("err", err.Error()))
 		return responseDto, errors.New("ReadCronsInfraError")
 	}
 

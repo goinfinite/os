@@ -1,5 +1,7 @@
 package componentForm
 
+import "github.com/goinfinite/os/src/infra/envs"
+
 templ SelectInput(
 	id, label, bindModelPath, onSelect string,
 	options []string,
@@ -41,9 +43,10 @@ templ SelectInput(
 }
 
 type SelectInputClientSideDto struct {
-	BindLabel     string
-	BindModelPath string
-	BindOptions   string
+	BindLabel                string
+	BindModelPath            string
+	BindOptions              string
+	ShouldIncludeBlankOption bool
 }
 
 templ SelectInputClientSide(selectInputDto SelectInputClientSideDto) {
@@ -53,6 +56,9 @@ templ SelectInputClientSide(selectInputDto SelectInputClientSideDto) {
 			x-model={ selectInputDto.BindModelPath }
 			class="bg-os-300 hover:border-os-100 border-os-200 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		>
+			if selectInputDto.ShouldIncludeBlankOption {
+				<option class="bg-os-500 checked:bg-infinite-500 bg-opacity-90" value="">--</option>
+			}
 			<template x-for={ "option in " + selectInputDto.BindOptions }>
 				<option
 					:value="option"
@@ -120,42 +126,13 @@ templ SelectInputWithLabelValuePair(
 	</div>
 }
 
-script MultiSelectInputLocalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.data('multiSelectInput', () => ({
-			getFormattedSelectedItems(bindSelectedItemsPath) {
-				if (bindSelectedItemsPath.length == 0) {
-					return '--';
-				}
-
-				let formattedSelectedItems = bindSelectedItemsPath.join(', ');
-				if (formattedSelectedItems.length > 80) {
-					return formattedSelectedItems.substr(0, 80) + '...';
-				}
-				return formattedSelectedItems;
-			},
-			shouldExpandOptions: false,
-			closeDropdown() {
-				this.shouldExpandOptions = false;
-			},
-			toggleDropdownDisplay() {
-				if (this.shouldExpandOptions) {
-					this.closeDropdown();
-					return;
-				}
-
-				this.shouldExpandOptions = true;
-			},
-		}));
-	});
-}
-
 templ MultiSelectInput(
 	id, label, bindModelPath string,
 	options []string,
 ) {
-	<!-- MultiSelectInput -->
-	@MultiSelectInputLocalState()
+	<!-- MultiSelectInput JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/component/form/multiSelectInput.js" }></script>
+	<!-- MultiSelectInput HTML -->
 	<div
 		class="relative w-full"
 		x-data="multiSelectInput"

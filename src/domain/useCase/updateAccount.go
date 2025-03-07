@@ -22,17 +22,14 @@ func UpdateAccount(
 		return errors.New("AccountNotFound")
 	}
 
-	if updateDto.Password != nil {
-		err = accountCmdRepo.UpdatePassword(updateDto.AccountId, *updateDto.Password)
-		if err != nil {
-			slog.Error(
-				"UpdateAccountPasswordError",
-				slog.String("accountId", updateDto.AccountId.String()),
-				slog.Any("error", err),
-			)
-			return errors.New("UpdateAccountPasswordInfraError")
-		}
-
+	err = accountCmdRepo.Update(updateDto)
+	if err != nil {
+		slog.Error(
+			"UpdateAccount",
+			slog.String("accountId", updateDto.AccountId.String()),
+			slog.String("err", err.Error()),
+		)
+		return errors.New("UpdateAccountInfraError")
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(updateDto)
