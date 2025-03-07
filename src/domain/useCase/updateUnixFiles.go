@@ -28,15 +28,14 @@ func NewUpdateUnixFiles(
 func (uc UpdateUnixFiles) updateFailureFactory(
 	filePath valueObject.UnixFilePath,
 	errMessage string,
-) (valueObject.UpdateProcessFailure, error) {
-	var updateProcessFailure valueObject.UpdateProcessFailure
-
+) valueObject.UpdateProcessFailure {
 	failureReason, err := valueObject.NewFailureReason(errMessage)
 	if err != nil {
-		return updateProcessFailure, err
+		slog.Debug(err.Error(), slog.String("errMessage", errMessage))
+		failureReason, _ = valueObject.NewFailureReason("MalformedFailureReason")
 	}
 
-	return valueObject.NewUpdateProcessFailure(filePath, failureReason), nil
+	return valueObject.NewUpdateProcessFailure(filePath, failureReason)
 }
 
 func (uc UpdateUnixFiles) updateFilePermissions(
@@ -111,7 +110,7 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 		return errors.New("FixFilePermissionsInfraError")
 	}
 
-	if updatePermissionsDto.SourcePath.String() == "/app" {
+	if sourcePathStr == "/app" {
 		defaultOwnership := valueObject.NewUnixFileDefaultOwnership()
 		updateOwnershipDto := dto.NewUpdateUnixFileOwnership(
 			sourcePath, defaultOwnership,
@@ -154,14 +153,7 @@ func (uc UpdateUnixFiles) Execute(
 		if updateDto.Permissions != nil {
 			err := uc.updateFilePermissions(sourcePath, *updateDto.Permissions)
 			if err != nil {
-				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
-				if err != nil {
-					slog.Error(
-						"ReportUpdatePermissionsFailureError",
-						slog.String("err", err.Error()),
-					)
-				}
-
+				updateFailure := uc.updateFailureFactory(sourcePath, err.Error())
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
@@ -172,14 +164,7 @@ func (uc UpdateUnixFiles) Execute(
 		if updateDto.Ownership != nil {
 			err := uc.updateFileOwnership(sourcePath, *updateDto.Ownership)
 			if err != nil {
-				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
-				if err != nil {
-					slog.Error(
-						"ReportUpdateOwnershipFailureError",
-						slog.String("err", err.Error()),
-					)
-				}
-
+				updateFailure := uc.updateFailureFactory(sourcePath, err.Error())
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
@@ -190,14 +175,7 @@ func (uc UpdateUnixFiles) Execute(
 		if updateDto.EncodedContent != nil {
 			err := uc.updateFileContent(sourcePath, *updateDto.EncodedContent)
 			if err != nil {
-				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
-				if err != nil {
-					slog.Error(
-						"ReportUpdateContentFailureError",
-						slog.String("err", err.Error()),
-					)
-				}
-
+				updateFailure := uc.updateFailureFactory(sourcePath, err.Error())
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
@@ -208,11 +186,7 @@ func (uc UpdateUnixFiles) Execute(
 		if updateDto.ShouldFixPermissions != nil {
 			err := uc.fixFilePermissions(sourcePath)
 			if err != nil {
-				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
-				if err != nil {
-					slog.Error("ReportMoveFailureError", slog.String("err", err.Error()))
-				}
-
+				updateFailure := uc.updateFailureFactory(sourcePath, err.Error())
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
@@ -223,11 +197,7 @@ func (uc UpdateUnixFiles) Execute(
 		if updateDto.DestinationPath != nil {
 			err := uc.moveFile(sourcePath, *updateDto.DestinationPath)
 			if err != nil {
-				updateFailure, err := uc.updateFailureFactory(sourcePath, err.Error())
-				if err != nil {
-					slog.Error("ReportMoveFailureError", slog.String("err", err.Error()))
-				}
-
+				updateFailure := uc.updateFailureFactory(sourcePath, err.Error())
 				updateProcessReport.FailedPathsWithReason = append(
 					updateProcessReport.FailedPathsWithReason, updateFailure,
 				)
