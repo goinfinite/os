@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"strconv"
 )
 
 templ AccountsIndex(accountsEntities []entity.Account) {
@@ -35,7 +36,7 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 			</div>
 		</div>
 		@CreateAccountModal()
-		@UpdatePasswordModal()
+		@UpdateAccountModal()
 		@UpdateApiKeyModal()
 		@componentStructural.DeleteModal(
 			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
@@ -99,9 +100,9 @@ templ AccountsTable(accountsEntities []entity.Account) {
 							<th scope="row" class="px-5 py-3 text-right">
 								<div class="inline-flex space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-lock-key", "os-200", "os-100",
-										"openUpdatePasswordModal("+accountEntity.Id.String()+")",
-										"update password", "os-100",
+										"ph-gear", "os-200", "os-100",
+										"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
+										"update account", "os-100",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-key", "os-200", "os-100",
@@ -136,12 +137,21 @@ templ CreateAccountForm() {
 		hx-swap="none"
 	>
 		<div class="mb-6 space-y-6">
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Id:                 "username",
-				Label:              "Username",
-				BindModelValuePath: "account.username",
-			})
+			<div class="flex items-center justify-center gap-2">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "username",
+					Label:              "Username",
+					BindModelValuePath: "account.username",
+				})
+				<div class="flex w-1/4 justify-center">
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "isSuperAdmin",
+						Label:         "Super Admin",
+						BindModelPath: "account.isSuperAdmin",
+					})
+				</div>
+			</div>
 			@componentForm.PasswordInput(componentForm.PasswordInputDto{
 				Id:                                "password",
 				Label:                             "Password",
@@ -165,8 +175,8 @@ templ CreateAccountModal() {
 	}
 }
 
-templ UpdatePasswordForm() {
-	<!-- UpdatePasswordForm -->
+templ UpdateAccountForm() {
+	<!-- UpdateAccountForm -->
 	<form
 		hx-put="/api/v1/account/"
 		hx-indicator="#loading-overlay"
@@ -181,20 +191,29 @@ templ UpdatePasswordForm() {
 				ShouldIncludeGenRandomPassBtn:     true,
 				ShouldIncludePassStrengthCriteria: true,
 			})
+			<div class="flex justify-end">
+				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+					Id:             "isSuperAdmin",
+					Label:          "Super Admin",
+					BindModelPath:  "account.isSuperAdmin",
+					CustomValue:    "true",
+					UncheckedValue: "false",
+				})
+			</div>
 		</div>
 		@componentForm.SubmitButton(
-			"update-account-password-button", "Update", "ph-key",
-			"closeUpdatePasswordModal()", false,
+			"update-account-button", "Update", "ph-check-fat",
+			"closeUpdateAccountModal()", false,
 		)
 	</form>
 }
 
-templ UpdatePasswordModal() {
+templ UpdateAccountModal() {
 	@componentStructural.RegularModal(
-		"Update Password", "isUpdatePasswordModalOpen", "closeUpdatePasswordModal()",
+		"Update Password", "isUpdateAccountModalOpen", "closeUpdateAccountModal()",
 		"account.id",
 	) {
-		@UpdatePasswordForm()
+		@UpdateAccountForm()
 	}
 }
 

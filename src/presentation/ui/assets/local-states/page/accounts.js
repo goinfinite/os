@@ -9,6 +9,7 @@ document.addEventListener("alpine:init", () => {
         groupId: "",
         username: "",
         password: "",
+        isSuperAdmin: false,
         apiKey: "",
         secureAccessPublicKeys: [],
       };
@@ -32,15 +33,16 @@ document.addEventListener("alpine:init", () => {
     closeCreateAccountModal() {
       this.isCreateAccountModalOpen = false;
     },
-    isUpdatePasswordModalOpen: false,
-    openUpdatePasswordModal(id) {
+    isUpdateAccountModalOpen: false,
+    openUpdateAccountModal(id, isSuperAdmin) {
       this.resetPrimaryStates();
 
       this.account.id = id;
-      this.isUpdatePasswordModalOpen = true;
+      this.account.isSuperAdmin = isSuperAdmin;
+      this.isUpdateAccountModalOpen = true;
     },
-    closeUpdatePasswordModal() {
-      this.isUpdatePasswordModalOpen = false;
+    closeUpdateAccountModal() {
+      this.isUpdateAccountModalOpen = false;
     },
     isUpdateApiKeyModalOpen: false,
     openUpdateApiKeyModal(id, username) {
