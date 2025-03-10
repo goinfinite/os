@@ -1,7 +1,10 @@
 # Changelog
 
 ```log
-0.1.9 - 2025/XX/XX
+0.2.0 - 2025/XX/XX
+- refactor(front): file manager with HTMX+Alpine.js
+
+0.1.9 - 2025/03/10
 fix(front): file manager permissions and account sudoers
 
 0.1.8 - 2025/01/24
