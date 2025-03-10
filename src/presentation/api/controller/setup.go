@@ -60,6 +60,8 @@ func (controller *SetupController) Setup(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
+	isSuperAdmin := true
+
 	operatorIpAddress := service.LocalOperatorIpAddress
 	if requestBody["operatorIpAddress"] != nil {
 		operatorIpAddress, err = valueObject.NewIpAddress(
@@ -71,7 +73,8 @@ func (controller *SetupController) Setup(c echo.Context) error {
 	}
 
 	createDto := dto.NewCreateAccount(
-		username, password, service.LocalOperatorAccountId, operatorIpAddress,
+		username, password, isSuperAdmin, service.LocalOperatorAccountId,
+		operatorIpAddress,
 	)
 
 	err = useCase.CreateFirstAccount(

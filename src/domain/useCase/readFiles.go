@@ -15,7 +15,7 @@ func ReadFiles(
 ) ([]entity.UnixFile, error) {
 	filesList, err := filesQueryRepo.Read(unixFilePath)
 	if err != nil {
-		slog.Error("ReadFilesError", slog.Any("err", err))
+		slog.Error("ReadFilesError", slog.String("err", err.Error()))
 		return filesList, errors.New("ReadFilesInfraError")
 	}
 

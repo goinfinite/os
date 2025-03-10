@@ -80,7 +80,7 @@ func CreateMapping(
 
 	existingMappings, err := mappingQueryRepo.ReadByHostname(createDto.Hostname)
 	if err != nil {
-		slog.Error("ReadMappingsError", slog.Any("err", err))
+		slog.Error("ReadMappingsError", slog.String("err", err.Error()))
 		return errors.New("ReadMappingsInfraError")
 	}
 
@@ -129,7 +129,7 @@ func CreateMapping(
 
 	mappingId, err := mappingCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateMappingError", slog.Any("err", err))
+		slog.Error("CreateMappingError", slog.String("err", err.Error()))
 		return errors.New("CreateMappingInfraError")
 	}
 

@@ -14,7 +14,7 @@ func DeleteActivityRecord(
 ) error {
 	err := activityRecordCmdRepo.Delete(deleteDto)
 	if err != nil {
-		slog.Error("DeleteActivityRecordError", slog.Any("error", err))
+		slog.Error("DeleteActivityRecordError", slog.String("err", err.Error()))
 		return errors.New("DeleteActivityRecordInfraError")
 	}
 

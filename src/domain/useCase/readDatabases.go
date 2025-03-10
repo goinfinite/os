@@ -13,7 +13,7 @@ func ReadDatabases(
 ) (databasesList []entity.Database, err error) {
 	databasesList, err = databaseQueryRepo.Read()
 	if err != nil {
-		slog.Error("ReadDatabasesError", slog.Any("err", err))
+		slog.Error("ReadDatabasesError", slog.String("err", err.Error()))
 		return databasesList, errors.New("ReadDatabasesInfraError")
 	}
 

@@ -26,7 +26,7 @@ func DeleteSecureAccessPublicKey(
 
 	err = accountCmdRepo.DeleteSecureAccessPublicKey(publicKeyEntity.Id)
 	if err != nil {
-		slog.Error("DeleteSecureAccessPublicKeyError", slog.Any("error", err))
+		slog.Error("DeleteSecureAccessPublicKeyError", slog.String("err", err.Error()))
 		return errors.New("DeleteSecureAccessPublicKeyInfraError")
 	}
 

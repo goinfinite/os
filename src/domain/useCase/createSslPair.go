@@ -18,7 +18,7 @@ func CreateSslPair(
 ) error {
 	existingVhosts, err := vhostQueryRepo.Read()
 	if err != nil {
-		slog.Error("ReadVhostsError", slog.Any("err", err))
+		slog.Error("ReadVhostsError", slog.String("err", err.Error()))
 		return errors.New("ReadVhostsInfraError")
 	}
 
@@ -47,7 +47,7 @@ func CreateSslPair(
 
 	createdSslPairId, err := sslCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateSslPairError", slog.Any("err", err))
+		slog.Error("CreateSslPairError", slog.String("err", err.Error()))
 		return errors.New("CreateSslPairInfraError")
 	}
 

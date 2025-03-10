@@ -22,6 +22,8 @@ definitions:
     type: object
   dto.CreateAccount:
     properties:
+      isSuperAdmin:
+        type: boolean
       password:
         type: string
       username:
@@ -89,7 +91,7 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceType'
       version:
         type: string
       workingDirectory:
@@ -258,7 +260,7 @@ definitions:
       name:
         type: string
       nature:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
@@ -292,7 +294,7 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceType'
       updatedAt:
         type: integer
       version:
@@ -388,6 +390,8 @@ definitions:
     properties:
       accountId:
         type: integer
+      isSuperAdmin:
+        type: boolean
       password:
         type: string
       shouldUpdateApiKey:
@@ -434,6 +438,8 @@ definitions:
         type: boolean
       autoStart:
         type: boolean
+      avatarUrl:
+        type: string
       envs:
         items:
           type: string
@@ -481,7 +487,7 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceType'
       version:
         type: string
       workingDirectory:
@@ -493,8 +499,12 @@ definitions:
         type: string
       encodedContent:
         type: string
+      ownership:
+        type: string
       permissions:
         type: string
+      shouldFixPermissions:
+        type: boolean
       sourcePaths:
         items:
           type: string
@@ -534,6 +544,8 @@ definitions:
         type: string
       id:
         type: integer
+      isSuperAdmin:
+        type: boolean
       secureAccessPublicKeys:
         items:
           $ref: '#/definitions/entity.SecureAccessPublicKey'
@@ -603,7 +615,7 @@ definitions:
       name:
         type: string
       nature:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
@@ -613,7 +625,7 @@ definitions:
       startupFile:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceType'
       versions:
         items:
           type: string
@@ -646,7 +658,7 @@ definitions:
       name:
         type: string
       nature:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
@@ -680,7 +692,7 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        type: string
+        $ref: '#/definitions/valueObject.ServiceType'
       updatedAt:
         type: integer
       version:
@@ -1046,6 +1058,30 @@ definitions:
       version:
         type: string
     type: object
+  valueObject.ServiceNature:
+    enum:
+    - solo
+    - multi
+    - custom
+    type: string
+    x-enum-varnames:
+    - ServiceNatureSolo
+    - ServiceNatureMulti
+    - ServiceNatureCustom
+  valueObject.ServiceType:
+    enum:
+    - runtime
+    - database
+    - webserver
+    - system
+    - other
+    type: string
+    x-enum-varnames:
+    - RuntimeServiceType
+    - DatabaseServiceType
+    - WebServerServiceType
+    - SystemServiceType
+    - OtherServiceType
 host: localhost:1618
 info:
   contact:
@@ -1058,7 +1094,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.1.8
+  version: 0.1.9
 paths:
   /v1/account/:
     get:

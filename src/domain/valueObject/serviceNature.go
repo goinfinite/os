@@ -10,8 +10,15 @@ import (
 
 type ServiceNature string
 
+const (
+	ServiceNatureSolo   ServiceNature = "solo"
+	ServiceNatureMulti  ServiceNature = "multi"
+	ServiceNatureCustom ServiceNature = "custom"
+)
+
 var ValidServiceNatures = []string{
-	"solo", "multi", "custom",
+	ServiceNatureSolo.String(), ServiceNatureMulti.String(),
+	ServiceNatureCustom.String(),
 }
 
 func NewServiceNature(value interface{}) (serviceNature ServiceNature, err error) {

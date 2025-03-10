@@ -16,7 +16,7 @@ func CompressUnixFiles(
 ) (dto.CompressionProcessReport, error) {
 	compressionProcessReport, err := filesCmdRepo.Compress(compressDto)
 	if err != nil {
-		slog.Error("CompressUnixFilesError", slog.Any("err", err))
+		slog.Error("CompressUnixFilesError", slog.String("err", err.Error()))
 		return compressionProcessReport, errors.New("CompressUnixFilesInfraError")
 	}
 

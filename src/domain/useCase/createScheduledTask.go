@@ -14,7 +14,7 @@ func CreateScheduledTask(
 ) error {
 	err := scheduledTaskCmdRepo.Create(dto)
 	if err != nil {
-		slog.Error("CreateScheduledTaskError", slog.Any("error", err))
+		slog.Error("CreateScheduledTaskError", slog.String("err", err.Error()))
 		return errors.New("CreateScheduledTaskInfraError")
 	}
 

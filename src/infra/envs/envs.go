@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                  string = "0.1.8"
+	InfiniteOsVersion                  string = "0.1.9"
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
@@ -21,5 +21,8 @@ const (
 	PkiConfDir                         string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
 	AccessTokenCookieKey               string = "os-access-token"
-	UserDataBaseDirectory              string = "/home/"
+	UserDataBaseDirectory              string = "/home"
+	DefaultPrimaryVhost                string = "goinfinite.local"
+	LocalStatesAssetsPath              string = "/assets/local-states"
+	GlobalStatesAssetsPath             string = "/assets/global-states"
 )

@@ -4,11 +4,7 @@ import "testing"
 
 func TestServiceNature(t *testing.T) {
 	t.Run("ValidServiceNature", func(t *testing.T) {
-		validServiceNature := []interface{}{
-			"solo", "multi", "custom",
-		}
-
-		for _, serviceNature := range validServiceNature {
+		for _, serviceNature := range ValidServiceNatures {
 			_, err := NewServiceNature(serviceNature)
 			if err != nil {
 				t.Errorf(

@@ -27,7 +27,7 @@ func NewFilesController(
 ) *FilesController {
 	return &FilesController{
 		filesQueryRepo:        filesInfra.FilesQueryRepo{},
-		filesCmdRepo:          filesInfra.FilesCmdRepo{},
+		filesCmdRepo:          filesInfra.NewFilesCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
@@ -104,9 +104,9 @@ func (controller *FilesController) Create(c echo.Context) error {
 
 	successResponse := "FileCreated"
 
-	filePermissions, _ := valueObject.NewUnixFilePermissions("0644")
+	filePermissions := valueObject.NewUnixFileDefaultPermissions()
 	if fileType.IsDir() {
-		filePermissions, _ = valueObject.NewUnixFilePermissions("0755")
+		filePermissions = valueObject.NewUnixDirDefaultPermissions()
 		successResponse = "DirectoryCreated"
 	}
 
@@ -248,6 +248,28 @@ func (controller *FilesController) Update(c echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
+	var ownershipPtr *valueObject.UnixFileOwnership
+	if requestInputData["ownership"] != nil {
+		ownership, err := valueObject.NewUnixFileOwnership(
+			requestInputData["ownership"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		ownershipPtr = &ownership
+	}
+
+	var shouldFixPermissionsPtr *bool
+	if requestInputData["shouldFixPermissions"] != nil {
+		shouldFixPermissions, err := voHelper.InterfaceToBool(
+			requestInputData["shouldFixPermissions"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+		shouldFixPermissionsPtr = &shouldFixPermissions
+	}
+
 	operatorAccountId, err := valueObject.NewAccountId(
 		requestInputData["operatorAccountId"],
 	)
@@ -264,7 +286,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 
 	updateUnixFileDto := dto.NewUpdateUnixFiles(
 		sourcePaths, destinationPathPtr, permissionsPtr, encodedContentPtr,
-		operatorAccountId, operatorIpAddress,
+		ownershipPtr, shouldFixPermissionsPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(

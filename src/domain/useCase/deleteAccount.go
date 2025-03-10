@@ -24,7 +24,7 @@ func DeleteAccount(
 
 	err = accountCmdRepo.Delete(deleteDto.AccountId)
 	if err != nil {
-		slog.Error("DeleteAccountError", slog.Any("error", err))
+		slog.Error("DeleteAccountError", slog.String("err", err.Error()))
 		return errors.New("DeleteAccountInfraError")
 	}
 

@@ -21,7 +21,7 @@ func DeleteMapping(
 
 	err = mappingCmdRepo.Delete(deleteDto.MappingId)
 	if err != nil {
-		slog.Error("DeleteMappingError", slog.Any("err", err))
+		slog.Error("DeleteMappingError", slog.String("err", err.Error()))
 		return errors.New("DeleteMappingInfraError")
 	}
 

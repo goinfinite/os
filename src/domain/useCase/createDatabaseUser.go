@@ -33,7 +33,7 @@ func CreateDatabaseUser(
 
 	err = dbCmdRepo.CreateUser(createDto)
 	if err != nil {
-		slog.Error("CreateDatabaseUserError", slog.Any("error", err))
+		slog.Error("CreateDatabaseUserError", slog.String("err", err.Error()))
 		return errors.New("CreateDatabaseUserInfraError")
 	}
 

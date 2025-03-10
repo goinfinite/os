@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
@@ -200,30 +201,49 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	stepType string,
-	catalogCmdSteps []valueObject.UnixCommand,
-	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
+	stepsType string,
+	steps []valueObject.UnixCommand,
+	totalExecTimeoutSecs valueObject.UnixTime,
 ) error {
-	preparedCmdSteps, err := repo.replaceCmdStepsPlaceholders(
-		catalogCmdSteps, receivedDataFields,
-	)
-	if err != nil {
-		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	if len(steps) == 0 {
+		return nil
 	}
 
-	for stepIndex, cmdStep := range preparedCmdSteps {
-		stepStr := cmdStep.String()
+	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
+	runCmdSettings := infraHelper.RunCmdSettings{
+		ShouldRunWithSubShell: true,
+		ExecutionTimeoutSecs:  totalExecTimeoutSecsUint,
+	}
 
-		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
+	totalExecRemainingTime := totalExecTimeoutSecsUint
+	for stepIndex, step := range steps {
+		stepStr := step.String()
 
-		stepOutput, err := infraHelper.RunCmdWithSubShell(stepStr)
+		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
+
+		runCmdSettings.Command = stepStr
+
+		stepExecTimeStart := time.Now()
+		stepOutput, err := infraHelper.RunCmd(runCmdSettings)
 		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			combinedOutput := stepOutput + " " + err.Error()
-			return errors.New(
-				stepType + "CmdStepError (" + stepIndexStr + "): " + combinedOutput,
+			errorMessage := stepOutput + " | " + err.Error()
+			if infraHelper.IsRunCmdTimeout(err) {
+				errorMessage = "MarketplaceItem" + stepsType + "TimeoutExceeded"
+			}
+
+			return fmt.Errorf(
+				"%sCmdStepError (%s): %s",
+				stepsType, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
+
+		stepExecElapsedTimeSecs := uint64(time.Since(stepExecTimeStart).Seconds())
+		totalExecRemainingTime = totalExecRemainingTime - stepExecElapsedTimeSecs
+		if totalExecRemainingTime == 0 {
+			return errors.New("MarketplaceItem" + stepsType + "TimeoutExceeded")
+		}
+
+		runCmdSettings.ExecutionTimeoutSecs = totalExecRemainingTime
 	}
 
 	return nil
@@ -236,17 +256,25 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 
 	chownRecursively := true
 	chownSymlinksToo := true
-	err := infraHelper.UpdatePermissionsForWebServerUse(
+	err := infraHelper.UpdateOwnershipForWebServerUse(
 		targetDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
 		return errors.New("ChownError (" + targetDirStr + "): " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		`find ` + targetDirStr + ` -type d -exec chmod 755 {} \; && find ` +
-			targetDirStr + ` -type f -exec chmod 644 {} \;`,
+	dirDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
+	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
+
+	updatePrivilegesCmd := fmt.Sprintf(
+		"find %s -type d -exec chmod %s {} \\; && find %s -type f -exec chmod %s {} \\;",
+		targetDirStr, dirDefaultPermissions.String(), targetDirStr,
+		fileDefaultPermissions.String(),
 	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               updatePrivilegesCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}
@@ -329,7 +357,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
 		if err != nil {
-			slog.Debug("CreateItemMappingError", slog.Any("error", err))
+			slog.Debug("CreateItemMappingError", slog.String("err", err.Error()))
 			continue
 		}
 
@@ -452,12 +480,24 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps("Install", catalogItem.InstallCmdSteps, receivedDataFields)
+	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
+		catalogItem.InstallCmdSteps, receivedDataFields,
+	)
+	if err != nil {
+		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	}
+
+	err = repo.runCmdSteps(
+		"Install", usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
 
-	_, err = infraHelper.RunCmd("rm", "-rf", installTempDirPath)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "rm",
+		Args:    []string{"-rf", installTempDirPath},
+	})
 	if err != nil {
 		return errors.New("DeleteTmpDirectoryError: " + err.Error())
 	}
@@ -509,7 +549,10 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
 		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
 	)
-	_, err := infraHelper.RunCmdWithSubShell(moveCmd)
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               moveCmd,
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }
 
@@ -553,9 +596,11 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	}
 	installedItemRealRootDirPathStr := installedItemRealRootDirPath.String()
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String(),
-	)
+	softDeleteCmd := "mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String()
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               softDeleteCmd,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("SoftDeleteItemFilesError: " + err.Error())
 	}
@@ -565,17 +610,19 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + installedItemRealRootDirPathStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               "rm -rf " + installedItemRealRootDirPathStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteItemRealRootPathError: " + err.Error())
 	}
 
 	itemAliasesRootDirStr := installedItem.InstallDirectory.String()
-	_, err = infraHelper.RunCmdWithSubShell(
-		"rm -rf " + itemAliasesRootDirStr,
-	)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               "rm -rf " + itemAliasesRootDirStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteItemAliasesRootDirError: " + err.Error())
 	}
@@ -594,7 +641,10 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("RestoreUnfamiliarFilesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell("rm -rf " + unfamiliarFilesBackupDirStr)
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               "rm -rf " + unfamiliarFilesBackupDirStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return errors.New("DeleteUnfamiliarFilesBackupDirError: " + err.Error())
 	}
@@ -690,7 +740,7 @@ func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
 	for _, unusedService := range unusedServiceNames {
 		err = servicesCmdRepo.Delete(unusedService)
 		if err != nil {
-			slog.Debug("UninstallUnusedServiceError", slog.Any("error", err))
+			slog.Debug("UninstallUnusedServiceError", slog.String("err", err.Error()))
 			continue
 		}
 	}
@@ -717,7 +767,7 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 			slog.Debug(
 				"DeleteMappingError",
 				slog.String("mappingPath", installedItemMapping.Path.String()),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -742,7 +792,16 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		installedItem.Name, installedItem.Type, installedItem.InstallDirectory,
 		installedItem.UrlPath, installedItem.Hostname, installedItem.InstallUuid,
 	)
-	err = repo.runCmdSteps("Uninstall", catalogItem.UninstallCmdSteps, systemDataFields)
+	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
+		catalogItem.UninstallCmdSteps, systemDataFields,
+	)
+	if err != nil {
+		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
+	}
+
+	err = repo.runCmdSteps(
+		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
@@ -777,15 +836,19 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsRepoBranch,
 			infraEnvs.MarketplaceCatalogItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command:               repoCloneCmd,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
 		}
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }

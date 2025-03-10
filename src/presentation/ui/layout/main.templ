@@ -1,33 +1,11 @@
 package layout
 
 import (
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	"github.com/goinfinite/os/src/domain/valueObject/helper"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 	"os"
 )
-
-script MainLayoutState() {
-	document.addEventListener('alpine:initializing', () => {
-		Alpine.store('main', {
-			displayScheduledTasksPopover: Alpine.$persist(false).as('dash.displayScheduledTasksPopover'),
-
-			toggleScheduledTasksPopover() {
-				this.displayScheduledTasksPopover = !this.displayScheduledTasksPopover;
-			},
-			refreshScheduledTasksPopover() {
-				window.dispatchEvent(new CustomEvent('refresh:footer'));
-				setTimeout(() => {this.displayScheduledTasksPopover = true}, 1000);
-			}
-		});
-	});
-}
-
-script DevWsHotReload() {
-	hotReloadWs = new WebSocket("wss://" + document.location.host + "/dev/hot-reload");
-	hotReloadWs.onclose = (() => {
-		setTimeout(() => {location.reload()}, 2000);
-	});
-}
 
 templ HeadTag() {
 	<head>
@@ -62,18 +40,20 @@ templ HeadTag() {
 		<script src="https://cdn.jsdelivr.net/npm/vega@5.31.0/build/vega.min.js" integrity="sha256-cYdMz6q7m7D3OhasQJRy1/5Th1YCEncQpVT0dz1Zmjc=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.23.0/build/vega-lite.min.js" integrity="sha256-WMJzWOJvLTGc9i9FvBekyDYvCGRQAd8uyNNB7uQJfH8=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.29.0/build/vega-embed.min.js" integrity="sha256-EtAqz74+xZ75o33UgiouBOKWG1u7Zxu+Zh0iIXFbmdo=" crossorigin="anonymous"></script>
-		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
-			@DevWsHotReload()
-		}
 	</head>
 }
 
-templ MainLayout(pageContent templ.Component, currentUrl string) {
+templ Main(pageContent templ.Component, currentUrl string) {
 	<!DOCTYPE html>
 	<html>
 		@HeadTag()
+		<!-- Main Layout JavaScript -->
+		<script src={ infraEnvs.GlobalStatesAssetsPath + "/layout/main.js" }></script>
+		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+			@templ.JSFuncCall("devWsHotReload")
+		}
+		<!-- Main Layout HTML -->
 		<body class="bg-os-500 flex text-white">
-			@MainLayoutState()
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->

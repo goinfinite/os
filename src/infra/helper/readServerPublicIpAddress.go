@@ -9,13 +9,15 @@ import (
 
 func ReadServerPublicIpAddress() (ipAddress valueObject.IpAddress, err error) {
 	digCmd := "dig +short TXT"
-	rawRecord, err := RunCmdWithSubShell(
-		digCmd + " o-o.myaddr.l.google.com @ns1.google.com",
-	)
+	rawRecord, err := RunCmd(RunCmdSettings{
+		Command:               digCmd + " o-o.myaddr.l.google.com @ns1.google.com",
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil || rawRecord == "" {
-		rawRecord, err = RunCmdWithSubShell(
-			digCmd + "CH whoami.cloudflare @1.1.1.1",
-		)
+		rawRecord, err = RunCmd(RunCmdSettings{
+			Command:               digCmd + " CH whoami.cloudflare @1.1.1.1",
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return ipAddress, err
 		}

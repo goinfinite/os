@@ -33,7 +33,10 @@ func NewO11yQueryRepo(
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 	nowEpoch := valueObject.NewUnixTimeNow()
-	rawFirstPidEpoch, err := infraHelper.RunCmdWithSubShell("stat -c '%Y' /proc/1")
+	rawFirstPidEpoch, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               "stat -c '%Y' /proc/1",
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return 0, errors.New("ReadFirstPidEpochFailed")
 	}
@@ -389,7 +392,7 @@ func (repo *O11yQueryRepo) ReadOverview(
 
 	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
-		slog.Debug("ReadServerPublicIpAddressError", slog.Any("error", err))
+		slog.Debug("ReadServerPublicIpAddressError", slog.String("err", err.Error()))
 		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
 	}
 

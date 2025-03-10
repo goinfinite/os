@@ -38,26 +38,49 @@ func NewServicesCmdRepo(
 }
 
 func (repo *ServicesCmdRepo) runCmdSteps(
-	stepType string,
+	stepsType string,
 	steps []valueObject.UnixCommand,
+	totalExecTimeoutSecs valueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
 
+	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
+	runCmdSettings := infraHelper.RunCmdSettings{
+		ShouldRunWithSubShell: true,
+		ExecutionTimeoutSecs:  totalExecTimeoutSecsUint,
+	}
+
+	totalExecRemainingTime := totalExecTimeoutSecsUint
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
-		slog.Debug("Running"+stepType+"Step", slog.String("step", stepStr))
+		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
 
-		stepOutput, err := infraHelper.RunCmdWithSubShell(stepStr)
+		runCmdSettings.Command = stepStr
+
+		execTimeStart := time.Now()
+		stepOutput, err := infraHelper.RunCmd(runCmdSettings)
 		if err != nil {
-			stepIndexStr := strconv.Itoa(stepIndex)
-			combinedOutput := stepOutput + " " + err.Error()
-			return errors.New(
-				stepType + "CmdStepError (" + stepIndexStr + "): " + combinedOutput,
+			errorMessage := stepOutput + " | " + err.Error()
+			if infraHelper.IsRunCmdTimeout(err) {
+				errorMessage = "Service" + stepsType + "TimeoutExceeded"
+			}
+
+			return fmt.Errorf(
+				"%sCmdStepError (%s): %s",
+				stepsType, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
+
+		stepExecElapsedTimeSecs := uint64(time.Since(execTimeStart).Seconds())
+		totalExecRemainingTime = totalExecRemainingTime - stepExecElapsedTimeSecs
+		if totalExecRemainingTime == 0 {
+			return errors.New("Service" + stepsType + "TimeoutExceeded")
+		}
+
+		runCmdSettings.ExecutionTimeoutSecs = totalExecRemainingTime
 	}
 
 	time.Sleep(1 * time.Second)
@@ -76,24 +99,28 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.runCmdSteps("PreStart", serviceEntity.PreStartCmdSteps)
+	err = repo.runCmdSteps(
+		"PreStart", serviceEntity.PreStartCmdSteps, serviceEntity.PreStartTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	startOutput, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " start " + serviceNameStr,
-	)
+	startOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               SupervisorCtlBin + " start " + serviceNameStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		combinedOutput := startOutput + " " + err.Error()
 		if !strings.Contains(combinedOutput, "no such process") {
 			return errors.New("SupervisorStartError: " + combinedOutput)
 		}
 
-		addOutput, err := infraHelper.RunCmdWithSubShell(
-			SupervisorCtlBin + " add " + serviceNameStr,
-		)
+		addOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command:               SupervisorCtlBin + " add " + serviceNameStr,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			combinedOutput = addOutput + " " + err.Error()
 			return errors.New("SupervisorAddError: " + combinedOutput)
@@ -102,7 +129,9 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 
 	time.Sleep(1 * time.Second)
 
-	return repo.runCmdSteps("PostStart", serviceEntity.PostStartCmdSteps)
+	return repo.runCmdSteps(
+		"PostStart", serviceEntity.PostStartCmdSteps, serviceEntity.PostStartTimeoutSecs,
+	)
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
@@ -116,14 +145,17 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.runCmdSteps("PreStop", serviceEntity.PreStopCmdSteps)
+	err = repo.runCmdSteps(
+		"PreStop", serviceEntity.PreStopCmdSteps, serviceEntity.PreStopTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
 
-	stopOutput, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
-	)
+	stopOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		combinedOutput := stopOutput + " " + err.Error()
 		return errors.New("SupervisorStopError: " + combinedOutput)
@@ -131,12 +163,16 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 
 	time.Sleep(1 * time.Second)
 
-	err = repo.runCmdSteps("Stop", serviceEntity.StopCmdSteps)
+	err = repo.runCmdSteps(
+		"Stop", serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
 
-	return repo.runCmdSteps("PostStop", serviceEntity.PostStopCmdSteps)
+	return repo.runCmdSteps(
+		"PostStop", serviceEntity.PostStopCmdSteps, serviceEntity.PostStartTimeoutSecs,
+	)
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
@@ -266,7 +302,10 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return err
 	}
 
-	reReadOutput, err := infraHelper.RunCmdWithSubShell(SupervisorCtlBin + " reread")
+	reReadOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               SupervisorCtlBin + " reread",
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
 		return errors.New("SupervisorRereadError: " + combinedOutput)
@@ -304,7 +343,10 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	serviceName valueObject.ServiceName, execUser valueObject.UnixUsername,
 ) error {
 	execUserStr := execUser.String()
-	_, err := infraHelper.RunCmd("id", execUserStr)
+	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "id",
+		Args:    []string{execUserStr},
+	})
 	if err != nil {
 		return errors.New("EnsureExecUserExistenceError: " + err.Error())
 	}
@@ -312,7 +354,10 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
-		_, err = infraHelper.RunCmd("chown", "-R", execUserStr, defaultDirPath)
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command: "chown",
+			Args:    []string{"-R", execUserStr, defaultDirPath},
+		})
 		if err != nil {
 			return errors.New("ChownDefaultDirsError: " + err.Error())
 		}
@@ -375,7 +420,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	if installableService.Nature.String() == "multi" {
+	if installableService.Nature == valueObject.ServiceNatureMulti {
 		if createDto.StartupFile == nil {
 			if installableService.StartupFile == nil {
 				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
@@ -419,7 +464,8 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	)
 	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
 
-	if createDto.StartupFile != nil {
+	isSoloService := installableService.Nature == valueObject.ServiceNatureSolo
+	if createDto.StartupFile != nil && isSoloService {
 		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
 	}
 
@@ -435,7 +481,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	err = repo.runCmdSteps("Install", usableInstallCmdSteps)
+	err = repo.runCmdSteps(
+		"Install", usableInstallCmdSteps, installableService.InstallTimeoutSecs,
+	)
 	if err != nil {
 		return installedServiceName, err
 	}
@@ -497,7 +545,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
 	}
 
-	if createDto.StartupFile != nil {
+	if createDto.StartupFile != nil && isSoloService {
 		startupFileStr := createDto.StartupFile.String()
 		installedServiceModel.StartupFile = &startupFileStr
 	}
@@ -639,7 +687,8 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["version"] = updateDto.Version.String()
 	}
 
-	if updateDto.StartupFile != nil {
+	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
+	if updateDto.StartupFile != nil && isSoloService {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
@@ -694,7 +743,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["working_directory"] = &workingDirectoryStr
 	}
 
-	if updateDto.StartupFile != nil {
+	if updateDto.StartupFile != nil && isSoloService {
 		startupFileStr := updateDto.StartupFile.String()
 		updateMap["startup_file"] = &startupFileStr
 	}
@@ -725,7 +774,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["log_error_path"] = &logErrorPathStr
 	}
 
-	if updateDto.AvatarUrl != nil && serviceEntity.Nature.String() == "custom" {
+	if updateDto.AvatarUrl != nil && serviceEntity.Nature == valueObject.ServiceNatureCustom {
 		avatarUrlStr := updateDto.AvatarUrl.String()
 		updateMap["avatar_url"] = &avatarUrlStr
 	}
@@ -765,9 +814,10 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	removeOutput, err := infraHelper.RunCmdWithSubShell(
-		SupervisorCtlBin + " remove " + serviceNameStr,
-	)
+	removeOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               SupervisorCtlBin + " remove " + serviceNameStr,
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		combinedOutput := removeOutput + " " + err.Error()
 		return errors.New("SupervisorRemoveError: " + combinedOutput)
@@ -785,11 +835,11 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	if serviceEntity.Nature.String() == "custom" {
+	if serviceEntity.Nature == valueObject.ServiceNatureCustom {
 		return nil
 	}
 
-	if serviceEntity.Nature.String() == "multi" {
+	if serviceEntity.Nature == valueObject.ServiceNatureMulti {
 		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
 		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
 		if err != nil {
@@ -808,7 +858,10 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return errors.New("ReadInstallableEntityError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps("Uninstall", installableEntity.UninstallCmdSteps)
+	err = repo.runCmdSteps(
+		"Uninstall", installableEntity.UninstallCmdSteps,
+		installableEntity.UninstallTimeoutSecs,
+	)
 	if err != nil {
 		return err
 	}
@@ -818,7 +871,10 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 		slog.Debug("RemovingFilePath", slog.String("filePath", filePathStr))
 
-		_, err := infraHelper.RunCmd("rm", "-rf", filePathStr)
+		_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command: "rm",
+			Args:    []string{"-rf", filePathStr},
+		})
 		if err != nil {
 			fileIndexStr := strconv.Itoa(fileIndex)
 			return errors.New(
@@ -842,15 +898,19 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoBranch,
 			infraEnvs.InstallableServicesItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmdWithSubShell(repoCloneCmd)
+		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+			Command:               repoCloneCmd,
+			ShouldRunWithSubShell: true,
+		})
 		if err != nil {
 			return errors.New("CloneServicesItemsRepoError: " + err.Error())
 		}
 	}
 
-	_, err = infraHelper.RunCmdWithSubShell(
-		"cd " + infraEnvs.InstallableServicesItemsDir + ";" +
+	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	return err
 }

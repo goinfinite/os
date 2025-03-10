@@ -26,7 +26,7 @@ func DeleteVirtualHost(
 
 	err = vhostCmdRepo.Delete(vhost)
 	if err != nil {
-		slog.Error("DeleteVirtualHostError", slog.Any("err", err))
+		slog.Error("DeleteVirtualHostError", slog.String("err", err.Error()))
 		return errors.New("DeleteVirtualHostInfraError")
 	}
 

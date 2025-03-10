@@ -504,9 +504,9 @@ document.addEventListener("alpine:init", () => {
 
       Infinite.JsonAjax("PUT", "/api/v1/services/", serviceAttributesToUpdate)
         .then(() => this.$dispatch("update:service"))
-        .catch((error) => {
-          throw new Error("UpdateServiceError: " + error.message);
-        });
+        .catch((error) =>
+          Alpine.store("toast").displayToast(error.message, "danger")
+        );
     },
     isUninstallServiceModalOpen: false,
     openUninstallServiceModal(name) {
@@ -523,9 +523,8 @@ document.addEventListener("alpine:init", () => {
         .ajax("DELETE", "/api/v1/services/" + this.service.name + "/", {
           swap: "none",
         })
-        .then(() => this.$dispatch("delete:service"));
-
-      this.closeUninstallServiceModal();
+        .then(() => this.$dispatch("delete:service"))
+        .finally(() => this.closeUninstallServiceModal());
     },
   }));
 });

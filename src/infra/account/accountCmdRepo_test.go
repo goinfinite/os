@@ -16,7 +16,7 @@ func addDummyUser() error {
 	ipAddress := valueObject.NewLocalhostIpAddress()
 	operatorAccountId, _ := valueObject.NewAccountId(0)
 	createDto := dto.NewCreateAccount(
-		username, password, operatorAccountId, ipAddress,
+		username, password, false, operatorAccountId, ipAddress,
 	)
 
 	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
@@ -65,7 +65,7 @@ func TestAccountCmdRepo(t *testing.T) {
 		ipAddress := valueObject.NewLocalhostIpAddress()
 		operatorAccountId, _ := valueObject.NewAccountId(0)
 		createDto := dto.NewCreateAccount(
-			username, password, operatorAccountId, ipAddress,
+			username, password, false, operatorAccountId, ipAddress,
 		)
 
 		_, err := accountCmdRepo.Create(createDto)
@@ -83,12 +83,15 @@ func TestAccountCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("UpdatePasswordValidAccount", func(t *testing.T) {
+	t.Run("UpdateValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
 		newPassword, _ := valueObject.NewPassword("newPassword")
-
-		err := accountCmdRepo.UpdatePassword(accountId, newPassword)
+		updateDto := dto.NewUpdateAccount(
+			accountId, &newPassword, nil, nil, accountId,
+			valueObject.NewLocalhostIpAddress(),
+		)
+		err := accountCmdRepo.Update(updateDto)
 		if err != nil {
 			t.Errorf(
 				"Expected no error for %s, but got %s", newPassword.String(),

@@ -2,153 +2,16 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"strconv"
 )
 
-script AccountsIndexLocalState() {
-    document.addEventListener('alpine:init', () => {
-		Alpine.data('accounts', () => ({
-			// Primary states
-			account: {},
-			secureAccessPublicKey: {},
-			resetPrimaryStates() {
-				this.account = {
-					id: '',
-					groupId: '',
-					username: '',
-					password: '',
-					apiKey: '',
-					secureAccessPublicKeys: [],
-				};
-				this.secureAccessPublicKey = {
-					id: '',
-					name: '',
-					content: '',
-				};
-			},
-			init() {
-				this.resetPrimaryStates();
-			},
-
-			// Modal states
-			isCreateAccountModalOpen: false,
-			openCreateAccountModal() {
-				this.resetPrimaryStates();
-
-				this.isCreateAccountModalOpen = true;
-			},
-			closeCreateAccountModal() {
-				this.isCreateAccountModalOpen = false;
-			},
-			isUpdatePasswordModalOpen: false,
-			openUpdatePasswordModal(id) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.isUpdatePasswordModalOpen = true;
-			},
-			closeUpdatePasswordModal() {
-				this.isUpdatePasswordModalOpen = false;
-			},
-			isUpdateApiKeyModalOpen: false,
-			openUpdateApiKeyModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.isUpdateApiKeyModalOpen = true;
-			},
-			closeUpdateApiKeyModal() {
-				this.isUpdateApiKeyModalOpen = false;
-				this.account.apiKey = '';
-			},
-			updateApiKey() {
-				htmx.ajax(
-					'PUT', '/api/v1/account/',
-					{
-						swap: 'none',
-						values: { id: this.account.id, shouldUpdateApiKey: true },
-						handler: (_, responseEvent) => {
-							const httpResponseObject = responseEvent.xhr;
-							if (httpResponseObject.status !== 200) {
-								return;
-							}
-
-							const responseData = JSON.parse(httpResponseObject.response);
-							this.account.apiKey = responseData.body;
-						}
-					},
-				);
-			},
-			isSecureAccessPublicKeysModalOpen: false,
-			openSecureAccessPublicKeysModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.account.secureAccessPublicKeys = JSON.parse(
-					document.getElementById('secureAccessPublicKeys_' + id).textContent
-				);
-
-				this.isSecureAccessPublicKeysModalOpen = true;
-			},
-			closeSecureAccessPublicKeysModal() {
-				this.isSecureAccessPublicKeysModalOpen = false;
-			},
-			isCreateSecureAccessPublicKeyModalOpen: false,
-			openCreateSecureAccessPublicKeyModal() {
-				this.isCreateSecureAccessPublicKeyModalOpen = true;
-			},
-			closeCreateSecureAccessPublicKeyModal() {
-				this.isCreateSecureAccessPublicKeyModalOpen = false;
-			},
-			isDeleteSecureAccessPublicKeyModalOpen: false,
-			openDeleteSecureAccessPublicKeyModal(id, name) {
-				this.secureAccessPublicKey.id = id;
-				this.secureAccessPublicKey.name = name;
-				this.isDeleteSecureAccessPublicKeyModalOpen = true;
-			},
-			closeDeleteSecureAccessPublicKeyModal() {
-				this.isDeleteSecureAccessPublicKeyModalOpen = false;
-			},
-			deleteSecureAccessPublicKey() {
-				htmx.ajax(
-					'DELETE',
-					`/api/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
-					{swap: 'none'},
-				).then(() => {
-				    this.$dispatch('delete:secure-access-public-key');
-				});
-				this.closeDeleteSecureAccessPublicKeyModal();
-			},
-			isDeleteAccountModalOpen: false,
-			openDeleteAccountModal(id, username) {
-				this.resetPrimaryStates();
-
-				this.account.id = id;
-				this.account.username = username;
-				this.isDeleteAccountModalOpen = true;
-			},
-			closeDeleteAccountModal() {
-				this.resetPrimaryStates();
-
-				this.isDeleteAccountModalOpen = false;
-			},
-			deleteAccount() {
-				htmx.ajax(
-                    'DELETE', `/api/v1/account/` + this.account.id, {swap: 'none'},
-                ).then(() => {
-				    this.$dispatch('delete:account');
-				});
-				this.closeDeleteAccountModal();
-			},
-		}));
-	});
-}
-
-templ AccountsIndex(accounts []entity.Account) {
-	@AccountsIndexLocalState()
+templ AccountsIndex(accountsEntities []entity.Account) {
+	<!-- Accounts Page JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/accounts.js" }></script>
+	<!-- Accounts Page HTML -->
 	<div x-data="accounts">
 		<div class="mb-6 flex flex-row items-center justify-between">
 			<div class="basis-[70%]">
@@ -169,11 +32,11 @@ templ AccountsIndex(accounts []entity.Account) {
 			class="flex flex-col"
 		>
 			<div id="accounts-table" class="card w-full">
-				@AccountsTable(accounts)
+				@AccountsTable(accountsEntities)
 			</div>
 		</div>
 		@CreateAccountModal()
-		@UpdatePasswordModal()
+		@UpdateAccountModal()
 		@UpdateApiKeyModal()
 		@componentStructural.DeleteModal(
 			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
@@ -189,73 +52,106 @@ templ AccountsIndex(accounts []entity.Account) {
 	</div>
 }
 
-templ AccountsTable(accounts []entity.Account) {
-	<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-		<thead class="bg-os-800 text-xs uppercase text-neutral-400">
-			<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-				<th scope="col" class="w-2/7 px-5 py-3 text-left">Username(s)</th>
-				<th scope="col" class="w-2/7 px-5 py-3 text-center">UserId(s)/GroupId(s)</th>
-				<th scope="col" class="flex justify-end py-3">
-					<div class="w-3/7 mr-2">
-						@componentForm.SubmitButton(
-							"open-create-account-form-button", "Create account",
-							"ph-user-plus", "openCreateAccountModal()", false,
-						)
-					</div>
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, account := range accounts {
-				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-					<th class="hidden">
-						@templ.JSONScript("secureAccessPublicKeys_"+account.Id.String(), account.SecureAccessPublicKeys)
-					</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-left font-normal">{ account.Username.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-center font-normal">{ account.Id.String() + "/" + account.GroupId.String() }</th>
-					<th scope="row" class="w-1/4 px-5 py-3 text-right">
-						<div class="inline-flex space-x-2">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-lock-key", "blue-900", "blue-700",
-								"openUpdatePasswordModal("+account.Id.String()+")",
-								"update password", "blue-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-key", "blue-900", "blue-700",
-								"openUpdateApiKeyModal("+account.Id.String()+", '"+account.Username.String()+"')",
-								"update api key", "blue-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-fingerprint", "blue-900", "blue-700",
-								"openSecureAccessPublicKeysModal("+account.Id.String()+", '"+account.Username.String()+"')",
-								"view secure access public keys", "blue-500",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openDeleteAccountModal("+account.Id.String()+", '"+account.Username.String()+"')",
-								"delete account", "red-500",
-							)
-						</div>
-					</th>
-				</tr>
-			}
-		</tbody>
-	</table>
+templ AccountsTable(accountsEntities []entity.Account) {
+	<!-- AccountsTable -->
+	<div class="bg-os-800 rounded-md p-4">
+		<div class="bg-os-500 space-y-3 rounded-md p-4">
+			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+				<!-- AccountsTable Header -->
+				<thead class="text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="w-1/5 px-5 py-3 text-left">Username(s)</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">UserId(s)/GroupId(s)</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">Home Directory</th>
+						<th scope="col" class="w-1/5 px-5 py-3 text-center">Created At</th>
+						<th scope="col" class="flex justify-end py-3">
+							<div class="mr-2">
+								@componentForm.SubmitButton(
+									"open-create-account-form-button", "Create account",
+									"ph-user-plus", "openCreateAccountModal()", true,
+								)
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- AccountsTable Items -->
+					for _, accountEntity := range accountsEntities {
+						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+							<th class="hidden">
+								@templ.JSONScript("secureAccessPublicKeys_"+accountEntity.Id.String(), accountEntity.SecureAccessPublicKeys)
+							</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-left font-normal">
+								<div class="flex items-center">
+									{ accountEntity.Username.String() }
+									if accountEntity.IsSuperAdmin {
+										<div class="group/accountType translate-y-10% relative top-1/2 ml-2">
+											<div class="bg-infinite-500 invisible absolute left-1/2 -mt-8 w-max -translate-x-1/2 rounded p-1.5 text-xs group-hover/accountType:visible group-hover/accountType:block">
+												super admin
+											</div>
+											<i class="ph-bold ph-wrench text-infinite-500"></i>
+										</div>
+									}
+								</div>
+							</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.Id.String() + "/" + accountEntity.GroupId.String() }</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.HomeDirectory.String() }</th>
+							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.CreatedAt.ReadDateOnly() }</th>
+							<th scope="row" class="px-5 py-3 text-right">
+								<div class="inline-flex space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-gear", "os-200", "os-100",
+										"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
+										"update account", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-key", "os-200", "os-100",
+										"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+										"update api key", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-fingerprint", "os-200", "os-100",
+										"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+										"view secure access public keys", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-trash", "red-800", "red-600",
+										"openDeleteAccountModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+										"delete account", "red-500",
+									)
+								</div>
+							</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 }
 
 templ CreateAccountForm() {
+	<!-- CreateAccountForm -->
 	<form
 		hx-post="/api/v1/account/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
 		<div class="mb-6 space-y-6">
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Id:                 "username",
-				Label:              "Username",
-				BindModelValuePath: "account.username",
-			})
+			<div class="flex items-center justify-center gap-2">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "username",
+					Label:              "Username",
+					BindModelValuePath: "account.username",
+				})
+				<div class="flex w-1/4 justify-center">
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "isSuperAdmin",
+						Label:         "Super Admin",
+						BindModelPath: "account.isSuperAdmin",
+					})
+				</div>
+			</div>
 			@componentForm.PasswordInput(componentForm.PasswordInputDto{
 				Id:                                "password",
 				Label:                             "Password",
@@ -279,7 +175,8 @@ templ CreateAccountModal() {
 	}
 }
 
-templ UpdatePasswordForm() {
+templ UpdateAccountForm() {
+	<!-- UpdateAccountForm -->
 	<form
 		hx-put="/api/v1/account/"
 		hx-indicator="#loading-overlay"
@@ -294,24 +191,32 @@ templ UpdatePasswordForm() {
 				ShouldIncludeGenRandomPassBtn:     true,
 				ShouldIncludePassStrengthCriteria: true,
 			})
+			<div class="flex justify-end">
+				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+					Id:            "isSuperAdmin",
+					Label:         "Super Admin",
+					BindModelPath: "account.isSuperAdmin",
+				})
+			</div>
 		</div>
 		@componentForm.SubmitButton(
-			"update-account-password-button", "Update", "ph-key",
-			"closeUpdatePasswordModal()", false,
+			"update-account-button", "Update", "ph-check-fat",
+			"closeUpdateAccountModal()", false,
 		)
 	</form>
 }
 
-templ UpdatePasswordModal() {
+templ UpdateAccountModal() {
 	@componentStructural.RegularModal(
-		"Update Password", "isUpdatePasswordModalOpen", "closeUpdatePasswordModal()",
+		"Update Account", "isUpdateAccountModalOpen", "closeUpdateAccountModal()",
 		"account.id",
 	) {
-		@UpdatePasswordForm()
+		@UpdateAccountForm()
 	}
 }
 
 templ UpdateApiKeyContent() {
+	<!-- UpdateApiKeyContent -->
 	<div class="mb-6">
 		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
 		<div x-show="account.apiKey !== ''">
@@ -337,6 +242,7 @@ templ UpdateApiKeyModal() {
 }
 
 templ SecureAccessPublicKeysList() {
+	<!-- SecureAccessPublicKeysList -->
 	@componentStructural.Alert(
 		componentStructural.AlertTypeInfo,
 		"These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
@@ -386,6 +292,7 @@ templ SecureAccessPublicKeysModal() {
 }
 
 templ CreateSecureAccessPublicKeyForm() {
+	<!-- CreateSecureAccessPublicKeyForm -->
 	<form
 		hx-post="/api/v1/account/secure-access-public-key"
 		hx-indicator="#loading-overlay"

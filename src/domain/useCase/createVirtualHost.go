@@ -40,7 +40,7 @@ func CreateVirtualHost(
 
 	err = vhostCmdRepo.Create(createDto)
 	if err != nil {
-		slog.Error("CreateVirtualHostError", slog.Any("err", err))
+		slog.Error("CreateVirtualHostError", slog.String("err", err.Error()))
 		return errors.New("CreateVirtualHostInfraError")
 	}
 

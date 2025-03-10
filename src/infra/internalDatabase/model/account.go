@@ -14,6 +14,7 @@ type Account struct {
 	Username               string `gorm:"not null"`
 	KeyHash                *string
 	HomeDirectory          string `gorm:"not null"`
+	IsSuperAdmin           bool   `gorm:"not null"`
 	SecureAccessPublicKeys []SecureAccessPublicKey
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
@@ -30,6 +31,7 @@ func (Account) ToModel(entity entity.Account) (model Account, err error) {
 		Username:      entity.Username.String(),
 		KeyHash:       nil,
 		HomeDirectory: entity.HomeDirectory.String(),
+		IsSuperAdmin:  entity.IsSuperAdmin,
 	}, nil
 }
 
@@ -68,8 +70,8 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 	}
 
 	return entity.NewAccount(
-		accountId, groupId, username, homeDirectory, secureAccessPublicKeys,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		accountId, groupId, username, homeDirectory, model.IsSuperAdmin,
+		secureAccessPublicKeys, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

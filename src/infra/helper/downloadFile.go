@@ -6,15 +6,10 @@ import (
 )
 
 func DownloadFile(url string, filePath string) error {
-	_, err := RunCmd(
-		"wget",
-		"-q",
-		"--no-check-certificate",
-		"-O",
-		filePath,
-		url,
-	)
-
+	_, err := RunCmd(RunCmdSettings{
+		Command: "wget",
+		Args:    []string{"-q", "--no-check-certificate", "-O", filePath, url},
+	})
 	if err != nil {
 		log.Printf("DownloadFileError: %s", err)
 		return errors.New("DownloadFileError")

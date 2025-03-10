@@ -43,13 +43,13 @@ func UpdatePhpConfigs(
 
 	_, err := vhostQueryRepo.ReadByHostname(updateDto.Hostname)
 	if err != nil {
-		slog.Error("HostnameNotFound", slog.Any("err", err))
+		slog.Error("HostnameNotFound", slog.String("err", err.Error()))
 		return errors.New("HostnameNotFound")
 	}
 
 	err = runtimeCmdRepo.UpdatePhpVersion(updateDto.Hostname, updateDto.PhpVersion)
 	if err != nil {
-		slog.Error("UpdatePhpVersionError", slog.Any("err", err))
+		slog.Error("UpdatePhpVersionError", slog.String("err", err.Error()))
 		return errors.New("UpdatePhpVersionInfraError")
 	}
 	securityActivityRecord := NewCreateSecurityActivityRecord(activityCmdRepo)
@@ -58,7 +58,7 @@ func UpdatePhpConfigs(
 	if len(updateDto.PhpModules) > 0 {
 		err = runtimeCmdRepo.UpdatePhpModules(updateDto.Hostname, updateDto.PhpModules)
 		if err != nil {
-			slog.Error("UpdatePhpModulesError", slog.Any("err", err))
+			slog.Error("UpdatePhpModulesError", slog.String("err", err.Error()))
 			return errors.New("UpdatePhpModulesInfraError")
 		}
 		securityActivityRecord.UpdatePhpConfigs(updateDto, "modules")
@@ -67,7 +67,7 @@ func UpdatePhpConfigs(
 	if len(updateDto.PhpSettings) > 0 {
 		err = runtimeCmdRepo.UpdatePhpSettings(updateDto.Hostname, updateDto.PhpSettings)
 		if err != nil {
-			slog.Error("UpdatePhpSettingsError", slog.Any("err", err))
+			slog.Error("UpdatePhpSettingsError", slog.String("err", err.Error()))
 			return errors.New("UpdatePhpSettingsInfraError")
 		}
 		securityActivityRecord.UpdatePhpConfigs(updateDto, "settings")

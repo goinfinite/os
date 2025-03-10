@@ -15,13 +15,13 @@ func EncryptStr(
 ) (encryptedText string, err error) {
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
-		slog.Error("EncryptSecretKeyError", slog.Any("error", err))
+		slog.Error("EncryptSecretKeyError", slog.String("err", err.Error()))
 		return encryptedText, errors.New("EncryptSecretKeyError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
-		slog.Error("EncryptCipherError", slog.Any("error", err))
+		slog.Error("EncryptCipherError", slog.String("err", err.Error()))
 		return encryptedText, errors.New("EncryptCipherError")
 	}
 
@@ -29,7 +29,7 @@ func EncryptStr(
 	cipherText := make([]byte, aes.BlockSize+len(plainTextBytes))
 	iv := cipherText[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		slog.Error("EncryptIvGenerationError", slog.Any("error", err))
+		slog.Error("EncryptIvGenerationError", slog.String("err", err.Error()))
 		return encryptedText, errors.New("EncryptIvGenerationError")
 	}
 
@@ -44,7 +44,7 @@ func DecryptStr(
 ) (decryptedText string, err error) {
 	apiKeyDecoded, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
-		slog.Error("DecryptDecodingError", slog.Any("error", err))
+		slog.Error("DecryptDecodingError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptDecodingError")
 	}
 	if len(apiKeyDecoded) < aes.BlockSize {
@@ -53,13 +53,13 @@ func DecryptStr(
 
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
-		slog.Error("DecryptSecretDecodingError", slog.Any("error", err))
+		slog.Error("DecryptSecretDecodingError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptSecretDecodingError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
-		slog.Error("DecryptCipherError", slog.Any("error", err))
+		slog.Error("DecryptCipherError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptCipherError")
 	}
 

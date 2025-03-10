@@ -3,31 +3,36 @@ package entity
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type InstalledService struct {
-	Name              valueObject.ServiceName    `json:"name"`
-	Nature            valueObject.ServiceNature  `json:"nature"`
-	Type              valueObject.ServiceType    `json:"type"`
-	Version           valueObject.ServiceVersion `json:"version"`
-	Status            valueObject.ServiceStatus  `json:"status"`
-	StartCmd          valueObject.UnixCommand    `json:"startCmd"`
-	Envs              []valueObject.ServiceEnv   `json:"envs"`
-	PortBindings      []valueObject.PortBinding  `json:"portBindings"`
-	StopCmdSteps      []valueObject.UnixCommand  `json:"stopCmdSteps"`
-	PreStartCmdSteps  []valueObject.UnixCommand  `json:"preStartCmdSteps"`
-	PostStartCmdSteps []valueObject.UnixCommand  `json:"postStartCmdSteps"`
-	PreStopCmdSteps   []valueObject.UnixCommand  `json:"preStopCmdSteps"`
-	PostStopCmdSteps  []valueObject.UnixCommand  `json:"postStopCmdSteps"`
-	ExecUser          *valueObject.UnixUsername  `json:"execUser"`
-	WorkingDirectory  *valueObject.UnixFilePath  `json:"workingDirectory"`
-	StartupFile       *valueObject.UnixFilePath  `json:"startupFile"`
-	AutoStart         *bool                      `json:"autoStart"`
-	AutoRestart       *bool                      `json:"autoRestart"`
-	TimeoutStartSecs  *uint                      `json:"timeoutStartSecs"`
-	MaxStartRetries   *uint                      `json:"maxStartRetries"`
-	LogOutputPath     *valueObject.UnixFilePath  `json:"logOutputPath"`
-	LogErrorPath      *valueObject.UnixFilePath  `json:"logErrorPath"`
-	AvatarUrl         *valueObject.Url           `json:"avatarUrl"`
-	CreatedAt         valueObject.UnixTime       `json:"createdAt"`
-	UpdatedAt         valueObject.UnixTime       `json:"updatedAt"`
+	Name                 valueObject.ServiceName    `json:"name"`
+	Nature               valueObject.ServiceNature  `json:"nature"`
+	Type                 valueObject.ServiceType    `json:"type"`
+	Version              valueObject.ServiceVersion `json:"version"`
+	Status               valueObject.ServiceStatus  `json:"status"`
+	StartCmd             valueObject.UnixCommand    `json:"startCmd"`
+	Envs                 []valueObject.ServiceEnv   `json:"envs"`
+	PortBindings         []valueObject.PortBinding  `json:"portBindings"`
+	StopTimeoutSecs      valueObject.UnixTime       `json:"-"`
+	StopCmdSteps         []valueObject.UnixCommand  `json:"-"`
+	PreStartTimeoutSecs  valueObject.UnixTime       `json:"-"`
+	PreStartCmdSteps     []valueObject.UnixCommand  `json:"-"`
+	PostStartTimeoutSecs valueObject.UnixTime       `json:"-"`
+	PostStartCmdSteps    []valueObject.UnixCommand  `json:"-"`
+	PreStopTimeoutSecs   valueObject.UnixTime       `json:"-"`
+	PreStopCmdSteps      []valueObject.UnixCommand  `json:"-"`
+	PostStopTimeoutSecs  valueObject.UnixTime       `json:"-"`
+	PostStopCmdSteps     []valueObject.UnixCommand  `json:"-"`
+	ExecUser             *valueObject.UnixUsername  `json:"execUser"`
+	WorkingDirectory     *valueObject.UnixFilePath  `json:"workingDirectory"`
+	StartupFile          *valueObject.UnixFilePath  `json:"startupFile"`
+	AutoStart            *bool                      `json:"autoStart"`
+	AutoRestart          *bool                      `json:"autoRestart"`
+	TimeoutStartSecs     *uint                      `json:"timeoutStartSecs"`
+	MaxStartRetries      *uint                      `json:"maxStartRetries"`
+	LogOutputPath        *valueObject.UnixFilePath  `json:"logOutputPath"`
+	LogErrorPath         *valueObject.UnixFilePath  `json:"logErrorPath"`
+	AvatarUrl            *valueObject.Url           `json:"avatarUrl"`
+	CreatedAt            valueObject.UnixTime       `json:"createdAt"`
+	UpdatedAt            valueObject.UnixTime       `json:"updatedAt"`
 }
 
 func NewInstalledService(
@@ -39,7 +44,16 @@ func NewInstalledService(
 	status valueObject.ServiceStatus,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	stopTimeoutSecs valueObject.UnixTime,
+	stopSteps []valueObject.UnixCommand,
+	preStartTimeoutSecs valueObject.UnixTime,
+	preStartSteps []valueObject.UnixCommand,
+	postStartTimeoutSecs valueObject.UnixTime,
+	postStartSteps []valueObject.UnixCommand,
+	preStopTimeoutSecs valueObject.UnixTime,
+	preStopSteps []valueObject.UnixCommand,
+	postStopTimeoutSecs valueObject.UnixTime,
+	postStopSteps []valueObject.UnixCommand,
 	execUser *valueObject.UnixUsername,
 	workingDirectory, startupFile *valueObject.UnixFilePath,
 	autoStart, autoRestart *bool,
@@ -50,30 +64,35 @@ func NewInstalledService(
 	updatedAt valueObject.UnixTime,
 ) InstalledService {
 	return InstalledService{
-		Name:              name,
-		Nature:            nature,
-		Type:              serviceType,
-		Version:           version,
-		StartCmd:          startCmd,
-		Status:            status,
-		Envs:              envs,
-		PortBindings:      portBindings,
-		StopCmdSteps:      stopSteps,
-		PreStartCmdSteps:  preStartSteps,
-		PostStartCmdSteps: postStartSteps,
-		PreStopCmdSteps:   preStopSteps,
-		PostStopCmdSteps:  postStopSteps,
-		ExecUser:          execUser,
-		WorkingDirectory:  workingDirectory,
-		StartupFile:       startupFile,
-		AutoStart:         autoStart,
-		AutoRestart:       autoRestart,
-		TimeoutStartSecs:  timeoutStartSecs,
-		MaxStartRetries:   maxStartRetries,
-		LogOutputPath:     logOutputPath,
-		LogErrorPath:      logErrorPath,
-		AvatarUrl:         avatarUrl,
-		CreatedAt:         createdAt,
-		UpdatedAt:         updatedAt,
+		Name:                 name,
+		Nature:               nature,
+		Type:                 serviceType,
+		Version:              version,
+		StartCmd:             startCmd,
+		Status:               status,
+		Envs:                 envs,
+		PortBindings:         portBindings,
+		StopTimeoutSecs:      stopTimeoutSecs,
+		StopCmdSteps:         stopSteps,
+		PreStartTimeoutSecs:  preStartTimeoutSecs,
+		PreStartCmdSteps:     preStartSteps,
+		PostStartTimeoutSecs: postStartTimeoutSecs,
+		PostStartCmdSteps:    postStartSteps,
+		PreStopTimeoutSecs:   preStopTimeoutSecs,
+		PreStopCmdSteps:      preStopSteps,
+		PostStopTimeoutSecs:  postStopTimeoutSecs,
+		PostStopCmdSteps:     postStopSteps,
+		ExecUser:             execUser,
+		WorkingDirectory:     workingDirectory,
+		StartupFile:          startupFile,
+		AutoStart:            autoStart,
+		AutoRestart:          autoRestart,
+		TimeoutStartSecs:     timeoutStartSecs,
+		MaxStartRetries:      maxStartRetries,
+		LogOutputPath:        logOutputPath,
+		LogErrorPath:         logErrorPath,
+		AvatarUrl:            avatarUrl,
+		CreatedAt:            createdAt,
+		UpdatedAt:            updatedAt,
 	}
 }

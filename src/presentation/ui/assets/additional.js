@@ -4,34 +4,34 @@
 window.__unocss = {
   theme: {
     colors: {
-      'infinite': {
-        '50': '#dea893',
-        '100': '#d89a81',
-        '200': '#d38b6f',
-        '300': '#cd7d5d',
-        '400': '#ca7654',
-        '500': '#c97350',
-        '600': '#c46f4d',
-        '700': '#ba6949',
-        '800': '#a55e41',
-        '900': '#905239',
-        '950': '#7c4631',
+      infinite: {
+        50: "#dea893",
+        100: "#d89a81",
+        200: "#d38b6f",
+        300: "#cd7d5d",
+        400: "#ca7654",
+        500: "#c97350",
+        600: "#c46f4d",
+        700: "#ba6949",
+        800: "#a55e41",
+        900: "#905239",
+        950: "#7c4631",
       },
-      'os': {
-        '5': '#66737a',
-        '100': '#4d5b64',
-        '200': '#34444e',
-        '300': '#1a2d38',
-        '400': '#0d212d',
-        '500': '#071b27',
-        '600': '#071a26',
-        '700': '#061924',
-        '800': '#061620',
-        '900': '#05131c',
-        '950': '#041118',
-      }
+      os: {
+        5: "#66737a",
+        100: "#4d5b64",
+        200: "#34444e",
+        300: "#1a2d38",
+        400: "#0d212d",
+        500: "#071b27",
+        600: "#071a26",
+        700: "#061924",
+        800: "#061620",
+        900: "#05131c",
+        950: "#041118",
+      },
     },
-  }
+  },
 };
 
 document.addEventListener("alpine:init", () => {
@@ -40,14 +40,17 @@ document.addEventListener("alpine:init", () => {
     loadingOverlayElement.classList.add("htmx-request");
 
     try {
-      const response = await fetch(url, {
+      const requestSettings = {
         method: method,
         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
-      });
+      };
+      if (Object.keys(payload).length > 0) {
+        requestSettings.body = JSON.stringify(payload);
+      }
+      const response = await fetch(url, requestSettings);
       const parsedResponse = await response.json();
 
       loadingOverlayElement.classList.remove("htmx-request");
@@ -73,9 +76,10 @@ document.addEventListener("alpine:init", () => {
 
   function createRandomPassword() {
     const passwordLength = 16;
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
 
-    let passwordContent = '';
+    let passwordContent = "";
     let passwordIterationCount = 0;
     while (passwordIterationCount < passwordLength) {
       const randomIndex = Math.floor(Math.random() * chars.length);
@@ -91,16 +95,19 @@ document.addEventListener("alpine:init", () => {
   function createFilterQueryParams(filtersObject, paginationObject) {
     const queryParams = new URLSearchParams();
 
-    const filtersAndPaginationObject = { ...filtersObject, ...paginationObject };
+    const filtersAndPaginationObject = {
+      ...filtersObject,
+      ...paginationObject,
+    };
     for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
-      if (typeof value === 'number') {
+      if (typeof value === "number") {
         queryParams.set(key, value);
         continue;
       }
 
       const trimValue = value.trim();
-      if (trimValue === '') {
-          continue;
+      if (trimValue === "") {
+        continue;
       }
       queryParams.set(key, trimValue);
     }
@@ -109,8 +116,11 @@ document.addEventListener("alpine:init", () => {
   }
 
   window.Infinite = {
+    Envs: {
+      AccessTokenCookieKey: "os-access-token",
+    },
     JsonAjax: jsonAjax,
     CreateRandomPassword: createRandomPassword,
-    CreateFilterQueryParams: createFilterQueryParams
-  }
+    CreateFilterQueryParams: createFilterQueryParams,
+  };
 });

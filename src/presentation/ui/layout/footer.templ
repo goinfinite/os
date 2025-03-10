@@ -8,6 +8,7 @@ import (
 )
 
 templ FooterSkeleton() {
+	<!-- FooterSkeleton HTML -->
 	<footer
 		id="footer"
 		hx-get="/fragment/footer"
@@ -47,6 +48,7 @@ func scheduledTaskStatusToIcon(taskStatus valueObject.ScheduledTaskStatus) strin
 templ ScheduledTasksPopover(
 	scheduledTasksEntities []entity.ScheduledTask,
 ) {
+	<!-- ScheduledTaskPopover HTML -->
 	<div
 		x-cloak
 		x-show="$store.main.displayScheduledTasksPopover"
@@ -189,9 +191,15 @@ templ ScheduledTasksPopover(
 }
 
 templ ResourceUsageProgressBar(usageRate uint8, usageLabel, tooltipText, icon string) {
+	<!-- ResourceUsageProgressBar HTML -->
 	<div class="group relative flex items-center">
 		<i class={ "ph-bold " + icon + " mr-2 align-middle text-xl" }></i>
-		@componentMisc.ProgressBar(usageRate, usageLabel)
+		@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+			ComponentColor:       "os-300",
+			CompletionRate:       usageRate,
+			Label:                usageLabel,
+			LabelBackgroundColor: "os-700",
+		})
 		<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover:block group-hover:-translate-y-0.5 group-hover:visible p-1.5 bg-os-300 text-neutral-50 text-xs rounded-md shadow-md" }>
 			{ tooltipText }
 		</div>
@@ -202,6 +210,7 @@ templ Footer(
 	o11yOverviewEntity entity.O11yOverview,
 	scheduledTasksEntities []entity.ScheduledTask,
 ) {
+	<!-- Footer Layout HTML -->
 	<footer
 		id="footer"
 		hx-get="/fragment/footer"

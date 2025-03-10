@@ -1,7 +1,6 @@
 package filesInfra
 
 import (
-	"fmt"
 	"os/user"
 	"testing"
 
@@ -13,9 +12,10 @@ func TestFilesCmdRepo(t *testing.T) {
 	filesCmdRepo := FilesCmdRepo{}
 
 	currentUser, _ := user.Current()
-	fileBasePathStr := fmt.Sprintf("/home/%s", currentUser.Username)
+	fileBasePathStr := "/home/" + currentUser.Username
 
-	filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
+	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
+	directoryDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
 	operatorAccountId, _ := valueObject.NewAccountId(0)
 	ipAddress := valueObject.NewLocalhostIpAddress()
 
@@ -24,7 +24,8 @@ func TestFilesCmdRepo(t *testing.T) {
 		mimeType, _ := valueObject.NewMimeType("directory")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &filePermissions, mimeType, operatorAccountId, ipAddress,
+			filePath, &directoryDefaultPermissions, mimeType, operatorAccountId,
+			ipAddress,
 		)
 
 		err := filesCmdRepo.Create(createDto)
@@ -40,7 +41,8 @@ func TestFilesCmdRepo(t *testing.T) {
 		mimeType, _ := valueObject.NewMimeType("generic")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &filePermissions, mimeType, operatorAccountId, ipAddress,
+			filePath, &fileDefaultPermissions, mimeType, operatorAccountId,
+			ipAddress,
 		)
 
 		err := filesCmdRepo.Create(createDto)
@@ -63,12 +65,13 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("UpdateUnixDirectoryPermissions", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
-		filePermissions, _ := valueObject.NewUnixFilePermissions("0777")
+	t.Run("UpdateOnlyUnixFilePermissions", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
 
 		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-			filePath, filePermissions,
+			filePath, fileDefaultPermissions, nil,
 		)
 
 		err := filesCmdRepo.UpdatePermissions(updatePermissionsDto)
@@ -77,13 +80,11 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
-	t.Run("UpdateUnixFilePermissions", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
-		)
+	t.Run("UpdateUnixDirectoryAndFilePermissions", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 
 		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-			filePath, filePermissions,
+			filePath, fileDefaultPermissions, &directoryDefaultPermissions,
 		)
 
 		err := filesCmdRepo.UpdatePermissions(updatePermissionsDto)

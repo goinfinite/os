@@ -38,7 +38,7 @@ func (repo *VirtualHostQueryRepo) Read() ([]entity.VirtualHost, error) {
 	for _, model := range models {
 		entity, err := model.ToEntity()
 		if err != nil {
-			slog.Error("ModelToEntityError", slog.Any("error", err))
+			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
 			continue
 		}
 
@@ -91,7 +91,7 @@ func (repo *VirtualHostQueryRepo) ReadAliasesByParentHostname(
 	for _, aliasModel := range aliasesModels {
 		aliasEntity, err := aliasModel.ToEntity()
 		if err != nil {
-			slog.Error("ModelToEntityError", slog.Any("error", err))
+			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
 			continue
 		}
 

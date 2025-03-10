@@ -124,10 +124,11 @@ func (repo SslQueryRepo) sslPairFactory(
 func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 	sslPairs := []entity.SslPair{}
 
-	crtFilePathsStr, err := infraHelper.RunCmdWithSubShell(
-		"find " + infraEnvs.PkiConfDir +
+	crtFilePathsStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
-	)
+		ShouldRunWithSubShell: true,
+	})
 	if err != nil {
 		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
 	}

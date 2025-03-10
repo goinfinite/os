@@ -22,7 +22,10 @@ func PostgresqlCmd(cmd string, dbName *string) (string, error) {
 		psqlArgs = append(psqlArgs, psqlDbToConnect...)
 	}
 
-	return infraHelper.RunCmd("psql", psqlArgs...)
+	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command: "psql",
+		Args:    psqlArgs,
+	})
 }
 
 func (repo PostgresDatabaseQueryRepo) getDatabaseNames() ([]valueObject.DatabaseName, error) {

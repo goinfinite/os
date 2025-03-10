@@ -21,7 +21,7 @@ func DeleteDatabase(
 
 	err = dbCmdRepo.Delete(deleteDto.DatabaseName)
 	if err != nil {
-		slog.Error("DeleteDatabaseError", slog.Any("error", err))
+		slog.Error("DeleteDatabaseError", slog.String("err", err.Error()))
 		return errors.New("DeleteDatabaseInfraError")
 	}
 

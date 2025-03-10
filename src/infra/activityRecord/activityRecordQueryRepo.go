@@ -86,7 +86,7 @@ func (repo *ActivityRecordQueryRepo) Read(
 			slog.Debug(
 				"ModelToEntityError",
 				slog.Uint64("id", activityRecordEventModel.ID),
-				slog.Any("error", err),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

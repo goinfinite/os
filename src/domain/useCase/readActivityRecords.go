@@ -14,7 +14,7 @@ func ReadActivityRecords(
 ) (activityRecords []entity.ActivityRecord) {
 	activityRecords, err := activityRecordQueryRepo.Read(readDto)
 	if err != nil {
-		slog.Error("ReadActivityRecordsInfraError", slog.Any("error", err))
+		slog.Error("ReadActivityRecordsInfraError", slog.String("err", err.Error()))
 	}
 
 	return activityRecords

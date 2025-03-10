@@ -20,7 +20,9 @@ func TestAuthQueryRepo(t *testing.T) {
 	username, _ := valueObject.NewUsername("authDummyUser")
 	password, _ := valueObject.NewPassword("q1w2e3r4t5y6")
 	localIpAddress := valueObject.NewLocalhostIpAddress()
-	createDto := dto.NewCreateAccount(username, password, accountId, localIpAddress)
+	createDto := dto.NewCreateAccount(
+		username, password, false, accountId, localIpAddress,
+	)
 
 	_, err := accountCmdRepo.Create(createDto)
 	if err != nil {
