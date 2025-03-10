@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.1.9"
+        "version": "0.2.0"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -2733,30 +2733,6 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -2765,12 +2741,6 @@
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3341,30 +3311,6 @@
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -3373,12 +3319,6 @@
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3961,18 +3901,18 @@
         "valueObject.ServiceType": {
             "type": "string",
             "enum": [
-                "runtime",
                 "database",
-                "webserver",
+                "other",
+                "runtime",
                 "system",
-                "other"
+                "webserver"
             ],
             "x-enum-varnames": [
-                "RuntimeServiceType",
-                "DatabaseServiceType",
-                "WebServerServiceType",
-                "SystemServiceType",
-                "OtherServiceType"
+                "ServiceTypeDatabase",
+                "ServiceTypeOther",
+                "ServiceTypeRuntime",
+                "ServiceTypeSystem",
+                "ServiceTypeWebServer"
             ]
         }
     },

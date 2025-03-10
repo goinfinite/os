@@ -265,32 +265,12 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
-      postStartCmdSteps:
-        items:
-          type: string
-        type: array
-      postStopCmdSteps:
-        items:
-          type: string
-        type: array
-      preStartCmdSteps:
-        items:
-          type: string
-        type: array
-      preStopCmdSteps:
-        items:
-          type: string
-        type: array
       startCmd:
         type: string
       startupFile:
         type: string
       status:
         type: string
-      stopCmdSteps:
-        items:
-          type: string
-        type: array
       timeoutStartSecs:
         type: integer
       type:
@@ -663,32 +643,12 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
-      postStartCmdSteps:
-        items:
-          type: string
-        type: array
-      postStopCmdSteps:
-        items:
-          type: string
-        type: array
-      preStartCmdSteps:
-        items:
-          type: string
-        type: array
-      preStopCmdSteps:
-        items:
-          type: string
-        type: array
       startCmd:
         type: string
       startupFile:
         type: string
       status:
         type: string
-      stopCmdSteps:
-        items:
-          type: string
-        type: array
       timeoutStartSecs:
         type: integer
       type:
@@ -1070,18 +1030,18 @@ definitions:
     - ServiceNatureCustom
   valueObject.ServiceType:
     enum:
-    - runtime
     - database
-    - webserver
-    - system
     - other
+    - runtime
+    - system
+    - webserver
     type: string
     x-enum-varnames:
-    - RuntimeServiceType
-    - DatabaseServiceType
-    - WebServerServiceType
-    - SystemServiceType
-    - OtherServiceType
+    - ServiceTypeDatabase
+    - ServiceTypeOther
+    - ServiceTypeRuntime
+    - ServiceTypeSystem
+    - ServiceTypeWebServer
 host: localhost:1618
 info:
   contact:
@@ -1094,7 +1054,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.1.9
+  version: 0.2.0
 paths:
   /v1/account/:
     get:

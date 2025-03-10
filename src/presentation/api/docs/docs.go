@@ -2739,30 +2739,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -2771,12 +2747,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3347,30 +3317,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -3379,12 +3325,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3967,18 +3907,18 @@ const docTemplate = `{
         "valueObject.ServiceType": {
             "type": "string",
             "enum": [
-                "runtime",
                 "database",
-                "webserver",
+                "other",
+                "runtime",
                 "system",
-                "other"
+                "webserver"
             ],
             "x-enum-varnames": [
-                "RuntimeServiceType",
-                "DatabaseServiceType",
-                "WebServerServiceType",
-                "SystemServiceType",
-                "OtherServiceType"
+                "ServiceTypeDatabase",
+                "ServiceTypeOther",
+                "ServiceTypeRuntime",
+                "ServiceTypeSystem",
+                "ServiceTypeWebServer"
             ]
         }
     },
@@ -3994,7 +3934,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1.9",
+	Version:          "0.2.0",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
