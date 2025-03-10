@@ -1,10 +1,13 @@
 package page
 
-import componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+import (
+	"github.com/goinfinite/os/src/infra/envs"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
 
 templ FileManagerIndex() {
 	<!-- FileManager JavaScript -->
-	<script src="/assets/local-states/file-manager.js"></script>
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
 	<div x-data="fileManager">
 		<div class="mb-6 flex flex-row items-center justify-between">
@@ -158,7 +161,7 @@ templ FilesExplorerTable() {
 				})
 			</div>
 		</div>
-		<!-- FilesExplorerTable Search Bars Header -->
+		<!-- FilesExplorerTable Headers Search Bars -->
 		<div class="grid grid-cols-4 gap-2">
 			<div class="flex items-center justify-center gap-1 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
