@@ -1,11 +1,18 @@
 package page
 
 import (
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
-templ FileManagerIndex() {
+type FilesGroupedByType struct {
+	Directories []entity.UnixFile
+	Files       []entity.UnixFile
+}
+
+templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 	<!-- FileManager JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
@@ -18,7 +25,7 @@ templ FileManagerIndex() {
 			</div>
 		</div>
 		<div id="file-manager-page-content">
-			@FilesExplorerTable()
+			@FilesExplorerTable(filesGroupedByType)
 		</div>
 	</div>
 }
@@ -53,10 +60,10 @@ templ FilesExplorerSearchBar(id, name, icon, tooltipText, bindModelValuePath, on
 	</button>
 }
 
-templ FilesExplorerTable() {
-	<!-- FilesExplorerTable -->
-	<div class="bg-os-800 grid grid-rows-2 gap-y-2 rounded p-3">
-		<!-- FilesExplorerTable Buttons Header -->
+templ FilesExplorerTableHeaders() {
+	<!-- FilesExplorerTable  Headers-->
+	<div class="grid grid-rows-2 gap-y-2 rounded">
+		<!-- FilesExplorerTable Headers Buttons -->
 		<div class="grid grid-cols-4 gap-3">
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -214,6 +221,45 @@ templ FilesExplorerTable() {
 					"This is a file name search bar", "searchBarFilter.fileName",
 					"console.log('Search File Name')",
 				)
+			</div>
+		</div>
+	</div>
+}
+
+templ DirectoryTreeItem(fileName valueObject.UnixFileName) {
+	<div id={ fileName.String() + "DirectoryTreeItem" } class="w-full">
+		<a
+			class="flex w-fit cursor-pointer items-center px-2"
+			@click={ "console.log('Open " + fileName.String() + " directory')" }
+		>
+			<i class="ph-bold ph-caret-right mr-2 text-sm text-neutral-500"></i>
+			<i class="ph-bold ph-folder text-infinite-500 mr-1"></i>
+			<p>{ fileName.String() }</p>
+		</a>
+	</div>
+}
+
+templ DirectoriesTree(directoriesList []entity.UnixFile) {
+	<!-- FilesExplorerTable DirectoriesTree -->
+	<div class="bg-os-500 h-120 ml-2 flex w-full flex-wrap space-y-2 overflow-y-auto p-2">
+		{{ homeDirectoryName := valueObject.UnixFileName("/") }}
+		@DirectoryTreeItem(homeDirectoryName)
+		for _, directoryEntity := range directoriesList {
+			@DirectoryTreeItem(directoryEntity.Name)
+		}
+	</div>
+}
+
+templ FilesExplorerTable(filesGroupedByType FilesGroupedByType) {
+	<div class="bg-os-800 space-y-2 p-3">
+		<!-- FilesExplorerTable -->
+		@FilesExplorerTableHeaders()
+		<!-- FilesExplorerTable Content -->
+		<div class="grid h-full grid-cols-4 gap-5">
+			@DirectoriesTree(filesGroupedByType.Directories)
+			<!-- FilesExplorerTable FileExplorer -->
+			<div class="col-span-3 mr-1 flex items-center justify-center">
+				<div class="bg-os-500 flex h-full w-full justify-center rounded p-2"></div>
 			</div>
 		</div>
 	</div>
