@@ -302,14 +302,15 @@ templ FileManagerModal(filesGroupedByType FilesGroupedByType) {
 	</div>
 }
 
-templ CreateFileForm(closeFunction string) {
+templ CreateFileForm(mimeType, closeFunction string) {
 	<form
 		hx-post="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
 		<div class="mb-6">
-			<input type="hidden" name="filePath" :value="currentSourcePath + '/' + file.name"/>
+			<input name="mimeType" type="hidden" value={ mimeType }/>
+			<input name="filePath" type="hidden" :value="currentSourcePath + '/' + file.name"/>
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
@@ -319,7 +320,7 @@ templ CreateFileForm(closeFunction string) {
 		</div>
 		@componentForm.SubmitButton(
 			"", "Create", "ph-fat-check",
-			closeFunction+"; reloadFileManagerContent()", false,
+			closeFunction+"; setTimeout(() => reloadFileManagerContent(), 250)", false,
 		)
 	</form>
 }
@@ -329,8 +330,7 @@ templ CreateFileModal() {
 		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()",
 		"currentSourcePath",
 	) {
-		<input name="mimeType" type="hidden" value="file"/>
-		@CreateFileForm("closeCreateFileModal()")
+		@CreateFileForm("file", "closeCreateFileModal()")
 	}
 }
 
@@ -339,7 +339,6 @@ templ CreateDirectoryModal() {
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
 		"currentSourcePath",
 	) {
-		<input name="mimeType" type="hidden" value="directory"/>
-		@CreateFileForm("closeCreateDirectoryModal()")
+		@CreateFileForm("directory", "closeCreateDirectoryModal()")
 	}
 }
