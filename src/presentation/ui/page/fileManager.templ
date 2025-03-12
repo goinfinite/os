@@ -245,11 +245,6 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 }
 
 templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
-	{{
-		filesAndDirsList := slices.Concat(
-			filesGroupedByType.Directories, filesGroupedByType.Files,
-		)
-	}}
 	<!-- FilesExplorerTable FilesExplorer -->
 	<div class="bg-os-500 col-span-3 mr-2 w-full">
 		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
@@ -267,14 +262,19 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 		<div class="h-110 overflow-y-auto">
 			<table class="w-full">
 				<tbody class="p-2">
+					{{
+						filesAndDirsList := slices.Concat(
+							filesGroupedByType.Directories, filesGroupedByType.Files,
+						)
+					}}
 					for _, fileEntity := range filesAndDirsList {
 						<tr class="border-os-300 border-t first:border-opacity-0">
 							<th scope="row" class="w-1/7 px-5 py-3 text-left font-normal">
 								{{
-								fileHighlightedIcon := "ph-file text-slate-600"
-								if fileEntity.MimeType.IsDir() {
-									fileHighlightedIcon = "ph-folder text-infinite-500"
-								}
+									fileHighlightedIcon := "ph-file text-slate-600"
+									if fileEntity.MimeType.IsDir() {
+										fileHighlightedIcon = "ph-folder text-infinite-500"
+									}
 								}}
 								<div class="justify-content flex items-center">
 									<i class={ "ph-bold " + fileHighlightedIcon + " mr-2" }></i>
