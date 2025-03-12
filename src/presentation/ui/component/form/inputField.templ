@@ -88,7 +88,7 @@ templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 				type={ inputDto.Type }
 				name={ inputDto.Id }
 				if inputDto.BindInputValuePath != "" {
-					:value={ inputDto.BindInputValuePath }
+					x-model:value={ inputDto.BindInputValuePath }
 				}
 				autocomplete="off"
 				class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
