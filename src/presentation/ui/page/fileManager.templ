@@ -2,17 +2,22 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"slices"
 )
 
 type FilesGroupedByType struct {
+	SourcePath  string
 	Directories []entity.UnixFile
 	Files       []entity.UnixFile
 }
 
-templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
+templ FileManagerIndex(
+	accountHomeDir valueObject.UnixFilePath,
+	filesGroupedByType FilesGroupedByType,
+) {
 	<!-- FileManager JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
@@ -25,7 +30,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 			</div>
 		</div>
 		<div id="file-manager-page-content">
-			@FilesExplorerTable(filesGroupedByType)
+			@FileManagerModal(accountHomeDir, filesGroupedByType)
 		</div>
 	</div>
 }
@@ -59,7 +64,7 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 	</button>
 }
 
-templ FilesExplorerTableHeaders() {
+templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 	<!-- FilesExplorerTable  Headers-->
 	<div class="grid grid-rows-2 gap-y-2 rounded">
 		<!-- FilesExplorerTable Headers Buttons -->
@@ -175,7 +180,7 @@ templ FilesExplorerTableHeaders() {
 					TextContent:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "console.log('Home')",
+					OnClick:                 "desiredSourcePath = '" + accountHomeDir.String() + "'; reloadFileManagerContent()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -210,11 +215,11 @@ templ FilesExplorerTableHeaders() {
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"desiredSourcePath", "ph-folder",
-					"searchBarFilter.sourcePath", "Use it to search and open another directory.",
+					"desiredSourcePath", "Use it to search and open another directory.",
 					"console.log('Search Source Path')",
 				)
 			</div>
-			<div class="flex justify-center rounded p-2">
+			<div class="flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"searchFileName", "ph-magnifying-glass",
 					"searchBarFilter.fileName", "Use it to find a file by name.",
@@ -250,11 +255,11 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 			<!-- AccountsTable Header -->
 			<thead class="text-xs uppercase text-neutral-400">
 				<tr class="bg-os-300">
-					<th scope="col" class="w-1/7 px-5 py-3 text-left">Name</th>
-					<th scope="col" class="w-3/7 px-5 py-3 text-center">Updated At</th>
-					<th scope="col" class="w-1/7 px-5 py-3 text-center">Permissions</th>
-					<th scope="col" class="w-1/7 px-5 py-3 text-center">Owner</th>
-					<th scope="col" class="w-1/7 px-5 py-3 text-right">Size</th>
+					<th scope="col" class="w-1/8 px-5 py-3 text-left">Name</th>
+					<th scope="col" class="w-1/8 px-5 py-3 text-right">Size</th>
+					<th scope="col" class="w-3/8 px-5 py-3 text-center">Updated At</th>
+					<th scope="col" class="w-1/8 px-5 py-3 text-center">Permissions</th>
+					<th scope="col" class="w-2/8 px-5 py-3 text-center">Ownership</th>
 				</tr>
 			</thead>
 		</table>
@@ -268,7 +273,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 					}}
 					for _, fileEntity := range filesAndDirsList {
 						<tr class="border-os-300 border-t first:border-opacity-0">
-							<th scope="row" class="w-1/7 px-5 py-3 text-left font-normal">
+							<th scope="row" class="w-1/8 px-5 py-3 text-left font-normal">
 								{{
 									fileHighlightedIcon := "ph-file text-slate-600"
 									if fileEntity.MimeType.IsDir() {
@@ -280,10 +285,10 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 									<p>{ fileEntity.Name.String() }</p>
 								</div>
 							</th>
-							<th scope="row" class="w-3/7 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
-							<th scope="row" class="w-1/7 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
-							<th scope="row" class="w-1/7 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() }</th>
-							<th scope="row" class="w-1/7 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+							<th scope="row" class="w-1/8 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+							<th scope="row" class="w-3/8 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
+							<th scope="row" class="w-1/8 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
+							<th scope="row" class="w-2/8 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
 						</tr>
 					}
 				</tbody>
@@ -292,12 +297,16 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 	</div>
 }
 
-templ FilesExplorerTable(filesGroupedByType FilesGroupedByType) {
+templ FileManagerModal(
+	accountHomeDir valueObject.UnixFilePath,
+	filesGroupedByType FilesGroupedByType,
+) {
+	<!-- FileManagerModal -->
 	<div class="bg-os-800 space-y-2 p-3">
-		<!-- FilesExplorerTable -->
-		@FilesExplorerTableHeaders()
-		<!-- FilesExplorerTable Content -->
-		<div class="grid h-full grid-cols-4 gap-5">
+		@FilesExplorerTableHeaders(accountHomeDir)
+		<!-- FileManagerModal Content -->
+		<div id="file-manager-content" class="grid h-full grid-cols-4 gap-5">
+			<data id="current-source-path" class="hidden" value={ filesGroupedByType.SourcePath }></data>
 			@DirectoriesTree(filesGroupedByType.Directories)
 			@FilesExplorer(filesGroupedByType)
 		</div>
