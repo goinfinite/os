@@ -197,18 +197,11 @@ templ FilesExplorerTableHeaders() {
 					OnClick:      "goForwardToNextSourcePath()",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
-					Icon:         "ph-arrow-up",
-					TooltipText:  "Back Level",
-					DefaultColor: "os-400",
-					HoverColor:   "os-200",
-					OnClick:      "console.log('Back Level')",
-				})
-				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
 					Icon:         "ph-arrows-clockwise",
 					TooltipText:  "Reload",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "console.log('Reload')",
+					OnClick:      "reloadFileManagerContent()",
 				})
 			</div>
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
