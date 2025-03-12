@@ -1,0 +1,65 @@
+package componentForm
+
+import "github.com/goinfinite/os/src/infra/envs"
+
+type DropzoneInputDto struct {
+	Id                 string
+	Description        string
+	AcceptAttribute    string
+	AllowMultipleFiles bool
+}
+
+templ Dropzone(inputDto DropzoneInputDto) {
+	<!-- Dropzone JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/component/form/dropzone.js" }></script>
+	<!-- Dropzone HTML -->
+	<div
+		x-data="dropzone"
+		x-init="updateFileInput"
+		x-on:drop.prevent="handleDrop"
+		x-on:dragover.prevent
+		x-on:dragenter.prevent
+		x-on:dragleave.prevent
+		class="flex w-full items-center justify-center"
+	>
+		<label
+			for={ inputDto.Id }
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 group/label relative flex w-full cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		>
+			<div class="flex flex-col items-center justify-center py-2 text-neutral-50 text-opacity-80 group-hover/label:text-opacity-90" x-show="files.length === 0">
+				<i class="ph-duotone ph-tray-arrow-up text-4xl"></i>
+				<p class="mt-2 text-sm">
+					<span class="font-semibold">Click to upload</span> or drag and drop
+				</p>
+				<p class="text-xs">{ inputDto.Description }</p>
+			</div>
+			<div class="flex flex-row flex-wrap items-center justify-center gap-4 py-2" x-show="files.length > 0">
+				<template x-for="(file, index) in files" :key="file.name">
+					<div class="bg-os-200 group/files max-w-36 min-h-28 relative flex rounded-md p-2">
+						<p x-text="file.name" class="text-pretty truncate text-xs"></p>
+						<button
+							@click.prevent="removeFile(index)"
+							class="absolute inset-0 flex items-center justify-center rounded-md bg-red-900 opacity-0 group-hover/files:opacity-100"
+						>
+							<i class="ph-bold ph-x-circle text-3xl"></i>
+						</button>
+					</div>
+				</template>
+			</div>
+			<input
+				name={ inputDto.Id }
+				id={ inputDto.Id }
+				type="file"
+				if inputDto.AllowMultipleFiles {
+					multiple
+				}
+				hidden
+				if inputDto.AcceptAttribute != "" {
+					accept={ inputDto.AcceptAttribute }
+				}
+				x-ref="dropzone"
+				@change="files = Array.from($refs.dropzone.files)"
+			/>
+		</label>
+	</div>
+}
