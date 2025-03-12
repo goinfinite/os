@@ -1,10 +1,8 @@
 package presenter
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
-	"os/user"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -19,23 +17,6 @@ type FileManagerPresenter struct{}
 
 func NewFileManagerPresenter() *FileManagerPresenter {
 	return &FileManagerPresenter{}
-}
-
-func (presenter *FileManagerPresenter) readAccountHomeDir(
-	rawAccountId any,
-) (accountHomeDir valueObject.UnixFilePath, err error) {
-	accountId, err := valueObject.NewAccountId(rawAccountId)
-	if err != nil {
-		return accountHomeDir, err
-	}
-
-	accountIdStr := accountId.String()
-	user, err := user.LookupId(accountIdStr)
-	if err != nil {
-		return accountHomeDir, errors.New("LookupAccountIdError: " + err.Error())
-	}
-
-	return valueObject.NewUnixFilePath(user.HomeDir)
 }
 
 func (presenter *FileManagerPresenter) readFilesGroupedByType(
@@ -71,16 +52,9 @@ func (presenter *FileManagerPresenter) readFilesGroupedByType(
 }
 
 func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
-	rawAccountId := c.Get("accountId")
-	accountHomeDir, err := presenter.readAccountHomeDir(rawAccountId)
-	if err != nil {
-		slog.Debug(err.Error(), slog.Any("rawAccountId", rawAccountId))
-		return nil
-	}
-
 	rawDesiredSourcePath := c.QueryParam("desiredSourcePath")
 	if rawDesiredSourcePath == "" {
-		rawDesiredSourcePath = accountHomeDir.String()
+		rawDesiredSourcePath = page.DefaultFileManagerSourcePath
 	}
 	filesGroupedByType, err := presenter.readFilesGroupedByType(rawDesiredSourcePath)
 	if err != nil {
@@ -88,6 +62,6 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.FileManagerIndex(accountHomeDir, filesGroupedByType)
+	pageContent := page.FileManagerIndex(filesGroupedByType)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

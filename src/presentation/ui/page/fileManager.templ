@@ -2,11 +2,13 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
+	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"slices"
 )
+
+const DefaultFileManagerSourcePath string = "/app"
 
 type FilesGroupedByType struct {
 	SourcePath  string
@@ -14,10 +16,7 @@ type FilesGroupedByType struct {
 	Files       []entity.UnixFile
 }
 
-templ FileManagerIndex(
-	accountHomeDir valueObject.UnixFilePath,
-	filesGroupedByType FilesGroupedByType,
-) {
+templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 	<!-- FileManager JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
@@ -29,9 +28,9 @@ templ FileManagerIndex(
 				)
 			</div>
 		</div>
-		<div id="file-manager-page-content">
-			@FileManagerModal(accountHomeDir, filesGroupedByType)
-		</div>
+		@FileManagerModal(filesGroupedByType)
+		@CreateFileModal()
+		@CreateDirectoryModal()
 	</div>
 }
 
@@ -64,7 +63,7 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 	</button>
 }
 
-templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
+templ FilesExplorerTableHeaders() {
 	<!-- FilesExplorerTable  Headers-->
 	<div class="grid grid-rows-2 gap-y-2 rounded">
 		<!-- FilesExplorerTable Headers Buttons -->
@@ -75,7 +74,7 @@ templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 					TextContent:             "Add File",
 					DefaultColor:            "os-500",
 					HoverColor:              "os-200",
-					OnClick:                 "console.log('Add file')",
+					OnClick:                 "openCreateFileModal()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -83,7 +82,7 @@ templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 					TextContent:             "Add Folder",
 					DefaultColor:            "os-500",
 					HoverColor:              "os-200",
-					OnClick:                 "console.log('Add folder')",
+					OnClick:                 "openCreateDirectoryModal()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -180,7 +179,7 @@ templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 					TextContent:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "desiredSourcePath = '" + accountHomeDir.String() + "'; reloadFileManagerContent()",
+					OnClick:                 "file.path = '" + DefaultFileManagerSourcePath + "'; accessDesiredSourcePath()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -188,14 +187,14 @@ templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 					TooltipText:  "Back",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "console.log('Back')",
+					OnClick:      "returnToPreviousSourcePath()",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
 					Icon:         "ph-arrow-right",
 					TooltipText:  "Forward",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "console.log('Forward')",
+					OnClick:      "goForwardToNextSourcePath()",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
 					Icon:         "ph-arrow-up",
@@ -214,14 +213,14 @@ templ FilesExplorerTableHeaders(accountHomeDir valueObject.UnixFilePath) {
 			</div>
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
-					"desiredSourcePath", "ph-folder",
-					"desiredSourcePath", "Use it to search and open another directory.",
-					"reloadFileManagerContent()",
+					"fileExplorerSourcePath", "ph-folder", "file.path",
+					`Use it to search and open another directory. The default path is "/app".`,
+					"accessDesiredSourcePath()",
 				)
 			</div>
 			<div class="flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
-					"searchFileName", "ph-magnifying-glass",
+					"fileExplorerFileName", "ph-magnifying-glass",
 					"searchBarFilter.fileName", "Use it to find a file by name.",
 					"console.log('Search File Name')",
 				)
@@ -297,13 +296,10 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 	</div>
 }
 
-templ FileManagerModal(
-	accountHomeDir valueObject.UnixFilePath,
-	filesGroupedByType FilesGroupedByType,
-) {
+templ FileManagerModal(filesGroupedByType FilesGroupedByType) {
 	<!-- FileManagerModal -->
 	<div class="bg-os-800 space-y-2 p-3">
-		@FilesExplorerTableHeaders(accountHomeDir)
+		@FilesExplorerTableHeaders()
 		<!-- FileManagerModal Content -->
 		<div id="file-manager-content" class="grid h-full grid-cols-4 gap-5">
 			<data id="current-source-path" class="hidden" value={ filesGroupedByType.SourcePath }></data>
@@ -311,4 +307,46 @@ templ FileManagerModal(
 			@FilesExplorer(filesGroupedByType)
 		</div>
 	</div>
+}
+
+templ CreateFileForm(closeFunction string) {
+	<form
+		hx-post="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input type="hidden" name="filePath" :value="currentSourcePath + '/' + file.name"/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentSourcePath",
+				BindInputValuePath:  "file.name",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"", "Create", "ph-fat-check",
+			closeFunction+"; reloadFileManagerContent()", false,
+		)
+	</form>
+}
+
+templ CreateFileModal() {
+	@componentStructural.RegularModal(
+		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()",
+		"currentSourcePath",
+	) {
+		<input name="mimeType" type="hidden" value="file"/>
+		@CreateFileForm("closeCreateFileModal()")
+	}
+}
+
+templ CreateDirectoryModal() {
+	@componentStructural.RegularModal(
+		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
+		"currentSourcePath",
+	) {
+		<input name="mimeType" type="hidden" value="directory"/>
+		@CreateFileForm("closeCreateDirectoryModal()")
+	}
 }
