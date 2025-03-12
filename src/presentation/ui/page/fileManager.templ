@@ -4,6 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"slices"
 )
 
 type FilesGroupedByType struct {
@@ -227,9 +228,9 @@ templ FilesExplorerTableHeaders() {
 
 templ DirectoriesTree(directoriesList []entity.UnixFile) {
 	<!-- FilesExplorerTable DirectoriesTree -->
-	<div class="bg-os-500 h-120 ml-2 flex w-full flex-wrap space-y-2 overflow-y-auto p-2">
+	<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-y-auto p-2">
 		for _, directoryEntity := range directoriesList {
-			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" } class="w-full">
+			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" }>
 				<a
 					class="flex w-fit cursor-pointer items-center px-2"
 					@click={ "console.log('Open " + directoryEntity.Name.String() + " directory')" }
@@ -243,6 +244,55 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 	</div>
 }
 
+templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
+	{{
+		filesAndDirsList := slices.Concat(
+			filesGroupedByType.Directories, filesGroupedByType.Files,
+		)
+	}}
+	<!-- FilesExplorerTable FilesExplorer -->
+	<div class="bg-os-500 col-span-3 mr-2 w-full">
+		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+			<!-- AccountsTable Header -->
+			<thead class="text-xs uppercase text-neutral-400">
+				<tr class="bg-os-300">
+					<th scope="col" class="w-1/7 px-5 py-3 text-left">Name</th>
+					<th scope="col" class="w-3/7 px-5 py-3 text-center">Updated At</th>
+					<th scope="col" class="w-1/7 px-5 py-3 text-center">Permissions</th>
+					<th scope="col" class="w-1/7 px-5 py-3 text-center">Owner</th>
+					<th scope="col" class="w-1/7 px-5 py-3 text-right">Size</th>
+				</tr>
+			</thead>
+		</table>
+		<div class="h-110 overflow-y-auto">
+			<table class="w-full">
+				<tbody class="p-2">
+					for _, fileEntity := range filesAndDirsList {
+						<tr class="border-os-300 border-t first:border-opacity-0">
+							<th scope="row" class="w-1/7 px-5 py-3 text-left font-normal">
+								{{
+								fileHighlightedIcon := "ph-file text-slate-600"
+								if fileEntity.MimeType.IsDir() {
+									fileHighlightedIcon = "ph-folder text-infinite-500"
+								}
+								}}
+								<div class="justify-content flex items-center">
+									<i class={ "ph-bold " + fileHighlightedIcon + " mr-2" }></i>
+									<p>{ fileEntity.Name.String() }</p>
+								</div>
+							</th>
+							<th scope="row" class="w-3/7 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
+							<th scope="row" class="w-1/7 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
+							<th scope="row" class="w-1/7 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() }</th>
+							<th scope="row" class="w-1/7 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
 templ FilesExplorerTable(filesGroupedByType FilesGroupedByType) {
 	<div class="bg-os-800 space-y-2 p-3">
 		<!-- FilesExplorerTable -->
@@ -250,6 +300,7 @@ templ FilesExplorerTable(filesGroupedByType FilesGroupedByType) {
 		<!-- FilesExplorerTable Content -->
 		<div class="grid h-full grid-cols-4 gap-5">
 			@DirectoriesTree(filesGroupedByType.Directories)
+			@FilesExplorer(filesGroupedByType)
 		</div>
 	</div>
 }
