@@ -2,7 +2,6 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
@@ -226,26 +225,20 @@ templ FilesExplorerTableHeaders() {
 	</div>
 }
 
-templ DirectoryTreeItem(fileName valueObject.UnixFileName) {
-	<div id={ fileName.String() + "DirectoryTreeItem" } class="w-full">
-		<a
-			class="flex w-fit cursor-pointer items-center px-2"
-			@click={ "console.log('Open " + fileName.String() + " directory')" }
-		>
-			<i class="ph-bold ph-caret-right mr-2 text-sm text-neutral-500"></i>
-			<i class="ph-bold ph-folder text-infinite-500 mr-1"></i>
-			<p>{ fileName.String() }</p>
-		</a>
-	</div>
-}
-
 templ DirectoriesTree(directoriesList []entity.UnixFile) {
 	<!-- FilesExplorerTable DirectoriesTree -->
 	<div class="bg-os-500 h-120 ml-2 flex w-full flex-wrap space-y-2 overflow-y-auto p-2">
-		{{ homeDirectoryName := valueObject.UnixFileName("/") }}
-		@DirectoryTreeItem(homeDirectoryName)
 		for _, directoryEntity := range directoriesList {
-			@DirectoryTreeItem(directoryEntity.Name)
+			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" } class="w-full">
+				<a
+					class="flex w-fit cursor-pointer items-center px-2"
+					@click={ "console.log('Open " + directoryEntity.Name.String() + " directory')" }
+				>
+					<i class="ph-bold ph-caret-right mr-2 text-sm text-neutral-500"></i>
+					<i class="ph-bold ph-folder text-infinite-500 mr-1"></i>
+					<p>{ directoryEntity.Name.String() }</p>
+				</a>
+			</div>
 		}
 	</div>
 }
@@ -257,10 +250,6 @@ templ FilesExplorerTable(filesGroupedByType FilesGroupedByType) {
 		<!-- FilesExplorerTable Content -->
 		<div class="grid h-full grid-cols-4 gap-5">
 			@DirectoriesTree(filesGroupedByType.Directories)
-			<!-- FilesExplorerTable FileExplorer -->
-			<div class="col-span-3 mr-1 flex items-center justify-center">
-				<div class="bg-os-500 flex h-full w-full justify-center rounded p-2"></div>
-			</div>
 		</div>
 	</div>
 }
