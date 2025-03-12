@@ -82,12 +82,14 @@ func Authentication(
 			}
 
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
-			_, err = getAccountIdFromAccessToken(
+			accountId, err := getAccountIdFromAccessToken(
 				authQueryRepo, accessTokenStr, userIpAddress,
 			)
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
+
+			c.Set("accountId", accountId.String())
 			return next(c)
 		}
 	}
