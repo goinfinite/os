@@ -30,7 +30,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 	</div>
 }
 
-templ FilesExplorerSearchBar(id, name, icon, tooltipText, bindModelValuePath, onClick string) {
+templ FilesExplorerSearchBar(id, name, icon, bindModelValuePath, tooltipText, onClick string) {
 	<div class="relative h-[90%] w-full">
 		<input
 			type="text"
@@ -211,14 +211,14 @@ templ FilesExplorerTableHeaders() {
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"searchSourcePath", "sourcePath", "ph-folder",
-					"This is a source path search bar", "searchBarFilter.sourcePath",
+					"searchBarFilter.sourcePath", "Use it to search and open another directory.",
 					"console.log('Search Source Path')",
 				)
 			</div>
 			<div class="flex justify-center rounded p-2">
 				@FilesExplorerSearchBar(
 					"searchFileName", "fileName", "ph-magnifying-glass",
-					"This is a file name search bar", "searchBarFilter.fileName",
+					"searchBarFilter.fileName", "Use it to find a file by name.",
 					"console.log('Search File Name')",
 				)
 			</div>
