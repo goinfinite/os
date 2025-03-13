@@ -39,15 +39,15 @@ document.addEventListener("htmx:afterRequest", (event) => {
     toastType = "danger";
   }
 
-  if (httpResponseObject.status == 207) {
-    console.log(httpResponseObject);
-  }
-
   const parsedResponse = JSON.parse(responseData);
   if (parsedResponse.body === undefined || parsedResponse.body === "") {
     return;
   }
-  const toastMessage = parsedResponse.body;
+
+  let toastMessage = parsedResponse.body;
+  if (typeof toastMessage !== "string") {
+    toastMessage = toastType === "success" ? "Success" : "Error";
+  }
 
   Alpine.store("toast").displayToast(toastMessage, toastType);
 });
