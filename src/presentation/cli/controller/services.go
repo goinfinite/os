@@ -253,7 +253,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
-	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "d", "", "WorkingDir")
+	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{},
 		"PortBindings (port/protocol)",
