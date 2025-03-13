@@ -277,6 +277,15 @@ func (service *ServicesService) CreateInstallable(
 		startupFilePtr = &startupFile
 	}
 
+	var workingDirPtr *valueObject.UnixFilePath
+	if input["workingDir"] != nil {
+		workingDir, err := valueObject.NewUnixFilePath(input["workingDir"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		workingDirPtr = &workingDir
+	}
+
 	envs := []valueObject.ServiceEnv{}
 	if input["envs"] != nil {
 		var assertOk bool
@@ -386,6 +395,10 @@ func (service *ServicesService) CreateInstallable(
 			installParams = append(installParams, "--startup-file", startupFilePtr.String())
 		}
 
+		if workingDirPtr != nil {
+			installParams = append(installParams, "--working-dir", workingDirPtr.String())
+		}
+
 		if autoStartPtr != nil {
 			autoStartStr := strconv.FormatBool(*autoStartPtr)
 			installParams = append(installParams, "--auto-start", autoStartStr)
@@ -428,9 +441,9 @@ func (service *ServicesService) CreateInstallable(
 	}
 
 	createDto := dto.NewCreateInstallableService(
-		name, envs, portBindings, versionPtr, startupFilePtr, autoStartPtr,
-		timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr, &autoCreateMapping,
-		operatorAccountId, operatorIpAddress,
+		name, envs, portBindings, versionPtr, startupFilePtr, workingDirPtr,
+		autoStartPtr, timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr,
+		&autoCreateMapping, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)

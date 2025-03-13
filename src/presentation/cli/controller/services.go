@@ -192,8 +192,8 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 }
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
-	var nameStr, versionStr, startupFileStr, autoStartStr, autoRestartStr,
-		autoCreateMappingStr string
+	var nameStr, versionStr, startupFileStr, workingDirStr, autoStartStr,
+		autoRestartStr, autoCreateMappingStr string
 	var envsSlice, portBindingsSlice []string
 	var timeoutStartSecsInt, maxStartRetriesInt int
 
@@ -220,6 +220,10 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 			if startupFileStr != "" {
 				requestBody["startupFile"] = startupFileStr
+			}
+
+			if workingDirStr != "" {
+				requestBody["workingDir"] = workingDirStr
 			}
 
 			if len(portBindingsSlice) > 0 {
@@ -249,6 +253,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
+	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{},
 		"PortBindings (port/protocol)",

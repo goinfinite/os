@@ -3,6 +3,7 @@
 ```log
 0.1.9 - 2025/XX/XX
 fix(front): file manager permissions and account sudoers
+feat: add WorkingDir property to CreateInstallableService DTO
 
 0.1.8 - 2025/01/24
 refactor(front): overview page with HTMX+Alpine.js

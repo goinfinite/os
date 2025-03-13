@@ -544,6 +544,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		workingDirectoryStr := installableService.WorkingDirectory.String()
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
 	}
+	if createDto.WorkingDir != nil {
+		workingDirectoryStr := createDto.WorkingDir.String()
+		installedServiceModel.WorkingDirectory = &workingDirectoryStr
+	}
 
 	if createDto.StartupFile != nil && isSoloService {
 		startupFileStr := createDto.StartupFile.String()

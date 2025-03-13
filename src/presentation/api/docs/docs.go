@@ -2547,6 +2547,9 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                },
+                "workingDir": {
+                    "type": "string"
                 }
             }
         },
@@ -2739,30 +2742,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -2771,12 +2750,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3347,30 +3320,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
-                "postStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "postStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStartCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "preStopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "startCmd": {
                     "type": "string"
                 },
@@ -3379,12 +3328,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
-                },
-                "stopCmdSteps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3967,18 +3910,18 @@ const docTemplate = `{
         "valueObject.ServiceType": {
             "type": "string",
             "enum": [
-                "runtime",
                 "database",
-                "webserver",
+                "other",
+                "runtime",
                 "system",
-                "other"
+                "webserver"
             ],
             "x-enum-varnames": [
-                "RuntimeServiceType",
-                "DatabaseServiceType",
-                "WebServerServiceType",
-                "SystemServiceType",
-                "OtherServiceType"
+                "ServiceTypeDatabase",
+                "ServiceTypeOther",
+                "ServiceTypeRuntime",
+                "ServiceTypeSystem",
+                "ServiceTypeWebServer"
             ]
         }
     },
