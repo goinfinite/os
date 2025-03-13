@@ -8,6 +8,7 @@ type CreateInstallableService struct {
 	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
 	Version           *valueObject.ServiceVersion `json:"version"`
 	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
+	WorkingDir        *valueObject.UnixFilePath   `json:"workingDir"`
 	AutoStart         *bool                       `json:"autoStart"`
 	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
 	AutoRestart       *bool                       `json:"autoRestart"`
@@ -23,6 +24,7 @@ func NewCreateInstallableService(
 	portBindings []valueObject.PortBinding,
 	version *valueObject.ServiceVersion,
 	startupFile *valueObject.UnixFilePath,
+	workingDir *valueObject.UnixFilePath,
 	autoStart *bool,
 	timeoutStartSecs *uint,
 	autoRestart *bool,
@@ -37,6 +39,7 @@ func NewCreateInstallableService(
 		PortBindings:      portBindings,
 		Version:           version,
 		StartupFile:       startupFile,
+		WorkingDir:        workingDir,
 		AutoStart:         autoStart,
 		TimeoutStartSecs:  timeoutStartSecs,
 		AutoRestart:       autoRestart,
