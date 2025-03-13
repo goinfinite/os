@@ -141,6 +141,8 @@ definitions:
         type: integer
       version:
         type: string
+      workingDir:
+        type: string
     type: object
   dto.CreateMapping:
     properties:
@@ -265,32 +267,12 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
-      postStartCmdSteps:
-        items:
-          type: string
-        type: array
-      postStopCmdSteps:
-        items:
-          type: string
-        type: array
-      preStartCmdSteps:
-        items:
-          type: string
-        type: array
-      preStopCmdSteps:
-        items:
-          type: string
-        type: array
       startCmd:
         type: string
       startupFile:
         type: string
       status:
         type: string
-      stopCmdSteps:
-        items:
-          type: string
-        type: array
       timeoutStartSecs:
         type: integer
       type:
@@ -663,32 +645,12 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
-      postStartCmdSteps:
-        items:
-          type: string
-        type: array
-      postStopCmdSteps:
-        items:
-          type: string
-        type: array
-      preStartCmdSteps:
-        items:
-          type: string
-        type: array
-      preStopCmdSteps:
-        items:
-          type: string
-        type: array
       startCmd:
         type: string
       startupFile:
         type: string
       status:
         type: string
-      stopCmdSteps:
-        items:
-          type: string
-        type: array
       timeoutStartSecs:
         type: integer
       type:
@@ -1070,18 +1032,18 @@ definitions:
     - ServiceNatureCustom
   valueObject.ServiceType:
     enum:
-    - runtime
     - database
-    - webserver
-    - system
     - other
+    - runtime
+    - system
+    - webserver
     type: string
     x-enum-varnames:
-    - RuntimeServiceType
-    - DatabaseServiceType
-    - WebServerServiceType
-    - SystemServiceType
-    - OtherServiceType
+    - ServiceTypeDatabase
+    - ServiceTypeOther
+    - ServiceTypeRuntime
+    - ServiceTypeSystem
+    - ServiceTypeWebServer
 host: localhost:1618
 info:
   contact:
