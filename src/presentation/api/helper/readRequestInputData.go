@@ -3,6 +3,7 @@ package apiHelper
 import (
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -85,15 +86,20 @@ func ReadRequestInputData(c echo.Context) (map[string]interface{}, error) {
 		}
 
 		if len(multipartForm.File) > 0 {
-			multipartFiles := map[string]*multipart.FileHeader{}
-			for fileKey, fileValues := range multipartForm.File {
-				if len(fileValues) != 1 {
+			requestFileHeaders := map[string]*multipart.FileHeader{}
+			for fileKey, fileHandlers := range multipartForm.File {
+				isSingleFile := len(fileHandlers) == 1
+				if isSingleFile {
+					requestFileHeaders[fileKey] = fileHandlers[0]
 					continue
 				}
 
-				multipartFiles[fileKey] = fileValues[0]
+				for fileIndex, fileHandler := range fileHandlers {
+					adjustedFileName := fileKey + "_" + strconv.Itoa(fileIndex)
+					requestFileHeaders[adjustedFileName] = fileHandler
+				}
 			}
-			requestBody["files"] = multipartFiles
+			requestBody["files"] = requestFileHeaders
 		}
 	default:
 		return nil, echo.NewHTTPError(http.StatusBadRequest, "InvalidContentType")
