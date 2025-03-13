@@ -2,6 +2,7 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -31,7 +32,8 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@FileManagerModal(filesGroupedByType)
 		@CreateFileModal()
 		@CreateDirectoryModal()
-		@UploadFileModal()
+		@UploadFilesModal()
+		@MoveFilesToTrashModal()
 	</div>
 }
 
@@ -74,7 +76,7 @@ templ FilesExplorerTableHeaders() {
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-file-plus",
 					TextContent:             "Add File",
-					DefaultColor:            "os-500",
+					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateFileModal()",
 					HideTextBelowBreakpoint: "1720px",
@@ -82,7 +84,7 @@ templ FilesExplorerTableHeaders() {
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-folder-plus",
 					TextContent:             "Add Folder",
-					DefaultColor:            "os-500",
+					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateDirectoryModal()",
 					HideTextBelowBreakpoint: "1720px",
@@ -90,86 +92,86 @@ templ FilesExplorerTableHeaders() {
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-upload-simple",
 					TextContent:             "Upload",
-					DefaultColor:            "os-500",
+					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
-					OnClick:                 "openUploadFileModal()",
+					OnClick:                 "openUploadFilesModal()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 			</div>
 			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-code",
-					TextContent:             "Edit Code",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Edit code')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-copy",
+					TextContent:               "Copy",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Copy')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-copy",
-					TextContent:             "Copy",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Copy')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-arrow-square-out",
+					TextContent:               "Move",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Move')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-arrow-square-out",
-					TextContent:             "Move",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Move')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-download-simple",
+					TextContent:               "Download",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Download')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-download-simple",
-					TextContent:             "Download",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Download')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-pencil-line",
+					TextContent:               "Rename",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Rename')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-pencil-line",
-					TextContent:             "Rename",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Rename')",
-					HideTextBelowBreakpoint: "1720px",
-				})
-				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-trash",
-					TextContent:             "Delete",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Delete')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-trash",
+					TextContent:               "Delete",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openMoveFilesToTrashModal()",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 			</div>
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-folder-lock",
-					TextContent:             "Permissions",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Permissions')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-folder-lock",
+					TextContent:               "Permissions",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Permissions')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-box-arrow-down",
-					TextContent:             "Compress",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Compress')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-box-arrow-down",
+					TextContent:               "Compress",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Compress')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                    "ph-box-arrow-up",
-					TextContent:             "Extract",
-					DefaultColor:            "os-500",
-					HoverColor:              "os-200",
-					OnClick:                 "console.log('Extract')",
-					HideTextBelowBreakpoint: "1720px",
+					Icon:                      "ph-box-arrow-up",
+					TextContent:               "Extract",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Extract')",
+					HideTextBelowBreakpoint:   "1720px",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 			</div>
 		</div>
@@ -205,6 +207,13 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:   "os-200",
 					OnClick:      "reloadFileManagerContent()",
 				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-trash-simple",
+					TooltipText:  "Show Trash",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "file.path = '" + useCase.TrashDirPath + "'; accessDesiredSourcePath()",
+				})
 			</div>
 			<div class="col-span-2 flex items-center justify-center rounded p-2">
 				@FilesExplorerSearchBar(
@@ -239,6 +248,43 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 				</a>
 			</div>
 		}
+		if len(directoriesList) == 0 {
+			<div class="flex justify-center">
+				<p class="italic text-slate-500">No directories found.</p>
+			</div>
+		}
+	</div>
+}
+
+templ SelectableFileName(fileEntity entity.UnixFile) {
+	<div class="justify-content flex items-center">
+		<label class="mr-2.5 inline-flex cursor-pointer items-center">
+			<input
+				type="checkbox"
+				@change={ "handleSelectSourcePath('" + fileEntity.Path.String() + "')" }
+				class="peer sr-only"
+			/>
+			<i class="ph-bold ph-square text-gray-500 peer-checked:hidden"></i>
+			<i class="ph-bold ph-check-square text-infinite-500 hidden peer-checked:block"></i>
+		</label>
+		{{
+			fileHighlightedIcon := "ph-file text-gray-300"
+			if fileEntity.MimeType.IsDir() {
+				fileHighlightedIcon = "ph-folder text-infinite-500"
+			}
+		}}
+		<a
+			if fileEntity.MimeType.IsDir() {
+				class="flex w-fit cursor-pointer items-center"
+				@click={ "file.path = '" + fileEntity.Path.String() + "'; accessDesiredSourcePath()" }
+			} else {
+				class="flex w-fit items-center"
+				@click={ "console.log('" + fileEntity.Path.String() + "')" }
+			}
+		>
+			<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+			<p class="max-w-80 max-[1280px]:max-w-40 truncate">{ fileEntity.Name.String() }</p>
+		</a>
 	</div>
 }
 
@@ -249,11 +295,11 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 			<!-- AccountsTable Header -->
 			<thead class="text-xs uppercase text-neutral-400">
 				<tr class="bg-os-300">
-					<th scope="col" class="w-3/10 px-5 py-3 text-left">Name</th>
-					<th scope="col" class="w-1/10 px-5 py-3 text-right">Size</th>
-					<th scope="col" class="w-3/10 px-5 py-3 text-center">Updated At</th>
-					<th scope="col" class="w-1/10 px-5 py-3 text-center">Permissions</th>
-					<th scope="col" class="w-2/10 px-5 py-3 text-center">Ownership</th>
+					<th scope="col" class="w-3/10 py-3 pl-3 text-left">Name</th>
+					<th scope="col" class="w-1/10 py-3 text-center">Size</th>
+					<th scope="col" class="w-3/10 py-3 text-center">Updated At</th>
+					<th scope="col" class="w-1/10 py-3 text-center">Permissions</th>
+					<th scope="col" class="w-2/10 py-3 text-center">Ownership</th>
 				</tr>
 			</thead>
 		</table>
@@ -267,22 +313,18 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 					}}
 					for _, fileEntity := range filesAndDirsList {
 						<tr class="border-os-300 border-t first:border-opacity-0">
-							<th scope="row" class="w-3/10 px-5 py-3 text-left font-normal">
-								{{
-									fileHighlightedIcon := "ph-file text-slate-600"
-									if fileEntity.MimeType.IsDir() {
-										fileHighlightedIcon = "ph-folder text-infinite-500"
-									}
-								}}
-								<div class="justify-content flex items-center">
-									<i class={ "ph-bold " + fileHighlightedIcon + " mr-2" }></i>
-									<p class="w-70 max-[1280px]:w-40 truncate">{ fileEntity.Name.String() }</p>
-								</div>
+							<th scope="row" class="w-3/10 py-3 pl-3 text-left font-normal">
+								@SelectableFileName(fileEntity)
 							</th>
-							<th scope="row" class="w-1/10 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
-							<th scope="row" class="w-3/10 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
-							<th scope="row" class="w-1/10 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
-							<th scope="row" class="w-2/10 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
+							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
+							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
+							<th scope="row" class="w-2/10 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
+						</tr>
+					}
+					if len(filesAndDirsList) == 0 {
+						<tr class="text-center">
+							<td class="col-span-10 pt-3 text-center italic text-slate-500">No files or directories found.</td>
 						</tr>
 					}
 				</tbody>
@@ -327,8 +369,7 @@ templ CreateFileForm(mimeType, closeFunction string) {
 
 templ CreateFileModal() {
 	@componentStructural.RegularModal(
-		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()",
-		"currentSourcePath",
+		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
 	) {
 		@CreateFileForm("file", "closeCreateFileModal()")
 	}
@@ -337,18 +378,18 @@ templ CreateFileModal() {
 templ CreateDirectoryModal() {
 	@componentStructural.RegularModal(
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
-		"currentSourcePath",
+		"",
 	) {
 		@CreateFileForm("directory", "closeCreateDirectoryModal()")
 	}
 }
 
-templ UploadFileForm() {
+templ UploadFilesForm() {
 	<form
 		hx-post="/api/v1/files/upload/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeUploadFileModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+		@submit="closeUploadFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 		enctype="multipart/form-data"
 	>
 		<div class="mb-6">
@@ -364,11 +405,23 @@ templ UploadFileForm() {
 	</form>
 }
 
-templ UploadFileModal() {
+templ UploadFilesModal() {
 	@componentStructural.RegularModal(
-		"Upload File", "isUploadFileModalOpen", "closeUploadFileModal()",
-		"currentSourcePath",
+		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
 	) {
-		@UploadFileForm()
+		@UploadFilesForm()
+	}
+}
+
+templ MoveFilesToTrashModal() {
+	@componentStructural.WarningModal(
+		"isMoveFilesToTrashModalOpen", "closeMoveFilesToTrashModal()",
+		"No, Keep it.", "moveFilesToTrash()", "move-files-to-trash",
+		"ph-trash-simple", "Yes, Move to Trash!",
+	) {
+		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+			Are you sure you want to move to trash?
+		</h3>
+		<p>Files and directories can still be recovered from the Trash.</p>
 	}
 }

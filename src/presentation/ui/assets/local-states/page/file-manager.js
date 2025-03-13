@@ -15,7 +15,7 @@ document.addEventListener("alpine:init", () => {
     },
 
     // Auxiliary States
-    lastFiveAccessedSourcePaths: {},
+    lastFiveAccessedSourcePaths: { previous: [], next: [] },
     saveCurrentSourcePathToHistory(historyObjKey) {
       if (this.lastFiveAccessedSourcePaths[historyObjKey].length === 5) {
         this.lastFiveAccessedSourcePaths[historyObjKey].shift();
@@ -47,6 +47,7 @@ document.addEventListener("alpine:init", () => {
       this.reloadFileManagerContent();
     },
     reloadFileManagerContent() {
+      this.resetAuxiliaryStates();
       this.currentSourcePath = this.file.path;
 
       htmx.ajax("GET", "/file-manager/?desiredSourcePath=" + this.file.path, {
@@ -58,8 +59,17 @@ document.addEventListener("alpine:init", () => {
     searchBarFilter: {
       fileName: "",
     },
+    selectedSourcePaths: [],
+    handleSelectSourcePath(sourcePath) {
+      if (this.selectedSourcePaths.has(sourcePath)) {
+        this.selectedSourcePaths.delete(sourcePath);
+        return;
+      }
+
+      this.selectedSourcePaths.add(sourcePath);
+    },
     resetAuxiliaryStates() {
-      this.lastFiveAccessedSourcePaths = { previous: [], next: [] };
+      this.selectedSourcePaths = new Set();
     },
 
     // Modal States
@@ -81,14 +91,38 @@ document.addEventListener("alpine:init", () => {
     closeCreateDirectoryModal() {
       this.isCreateDirectoryModalOpen = false;
     },
-    isUploadFileModalOpen: false,
-    openUploadFileModal() {
+    isUploadFilesModalOpen: false,
+    openUploadFilesModal() {
       this.resetPrimaryStates();
 
-      this.isUploadFileModalOpen = true;
+      this.isUploadFilesModalOpen = true;
     },
-    closeUploadFileModal() {
-      this.isUploadFileModalOpen = false;
+    closeUploadFilesModal() {
+      this.isUploadFilesModalOpen = false;
+    },
+    isMoveFilesToTrashModalOpen: false,
+    openMoveFilesToTrashModal() {
+      this.resetPrimaryStates();
+
+      this.isMoveFilesToTrashModalOpen = true;
+    },
+    closeMoveFilesToTrashModal() {
+      this.isMoveFilesToTrashModalOpen = false;
+    },
+    moveFilesToTrash() {
+      const shouldDisplayToast = false;
+      Infinite.JsonAjax(
+        "PUT",
+        "/api/v1/files/delete/",
+        {
+          sourcePaths: Array.from(this.selectedSourcePaths),
+          hardDelete: false,
+        },
+        shouldDisplayToast
+      ).then(() => {
+        this.closeMoveFilesToTrashModal();
+        this.reloadFileManagerContent();
+      });
     },
   }));
 });
