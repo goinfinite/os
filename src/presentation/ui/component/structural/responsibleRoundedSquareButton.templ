@@ -13,6 +13,14 @@ type ResponsibleRoundedSquareButtonDto struct {
 templ ResponsibleRoundedSquareButton(inputDto ResponsibleRoundedSquareButtonDto) {
 	<!-- ResponsibleRoundedSquareButton -->
 	<div class="group/responsibleRoundedSquareButton relative w-fit">
+		{{
+			bindIconClasses := "'ph-duotone " + inputDto.Icon + " text-xl'"
+			bindDescriptionClasses := "'font-medium max-" + inputDto.HideTextBelowBreakpoint + ":hidden'"
+			if inputDto.DeactivateButtonCondition != "" {
+				bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
+				bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
+			}
+		}}
 		<button
 			type="button"
 			@click={ inputDto.OnClick }
@@ -21,17 +29,9 @@ templ ResponsibleRoundedSquareButton(inputDto ResponsibleRoundedSquareButtonDto)
 				:disabled={ inputDto.DeactivateButtonCondition }
 			}
 		>
-			{{
-				bindIconClasses := "'ph-duotone " + inputDto.Icon + " text-xl'"
-				bindDescriptionClasses := "'font-medium max-[" + inputDto.HideTextBelowBreakpoint + "]:hidden'"
-				if inputDto.DeactivateButtonCondition != "" {
-					bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
-					bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
-				}
-			}}
 			<i :class={ bindIconClasses }></i>
 			<span :class={ bindDescriptionClasses }>{ inputDto.Description }</span>
-			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 group-hover/responsibleRoundedSquareButton:max-[" + inputDto.HideTextBelowBreakpoint + "]:block group-hover/responsibleRoundedSquareButton:max-[" + inputDto.HideTextBelowBreakpoint + "]:-translate-y-0.5 group-hover/responsibleRoundedSquareButton:max-[" + inputDto.HideTextBelowBreakpoint + "]:visible p-1.5 bg-" + inputDto.HoverColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
+			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:block max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:-translate-y-0.5 max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:visible p-1.5 bg-" + inputDto.HoverColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
 				{ inputDto.Description }
 			</div>
 		</button>
