@@ -25,7 +25,6 @@ document.addEventListener("alpine:init", () => {
           this.currentSourcePath
         );
       }
-      console.log(this.lastFiveAccessedSourcePaths[historyObjKey]);
     },
     returnToPreviousSourcePath() {
       if (this.lastFiveAccessedSourcePaths.previous.length === 0) return;
@@ -66,6 +65,8 @@ document.addEventListener("alpine:init", () => {
     // Modal States
     isCreateFileModalOpen: false,
     openCreateFileModal() {
+      this.resetPrimaryStates();
+
       this.isCreateFileModalOpen = true;
     },
     closeCreateFileModal() {
@@ -73,10 +74,21 @@ document.addEventListener("alpine:init", () => {
     },
     isCreateDirectoryModalOpen: false,
     openCreateDirectoryModal() {
+      this.resetPrimaryStates();
+
       this.isCreateDirectoryModalOpen = true;
     },
     closeCreateDirectoryModal() {
       this.isCreateDirectoryModalOpen = false;
+    },
+    isUploadFileModalOpen: false,
+    openUploadFileModal() {
+      this.resetPrimaryStates();
+
+      this.isUploadFileModalOpen = true;
+    },
+    closeUploadFileModal() {
+      this.isUploadFileModalOpen = false;
     },
   }));
 });

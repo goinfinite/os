@@ -31,6 +31,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@FileManagerModal(filesGroupedByType)
 		@CreateFileModal()
 		@CreateDirectoryModal()
+		@UploadFileModal()
 	</div>
 }
 
@@ -38,6 +39,7 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 	<div class="relative h-[90%] w-full">
 		<input
 			type="text"
+			@keyup.enter={ onClick }
 			if bindModelValuePath != "" {
 				x-model:value={ bindModelValuePath }
 			}
@@ -90,7 +92,7 @@ templ FilesExplorerTableHeaders() {
 					TextContent:             "Upload",
 					DefaultColor:            "os-500",
 					HoverColor:              "os-200",
-					OnClick:                 "console.log('Upload')",
+					OnClick:                 "openUploadFileModal()",
 					HideTextBelowBreakpoint: "1720px",
 				})
 			</div>
@@ -307,6 +309,7 @@ templ CreateFileForm(mimeType, closeFunction string) {
 		hx-post="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		@submit={ closeFunction + "; setTimeout(() => reloadFileManagerContent(), 250)" }
 	>
 		<div class="mb-6">
 			<input name="mimeType" type="hidden" value={ mimeType }/>
@@ -318,10 +321,7 @@ templ CreateFileForm(mimeType, closeFunction string) {
 				BindInputValuePath:  "file.name",
 			})
 		</div>
-		@componentForm.SubmitButton(
-			"", "Create", "ph-fat-check",
-			closeFunction+"; setTimeout(() => reloadFileManagerContent(), 250)", false,
-		)
+		@componentForm.SubmitButton("", "Create", "ph-check-fat", "", false)
 	</form>
 }
 
@@ -340,5 +340,35 @@ templ CreateDirectoryModal() {
 		"currentSourcePath",
 	) {
 		@CreateFileForm("directory", "closeCreateDirectoryModal()")
+	}
+}
+
+templ UploadFileForm() {
+	<form
+		hx-post="/api/v1/files/upload/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUploadFileModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+		enctype="multipart/form-data"
+	>
+		<div class="mb-6">
+			<input name="destinationPath" type="hidden" :value="currentSourcePath"/>
+			@componentForm.Dropzone(componentForm.DropzoneInputDto{
+				Id:                 "files",
+				Description:        "Any file is accepted",
+				AcceptAttribute:    "*/*",
+				AllowMultipleFiles: true,
+			})
+		</div>
+		@componentForm.SubmitButton("", "Upload", "ph-check-fat", "", false)
+	</form>
+}
+
+templ UploadFileModal() {
+	@componentStructural.RegularModal(
+		"Upload File", "isUploadFileModalOpen", "closeUploadFileModal()",
+		"currentSourcePath",
+	) {
+		@UploadFileForm()
 	}
 }
