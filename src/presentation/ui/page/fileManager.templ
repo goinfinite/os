@@ -240,7 +240,7 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" }>
 				<a
 					class="flex w-fit cursor-pointer items-center px-2"
-					@click={ "console.log('Open " + directoryEntity.Name.String() + " directory')" }
+					@click={ "file.path = '" + directoryEntity.Path.String() + "'; accessDesiredSourcePath()" }
 				>
 					<i class="ph-bold ph-caret-right mr-2 text-sm text-neutral-500"></i>
 					<i class="ph-bold ph-folder text-infinite-500 mr-1"></i>
