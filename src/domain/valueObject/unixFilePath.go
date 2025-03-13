@@ -14,6 +14,8 @@ const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
+const DefaultAppWorkingDir = UnixFilePath("/app")
+
 func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
