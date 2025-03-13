@@ -52,7 +52,7 @@ func (vo UnixTime) ReadTimeOnly() string {
 }
 
 func (ut UnixTime) ReadDateTime() string {
-	return time.Unix(int64(ut), 0).UTC().Format(time.RFC1123)
+	return time.Unix(int64(ut), 0).UTC().Format("02/01/2006 15:04:05")
 }
 
 func (ut UnixTime) ReadStartOfDay() time.Time {
