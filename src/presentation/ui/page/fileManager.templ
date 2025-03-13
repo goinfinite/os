@@ -75,7 +75,7 @@ templ FilesExplorerTableHeaders() {
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-file-plus",
-					TextContent:             "Add File",
+					Description:             "Add File",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateFileModal()",
@@ -83,7 +83,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-folder-plus",
-					TextContent:             "Add Folder",
+					Description:             "Add Folder",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateDirectoryModal()",
@@ -91,7 +91,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-upload-simple",
-					TextContent:             "Upload",
+					Description:             "Upload",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openUploadFilesModal()",
@@ -101,7 +101,7 @@ templ FilesExplorerTableHeaders() {
 			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-copy",
-					TextContent:               "Copy",
+					Description:               "Copy",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Copy')",
@@ -110,7 +110,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-arrow-square-out",
-					TextContent:               "Move",
+					Description:               "Move",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Move')",
@@ -119,7 +119,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-download-simple",
-					TextContent:               "Download",
+					Description:               "Download",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Download')",
@@ -128,7 +128,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-pencil-line",
-					TextContent:               "Rename",
+					Description:               "Rename",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Rename')",
@@ -137,7 +137,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-trash",
-					TextContent:               "Delete",
+					Description:               "Delete",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "openMoveFilesToTrashModal()",
@@ -148,7 +148,7 @@ templ FilesExplorerTableHeaders() {
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-folder-lock",
-					TextContent:               "Permissions",
+					Description:               "Permissions",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Permissions')",
@@ -157,7 +157,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-box-arrow-down",
-					TextContent:               "Compress",
+					Description:               "Compress",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Compress')",
@@ -166,7 +166,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-box-arrow-up",
-					TextContent:               "Extract",
+					Description:               "Extract",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Extract')",
@@ -180,7 +180,7 @@ templ FilesExplorerTableHeaders() {
 			<div class="flex items-center justify-center gap-1 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-house",
-					TextContent:             "Home",
+					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
 					OnClick:                 "file.path = '" + DefaultFileManagerSourcePath + "'; accessDesiredSourcePath()",
