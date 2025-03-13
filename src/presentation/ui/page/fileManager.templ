@@ -249,11 +249,11 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 			<!-- AccountsTable Header -->
 			<thead class="text-xs uppercase text-neutral-400">
 				<tr class="bg-os-300">
-					<th scope="col" class="w-1/8 px-5 py-3 text-left">Name</th>
-					<th scope="col" class="w-1/8 px-5 py-3 text-right">Size</th>
-					<th scope="col" class="w-3/8 px-5 py-3 text-center">Updated At</th>
-					<th scope="col" class="w-1/8 px-5 py-3 text-center">Permissions</th>
-					<th scope="col" class="w-2/8 px-5 py-3 text-center">Ownership</th>
+					<th scope="col" class="w-3/10 px-5 py-3 text-left">Name</th>
+					<th scope="col" class="w-1/10 px-5 py-3 text-right">Size</th>
+					<th scope="col" class="w-3/10 px-5 py-3 text-center">Updated At</th>
+					<th scope="col" class="w-1/10 px-5 py-3 text-center">Permissions</th>
+					<th scope="col" class="w-2/10 px-5 py-3 text-center">Ownership</th>
 				</tr>
 			</thead>
 		</table>
@@ -267,7 +267,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 					}}
 					for _, fileEntity := range filesAndDirsList {
 						<tr class="border-os-300 border-t first:border-opacity-0">
-							<th scope="row" class="w-1/8 px-5 py-3 text-left font-normal">
+							<th scope="row" class="w-3/10 px-5 py-3 text-left font-normal">
 								{{
 									fileHighlightedIcon := "ph-file text-slate-600"
 									if fileEntity.MimeType.IsDir() {
@@ -276,13 +276,13 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 								}}
 								<div class="justify-content flex items-center">
 									<i class={ "ph-bold " + fileHighlightedIcon + " mr-2" }></i>
-									<p>{ fileEntity.Name.String() }</p>
+									<p class="w-70 max-[1280px]:w-40 truncate">{ fileEntity.Name.String() }</p>
 								</div>
 							</th>
-							<th scope="row" class="w-1/8 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
-							<th scope="row" class="w-3/8 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
-							<th scope="row" class="w-1/8 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
-							<th scope="row" class="w-2/8 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
+							<th scope="row" class="w-1/10 px-5 py-3 text-right font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+							<th scope="row" class="w-3/10 px-5 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
+							<th scope="row" class="w-1/10 px-5 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
+							<th scope="row" class="w-2/10 px-5 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
 						</tr>
 					}
 				</tbody>
