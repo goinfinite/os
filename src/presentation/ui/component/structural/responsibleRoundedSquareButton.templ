@@ -14,20 +14,19 @@ templ ResponsibleRoundedSquareButton(inputDto ResponsibleRoundedSquareButtonDto)
 	<!-- ResponsibleRoundedSquareButton -->
 	<div class="group/responsibleRoundedSquareButton relative w-fit">
 		{{
-			buttonClasses := "inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-" + inputDto.DefaultColor + " text-center"
+			bindButtonClasses := "'inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-" + inputDto.DefaultColor + " text-center'"
 			bindIconClasses := "'ph-duotone " + inputDto.Icon + " text-xl'"
 			bindDescriptionClasses := "'font-medium max-" + inputDto.HideTextBelowBreakpoint + ":hidden'"
 			if inputDto.DeactivateButtonCondition != "" {
-				bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
-				bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500 ' : '')"
-			} else {
-				buttonClasses += " hover:bg-" + inputDto.HoverColor
+				bindButtonClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? '' : ' hover:bg-" + inputDto.HoverColor + "')"
+				bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
+				bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
 			}
 		}}
 		<button
 			type="button"
 			@click={ inputDto.OnClick }
-			class={ buttonClasses }
+			:class={ bindButtonClasses }
 			if inputDto.DeactivateButtonCondition != "" {
 				:disabled={ inputDto.DeactivateButtonCondition }
 			}
