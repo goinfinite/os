@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -20,23 +19,23 @@ func NewFileManagerPresenter() *FileManagerPresenter {
 }
 
 func (presenter *FileManagerPresenter) readFilesGroupedByType(
-	rawDesiredSourcePath string,
-) (filesGroupedByType page.FilesGroupedByType, err error) {
-	desiredSourcePath, err := valueObject.NewUnixFilePath(rawDesiredSourcePath)
+	rawWorkingDirPath string,
+) page.FilesGroupedByType {
+	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
 	if err != nil {
-		return filesGroupedByType, err
+		workingDirPath, _ = valueObject.NewUnixFilePath("/invalid/path")
 	}
 
-	filesList, err := useCase.ReadFiles(filesInfra.FilesQueryRepo{}, desiredSourcePath)
+	filesGroupedByType := page.FilesGroupedByType{
+		WorkingDirPath: workingDirPath.String(),
+		Directories:    []entity.UnixFile{},
+		Files:          []entity.UnixFile{},
+	}
+	filesList, err := useCase.ReadFiles(filesInfra.FilesQueryRepo{}, workingDirPath)
 	if err != nil {
-		return filesGroupedByType, err
+		return filesGroupedByType
 	}
 
-	filesGroupedByType = page.FilesGroupedByType{
-		SourcePath:  desiredSourcePath.String(),
-		Directories: []entity.UnixFile{},
-		Files:       []entity.UnixFile{},
-	}
 	for _, fileEntity := range filesList {
 		if fileEntity.MimeType.IsDir() {
 			filesGroupedByType.Directories = append(
@@ -48,19 +47,15 @@ func (presenter *FileManagerPresenter) readFilesGroupedByType(
 		filesGroupedByType.Files = append(filesGroupedByType.Files, fileEntity)
 	}
 
-	return filesGroupedByType, nil
+	return filesGroupedByType
 }
 
 func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
-	rawDesiredSourcePath := c.QueryParam("desiredSourcePath")
-	if rawDesiredSourcePath == "" {
-		rawDesiredSourcePath = page.DefaultFileManagerSourcePath
+	rawWorkingDirPath := c.QueryParam("workingDirPath")
+	if rawWorkingDirPath == "" {
+		rawWorkingDirPath = valueObject.DefaultAppWorkingDir.String()
 	}
-	filesGroupedByType, err := presenter.readFilesGroupedByType(rawDesiredSourcePath)
-	if err != nil {
-		slog.Error(err.Error())
-		return nil
-	}
+	filesGroupedByType := presenter.readFilesGroupedByType(rawWorkingDirPath)
 
 	pageContent := page.FileManagerIndex(filesGroupedByType)
 	return uiHelper.Render(c, pageContent, http.StatusOK)

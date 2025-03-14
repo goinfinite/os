@@ -3,18 +3,17 @@ package page
 import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"slices"
 )
 
-const DefaultFileManagerSourcePath string = "/app"
-
 type FilesGroupedByType struct {
-	SourcePath  string
-	Directories []entity.UnixFile
-	Files       []entity.UnixFile
+	WorkingDirPath string
+	Directories    []entity.UnixFile
+	Files          []entity.UnixFile
 }
 
 templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
@@ -68,7 +67,7 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 }
 
 templ FilesExplorerTableHeaders() {
-	<!-- FilesExplorerTable  Headers-->
+	<!-- FilesExplorerTable Headers-->
 	<div class="grid grid-rows-2 gap-y-2 rounded">
 		<!-- FilesExplorerTable Headers Buttons -->
 		<div class="grid grid-cols-4 gap-3">
@@ -79,7 +78,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateFileModal()",
-					HideTextBelowBreakpoint: "1720px",
+					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-folder-plus",
@@ -87,7 +86,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateDirectoryModal()",
-					HideTextBelowBreakpoint: "1720px",
+					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-upload-simple",
@@ -95,17 +94,29 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openUploadFilesModal()",
-					HideTextBelowBreakpoint: "1720px",
+					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 			</div>
+			// Ordenar como ordem alfabética no retorno do Read dos files.
 			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
+				// Se o arquivo tiver menos de 5MB e for das extensões permitidas, permitir esse botão.
+				// Dentro do Monaco Editor, adicionar um botão que permita ele fazer o download do arquivo também.
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-code",
+					Description:               "Edit",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "console.log('Open Monaco Editor')",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-copy",
 					Description:               "Copy",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Copy')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -114,7 +125,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Move')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -123,7 +134,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Download')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -132,7 +143,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Rename')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -141,7 +152,7 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "openMoveFilesToTrashModal()",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[107.5rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 			</div>
@@ -152,25 +163,25 @@ templ FilesExplorerTableHeaders() {
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Permissions')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[115rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-box-arrow-down",
+					Icon:                      "ph-file-zip",
 					Description:               "Compress",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Compress')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[115rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-box-arrow-up",
+					Icon:                      "ph-split-horizontal",
 					Description:               "Extract",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Extract')",
-					HideTextBelowBreakpoint:   "1720px",
+					HideTextBelowBreakpoint:   "[115rem]",
 					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
 				})
 			</div>
@@ -183,15 +194,15 @@ templ FilesExplorerTableHeaders() {
 					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "file.path = '" + DefaultFileManagerSourcePath + "'; accessDesiredSourcePath()",
-					HideTextBelowBreakpoint: "1720px",
+					OnClick:                 "file.path = '" + valueObject.DefaultAppWorkingDir.String() + "'; accessWorkingDirPath()",
+					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
 					Icon:         "ph-arrow-left",
 					TooltipText:  "Back",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "returnToPreviousSourcePath()",
+					OnClick:      "returnToPreviousWorkingDirPath()",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
 					Icon:         "ph-arrow-right",
@@ -212,21 +223,14 @@ templ FilesExplorerTableHeaders() {
 					TooltipText:  "Show Trash",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "file.path = '" + useCase.TrashDirPath + "'; accessDesiredSourcePath()",
+					OnClick:      "file.path = '" + useCase.TrashDirPath + "'; accessWorkingDirPath()",
 				})
 			</div>
-			<div class="col-span-2 flex items-center justify-center rounded p-2">
+			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
 				@FilesExplorerSearchBar(
 					"fileExplorerSourcePath", "ph-folder", "file.path",
-					`Use it to search and open another directory. The default path is "/app".`,
-					"accessDesiredSourcePath()",
-				)
-			</div>
-			<div class="flex items-center justify-center rounded p-2">
-				@FilesExplorerSearchBar(
-					"fileExplorerFileName", "ph-magnifying-glass",
-					"searchBarFilter.fileName", "Use it to find a file by name.",
-					"console.log('Search File Name')",
+					`Search and open another directory.`,
+					"accessWorkingDirPath()",
 				)
 			</div>
 		</div>
@@ -240,11 +244,11 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" }>
 				<a
 					class="flex w-fit cursor-pointer items-center px-2"
-					@click={ "file.path = '" + directoryEntity.Path.String() + "'; accessDesiredSourcePath()" }
+					@click={ "file.path = '" + directoryEntity.Path.String() + "'; accessWorkingDirPath()" }
 				>
-					<i class="ph-bold ph-caret-right mr-2 text-sm text-neutral-500"></i>
-					<i class="ph-bold ph-folder text-infinite-500 mr-1"></i>
-					<p>{ directoryEntity.Name.String() }</p>
+					<i class="ph-bold ph-caret-right mr-2 text-xs text-neutral-500 xl:text-sm"></i>
+					<i class="ph-bold ph-folder text-infinite-500 mr-1 text-sm xl:text-base"></i>
+					<p class="text-sm xl:text-base">{ directoryEntity.Name.String() }</p>
 				</a>
 			</div>
 		}
@@ -256,46 +260,26 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 	</div>
 }
 
-templ SelectableFileName(fileEntity entity.UnixFile) {
-	<div class="justify-content flex items-center">
-		<label class="mr-2.5 inline-flex cursor-pointer items-center">
-			<input
-				type="checkbox"
-				@change={ "handleSelectSourcePath('" + fileEntity.Path.String() + "')" }
-				class="peer sr-only"
-			/>
-			<i class="ph-bold ph-square text-gray-500 peer-checked:hidden"></i>
-			<i class="ph-bold ph-check-square text-infinite-500 hidden peer-checked:block"></i>
-		</label>
-		{{
-			fileHighlightedIcon := "ph-file text-gray-300"
-			if fileEntity.MimeType.IsDir() {
-				fileHighlightedIcon = "ph-folder text-infinite-500"
-			}
-		}}
-		<a
-			if fileEntity.MimeType.IsDir() {
-				class="flex w-fit cursor-pointer items-center"
-				@click={ "file.path = '" + fileEntity.Path.String() + "'; accessDesiredSourcePath()" }
-			} else {
-				class="flex w-fit items-center"
-				@click={ "console.log('" + fileEntity.Path.String() + "')" }
-			}
-		>
-			<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
-			<p class="max-w-80 max-[1280px]:max-w-40 truncate">{ fileEntity.Name.String() }</p>
-		</a>
-	</div>
-}
-
+// Adicionar um <td> novo para o checkbox (inclusive o <th> vai ter um Select All também).
+//	 -> Isso aqui vai ser necessário para fazer a linha INTEIRA ser clicável para navegar
+//      para dentro do diretório. Inclusive, adicionar um hover para mostrar qual o diretório
+//      estou selecionando.
 templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 	<!-- FilesExplorerTable FilesExplorer -->
 	<div class="bg-os-500 col-span-3 mr-2 w-full">
 		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
 			<!-- AccountsTable Header -->
-			<thead class="text-xs uppercase text-neutral-400">
-				<tr class="bg-os-300">
-					<th scope="col" class="w-3/10 py-3 pl-3 text-left">Name</th>
+			<thead class="text-[0.6rem] uppercase text-neutral-400 xl:text-xs">
+				<tr class="bg-os-300 h-12">
+					<th scope="col" class="w-0.5/10 py-3 text-center text-base">
+						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+							Id:              "selectAllSourcePaths",
+							DeselectedColor: "gray-500",
+							SelectedColor:   "infinite-500",
+							OnChange:        "handleSelectAllSourcePaths()",
+						})
+					</th>
+					<th scope="col" class="w-2.5/10 py-3 text-left">Name</th>
 					<th scope="col" class="w-1/10 py-3 text-center">Size</th>
 					<th scope="col" class="w-3/10 py-3 text-center">Updated At</th>
 					<th scope="col" class="w-1/10 py-3 text-center">Permissions</th>
@@ -305,7 +289,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 		</table>
 		<div class="h-110 overflow-y-auto">
 			<table class="w-full">
-				<tbody class="p-2">
+				<tbody class="p-2 text-sm xl:text-base">
 					{{
 						filesAndDirsList := slices.Concat(
 							filesGroupedByType.Directories, filesGroupedByType.Files,
@@ -313,8 +297,34 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 					}}
 					for _, fileEntity := range filesAndDirsList {
 						<tr class="border-os-300 border-t first:border-opacity-0">
-							<th scope="row" class="w-3/10 py-3 pl-3 text-left font-normal">
-								@SelectableFileName(fileEntity)
+							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
+								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+									Id:              "selectSourcePath",
+									DeselectedColor: "gray-500",
+									SelectedColor:   "infinite-500",
+									OnChange:        "handleSelectSourcePath('" + fileEntity.Path.String() + "')",
+									CustomValue:     fileEntity.Path.String(),
+								})
+							</th>
+							<th scope="row" class="w-2.5/10 justify-content flex items-center py-3 text-left font-normal">
+								{{
+									fileHighlightedIcon := "ph-file text-gray-300"
+									if fileEntity.MimeType.IsDir() {
+										fileHighlightedIcon = "ph-folder text-infinite-500"
+									}
+								}}
+								<a
+									if fileEntity.MimeType.IsDir() {
+										class="flex w-fit cursor-pointer items-center"
+										@click={ "file.path = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }
+									} else {
+										class="flex w-fit items-center"
+										@click={ "console.log('" + fileEntity.Path.String() + "')" }
+									}
+								>
+									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
+								</a>
 							</th>
 							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
 							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
@@ -339,7 +349,11 @@ templ FileManagerModal(filesGroupedByType FilesGroupedByType) {
 		@FilesExplorerTableHeaders()
 		<!-- FileManagerModal Content -->
 		<div id="file-manager-content" class="grid h-full grid-cols-4 gap-5">
-			<data id="current-source-path" class="hidden" value={ filesGroupedByType.SourcePath }></data>
+			<data
+				id="current-source-path"
+				class="hidden"
+				value={ filesGroupedByType.WorkingDirPath }
+			></data>
 			@DirectoriesTree(filesGroupedByType.Directories)
 			@FilesExplorer(filesGroupedByType)
 		</div>
@@ -355,11 +369,11 @@ templ CreateFileForm(mimeType, closeFunction string) {
 	>
 		<div class="mb-6">
 			<input name="mimeType" type="hidden" value={ mimeType }/>
-			<input name="filePath" type="hidden" :value="currentSourcePath + '/' + file.name"/>
+			<input name="filePath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentSourcePath",
+				BindPrefixValuePath: "currentWorkingDirPath",
 				BindInputValuePath:  "file.name",
 			})
 		</div>
@@ -393,7 +407,7 @@ templ UploadFilesForm() {
 		enctype="multipart/form-data"
 	>
 		<div class="mb-6">
-			<input name="destinationPath" type="hidden" :value="currentSourcePath"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
 			@componentForm.Dropzone(componentForm.DropzoneInputDto{
 				Id:                 "files",
 				Description:        "Any file is accepted",

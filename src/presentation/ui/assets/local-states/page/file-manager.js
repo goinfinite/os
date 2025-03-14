@@ -1,13 +1,15 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("fileManager", () => ({
     // Primary States
-    currentSourcePath: "",
+
+    // Alterar isso aqui para "currentWorkingDirPath"
+    currentWorkingDirPath: "",
     file: {},
     resetPrimaryStates() {
-      this.currentSourcePath = document.getElementById(
+      this.currentWorkingDirPath = document.getElementById(
         "current-source-path"
       ).value;
-      this.file = { name: "", path: this.currentSourcePath };
+      this.file = { name: "", path: this.currentWorkingDirPath };
     },
     init() {
       this.resetPrimaryStates();
@@ -15,42 +17,42 @@ document.addEventListener("alpine:init", () => {
     },
 
     // Auxiliary States
-    lastFiveAccessedSourcePaths: { previous: [], next: [] },
-    saveCurrentSourcePathToHistory(historyObjKey) {
-      if (this.lastFiveAccessedSourcePaths[historyObjKey].length === 5) {
-        this.lastFiveAccessedSourcePaths[historyObjKey].shift();
+    lastFiveAccessedWorkingDirPaths: { previous: [], next: [] },
+    saveCurrentWorkingDirPathToHistory(historyObjKey) {
+      if (this.lastFiveAccessedWorkingDirPaths[historyObjKey].length === 5) {
+        this.lastFiveAccessedWorkingDirPaths[historyObjKey].shift();
       }
-      if (this.currentSourcePath !== this.file.path) {
-        this.lastFiveAccessedSourcePaths[historyObjKey].push(
-          this.currentSourcePath
+      if (this.currentWorkingDirPath !== this.file.path) {
+        this.lastFiveAccessedWorkingDirPaths[historyObjKey].push(
+          this.currentWorkingDirPath
         );
       }
     },
-    returnToPreviousSourcePath() {
-      if (this.lastFiveAccessedSourcePaths.previous.length === 0) return;
+    returnToPreviousWorkingDirPath() {
+      if (this.lastFiveAccessedWorkingDirPaths.previous.length === 0) return;
 
-      this.file.path = this.lastFiveAccessedSourcePaths.previous.pop();
+      this.file.path = this.lastFiveAccessedWorkingDirPaths.previous.pop();
 
-      this.saveCurrentSourcePathToHistory("next");
+      this.saveCurrentWorkingDirPathToHistory("next");
       this.reloadFileManagerContent();
     },
     goForwardToNextSourcePath() {
-      if (this.lastFiveAccessedSourcePaths.next.length === 0) return;
+      if (this.lastFiveAccessedWorkingDirPaths.next.length === 0) return;
 
-      this.file.path = this.lastFiveAccessedSourcePaths.next.pop();
+      this.file.path = this.lastFiveAccessedWorkingDirPaths.next.pop();
 
-      this.saveCurrentSourcePathToHistory("previous");
+      this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
-    accessDesiredSourcePath() {
-      this.saveCurrentSourcePathToHistory("previous");
+    accessWorkingDirPath() {
+      this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
     reloadFileManagerContent() {
       this.resetAuxiliaryStates();
-      this.currentSourcePath = this.file.path;
+      this.currentWorkingDirPath = this.file.path;
 
-      htmx.ajax("GET", "/file-manager/?desiredSourcePath=" + this.file.path, {
+      htmx.ajax("GET", "/file-manager/?workingDirPath=" + this.file.path, {
         select: "#file-manager-content",
         target: "#file-manager-content",
         swap: "outerHTML transition:true",
@@ -60,6 +62,32 @@ document.addEventListener("alpine:init", () => {
       fileName: "",
     },
     selectedSourcePaths: [],
+    handleSelectAllSourcePaths() {
+      const selectAllSourcePathsCheckbox = document.getElementById(
+        "selectAllSourcePaths"
+      );
+      const allSelectSourcePathCheckboxes =
+        document.getElementsByName("selectSourcePath");
+
+      for (const selectSourcePathCheckbox of allSelectSourcePathCheckboxes) {
+        const shouldBeSelected =
+          selectAllSourcePathsCheckbox.checked &&
+          !selectSourcePathCheckbox.checked;
+        if (shouldBeSelected) {
+          selectSourcePathCheckbox.checked = true;
+          this.selectedSourcePaths.add(selectSourcePathCheckbox.value);
+          continue;
+        }
+
+        const shouldBeUnselected =
+          !selectAllSourcePathsCheckbox.checked &&
+          selectSourcePathCheckbox.checked;
+        if (shouldBeUnselected) {
+          selectSourcePathCheckbox.checked = false;
+          this.selectedSourcePaths.delete(selectSourcePathCheckbox.value);
+        }
+      }
+    },
     handleSelectSourcePath(sourcePath) {
       if (this.selectedSourcePaths.has(sourcePath)) {
         this.selectedSourcePaths.delete(sourcePath);
@@ -110,16 +138,10 @@ document.addEventListener("alpine:init", () => {
       this.isMoveFilesToTrashModalOpen = false;
     },
     moveFilesToTrash() {
-      const shouldDisplayToast = false;
-      Infinite.JsonAjax(
-        "PUT",
-        "/api/v1/files/delete/",
-        {
-          sourcePaths: Array.from(this.selectedSourcePaths),
-          hardDelete: false,
-        },
-        shouldDisplayToast
-      ).then(() => {
+      Infinite.JsonAjax("PUT", "/api/v1/files/delete/", {
+        sourcePaths: Array.from(this.selectedSourcePaths),
+        hardDelete: false,
+      }).then(() => {
         this.closeMoveFilesToTrashModal();
         this.reloadFileManagerContent();
       });
