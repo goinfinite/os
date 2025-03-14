@@ -273,10 +273,8 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 				<tr class="bg-os-300 h-12">
 					<th scope="col" class="w-0.5/10 py-3 text-center text-base">
 						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-							Id:              "selectAllSourcePaths",
-							DeselectedColor: "gray-500",
-							SelectedColor:   "infinite-500",
-							OnChange:        "handleSelectAllSourcePaths()",
+							Id:       "selectAllSourcePaths",
+							OnChange: "handleSelectAllSourcePaths()",
 						})
 					</th>
 					<th scope="col" class="w-2.5/10 py-3 text-left">Name</th>
@@ -299,11 +297,9 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						<tr class="border-os-300 border-t first:border-opacity-0">
 							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-									Id:              "selectSourcePath",
-									DeselectedColor: "gray-500",
-									SelectedColor:   "infinite-500",
-									OnChange:        "handleSelectSourcePath('" + fileEntity.Path.String() + "')",
-									CustomValue:     fileEntity.Path.String(),
+									Id:          "selectSourcePath",
+									OnChange:    "handleSelectSourcePath('" + fileEntity.Path.String() + "')",
+									CustomValue: fileEntity.Path.String(),
 								})
 							</th>
 							<th scope="row" class="w-2.5/10 justify-content flex items-center py-3 text-left font-normal">

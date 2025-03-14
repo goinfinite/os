@@ -1,7 +1,7 @@
 package componentForm
 
 type CheckboxInputDto struct {
-	Id, DeselectedColor, SelectedColor, OnChange, CustomValue string
+	Id, OnChange, CustomValue string
 }
 
 templ CheckboxInput(inputDto CheckboxInputDto) {
@@ -16,8 +16,8 @@ templ CheckboxInput(inputDto CheckboxInputDto) {
 			class="peer sr-only"
 			value={ inputDto.CustomValue }
 		/>
-		<i class={ "ph-bold ph-square text-" + inputDto.DeselectedColor + " peer-checked:hidden" }></i>
-		<i class={ "ph-bold ph-check-square text-" + inputDto.SelectedColor + " hidden peer-checked:block" }></i>
+		<i class={ "ph-bold ph-square text-os-100 peer-checked:hidden" }></i>
+		<i class={ "ph-bold ph-check-square text-infinite-500 hidden peer-checked:block" }></i>
 	</label>
 }
 
