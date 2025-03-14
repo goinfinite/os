@@ -86,20 +86,16 @@ func (controller *FilesController) Create(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	fileTypeStr := "generic"
+	fileType := valueObject.GenericMimeType
 	if requestInputData["mimeType"] != nil {
-		fileTypeStr, err = voHelper.InterfaceToString(requestInputData["mimeType"])
+		fileType, err = valueObject.NewMimeType(requestInputData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 
-		if fileTypeStr != "directory" && fileTypeStr != "generic" {
-			fileTypeStr = "generic"
+		if fileType != valueObject.DirectoryMimeType {
+			fileType = valueObject.GenericMimeType
 		}
-	}
-	fileType, err := valueObject.NewMimeType(fileTypeStr)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	successResponse := "FileCreated"

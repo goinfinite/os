@@ -11,6 +11,9 @@ const mimeTypeRegexExpression = `^[A-z0-9\-]{1,64}\/[A-z0-9\-\_\+\.\,]{2,128}$|^
 
 type MimeType string
 
+const DirectoryMimeType = MimeType("directory")
+const GenericMimeType = MimeType("generic")
+
 func NewMimeType(value interface{}) (mimeType MimeType, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
@@ -30,5 +33,5 @@ func (vo MimeType) String() string {
 }
 
 func (vo MimeType) IsDir() bool {
-	return vo == "directory"
+	return vo == DirectoryMimeType
 }
