@@ -260,10 +260,6 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 	</div>
 }
 
-// Adicionar um <td> novo para o checkbox (inclusive o <th> vai ter um Select All também).
-//	 -> Isso aqui vai ser necessário para fazer a linha INTEIRA ser clicável para navegar
-//      para dentro do diretório. Inclusive, adicionar um hover para mostrar qual o diretório
-//      estou selecionando.
 templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 	<!-- FilesExplorerTable FilesExplorer -->
 	<div class="bg-os-500 col-span-3 mr-2 w-full">
@@ -294,7 +290,16 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						)
 					}}
 					for _, fileEntity := range filesAndDirsList {
-						<tr class="border-os-300 border-t first:border-opacity-0">
+						{{
+							fileTableRowDoubleClick := "console.log('Open file')"
+							if fileEntity.MimeType.IsDir() {
+								fileTableRowDoubleClick = "file.path = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()"
+							}
+						}}
+						<tr
+							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
+							@dblclick={ fileTableRowDoubleClick }
+						>
 							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
 									Id:          "selectSourcePath",
@@ -302,25 +307,17 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 									CustomValue: fileEntity.Path.String(),
 								})
 							</th>
-							<th scope="row" class="w-2.5/10 justify-content flex items-center py-3 text-left font-normal">
-								{{
-									fileHighlightedIcon := "ph-file text-gray-300"
-									if fileEntity.MimeType.IsDir() {
-										fileHighlightedIcon = "ph-folder text-infinite-500"
-									}
-								}}
-								<a
-									if fileEntity.MimeType.IsDir() {
-										class="flex w-fit cursor-pointer items-center"
-										@click={ "file.path = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }
-									} else {
-										class="flex w-fit items-center"
-										@click={ "console.log('" + fileEntity.Path.String() + "')" }
-									}
-								>
+							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
+								<div class="flex w-fit items-center">
+									{{
+										fileHighlightedIcon := "ph-file text-gray-300"
+										if fileEntity.MimeType.IsDir() {
+											fileHighlightedIcon = "ph-folder text-infinite-500"
+										}
+									}}
 									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
 									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
-								</a>
+								</div>
 							</th>
 							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
 							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
