@@ -293,16 +293,17 @@ func (controller *FilesController) Update(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	httpStatus := http.StatusOK
-
 	hasSuccess := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
 	hasFailures := len(updateProcessInfo.FailedPathsWithReason) > 0
+	if !hasSuccess && hasFailures {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, updateProcessInfo)
+	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		httpStatus = http.StatusMultiStatus
+		return apiHelper.ResponseWrapper(c, http.StatusMultiStatus, updateProcessInfo)
 	}
 
-	return apiHelper.ResponseWrapper(c, httpStatus, updateProcessInfo)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, updateProcessInfo)
 }
 
 // CopyFile    godoc
@@ -680,16 +681,17 @@ func (controller *FilesController) Upload(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	httpStatus := http.StatusCreated
-
 	hasSuccess := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
 	hasFailures := len(uploadProcessInfo.FailedNamesWithReason) > 0
+	if !hasSuccess && hasFailures {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, uploadProcessInfo)
+	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		httpStatus = http.StatusMultiStatus
+		return apiHelper.ResponseWrapper(c, http.StatusMultiStatus, uploadProcessInfo)
 	}
 
-	return apiHelper.ResponseWrapper(c, httpStatus, uploadProcessInfo)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, uploadProcessInfo)
 }
 
 // DownloadFile    godoc
