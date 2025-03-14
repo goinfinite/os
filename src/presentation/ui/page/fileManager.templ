@@ -32,6 +32,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@CreateFileModal()
 		@CreateDirectoryModal()
 		@UploadFilesModal()
+		@RenameFileModal()
 		@MoveFilesToTrashModal()
 	</div>
 }
@@ -108,7 +109,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Open Monaco Editor')",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-copy",
@@ -117,7 +118,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Copy')",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-arrow-square-out",
@@ -126,7 +127,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Move')",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-download-simple",
@@ -135,16 +136,16 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Download')",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-pencil-line",
 					Description:               "Rename",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Rename')",
+					OnClick:                   "openRenameFileModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-trash",
@@ -153,7 +154,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "openMoveFilesToTrashModal()",
 					HideTextBelowBreakpoint:   "[107.5rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 			</div>
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
@@ -164,7 +165,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Permissions')",
 					HideTextBelowBreakpoint:   "[115rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-file-zip",
@@ -173,7 +174,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Compress')",
 					HideTextBelowBreakpoint:   "[115rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size === 0",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-split-horizontal",
@@ -182,7 +183,7 @@ templ FilesExplorerTableHeaders() {
 					HoverColor:                "os-200",
 					OnClick:                   "console.log('Extract')",
 					HideTextBelowBreakpoint:   "[115rem]",
-					DeactivateButtonCondition: "selectedSourcePaths.size !== 1",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 			</div>
 		</div>
@@ -194,7 +195,7 @@ templ FilesExplorerTableHeaders() {
 					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "file.path = '" + valueObject.DefaultAppWorkingDir.String() + "'; accessWorkingDirPath()",
+					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDir.String() + "'; accessWorkingDirPath()",
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -223,12 +224,12 @@ templ FilesExplorerTableHeaders() {
 					TooltipText:  "Show Trash",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "file.path = '" + useCase.TrashDirPath + "'; accessWorkingDirPath()",
+					OnClick:      "desiredWorkingDirPath = '" + useCase.TrashDirPath + "'; accessWorkingDirPath()",
 				})
 			</div>
 			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
 				@FilesExplorerSearchBar(
-					"fileExplorerSourcePath", "ph-folder", "file.path",
+					"fileExplorerSourcePath", "ph-folder", "desiredWorkingDirPath",
 					`Search and open another directory.`,
 					"accessWorkingDirPath()",
 				)
@@ -244,7 +245,7 @@ templ DirectoriesTree(directoriesList []entity.UnixFile) {
 			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" }>
 				<a
 					class="flex w-fit cursor-pointer items-center px-2"
-					@click={ "file.path = '" + directoryEntity.Path.String() + "'; accessWorkingDirPath()" }
+					@click={ "desiredWorkingDirPath = '" + directoryEntity.Path.String() + "'; accessWorkingDirPath()" }
 				>
 					<i class="ph-bold ph-caret-right mr-2 text-xs text-neutral-500 xl:text-sm"></i>
 					<i class="ph-bold ph-folder text-infinite-500 mr-1 text-sm xl:text-base"></i>
@@ -293,18 +294,21 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						{{
 							fileTableRowDoubleClick := "console.log('Open file')"
 							if fileEntity.MimeType.IsDir() {
-								fileTableRowDoubleClick = "file.path = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()"
+								fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()"
 							}
 						}}
 						<tr
 							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
 							@dblclick={ fileTableRowDoubleClick }
 						>
+							<th class="hidden">
+								@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+							</th>
 							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
 									Id:          "selectSourcePath",
-									OnChange:    "handleSelectSourcePath('" + fileEntity.Path.String() + "')",
-									CustomValue: fileEntity.Path.String(),
+									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
+									CustomValue: fileEntity.Name.String(),
 								})
 							</th>
 							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
@@ -353,7 +357,10 @@ templ FileManagerModal(filesGroupedByType FilesGroupedByType) {
 	</div>
 }
 
-templ CreateFileForm(mimeType, closeFunction string) {
+templ CreateFileForm(
+	mimeType valueObject.MimeType,
+	closeFunction string,
+) {
 	<form
 		hx-post="/api/v1/files/"
 		hx-indicator="#loading-overlay"
@@ -361,7 +368,7 @@ templ CreateFileForm(mimeType, closeFunction string) {
 		@submit={ closeFunction + "; setTimeout(() => reloadFileManagerContent(), 250)" }
 	>
 		<div class="mb-6">
-			<input name="mimeType" type="hidden" value={ mimeType }/>
+			<input name="mimeType" type="hidden" value={ mimeType.String() }/>
 			<input name="filePath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
@@ -378,7 +385,7 @@ templ CreateFileModal() {
 	@componentStructural.RegularModal(
 		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
 	) {
-		@CreateFileForm("file", "closeCreateFileModal()")
+		@CreateFileForm(valueObject.GenericMimeType, "closeCreateFileModal()")
 	}
 }
 
@@ -387,7 +394,7 @@ templ CreateDirectoryModal() {
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
 		"",
 	) {
-		@CreateFileForm("directory", "closeCreateDirectoryModal()")
+		@CreateFileForm(valueObject.DirectoryMimeType, "closeCreateDirectoryModal()")
 	}
 }
 
@@ -417,6 +424,35 @@ templ UploadFilesModal() {
 		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
 	) {
 		@UploadFilesForm()
+	}
+}
+
+templ RenameFileForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeRenameFileModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+	>
+		<div class="mb-6">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentWorkingDirPath",
+				BindInputValuePath:  "file.name",
+			})
+		</div>
+		@componentForm.SubmitButton("", "Rename", "ph-pencil", "", false)
+	</form>
+}
+
+templ RenameFileModal() {
+	@componentStructural.RegularModal(
+		"Rename File", "isRenameFileModalOpen", "closeRenameFileModal()", "",
+	) {
+		@RenameFileForm()
 	}
 }
 

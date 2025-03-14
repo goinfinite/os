@@ -1,28 +1,48 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("fileManager", () => ({
     // Primary States
-
-    // Alterar isso aqui para "currentWorkingDirPath"
     currentWorkingDirPath: "",
     file: {},
     resetPrimaryStates() {
-      this.currentWorkingDirPath = document.getElementById(
-        "current-source-path"
-      ).value;
-      this.file = { name: "", path: this.currentWorkingDirPath };
+      this.file = {
+        name: "",
+        path: "",
+        mimeType: "",
+        content: "",
+      };
     },
     init() {
       this.resetPrimaryStates();
       this.resetAuxiliaryStates();
+
+      this.currentWorkingDirPath = document.getElementById(
+        "current-source-path"
+      ).value;
+      this.desiredWorkingDirPath = this.currentWorkingDirPath;
     },
 
     // Auxiliary States
+    desiredWorkingDirPath: "",
+    reloadFileManagerContent() {
+      this.resetAuxiliaryStates();
+      this.currentWorkingDirPath = this.desiredWorkingDirPath;
+
+      htmx.ajax(
+        "GET",
+        "/file-manager/?workingDirPath=" + this.desiredWorkingDirPath,
+        {
+          select: "#file-manager-content",
+          target: "#file-manager-content",
+          swap: "outerHTML transition:true",
+        }
+      );
+    },
     lastFiveAccessedWorkingDirPaths: { previous: [], next: [] },
     saveCurrentWorkingDirPathToHistory(historyObjKey) {
       if (this.lastFiveAccessedWorkingDirPaths[historyObjKey].length === 5) {
         this.lastFiveAccessedWorkingDirPaths[historyObjKey].shift();
       }
-      if (this.currentWorkingDirPath !== this.file.path) {
+      if (this.currentWorkingDirPath !== this.desiredWorkingDirPath) {
         this.lastFiveAccessedWorkingDirPaths[historyObjKey].push(
           this.currentWorkingDirPath
         );
@@ -31,7 +51,8 @@ document.addEventListener("alpine:init", () => {
     returnToPreviousWorkingDirPath() {
       if (this.lastFiveAccessedWorkingDirPaths.previous.length === 0) return;
 
-      this.file.path = this.lastFiveAccessedWorkingDirPaths.previous.pop();
+      this.desiredWorkingDirPath =
+        this.lastFiveAccessedWorkingDirPaths.previous.pop();
 
       this.saveCurrentWorkingDirPathToHistory("next");
       this.reloadFileManagerContent();
@@ -39,7 +60,8 @@ document.addEventListener("alpine:init", () => {
     goForwardToNextSourcePath() {
       if (this.lastFiveAccessedWorkingDirPaths.next.length === 0) return;
 
-      this.file.path = this.lastFiveAccessedWorkingDirPaths.next.pop();
+      this.desiredWorkingDirPath =
+        this.lastFiveAccessedWorkingDirPaths.next.pop();
 
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
@@ -48,20 +70,10 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
-    reloadFileManagerContent() {
-      this.resetAuxiliaryStates();
-      this.currentWorkingDirPath = this.file.path;
-
-      htmx.ajax("GET", "/file-manager/?workingDirPath=" + this.file.path, {
-        select: "#file-manager-content",
-        target: "#file-manager-content",
-        swap: "outerHTML transition:true",
-      });
-    },
     searchBarFilter: {
       fileName: "",
     },
-    selectedSourcePaths: [],
+    selectedFileNames: [],
     handleSelectAllSourcePaths() {
       const selectAllSourcePathsCheckbox = document.getElementById(
         "selectAllSourcePaths"
@@ -75,7 +87,7 @@ document.addEventListener("alpine:init", () => {
           !selectSourcePathCheckbox.checked;
         if (shouldBeSelected) {
           selectSourcePathCheckbox.checked = true;
-          this.selectedSourcePaths.add(selectSourcePathCheckbox.value);
+          this.selectedFileNames.push(selectSourcePathCheckbox.value);
           continue;
         }
 
@@ -84,20 +96,25 @@ document.addEventListener("alpine:init", () => {
           selectSourcePathCheckbox.checked;
         if (shouldBeUnselected) {
           selectSourcePathCheckbox.checked = false;
-          this.selectedSourcePaths.delete(selectSourcePathCheckbox.value);
+
+          const selectedFileNameIndex = this.selectedFileNames.indexOf(
+            selectSourcePathCheckbox.value
+          );
+          this.selectedFileNames.splice(selectedFileNameIndex, 1);
         }
       }
     },
-    handleSelectSourcePath(sourcePath) {
-      if (this.selectedSourcePaths.has(sourcePath)) {
-        this.selectedSourcePaths.delete(sourcePath);
+    handleSelectSourcePath(fileName) {
+      const selectedFileNameIndex = this.selectedFileNames.indexOf(fileName);
+      if (selectedFileNameIndex !== -1) {
+        this.selectedFileNames.splice(selectedFileNameIndex, 1);
         return;
       }
 
-      this.selectedSourcePaths.add(sourcePath);
+      this.selectedFileNames.push(fileName);
     },
     resetAuxiliaryStates() {
-      this.selectedSourcePaths = new Set();
+      this.selectedFileNames = [];
     },
 
     // Modal States
@@ -128,6 +145,21 @@ document.addEventListener("alpine:init", () => {
     closeUploadFilesModal() {
       this.isUploadFilesModalOpen = false;
     },
+    isRenameFileModalOpen: false,
+    openRenameFileModal() {
+      this.resetPrimaryStates();
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      this.file.path = fileEntity.path;
+
+      this.isRenameFileModalOpen = true;
+    },
+    closeRenameFileModal() {
+      this.isRenameFileModalOpen = false;
+    },
     isMoveFilesToTrashModalOpen: false,
     openMoveFilesToTrashModal() {
       this.resetPrimaryStates();
@@ -138,8 +170,16 @@ document.addEventListener("alpine:init", () => {
       this.isMoveFilesToTrashModalOpen = false;
     },
     moveFilesToTrash() {
+      const sourcePaths = [];
+      for (const fileName of this.selectedFileNames) {
+        const fileEntity = JSON.parse(
+          document.getElementById("fileEntity_" + fileName).textContent
+        );
+        sourcePaths.push(fileEntity.path);
+      }
+
       Infinite.JsonAjax("PUT", "/api/v1/files/delete/", {
-        sourcePaths: Array.from(this.selectedSourcePaths),
+        sourcePaths: sourcePaths,
         hardDelete: false,
       }).then(() => {
         this.closeMoveFilesToTrashModal();
