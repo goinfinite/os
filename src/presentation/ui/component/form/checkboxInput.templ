@@ -1,5 +1,26 @@
 package componentForm
 
+type CheckboxInputDto struct {
+	Id, DeselectedColor, SelectedColor, OnChange, CustomValue string
+}
+
+templ CheckboxInput(inputDto CheckboxInputDto) {
+	<label class="cursor-pointer">
+		<input
+			if inputDto.Id != "" {
+				id={ inputDto.Id }
+				name={ inputDto.Id }
+			}
+			type="checkbox"
+			@change={ inputDto.OnChange }
+			class="peer sr-only"
+			value={ inputDto.CustomValue }
+		/>
+		<i class={ "ph-bold ph-square text-" + inputDto.DeselectedColor + " peer-checked:hidden" }></i>
+		<i class={ "ph-bold ph-check-square text-" + inputDto.SelectedColor + " hidden peer-checked:block" }></i>
+	</label>
+}
+
 type CheckboxInputSwitchToggleDto struct {
 	Id, Label, BindModelPath, CustomValue string
 }
