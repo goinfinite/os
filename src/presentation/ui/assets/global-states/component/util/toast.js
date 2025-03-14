@@ -20,11 +20,18 @@ document.addEventListener("alpine:init", () => {
   });
 });
 
+const httpErrorStatusCodeWithMessage = {
+  400: "BadRequest",
+  401: "Unauthorized",
+  404: "NotFound",
+  500: "InternalServerError",
+};
 document.addEventListener("htmx:afterRequest", (event) => {
   const httpResponseObject = event.detail.xhr;
 
-  const contentType = httpResponseObject.getResponseHeader("Content-Type");
-  if (contentType !== "application/json") {
+  if (
+    httpResponseObject.getResponseHeader("Content-Type") !== "application/json"
+  ) {
     return;
   }
 
@@ -33,20 +40,27 @@ document.addEventListener("htmx:afterRequest", (event) => {
     return;
   }
 
-  let toastType = "success";
-  const isResponseError = httpResponseObject.status >= 400;
-  if (isResponseError) {
-    toastType = "danger";
-  }
-
   const parsedResponse = JSON.parse(responseData);
   if (parsedResponse.body === undefined || parsedResponse.body === "") {
     return;
   }
 
-  let toastMessage = parsedResponse.body;
-  if (typeof toastMessage !== "string") {
-    toastMessage = toastType === "success" ? "Success" : "Error";
+  httpResponseStatusCode = httpResponseObject.status;
+
+  let toastType = "success";
+  let toastMessage = "Success";
+  if (httpResponseStatusCode == 207) {
+    toastType = "partialSuccess";
+    toastMessage = "PartialSuccess";
+  }
+
+  if (httpResponseStatusCode >= 400) {
+    toastType = "danger";
+    toastMessage = httpErrorStatusCodeWithMessage[httpResponseStatusCode];
+  }
+
+  if (typeof parsedResponse.body === "string") {
+    toastMessage = parsedResponse.body;
   }
 
   Alpine.store("toast").displayToast(toastMessage, toastType);
