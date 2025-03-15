@@ -5,7 +5,7 @@ type CheckboxInputDto struct {
 }
 
 templ CheckboxInput(inputDto CheckboxInputDto) {
-	<label class="cursor-pointer">
+	<label class="flex items-center justify-center cursor-pointer">
 		<input
 			if inputDto.Id != "" {
 				id={ inputDto.Id }
