@@ -9,6 +9,7 @@ document.addEventListener("alpine:init", () => {
         path: "",
         mimeType: "",
         content: "",
+        permissions: {},
       };
     },
     init() {
@@ -70,9 +71,6 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
-    searchBarFilter: {
-      fileName: "",
-    },
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
       const selectAllSourcePathsCheckbox = document.getElementById(
@@ -112,6 +110,18 @@ document.addEventListener("alpine:init", () => {
       }
 
       this.selectedFileNames.push(fileName);
+    },
+    handleSelectPermission(
+      permissionClass,
+      permissionValue,
+      isCheckboxChecked
+    ) {
+      if (!isCheckboxChecked) {
+        this.file.permissions[permissionClass] -= permissionValue;
+        return;
+      }
+
+      this.file.permissions[permissionClass] += permissionValue;
     },
     resetAuxiliaryStates() {
       this.selectedFileNames = [];
@@ -185,6 +195,28 @@ document.addEventListener("alpine:init", () => {
         this.closeMoveFilesToTrashModal();
         this.reloadFileManagerContent();
       });
+    },
+    isUpdateFilePermissionsModalOpen: false,
+    openUpdateFilePermissionsModal() {
+      this.resetPrimaryStates();
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      this.file.path = fileEntity.path;
+
+      const filePermissionsParts = fileEntity.permissions.split("");
+      this.file.permissions = {
+        owner: parseInt(filePermissionsParts[0]),
+        group: parseInt(filePermissionsParts[1]),
+        others: parseInt(filePermissionsParts[2]),
+      };
+
+      this.isUpdateFilePermissionsModalOpen = true;
+    },
+    closeUpdateFilePermissionsModal() {
+      this.isUpdateFilePermissionsModalOpen = false;
     },
   }));
 });

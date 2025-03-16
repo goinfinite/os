@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"slices"
+	"strings"
 )
 
 type FilesGroupedByType struct {
@@ -34,6 +35,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@UploadFilesModal()
 		@RenameFileModal()
 		@MoveFilesToTrashModal()
+		@UpdateFilePermissionsModal()
 	</div>
 }
 
@@ -163,7 +165,7 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Permissions",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Permissions')",
+					OnClick:                   "openUpdateFilePermissionsModal()",
 					HideTextBelowBreakpoint:   "[115rem]",
 					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
@@ -291,12 +293,10 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						)
 					}}
 					for _, fileEntity := range filesAndDirsList {
-						{{
-							fileTableRowDoubleClick := "console.log('Open file')"
-							if fileEntity.MimeType.IsDir() {
-								fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()"
-							}
-						}}
+						{{ fileTableRowDoubleClick := "console.log('Open file')" }}
+						if fileEntity.MimeType.IsDir() {
+							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
+						}
 						<tr
 							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
 							@dblclick={ fileTableRowDoubleClick }
@@ -306,19 +306,17 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 							</th>
 							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-									Id:          "selectSourcePath",
+									Name:        "selectSourcePath",
 									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
 									CustomValue: fileEntity.Name.String(),
 								})
 							</th>
 							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
 								<div class="flex w-fit items-center">
-									{{
-										fileHighlightedIcon := "ph-file text-gray-300"
-										if fileEntity.MimeType.IsDir() {
-											fileHighlightedIcon = "ph-folder text-infinite-500"
-										}
-									}}
+									{{ fileHighlightedIcon := "ph-file text-gray-300" }}
+									if fileEntity.MimeType.IsDir() {
+										{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
+									}
 									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
 									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
 								</div>
@@ -466,5 +464,52 @@ templ MoveFilesToTrashModal() {
 			Are you sure you want to move to trash?
 		</h3>
 		<p>Files and directories can still be recovered from the Trash.</p>
+	}
+}
+
+templ UpdateFilePermissionsForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUpdateFilePermissionsModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+	>
+		<div class="mb-6 flex justify-center space-x-10">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="permissions" type="hidden" :value="Object.values(file.permissions).join('')"/>
+			for _, filePermissionClass := range []string{"owner", "group", "others"} {
+				<div class="flex flex-col items-center rounded-md">
+					<input
+						type="text"
+						class="border-os-200 w-30 cursor-default border-b-2 bg-inherit text-center text-3xl outline-none"
+						x-model:value={ "file.permissions." + filePermissionClass }
+						readonly
+					/>
+					<label class="text-center text-xl">
+						{ strings.ToUpper(filePermissionClass[0:1]) + filePermissionClass[1:] }
+					</label>
+					<div class="mt-4 flex flex-col items-start">
+						{{ filePermissionTypesWithValues := map[string]string{"Read": "4", "Write": "2", "Execute": "1"} }}
+						for permissionType, permissionValue := range filePermissionTypesWithValues {
+							@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+								Label:                  permissionType,
+								OnChange:               "handleSelectPermission('" + filePermissionClass + "', " + permissionValue + ", $event.target.checked)",
+								BindIsCheckedCondition: "(file.permissions." + filePermissionClass + " & " + permissionValue + ") !== 0",
+							})
+						}
+					</div>
+				</div>
+			}
+		</div>
+		@componentForm.SubmitButton("", "Update", "ph-check-fat", "", false)
+	</form>
+}
+
+templ UpdateFilePermissionsModal() {
+	@componentStructural.RegularModal(
+		"Update File Permissions", "isUpdateFilePermissionsModalOpen",
+		"closeUpdateFilePermissionsModal()", "",
+	) {
+		@UpdateFilePermissionsForm()
 	}
 }
