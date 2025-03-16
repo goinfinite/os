@@ -35,6 +35,10 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@UploadFilesModal()
 		@RenameFileModal()
 		@MoveFilesToTrashModal()
+		@componentStructural.DeleteModal(
+			"isEmptyTrashModalOpen", "closeEmptyTrashModal()",
+			"deleteFiles(true); closeEmptyTrashModal()", "", "",
+		)
 		@UpdateFilePermissionsModal()
 	</div>
 }
@@ -154,7 +158,7 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Delete",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "openMoveFilesToTrashModal()",
+					OnClick:                   "currentWorkingDirPath.startsWith('" + useCase.TrashDirPath + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
 					HideTextBelowBreakpoint:   "[107.5rem]",
 					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
@@ -457,7 +461,7 @@ templ RenameFileModal() {
 templ MoveFilesToTrashModal() {
 	@componentStructural.WarningModal(
 		"isMoveFilesToTrashModalOpen", "closeMoveFilesToTrashModal()",
-		"No, Keep it.", "moveFilesToTrash()", "move-files-to-trash",
+		"No, Keep it.", "deleteFiles(false)", "move-files-to-trash",
 		"ph-trash-simple", "Yes, Move to Trash!",
 	) {
 		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">

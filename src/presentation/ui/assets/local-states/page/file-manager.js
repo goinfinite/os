@@ -179,7 +179,16 @@ document.addEventListener("alpine:init", () => {
     closeMoveFilesToTrashModal() {
       this.isMoveFilesToTrashModalOpen = false;
     },
-    moveFilesToTrash() {
+    isEmptyTrashModalOpen: false,
+    openEmptyTrashModal() {
+      this.resetPrimaryStates();
+
+      this.isEmptyTrashModalOpen = true;
+    },
+    closeEmptyTrashModal() {
+      this.isEmptyTrashModalOpen = false;
+    },
+    deleteFiles(shouldHardDelete) {
       const sourcePaths = [];
       for (const fileName of this.selectedFileNames) {
         const fileEntity = JSON.parse(
@@ -190,7 +199,7 @@ document.addEventListener("alpine:init", () => {
 
       Infinite.JsonAjax("PUT", "/api/v1/files/delete/", {
         sourcePaths: sourcePaths,
-        hardDelete: false,
+        hardDelete: shouldHardDelete,
       }).then(() => {
         this.closeMoveFilesToTrashModal();
         this.reloadFileManagerContent();
