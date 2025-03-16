@@ -1,23 +1,35 @@
 package componentForm
 
 type CheckboxInputDto struct {
-	Id, OnChange, CustomValue string
+	Id, Name, Label, OnChange, CustomValue, BindIsCheckedCondition string
 }
 
 templ CheckboxInput(inputDto CheckboxInputDto) {
 	<label class="flex items-center justify-center cursor-pointer">
 		<input
+			type="checkbox"
+			class="peer sr-only"
 			if inputDto.Id != "" {
 				id={ inputDto.Id }
+			}
+			if inputDto.Name != "" {
 				name={ inputDto.Id }
 			}
-			type="checkbox"
-			@change={ inputDto.OnChange }
-			class="peer sr-only"
-			value={ inputDto.CustomValue }
+			if inputDto.OnChange != "" {
+				@change={ inputDto.OnChange }
+			}
+			if inputDto.CustomValue != "" {
+				value={ inputDto.CustomValue }
+			}
+			if inputDto.BindIsCheckedCondition != "" {
+				:checked={ inputDto.BindIsCheckedCondition }
+			}
 		/>
 		<i class={ "ph-bold ph-square text-os-100 peer-checked:hidden" }></i>
 		<i class={ "ph-bold ph-check-square text-infinite-500 hidden peer-checked:inline" }></i>
+		if inputDto.Label != "" {
+			<label class="ml-1">{ inputDto.Label }</label>
+		}
 	</label>
 }
 
