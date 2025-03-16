@@ -218,7 +218,12 @@ templ UpdateAccountModal() {
 templ UpdateApiKeyContent() {
 	<!-- UpdateApiKeyContent -->
 	<div class="mb-6">
-		@componentForm.TextAreaReadOnly("apiKey", "API Key", "account.apiKey")
+		@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+			Id:                 "apiKey",
+			Name:               "apiKey",
+			Label:              "API Key",
+			BindModelValuePath: "account.apiKey",
+		})
 		<div x-show="account.apiKey !== ''">
 			@componentStructural.Alert(
 				componentStructural.AlertTypeWarning,
