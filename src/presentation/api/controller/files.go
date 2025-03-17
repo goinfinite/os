@@ -44,10 +44,12 @@ func NewFilesController(
 // @Success      200 {array} entity.UnixFile
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(c echo.Context) error {
+	requiredParams := []string{"sourcePath"}
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
