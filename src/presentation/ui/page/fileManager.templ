@@ -40,6 +40,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 			"deleteFiles(true); closeEmptyTrashModal()", "", "",
 		)
 		@UpdateFilePermissionsModal()
+		@CompressFilesModal()
 	</div>
 }
 
@@ -178,7 +179,7 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Compress",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Compress')",
+					OnClick:                   "openCompressFilesModal()",
 					HideTextBelowBreakpoint:   "[115rem]",
 					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
@@ -371,7 +372,11 @@ templ CreateFileForm(
 	>
 		<div class="mb-6">
 			<input name="mimeType" type="hidden" value={ mimeType.String() }/>
-			<input name="filePath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
+			<input
+				name="filePath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name"
+			/>
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
@@ -438,7 +443,11 @@ templ RenameFileForm() {
 	>
 		<div class="mb-6">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
-			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
+			<input
+				name="destinationPath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name"
+			/>
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
@@ -515,5 +524,48 @@ templ UpdateFilePermissionsModal() {
 		"closeUpdateFilePermissionsModal()", "",
 	) {
 		@UpdateFilePermissionsForm()
+	}
+}
+
+templ CompressFilesForm() {
+	<form
+		hx-post="/api/v1/files/compress/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeCompressFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+	>
+		<div class="mb-6 space-y-7">
+			<template x-for="fileName in selectedFileNames">
+				<input
+					name="sourcePath"
+					type="hidden"
+					:value="currentWorkingDirPath + '/' + fileName"
+				/>
+			</template>
+			<input
+				name="destinationPath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name + '.' + file.extension"
+			/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentWorkingDirPath",
+				BindInputValuePath:  "file.name",
+			})
+			@componentForm.SelectInput(
+				"compressionType", "File Extension", "file.extension", "",
+				[]string{"zip", "tgz"}, false,
+			)
+		</div>
+		@componentForm.SubmitButton("", "Compress", "ph-file-zip", "", false)
+	</form>
+}
+
+templ CompressFilesModal() {
+	@componentStructural.RegularModal(
+		"Compress Files", "isCompressFilesModalOpen", "closeCompressFilesModal()", "",
+	) {
+		@CompressFilesForm()
 	}
 }

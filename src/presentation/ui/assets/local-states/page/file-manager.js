@@ -6,10 +6,11 @@ document.addEventListener("alpine:init", () => {
     resetPrimaryStates() {
       this.file = {
         name: "",
+        extension: "",
+        permissions: {},
         path: "",
         mimeType: "",
         content: "",
-        permissions: {},
       };
     },
     init() {
@@ -226,6 +227,16 @@ document.addEventListener("alpine:init", () => {
     },
     closeUpdateFilePermissionsModal() {
       this.isUpdateFilePermissionsModalOpen = false;
+    },
+    isCompressFilesModalOpen: false,
+    openCompressFilesModal() {
+      this.resetPrimaryStates();
+
+      this.file.extension = "zip";
+      this.isCompressFilesModalOpen = true;
+    },
+    closeCompressFilesModal() {
+      this.isCompressFilesModalOpen = false;
     },
   }));
 });
