@@ -72,6 +72,17 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
+    get shouldUpdateFileContentButtonBeDeactivate() {
+      if (this.selectedFileNames.length !== 1) {
+        return true;
+      }
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      return fileEntity.mimeType === "directory";
+    },
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
       const selectAllSourcePathsCheckbox = document.getElementById(
@@ -129,10 +140,8 @@ document.addEventListener("alpine:init", () => {
         return true;
       }
 
-      const fileToDecompress = this.selectedFileNames[0];
-      return !(
-        fileToDecompress.includes(".zip") || fileToDecompress.includes(".tgz")
-      );
+      const fileName = this.selectedFileNames[0];
+      return !(fileName.includes(".zip") || fileName.includes(".tgz"));
     },
     decompressFile() {
       const fileName = this.selectedFileNames[0];
@@ -182,6 +191,67 @@ document.addEventListener("alpine:init", () => {
     },
     closeUploadFilesModal() {
       this.isUploadFilesModalOpen = false;
+    },
+    codeEditorInstance: null,
+    isUpdateFileContentModalOpen: false,
+    openUpdateFileContentModal() {
+      this.resetPrimaryStates();
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      this.file.name = fileEntity.name;
+      this.file.path = fileEntity.path;
+      this.file.mimeType = fileEntity.mimeType;
+
+      const shouldDisplayToast = false;
+      Infinite.JsonAjax(
+        "GET",
+        "/api/v1/files/?sourcePath=" + fileEntity.path,
+        {},
+        shouldDisplayToast
+      )
+        .then((filesList) => {
+          const desiredFile = filesList[0];
+          const supportedLanguages = {
+            bash: "shell",
+            css: "css",
+            html: "htmlmixed",
+            js: "javascript",
+            json: "javascript",
+            php: "php",
+            sh: "shell",
+            ts: "typescript",
+            yml: "yaml",
+            yaml: "yaml",
+          };
+
+          this.codeEditorInstance = ace.edit("code-editor");
+          this.codeEditorInstance.setTheme("ace/theme/dracula");
+          this.codeEditorInstance.navigateFileStart();
+          this.codeEditorInstance.session.setMode(
+            "ace/mode/" + supportedLanguages[fileEntity.extension] ??
+              "plaintext"
+          );
+          this.codeEditorInstance.setValue(desiredFile.content);
+          this.codeEditorInstance.clearSelection();
+
+          this.isUpdateFileContentModalOpen = true;
+        })
+        .catch((error) =>
+          Alpine.store("toast").displayToast(error.message, "danger")
+        );
+    },
+    closeUpdateFileContentModal() {
+      this.resetAuxiliaryStates();
+
+      document.getElementById(
+        "selectSourcePath_" + this.file.name
+      ).checked = false;
+
+      this.isUpdateFileContentModalOpen = false;
+      this.codeEditorInstance.destroy();
     },
     isRenameFileModalOpen: false,
     openRenameFileModal() {

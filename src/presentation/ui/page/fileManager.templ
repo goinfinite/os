@@ -33,6 +33,7 @@ templ FileManagerIndex(filesGroupedByType FilesGroupedByType) {
 		@CreateFileModal()
 		@CreateDirectoryModal()
 		@UploadFilesModal()
+		@UpdateFileContentModal()
 		@RenameFileModal()
 		@MoveFilesToTrashModal()
 		@componentStructural.DeleteModal(
@@ -114,9 +115,9 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Edit",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Open Monaco Editor')",
+					OnClick:                   "openUpdateFileContentModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+					DeactivateButtonCondition: "shouldUpdateFileContentButtonBeDeactivate",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-copy",
@@ -298,7 +299,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						)
 					}}
 					for _, fileEntity := range filesAndDirsList {
-						{{ fileTableRowDoubleClick := "console.log('Open file')" }}
+						{{ fileTableRowDoubleClick := "handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
 						if fileEntity.MimeType.IsDir() {
 							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
 						}
@@ -311,6 +312,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 							</th>
 							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+									Id:          "selectSourcePath_" + fileEntity.Name.String(),
 									Name:        "selectSourcePath",
 									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
 									CustomValue: fileEntity.Name.String(),
@@ -431,6 +433,36 @@ templ UploadFilesModal() {
 		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
 	) {
 		@UploadFilesForm()
+	}
+}
+
+templ UpdateFileContentForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUpdateFileContentModal()"
+	>
+		<div class="mb-6">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="encodedContent" type="hidden" :value="btoa(file.content)"/>
+			<div id="code-editor" class="relative w-full h-[30rem] xl:h-[35rem]"></div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Update", "ph-check-fat",
+			"file.content = codeEditorInstance.getValue(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ UpdateFileContentModal() {
+	@componentStructural.RegularModal(
+		"Update File Content", "isUpdateFileContentModalOpen",
+		"closeUpdateFileContentModal()", "",
+	) {
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha256-Q9hnBpgBFstzZOr+OKFOWZWfcF5nFXO8Qz48Nmndo6U=" crossorigin="anonymous"></script>
+		@UpdateFileContentForm()
 	}
 }
 
