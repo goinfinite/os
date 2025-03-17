@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	"errors"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
@@ -145,21 +146,40 @@ func (controller *FilesController) Create(c echo.Context) error {
 }
 
 func (controller *FilesController) parseSourcePaths(
-	rawSourcePaths []interface{},
+	rawSourcePathsUnknownType any,
 ) ([]valueObject.UnixFilePath, error) {
-	filePaths := []valueObject.UnixFilePath{}
+	sourcePaths := []valueObject.UnixFilePath{}
 
-	for pathIndex, rawSourcePath := range rawSourcePaths {
-		filePath, err := valueObject.NewUnixFilePath(rawSourcePath)
+	rawSourcePathsStrSlice := []string{}
+	switch rawSourcePathsValues := rawSourcePathsUnknownType.(type) {
+	case string:
+		rawSourcePathsStrSlice = []string{rawSourcePathsValues}
+	case []string:
+		rawSourcePathsStrSlice = rawSourcePathsValues
+	case []interface{}:
+		for _, rawSourcePath := range rawSourcePathsValues {
+			rawSourcePathStr, err := voHelper.InterfaceToString(rawSourcePath)
+			if err != nil {
+				slog.Debug(err.Error(), slog.Any("rawSourcePath", rawSourcePath))
+				continue
+			}
+			rawSourcePathsStrSlice = append(rawSourcePathsStrSlice, rawSourcePathStr)
+		}
+	default:
+		return sourcePaths, errors.New("SourcePathsMustBeStringSlice")
+	}
+
+	for _, rawSourcePath := range rawSourcePathsStrSlice {
+		sourcePath, err := valueObject.NewUnixFilePath(rawSourcePath)
 		if err != nil {
-			slog.Debug(err.Error(), slog.Int("index", pathIndex))
+			slog.Debug(err.Error(), slog.String("rawSourcePath", rawSourcePath))
 			continue
 		}
 
-		filePaths = append(filePaths, filePath)
+		sourcePaths = append(sourcePaths, sourcePath)
 	}
 
-	return filePaths, nil
+	return sourcePaths, nil
 }
 
 // UpdateFile godoc
@@ -186,27 +206,9 @@ func (controller *FilesController) Update(c echo.Context) error {
 		}
 	}
 
-	if requestInputData["sourcePaths"] == nil {
-		if _, exists := requestInputData["sourcePath"]; exists {
-			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
-		}
-	}
-
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -398,27 +400,9 @@ func (controller *FilesController) Delete(c echo.Context) error {
 		}
 	}
 
-	if requestInputData["sourcePaths"] == nil {
-		if _, exists := requestInputData["sourcePath"]; exists {
-			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
-		}
-	}
-
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -491,19 +475,7 @@ func (controller *FilesController) Compress(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
