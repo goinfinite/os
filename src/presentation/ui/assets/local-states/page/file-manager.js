@@ -7,7 +7,7 @@ document.addEventListener("alpine:init", () => {
       this.file = {
         name: "",
         extension: "",
-        permissions: {},
+        permissions: { owner: "", group: "", others: "" },
         path: "",
         mimeType: "",
         content: "",
@@ -123,6 +123,33 @@ document.addEventListener("alpine:init", () => {
       }
 
       this.file.permissions[permissionClass] += permissionValue;
+    },
+    get shouldDecompressFileButtonBeDeactivate() {
+      if (this.selectedFileNames.length !== 1) {
+        return true;
+      }
+
+      const fileToDecompress = this.selectedFileNames[0];
+      return !(
+        fileToDecompress.includes(".zip") || fileToDecompress.includes(".tgz")
+      );
+    },
+    decompressFile() {
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      const destinationPath = fileEntity.path.split(".")[0];
+
+      htmx
+        .ajax("PUT", "/api/v1/files/extract/", {
+          swap: "none",
+          values: {
+            sourcePath: fileEntity.path,
+            destinationPath: destinationPath,
+          },
+        })
+        .then(setTimeout(() => this.reloadFileManagerContent(), 250));
     },
     resetAuxiliaryStates() {
       this.selectedFileNames = [];

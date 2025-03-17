@@ -185,12 +185,12 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-split-horizontal",
-					Description:               "Extract",
+					Description:               "Decompress",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Extract')",
+					OnClick:                   "decompressFile()",
 					HideTextBelowBreakpoint:   "[115rem]",
-					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+					DeactivateButtonCondition: "shouldDecompressFileButtonBeDeactivate",
 				})
 			</div>
 		</div>
