@@ -142,9 +142,9 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Download",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Download')",
+					OnClick:                   "downloadFile()",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length === 0",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-pencil-line",

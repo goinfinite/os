@@ -135,6 +135,26 @@ document.addEventListener("alpine:init", () => {
 
       this.file.permissions[permissionClass] += permissionValue;
     },
+    downloadFile() {
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+
+      const shouldDisplayToast = false;
+      Infinite.JsonAjax(
+        "GET",
+        "/api/v1/files/?sourcePath=" + fileEntity.path,
+        {},
+        shouldDisplayToast
+      ).then((readFilesResponseDto) => {
+        Infinite.DownloadFile(
+          fileEntity.name,
+          readFilesResponseDto.files[0].content,
+          fileEntity.mimeType
+        );
+      });
+    },
     get shouldDecompressFileButtonBeDeactivate() {
       if (this.selectedFileNames.length !== 1) {
         return true;
@@ -201,6 +221,13 @@ document.addEventListener("alpine:init", () => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
+
+      if (fileEntity.size >= 1048576) {
+        this.resetAuxiliaryStates();
+        Alpine.store("toast").displayToast("FileTooBigToEdit", "danger");
+        return;
+      }
+
       this.file.name = fileEntity.name;
       this.file.path = fileEntity.path;
       this.file.mimeType = fileEntity.mimeType;
@@ -212,8 +239,8 @@ document.addEventListener("alpine:init", () => {
         {},
         shouldDisplayToast
       )
-        .then((filesList) => {
-          const desiredFile = filesList[0];
+        .then((readFilesResponseDto) => {
+          const desiredFile = readFilesResponseDto.files[0];
           const supportedLanguages = {
             bash: "shell",
             css: "css",
