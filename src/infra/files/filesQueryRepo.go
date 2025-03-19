@@ -329,12 +329,14 @@ func (repo FilesQueryRepo) Read(
 
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
-		responseDto.FileTree, err = repo.readUnixFileTree(
+		unixFileTree, err := repo.readUnixFileTree(
 			requestDto.SourcePath, valueObject.FileSystemRootDir,
 		)
 		if err != nil {
 			return responseDto, err
 		}
+
+		responseDto.FileTree = &unixFileTree
 	}
 
 	return responseDto, nil
