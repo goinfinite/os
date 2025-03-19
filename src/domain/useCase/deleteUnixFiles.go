@@ -86,8 +86,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 			continue
 		}
 
-		isRootPath := fileToDelete.String() == "/"
-		if !isRootPath {
+		if !fileToDelete.IsRootPath() {
 			continue
 		}
 
