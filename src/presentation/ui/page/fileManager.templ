@@ -434,47 +434,43 @@ templ UpdateFileContentForm() {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="bg-os-800 -mt-2 mb-2 grid grid-cols-6 rounded-md p-4">
-			<div class="col-span-2 flex justify-start">
-				<div class="flex items-center space-x-2">
+		<div class="bg-os-800 -mt-2 mb-2 grid grid-cols-2 rounded-md p-4">
+			<div class="flex items-center justify-start space-x-4">
+				<div class="flex space-x-2">
 					@componentStructural.CircularIconButtonWithTooltip(
-						"ph-arrow-counter-clockwise", "infinite-500", "infinite-300",
-						"codeEditorInstance.undo()", "Undo", "infinite-500",
+						"ph-arrow-counter-clockwise", "os-200", "os-100",
+						"codeEditorInstance.undo()", "Undo", "os-200",
 					)
 					@componentStructural.CircularIconButtonWithTooltip(
-						"ph-arrow-clockwise", "infinite-500", "infinite-300",
-						"codeEditorInstance.redo()", "Redo", "infinite-500",
+						"ph-arrow-clockwise", "os-200", "os-100",
+						"codeEditorInstance.redo()", "Redo", "os-200",
 					)
 				</div>
-				<div class="ml-4 flex items-center space-x-2">
+				<div class="flex items-center space-x-2">
 					@componentStructural.CircularIconButtonWithTooltip(
-						"ph-minus", "infinite-500", "infinite-300",
-						"resizeCodeEditorFont('decrease')", "Decrease Font Size", "infinite-500",
+						"ph-minus", "os-200", "os-100",
+						"resizeCodeEditorFont('decrease')", "Decrease Font Size", "os-200",
 					)
 					<label x-text="codeEditorFontSize"></label>
 					@componentStructural.CircularIconButtonWithTooltip(
-						"ph-plus", "infinite-500", "infinite-300",
-						"resizeCodeEditorFont('increase')", "Increase Font Size", "infinite-500",
+						"ph-plus", "os-200", "os-100",
+						"resizeCodeEditorFont('increase')", "Increase Font Size", "os-200",
 					)
 				</div>
 			</div>
-			<div class="col-span-3 flex items-center justify-center space-x-2">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					BindModelValuePath: "codeEditorFindContent",
+			<div class="flex items-center justify-end space-x-2">
+				@componentStructural.CircularIconButtonWithTooltip(
+					"ph-magnifying-glass", "os-200", "os-100",
+					"codeEditorInstance.execCommand('find')",
+					"Show Search Box", "os-200",
+				)
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:         "ph-download-simple",
+					Description:  "Download",
+					DefaultColor: "infinite-500",
+					HoverColor:   "infinite-300",
+					OnClick:      "downloadFile(); closeUpdateFileContentModal()",
 				})
-				@componentStructural.CircularIconButtonWithTooltip(
-					"ph-magnifying-glass", "infinite-500", "infinite-300",
-					"codeEditorInstance.find(codeEditorFindContent)",
-					"Find", "infinite-500",
-				)
-			</div>
-			<div class="flex items-center justify-end">
-				@componentStructural.CircularIconButtonWithTooltip(
-					"ph-download-simple", "infinite-500", "infinite-300",
-					"downloadFile(); closeUpdateFileContentModal()",
-					"Download", "infinite-500",
-				)
 			</div>
 		</div>
 		<div class="mb-6">
@@ -483,7 +479,7 @@ templ UpdateFileContentForm() {
 			<div id="code-editor" class="relative h-[30rem] w-full"></div>
 		</div>
 		@componentForm.SubmitButton(
-			"", "Update", "ph-check-fat",
+			"", "Save Changes", "ph-floppy-disk",
 			"file.content = codeEditorInstance.getValue(); closeUpdateFileContentModal(); setTimeout(() => reloadFileManagerContent(), 250)",
 			false,
 		)
