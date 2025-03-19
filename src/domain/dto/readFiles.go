@@ -11,6 +11,6 @@ type ReadFilesRequest struct {
 }
 
 type ReadFilesResponse struct {
-	FileTree entity.UnixFileTree `json:"fileTree"`
-	Files    []entity.UnixFile   `json:"files"`
+	FileTree UnixFileTree      `json:"fileTree"`
+	Files    []entity.UnixFile `json:"files"`
 }
