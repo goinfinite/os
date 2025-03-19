@@ -177,14 +177,10 @@ func (repo FilesQueryRepo) readUnixFileTree(
 	}
 
 	currentParentSourcePath := strings.Split(currentDesiredSourcePath, "/")[0]
-	if currentParentSourcePath == "" {
-		return unixFileTree, err
-	}
-
+	nextDesiredParentPathStr := desiredParentPathStr + currentParentSourcePath + "/"
 	nextDesiredParentPath, err := valueObject.NewUnixFilePath(
-		desiredParentPathStr + currentParentSourcePath + "/",
+		nextDesiredParentPathStr,
 	)
-	nextDesiredParentPathStr := nextDesiredParentPath.String()
 
 	nextDesiredParentPathWithoutLeadingSlash := strings.TrimSuffix(
 		nextDesiredParentPathStr, "/",
@@ -193,12 +189,14 @@ func (repo FilesQueryRepo) readUnixFileTree(
 	if err != nil {
 		return unixFileTree, err
 	}
+
 	nextDesiredParentPathIsDir := fileStat.IsDir()
+	isTheLastDir := currentParentSourcePath == ""
 
 	findCmdArgs := []string{
 		"-L", desiredParentPathStr, "-mindepth", "1", "-maxdepth", "1",
 	}
-	if nextDesiredParentPathIsDir {
+	if nextDesiredParentPathIsDir && !isTheLastDir {
 		findCmdArgs = append(
 			findCmdArgs, "-type", "d", "!", "-path",
 			nextDesiredParentPathWithoutLeadingSlash,
@@ -236,7 +234,7 @@ func (repo FilesQueryRepo) readUnixFileTree(
 		unixFileTree.AddUnixFile(simplifiedFileEntity)
 	}
 
-	if !nextDesiredParentPathIsDir {
+	if !nextDesiredParentPathIsDir || isTheLastDir {
 		return unixFileTree, err
 	}
 
@@ -254,18 +252,22 @@ func (repo FilesQueryRepo) readUnixFileTree(
 func (repo FilesQueryRepo) Read(
 	requestDto dto.ReadFilesRequest,
 ) (responseDto dto.ReadFilesResponse, err error) {
-	sourcePathStr := requestDto.SourcePath.String()
+	sourcePath := requestDto.SourcePath
+	sourcePathStr := sourcePath.String()
+
 	exists := infraHelper.FileExists(sourcePathStr)
 	if !exists {
 		return responseDto, errors.New("PathNotFound")
 	}
 
 	filePathHasTrailingSlash := strings.HasSuffix(sourcePathStr, "/")
-	if filePathHasTrailingSlash && !requestDto.SourcePath.IsRootPath() {
+	if filePathHasTrailingSlash && !sourcePath.IsRootPath() {
 		filePathWithoutTrailingSlashStr := strings.TrimSuffix(sourcePathStr, "/")
 		filePathWithoutTrailingSlash, _ := valueObject.NewUnixFilePath(
 			filePathWithoutTrailingSlashStr,
 		)
+
+		sourcePath = filePathWithoutTrailingSlash
 		sourcePathStr = filePathWithoutTrailingSlash.String()
 	}
 
@@ -274,7 +276,7 @@ func (repo FilesQueryRepo) Read(
 		return responseDto, errors.New("ReadSourcePathInfoError")
 	}
 
-	filesToFactory := []valueObject.UnixFilePath{requestDto.SourcePath}
+	filesToFactory := []valueObject.UnixFilePath{sourcePath}
 
 	if sourcePathInfo.IsDir() {
 		filesToFactoryWithoutSourcePath := filesToFactory[1:]
@@ -334,7 +336,7 @@ func (repo FilesQueryRepo) Read(
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
 		unixFileTree, err := repo.readUnixFileTree(
-			requestDto.SourcePath, valueObject.FileSystemRootDir,
+			sourcePath, valueObject.FileSystemRootDir,
 		)
 		if err != nil {
 			return responseDto, err
