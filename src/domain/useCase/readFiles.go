@@ -4,20 +4,24 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
+
+var FilesDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 30,
+}
 
 func ReadFiles(
 	filesQueryRepo repository.FilesQueryRepo,
-	unixFilePath valueObject.UnixFilePath,
-) ([]entity.UnixFile, error) {
-	filesList, err := filesQueryRepo.Read(unixFilePath)
+	requestDto dto.ReadFilesRequest,
+) (responseDto dto.ReadFilesResponse, err error) {
+	responseDto, err = filesQueryRepo.Read(requestDto)
 	if err != nil {
 		slog.Error("ReadFilesError", slog.String("err", err.Error()))
-		return filesList, errors.New("ReadFilesInfraError")
+		return responseDto, errors.New("ReadFilesInfraError")
 	}
 
-	return filesList, nil
+	return responseDto, nil
 }
