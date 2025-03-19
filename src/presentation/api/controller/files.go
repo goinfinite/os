@@ -41,7 +41,8 @@ func NewFilesController(
 // @Produce      json
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
-// @Success      200 {array} entity.UnixFile
+// @Param        shouldIncludeFileTree query  bool  false  "ShouldIncludeFileTree"
+// @Success      200 {array} dto.ReadFilesResponse
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(c echo.Context) error {
 	requiredParams := []string{"sourcePath"}
@@ -56,9 +57,24 @@ func (controller *FilesController) Read(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
+	shouldIncludeFileTree := false
+	if requestInputData["shouldIncludeFileTree"] != nil {
+		shouldIncludeFileTree, err = voHelper.InterfaceToBool(
+			requestInputData["shouldIncludeFileTree"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+	}
+
+	readFilesRequestDto := dto.ReadFilesRequest{
+		SourcePath:            sourcePath,
+		ShouldIncludeFileTree: &shouldIncludeFileTree,
+	}
+
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 
-	filesList, err := useCase.ReadFiles(filesQueryRepo, sourcePath)
+	filesList, err := useCase.ReadFiles(filesQueryRepo, readFilesRequestDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
