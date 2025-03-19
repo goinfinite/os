@@ -240,24 +240,56 @@ templ FilesExplorerTableHeaders() {
 	</div>
 }
 
-templ DirectoriesTree(directoriesList []entity.UnixFile) {
-	<!-- FilesExplorerTable DirectoriesTree -->
-	<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-y-auto p-2">
-		for _, directoryEntity := range directoriesList {
-			<div id={ directoryEntity.Name.String() + "DirectoryTreeItem" }>
+templ DirectoriesTreeItems(
+	workDirPath valueObject.UnixFilePath,
+	unixFileTree dto.UnixFileTree,
+) {
+	for _, fileEntity := range unixFileTree.Children {
+		if fileEntity.MimeType == "directory" {
+			<div class="space-y-2 pl-2">
 				<a
-					class="flex w-fit cursor-pointer items-center px-2"
-					@click={ "desiredWorkingDirPath = '" + directoryEntity.Path.String() + "'; accessWorkingDirPath()" }
+					class="flex w-fit cursor-pointer items-center"
+					@click={ "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }
 				>
-					<i class="ph-bold ph-caret-right mr-2 text-xs text-neutral-500 xl:text-sm"></i>
-					<i class="ph-bold ph-folder text-infinite-500 mr-1 text-sm xl:text-base"></i>
-					<p class="text-sm xl:text-base">{ directoryEntity.Name.String() }</p>
+					{{
+						itemIconClasses := "ph-bold mr-2 text-xs text-neutral-500 xl:text-sm"
+						dirIconClasses := "ph-bold text-infinite-500 mr-1 text-sm xl:text-base"
+						if fileEntity.Path == workDirPath {
+							itemIconClasses += " ph-caret-down"
+							dirIconClasses += " ph-folder-open"
+						} else {
+							itemIconClasses += " ph-caret-right"
+							dirIconClasses += " ph-folder"
+						}
+					}}
+					<i class={ itemIconClasses }></i>
+					<i class={ dirIconClasses }></i>
+					<p class="text-sm xl:text-base">{ fileEntity.Name.String() }</p>
 				</a>
+				if len(fileEntity.Children) > 0 {
+					@DirectoriesTreeItems(workDirPath, fileEntity)
+				}
 			</div>
 		}
-		if len(directoriesList) == 0 {
+	}
+}
+
+templ DirectoriesTree(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	<!-- FilesExplorerTable DirectoriesTree -->
+	<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-y-auto p-2">
+		if unixFileTree != nil {
+			<div class="flex cursor-default items-center">
+				<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
+				<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
+				<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
+			</div>
+			@DirectoriesTreeItems(workingDirPath, *unixFileTree)
+		} else {
 			<div class="flex justify-center">
-				<p class="italic text-slate-500">No directories found.</p>
+				<p class="italic text-slate-500">No directories or files found.</p>
 			</div>
 		}
 	</div>
@@ -348,7 +380,7 @@ templ FileManagerModal(
 				class="hidden"
 				value={ workingDirPath.String() }
 			></data>
-			@DirectoriesTree(readFilesResponseDto.Files)
+			@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
 			@FilesExplorer(readFilesResponseDto.Files)
 		</div>
 	</div>
