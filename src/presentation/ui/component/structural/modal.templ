@@ -12,7 +12,9 @@ templ RegularModal(title, isOpenState, closeModalFunction, elementIdStatePath st
 		x-transition:leave-end="opacity-0"
 		class="fixed left-0 top-0 z-50 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
 	>
-		<div class="bg-os-400 max-w-3/5 relative mx-auto mt-20 rounded-md p-6 drop-shadow-xl xl:mt-24 xl:max-w-3xl">
+		{{ regularModalClasses := "'bg-os-400 relative rounded-md p-6 drop-shadow-xl'" }}
+		{{ regularModalClasses += "+ (isFullScreenActive ? ' w-full h-full' : ' max-w-3/5 mx-auto mt-20 xl:mt-24 xl:max-w-3xl')" }}
+		<div x-data="{ isFullScreenActive: false }" :class={ regularModalClasses }>
 			<div class="mb-6 flex justify-between align-middle">
 				<h2 class="text-2xl">
 					{ title }
@@ -20,13 +22,23 @@ templ RegularModal(title, isOpenState, closeModalFunction, elementIdStatePath st
 						<strong>#<span x-text={ elementIdStatePath }></span></strong>
 					}
 				</h2>
-				<div class="inline-flex">
-					<button
-						@click={ closeModalFunction }
-						class="opacity-85 bg-transparent hover:opacity-100 active:opacity-100"
-					>
-						<i class="ph-bold ph-x-square align-middle text-3xl"></i>
-					</button>
+				<div class="inline-flex space-x-2 bg-inherit">
+					<div x-show="!isFullScreenActive">
+						@CircularIconButtonWithTooltip(
+							"ph-arrows-out", "os-200", "os-100",
+							"isFullScreenActive = true", "", "",
+						)
+					</div>
+					<div x-show="isFullScreenActive">
+						@CircularIconButtonWithTooltip(
+							"ph-arrows-in", "os-200", "os-100",
+							"isFullScreenActive = false", "", "",
+						)
+					</div>
+					@CircularIconButtonWithTooltip(
+						"ph-x", "os-200", "os-100",
+						closeModalFunction+"; setTimeout(() => isFullScreenActive = false, 150)", "", "",
+					)
 				</div>
 			</div>
 			{ children... }
