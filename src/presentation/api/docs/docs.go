@@ -769,6 +769,12 @@ const docTemplate = `{
                         "name": "sourcePath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "ShouldIncludeFileTree",
+                        "name": "shouldIncludeFileTree",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -777,7 +783,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.UnixFile"
+                                "$ref": "#/definitions/dto.ReadFilesResponse"
                             }
                         }
                     }
@@ -2340,12 +2346,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "destinationPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "sourcePaths": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/valueObject.UnixFilePath"
                     }
                 }
             }
@@ -2354,13 +2360,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "shouldOverwrite": {
                     "type": "boolean"
                 },
                 "sourcePath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -2417,10 +2423,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "logOutputPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -2477,7 +2483,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -2540,7 +2546,7 @@ const docTemplate = `{
                     }
                 },
                 "startupFile": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -2619,10 +2625,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "filePath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "mimeType": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MimeType"
                 },
                 "permissions": {
                     "type": "string"
@@ -2661,10 +2667,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "sourcePath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -2716,10 +2722,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "logOutputPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -2743,7 +2749,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "status": {
                     "type": "string"
@@ -2761,7 +2767,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -2816,6 +2822,20 @@ const docTemplate = `{
                 },
                 "pagination": {
                     "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
+        "dto.ReadFilesResponse": {
+            "type": "object",
+            "properties": {
+                "fileTree": {
+                    "$ref": "#/definitions/dto.UnixFileTree"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.UnixFile"
+                    }
                 }
             }
         },
@@ -2892,6 +2912,26 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entity.ScheduledTask"
                     }
+                }
+            }
+        },
+        "dto.UnixFileTree": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UnixFileTree"
+                    }
+                },
+                "mimeType": {
+                    "$ref": "#/definitions/valueObject.MimeType"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -2988,10 +3028,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "logOutputPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -3033,7 +3073,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "status": {
                     "type": "string"
@@ -3054,7 +3094,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -3062,7 +3102,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "encodedContent": {
                     "type": "string"
@@ -3079,7 +3119,7 @@ const docTemplate = `{
                 "sourcePaths": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/valueObject.UnixFilePath"
                     }
                 }
             }
@@ -3100,7 +3140,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rootDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "type": {
                     "type": "string"
@@ -3131,7 +3171,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "homeDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "id": {
                     "type": "integer"
@@ -3232,10 +3272,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "logOutputPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "manifestVersion": {
                     "type": "string"
@@ -3256,7 +3296,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.ServiceType"
@@ -3268,7 +3308,7 @@ const docTemplate = `{
                     }
                 },
                 "workingDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -3297,10 +3337,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "logOutputPath": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -3321,7 +3361,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "status": {
                     "type": "string"
@@ -3339,7 +3379,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -3438,7 +3478,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "installDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "installUuid": {
                     "type": "string"
@@ -3704,7 +3744,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "mimeType": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MimeType"
                 },
                 "name": {
                     "type": "string"
@@ -3713,7 +3753,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "path": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "permissions": {
                     "type": "string"
@@ -3739,7 +3779,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rootDirectory": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "type": {
                     "type": "string"
@@ -3849,6 +3889,17 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.MimeType": {
+            "type": "string",
+            "enum": [
+                "directory",
+                "generic"
+            ],
+            "x-enum-varnames": [
+                "DirectoryMimeType",
+                "GenericMimeType"
+            ]
+        },
         "valueObject.PortBinding": {
             "type": "object",
             "properties": {
@@ -3919,6 +3970,17 @@ const docTemplate = `{
                 "ServiceTypeRuntime",
                 "ServiceTypeSystem",
                 "ServiceTypeWebServer"
+            ]
+        },
+        "valueObject.UnixFilePath": {
+            "type": "string",
+            "enum": [
+                "/",
+                "/app"
+            ],
+            "x-enum-varnames": [
+                "FileSystemRootDir",
+                "DefaultAppWorkingDir"
             ]
         }
     },
