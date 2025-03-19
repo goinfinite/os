@@ -72,6 +72,19 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
+    supportedMimeTypesToEdit: [
+      "application/javascript",
+      "application/json",
+      "application/xhtml+xml",
+      "application/xml",
+      "generic",
+      "image/svg+xml",
+      "text/css",
+      "text/csv",
+      "text/html",
+      "text/javascript",
+      "text/plain",
+    ],
     get shouldUpdateFileContentButtonBeDeactivate() {
       if (this.selectedFileNames.length !== 1) {
         return true;
@@ -81,7 +94,8 @@ document.addEventListener("alpine:init", () => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
-      return fileEntity.mimeType === "directory";
+
+      return !this.supportedMimeTypesToEdit.includes(fileEntity.mimeType);
     },
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
@@ -212,19 +226,38 @@ document.addEventListener("alpine:init", () => {
     closeUploadFilesModal() {
       this.isUploadFilesModalOpen = false;
     },
-    codeEditorInstance: null,
     isUpdateFileContentModalOpen: false,
+    codeEditorInstance: null,
+    codeEditorFontSize: 12,
+    resizeCodeEditorFont(operation) {
+      switch (operation) {
+        case "decrease":
+          this.codeEditorFontSize--;
+          break;
+        case "increase":
+          this.codeEditorFontSize++;
+          break;
+      }
+
+      this.codeEditorInstance.setFontSize(this.codeEditorFontSize);
+    },
     openUpdateFileContentModal() {
       this.resetPrimaryStates();
+      this.codeEditorInstance = null;
+      this.codeEditorFontSize = 12;
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
 
-      if (fileEntity.size >= 1048576) {
+      if (!this.supportedMimeTypesToEdit.includes(fileEntity.mimeType)) {
         this.resetAuxiliaryStates();
-        Alpine.store("toast").displayToast("FileTooBigToEdit", "danger");
+        return;
+      }
+
+      if (fileEntity.size >= 1048576) {
+        this.downloadFile();
         return;
       }
 
@@ -255,12 +288,14 @@ document.addEventListener("alpine:init", () => {
           };
 
           this.codeEditorInstance = ace.edit("code-editor");
-          this.codeEditorInstance.setTheme("ace/theme/dracula");
+          this.codeEditorInstance.setOptions({
+            mode:
+              "ace/mode/" + supportedLanguages[fileEntity.extension] ??
+              "plaintext",
+            theme: "ace/theme/dracula",
+            autoScrollEditorIntoView: true,
+          });
           this.codeEditorInstance.navigateFileStart();
-          this.codeEditorInstance.session.setMode(
-            "ace/mode/" + supportedLanguages[fileEntity.extension] ??
-              "plaintext"
-          );
           this.codeEditorInstance.setValue(desiredFile.content);
           this.codeEditorInstance.clearSelection();
 

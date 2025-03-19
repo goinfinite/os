@@ -106,10 +106,7 @@ templ FilesExplorerTableHeaders() {
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 			</div>
-			// Ordenar como ordem alfabética no retorno do Read dos files.
 			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
-				// Se o arquivo tiver menos de 5MB e for das extensões permitidas, permitir esse botão.
-				// Dentro do Monaco Editor, adicionar um botão que permita ele fazer o download do arquivo também.
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-code",
 					Description:               "Edit",
@@ -299,7 +296,7 @@ templ FilesExplorer(filesGroupedByType FilesGroupedByType) {
 						)
 					}}
 					for _, fileEntity := range filesAndDirsList {
-						{{ fileTableRowDoubleClick := "handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
+						{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
 						if fileEntity.MimeType.IsDir() {
 							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
 						}
@@ -441,16 +438,47 @@ templ UpdateFileContentForm() {
 		hx-put="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeUpdateFileContentModal()"
+		@submit="closeUpdateFileContentModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 	>
+		<div class="-mt-2 mb-2 grid grid-cols-2">
+			<div class="flex justify-start">
+				<div class="flex space-x-2">
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-arrow-counter-clockwise", "infinite-500", "infinite-300",
+						"codeEditorInstance.undo()", "Undo", "infinite-500",
+					)
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-arrow-clockwise", "infinite-500", "infinite-300",
+						"codeEditorInstance.redo()", "Redo", "infinite-500",
+					)
+				</div>
+				<div class="ml-4 flex items-center space-x-2">
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-minus", "infinite-500", "infinite-300",
+						"resizeCodeEditorFont('decrease')", "Decrease Font Size", "infinite-500",
+					)
+					<label id="codeEditorFontSize" x-text="codeEditorFontSize"></label>
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-plus", "infinite-500", "infinite-300",
+						"resizeCodeEditorFont('increase')", "Increase Font Size", "infinite-500",
+					)
+				</div>
+			</div>
+			<div class="flex justify-end">
+				@componentStructural.CircularIconButtonWithTooltip(
+					"ph-download-simple", "infinite-500", "infinite-300",
+					"downloadFile()", "Download File", "infinite-500",
+				)
+			</div>
+		</div>
 		<div class="mb-6">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
 			<input name="encodedContent" type="hidden" :value="btoa(file.content)"/>
-			<div id="code-editor" class="relative w-full h-[30rem] xl:h-[35rem]"></div>
+			<div id="code-editor" class="relative h-[30rem] w-full xl:h-[35rem]"></div>
 		</div>
 		@componentForm.SubmitButton(
 			"", "Update", "ph-check-fat",
-			"file.content = codeEditorInstance.getValue(); setTimeout(() => reloadFileManagerContent(), 250)",
+			"file.content = codeEditorInstance.getValue()",
 			false,
 		)
 	</form>
