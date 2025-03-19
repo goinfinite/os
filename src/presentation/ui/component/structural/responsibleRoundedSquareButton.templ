@@ -21,6 +21,8 @@ templ ResponsibleRoundedSquareButton(inputDto ResponsibleRoundedSquareButtonDto)
 				bindButtonClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? '' : ' hover:bg-" + inputDto.HoverColor + "')"
 				bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
 				bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
+			} else {
+				bindButtonClasses += " + ' hover:bg-" + inputDto.HoverColor + "'"
 			}
 		}}
 		<button
