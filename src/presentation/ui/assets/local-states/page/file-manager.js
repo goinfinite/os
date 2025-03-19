@@ -75,6 +75,8 @@ document.addEventListener("alpine:init", () => {
     supportedMimeTypesToEdit: [
       "application/javascript",
       "application/json",
+      "application/pgp-keys",
+      "application/x-x509-ca-cert",
       "application/xhtml+xml",
       "application/xml",
       "generic",
