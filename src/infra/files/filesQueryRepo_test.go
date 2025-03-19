@@ -4,6 +4,7 @@ import (
 	"os/user"
 	"testing"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
@@ -15,7 +16,11 @@ func TestFilesQueryRepo(t *testing.T) {
 
 	t.Run("Read", func(t *testing.T) {
 		unixDirPath, _ := valueObject.NewUnixFilePath(userHomeDir)
-		_, err := filesQueryRepo.Read(unixDirPath)
+		requestDto := dto.ReadFilesRequest{
+			SourcePath: unixDirPath,
+		}
+
+		_, err := filesQueryRepo.Read(requestDto)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -23,7 +28,11 @@ func TestFilesQueryRepo(t *testing.T) {
 
 	t.Run("ReadWithInvalidDirectory", func(t *testing.T) {
 		invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
-		_, err := filesQueryRepo.Read(invalidUnixPath)
+		requestDto := dto.ReadFilesRequest{
+			SourcePath: invalidUnixPath,
+		}
+
+		_, err := filesQueryRepo.Read(requestDto)
 		if err == nil {
 			t.Errorf("ExpectedErrorButGotNil")
 		}
@@ -32,6 +41,9 @@ func TestFilesQueryRepo(t *testing.T) {
 	t.Run("ReadFollowingSymlink", func(t *testing.T) {
 		downloadsDirPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/Downloads")
 		tmpSymlinkPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/tmpSymlink")
+		requestDto := dto.ReadFilesRequest{
+			SourcePath: tmpSymlinkPath,
+		}
 
 		err := infraHelper.CreateSymlink(
 			downloadsDirPath.String(), tmpSymlinkPath.String(), false,
@@ -40,11 +52,11 @@ func TestFilesQueryRepo(t *testing.T) {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 
-		files, err := filesQueryRepo.Read(tmpSymlinkPath)
+		responseDto, err := filesQueryRepo.Read(requestDto)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
-		if len(files) == 0 {
+		if len(responseDto.Files) == 0 {
 			t.Errorf("ExpectedNonEmptyFilesButGotEmpty")
 		}
 
