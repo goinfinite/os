@@ -3,7 +3,7 @@ package presenter
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
@@ -18,36 +18,22 @@ func NewFileManagerPresenter() *FileManagerPresenter {
 	return &FileManagerPresenter{}
 }
 
-func (presenter *FileManagerPresenter) readFilesGroupedByType(
-	rawWorkingDirPath string,
-) page.FilesGroupedByType {
-	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
+func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
+	workingDirPath valueObject.UnixFilePath,
+) dto.ReadFilesResponse {
+	shouldIncludeFileTree := true
+	readFilesRequestDto := dto.ReadFilesRequest{
+		SourcePath:            workingDirPath,
+		ShouldIncludeFileTree: &shouldIncludeFileTree,
+	}
+	readFilesResponseDto, err := useCase.ReadFiles(
+		filesInfra.FilesQueryRepo{}, readFilesRequestDto,
+	)
 	if err != nil {
-		workingDirPath, _ = valueObject.NewUnixFilePath("/invalid/path")
+		return readFilesResponseDto
 	}
 
-	filesGroupedByType := page.FilesGroupedByType{
-		WorkingDirPath: workingDirPath.String(),
-		Directories:    []entity.UnixFile{},
-		Files:          []entity.UnixFile{},
-	}
-	filesList, err := useCase.ReadFiles(filesInfra.FilesQueryRepo{}, workingDirPath)
-	if err != nil {
-		return filesGroupedByType
-	}
-
-	for _, fileEntity := range filesList {
-		if fileEntity.MimeType.IsDir() {
-			filesGroupedByType.Directories = append(
-				filesGroupedByType.Directories, fileEntity,
-			)
-			continue
-		}
-
-		filesGroupedByType.Files = append(filesGroupedByType.Files, fileEntity)
-	}
-
-	return filesGroupedByType
+	return readFilesResponseDto
 }
 
 func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
@@ -55,8 +41,14 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 	if rawWorkingDirPath == "" {
 		rawWorkingDirPath = valueObject.DefaultAppWorkingDir.String()
 	}
-	filesGroupedByType := presenter.readFilesGroupedByType(rawWorkingDirPath)
 
-	pageContent := page.FileManagerIndex(filesGroupedByType)
+	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
+	if err != nil {
+		workingDirPath, _ = valueObject.NewUnixFilePath("/invalid/path")
+	}
+
+	readFilesResponseDto := presenter.readUnixFilesByWorkingDir(workingDirPath)
+
+	pageContent := page.FileManagerIndex(workingDirPath, readFilesResponseDto)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

@@ -229,6 +229,7 @@ document.addEventListener("alpine:init", () => {
     isUpdateFileContentModalOpen: false,
     codeEditorInstance: null,
     codeEditorFontSize: 12,
+    codeEditorFindContent: "",
     resizeCodeEditorFont(operation) {
       switch (operation) {
         case "decrease":
@@ -245,6 +246,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
       this.codeEditorInstance = null;
       this.codeEditorFontSize = 12;
+      this.codeEditorFindContent = "";
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
