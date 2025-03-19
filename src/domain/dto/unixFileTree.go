@@ -23,5 +23,5 @@ func (dto *UnixFileTree) AddUnixFile(child entity.SimplifiedUnixFile) {
 }
 
 func (dto *UnixFileTree) AddSubTree(subTree UnixFileTree) {
-	dto.Children = append(dto.Children, subTree)
+	dto.Children = append([]UnixFileTree{subTree}, dto.Children...)
 }

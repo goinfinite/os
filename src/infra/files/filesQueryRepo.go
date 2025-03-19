@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 
@@ -212,7 +213,10 @@ func (repo FilesQueryRepo) readUnixFileTree(
 		return unixFileTree, err
 	}
 
-	for _, rawUnixFilePath := range strings.Split(rawUnixFileTree, "\n") {
+	rawUnixFileTreeParts := strings.Split(rawUnixFileTree, "\n")
+	sort.Strings(rawUnixFileTreeParts)
+
+	for _, rawUnixFilePath := range rawUnixFileTreeParts {
 		if rawUnixFilePath == "" {
 			continue
 		}
