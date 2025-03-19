@@ -53,6 +53,10 @@ func (vo UnixFilePath) GetWithoutExtension() UnixFilePath {
 }
 
 func (vo UnixFilePath) GetFileName() UnixFileName {
+	if vo.IsRootPath() {
+		return UnixFileName("/")
+	}
+
 	unixFileBase := filepath.Base(string(vo))
 	unixFileName, _ := NewUnixFileName(unixFileBase)
 	return unixFileName
