@@ -48,3 +48,21 @@ func NewUnixFile(
 		UpdatedAt:   updatedAt,
 	}
 }
+
+type SimplifiedUnixFile struct {
+	Name     valueObject.UnixFileName `json:"name"`
+	Path     valueObject.UnixFilePath `json:"path"`
+	MimeType valueObject.MimeType     `json:"mimeType"`
+}
+
+func NewSimplifiedUnixFile(
+	name valueObject.UnixFileName,
+	path valueObject.UnixFilePath,
+	mimeType valueObject.MimeType,
+) SimplifiedUnixFile {
+	return SimplifiedUnixFile{
+		Name:     name,
+		Path:     path,
+		MimeType: mimeType,
+	}
+}
