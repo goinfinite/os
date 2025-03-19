@@ -14,6 +14,7 @@ const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
+const FileSystemRootDir = UnixFilePath("/")
 const DefaultAppWorkingDir = UnixFilePath("/app")
 
 func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
@@ -77,4 +78,8 @@ func (vo UnixFilePath) GetFileDir() UnixFilePath {
 
 func (vo UnixFilePath) String() string {
 	return string(vo)
+}
+
+func (vo UnixFilePath) IsRootPath() bool {
+	return vo == FileSystemRootDir
 }
