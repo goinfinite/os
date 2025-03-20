@@ -20,7 +20,7 @@ templ InputField(inputDto InputFieldDto) {
 				name={ inputDto.Id }
 			}
 			if inputDto.BindModelValuePath != "" {
-				x-model:value={ inputDto.BindModelValuePath }
+				:value={ inputDto.BindModelValuePath }
 			}
 			autocomplete="off"
 			if inputDto.Label != "" {
@@ -55,7 +55,7 @@ templ InputFieldClientSide(bindInputType, bindLabel, bindValuePath string) {
 		<input
 			:type={ bindInputType }
 			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+				:value={ bindValuePath }
 			}
 			autocomplete="off"
 			:placeholder={ bindLabel }
@@ -88,7 +88,7 @@ templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 				type={ inputDto.Type }
 				name={ inputDto.Id }
 				if inputDto.BindInputValuePath != "" {
-					x-model:value={ inputDto.BindInputValuePath }
+					:value={ inputDto.BindInputValuePath }
 				}
 				autocomplete="off"
 				class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
