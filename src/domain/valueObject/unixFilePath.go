@@ -41,7 +41,7 @@ func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 	return UnixFilePath(stringValue), nil
 }
 
-func (vo UnixFilePath) GetWithoutExtension() UnixFilePath {
+func (vo UnixFilePath) ReadWithoutExtension() UnixFilePath {
 	unixFilePathExtStr := filepath.Ext(string(vo))
 	if unixFilePathExtStr == "" {
 		return vo
@@ -52,7 +52,7 @@ func (vo UnixFilePath) GetWithoutExtension() UnixFilePath {
 	return unixFilePathWithoutExt
 }
 
-func (vo UnixFilePath) GetFileName() UnixFileName {
+func (vo UnixFilePath) ReadFileName() UnixFileName {
 	if vo.IsRootPath() {
 		return UnixFileName("/")
 	}
@@ -62,7 +62,7 @@ func (vo UnixFilePath) GetFileName() UnixFileName {
 	return unixFileName
 }
 
-func (vo UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
+func (vo UnixFilePath) ReadFileNameWithoutExtension() UnixFileName {
 	unixFileBase := filepath.Base(string(vo))
 	unixFilePathExt := filepath.Ext(string(vo))
 	unixFileBaseWithoutExtStr := strings.TrimSuffix(string(unixFileBase), unixFilePathExt)
@@ -70,14 +70,27 @@ func (vo UnixFilePath) GetFileNameWithoutExtension() UnixFileName {
 	return unixFileNameWithoutExt
 }
 
-func (vo UnixFilePath) GetFileExtension() (UnixFileExtension, error) {
+func (vo UnixFilePath) ReadFileExtension() (UnixFileExtension, error) {
 	unixFileExtensionStr := filepath.Ext(string(vo))
 	return NewUnixFileExtension(unixFileExtensionStr)
 }
 
-func (vo UnixFilePath) GetFileDir() UnixFilePath {
+func (vo UnixFilePath) ReadFileDir() UnixFilePath {
 	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(vo)))
 	return unixFileDirPath
+}
+
+func (vo UnixFilePath) ReadWithoutTrailingSlash() UnixFilePath {
+	unixFilePathStr := vo.String()
+	if vo.IsRootPath() {
+		return FileSystemRootDir
+	}
+
+	unixFilePathWithoutTrailingSlashStr := strings.TrimSuffix(unixFilePathStr, "/")
+	unixFilePathWithoutTrailingSlash, _ := NewUnixFilePath(
+		unixFilePathWithoutTrailingSlashStr,
+	)
+	return unixFilePathWithoutTrailingSlash
 }
 
 func (vo UnixFilePath) String() string {
