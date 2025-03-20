@@ -9,8 +9,6 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-const TrashDirPath string = "/app/.trash"
-
 type DeleteUnixFiles struct {
 	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
@@ -33,8 +31,7 @@ func (uc DeleteUnixFiles) emptyTrash(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
-	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
-	err := uc.filesCmdRepo.Delete(trashPath)
+	err := uc.filesCmdRepo.Delete(valueObject.AppTrashDirPath)
 	if err != nil {
 		return err
 	}
@@ -46,27 +43,26 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
-	trashPath, _ := valueObject.NewUnixFilePath(TrashDirPath)
-
-	_, err := uc.filesQueryRepo.ReadFirst(trashPath)
+	_, err := uc.filesQueryRepo.ReadFirst(valueObject.AppTrashDirPath)
 	if err == nil {
 		return nil
 	}
 
 	trashDirPermissions, _ := valueObject.NewUnixFilePermissions("755")
 	createGeneralTrashDir := dto.NewCreateUnixFile(
-		trashPath, &trashDirPermissions, valueObject.DirectoryMimeType,
-		operatorAccountId, operatorIpAddress,
+		valueObject.AppTrashDirPath, &trashDirPermissions,
+		valueObject.DirectoryMimeType, operatorAccountId, operatorIpAddress,
 	)
 
 	return CreateUnixFile(
-		uc.filesQueryRepo, uc.filesCmdRepo, uc.activityRecordCmdRepo, createGeneralTrashDir,
+		uc.filesQueryRepo, uc.filesCmdRepo, uc.activityRecordCmdRepo,
+		createGeneralTrashDir,
 	)
 }
 
 func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	for fileToDeleteIndex, fileToDelete := range deleteDto.SourcePaths {
-		shouldCleanTrash := fileToDelete.String() == TrashDirPath
+		shouldCleanTrash := fileToDelete == valueObject.AppTrashDirPath
 		if shouldCleanTrash {
 			err := uc.emptyTrash(
 				deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress,
@@ -121,11 +117,9 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	}
 
 	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
-		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.ReadFileName().String()
-		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 		shouldOverwrite := true
 		moveDto := dto.NewMoveUnixFile(
-			fileToMoveToTrash, trashPathWithFileName, shouldOverwrite,
+			fileToMoveToTrash, valueObject.AppTrashDirPath, shouldOverwrite,
 		)
 
 		err = uc.filesCmdRepo.Move(moveDto)

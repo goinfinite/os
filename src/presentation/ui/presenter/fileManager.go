@@ -39,7 +39,7 @@ func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
 func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 	rawWorkingDirPath := c.QueryParam("workingDirPath")
 	if rawWorkingDirPath == "" {
-		rawWorkingDirPath = valueObject.DefaultAppWorkingDir.String()
+		rawWorkingDirPath = valueObject.DefaultAppWorkingDirPath.String()
 	}
 
 	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)

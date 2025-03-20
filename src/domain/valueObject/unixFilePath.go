@@ -14,8 +14,9 @@ const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
-const FileSystemRootDir = UnixFilePath("/")
-const DefaultAppWorkingDir = UnixFilePath("/app")
+const FileSystemRootDirPath = UnixFilePath("/")
+const DefaultAppWorkingDirPath = UnixFilePath("/app")
+const AppTrashDirPath = UnixFilePath("/app/.trash")
 
 func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
@@ -83,7 +84,7 @@ func (vo UnixFilePath) ReadFileDir() UnixFilePath {
 func (vo UnixFilePath) ReadWithoutTrailingSlash() UnixFilePath {
 	unixFilePathStr := vo.String()
 	if vo.IsRootPath() {
-		return FileSystemRootDir
+		return FileSystemRootDirPath
 	}
 
 	unixFilePathWithoutTrailingSlashStr := strings.TrimSuffix(unixFilePathStr, "/")
@@ -98,5 +99,5 @@ func (vo UnixFilePath) String() string {
 }
 
 func (vo UnixFilePath) IsRootPath() bool {
-	return vo == FileSystemRootDir
+	return vo == FileSystemRootDirPath
 }

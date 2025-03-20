@@ -73,7 +73,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	}
 
 	var unixFileExtensionPtr *valueObject.UnixFileExtension
-	unixFileExtension, err := unixFilePath.GetFileExtension()
+	unixFileExtension, err := unixFilePath.ReadFileExtension()
 	if err == nil {
 		unixFileExtensionPtr = &unixFileExtension
 	}
@@ -114,7 +114,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	unixFileUpdatedAt := valueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
 
 	unixFile = entity.NewUnixFile(
-		unixFilePath.GetFileName(), unixFilePath, unixFileMimeType, unixFilePermissions,
+		unixFilePath.ReadFileName(), unixFilePath, unixFileMimeType, unixFilePermissions,
 		unixFileSize, unixFileExtensionPtr, unixFileContentPtr, unixFileUid,
 		unixFileUsername, unixFileGid, unixFileGroup, unixFileUpdatedAt,
 	)
@@ -125,20 +125,9 @@ func (repo FilesQueryRepo) unixFileFactory(
 func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 	unixFilePath valueObject.UnixFilePath,
 ) (simplifiedUnixFile entity.SimplifiedUnixFile, err error) {
-	unixFilePathStr := unixFilePath.String()
-	if !unixFilePath.IsRootPath() && strings.HasSuffix(unixFilePathStr, "/") {
-		unixFilePathWithoutTrailingSlash := strings.TrimSuffix(unixFilePathStr, "/")
-		unixFilePath, err = valueObject.NewUnixFilePath(
-			unixFilePathWithoutTrailingSlash,
-		)
-		if err != nil {
-			return simplifiedUnixFile, err
-		}
+	unixFilePath = unixFilePath.ReadWithoutTrailingSlash()
 
-		unixFilePathStr = unixFilePath.String()
-	}
-
-	fileInfo, err := os.Stat(unixFilePathStr)
+	fileInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
 		return simplifiedUnixFile, err
 	}
@@ -148,13 +137,13 @@ func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 		unixFileMimeType = valueObject.DirectoryMimeType
 	}
 
-	unixFileExtension, err := unixFilePath.GetFileExtension()
+	unixFileExtension, err := unixFilePath.ReadFileExtension()
 	if err == nil {
 		unixFileMimeType = unixFileExtension.GetMimeType()
 	}
 
 	return entity.NewSimplifiedUnixFile(
-		unixFilePath.GetFileName(), unixFilePath, unixFileMimeType,
+		unixFilePath.ReadFileName(), unixFilePath, unixFileMimeType,
 	), nil
 }
 
@@ -252,23 +241,12 @@ func (repo FilesQueryRepo) readUnixFileTree(
 func (repo FilesQueryRepo) Read(
 	requestDto dto.ReadFilesRequest,
 ) (responseDto dto.ReadFilesResponse, err error) {
-	sourcePath := requestDto.SourcePath
+	sourcePath := requestDto.SourcePath.ReadWithoutTrailingSlash()
 	sourcePathStr := sourcePath.String()
 
 	exists := infraHelper.FileExists(sourcePathStr)
 	if !exists {
 		return responseDto, errors.New("PathNotFound")
-	}
-
-	filePathHasTrailingSlash := strings.HasSuffix(sourcePathStr, "/")
-	if filePathHasTrailingSlash && !sourcePath.IsRootPath() {
-		filePathWithoutTrailingSlashStr := strings.TrimSuffix(sourcePathStr, "/")
-		filePathWithoutTrailingSlash, _ := valueObject.NewUnixFilePath(
-			filePathWithoutTrailingSlashStr,
-		)
-
-		sourcePath = filePathWithoutTrailingSlash
-		sourcePathStr = filePathWithoutTrailingSlash.String()
 	}
 
 	sourcePathInfo, err := os.Stat(sourcePathStr)
@@ -336,7 +314,7 @@ func (repo FilesQueryRepo) Read(
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
 		unixFileTree, err := repo.readUnixFileTree(
-			sourcePath, valueObject.FileSystemRootDir,
+			sourcePath, valueObject.FileSystemRootDirPath,
 		)
 		if err != nil {
 			return responseDto, err

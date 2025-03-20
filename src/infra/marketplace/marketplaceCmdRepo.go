@@ -13,7 +13,6 @@ import (
 	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -662,7 +661,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 
 	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
-		useCase.TrashDirPath, installedItem.Slug.String(),
+		valueObject.AppTrashDirPath.String(), installedItem.Slug.String(),
 		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
 	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)

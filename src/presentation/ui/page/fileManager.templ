@@ -3,7 +3,6 @@ package page
 import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
@@ -158,7 +157,7 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Delete",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "currentWorkingDirPath.startsWith('" + useCase.TrashDirPath + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
+					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.AppTrashDirPath.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
 					HideTextBelowBreakpoint:   "[107.5rem]",
 					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
@@ -201,7 +200,7 @@ templ FilesExplorerTableHeaders() {
 					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDir.String() + "'; accessWorkingDirPath()",
+					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDirPath.String() + "'; accessWorkingDirPath()",
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -230,7 +229,7 @@ templ FilesExplorerTableHeaders() {
 					TooltipText:  "Show Trash",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "desiredWorkingDirPath = '" + useCase.TrashDirPath + "'; accessWorkingDirPath()",
+					OnClick:      "desiredWorkingDirPath = '" + valueObject.AppTrashDirPath.String() + "'; accessWorkingDirPath()",
 				})
 			</div>
 			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
@@ -484,8 +483,9 @@ templ MoveFilesForm(
 	>
 		<div class="mb-6 space-y-2">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
 			@componentForm.InputFieldReadOnly(
-				"text", "destinationPath", "Destination Path",
+				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
 			)
 			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
@@ -519,8 +519,9 @@ templ CopyFilesForm(
 	>
 		<div class="mb-6 space-y-2">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
 			@componentForm.InputFieldReadOnly(
-				"text", "destinationPath", "Destination Path",
+				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
 			)
 			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
