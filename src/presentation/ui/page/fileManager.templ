@@ -30,9 +30,9 @@ templ FileManagerIndex(
 			@CreateFileModal()
 			@CreateDirectoryModal()
 			@UploadFilesModal()
+			@UpdateFileContentModal()
 			@CopyFilesModal(workingDirPath, readFilesResponseDto.FileTree)
 			@MoveFilesModal(workingDirPath, readFilesResponseDto.FileTree)
-			@UpdateFileContentModal()
 			@RenameFileModal()
 			@MoveFilesToTrashModal()
 			@componentStructural.DeleteModal(
@@ -405,7 +405,6 @@ templ CreateFileForm(
 		hx-post="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit={ closeFunction + "; setTimeout(() => reloadFileManagerContent(), 250)" }
 	>
 		<div class="mb-6">
 			<input name="mimeType" type="hidden" value={ mimeType.String() }/>
@@ -421,7 +420,11 @@ templ CreateFileForm(
 				BindInputValuePath:  "file.name",
 			})
 		</div>
-		@componentForm.SubmitButton("", "Create", "ph-check-fat", "", false)
+		@componentForm.SubmitButton(
+			"", "Create", "ph-check-fat",
+			closeFunction+"; setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
 	</form>
 }
 
@@ -447,7 +450,6 @@ templ UploadFilesForm() {
 		hx-post="/api/v1/files/upload/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeUploadFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 		enctype="multipart/form-data"
 	>
 		<div class="mb-6">
@@ -459,7 +461,11 @@ templ UploadFilesForm() {
 				AllowMultipleFiles: true,
 			})
 		</div>
-		@componentForm.SubmitButton("", "Upload", "ph-check-fat", "", false)
+		@componentForm.SubmitButton(
+			"", "Upload", "ph-check-fat",
+			"closeUploadFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
 	</form>
 }
 
@@ -468,78 +474,6 @@ templ UploadFilesModal() {
 		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
 	) {
 		@UploadFilesForm()
-	}
-}
-
-templ MoveFilesForm(
-	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
-) {
-	<form
-		hx-put="/api/v1/files/"
-		hx-indicator="#loading-overlay"
-		hx-swap="none"
-		@submit="closeMoveFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
-	>
-		<div class="mb-6 space-y-2">
-			<input name="sourcePath" type="hidden" :value="file.path"/>
-			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
-			@componentForm.InputFieldReadOnly(
-				"text", "", "Destination Path",
-				"currentWorkingDirPath + '/' + file.name", "",
-			)
-			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
-				@DirectoriesTree(workingDirPath, unixFileTree)
-			</div>
-		</div>
-		@componentForm.SubmitButton("", "Move", "ph-arrow-square-out", "", false)
-	</form>
-}
-
-templ MoveFilesModal(
-	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
-) {
-	@componentStructural.RegularModal(
-		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
-	) {
-		@MoveFilesForm(workingDirPath, unixFileTree)
-	}
-}
-
-templ CopyFilesForm(
-	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
-) {
-	<form
-		hx-post="/api/v1/files/copy/"
-		hx-indicator="#loading-overlay"
-		hx-swap="none"
-		@submit="closeCopyFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
-	>
-		<div class="mb-6 space-y-2">
-			<input name="sourcePath" type="hidden" :value="file.path"/>
-			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
-			@componentForm.InputFieldReadOnly(
-				"text", "", "Destination Path",
-				"currentWorkingDirPath + '/' + file.name", "",
-			)
-			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
-				@DirectoriesTree(workingDirPath, unixFileTree)
-			</div>
-		</div>
-		@componentForm.SubmitButton("", "Copy", "ph-copy", "", false)
-	</form>
-}
-
-templ CopyFilesModal(
-	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
-) {
-	@componentStructural.RegularModal(
-		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
-	) {
-		@CopyFilesForm(workingDirPath, unixFileTree)
 	}
 }
 
@@ -611,12 +545,89 @@ templ UpdateFileContentModal() {
 	}
 }
 
+templ MoveFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Move", "ph-arrow-square-out",
+			"closeMoveFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ MoveFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	@componentStructural.RegularModal(
+		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
+	) {
+		@MoveFilesForm(workingDirPath, unixFileTree)
+	}
+}
+
+templ CopyFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	<form
+		hx-post="/api/v1/files/copy/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Copy", "ph-copy",
+			"closeCopyFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ CopyFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	@componentStructural.RegularModal(
+		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
+	) {
+		@CopyFilesForm(workingDirPath, unixFileTree)
+	}
+}
+
 templ RenameFileForm() {
 	<form
 		hx-put="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeRenameFileModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 	>
 		<div class="mb-6">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
@@ -632,7 +643,11 @@ templ RenameFileForm() {
 				BindInputValuePath:  "file.name",
 			})
 		</div>
-		@componentForm.SubmitButton("", "Rename", "ph-pencil", "", false)
+		@componentForm.SubmitButton(
+			"", "Rename", "ph-pencil",
+			"closeRenameFileModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
 	</form>
 }
 
@@ -662,7 +677,6 @@ templ UpdateFilePermissionsForm() {
 		hx-put="/api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeUpdateFilePermissionsModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 	>
 		<div class="mb-6 flex justify-center space-x-10">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
@@ -691,7 +705,11 @@ templ UpdateFilePermissionsForm() {
 				</div>
 			}
 		</div>
-		@componentForm.SubmitButton("", "Update", "ph-check-fat", "", false)
+		@componentForm.SubmitButton(
+			"", "Update", "ph-check-fat",
+			"closeUpdateFilePermissionsModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
 	</form>
 }
 
@@ -709,7 +727,6 @@ templ CompressFilesForm() {
 		hx-post="/api/v1/files/compress/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeCompressFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
 	>
 		<div class="mb-6 space-y-7">
 			<template x-for="fileName in selectedFileNames">
@@ -735,7 +752,11 @@ templ CompressFilesForm() {
 				[]string{"zip", "tgz"}, false,
 			)
 		</div>
-		@componentForm.SubmitButton("", "Compress", "ph-file-zip", "", false)
+		@componentForm.SubmitButton(
+			"", "Compress", "ph-file-zip",
+			"closeCompressFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
 	</form>
 }
 
