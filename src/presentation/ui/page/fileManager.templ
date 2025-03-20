@@ -26,19 +26,23 @@ templ FileManagerIndex(
 				)
 			</div>
 		</div>
-		@FileManagerModal(workingDirPath, readFilesResponseDto)
-		@CreateFileModal()
-		@CreateDirectoryModal()
-		@UploadFilesModal()
-		@UpdateFileContentModal()
-		@RenameFileModal()
-		@MoveFilesToTrashModal()
-		@componentStructural.DeleteModal(
-			"isEmptyTrashModalOpen", "closeEmptyTrashModal()",
-			"deleteFiles(true); closeEmptyTrashModal()", "", "",
-		)
-		@UpdateFilePermissionsModal()
-		@CompressFilesModal()
+		<div id="file-manager-content">
+			@FileManagerModal(workingDirPath, readFilesResponseDto)
+			@CreateFileModal()
+			@CreateDirectoryModal()
+			@UploadFilesModal()
+			@CopyFilesModal(workingDirPath, readFilesResponseDto.FileTree)
+			@MoveFilesModal(workingDirPath, readFilesResponseDto.FileTree)
+			@UpdateFileContentModal()
+			@RenameFileModal()
+			@MoveFilesToTrashModal()
+			@componentStructural.DeleteModal(
+				"isEmptyTrashModalOpen", "closeEmptyTrashModal()",
+				"deleteFiles(true); closeEmptyTrashModal()", "", "",
+			)
+			@UpdateFilePermissionsModal()
+			@CompressFilesModal()
+		</div>
 	</div>
 }
 
@@ -118,18 +122,18 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Copy",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Copy')",
+					OnClick:                   "openCopyFilesModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length === 0",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-arrow-square-out",
 					Description:               "Move",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "console.log('Move')",
+					OnClick:                   "openMoveFilesModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length === 0",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-download-simple",
@@ -254,9 +258,17 @@ templ DirectoriesTreeItems(
 					{{
 						itemIconClasses := "ph-bold mr-2 text-xs text-neutral-500 xl:text-sm"
 						dirIconClasses := "ph-bold text-infinite-500 mr-1 text-sm xl:text-base"
-						if fileEntity.Path == workDirPath {
+						dirNameClasses := "text-sm xl:text-base"
+
+						isDesiredWorkDirPath := fileEntity.Path == workDirPath
+						isDirectoryOpened := len(fileEntity.Children) > 0 || isDesiredWorkDirPath
+						if isDirectoryOpened {
 							itemIconClasses += " ph-caret-down"
 							dirIconClasses += " ph-folder-open"
+
+							if isDesiredWorkDirPath {
+								dirNameClasses += " font-bold"
+							}
 						} else {
 							itemIconClasses += " ph-caret-right"
 							dirIconClasses += " ph-folder"
@@ -264,7 +276,7 @@ templ DirectoriesTreeItems(
 					}}
 					<i class={ itemIconClasses }></i>
 					<i class={ dirIconClasses }></i>
-					<p class="text-sm xl:text-base">{ fileEntity.Name.String() }</p>
+					<p class={ dirNameClasses }>{ fileEntity.Name.String() }</p>
 				</a>
 				if len(fileEntity.Children) > 0 {
 					@DirectoriesTreeItems(workDirPath, fileEntity)
@@ -279,20 +291,18 @@ templ DirectoriesTree(
 	unixFileTree *dto.UnixFileTree,
 ) {
 	<!-- FilesExplorerTable DirectoriesTree -->
-	<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-y-auto p-2">
-		if unixFileTree != nil {
-			<div class="flex cursor-default items-center">
-				<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
-				<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
-				<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
-			</div>
-			@DirectoriesTreeItems(workingDirPath, *unixFileTree)
-		} else {
-			<div class="flex justify-center">
-				<p class="italic text-slate-500">No directories or files found.</p>
-			</div>
-		}
-	</div>
+	if unixFileTree != nil {
+		<div class="flex cursor-default items-center">
+			<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
+			<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
+			<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
+		</div>
+		@DirectoriesTreeItems(workingDirPath, *unixFileTree)
+	} else {
+		<div class="flex justify-center">
+			<p class="italic text-slate-500">No directories or files found.</p>
+		</div>
+	}
 }
 
 templ FilesExplorer(unixFilesList []entity.UnixFile) {
@@ -374,13 +384,15 @@ templ FileManagerModal(
 	<div class="bg-os-800 space-y-2 p-3">
 		@FilesExplorerTableHeaders()
 		<!-- FileManagerModal Content -->
-		<div id="file-manager-content" class="grid h-full grid-cols-4 gap-5">
+		<div class="grid h-full grid-cols-4 gap-5">
 			<data
 				id="current-source-path"
 				class="hidden"
 				value={ workingDirPath.String() }
 			></data>
-			@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
+			<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-x-auto overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
+			</div>
 			@FilesExplorer(readFilesResponseDto.Files)
 		</div>
 	</div>
@@ -457,6 +469,76 @@ templ UploadFilesModal() {
 		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
 	) {
 		@UploadFilesForm()
+	}
+}
+
+templ MoveFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeMoveFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "destinationPath", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton("", "Move", "ph-arrow-square-out", "", false)
+	</form>
+}
+
+templ MoveFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	@componentStructural.RegularModal(
+		"Upload Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
+	) {
+		@MoveFilesForm(workingDirPath, unixFileTree)
+	}
+}
+
+templ CopyFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	<form
+		hx-post="/api/v1/files/copy/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeCopyFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "destinationPath", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton("", "Copy", "ph-copy", "", false)
+	</form>
+}
+
+templ CopyFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileTree,
+) {
+	@componentStructural.RegularModal(
+		"Upload Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
+	) {
+		@CopyFilesForm(workingDirPath, unixFileTree)
 	}
 }
 

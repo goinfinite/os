@@ -139,18 +139,6 @@ document.addEventListener("alpine:init", () => {
 
       this.selectedFileNames.push(fileName);
     },
-    handleSelectPermission(
-      permissionClass,
-      permissionValue,
-      isCheckboxChecked
-    ) {
-      if (!isCheckboxChecked) {
-        this.file.permissions[permissionClass] -= permissionValue;
-        return;
-      }
-
-      this.file.permissions[permissionClass] += permissionValue;
-    },
     downloadFile() {
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
@@ -170,6 +158,18 @@ document.addEventListener("alpine:init", () => {
           fileEntity.mimeType
         );
       });
+    },
+    handleSelectPermission(
+      permissionClass,
+      permissionValue,
+      isCheckboxChecked
+    ) {
+      if (!isCheckboxChecked) {
+        this.file.permissions[permissionClass] -= permissionValue;
+        return;
+      }
+
+      this.file.permissions[permissionClass] += permissionValue;
     },
     get shouldDecompressFileButtonBeDeactivate() {
       if (this.selectedFileNames.length !== 1) {
@@ -316,6 +316,38 @@ document.addEventListener("alpine:init", () => {
 
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
+    },
+    isMoveFilesModalOpen: false,
+    openMoveFilesModal() {
+      this.resetPrimaryStates();
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      this.file.name = fileEntity.name;
+      this.file.path = fileEntity.path;
+
+      this.isMoveFilesModalOpen = true;
+    },
+    closeMoveFilesModal() {
+      this.isMoveFilesModalOpen = false;
+    },
+    isCopyFilesModalOpen: false,
+    openCopyFilesModal() {
+      this.resetPrimaryStates();
+
+      const fileName = this.selectedFileNames[0];
+      const fileEntity = JSON.parse(
+        document.getElementById("fileEntity_" + fileName).textContent
+      );
+      this.file.name = fileEntity.name;
+      this.file.path = fileEntity.path;
+
+      this.isCopyFilesModalOpen = true;
+    },
+    closeCopyFilesModal() {
+      this.isCopyFilesModalOpen = false;
     },
     isRenameFileModalOpen: false,
     openRenameFileModal() {
