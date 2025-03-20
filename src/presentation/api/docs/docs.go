@@ -2553,6 +2553,9 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                },
+                "workingDir": {
+                    "$ref": "#/definitions/valueObject.UnixFilePath"
                 }
             }
         },
@@ -3976,11 +3979,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "/",
-                "/app"
+                "/app",
+                "/app/.trash"
             ],
             "x-enum-varnames": [
-                "FileSystemRootDir",
-                "DefaultAppWorkingDir"
+                "FileSystemRootDirPath",
+                "DefaultAppWorkingDirPath",
+                "AppTrashDirPath"
             ]
         }
     },

@@ -141,6 +141,8 @@ definitions:
         type: integer
       version:
         type: string
+      workingDir:
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.CreateMapping:
     properties:
@@ -1076,10 +1078,12 @@ definitions:
     enum:
     - /
     - /app
+    - /app/.trash
     type: string
     x-enum-varnames:
-    - FileSystemRootDir
-    - DefaultAppWorkingDir
+    - FileSystemRootDirPath
+    - DefaultAppWorkingDirPath
+    - AppTrashDirPath
 host: localhost:1618
 info:
   contact:
