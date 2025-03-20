@@ -88,7 +88,6 @@ func Authentication(
 			if err != nil {
 				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
-
 			return next(c)
 		}
 	}
