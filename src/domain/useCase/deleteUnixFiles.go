@@ -121,7 +121,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	}
 
 	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
-		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.GetFileName().String()
+		trashPathWithFileNameStr := TrashDirPath + "/" + fileToMoveToTrash.ReadFileName().String()
 		trashPathWithFileName, _ := valueObject.NewUnixFilePath(trashPathWithFileNameStr)
 		shouldOverwrite := true
 		moveDto := dto.NewMoveUnixFile(

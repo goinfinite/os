@@ -705,5 +705,5 @@ func (controller *FilesController) Download(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	return c.Attachment(sourcePath.String(), sourcePath.GetFileName().String())
+	return c.Attachment(sourcePath.String(), sourcePath.ReadFileName().String())
 }
