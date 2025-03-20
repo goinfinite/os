@@ -120,7 +120,7 @@ templ InputFieldReadOnly(
 			id={ id }
 			name={ id }
 			if clientSideValuePath != "" {
-				x-model:value={ clientSideValuePath }
+				:value={ clientSideValuePath }
 			}
 			if serverSideValue != "" {
 				value={ serverSideValue }
