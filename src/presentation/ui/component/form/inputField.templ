@@ -20,7 +20,7 @@ templ InputField(inputDto InputFieldDto) {
 				name={ inputDto.Id }
 			}
 			if inputDto.BindModelValuePath != "" {
-				:value={ inputDto.BindModelValuePath }
+				x-model:value={ inputDto.BindModelValuePath }
 			}
 			autocomplete="off"
 			if inputDto.Label != "" {
