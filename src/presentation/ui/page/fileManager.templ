@@ -501,7 +501,7 @@ templ MoveFilesModal(
 	unixFileTree *dto.UnixFileTree,
 ) {
 	@componentStructural.RegularModal(
-		"Upload Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
+		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
 	) {
 		@MoveFilesForm(workingDirPath, unixFileTree)
 	}
@@ -536,7 +536,7 @@ templ CopyFilesModal(
 	unixFileTree *dto.UnixFileTree,
 ) {
 	@componentStructural.RegularModal(
-		"Upload Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
+		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
 	) {
 		@CopyFilesForm(workingDirPath, unixFileTree)
 	}
