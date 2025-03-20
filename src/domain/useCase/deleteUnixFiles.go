@@ -48,7 +48,7 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 		return nil
 	}
 
-	trashDirPermissions, _ := valueObject.NewUnixFilePermissions("755")
+	trashDirPermissions := valueObject.NewUnixDirDefaultPermissions()
 	createGeneralTrashDir := dto.NewCreateUnixFile(
 		valueObject.AppTrashDirPath, &trashDirPermissions,
 		valueObject.DirectoryMimeType, operatorAccountId, operatorIpAddress,
