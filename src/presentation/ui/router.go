@@ -82,6 +82,13 @@ func (router *Router) databasesRoutes() {
 	databaseGroup.GET("/", databasesPresenter.Handler)
 }
 
+func (router *Router) fileManagerRoutes() {
+	fileManagerGroup := router.baseRoute.Group("/file-manager")
+
+	fileManagerPresenter := presenter.NewFileManagerPresenter()
+	fileManagerGroup.GET("/", fileManagerPresenter.Handler)
+}
+
 func (router *Router) loginRoutes() {
 	loginGroup := router.baseRoute.Group("/login")
 
@@ -192,9 +199,10 @@ func (router *Router) previousDashboardRoute() {
 
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
-	router.cronsRoutes()
 	router.accountsRoutes()
+	router.cronsRoutes()
 	router.databasesRoutes()
+	router.fileManagerRoutes()
 	router.loginRoutes()
 	router.mappingsRoutes()
 	router.marketplaceRoutes()

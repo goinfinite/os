@@ -1,58 +1,10 @@
 package componentUtil
 
-script ToastGlobalState() {
-	document.addEventListener('alpine:init', () => {
-		Alpine.store('toast', {
-			toastVisible: false,
-			toastMessage: '',
-			toastType: 'danger',
-
-			displayToast(message, type) {
-				this.toastVisible = true;
-				this.toastMessage = message;
-				this.toastType = type;
-				setTimeout(() => {this.clearToast()}, 3000);
-			},
-
-			clearToast() {
-				this.toastVisible = false;
-				this.toastMessage = '';
-			}
-		});
-	});
-
-	document.addEventListener('htmx:afterRequest', (event) => {
-		const httpResponseObject = event.detail.xhr;
-
-		const contentType = httpResponseObject.getResponseHeader("Content-Type");
-		if (contentType !== 'application/json') {
-			return;
-		}
-
-	  	const responseData = httpResponseObject.responseText;
-		if (responseData === '') {
-			return;
-		}
-
-		let toastType = 'success';
-		const isResponseError = httpResponseObject.status >= 400;
-		if (isResponseError) {
-			toastType = 'danger';
-		}
-
-		const parsedResponse = JSON.parse(responseData);
-		if (parsedResponse.body === undefined || parsedResponse.body === '') {
-			return;
-		}
-		const toastMessage = parsedResponse.body;
-	
-		Alpine.store('toast').displayToast(toastMessage, toastType);
-	});
-}
+import "github.com/goinfinite/os/src/infra/envs"
 
 templ Toast() {
 	<!-- Toast JavaScript -->
-	@ToastGlobalState()
+	<script src={ infraEnvs.GlobalStatesAssetsPath + "/component/util/toast.js" }></script>
 	<!-- Toast HTML -->
 	<div
 		id="toast"
@@ -64,8 +16,9 @@ templ Toast() {
 		class="bg-os-300 fixed bottom-5 right-10 mb-6 flex w-fit flex-row items-center justify-stretch rounded-md text-neutral-50 shadow-md"
 		role="alert"
 	>
+		<i x-show="$store.toast.toastType == 'success'" class="ph-duotone ph-seal-warning items-center justify-center rounded-md bg-green-800 p-2 text-3xl"></i>
+		<i x-show="$store.toast.toastType == 'partialSuccess'" class="ph-duotone ph-seal-check items-center justify-center rounded-md bg-yellow-800 p-2 text-3xl"></i>
 		<i x-show="$store.toast.toastType == 'danger'" class="ph-duotone ph-warning-octagon items-center justify-center rounded-md bg-red-800 p-2 text-3xl"></i>
-		<i x-show="$store.toast.toastType == 'success'" class="ph-duotone ph-seal-check items-center justify-center rounded-md bg-green-800 p-2 text-3xl"></i>
 		<div class="toast-message ms-3 basis-4/5 text-sm font-normal" x-text="$store.toast.toastMessage"></div>
 		<button
 			type="button"

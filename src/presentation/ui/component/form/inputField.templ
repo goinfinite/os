@@ -55,7 +55,7 @@ templ InputFieldClientSide(bindInputType, bindLabel, bindValuePath string) {
 		<input
 			:type={ bindInputType }
 			if bindValuePath != "" {
-				x-model:value={ bindValuePath }
+				:value={ bindValuePath }
 			}
 			autocomplete="off"
 			:placeholder={ bindLabel }
@@ -120,7 +120,7 @@ templ InputFieldReadOnly(
 			id={ id }
 			name={ id }
 			if clientSideValuePath != "" {
-				x-model:value={ clientSideValuePath }
+				:value={ clientSideValuePath }
 			}
 			if serverSideValue != "" {
 				value={ serverSideValue }

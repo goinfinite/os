@@ -15,7 +15,7 @@ templ TextArea(inputDto TextAreaDto) {
 				name={ inputDto.Id }
 			}
 			if inputDto.BindModelValuePath != "" {
-				x-model={ inputDto.BindModelValuePath }
+				x-model:value={ inputDto.BindModelValuePath }
 			}
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full rounded-md border px-3 pr-7 pt-1.5 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
 		></textarea>
@@ -40,29 +40,38 @@ templ TextArea(inputDto TextAreaDto) {
 	</div>
 }
 
-templ TextAreaReadOnly(id, label, bindValuePath string) {
+type TextAreaReadOnlyDto struct {
+	Id, Name, Label, BindModelValuePath, InfoTooltipContent string
+}
+
+templ TextAreaReadOnly(inputDto TextAreaReadOnlyDto) {
 	<!-- TextAreaReadOnly -->
 	<div class="relative w-full">
 		<textarea
-			name={ id }
-			if bindValuePath != "" {
-				x-model={ bindValuePath }
+			id={ inputDto.Id }
+			if inputDto.Name != "" {
+				name={ inputDto.Name }
+				x-ref={ inputDto.Name }
 			}
-			x-ref={ id }
+			if inputDto.BindModelValuePath != "" {
+				x-model:value={ inputDto.BindModelValuePath }
+			}
 			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 h-30 peer relative w-full cursor-default rounded-md border pl-3 pr-8 pt-1.5 text-sm text-neutral-100 text-slate-400 placeholder-transparent outline-none transition-all"
 			readonly
 		></textarea>
 		<div class="absolute right-2 top-1">
-			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "navigator.clipboard.writeText($refs." + id + ".value)" }>
+			<button type="button" class="mx-1 bg-inherit text-xl text-neutral-50" @click={ "navigator.clipboard.writeText($refs." + inputDto.Id + ".value)" }>
 				<i class="ph-duotone ph-copy-simple"></i>
 			</button>
 		</div>
-		if label != "" {
+		if inputDto.Label != "" {
 			<label
-				for={ id }
+				if inputDto.Name != "" {
+					for={ inputDto.Name }
+				}
 				class="from-os-300 via-os-300 absolute -top-2 left-1.5 z-[1] cursor-text bg-gradient-to-t via-50% to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80 transition-all before:absolute before:left-0 before:top-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-autofill:-top-2 peer-hover:text-opacity-90 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-opacity-100"
 			>
-				{ label }
+				{ inputDto.Label }
 			</label>
 		}
 	</div>

@@ -17,7 +17,7 @@ func FileSerializedDataToMap(
 	}
 	defer fileHandler.Close()
 
-	itemFileExt, err := filePath.GetFileExtension()
+	itemFileExt, err := filePath.ReadFileExtension()
 	if err != nil {
 		return outputMap, err
 	}

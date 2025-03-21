@@ -21,11 +21,10 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
-		mimeType, _ := valueObject.NewMimeType("directory")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &directoryDefaultPermissions, mimeType, operatorAccountId,
-			ipAddress,
+			filePath, &directoryDefaultPermissions, valueObject.DirectoryMimeType,
+			operatorAccountId, ipAddress,
 		)
 
 		err := filesCmdRepo.Create(createDto)
@@ -38,11 +37,10 @@ func TestFilesCmdRepo(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(
 			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
 		)
-		mimeType, _ := valueObject.NewMimeType("generic")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &fileDefaultPermissions, mimeType, operatorAccountId,
-			ipAddress,
+			filePath, &fileDefaultPermissions, valueObject.GenericMimeType,
+			operatorAccountId, ipAddress,
 		)
 
 		err := filesCmdRepo.Create(createDto)

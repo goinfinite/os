@@ -1,0 +1,769 @@
+package page
+
+import (
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	"github.com/goinfinite/os/src/infra/envs"
+	"github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"strings"
+)
+
+templ FileManagerIndex(
+	workingDirPath valueObject.UnixFilePath,
+	readFilesResponseDto dto.ReadFilesResponse,
+) {
+	<!-- FileManager JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
+	<!-- FileManager HTML -->
+	<div x-data="fileManager">
+		<div class="mb-6 flex flex-row items-center justify-between">
+			<div class="basis-[70%]">
+				@componentStructural.PageTitle(
+					"File Manager", "", "ph-files",
+				)
+			</div>
+		</div>
+		<div id="file-manager-content">
+			@FileManagerModal(workingDirPath, readFilesResponseDto)
+			@CreateFileModal()
+			@CreateDirectoryModal()
+			@UploadFilesModal()
+			@UpdateFileContentModal()
+			@CopyFilesModal(workingDirPath, readFilesResponseDto.FileTree)
+			@MoveFilesModal(workingDirPath, readFilesResponseDto.FileTree)
+			@RenameFileModal()
+			@MoveFilesToTrashModal()
+			@componentStructural.DeleteModal(
+				"isEmptyTrashModalOpen", "closeEmptyTrashModal()",
+				"deleteFiles(true); closeEmptyTrashModal()", "", "",
+			)
+			@UpdateFilePermissionsModal()
+			@CompressFilesModal()
+		</div>
+	</div>
+}
+
+templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick string) {
+	<div class="relative h-[90%] w-full">
+		<input
+			type="text"
+			@keyup.enter={ onClick }
+			if bindModelValuePath != "" {
+				x-model:value={ bindModelValuePath }
+			}
+			autocomplete="off"
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-full w-full rounded-l-md border pl-8 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
+		/>
+		<div class="absolute left-2.5 top-1/2 z-10 w-fit -translate-y-1/2">
+			<i class={ "ph-duotone " + icon }></i>
+		</div>
+		<div class={ "group/fileExplorerSearchBar_" + id + " absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2" }>
+			<i class="ph-duotone ph-info cursor-help"></i>
+			<div class={ "invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-os-200 p-2 text-xs text-white shadow-lg group-hover/fileExplorerSearchBar_" + id + ":visible group-hover/fileExplorerSearchBar_" + id + ":block" }>
+				{ tooltipText }
+			</div>
+		</div>
+	</div>
+	<button
+		type="button"
+		@click={ onClick }
+		class="bg-os-400 border-os-200 hover:border-os-100 hover:bg-os-200 inline-flex h-[90%] items-center rounded-r-md border-y border-r p-2 text-center"
+	>
+		<i class="ph-duotone ph-arrow-right text-xl"></i>
+	</button>
+}
+
+templ FilesExplorerTableHeaders() {
+	<!-- FilesExplorerTable Headers-->
+	<div class="grid grid-rows-2 gap-y-2 rounded">
+		<!-- FilesExplorerTable Headers Buttons -->
+		<div class="grid grid-cols-4 gap-3">
+			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-file-plus",
+					Description:             "Add File",
+					DefaultColor:            "os-800",
+					HoverColor:              "os-200",
+					OnClick:                 "openCreateFileModal()",
+					HideTextBelowBreakpoint: "[107.5rem]",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-folder-plus",
+					Description:             "Add Folder",
+					DefaultColor:            "os-800",
+					HoverColor:              "os-200",
+					OnClick:                 "openCreateDirectoryModal()",
+					HideTextBelowBreakpoint: "[107.5rem]",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-upload-simple",
+					Description:             "Upload",
+					DefaultColor:            "os-800",
+					HoverColor:              "os-200",
+					OnClick:                 "openUploadFilesModal()",
+					HideTextBelowBreakpoint: "[107.5rem]",
+				})
+			</div>
+			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-code",
+					Description:               "Edit",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openUpdateFileContentModal()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "shouldUpdateFileContentButtonBeDeactivate",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-copy",
+					Description:               "Copy",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openCopyFilesModal()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-arrow-square-out",
+					Description:               "Move",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openMoveFilesModal()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-download-simple",
+					Description:               "Download",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "downloadFile()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-pencil-line",
+					Description:               "Rename",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openRenameFileModal()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-trash",
+					Description:               "Delete",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.AppTrashDirPath.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
+					HideTextBelowBreakpoint:   "[107.5rem]",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
+				})
+			</div>
+			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-folder-lock",
+					Description:               "Permissions",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openUpdateFilePermissionsModal()",
+					HideTextBelowBreakpoint:   "[115rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-file-zip",
+					Description:               "Compress",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openCompressFilesModal()",
+					HideTextBelowBreakpoint:   "[115rem]",
+					DeactivateButtonCondition: "selectedFileNames.length === 0",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-split-horizontal",
+					Description:               "Decompress",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "decompressFile()",
+					HideTextBelowBreakpoint:   "[115rem]",
+					DeactivateButtonCondition: "shouldDecompressFileButtonBeDeactivate",
+				})
+			</div>
+		</div>
+		<!-- FilesExplorerTable Headers Search Bars -->
+		<div class="grid grid-cols-4 gap-2">
+			<div class="flex items-center justify-center gap-1 rounded p-2">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                    "ph-house",
+					Description:             "Home",
+					DefaultColor:            "os-400",
+					HoverColor:              "os-200",
+					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDirPath.String() + "'; accessWorkingDirPath()",
+					HideTextBelowBreakpoint: "[107.5rem]",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrow-left",
+					TooltipText:  "Back",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "returnToPreviousWorkingDirPath()",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrow-right",
+					TooltipText:  "Forward",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "goForwardToNextSourcePath()",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-arrows-clockwise",
+					TooltipText:  "Reload",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "reloadFileManagerContent()",
+				})
+				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
+					Icon:         "ph-trash-simple",
+					TooltipText:  "Show Trash",
+					DefaultColor: "os-400",
+					HoverColor:   "os-200",
+					OnClick:      "desiredWorkingDirPath = '" + valueObject.AppTrashDirPath.String() + "'; accessWorkingDirPath()",
+				})
+			</div>
+			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
+				@FilesExplorerSearchBar(
+					"fileExplorerSourcePath", "ph-folder", "desiredWorkingDirPath",
+					`Search and open another directory.`,
+					"accessWorkingDirPath()",
+				)
+			</div>
+		</div>
+	</div>
+}
+
+templ DirectoriesTreeItems(
+	workDirPath valueObject.UnixFilePath,
+	unixFileTree dto.UnixFileBranch,
+) {
+	for _, fileBranch := range unixFileTree.Branches {
+		if fileBranch.MimeType == "directory" {
+			<div class="space-y-2 pl-2">
+				<a
+					class="flex w-fit cursor-pointer items-center"
+					@click={ "desiredWorkingDirPath = '" + fileBranch.Path.String() + "'; accessWorkingDirPath()" }
+				>
+					{{
+						itemIconClasses := "ph-bold mr-2 text-xs text-neutral-500 xl:text-sm"
+						dirIconClasses := "ph-bold text-infinite-500 mr-1 text-sm xl:text-base"
+						dirNameClasses := "text-sm xl:text-base"
+
+						isDesiredWorkDirPath := fileBranch.Path == workDirPath
+						isDirectoryOpened := len(fileBranch.Branches) > 0 || isDesiredWorkDirPath
+						if isDirectoryOpened {
+							itemIconClasses += " ph-caret-down"
+							dirIconClasses += " ph-folder-open"
+
+							if isDesiredWorkDirPath {
+								dirNameClasses += " font-bold"
+							}
+						} else {
+							itemIconClasses += " ph-caret-right"
+							dirIconClasses += " ph-folder"
+						}
+					}}
+					<i class={ itemIconClasses }></i>
+					<i class={ dirIconClasses }></i>
+					<p class={ dirNameClasses }>{ fileBranch.Name.String() }</p>
+				</a>
+				if len(fileBranch.Branches) > 0 {
+					@DirectoriesTreeItems(workDirPath, fileBranch)
+				}
+			</div>
+		}
+	}
+}
+
+templ DirectoriesTree(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileBranch,
+) {
+	<!-- FilesExplorerTable DirectoriesTree -->
+	if unixFileTree != nil {
+		<div class="flex cursor-default items-center">
+			<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
+			<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
+			<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
+		</div>
+		@DirectoriesTreeItems(workingDirPath, *unixFileTree)
+	} else {
+		<div class="flex justify-center">
+			<p class="italic text-slate-500">No directories or files found.</p>
+		</div>
+	}
+}
+
+templ FilesExplorer(unixFilesList []entity.UnixFile) {
+	<!-- FilesExplorerTable FilesExplorer -->
+	<div class="bg-os-500 col-span-3 mr-2 w-full">
+		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+			<!-- AccountsTable Header -->
+			<thead class="text-[0.6rem] uppercase text-neutral-400 xl:text-xs">
+				<tr class="bg-os-300 h-12">
+					<th scope="col" class="w-0.5/10 py-3 text-center text-base">
+						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+							Id:       "selectAllSourcePaths",
+							OnChange: "handleSelectAllSourcePaths()",
+						})
+					</th>
+					<th scope="col" class="w-2.5/10 py-3 text-left">Name</th>
+					<th scope="col" class="w-1/10 py-3 text-center">Size</th>
+					<th scope="col" class="w-3/10 py-3 text-center">Updated At</th>
+					<th scope="col" class="w-1/10 py-3 text-center">Permissions</th>
+					<th scope="col" class="w-2/10 py-3 text-center">Ownership</th>
+				</tr>
+			</thead>
+		</table>
+		<div class="h-110 overflow-y-auto">
+			<table class="w-full">
+				<tbody class="p-2 text-sm xl:text-base">
+					for _, fileEntity := range unixFilesList {
+						{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
+						if fileEntity.MimeType.IsDir() {
+							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
+						}
+						<tr
+							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
+							@dblclick={ fileTableRowDoubleClick }
+						>
+							<th class="hidden">
+								@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+							</th>
+							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
+								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+									Id:          "selectSourcePath_" + fileEntity.Name.String(),
+									Name:        "selectSourcePath",
+									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
+									CustomValue: fileEntity.Name.String(),
+								})
+							</th>
+							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
+								<div class="flex w-fit items-center">
+									{{ fileHighlightedIcon := "ph-file text-gray-300" }}
+									if fileEntity.MimeType.IsDir() {
+										{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
+									}
+									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
+								</div>
+							</th>
+							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
+							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
+							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
+							<th scope="row" class="w-2/10 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
+						</tr>
+					}
+					if len(unixFilesList) == 0 {
+						<tr class="text-center">
+							<td class="col-span-10 pt-3 text-center italic text-slate-500">No files or directories found.</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+templ FileManagerModal(
+	workingDirPath valueObject.UnixFilePath,
+	readFilesResponseDto dto.ReadFilesResponse,
+) {
+	<!-- FileManagerModal -->
+	<div class="bg-os-800 space-y-2 p-3">
+		@FilesExplorerTableHeaders()
+		<!-- FileManagerModal Content -->
+		<div class="grid h-full grid-cols-4 gap-5">
+			<data
+				id="current-source-path"
+				class="hidden"
+				value={ workingDirPath.String() }
+			></data>
+			<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-x-auto overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
+			</div>
+			@FilesExplorer(readFilesResponseDto.Files)
+		</div>
+	</div>
+}
+
+templ CreateFileForm(
+	mimeType valueObject.MimeType,
+	closeFunction string,
+) {
+	<form
+		hx-post="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input name="mimeType" type="hidden" value={ mimeType.String() }/>
+			<input
+				name="filePath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name"
+			/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentWorkingDirPath",
+				BindInputValuePath:  "file.name",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"", "Create", "ph-check-fat",
+			closeFunction+"; setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ CreateFileModal() {
+	@componentStructural.RegularModal(
+		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
+	) {
+		@CreateFileForm(valueObject.GenericMimeType, "closeCreateFileModal()")
+	}
+}
+
+templ CreateDirectoryModal() {
+	@componentStructural.RegularModal(
+		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
+		"",
+	) {
+		@CreateFileForm(valueObject.DirectoryMimeType, "closeCreateDirectoryModal()")
+	}
+}
+
+templ UploadFilesForm() {
+	<form
+		hx-post="/api/v1/files/upload/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		enctype="multipart/form-data"
+	>
+		<div class="mb-6">
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			@componentForm.Dropzone(componentForm.DropzoneInputDto{
+				Id:                 "files",
+				Description:        "Any file is accepted",
+				AcceptAttribute:    "*/*",
+				AllowMultipleFiles: true,
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"", "Upload", "ph-check-fat",
+			"closeUploadFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ UploadFilesModal() {
+	@componentStructural.RegularModal(
+		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
+	) {
+		@UploadFilesForm()
+	}
+}
+
+templ UpdateFileContentForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="bg-os-800 -mt-2 mb-2 grid grid-cols-2 rounded-md p-4">
+			<div class="flex items-center justify-start space-x-4">
+				<div class="flex space-x-2">
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-arrow-counter-clockwise", "os-200", "os-100",
+						"codeEditorInstance.undo()", "Undo", "os-200",
+					)
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-arrow-clockwise", "os-200", "os-100",
+						"codeEditorInstance.redo()", "Redo", "os-200",
+					)
+				</div>
+				<div class="flex items-center space-x-2">
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-minus", "os-200", "os-100",
+						"resizeCodeEditorFont('decrease')", "Decrease Font Size", "os-200",
+					)
+					<label x-text="codeEditorFontSize"></label>
+					@componentStructural.CircularIconButtonWithTooltip(
+						"ph-plus", "os-200", "os-100",
+						"resizeCodeEditorFont('increase')", "Increase Font Size", "os-200",
+					)
+				</div>
+			</div>
+			<div class="flex items-center justify-end space-x-2">
+				@componentStructural.CircularIconButtonWithTooltip(
+					"ph-magnifying-glass", "os-200", "os-100",
+					"codeEditorInstance.execCommand('find')",
+					"Show Search Box", "os-200",
+				)
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:         "ph-download-simple",
+					Description:  "Download",
+					DefaultColor: "infinite-500",
+					HoverColor:   "infinite-300",
+					OnClick:      "downloadFile(); closeUpdateFileContentModal()",
+				})
+			</div>
+		</div>
+		<div class="mb-6">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="encodedContent" type="hidden" :value="btoa(file.content)"/>
+			<div id="code-editor" class="relative h-[30rem] w-full"></div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Save Changes", "ph-floppy-disk",
+			"file.content = codeEditorInstance.getValue(); closeUpdateFileContentModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ UpdateFileContentModal() {
+	@componentStructural.RegularModal(
+		"Update File Content", "isUpdateFileContentModalOpen",
+		"closeUpdateFileContentModal()", "",
+	) {
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha256-Q9hnBpgBFstzZOr+OKFOWZWfcF5nFXO8Qz48Nmndo6U=" crossorigin="anonymous"></script>
+		@UpdateFileContentForm()
+	}
+}
+
+templ MoveFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileBranch,
+) {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Move", "ph-arrow-square-out",
+			"closeMoveFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ MoveFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileBranch,
+) {
+	@componentStructural.RegularModal(
+		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
+	) {
+		@MoveFilesForm(workingDirPath, unixFileTree)
+	}
+}
+
+templ CopyFilesForm(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileBranch,
+) {
+	<form
+		hx-post="/api/v1/files/copy/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-2">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			@componentForm.InputFieldReadOnly(
+				"text", "", "Destination Path",
+				"currentWorkingDirPath + '/' + file.name", "",
+			)
+			<div id="" class="bg-os-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+				@DirectoriesTree(workingDirPath, unixFileTree)
+			</div>
+		</div>
+		@componentForm.SubmitButton(
+			"", "Copy", "ph-copy",
+			"closeCopyFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ CopyFilesModal(
+	workingDirPath valueObject.UnixFilePath,
+	unixFileTree *dto.UnixFileBranch,
+) {
+	@componentStructural.RegularModal(
+		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
+	) {
+		@CopyFilesForm(workingDirPath, unixFileTree)
+	}
+}
+
+templ RenameFileForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input
+				name="destinationPath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name"
+			/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentWorkingDirPath",
+				BindInputValuePath:  "file.name",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"", "Rename", "ph-pencil",
+			"closeRenameFileModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ RenameFileModal() {
+	@componentStructural.RegularModal(
+		"Rename File", "isRenameFileModalOpen", "closeRenameFileModal()", "",
+	) {
+		@RenameFileForm()
+	}
+}
+
+templ MoveFilesToTrashModal() {
+	@componentStructural.WarningModal(
+		"isMoveFilesToTrashModalOpen", "closeMoveFilesToTrashModal()",
+		"No, Keep it.", "deleteFiles(false)", "move-files-to-trash",
+		"ph-trash-simple", "Yes, Move to Trash!",
+	) {
+		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+			Are you sure you want to move to trash?
+		</h3>
+		<p>Files and directories can still be recovered from the Trash.</p>
+	}
+}
+
+templ UpdateFilePermissionsForm() {
+	<form
+		hx-put="/api/v1/files/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 flex justify-center space-x-10">
+			<input name="sourcePath" type="hidden" :value="file.path"/>
+			<input name="permissions" type="hidden" :value="Object.values(file.permissions).join('')"/>
+			for _, filePermissionClass := range []string{"owner", "group", "others"} {
+				<div class="flex flex-col items-center rounded-md">
+					<input
+						type="text"
+						class="border-os-200 w-30 cursor-default border-b-2 bg-inherit text-center text-3xl outline-none"
+						x-model:value={ "file.permissions." + filePermissionClass }
+						readonly
+					/>
+					<label class="text-center text-xl">
+						{ strings.ToUpper(filePermissionClass[0:1]) + filePermissionClass[1:] }
+					</label>
+					<div class="mt-4 flex flex-col items-start">
+						{{ filePermissionTypesWithValues := map[string]string{"Read": "4", "Write": "2", "Execute": "1"} }}
+						for permissionType, permissionValue := range filePermissionTypesWithValues {
+							@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+								Label:                  permissionType,
+								OnChange:               "handleSelectPermission('" + filePermissionClass + "', " + permissionValue + ", $event.target.checked)",
+								BindIsCheckedCondition: "(file.permissions." + filePermissionClass + " & " + permissionValue + ") !== 0",
+							})
+						}
+					</div>
+				</div>
+			}
+		</div>
+		@componentForm.SubmitButton(
+			"", "Update", "ph-check-fat",
+			"closeUpdateFilePermissionsModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ UpdateFilePermissionsModal() {
+	@componentStructural.RegularModal(
+		"Update File Permissions", "isUpdateFilePermissionsModalOpen",
+		"closeUpdateFilePermissionsModal()", "",
+	) {
+		@UpdateFilePermissionsForm()
+	}
+}
+
+templ CompressFilesForm() {
+	<form
+		hx-post="/api/v1/files/compress/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-7">
+			<template x-for="fileName in selectedFileNames">
+				<input
+					name="sourcePath"
+					type="hidden"
+					:value="currentWorkingDirPath + '/' + fileName"
+				/>
+			</template>
+			<input
+				name="destinationPath"
+				type="hidden"
+				:value="currentWorkingDirPath + '/' + file.name + '.' + file.extension"
+			/>
+			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+				Type:                "text",
+				Label:               "Name",
+				BindPrefixValuePath: "currentWorkingDirPath",
+				BindInputValuePath:  "file.name",
+			})
+			@componentForm.SelectInput(
+				"compressionType", "File Extension", "file.extension", "",
+				[]string{"zip", "tgz"}, false,
+			)
+		</div>
+		@componentForm.SubmitButton(
+			"", "Compress", "ph-file-zip",
+			"closeCompressFilesModal(); setTimeout(() => reloadFileManagerContent(), 250)",
+			false,
+		)
+	</form>
+}
+
+templ CompressFilesModal() {
+	@componentStructural.RegularModal(
+		"Compress Files", "isCompressFilesModalOpen", "closeCompressFilesModal()", "",
+	) {
+		@CompressFilesForm()
+	}
+}

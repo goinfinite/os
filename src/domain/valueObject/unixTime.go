@@ -51,6 +51,18 @@ func (vo UnixTime) ReadTimeOnly() string {
 	return time.Unix(int64(vo), 0).UTC().Format("15:04:05")
 }
 
+func (ut UnixTime) ReadDateTime() string {
+	return time.Unix(int64(ut), 0).UTC().Format("02/01/2006 15:04:05")
+}
+
+func (ut UnixTime) ReadStartOfDay() time.Time {
+	return time.Unix(int64(ut), 0).UTC().Truncate(24 * time.Hour)
+}
+
+func (ut UnixTime) ReadEndOfDay() time.Time {
+	return ut.ReadStartOfDay().Add(24 * time.Hour)
+}
+
 func (vo UnixTime) ReadAsGoTime() time.Time {
 	return time.Unix(int64(vo), 0).UTC()
 }

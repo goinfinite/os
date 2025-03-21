@@ -1,0 +1,43 @@
+package componentStructural
+
+type ResponsibleRoundedSquareButtonDto struct {
+	Icon                      string
+	Description               string
+	DefaultColor              string
+	HoverColor                string
+	OnClick                   string
+	HideTextBelowBreakpoint   string
+	DeactivateButtonCondition string
+}
+
+templ ResponsibleRoundedSquareButton(inputDto ResponsibleRoundedSquareButtonDto) {
+	<!-- ResponsibleRoundedSquareButton -->
+	<div class="group/responsibleRoundedSquareButton relative w-fit">
+		{{
+			bindButtonClasses := "'inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-" + inputDto.DefaultColor + " text-center'"
+			bindIconClasses := "'ph-duotone " + inputDto.Icon + " text-xl'"
+			bindDescriptionClasses := "'font-medium max-" + inputDto.HideTextBelowBreakpoint + ":hidden'"
+			if inputDto.DeactivateButtonCondition != "" {
+				bindButtonClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? '' : ' hover:bg-" + inputDto.HoverColor + "')"
+				bindIconClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
+				bindDescriptionClasses += "+ (" + inputDto.DeactivateButtonCondition + " ? ' text-gray-500' : '')"
+			} else {
+				bindButtonClasses += " + ' hover:bg-" + inputDto.HoverColor + "'"
+			}
+		}}
+		<button
+			type="button"
+			@click={ inputDto.OnClick }
+			:class={ bindButtonClasses }
+			if inputDto.DeactivateButtonCondition != "" {
+				:disabled={ inputDto.DeactivateButtonCondition }
+			}
+		>
+			<i :class={ bindIconClasses }></i>
+			<span :class={ bindDescriptionClasses }>{ inputDto.Description }</span>
+			<div class={ "absolute left-1/2 transform -translate-x-1/2 invisible bottom-full mb-2 transition-all duration-300 max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:block max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:-translate-y-0.5 max-" + inputDto.HideTextBelowBreakpoint + ":group-hover/responsibleRoundedSquareButton:visible p-1.5 bg-" + inputDto.HoverColor + " text-neutral-50 text-xs rounded-md shadow-md w-max" }>
+				{ inputDto.Description }
+			</div>
+		</button>
+	</div>
+}

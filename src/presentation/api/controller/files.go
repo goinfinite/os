@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	"errors"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
@@ -40,22 +41,40 @@ func NewFilesController(
 // @Produce      json
 // @Security     Bearer
 // @Param        sourcePath	query	string	true	"SourcePath"
-// @Success      200 {array} entity.UnixFile
+// @Param        shouldIncludeFileTree query  bool  false  "ShouldIncludeFileTree"
+// @Success      200 {array} dto.ReadFilesResponse
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(c echo.Context) error {
+	requiredParams := []string{"sourcePath"}
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
 	}
+	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestInputData["sourcePath"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
+	shouldIncludeFileTree := false
+	if requestInputData["shouldIncludeFileTree"] != nil {
+		shouldIncludeFileTree, err = voHelper.InterfaceToBool(
+			requestInputData["shouldIncludeFileTree"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		}
+	}
+
+	readFilesRequestDto := dto.ReadFilesRequest{
+		SourcePath:            sourcePath,
+		ShouldIncludeFileTree: &shouldIncludeFileTree,
+	}
+
 	filesQueryRepo := filesInfra.FilesQueryRepo{}
 
-	filesList, err := useCase.ReadFiles(filesQueryRepo, sourcePath)
+	filesList, err := useCase.ReadFiles(filesQueryRepo, readFilesRequestDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -86,20 +105,16 @@ func (controller *FilesController) Create(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	fileTypeStr := "generic"
+	fileType := valueObject.GenericMimeType
 	if requestInputData["mimeType"] != nil {
-		fileTypeStr, err = voHelper.InterfaceToString(requestInputData["mimeType"])
+		fileType, err = valueObject.NewMimeType(requestInputData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 
-		if fileTypeStr != "directory" && fileTypeStr != "generic" {
-			fileTypeStr = "generic"
+		if fileType != valueObject.DirectoryMimeType {
+			fileType = valueObject.GenericMimeType
 		}
-	}
-	fileType, err := valueObject.NewMimeType(fileTypeStr)
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
 	successResponse := "FileCreated"
@@ -149,21 +164,40 @@ func (controller *FilesController) Create(c echo.Context) error {
 }
 
 func (controller *FilesController) parseSourcePaths(
-	rawSourcePaths []interface{},
+	rawSourcePathsUnknownType any,
 ) ([]valueObject.UnixFilePath, error) {
-	filePaths := []valueObject.UnixFilePath{}
+	sourcePaths := []valueObject.UnixFilePath{}
 
-	for pathIndex, rawSourcePath := range rawSourcePaths {
-		filePath, err := valueObject.NewUnixFilePath(rawSourcePath)
+	rawSourcePathsStrSlice := []string{}
+	switch rawSourcePathsValues := rawSourcePathsUnknownType.(type) {
+	case string:
+		rawSourcePathsStrSlice = []string{rawSourcePathsValues}
+	case []string:
+		rawSourcePathsStrSlice = rawSourcePathsValues
+	case []interface{}:
+		for _, rawSourcePath := range rawSourcePathsValues {
+			rawSourcePathStr, err := voHelper.InterfaceToString(rawSourcePath)
+			if err != nil {
+				slog.Debug(err.Error(), slog.Any("rawSourcePath", rawSourcePath))
+				continue
+			}
+			rawSourcePathsStrSlice = append(rawSourcePathsStrSlice, rawSourcePathStr)
+		}
+	default:
+		return sourcePaths, errors.New("SourcePathsMustBeStringSlice")
+	}
+
+	for _, rawSourcePath := range rawSourcePathsStrSlice {
+		sourcePath, err := valueObject.NewUnixFilePath(rawSourcePath)
 		if err != nil {
-			slog.Debug(err.Error(), slog.Int("index", pathIndex))
+			slog.Debug(err.Error(), slog.String("rawSourcePath", rawSourcePath))
 			continue
 		}
 
-		filePaths = append(filePaths, filePath)
+		sourcePaths = append(sourcePaths, sourcePath)
 	}
 
-	return filePaths, nil
+	return sourcePaths, nil
 }
 
 // UpdateFile godoc
@@ -190,27 +224,9 @@ func (controller *FilesController) Update(c echo.Context) error {
 		}
 	}
 
-	if requestInputData["sourcePaths"] == nil {
-		if _, exists := requestInputData["sourcePath"]; exists {
-			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
-		}
-	}
-
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -297,16 +313,17 @@ func (controller *FilesController) Update(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	httpStatus := http.StatusOK
-
 	hasSuccess := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
 	hasFailures := len(updateProcessInfo.FailedPathsWithReason) > 0
+	if !hasSuccess && hasFailures {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, updateProcessInfo)
+	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		httpStatus = http.StatusMultiStatus
+		return apiHelper.ResponseWrapper(c, http.StatusMultiStatus, updateProcessInfo)
 	}
 
-	return apiHelper.ResponseWrapper(c, httpStatus, updateProcessInfo)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, updateProcessInfo)
 }
 
 // CopyFile    godoc
@@ -401,27 +418,9 @@ func (controller *FilesController) Delete(c echo.Context) error {
 		}
 	}
 
-	if requestInputData["sourcePaths"] == nil {
-		if _, exists := requestInputData["sourcePath"]; exists {
-			requestInputData["sourcePaths"] = requestInputData["sourcePath"]
-		}
-	}
-
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -494,19 +493,7 @@ func (controller *FilesController) Compress(c echo.Context) error {
 
 	apiHelper.CheckMissingParams(requestInputData, requiredParams)
 
-	_, isSourcePathsString := requestInputData["sourcePath"].(string)
-	if isSourcePathsString {
-		requestInputData["sourcePaths"] = []interface{}{requestInputData["sourcePath"]}
-	}
-
-	sourcePathsSlice, assertOk := requestInputData["sourcePaths"].([]interface{})
-	if !assertOk {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "SourcePathMustBeArray",
-		)
-	}
-
-	sourcePaths, err := controller.parseSourcePaths(sourcePathsSlice)
+	sourcePaths, err := controller.parseSourcePaths(requestInputData["sourcePaths"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
@@ -684,16 +671,17 @@ func (controller *FilesController) Upload(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
 
-	httpStatus := http.StatusCreated
-
 	hasSuccess := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
 	hasFailures := len(uploadProcessInfo.FailedNamesWithReason) > 0
+	if !hasSuccess && hasFailures {
+		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, uploadProcessInfo)
+	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		httpStatus = http.StatusMultiStatus
+		return apiHelper.ResponseWrapper(c, http.StatusMultiStatus, uploadProcessInfo)
 	}
 
-	return apiHelper.ResponseWrapper(c, httpStatus, uploadProcessInfo)
+	return apiHelper.ResponseWrapper(c, http.StatusOK, uploadProcessInfo)
 }
 
 // DownloadFile    godoc
@@ -717,5 +705,5 @@ func (controller *FilesController) Download(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	return c.Attachment(sourcePath.String(), sourcePath.GetFileName().String())
+	return c.Attachment(sourcePath.String(), sourcePath.ReadFileName().String())
 }

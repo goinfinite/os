@@ -28,9 +28,6 @@ document.addEventListener("alpine:init", () => {
         this.sslPair.id == "" || this.sslPair.virtualHostsHostnames.length == 0
       );
     },
-    // JavaScript doesn't provide any API capable of directly downloading a blob
-    // file, so it's necessary to create an invisible anchor element and artificially
-    // trigger a click on it to emulate this process.
     downloadPemFile(isKeyFileContent) {
       let pemFileContent = this.sslPair.certificate;
       let fileExtension = "crt";
@@ -39,17 +36,8 @@ document.addEventListener("alpine:init", () => {
         fileExtension = "key";
       }
 
-      const blobFile = new Blob([pemFileContent], { type: "text/plain" });
-      const blobFileUrlObject = window.URL.createObjectURL(blobFile);
-      const downloadPemFileElement = document.createElement("a");
-
-      downloadPemFileElement.href = blobFileUrlObject;
-      downloadPemFileElement.download = `${this.sslPair.id}.${fileExtension}`;
-      document.body.appendChild(downloadPemFileElement);
-
-      downloadPemFileElement.click();
-      window.URL.revokeObjectURL(blobFileUrlObject);
-      document.body.removeChild(downloadPemFileElement);
+      const pemFileNameWithExtension = `${this.sslPair.id}.${fileExtension}`;
+      Infinite.DownloadFile(pemFileNameWithExtension, pemFileContent);
     },
 
     // Modal states

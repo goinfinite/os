@@ -70,15 +70,16 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 		return errors.New("FileToCopyNotFound")
 	}
 
-	destinationPathStr := copyDto.DestinationPath.String()
+	sourceFileName := copyDto.SourcePath.ReadFileName()
+	destinationAbsolutePath := copyDto.DestinationPath.String() + "/" + sourceFileName.String()
 	if !copyDto.ShouldOverwrite {
-		destinationPathExists := infraHelper.FileExists(destinationPathStr)
+		destinationPathExists := infraHelper.FileExists(destinationAbsolutePath)
 		if destinationPathExists {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 	}
 
-	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationPathStr
+	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationAbsolutePath
 	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command:               copyCmd,
 		ShouldRunWithSubShell: true,
@@ -108,7 +109,7 @@ func (repo FilesCmdRepo) Compress(
 
 	compressionTypeStr := "zip"
 
-	destinationPathExt, err := compressDto.DestinationPath.GetFileExtension()
+	destinationPathExt, err := compressDto.DestinationPath.ReadFileExtension()
 	if err == nil {
 		destinationPathExtStr := destinationPathExt.String()
 		if destinationPathExtStr != "zip" {
@@ -120,7 +121,7 @@ func (repo FilesCmdRepo) Compress(
 		compressionTypeStr = compressDto.CompressionType.String()
 	}
 
-	destinationPathWithoutExt := compressDto.DestinationPath.GetWithoutExtension()
+	destinationPathWithoutExt := compressDto.DestinationPath.ReadWithoutExtension()
 	compressionTypeAsExt := compressionTypeStr
 	newDestinationPath, err := valueObject.NewUnixFilePath(
 		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
@@ -267,7 +268,7 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 	compressBinaryFlag := "-xf"
 	compressDestinationFlag := "-C"
 
-	unixFilePathExtension, err := fileToExtract.GetFileExtension()
+	unixFilePathExtension, err := fileToExtract.ReadFileExtension()
 	if err != nil {
 		return err
 	}
@@ -301,32 +302,29 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		return errors.New("SourceToMoveOrRenameNotFound")
 	}
 
-	destinationPathStr := moveDto.DestinationPath.String()
-	if !infraHelper.FileExists(destinationPathStr) {
-		return os.Rename(sourcePathStr, destinationPathStr)
-	}
-
-	destinationInfo, err := os.Stat(destinationPathStr)
+	sourceFileName := moveDto.SourcePath.ReadFileName()
+	destinationAbsolutePathStr := moveDto.DestinationPath.String() + "/" + sourceFileName.String()
+	destinationAbsolutePath, err := valueObject.NewUnixFilePath(
+		destinationAbsolutePathStr,
+	)
 	if err != nil {
-		return errors.New("DestinationPathStatError: " + err.Error())
+		return errors.New("BuildDestinationAbsolutePathError: " + err.Error())
 	}
 
-	if destinationInfo.IsDir() {
-		if !strings.HasSuffix(destinationPathStr, "/") {
-			destinationPathStr += "/"
-		}
-		sourcePathFileNameStr := moveDto.SourcePath.GetFileName().String()
-		destinationPathStr += sourcePathFileNameStr
+	if !infraHelper.FileExists(destinationAbsolutePathStr) {
+		return os.Rename(sourcePathStr, destinationAbsolutePathStr)
 	}
 
-	if infraHelper.FileExists(destinationPathStr) && moveDto.ShouldOverwrite {
-		err = repo.Delete(moveDto.DestinationPath)
-		if err != nil {
-			return errors.New("MoveFileToTrashError: " + err.Error())
-		}
+	if !moveDto.ShouldOverwrite {
+		return nil
 	}
 
-	return os.Rename(sourcePathStr, destinationPathStr)
+	err = repo.Delete(destinationAbsolutePath)
+	if err != nil {
+		return errors.New("MoveFileToTrashError: " + err.Error())
+	}
+
+	return os.Rename(sourcePathStr, destinationAbsolutePathStr)
 }
 
 func (repo FilesCmdRepo) UpdateContent(

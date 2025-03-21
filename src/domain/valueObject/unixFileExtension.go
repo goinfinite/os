@@ -34,7 +34,7 @@ func NewUnixFileExtension(value interface{}) (
 }
 
 func (vo UnixFileExtension) GetMimeType() MimeType {
-	mimeTypeStr := "generic"
+	mimeTypeStr := GenericMimeType.String()
 
 	fileExtWithLeadingDot := "." + string(vo)
 	mimeTypeWithCharset := mime.TypeByExtension(fileExtWithLeadingDot)

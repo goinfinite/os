@@ -1,5 +1,38 @@
 package componentForm
 
+type CheckboxInputDto struct {
+	Id, Name, Label, OnChange, CustomValue, BindIsCheckedCondition string
+}
+
+templ CheckboxInput(inputDto CheckboxInputDto) {
+	<label class="flex items-center justify-center cursor-pointer">
+		<input
+			type="checkbox"
+			class="peer sr-only"
+			if inputDto.Id != "" {
+				id={ inputDto.Id }
+			}
+			if inputDto.Name != "" {
+				name={ inputDto.Name }
+			}
+			if inputDto.OnChange != "" {
+				@change={ inputDto.OnChange }
+			}
+			if inputDto.CustomValue != "" {
+				value={ inputDto.CustomValue }
+			}
+			if inputDto.BindIsCheckedCondition != "" {
+				:checked={ inputDto.BindIsCheckedCondition }
+			}
+		/>
+		<i class={ "ph-bold ph-square text-os-100 peer-checked:hidden" }></i>
+		<i class={ "ph-bold ph-check-square text-infinite-500 hidden peer-checked:inline" }></i>
+		if inputDto.Label != "" {
+			<label class="ml-1">{ inputDto.Label }</label>
+		}
+	</label>
+}
+
 type CheckboxInputSwitchToggleDto struct {
 	Id, Label, BindModelPath, CustomValue string
 }

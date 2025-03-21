@@ -115,6 +115,23 @@ document.addEventListener("alpine:init", () => {
     return queryParams;
   }
 
+  // JavaScript doesn't provide any API capable of directly downloading a blob
+  // file, so it's necessary to create an invisible anchor element and artificially
+  // trigger a click on it to emulate this process.
+  function downloadFile(nameWithExtension, content, mimeType = "text/plain") {
+    const blobFile = new Blob([content], { type: mimeType });
+    const blobFileUrlObject = window.URL.createObjectURL(blobFile);
+    const downloadFileElement = document.createElement("a");
+
+    downloadFileElement.href = blobFileUrlObject;
+    downloadFileElement.download = nameWithExtension;
+    document.body.appendChild(downloadFileElement);
+
+    downloadFileElement.click();
+    window.URL.revokeObjectURL(blobFileUrlObject);
+    document.body.removeChild(downloadFileElement);
+  }
+
   window.Infinite = {
     Envs: {
       AccessTokenCookieKey: "os-access-token",
@@ -122,5 +139,6 @@ document.addEventListener("alpine:init", () => {
     JsonAjax: jsonAjax,
     CreateRandomPassword: createRandomPassword,
     CreateFilterQueryParams: createFilterQueryParams,
+    DownloadFile: downloadFile,
   };
 });
