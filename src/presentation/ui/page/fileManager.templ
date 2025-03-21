@@ -245,22 +245,22 @@ templ FilesExplorerTableHeaders() {
 
 templ DirectoriesTreeItems(
 	workDirPath valueObject.UnixFilePath,
-	unixFileTree dto.UnixFileTree,
+	unixFileTree dto.UnixFileBranch,
 ) {
-	for _, fileEntity := range unixFileTree.Children {
-		if fileEntity.MimeType == "directory" {
+	for _, fileBranch := range unixFileTree.Branches {
+		if fileBranch.MimeType == "directory" {
 			<div class="space-y-2 pl-2">
 				<a
 					class="flex w-fit cursor-pointer items-center"
-					@click={ "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }
+					@click={ "desiredWorkingDirPath = '" + fileBranch.Path.String() + "'; accessWorkingDirPath()" }
 				>
 					{{
 						itemIconClasses := "ph-bold mr-2 text-xs text-neutral-500 xl:text-sm"
 						dirIconClasses := "ph-bold text-infinite-500 mr-1 text-sm xl:text-base"
 						dirNameClasses := "text-sm xl:text-base"
 
-						isDesiredWorkDirPath := fileEntity.Path == workDirPath
-						isDirectoryOpened := len(fileEntity.Children) > 0 || isDesiredWorkDirPath
+						isDesiredWorkDirPath := fileBranch.Path == workDirPath
+						isDirectoryOpened := len(fileBranch.Branches) > 0 || isDesiredWorkDirPath
 						if isDirectoryOpened {
 							itemIconClasses += " ph-caret-down"
 							dirIconClasses += " ph-folder-open"
@@ -275,10 +275,10 @@ templ DirectoriesTreeItems(
 					}}
 					<i class={ itemIconClasses }></i>
 					<i class={ dirIconClasses }></i>
-					<p class={ dirNameClasses }>{ fileEntity.Name.String() }</p>
+					<p class={ dirNameClasses }>{ fileBranch.Name.String() }</p>
 				</a>
-				if len(fileEntity.Children) > 0 {
-					@DirectoriesTreeItems(workDirPath, fileEntity)
+				if len(fileBranch.Branches) > 0 {
+					@DirectoriesTreeItems(workDirPath, fileBranch)
 				}
 			</div>
 		}
@@ -287,7 +287,7 @@ templ DirectoriesTreeItems(
 
 templ DirectoriesTree(
 	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
+	unixFileTree *dto.UnixFileBranch,
 ) {
 	<!-- FilesExplorerTable DirectoriesTree -->
 	if unixFileTree != nil {
@@ -547,7 +547,7 @@ templ UpdateFileContentModal() {
 
 templ MoveFilesForm(
 	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
+	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
 		hx-put="/api/v1/files/"
@@ -575,7 +575,7 @@ templ MoveFilesForm(
 
 templ MoveFilesModal(
 	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
+	unixFileTree *dto.UnixFileBranch,
 ) {
 	@componentStructural.RegularModal(
 		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
@@ -586,7 +586,7 @@ templ MoveFilesModal(
 
 templ CopyFilesForm(
 	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
+	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
 		hx-post="/api/v1/files/copy/"
@@ -614,7 +614,7 @@ templ CopyFilesForm(
 
 templ CopyFilesModal(
 	workingDirPath valueObject.UnixFilePath,
-	unixFileTree *dto.UnixFileTree,
+	unixFileTree *dto.UnixFileBranch,
 ) {
 	@componentStructural.RegularModal(
 		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",

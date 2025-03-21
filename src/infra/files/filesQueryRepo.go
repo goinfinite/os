@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"sort"
 	"strings"
 	"syscall"
 
@@ -147,95 +146,118 @@ func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 	), nil
 }
 
-func (repo FilesQueryRepo) readUnixFileTree(
+func (repo FilesQueryRepo) readUnixFileBranch(
 	desiredAbsolutePath valueObject.UnixFilePath,
-	desiredParentPath valueObject.UnixFilePath,
-) (unixFileTree dto.UnixFileTree, err error) {
-	unixFileTreeRoot, err := repo.simplifiedUnixFileFactory(desiredParentPath)
+	shouldIncludeFiles bool,
+) (treeBranch dto.UnixFileBranch, err error) {
+	treeDirectory, err := repo.simplifiedUnixFileFactory(desiredAbsolutePath)
 	if err != nil {
-		return unixFileTree, err
+		return treeBranch, err
 	}
-	unixFileTree = dto.NewUnixFileTree(unixFileTreeRoot, []dto.UnixFileTree{})
-
-	desiredParentPathStr := desiredParentPath.String()
-	currentDesiredSourcePath := strings.TrimPrefix(
-		desiredAbsolutePath.String(), desiredParentPathStr,
-	)
-	if currentDesiredSourcePath == "" {
-		return unixFileTree, err
-	}
-
-	currentParentSourcePath := strings.Split(currentDesiredSourcePath, "/")[0]
-	nextDesiredParentPathStr := desiredParentPathStr + currentParentSourcePath + "/"
-	nextDesiredParentPath, err := valueObject.NewUnixFilePath(
-		nextDesiredParentPathStr,
-	)
-
-	nextDesiredParentPathWithoutLeadingSlash := strings.TrimSuffix(
-		nextDesiredParentPathStr, "/",
-	)
-	fileStat, err := os.Stat(nextDesiredParentPathWithoutLeadingSlash)
-	if err != nil {
-		return unixFileTree, err
-	}
-
-	nextDesiredParentPathIsDir := fileStat.IsDir()
-	isTheLastDir := currentParentSourcePath == ""
+	treeBranch = dto.NewUnixFileBranch(treeDirectory)
 
 	findCmdArgs := []string{
-		"-L", desiredParentPathStr, "-mindepth", "1", "-maxdepth", "1",
+		"-L", desiredAbsolutePath.String(), "-mindepth", "1", "-maxdepth", "1",
 	}
-	if nextDesiredParentPathIsDir && !isTheLastDir {
-		findCmdArgs = append(
-			findCmdArgs, "-type", "d", "!", "-path",
-			nextDesiredParentPathWithoutLeadingSlash,
-		)
+	if !shouldIncludeFiles {
+		findCmdArgs = append(findCmdArgs, "-type", "d")
 	}
 
-	rawUnixFileTree, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawDirectoryTree, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find",
 		Args:    findCmdArgs,
 	})
 	if err != nil {
-		return unixFileTree, err
+		return treeBranch, err
 	}
 
-	rawUnixFileTreeParts := strings.Split(rawUnixFileTree, "\n")
-	sort.Strings(rawUnixFileTreeParts)
+	directoriesToBrowse := strings.Split(rawDirectoryTree, "\n")
+	if len(directoriesToBrowse) == 0 {
+		return treeBranch, err
+	}
 
-	for _, rawUnixFilePath := range rawUnixFileTreeParts {
-		if rawUnixFilePath == "" {
+	for _, rawDirectoryPath := range directoriesToBrowse {
+		if rawDirectoryPath == "" {
 			continue
 		}
 
-		unixFilePath, err := valueObject.NewUnixFilePath(rawUnixFilePath)
+		directoryPath, err := valueObject.NewUnixFilePath(rawDirectoryPath)
 		if err != nil {
-			slog.Debug(err.Error(), slog.String("rawUnixFilePath", rawUnixFilePath))
+			slog.Error(
+				err.Error(),
+				slog.String("directoryPath", rawDirectoryPath),
+			)
 			continue
 		}
 
-		simplifiedFileEntity, err := repo.simplifiedUnixFileFactory(unixFilePath)
+		treeDirectory, err = repo.simplifiedUnixFileFactory(directoryPath)
 		if err != nil {
-			slog.Debug(err.Error(), slog.String("unixFilePath", rawUnixFilePath))
+			slog.Error(
+				err.Error(),
+				slog.String("directoryPath", rawDirectoryPath),
+			)
 			continue
 		}
-
-		unixFileTree.AddUnixFile(simplifiedFileEntity)
+		treeBranch.Branches[treeDirectory.Name] = dto.NewUnixFileBranch(treeDirectory)
 	}
 
-	if !nextDesiredParentPathIsDir || isTheLastDir {
-		return unixFileTree, err
-	}
+	return treeBranch, nil
+}
 
-	unixFileSubTree, err := repo.readUnixFileTree(
-		desiredAbsolutePath, nextDesiredParentPath,
+func (repo FilesQueryRepo) readUnixFileTree(
+	desiredAbsolutePath valueObject.UnixFilePath,
+) (trunkBranch dto.UnixFileBranch, err error) {
+	fileSystemRootDirectory, err := repo.simplifiedUnixFileFactory(
+		valueObject.FileSystemRootDirPath,
 	)
 	if err != nil {
-		return unixFileTree, err
+		return trunkBranch, err
+	}
+	trunkBranch = dto.NewUnixFileBranch(fileSystemRootDirectory)
+
+	directoriesToBrowse := strings.Split(
+		desiredAbsolutePath.ReadWithoutTrailingSlash().String(), "/",
+	)
+
+	directoriesToBrowseLength := len(directoriesToBrowse)
+	if directoriesToBrowseLength == 0 {
+		return trunkBranch, err
 	}
 
-	unixFileTree.AddSubTree(unixFileSubTree)
-	return unixFileTree, err
+	currentDirectoryPath := ""
+	currentBranch := trunkBranch
+	for rawDirectoryIndex, rawDirectoryName := range directoriesToBrowse {
+		currentDirectoryPath += rawDirectoryName + "/"
+
+		isRootDirectory := rawDirectoryIndex == 0
+		if isRootDirectory {
+			currentDirectoryPath = "/"
+		}
+
+		directoryPath, err := valueObject.NewUnixFilePath(currentDirectoryPath)
+		if err != nil {
+			slog.Error(
+				err.Error(),
+				slog.String("directoryPath", currentDirectoryPath),
+			)
+			continue
+		}
+
+		isTheLastDirectory := directoriesToBrowseLength == (rawDirectoryIndex + 1)
+		treeBranch, err := repo.readUnixFileBranch(directoryPath, isTheLastDirectory)
+		if err != nil {
+			slog.Error(
+				err.Error(),
+				slog.String("directoryPath", currentDirectoryPath),
+			)
+			continue
+		}
+
+		currentBranch.Branches[treeBranch.Name] = treeBranch
+		currentBranch = currentBranch.Branches[treeBranch.Name]
+	}
+
+	return trunkBranch, nil
 }
 
 func (repo FilesQueryRepo) Read(
@@ -313,9 +335,7 @@ func (repo FilesQueryRepo) Read(
 
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
-		unixFileTree, err := repo.readUnixFileTree(
-			sourcePath, valueObject.FileSystemRootDirPath,
-		)
+		unixFileTree, err := repo.readUnixFileTree(sourcePath)
 		if err != nil {
 			return responseDto, err
 		}
