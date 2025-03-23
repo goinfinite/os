@@ -13,6 +13,6 @@ type UnixFileBranch struct {
 func NewUnixFileBranch(parentNodeFile entity.SimplifiedUnixFile) UnixFileBranch {
 	return UnixFileBranch{
 		SimplifiedUnixFile: parentNodeFile,
-		Branches:           map[valueObject.UnixFileName]UnixFileBranch{},
+		Branches:           make(map[valueObject.UnixFileName]UnixFileBranch),
 	}
 }
