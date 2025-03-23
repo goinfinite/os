@@ -124,8 +124,6 @@ func (repo FilesQueryRepo) unixFileFactory(
 func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 	unixFilePath valueObject.UnixFilePath,
 ) (simplifiedUnixFile entity.SimplifiedUnixFile, err error) {
-	unixFilePath = unixFilePath.ReadWithoutTrailingSlash()
-
 	fileInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
 		return simplifiedUnixFile, err
@@ -215,9 +213,7 @@ func (repo FilesQueryRepo) readUnixFileTree(
 	}
 	trunkBranch = dto.NewUnixFileBranch(fileSystemRootDirectory)
 
-	directoriesToBrowse := strings.Split(
-		desiredAbsolutePath.ReadWithoutTrailingSlash().String(), "/",
-	)
+	directoriesToBrowse := strings.Split(desiredAbsolutePath.String(), "/")
 
 	directoriesToBrowseLength := len(directoriesToBrowse)
 	if directoriesToBrowseLength == 0 {
@@ -263,8 +259,7 @@ func (repo FilesQueryRepo) readUnixFileTree(
 func (repo FilesQueryRepo) Read(
 	requestDto dto.ReadFilesRequest,
 ) (responseDto dto.ReadFilesResponse, err error) {
-	sourcePath := requestDto.SourcePath.ReadWithoutTrailingSlash()
-	sourcePathStr := sourcePath.String()
+	sourcePathStr := requestDto.SourcePath.String()
 
 	exists := infraHelper.FileExists(sourcePathStr)
 	if !exists {
@@ -276,7 +271,7 @@ func (repo FilesQueryRepo) Read(
 		return responseDto, errors.New("ReadSourcePathInfoError")
 	}
 
-	filesToFactory := []valueObject.UnixFilePath{sourcePath}
+	filesToFactory := []valueObject.UnixFilePath{requestDto.SourcePath}
 
 	if sourcePathInfo.IsDir() {
 		filesToFactoryWithoutSourcePath := filesToFactory[1:]
@@ -335,7 +330,7 @@ func (repo FilesQueryRepo) Read(
 
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
-		unixFileTree, err := repo.readUnixFileTree(sourcePath)
+		unixFileTree, err := repo.readUnixFileTree(requestDto.SourcePath)
 		if err != nil {
 			return responseDto, err
 		}

@@ -39,6 +39,10 @@ func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 		return filePath, errors.New("RelativePathNotAllowed")
 	}
 
+	if stringValue != UnixFilePathFileSystemRootDir.String() && strings.HasSuffix(stringValue, "/") {
+		stringValue = strings.TrimSuffix(stringValue, "/")
+	}
+
 	return UnixFilePath(stringValue), nil
 }
 
@@ -79,19 +83,6 @@ func (vo UnixFilePath) ReadFileExtension() (UnixFileExtension, error) {
 func (vo UnixFilePath) ReadFileDir() UnixFilePath {
 	unixFileDirPath, _ := NewUnixFilePath(filepath.Dir(string(vo)))
 	return unixFileDirPath
-}
-
-func (vo UnixFilePath) ReadWithoutTrailingSlash() UnixFilePath {
-	unixFilePathStr := vo.String()
-	if vo.IsFileSystemRootDir() {
-		return UnixFilePathFileSystemRootDir
-	}
-
-	unixFilePathWithoutTrailingSlashStr := strings.TrimSuffix(unixFilePathStr, "/")
-	unixFilePathWithoutTrailingSlash, _ := NewUnixFilePath(
-		unixFilePathWithoutTrailingSlashStr,
-	)
-	return unixFilePathWithoutTrailingSlash
 }
 
 func (vo UnixFilePath) String() string {
