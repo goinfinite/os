@@ -37,9 +37,6 @@ func NewRouter(
 	}
 }
 
-//go:embed dist/*
-var previousDashFiles embed.FS
-
 //go:embed assets/*
 var assetsFiles embed.FS
 
@@ -183,20 +180,6 @@ func (router *Router) fragmentRoutes() {
 	fragmentGroup.GET("/footer", footerPresenter.Handler)
 }
 
-func (router *Router) previousDashboardRoute() {
-	dashFilesFs, err := fs.Sub(previousDashFiles, "dist")
-	if err != nil {
-		slog.Error("ReadPreviousDashFilesError", slog.String("err", err.Error()))
-		os.Exit(1)
-	}
-	dashFileServer := http.FileServer(http.FS(dashFilesFs))
-
-	previousDashGroup := router.baseRoute.Group("/_")
-	previousDashGroup.GET(
-		"/*", echo.WrapHandler(http.StripPrefix("/_", dashFileServer)),
-	)
-}
-
 func (router *Router) RegisterRoutes() {
 	router.assetsRoute()
 	router.accountsRoutes()
@@ -216,7 +199,6 @@ func (router *Router) RegisterRoutes() {
 	}
 
 	router.fragmentRoutes()
-	router.previousDashboardRoute()
 
 	router.baseRoute.RouteNotFound("/*", func(c echo.Context) error {
 		urlPath := c.Request().URL.Path
