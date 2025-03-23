@@ -105,15 +105,15 @@ func (controller *FilesController) Create(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	fileType := valueObject.GenericMimeType
+	fileType := valueObject.MimeTypeGeneric
 	if requestInputData["mimeType"] != nil {
 		fileType, err = valueObject.NewMimeType(requestInputData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 
-		if fileType != valueObject.DirectoryMimeType {
-			fileType = valueObject.GenericMimeType
+		if fileType != valueObject.MimeTypeDirectory {
+			fileType = valueObject.MimeTypeGeneric
 		}
 	}
 

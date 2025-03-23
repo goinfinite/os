@@ -157,7 +157,7 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Delete",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.AppTrashDirPath.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
+					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.UnixFilePathTrashDir.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
 					HideTextBelowBreakpoint:   "[107.5rem]",
 					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
@@ -200,7 +200,7 @@ templ FilesExplorerTableHeaders() {
 					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDirPath.String() + "'; accessWorkingDirPath()",
+					OnClick:                 "desiredWorkingDirPath = '" + valueObject.UnixFilePathAppWorkingDir.String() + "'; accessWorkingDirPath()",
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -229,7 +229,7 @@ templ FilesExplorerTableHeaders() {
 					TooltipText:  "Show Trash",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "desiredWorkingDirPath = '" + valueObject.AppTrashDirPath.String() + "'; accessWorkingDirPath()",
+					OnClick:      "desiredWorkingDirPath = '" + valueObject.UnixFilePathTrashDir.String() + "'; accessWorkingDirPath()",
 				})
 			</div>
 			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
@@ -432,7 +432,7 @@ templ CreateFileModal() {
 	@componentStructural.RegularModal(
 		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
 	) {
-		@CreateFileForm(valueObject.GenericMimeType, "closeCreateFileModal()")
+		@CreateFileForm(valueObject.MimeTypeGeneric, "closeCreateFileModal()")
 	}
 }
 
@@ -441,7 +441,7 @@ templ CreateDirectoryModal() {
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
 		"",
 	) {
-		@CreateFileForm(valueObject.DirectoryMimeType, "closeCreateDirectoryModal()")
+		@CreateFileForm(valueObject.MimeTypeDirectory, "closeCreateDirectoryModal()")
 	}
 }
 

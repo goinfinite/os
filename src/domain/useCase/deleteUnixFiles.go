@@ -31,7 +31,7 @@ func (uc DeleteUnixFiles) emptyTrash(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
-	err := uc.filesCmdRepo.Delete(valueObject.AppTrashDirPath)
+	err := uc.filesCmdRepo.Delete(valueObject.UnixFilePathTrashDir)
 	if err != nil {
 		return err
 	}
@@ -43,15 +43,15 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
-	_, err := uc.filesQueryRepo.ReadFirst(valueObject.AppTrashDirPath)
+	_, err := uc.filesQueryRepo.ReadFirst(valueObject.UnixFilePathTrashDir)
 	if err == nil {
 		return nil
 	}
 
 	trashDirPermissions := valueObject.NewUnixDirDefaultPermissions()
 	createGeneralTrashDir := dto.NewCreateUnixFile(
-		valueObject.AppTrashDirPath, &trashDirPermissions,
-		valueObject.DirectoryMimeType, operatorAccountId, operatorIpAddress,
+		valueObject.UnixFilePathTrashDir, &trashDirPermissions,
+		valueObject.MimeTypeDirectory, operatorAccountId, operatorIpAddress,
 	)
 
 	return CreateUnixFile(
@@ -62,7 +62,7 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 
 func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	for fileToDeleteIndex, fileToDelete := range deleteDto.SourcePaths {
-		shouldCleanTrash := fileToDelete == valueObject.AppTrashDirPath
+		shouldCleanTrash := fileToDelete == valueObject.UnixFilePathTrashDir
 		if shouldCleanTrash {
 			err := uc.emptyTrash(
 				deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress,
@@ -82,7 +82,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 			continue
 		}
 
-		if !fileToDelete.IsRootPath() {
+		if !fileToDelete.IsFileSystemRootDir() {
 			continue
 		}
 
@@ -119,7 +119,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
 		shouldOverwrite := true
 		moveDto := dto.NewMoveUnixFile(
-			fileToMoveToTrash, valueObject.AppTrashDirPath, shouldOverwrite,
+			fileToMoveToTrash, valueObject.UnixFilePathTrashDir, shouldOverwrite,
 		)
 
 		err = uc.filesCmdRepo.Move(moveDto)

@@ -79,7 +79,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	unixFileMimeType := unixFileExtension.GetMimeType()
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.DirectoryMimeType
+		unixFileMimeType = valueObject.MimeTypeDirectory
 		unixFileExtensionPtr = nil
 	}
 
@@ -131,9 +131,9 @@ func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 		return simplifiedUnixFile, err
 	}
 
-	unixFileMimeType := valueObject.GenericMimeType
+	unixFileMimeType := valueObject.MimeTypeGeneric
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.DirectoryMimeType
+		unixFileMimeType = valueObject.MimeTypeDirectory
 	}
 
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
@@ -208,7 +208,7 @@ func (repo FilesQueryRepo) readUnixFileTree(
 	desiredAbsolutePath valueObject.UnixFilePath,
 ) (trunkBranch dto.UnixFileBranch, err error) {
 	fileSystemRootDirectory, err := repo.simplifiedUnixFileFactory(
-		valueObject.FileSystemRootDirPath,
+		valueObject.UnixFilePathFileSystemRootDir,
 	)
 	if err != nil {
 		return trunkBranch, err

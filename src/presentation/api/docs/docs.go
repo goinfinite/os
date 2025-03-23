@@ -3899,8 +3899,8 @@ const docTemplate = `{
                 "generic"
             ],
             "x-enum-varnames": [
-                "DirectoryMimeType",
-                "GenericMimeType"
+                "MimeTypeDirectory",
+                "MimeTypeGeneric"
             ]
         },
         "valueObject.PortBinding": {
@@ -3983,9 +3983,9 @@ const docTemplate = `{
                 "/app/.trash"
             ],
             "x-enum-varnames": [
-                "FileSystemRootDirPath",
-                "DefaultAppWorkingDirPath",
-                "AppTrashDirPath"
+                "UnixFilePathFileSystemRootDir",
+                "UnixFilePathAppWorkingDir",
+                "UnixFilePathTrashDir"
             ]
         }
     },

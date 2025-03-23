@@ -14,9 +14,9 @@ const unixFileRelativePathRegexExpression = `\.\.\/|^\.\/|^\/\.\/`
 
 type UnixFilePath string
 
-const FileSystemRootDirPath = UnixFilePath("/")
-const DefaultAppWorkingDirPath = UnixFilePath("/app")
-const AppTrashDirPath = UnixFilePath("/app/.trash")
+const UnixFilePathFileSystemRootDir = UnixFilePath("/")
+const UnixFilePathAppWorkingDir = UnixFilePath("/app")
+const UnixFilePathTrashDir = UnixFilePath("/app/.trash")
 
 func NewUnixFilePath(value interface{}) (filePath UnixFilePath, err error) {
 	stringValue, err := voHelper.InterfaceToString(value)
@@ -54,7 +54,7 @@ func (vo UnixFilePath) ReadWithoutExtension() UnixFilePath {
 }
 
 func (vo UnixFilePath) ReadFileName() UnixFileName {
-	if vo.IsRootPath() {
+	if vo.IsFileSystemRootDir() {
 		return UnixFileName("/")
 	}
 
@@ -83,8 +83,8 @@ func (vo UnixFilePath) ReadFileDir() UnixFilePath {
 
 func (vo UnixFilePath) ReadWithoutTrailingSlash() UnixFilePath {
 	unixFilePathStr := vo.String()
-	if vo.IsRootPath() {
-		return FileSystemRootDirPath
+	if vo.IsFileSystemRootDir() {
+		return UnixFilePathFileSystemRootDir
 	}
 
 	unixFilePathWithoutTrailingSlashStr := strings.TrimSuffix(unixFilePathStr, "/")
@@ -98,6 +98,6 @@ func (vo UnixFilePath) String() string {
 	return string(vo)
 }
 
-func (vo UnixFilePath) IsRootPath() bool {
-	return vo == FileSystemRootDirPath
+func (vo UnixFilePath) IsFileSystemRootDir() bool {
+	return vo == UnixFilePathFileSystemRootDir
 }

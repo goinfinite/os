@@ -10,9 +10,9 @@ type UnixFileBranch struct {
 	Branches map[valueObject.UnixFileName]UnixFileBranch `json:"branches"`
 }
 
-func NewUnixFileBranch(trunkBranchFile entity.SimplifiedUnixFile) UnixFileBranch {
+func NewUnixFileBranch(parentNodeFile entity.SimplifiedUnixFile) UnixFileBranch {
 	return UnixFileBranch{
-		SimplifiedUnixFile: trunkBranchFile,
+		SimplifiedUnixFile: parentNodeFile,
 		Branches:           map[valueObject.UnixFileName]UnixFileBranch{},
 	}
 }

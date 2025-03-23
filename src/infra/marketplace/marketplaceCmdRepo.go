@@ -660,7 +660,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 
 	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
-		valueObject.AppTrashDirPath.String(), installedItem.Slug.String(),
+		valueObject.UnixFilePathTrashDir.String(), installedItem.Slug.String(),
 		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
 	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
