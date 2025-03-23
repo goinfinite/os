@@ -10,7 +10,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -389,7 +388,7 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 				placeholderValue = ""
 			}
 
-			printablePlaceholderValue := shellescape.StripUnsafe(placeholderValue)
+			printablePlaceholderValue := infraHelper.ShellEscape{}.StripUnsafe(placeholderValue)
 
 			cmdStepStr = strings.ReplaceAll(
 				cmdStepStr, "%"+stepPlaceholder+"%", printablePlaceholderValue,

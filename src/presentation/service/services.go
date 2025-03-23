@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
@@ -375,14 +375,14 @@ func (service *ServicesService) CreateInstallable(
 
 		if len(envs) > 0 {
 			for _, env := range envs {
-				escapedField := shellescape.Quote(env.String())
+				escapedField := infraHelper.ShellEscape{}.Quote(env.String())
 				installParams = append(installParams, "--envs", escapedField)
 			}
 		}
 
 		if len(portBindings) > 0 {
 			for _, portBinding := range portBindings {
-				escapedField := shellescape.Quote(portBinding.String())
+				escapedField := infraHelper.ShellEscape{}.Quote(portBinding.String())
 				installParams = append(installParams, "--port-bindings", escapedField)
 			}
 		}

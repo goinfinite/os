@@ -1,10 +1,9 @@
 module github.com/goinfinite/os
 
-go 1.23.3
+go 1.24.1
 
 require (
 	github.com/alecthomas/chroma v0.10.0
-	github.com/alessio/shellescape v1.4.2
 	github.com/dgraph-io/badger/v4 v4.5.1
 	github.com/glebarez/sqlite v1.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible

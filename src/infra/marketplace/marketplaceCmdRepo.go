@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -184,7 +183,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 				dataFieldValue = ""
 			}
 
-			printableDataFieldValue := shellescape.StripUnsafe(dataFieldValue)
+			printableDataFieldValue := infraHelper.ShellEscape{}.StripUnsafe(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
 				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", printableDataFieldValue,
