@@ -7,6 +7,8 @@ import (
 	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -247,7 +249,9 @@ templ DirectoriesTreeItems(
 	workDirPath valueObject.UnixFilePath,
 	unixFileTree dto.UnixFileBranch,
 ) {
-	for _, fileBranch := range unixFileTree.Branches {
+	{{ lexicalOrderBranchesNames := slices.Sorted(maps.Keys(unixFileTree.Branches)) }}
+	for _, branchName := range lexicalOrderBranchesNames {
+		{{ fileBranch := unixFileTree.Branches[branchName] }}
 		<li>
 			<a
 				class="flex w-fit cursor-pointer items-center"
