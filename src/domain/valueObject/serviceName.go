@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
-	"golang.org/x/exp/maps"
 )
 
 type ServiceName string
@@ -46,13 +45,14 @@ func ServiceNameAdapter(value string) string {
 	stringValue := strings.TrimSpace(value)
 	stringValue = strings.ToLower(stringValue)
 
-	nativeSvcNames := maps.Keys(NativeSvcNamesWithAliases)
-	for _, nativeSvcName := range nativeSvcNames {
-		if !slices.Contains(NativeSvcNamesWithAliases[nativeSvcName], stringValue) {
-			continue
+	for exactName, aliases := range NativeSvcNamesWithAliases {
+		if exactName == value {
+			return exactName
 		}
-		stringValue = nativeSvcName
-		break
+
+		if slices.Contains(aliases, value) {
+			return exactName
+		}
 	}
 
 	return stringValue

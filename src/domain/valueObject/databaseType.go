@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
-	"golang.org/x/exp/maps"
 )
 
 type DatabaseType string
@@ -32,17 +31,14 @@ func NewDatabaseType(value interface{}) (dbType DatabaseType, err error) {
 }
 
 func databaseTypeAdapter(value string) (string, error) {
-	databaseTypes := maps.Keys(databaseTypesWithAliases)
-	if slices.Contains(databaseTypes, value) {
-		return value, nil
-	}
-
-	for _, databaseType := range databaseTypes {
-		if !slices.Contains(databaseTypesWithAliases[databaseType], value) {
-			continue
+	for exactName, aliases := range databaseTypesWithAliases {
+		if exactName == value {
+			return exactName, nil
 		}
 
-		return databaseType, nil
+		if slices.Contains(aliases, value) {
+			return exactName, nil
+		}
 	}
 
 	return "", errors.New("InvalidDatabaseType")

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
-	"golang.org/x/exp/maps"
 )
 
 type ServiceStatus string
@@ -47,24 +46,17 @@ func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
 func serviceStatusAdapter(value string) (string, error) {
 	value = strings.ToLower(value)
 
-	if _, isPrimaryStatus := ServiceStatusesWithAliases[value]; isPrimaryStatus {
-		return value, nil
-	}
-
-	primaryStatuses := maps.Keys(ServiceStatusesWithAliases)
-	for _, primaryStatus := range primaryStatuses {
-		if !slices.Contains(ServiceStatusesWithAliases[primaryStatus], value) {
-			continue
+	for exactName, aliases := range ServiceStatusesWithAliases {
+		if exactName == value {
+			return exactName, nil
 		}
-		value = primaryStatus
-		break
+
+		if slices.Contains(aliases, value) {
+			return exactName, nil
+		}
 	}
 
-	if _, isPrimaryStatus := ServiceStatusesWithAliases[value]; !isPrimaryStatus {
-		return value, errors.New("InvalidServiceStatus")
-	}
-
-	return value, nil
+	return "", errors.New("InvalidServiceStatus")
 }
 
 func (vo ServiceStatus) String() string {
