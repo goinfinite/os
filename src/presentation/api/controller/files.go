@@ -18,8 +18,8 @@ import (
 )
 
 type FilesController struct {
-	filesQueryRepo        filesInfra.FilesQueryRepo
-	filesCmdRepo          filesInfra.FilesCmdRepo
+	filesQueryRepo        *filesInfra.FilesQueryRepo
+	filesCmdRepo          *filesInfra.FilesCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
@@ -27,7 +27,7 @@ func NewFilesController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *FilesController {
 	return &FilesController{
-		filesQueryRepo:        filesInfra.FilesQueryRepo{},
+		filesQueryRepo:        &filesInfra.FilesQueryRepo{},
 		filesCmdRepo:          filesInfra.NewFilesCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
@@ -72,9 +72,7 @@ func (controller *FilesController) Read(c echo.Context) error {
 		ShouldIncludeFileTree: &shouldIncludeFileTree,
 	}
 
-	filesQueryRepo := filesInfra.FilesQueryRepo{}
-
-	filesList, err := useCase.ReadFiles(filesQueryRepo, readFilesRequestDto)
+	filesList, err := useCase.ReadFiles(controller.filesQueryRepo, readFilesRequestDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}

@@ -27,7 +27,7 @@ func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
 		ShouldIncludeFileTree: &shouldIncludeFileTree,
 	}
 	readFilesResponseDto, err := useCase.ReadFiles(
-		filesInfra.FilesQueryRepo{}, readFilesRequestDto,
+		&filesInfra.FilesQueryRepo{}, readFilesRequestDto,
 	)
 	if err != nil {
 		return readFilesResponseDto

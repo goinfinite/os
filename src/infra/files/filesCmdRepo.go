@@ -16,12 +16,12 @@ import (
 )
 
 type FilesCmdRepo struct {
-	filesQueryRepo FilesQueryRepo
+	filesQueryRepo *FilesQueryRepo
 }
 
-func NewFilesCmdRepo() FilesCmdRepo {
-	return FilesCmdRepo{
-		filesQueryRepo: FilesQueryRepo{},
+func NewFilesCmdRepo() *FilesCmdRepo {
+	return &FilesCmdRepo{
+		filesQueryRepo: &FilesQueryRepo{},
 	}
 }
 

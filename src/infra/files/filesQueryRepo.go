@@ -18,7 +18,7 @@ import (
 
 type FilesQueryRepo struct{}
 
-func (repo FilesQueryRepo) unixFileFactory(
+func (repo *FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
 	shouldReturnContent bool,
 ) (entity.UnixFile, error) {
@@ -121,7 +121,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 	return unixFile, nil
 }
 
-func (repo FilesQueryRepo) simplifiedUnixFileFactory(
+func (repo *FilesQueryRepo) simplifiedUnixFileFactory(
 	unixFilePath valueObject.UnixFilePath,
 ) (simplifiedUnixFile entity.SimplifiedUnixFile, err error) {
 	fileInfo, err := os.Stat(unixFilePath.String())
@@ -144,7 +144,7 @@ func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 	), nil
 }
 
-func (repo FilesQueryRepo) readUnixFileBranch(
+func (repo *FilesQueryRepo) readUnixFileBranch(
 	desiredAbsolutePath valueObject.UnixFilePath,
 	shouldIncludeFiles bool,
 ) (treeBranch dto.UnixFileBranch, err error) {
@@ -202,7 +202,7 @@ func (repo FilesQueryRepo) readUnixFileBranch(
 	return treeBranch, nil
 }
 
-func (repo FilesQueryRepo) readUnixFileTree(
+func (repo *FilesQueryRepo) readUnixFileTree(
 	desiredAbsolutePath valueObject.UnixFilePath,
 ) (trunkBranch dto.UnixFileBranch, err error) {
 	fileSystemRootDirectory, err := repo.simplifiedUnixFileFactory(
@@ -256,7 +256,7 @@ func (repo FilesQueryRepo) readUnixFileTree(
 	return trunkBranch, nil
 }
 
-func (repo FilesQueryRepo) Read(
+func (repo *FilesQueryRepo) Read(
 	requestDto dto.ReadFilesRequest,
 ) (responseDto dto.ReadFilesResponse, err error) {
 	sourcePathStr := requestDto.SourcePath.String()
@@ -341,14 +341,11 @@ func (repo FilesQueryRepo) Read(
 	return responseDto, nil
 }
 
-func (repo FilesQueryRepo) ReadFirst(
+func (repo *FilesQueryRepo) ReadFirst(
 	unixFilePath valueObject.UnixFilePath,
-) (entity.UnixFile, error) {
-	var unixFile entity.UnixFile
-
-	exists := infraHelper.FileExists(unixFilePath.String())
-	if !exists {
-		return unixFile, errors.New("FileNotFound")
+) (unixFileEntity entity.UnixFile, err error) {
+	if !infraHelper.FileExists(unixFilePath.String()) {
+		return unixFileEntity, errors.New("FileNotFound")
 	}
 
 	shouldReturnContent := false
