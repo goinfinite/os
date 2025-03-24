@@ -72,37 +72,35 @@ templ OverviewIndex(
 }
 
 templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInstalledItem) {
-	<div class="bg-os-800 p-5">
+	<div class="rounded-lg bg-neutral-950/20 p-5">
 		<div class="mb-2">
 			@componentStructural.PageSubHeading("Marketplace", "", "ph-storefront")
 		</div>
 		<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-			<thead class="bg-os-500 text-xs uppercase text-neutral-400">
-				<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-					<th scope="col" class="w-[20%] px-5 py-3 text-left">Name</th>
-					<th scope="col" class="w-[15%] px-5 py-3">Type/Installation Path</th>
-					<th scope="col" class="w-[20%] px-5 py-3">Installation Directory</th>
-					<th scope="col" class="w-[15%] px-5 py-3">Created At</th>
-					<th scope="col" class="flex justify-end py-3">
-						<div class="mr-2">
-							@componentForm.SubmitButton(
-								"", "Install catalog item", "ph-arrow-line-down",
-								"openMarketplaceItemInstallationModal()", false,
-							)
-						</div>
+			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[30%] text-left">Name</th>
+					<th scope="col" class="w-[15%]">Type/Installation Path</th>
+					<th scope="col" class="w-[20%]">Installation Directory</th>
+					<th scope="col" class="w-[15%]">Created At</th>
+					<th scope="col" class="w-[20%]">
+						@componentForm.SubmitButton(
+							"", "Install catalog item", "ph-arrow-line-down",
+							"openMarketplaceItemInstallationModal()", false,
+						)
 					</th>
 				</tr>
 			</thead>
 			<tbody>
 				for _, installedItem := range installedItemsList {
-					<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
-						<th scope="row" class="px-5 py-3 text-left font-normal">
-							<div class="inline-flex items-center">
-								<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+						<td class="text-left">
+							<div class="flex items-center gap-2">
+								<img class="h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
 								{ installedItem.Name.String() }
 							</div>
-						</th>
-						<th scope="row" class="px-5 py-3 font-normal">
+						</td>
+						<td>
 							<div class="flex items-center justify-center">
 								@componentStructural.Tag(
 									"", installedItem.Type.String(),
@@ -110,18 +108,16 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 									"infinite-500",
 								)
 							</div>
-						</th>
-						<th scope="row" class="px-5 py-3 font-normal">{ installedItem.InstallDirectory.String() }</th>
-						<th scope="row" class="px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
-						<th scope="row" class="px-5 py-3 text-right font-normal">
-							<div class="inline-flex">
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-trash", "red-800", "red-600",
-									"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
-									"Uninstall", "red-500",
-								)
-							</div>
-						</th>
+						</td>
+						<td>{ installedItem.InstallDirectory.String() }</td>
+						<td>{ installedItem.CreatedAt.ReadDateOnly() }</td>
+						<td class="text-right">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
+								"Uninstall", "red-500",
+							)
+						</td>
 					</tr>
 				}
 				if len(installedItemsList) == 0 {
@@ -135,7 +131,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 }
 
 templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalogItem) {
-	<div class="flex grid justify-center gap-x-14">
+	<div>
 		<!-- MarketplaceCatalogItemsCarousel JavaScript -->
 		@templ.JSONScript("marketplaceCatalogItem_"+catalogItemEntity.Id.String(), catalogItemEntity)
 		<!-- MarketplaceCatalogItemsCarousel HTML -->
@@ -326,23 +322,23 @@ func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) s
 
 templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 	<!-- SystemInfoTableAndGraphic -->
-	<div class="bg-os-800 mb-4 rounded-md p-5">
+	<div class="rounded-lg bg-neutral-950/20 p-5">
 		<div class="mb-2">
 			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
 		</div>
-		<div class="grid grid-cols-3 gap-3">
+		<div class="grid grid-cols-3 items-center gap-3">
 			<!-- Observability Table -->
-			<div class="bg-os-500 space-y-1.5 rounded p-3">
-				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
-					<span>Hostname</span>
+			<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
+				<div>
+					<span class="font-bold">Hostname</span>
 					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
 				</div>
-				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
-					<span>Uptime</span>
+				<div>
+					<span class="font-bold">Uptime</span>
 					<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
 				</div>
-				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
-					<span>Hardware Specs</span>
+				<div>
+					<span class="font-bold">Hardware Specs</span>
 					<div class="space-y-2">
 						<div class="flex justify-end">
 							@componentStructural.TinyTag(componentStructural.TinyTagDto{
@@ -367,13 +363,13 @@ templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
 						</div>
 					</div>
 				</div>
-				<div class="bg-os-800 grid grid-flow-col grid-cols-2 rounded p-3">
-					<span>Public IP Address</span>
+				<div>
+					<span class="font-bold">Public IP Address</span>
 					<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
 				</div>
 			</div>
 			<!-- Resource Usage Graphic -->
-			<div class="bg-os-500 col-span-2 rounded px-4 pb-2 pt-4">
+			<div class="col-span-2 rounded-md bg-neutral-950/20 p-4">
 				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
 					<div class="flex flex-row items-center gap-1">
 						<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
@@ -400,7 +396,7 @@ templ InstalledServicesItemsTable(
 	installedServicesResponseDto dto.ReadInstalledServicesItemsResponse,
 ) {
 	<!-- InstalledServicesItemsTable -->
-	<div class="bg-os-800 p-5">
+	<div class="rounded-lg bg-neutral-950/20 p-5">
 		<div class="mb-2">
 			@componentStructural.PageSubHeading("Services", "", "ph-package")
 		</div>
@@ -414,72 +410,66 @@ templ InstalledServicesItemsTable(
 			@update:installed-services-pagination="reloadInstalledServicesTable()"
 			@update:installed-services-record-filters="reloadInstalledServicesTable()"
 		>
-			<div class="bg-os-800 border-b border-neutral-500 border-opacity-90 p-2">
+			<div class="bg-neutral-950/15 rounded-t-md p-2">
 				@componentStructural.RecordFilters("installed-services", "installedServicesFilters")
 			</div>
 			<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-				<thead class="bg-os-500 text-xs uppercase text-neutral-400">
-					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-						<th scope="col" class="px5 w-[25%] py-3 text-left">Service</th>
-						<th scope="col" class="px5 w-[10%] py-3">Status</th>
-						<th scope="col" class="px5 w-[10%] py-3">CPU</th>
-						<th scope="col" class="px5 w-[10%] py-3">RAM</th>
-						<th scope="col" class="px5 w-[25%] py-3">Port Bindings</th>
-						<th scope="col" class="flex justify-end py-3">
-							<div class="mr-2">
-								@componentForm.SubmitButton(
-									"", "Install service", "ph-arrow-line-down",
-									"openServiceInstallationModal()", false,
-								)
-							</div>
+				<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+					<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+						<th scope="col" class="w-[35%] text-left">Service</th>
+						<th scope="col" class="w-[7.5%]">Status</th>
+						<th scope="col" class="w-[7.5%]">CPU</th>
+						<th scope="col" class="w-[7.5%]">RAM</th>
+						<th scope="col">Port Bindings</th>
+						<th scope="col" class="w-[20%]">
+							@componentForm.SubmitButton(
+								"", "Install service", "ph-arrow-line-down",
+								"openServiceInstallationModal()", false,
+							)
 						</th>
 					</tr>
 				</thead>
 				<tbody>
 					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
-						<tr class="odd:bg-os-300 even:bg-os-600 border-b border-neutral-500 border-opacity-30 text-center">
-							<td class="hidden">
-								@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
-							</td>
-							<td class="overflow-x-hidden px-3 py-2 text-left">
-								<div class="grid grid-rows-2 gap-1">
-									<div class="inline-flex items-center">
-										<img
-											class="mr-2 h-10 w-10 rounded-full"
-											if installedServiceEntity.AvatarUrl != nil {
-												src={ installedServiceEntity.AvatarUrl.String() }
-											} else {
-												src="/assets/default-avatar.jpg"
-											}
-										/>
-										{ installedServiceEntity.Name.String() }
-									</div>
-									<div class="mt-1 flex flex-wrap items-center justify-normal gap-2">
-										@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
-											HighlightedLabel: "type",
-											TagValue:         installedServiceEntity.Type.String(),
-											TagColor:         "infinite-500",
-											FilterValue:      installedServiceEntity.Type.String(),
-											FilterBindPath:   "installedServicesFilters['type']",
-										})
-										@componentStructural.Tag(
-											"", "version", installedServiceEntity.Version.String(),
-											"infinite-500",
-										)
-										@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
-											HighlightedLabel: "nature",
-											TagValue:         installedServiceEntity.Nature.String(),
-											TagColor:         "infinite-500",
-											FilterValue:      installedServiceEntity.Nature.String(),
-											FilterBindPath:   "installedServicesFilters['nature']",
-										})
-									</div>
+						<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
+							<td class="text-left">
+								<div class="mb-2 flex items-center gap-2">
+									<img
+										class="h-10 w-10 rounded-full"
+										if installedServiceEntity.AvatarUrl != nil {
+											src={ installedServiceEntity.AvatarUrl.String() }
+										} else {
+											src="/assets/default-avatar.jpg"
+										}
+									/>
+									{ installedServiceEntity.Name.String() }
+								</div>
+								<div class="flex flex-wrap items-center justify-normal gap-2">
+									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+										HighlightedLabel: "type",
+										TagValue:         installedServiceEntity.Type.String(),
+										TagColor:         "infinite-500",
+										FilterValue:      installedServiceEntity.Type.String(),
+										FilterBindPath:   "installedServicesFilters['type']",
+									})
+									@componentStructural.Tag(
+										"", "version", installedServiceEntity.Version.String(),
+										"infinite-500",
+									)
+									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+										HighlightedLabel: "nature",
+										TagValue:         installedServiceEntity.Nature.String(),
+										TagColor:         "infinite-500",
+										FilterValue:      installedServiceEntity.Nature.String(),
+										FilterBindPath:   "installedServicesFilters['nature']",
+									})
 								</div>
 							</td>
-							<td class="overflow-x-hidden px-3 py-2">
+							<td>
 								{ installedServiceEntity.Status.String() }
 							</td>
-							<td class="overflow-x-hidden px-3 py-2">
+							<td>
 								if installedServiceEntity.Metrics != nil {
 									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
 										ComponentColor:       "os-950",
@@ -491,7 +481,7 @@ templ InstalledServicesItemsTable(
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
-							<td class="overflow-x-hidden px-3 py-2">
+							<td>
 								if installedServiceEntity.Metrics != nil {
 									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
 										ComponentColor:       "os-950",
@@ -503,14 +493,14 @@ templ InstalledServicesItemsTable(
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
-							<td class="overflow-x-hidden px-3 py-2">
+							<td>
 								if installedServiceEntity.PortBindings != nil && len(installedServiceEntity.PortBindings) > 0 {
 									@componentStructural.PortBindingsTable(installedServiceEntity.PortBindings)
 								} else {
 									<span class="text-center text-slate-500">--</span>
 								}
 							</td>
-							<td class="px-3 py-2">
+							<td>
 								<div class="flex justify-end space-x-2">
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-arrow-clockwise", "os-200", "os-300",
@@ -572,7 +562,7 @@ templ InstalledServicesItemsTable(
 }
 
 templ InstallableServiceItemsCarousel(installableServiceEntity entity.InstallableService) {
-	<div class="flex grid justify-center gap-x-14">
+	<div>
 		<!-- InstallableServicesCarousel JavaScript -->
 		@templ.JSONScript("installableServiceEntity_"+installableServiceEntity.Name.String(), installableServiceEntity)
 		<!-- InstallableServicesCarousel HTML -->
@@ -704,11 +694,11 @@ templ InstallableServiceForm(
 								BindModelPath: "service.autoRestart",
 							})
 							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-								Id:            "Auto Start",
+								Label:         "Auto Start",
 								BindModelPath: "service.autoStart",
 							})
 							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-								Id:            "Auto Create Mapping",
+								Label:         "Auto Create Mapping",
 								BindModelPath: "service.autoCreateMapping",
 							})
 						</div>
@@ -814,11 +804,11 @@ templ CustomServiceForm(
 						BindModelPath: "service.autoRestart",
 					})
 					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Id:            "Auto Start",
+						Label:         "Auto Start",
 						BindModelPath: "service.autoStart",
 					})
 					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Id:            "Auto Create Mapping",
+						Label:         "Auto Create Mapping",
 						BindModelPath: "service.autoCreateMapping",
 					})
 				</div>
