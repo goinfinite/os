@@ -85,7 +85,7 @@ templ FilesExplorerTableHeaders() {
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-file-plus",
-					Description:             "Add File",
+					Description:             "Create File",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateFileModal()",
@@ -93,7 +93,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-folder-plus",
-					Description:             "Add Folder",
+					Description:             "Create Directory",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateDirectoryModal()",
@@ -101,7 +101,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-upload-simple",
-					Description:             "Upload",
+					Description:             "Upload File(s)",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openUploadFilesModal()",
@@ -110,6 +110,15 @@ templ FilesExplorerTableHeaders() {
 			</div>
 			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-download-simple",
+					Description:               "Download",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "downloadFile()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-code",
 					Description:               "Edit",
 					DefaultColor:              "os-800",
@@ -117,15 +126,6 @@ templ FilesExplorerTableHeaders() {
 					OnClick:                   "openUpdateFileContentModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "shouldUpdateFileContentButtonBeDeactivate",
-				})
-				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-copy",
-					Description:               "Copy",
-					DefaultColor:              "os-800",
-					HoverColor:                "os-200",
-					OnClick:                   "openCopyFilesModal()",
-					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-truck",
@@ -137,11 +137,11 @@ templ FilesExplorerTableHeaders() {
 					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-download-simple",
-					Description:               "Download",
+					Icon:                      "ph-copy",
+					Description:               "Copy",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "downloadFile()",
+					OnClick:                   "openCopyFilesModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
@@ -185,7 +185,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-split-horizontal",
-					Description:               "Decompress",
+					Description:               "Extract",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "decompressFile()",
@@ -347,21 +347,19 @@ templ FilesExplorer(unixFilesList []entity.UnixFile) {
 							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
 						}
 						<tr
-							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
+							class="border-os-300 hover:bg-os-200 *:py-3 *:text-center *:font-normal cursor-default select-none border-t first:border-opacity-0"
 							@dblclick={ fileTableRowDoubleClick }
 						>
-							<th class="hidden">
-								@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
-							</th>
-							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
+							@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+							<td scope="row" class="w-0.5/10">
 								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
 									Id:          "selectSourcePath_" + fileEntity.Name.String(),
 									Name:        "selectSourcePath",
 									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
 									CustomValue: fileEntity.Name.String(),
 								})
-							</th>
-							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
+							</td>
+							<td scope="row" class="w-2.5/10 py-3 text-left font-normal">
 								<div class="flex w-fit items-center">
 									{{ fileHighlightedIcon := "ph-file text-gray-300" }}
 									if fileEntity.MimeType.IsDir() {
@@ -370,11 +368,11 @@ templ FilesExplorer(unixFilesList []entity.UnixFile) {
 									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
 									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
 								</div>
-							</th>
-							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
-							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
-							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
-							<th scope="row" class="w-2/10 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
+							</td>
+							<td scope="row" class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
+							<td scope="row" class="w-3/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
+							<td scope="row" class="w-1/10">{ fileEntity.Permissions.String() }</td>
+							<td scope="row" class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
 						</tr>
 					}
 					if len(unixFilesList) == 0 {
