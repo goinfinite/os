@@ -299,32 +299,24 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	sourcePathStr := moveDto.SourcePath.String()
 	if !infraHelper.FileExists(sourcePathStr) {
-		return errors.New("SourceToMoveOrRenameNotFound")
+		return errors.New("SourceFileNotFound")
 	}
 
-	sourceFileName := moveDto.SourcePath.ReadFileName()
-	destinationAbsolutePathStr := moveDto.DestinationPath.String() + "/" + sourceFileName.String()
-	destinationAbsolutePath, err := valueObject.NewUnixFilePath(
-		destinationAbsolutePathStr,
-	)
-	if err != nil {
-		return errors.New("BuildDestinationAbsolutePathError: " + err.Error())
-	}
-
-	if !infraHelper.FileExists(destinationAbsolutePathStr) {
-		return os.Rename(sourcePathStr, destinationAbsolutePathStr)
+	destinationPathStr := moveDto.DestinationPath.String()
+	if !infraHelper.FileExists(destinationPathStr) {
+		return os.Rename(sourcePathStr, destinationPathStr)
 	}
 
 	if !moveDto.ShouldOverwrite {
 		return nil
 	}
 
-	err = repo.Delete(destinationAbsolutePath)
+	err := repo.Delete(moveDto.DestinationPath)
 	if err != nil {
 		return errors.New("MoveFileToTrashError: " + err.Error())
 	}
 
-	return os.Rename(sourcePathStr, destinationAbsolutePathStr)
+	return os.Rename(sourcePathStr, destinationPathStr)
 }
 
 func (repo FilesCmdRepo) UpdateContent(
