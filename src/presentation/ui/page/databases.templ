@@ -86,8 +86,8 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 						<!-- DatabasesTabs Table Items -->
 						for _, database := range selectedDbOverview.Databases {
 							<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-								<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">{ database.Name.String() }</th>
-								<th scope="row" class="w-2/6 px-5 py-3 text-center">
+								<td scope="row" class="w-1/6 px-5 py-3 text-left font-normal">{ database.Name.String() }</td>
+								<td scope="row" class="w-2/6 px-5 py-3 text-center">
 									<div class="bg-os-500 max-h-75 rounded-md px-2.5 py-1">
 										for _, user := range database.Users {
 											<div class="bg-os-800 my-1.5 flex items-center justify-between rounded-md p-3">
@@ -102,16 +102,18 @@ templ DatabasesTabs(selectedDbOverview presenterDto.DatabaseOverview) {
 											</div>
 										}
 									</div>
-								</th>
-								<th scope="row" class="w-1/6 px-5 py-3 text-center font-normal">{ database.Size.String() }</th>
-								<th scope="row" class="px-5 py-3 text-right">
+								</td>
+								<td scope="row" class="w-1/6 px-5 py-3 text-center font-normal">
+									{ database.Size.StringWithSuffix() }
+								</td>
+								<td scope="row" class="px-5 py-3 text-right">
 									<div class="inline-flex">
 										@componentStructural.CircularIconButtonWithTooltip(
 											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
 											"Delete database", "red-500",
 										)
 									</div>
-								</th>
+								</td>
 							</tr>
 						}
 					</tbody>
