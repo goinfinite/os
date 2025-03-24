@@ -507,7 +507,7 @@ templ InstalledServicesItemsTable(
 										"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'restart')",
 										"Restart", "os-200",
 									)
-									if installedServiceEntity.Type.String() != "system" {
+									if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
 										switch installedServiceEntity.Status.String() {
 											case "running":
 												@componentStructural.CircularIconButtonWithTooltip(
