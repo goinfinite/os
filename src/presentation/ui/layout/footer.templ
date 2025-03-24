@@ -8,7 +8,6 @@ import (
 )
 
 templ FooterSkeleton() {
-	<!-- FooterSkeleton HTML -->
 	<footer
 		id="footer"
 		hx-get="/fragment/footer"
@@ -17,6 +16,7 @@ templ FooterSkeleton() {
 		hx-swap="outerHTML transition:true"
 		class="bg-os-800 border-os-400 h-8.5 fixed bottom-0 flex w-full items-center justify-end border-t-2 px-3 text-sm transition-all duration-300 ease-in-out"
 	>
+		<!-- FooterSkeleton HTML -->
 		<div class="flex items-center space-x-3">
 			<div class="bg-os-200 h-6 w-9 animate-pulse rounded-md"></div>
 			for i := 0; i < 3; i++ {
@@ -210,7 +210,6 @@ templ Footer(
 	o11yOverviewEntity entity.O11yOverview,
 	scheduledTasksEntities []entity.ScheduledTask,
 ) {
-	<!-- Footer Layout HTML -->
 	<footer
 		id="footer"
 		hx-get="/fragment/footer"
@@ -219,6 +218,7 @@ templ Footer(
 		hx-swap="outerHTML"
 		class="bg-os-800 border-os-400 h-8.5 fixed bottom-0 flex w-full items-center justify-end border-t-2 px-3 text-sm transition-all duration-300 ease-in-out"
 	>
+		<!-- Footer Layout HTML -->
 		<div
 			class="mr-5 flex h-full items-center"
 			:class="$store.main.displayScheduledTasksPopover ? 'bg-os-300' : 'bg-os-800'"
