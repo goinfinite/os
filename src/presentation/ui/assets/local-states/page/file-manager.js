@@ -144,20 +144,13 @@ document.addEventListener("alpine:init", () => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
+      const currentUrl = window.location.href;
+      const osBaseUrl = currentUrl.replace("/file-manager/", "");
 
-      const shouldDisplayToast = false;
-      Infinite.JsonAjax(
-        "GET",
-        "/api/v1/files/?sourcePath=" + fileEntity.path,
-        {},
-        shouldDisplayToast
-      ).then((readFilesResponseDto) => {
-        Infinite.DownloadFile(
-          fileEntity.name,
-          readFilesResponseDto.files[0].content,
-          fileEntity.mimeType
-        );
-      });
+      window.open(
+        osBaseUrl + "/api/v1/files/download/?sourcePath=" + fileEntity.path,
+        "_blank"
+      );
     },
     handleSelectPermission(
       permissionClass,
