@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/user"
-	"slices"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -90,21 +89,23 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 func (repo FilesCmdRepo) Compress(
 	compressDto dto.CompressUnixFiles,
 ) (compressionProcessReport dto.CompressionProcessReport, err error) {
-	existingFiles := []string{}
+	compressibleFilesStr := []string{}
+	incompressibleFilesStr := map[string]interface{}{}
 	for _, sourcePath := range compressDto.SourcePaths {
 		sourcePathExists := infraHelper.FileExists(sourcePath.String())
 		if !sourcePathExists {
+			incompressibleFilesStr[sourcePath.String()] = nil
 			slog.Debug(
 				"SourcePathNotFound", slog.String("sourcePath", sourcePath.String()),
 			)
 			continue
 		}
 
-		existingFiles = append(existingFiles, sourcePath.String())
+		compressibleFilesStr = append(compressibleFilesStr, sourcePath.String())
 	}
 
-	if len(existingFiles) < 1 {
-		return compressionProcessReport, errors.New("NoExistingFilesToCompress")
+	if len(compressibleFilesStr) == 0 {
+		return compressionProcessReport, errors.New("NoCompressibleFilesFound")
 	}
 
 	compressionTypeStr := "zip"
@@ -138,8 +139,7 @@ func (repo FilesCmdRepo) Compress(
 		return compressionProcessReport, errors.New("UnsupportedCompressionType")
 	}
 
-	destinationPathExists := infraHelper.FileExists(newDestinationPath.String())
-	if destinationPathExists {
+	if infraHelper.FileExists(newDestinationPath.String()) {
 		return compressionProcessReport, errors.New("DestinationPathAlreadyExists")
 	}
 
@@ -150,7 +150,7 @@ func (repo FilesCmdRepo) Compress(
 		compressionBinaryFlag = "-czf"
 	}
 
-	filesToCompress := strings.Join(existingFiles, " ")
+	filesToCompress := strings.Join(compressibleFilesStr, " ")
 	compressCmd := fmt.Sprintf(
 		"%s %s %s %s",
 		compressionBinary, compressionBinaryFlag,
@@ -170,7 +170,7 @@ func (repo FilesCmdRepo) Compress(
 		newDestinationPath,
 	)
 	for _, sourcePath := range compressDto.SourcePaths {
-		if !slices.Contains(existingFiles, sourcePath.String()) {
+		if _, isIncompressible := incompressibleFilesStr[sourcePath.String()]; isIncompressible {
 			compressionProcessReport.FailedPathsWithReason = append(
 				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(
