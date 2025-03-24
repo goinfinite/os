@@ -429,7 +429,7 @@ templ CreateFileForm(
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 		</div>
@@ -757,7 +757,7 @@ templ CompressFilesForm() {
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 			@componentForm.SelectInput(
