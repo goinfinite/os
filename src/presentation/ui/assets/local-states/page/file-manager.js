@@ -193,7 +193,7 @@ document.addEventListener("alpine:init", () => {
       this.selectedFileNames = [];
     },
 
-    // Modal States
+    // Generic Modal States
     isCreateFileModalOpen: false,
     openCreateFileModal() {
       this.resetPrimaryStates();
@@ -222,8 +222,11 @@ document.addEventListener("alpine:init", () => {
       this.isUploadFilesModalOpen = false;
     },
     isUpdateFileContentModalOpen: false,
+
+    // Code Editor States
     codeEditorInstance: null,
     codeEditorFontSize: 12,
+    codeEditorMaxFileSize: 5242880,
     resizeCodeEditorFont(operation) {
       switch (operation) {
         case "decrease":
@@ -251,7 +254,7 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      if (fileEntity.size >= 1048576) {
+      if (fileEntity.size >= this.codeEditorMaxFileSize) {
         this.downloadFile();
         return;
       }
