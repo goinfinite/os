@@ -320,69 +320,70 @@ templ DirectoriesTree(
 templ FilesExplorer(unixFilesList []entity.UnixFile) {
 	<!-- FilesExplorerTable FilesExplorer -->
 	<div class="bg-os-500 col-span-3 mr-2 w-full">
-		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
-			<!-- AccountsTable Header -->
-			<thead class="text-[0.6rem] uppercase text-neutral-400 xl:text-xs">
-				<tr class="bg-os-300 h-12">
-					<th scope="col" class="w-0.5/10 py-3 text-center text-base">
+		<table class="w-full border-collapse overflow-y-auto transition-all duration-300 ease-in-out">
+			<!-- FileExplorerTable Header -->
+			<thead class="text-xs uppercase text-neutral-400">
+				<tr class="bg-os-300 *:text-left *:py-3 h-12">
+					<th class="w-0.5/10">
 						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
 							Id:       "selectAllSourcePaths",
 							OnChange: "handleSelectAllSourcePaths()",
 						})
 					</th>
-					<th scope="col" class="w-2.5/10 py-3 text-left">Name</th>
-					<th scope="col" class="w-1/10 py-3 text-center">Size</th>
-					<th scope="col" class="w-3/10 py-3 text-center">Updated At</th>
-					<th scope="col" class="w-1/10 py-3 text-center">Permissions</th>
-					<th scope="col" class="w-2/10 py-3 text-center">Ownership</th>
+					<th class="w-3.5/10">Name</th>
+					<th class="w-1/10">Size</th>
+					<th class="w-2/10">Updated At</th>
+					<th class="w-1/10">Perms</th>
+					<th class="w-2/10">Ownership</th>
 				</tr>
 			</thead>
+			<tbody class="*:cursor-default *:select-none *:border-t *:border-neutral-50/10 text-sm">
+				for _, fileEntity := range unixFilesList {
+					{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
+					if fileEntity.MimeType.IsDir() {
+						{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
+					}
+					<tr
+						class="*:py-1 *:h-14 *:overflow-hidden first:border-opacity-0 hover:bg-neutral-50/10"
+						@dblclick={ fileTableRowDoubleClick }
+					>
+						@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+						<td class="w-0.5/10">
+							@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+								Id:          "selectSourcePath_" + fileEntity.Name.String(),
+								Name:        "selectSourcePath",
+								OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
+								CustomValue: fileEntity.Name.String(),
+							})
+						</td>
+						<td class="w-0.5/10">
+							<div class="flex w-fit items-center">
+								{{ fileHighlightedIcon := "ph-file text-gray-300" }}
+								if fileEntity.MimeType.IsDir() {
+									{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
+								}
+								<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+								<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
+							</div>
+						</td>
+						<td class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
+						<td class="w-2/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
+						<td class="w-1/10">{ fileEntity.Permissions.String() }</td>
+						<td class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
+					</tr>
+				}
+				if len(unixFilesList) == 0 {
+					<tr class="text-center italic text-slate-500">
+						<td class="w-0.5/10"></td>
+						<td class="w-0.5/10 py-4">No files or directories found.</td>
+						<td class="w-1/10"></td>
+						<td class="w-2/10"></td>
+						<td class="w-1/10"></td>
+						<td class="w-2/10"></td>
+					</tr>
+				}
+			</tbody>
 		</table>
-		<div class="h-110 overflow-y-auto">
-			<table class="w-full">
-				<tbody class="p-2 text-sm xl:text-base">
-					for _, fileEntity := range unixFilesList {
-						{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
-						if fileEntity.MimeType.IsDir() {
-							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
-						}
-						<tr
-							class="border-os-300 hover:bg-os-200 *:py-3 *:text-center *:font-normal cursor-default select-none border-t first:border-opacity-0"
-							@dblclick={ fileTableRowDoubleClick }
-						>
-							@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
-							<td scope="row" class="w-0.5/10">
-								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-									Id:          "selectSourcePath_" + fileEntity.Name.String(),
-									Name:        "selectSourcePath",
-									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
-									CustomValue: fileEntity.Name.String(),
-								})
-							</td>
-							<td scope="row" class="w-2.5/10 py-3 text-left font-normal">
-								<div class="flex w-fit items-center">
-									{{ fileHighlightedIcon := "ph-file text-gray-300" }}
-									if fileEntity.MimeType.IsDir() {
-										{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
-									}
-									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
-									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
-								</div>
-							</td>
-							<td scope="row" class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
-							<td scope="row" class="w-3/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
-							<td scope="row" class="w-1/10">{ fileEntity.Permissions.String() }</td>
-							<td scope="row" class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
-						</tr>
-					}
-					if len(unixFilesList) == 0 {
-						<tr class="text-center">
-							<td class="col-span-10 pt-3 text-center italic text-slate-500">No files or directories found.</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
 	</div>
 }
 
