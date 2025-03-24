@@ -279,7 +279,7 @@ templ SecureAccessPublicKeysList() {
 			<div class="ml-auto mt-2">
 				@componentForm.SubmitButton(
 					"open-create-secure-access-public-key-modal",
-					"create secure access public key", "ph-fingerprint",
+					"upload secure access public key", "ph-fingerprint",
 					"openCreateSecureAccessPublicKeyModal()", true,
 				)
 			</div>
@@ -308,19 +308,19 @@ templ CreateSecureAccessPublicKeyForm() {
 			@componentForm.InputField(componentForm.InputFieldDto{
 				Type:               "text",
 				Id:                 "name",
-				Label:              "Key name",
+				Label:              "Key Name (Aliases)",
 				BindModelValuePath: "secureAccessPublicKey.name",
 				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "content",
-				Label:              "Key content",
+				Label:              "Key Content",
 				BindModelValuePath: "secureAccessPublicKey.content",
 				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
 			})
 		</div>
 		@componentForm.SubmitButton(
-			"create-new-secure-access-public-key", "create secure access public key",
+			"create-new-secure-access-public-key", "upload secure access public key",
 			"ph-check-fat",
 			"closeCreateSecureAccessPublicKeyModal(); closeSecureAccessPublicKeysModal()",
 			false,
@@ -330,7 +330,7 @@ templ CreateSecureAccessPublicKeyForm() {
 
 templ CreateSecureAccessPublicKeyModal() {
 	@componentStructural.RegularModal(
-		"Create Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
+		"Upload Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
 		"closeCreateSecureAccessPublicKeyModal()", "account.username",
 	) {
 		@CreateSecureAccessPublicKeyForm()
