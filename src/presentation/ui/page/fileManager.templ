@@ -652,7 +652,7 @@ templ RenameFileForm() {
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 		</div>
