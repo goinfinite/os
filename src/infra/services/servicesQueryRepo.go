@@ -397,8 +397,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	requiredParams := []string{
-		"name", "nature", "type", "startCmd", "description",
-		"installCmdSteps",
+		"name", "nature", "type", "startCmd", "description", "installCmdSteps",
 	}
 	for _, requiredParam := range requiredParams {
 		if serviceMap[requiredParam] != nil {
