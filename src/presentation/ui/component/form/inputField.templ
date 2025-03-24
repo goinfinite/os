@@ -31,7 +31,7 @@ templ InputField(inputDto InputFieldDto) {
 		if inputDto.InfoTooltipContent != "" {
 			<div class="group absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2">
 				<i class="ph-duotone ph-info cursor-help"></i>
-				<div class="invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-os-200 p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
+				<div class="bg-os-200 invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
 					{ inputDto.InfoTooltipContent }
 				</div>
 			</div>
@@ -86,9 +86,11 @@ templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 			<span class="bg-os-200 border-os-200 pt-2.7 relative h-10 cursor-default rounded-s-md border-r px-3 text-sm text-slate-400" x-text={ inputDto.BindPrefixValuePath }></span>
 			<input
 				type={ inputDto.Type }
-				name={ inputDto.Id }
+				if inputDto.Id != "" {
+					name={ inputDto.Id }
+				}
 				if inputDto.BindInputValuePath != "" {
-					:value={ inputDto.BindInputValuePath }
+					x-model:value={ inputDto.BindInputValuePath }
 				}
 				autocomplete="off"
 				class="bg-os-300 autofill:bg-os-300 peer relative h-10 w-full rounded-r-md pl-2 pr-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
@@ -97,7 +99,7 @@ templ InputFieldWithPrefix(inputDto InputFieldWithPrefixDto) {
 		if inputDto.InfoTooltipContent != "" {
 			<div class="group absolute right-2 top-1/2 z-10 w-fit -translate-y-1/2">
 				<i class="ph-duotone ph-info cursor-help"></i>
-				<div class="invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md bg-os-200 p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
+				<div class="bg-os-200 invisible absolute bottom-full mb-2 w-max -translate-x-1/2 rounded-md p-2 text-xs text-white shadow-lg group-hover:visible group-hover:block">
 					{ inputDto.InfoTooltipContent }
 				</div>
 			</div>
