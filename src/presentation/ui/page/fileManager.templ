@@ -20,15 +20,22 @@ templ FileManagerIndex(
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
 	<div x-data="fileManager">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"File Manager", "", "ph-files",
-				)
-			</div>
+		<div class="mb-6">
+			@componentStructural.PageTitle("File Manager", "", "ph-files")
 		</div>
 		<div id="file-manager-content">
-			@FileManagerModal(workingDirPath, readFilesResponseDto)
+			<div id="file-explorer" class="flex h-[calc(85svh)] flex-col space-y-2 overflow-hidden bg-neutral-950/30 p-3">
+				@FileExplorerToolbar()
+				<div class="flex h-full flex-1 flex-row gap-5">
+					<data id="current-source-path" class="hidden" value={ workingDirPath.String() }></data>
+					<div class="w-1/3 overflow-y-auto overflow-x-hidden">
+						@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
+					</div>
+					<div class="bg-os-500 col-span-3 mr-2 w-full overflow-y-auto overflow-x-hidden">
+						@FilesExplorer(readFilesResponseDto.Files)
+					</div>
+				</div>
+			</div>
 			@CreateFileModal()
 			@CreateDirectoryModal()
 			@UploadFilesModal()
@@ -48,7 +55,7 @@ templ FileManagerIndex(
 }
 
 templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick string) {
-	<div class="relative h-[90%] w-full">
+	<div class="relative h-full w-full">
 		<input
 			type="text"
 			@keyup.enter={ onClick }
@@ -77,10 +84,9 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 	</button>
 }
 
-templ FilesExplorerTableHeaders() {
-	<!-- FilesExplorerTable Headers-->
+templ FileExplorerToolbar() {
+	<!-- FileExplorerToolbar -->
 	<div class="grid grid-rows-2 gap-y-2 rounded">
-		<!-- FilesExplorerTable Headers Buttons -->
 		<div class="grid grid-cols-4 gap-3">
 			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
@@ -318,95 +324,77 @@ templ DirectoriesTree(
 }
 
 templ FilesExplorer(unixFilesList []entity.UnixFile) {
-	<!-- FilesExplorerTable FilesExplorer -->
-	<div class="bg-os-500 col-span-3 mr-2 w-full">
-		<table class="w-full border-collapse overflow-y-auto transition-all duration-300 ease-in-out">
-			<!-- FileExplorerTable Header -->
-			<thead class="text-xs uppercase text-neutral-400">
-				<tr class="bg-os-300 *:text-left *:py-3 h-12">
-					<th class="w-0.5/10">
+	<!-- FilesExplorerTable -->
+	<table class="w-full border-collapse overflow-y-auto rounded-lg transition-all duration-300 ease-in-out">
+		<!-- FileExplorerTable Header -->
+		<thead class="text-xs uppercase text-neutral-400">
+			<tr class="bg-os-300 *:text-left *:py-3 h-12">
+				<th class="w-0.5/10 rounded-tl-lg">
+					@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+						Id:       "selectAllSourcePaths",
+						OnChange: "handleSelectAllSourcePaths()",
+					})
+				</th>
+				<th class="w-3.5/10">Name</th>
+				<th class="w-1/10">Size</th>
+				<th class="w-2/10">Updated At</th>
+				<th class="w-1/10">Perms</th>
+				<th class="w-2/10 rounded-tr-lg">Ownership</th>
+			</tr>
+		</thead>
+		<tbody class="*:cursor-default *:select-none *:border-t *:border-neutral-50/10 text-sm">
+			for _, fileEntity := range unixFilesList {
+				{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
+				if fileEntity.MimeType.IsDir() {
+					{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
+				}
+				<tr
+					class="*:py-1 *:h-14 *:overflow-hidden first:border-opacity-0 hover:bg-neutral-50/10"
+					@dblclick={ fileTableRowDoubleClick }
+				>
+					@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+					<td class="w-0.5/10">
 						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-							Id:       "selectAllSourcePaths",
-							OnChange: "handleSelectAllSourcePaths()",
+							Id:          "selectSourcePath_" + fileEntity.Name.String(),
+							Name:        "selectSourcePath",
+							OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
+							CustomValue: fileEntity.Name.String(),
 						})
-					</th>
-					<th class="w-3.5/10">Name</th>
-					<th class="w-1/10">Size</th>
-					<th class="w-2/10">Updated At</th>
-					<th class="w-1/10">Perms</th>
-					<th class="w-2/10">Ownership</th>
+					</td>
+					<td class="w-0.5/10">
+						<div class="flex w-fit items-center">
+							{{ fileHighlightedIcon := "ph-file text-gray-300" }}
+							if fileEntity.MimeType.IsDir() {
+								{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
+							}
+							<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+							<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
+						</div>
+					</td>
+					<td class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
+					<td class="w-2/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
+					<td class="w-1/10">{ fileEntity.Permissions.String() }</td>
+					<td class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
 				</tr>
-			</thead>
-			<tbody class="*:cursor-default *:select-none *:border-t *:border-neutral-50/10 text-sm">
-				for _, fileEntity := range unixFilesList {
-					{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
-					if fileEntity.MimeType.IsDir() {
-						{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
-					}
-					<tr
-						class="*:py-1 *:h-14 *:overflow-hidden first:border-opacity-0 hover:bg-neutral-50/10"
-						@dblclick={ fileTableRowDoubleClick }
-					>
-						@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
-						<td class="w-0.5/10">
-							@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-								Id:          "selectSourcePath_" + fileEntity.Name.String(),
-								Name:        "selectSourcePath",
-								OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
-								CustomValue: fileEntity.Name.String(),
-							})
-						</td>
-						<td class="w-0.5/10">
-							<div class="flex w-fit items-center">
-								{{ fileHighlightedIcon := "ph-file text-gray-300" }}
-								if fileEntity.MimeType.IsDir() {
-									{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
-								}
-								<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
-								<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
-							</div>
-						</td>
-						<td class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
-						<td class="w-2/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
-						<td class="w-1/10">{ fileEntity.Permissions.String() }</td>
-						<td class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
-					</tr>
-				}
-				if len(unixFilesList) == 0 {
-					<tr class="text-center italic text-slate-500">
-						<td class="w-0.5/10"></td>
-						<td class="w-0.5/10 py-4">No files or directories found.</td>
-						<td class="w-1/10"></td>
-						<td class="w-2/10"></td>
-						<td class="w-1/10"></td>
-						<td class="w-2/10"></td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	</div>
+			}
+			if len(unixFilesList) == 0 {
+				<tr class="text-center italic text-slate-500">
+					<td class="w-0.5/10"></td>
+					<td class="w-0.5/10 py-4">No files or directories found.</td>
+					<td class="w-1/10"></td>
+					<td class="w-2/10"></td>
+					<td class="w-1/10"></td>
+					<td class="w-2/10"></td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
 templ FileManagerModal(
 	workingDirPath valueObject.UnixFilePath,
 	readFilesResponseDto dto.ReadFilesResponse,
 ) {
-	<!-- FileManagerModal -->
-	<div class="bg-os-800 space-y-2 p-3">
-		@FilesExplorerTableHeaders()
-		<!-- FileManagerModal Content -->
-		<div class="grid h-full grid-cols-4 gap-5">
-			<data
-				id="current-source-path"
-				class="hidden"
-				value={ workingDirPath.String() }
-			></data>
-			<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-x-auto overflow-y-auto p-2">
-				@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
-			</div>
-			@FilesExplorer(readFilesResponseDto.Files)
-		</div>
-	</div>
 }
 
 templ CreateFileForm(
