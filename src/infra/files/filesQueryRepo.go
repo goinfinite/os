@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -301,9 +302,12 @@ func (repo *FilesQueryRepo) Read(
 	}
 
 	fileEntities := []entity.UnixFile{}
+	directoryEntities := []entity.UnixFile{}
+
+	isSourcePathDir := sourcePathInfo.IsDir()
 	for _, filePath := range factorableFilePaths {
 		isFileTheSourcePath := filePath.String() == sourcePathStr
-		if isFileTheSourcePath && sourcePathInfo.IsDir() {
+		if isFileTheSourcePath && isSourcePathDir {
 			continue
 		}
 
@@ -316,8 +320,21 @@ func (repo *FilesQueryRepo) Read(
 			continue
 		}
 
+		if fileEntity.MimeType.IsDir() {
+			directoryEntities = append(directoryEntities, fileEntity)
+			continue
+		}
+
 		fileEntities = append(fileEntities, fileEntity)
 	}
+
+	slices.SortStableFunc(fileEntities, func(a, b entity.UnixFile) int {
+		return strings.Compare(a.Name.String(), b.Name.String())
+	})
+	slices.SortStableFunc(directoryEntities, func(a, b entity.UnixFile) int {
+		return strings.Compare(a.Name.String(), b.Name.String())
+	})
+	fileEntities = append(directoryEntities, fileEntities...)
 
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
