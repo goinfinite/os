@@ -79,8 +79,8 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 		<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
 			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
 				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
-					<th scope="col" class="w-[30%] text-left">Name</th>
-					<th scope="col" class="w-[15%]">Type/Installation Path</th>
+					<th scope="col" class="w-[25%] text-left">Name</th>
+					<th scope="col" class="w-[20%]">Type/Installation Path</th>
 					<th scope="col" class="w-[20%]">Installation Directory</th>
 					<th scope="col" class="w-[15%]">Created At</th>
 					<th scope="col" class="w-[20%]">
@@ -111,7 +111,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 						</td>
 						<td>{ installedItem.InstallDirectory.String() }</td>
 						<td>{ installedItem.CreatedAt.ReadDateOnly() }</td>
-						<td class="text-right">
+						<td class="float-right text-right">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-trash", "red-800", "red-600",
 								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
