@@ -53,11 +53,11 @@ templ Main(pageContent templ.Component, currentUrl string) {
 			@templ.JSFuncCall("devWsHotReload")
 		}
 		<!-- Main Layout HTML -->
-		<body class="bg-os-500 flex text-white">
+		<body class="bg-os-500 flex overflow-hidden text-white">
 			@componentUtil.LoadingOverlay()
 			@Sidebar(currentUrl)
 			<!-- Page Content -->
-			<div class="overflow-h-auto h-screen w-full overflow-x-hidden p-6">
+			<div class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@pageContent
 			</div>
 			@FooterSkeleton()
