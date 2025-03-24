@@ -36,13 +36,13 @@ document.addEventListener("alpine:init", () => {
       this.isUpdatePhpVersionModalOpen = false;
     },
     updatePhpVersion() {
+      this.closeUpdatePhpVersionModal();
       htmx
         .ajax("PUT", "/api/v1/runtime/php/" + this.vhostHostname + "/", {
           swap: "none",
           values: { version: this.phpConfigs.version.value },
         })
-        .then(() => this.$dispatch("refresh:runtimes-page-content"))
-        .finally(() => this.closeUpdatePhpVersionModal());
+        .then(() => this.$dispatch("refresh:runtimes-page-content"));
     },
   }));
 });
