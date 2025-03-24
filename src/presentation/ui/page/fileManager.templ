@@ -569,7 +569,7 @@ templ MoveFilesForm(
 	>
 		<div class="mb-6 space-y-2">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
-			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
 			@componentForm.InputFieldReadOnly(
 				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
