@@ -72,7 +72,7 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
-    supportedMimeTypesToEdit: [
+    codeEditorSupportedMimeTypes: [
       "application/javascript",
       "application/json",
       "application/pgp-keys",
@@ -97,7 +97,7 @@ document.addEventListener("alpine:init", () => {
         document.getElementById("fileEntity_" + fileName).textContent
       );
 
-      return !this.supportedMimeTypesToEdit.includes(fileEntity.mimeType);
+      return !this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType);
     },
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
@@ -246,7 +246,7 @@ document.addEventListener("alpine:init", () => {
         document.getElementById("fileEntity_" + fileName).textContent
       );
 
-      if (!this.supportedMimeTypesToEdit.includes(fileEntity.mimeType)) {
+      if (!this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType)) {
         this.resetAuxiliaryStates();
         return;
       }
