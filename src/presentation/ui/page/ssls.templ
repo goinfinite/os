@@ -142,7 +142,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				BindModelPath: "shouldImportSslCertificateAsFile",
 			})
 		</div>
-		@componentForm.DeactivatableSubmitButton(
+		@componentForm.DeactivableSubmitButton(
 			"Import SSL certificate", "ph-check-fat", "closeImportSslCertificateModal()",
 			"shouldDisableImportSslCertificateSubmitButton", false,
 		)
@@ -207,7 +207,7 @@ templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
 				"sslPair.virtualHostsHostnames", vhostsHostnames,
 			)
 		</div>
-		@componentForm.DeactivatableSubmitButton(
+		@componentForm.DeactivableSubmitButton(
 			"Remove virtual hosts hostnames", "ph-network-slash",
 			"closeRemoveVirtualHostsHostnamesModal()",
 			"shouldDisableRemoveVirtualHostsHostnamesSubmitButton", false,

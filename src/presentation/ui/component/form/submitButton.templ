@@ -26,7 +26,7 @@ templ SubmitButton(
 	</button>
 }
 
-func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
+func getDeactivableSubmitButtonClasses(denseMode, isBlocked bool) string {
 	classes := "w-full rounded-md border-none p-3 text-center text-base font-bold lowercase leading-none text-white"
 	if denseMode {
 		classes = "rounded-md border-none px-2 py-1 text-center text-sm font-bold lowercase text-white"
@@ -39,7 +39,7 @@ func getDeactivatableSubmitButtonClasses(denseMode, isBlocked bool) string {
 	return classes + " bg-infinite-500 hover:bg-infinite-300"
 }
 
-templ DeactivatableSubmitButton(
+templ DeactivableSubmitButton(
 	label, icon, onClick, deactivationConditionStatePath string,
 	denseMode bool,
 ) {
@@ -47,7 +47,7 @@ templ DeactivatableSubmitButton(
 	<button
 		x-show={ deactivationConditionStatePath }
 		type="button"
-		class={ getDeactivatableSubmitButtonClasses(denseMode, true) }
+		class={ getDeactivableSubmitButtonClasses(denseMode, true) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
@@ -61,7 +61,7 @@ templ DeactivatableSubmitButton(
 		if onClick != "" {
 			@click={ onClick }
 		}
-		class={ getDeactivatableSubmitButtonClasses(denseMode, false) }
+		class={ getDeactivableSubmitButtonClasses(denseMode, false) }
 	>
 		if icon != "" {
 			<i class={ "ph-duotone " + icon + " mr-1 align-middle text-xl" }></i>
