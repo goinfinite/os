@@ -32,21 +32,50 @@ func NewAccountCmdRepo(
 	}
 }
 
-func (repo *AccountCmdRepo) switchAccountSudoPrivileges(
+func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 	accountName valueObject.Username,
-	isAccountMustBeSuperAdmin bool,
+	shouldPromoteAccount bool,
 ) error {
-	runCmdSettings := infraHelper.RunCmdSettings{
-		Command: "usermod",
-		Args:    []string{"-G", "sudo", accountName.String()},
-	}
-	if !isAccountMustBeSuperAdmin {
-		runCmdSettings.Command = "deluser"
-		runCmdSettings.Args = []string{accountName.String(), "sudo"}
+	sudoersFilePath := "/etc/sudoers"
+	if !infraHelper.FileExists(sudoersFilePath) {
+		err := infraHelper.InstallPkgs([]string{"sudo"})
+		if err != nil {
+			return errors.New("InstallSudoPkgError: " + err.Error())
+		}
 	}
 
-	_, err := infraHelper.RunCmd(runCmdSettings)
-	return err
+	accountNameStr := accountName.String()
+	toggleUserGroupSettings := infraHelper.RunCmdSettings{
+		Command: "usermod",
+		Args:    []string{"-G", "sudo", accountNameStr},
+	}
+	if !shouldPromoteAccount {
+		toggleUserGroupSettings.Command = "deluser"
+		toggleUserGroupSettings.Args = []string{accountNameStr, "sudo"}
+	}
+	_, err := infraHelper.RunCmd(toggleUserGroupSettings)
+	if err != nil {
+		return errors.New("ToggleAccountSudoGroupError: " + err.Error())
+	}
+
+	sudoersDirPath := "/etc/sudoers.d"
+	err = infraHelper.MakeDir(sudoersDirPath)
+	if err != nil {
+		return errors.New("CreateSudoersDirError: " + err.Error())
+	}
+
+	sudoersDirAccountFilePath := sudoersDirPath + "/" + accountNameStr
+	if !shouldPromoteAccount {
+		err = os.Remove(sudoersDirAccountFilePath)
+		if err != nil {
+			return errors.New("RemoveSudoersFileError: " + err.Error())
+		}
+
+		return nil
+	}
+
+	sudoersLine := accountNameStr + " ALL=(ALL) NOPASSWD:ALL"
+	return infraHelper.UpdateFile(sudoersDirAccountFilePath, sudoersLine, true)
 }
 
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
@@ -105,12 +134,9 @@ func (repo *AccountCmdRepo) Create(
 	}
 
 	if createDto.IsSuperAdmin {
-		isAccountMustBeSuperAdmin := true
-		err := repo.switchAccountSudoPrivileges(
-			createDto.Username, isAccountMustBeSuperAdmin,
-		)
+		err := repo.toggleAccountSudoPrivileges(createDto.Username, createDto.IsSuperAdmin)
 		if err != nil {
-			slog.Debug("AddAccountToSudoersError", slog.String("err", err.Error()))
+			slog.Debug("PromoteAccountToSudoersError", slog.String("err", err.Error()))
 		}
 	}
 
@@ -155,16 +181,14 @@ func (repo *AccountCmdRepo) Create(
 }
 
 func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
-	readFirstAccountRequestDto := dto.ReadAccountsRequest{
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
 		AccountId: &accountId,
-	}
-	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
+	})
 	if err != nil {
-		return err
+		return errors.New("ReadAccountEntityError: " + err.Error())
 	}
 
 	accountIdStr := accountId.String()
-
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "pgrep",
 		Args:    []string{"-u", accountIdStr},
@@ -176,19 +200,25 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 		})
 	}
 
+	if accountEntity.IsSuperAdmin {
+		err := repo.toggleAccountSudoPrivileges(accountEntity.Username, false)
+		if err != nil {
+			return errors.New("DemoteAccountFromSudoersError: " + err.Error())
+		}
+	}
+
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "userdel",
 		Args:    []string{"-r", accountEntity.Username.String()},
 	})
 	if err != nil {
-		return err
+		return errors.New("UserDeleteError: " + err.Error())
 	}
 
 	accountModel := dbModel.Account{}
-
 	err = repo.persistentDbSvc.Handler.Delete(accountModel, accountIdStr).Error
 	if err != nil {
-		return errors.New("DeleteAccountDatabaseError: " + err.Error())
+		return errors.New("DeleteAccountDatabaseEntryError: " + err.Error())
 	}
 
 	return nil
@@ -222,11 +252,9 @@ func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 
 	updateMap := map[string]interface{}{"updated_at": time.Now()}
 	if updateDto.IsSuperAdmin != nil {
-		err := repo.switchAccountSudoPrivileges(
-			accountEntity.Username, *updateDto.IsSuperAdmin,
-		)
+		err := repo.toggleAccountSudoPrivileges(accountEntity.Username, *updateDto.IsSuperAdmin)
 		if err != nil {
-			return errors.New("SwitchAccountSudoPrivilegesError: " + err.Error())
+			return errors.New("ToggleAccountSudoPrivilegesError: " + err.Error())
 		}
 
 		updateMap["is_super_admin"] = *updateDto.IsSuperAdmin
