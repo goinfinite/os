@@ -6,7 +6,7 @@ import (
 )
 
 type ReadFilesRequest struct {
-	SourcePath            valueObject.UnixFilePath `json:"serviceName"`
+	SourcePath            valueObject.UnixFilePath `json:"sourcePath"`
 	ShouldIncludeFileTree *bool                    `json:"shouldIncludeFileTree,omitempty"`
 }
 

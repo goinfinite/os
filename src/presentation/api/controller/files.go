@@ -18,8 +18,8 @@ import (
 )
 
 type FilesController struct {
-	filesQueryRepo        filesInfra.FilesQueryRepo
-	filesCmdRepo          filesInfra.FilesCmdRepo
+	filesQueryRepo        *filesInfra.FilesQueryRepo
+	filesCmdRepo          *filesInfra.FilesCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
@@ -27,7 +27,7 @@ func NewFilesController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *FilesController {
 	return &FilesController{
-		filesQueryRepo:        filesInfra.FilesQueryRepo{},
+		filesQueryRepo:        &filesInfra.FilesQueryRepo{},
 		filesCmdRepo:          filesInfra.NewFilesCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
@@ -72,9 +72,7 @@ func (controller *FilesController) Read(c echo.Context) error {
 		ShouldIncludeFileTree: &shouldIncludeFileTree,
 	}
 
-	filesQueryRepo := filesInfra.FilesQueryRepo{}
-
-	filesList, err := useCase.ReadFiles(filesQueryRepo, readFilesRequestDto)
+	filesList, err := useCase.ReadFiles(controller.filesQueryRepo, readFilesRequestDto)
 	if err != nil {
 		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
 	}
@@ -105,15 +103,15 @@ func (controller *FilesController) Create(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	fileType := valueObject.GenericMimeType
+	fileType := valueObject.MimeTypeGeneric
 	if requestInputData["mimeType"] != nil {
 		fileType, err = valueObject.NewMimeType(requestInputData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 
-		if fileType != valueObject.DirectoryMimeType {
-			fileType = valueObject.GenericMimeType
+		if fileType != valueObject.MimeTypeDirectory {
+			fileType = valueObject.MimeTypeGeneric
 		}
 	}
 
@@ -306,7 +304,7 @@ func (controller *FilesController) Update(c echo.Context) error {
 	)
 
 	updateUnixFileUc := useCase.NewUpdateUnixFiles(
-		controller.filesCmdRepo, controller.activityRecordCmdRepo,
+		controller.filesQueryRepo, controller.filesCmdRepo, controller.activityRecordCmdRepo,
 	)
 	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {

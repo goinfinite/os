@@ -130,6 +130,9 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	overview page.ServicesOverview, err error,
 ) {
 	installedItemsResponseDto, err := presenter.readInstalledServices(c)
+	if err != nil {
+		return overview, err
+	}
 
 	installableItemsResponseOutput := presenter.servicesService.ReadInstallableItems(
 		map[string]interface{}{},

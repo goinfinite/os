@@ -1,10 +1,10 @@
 document.addEventListener("alpine:init", () => {
   const selectedVhostHostname = document.getElementById(
     "selectedVhostHostname"
-  ).textContent;
+  ).value;
   const selectedRuntimeType = document.getElementById(
     "selectedRuntimeType"
-  ).textContent;
+  ).value;
 
   Alpine.data("runtimes", () => ({
     vhostHostname: selectedVhostHostname,

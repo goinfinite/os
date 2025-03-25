@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/user"
-	"slices"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -16,12 +15,12 @@ import (
 )
 
 type FilesCmdRepo struct {
-	filesQueryRepo FilesQueryRepo
+	filesQueryRepo *FilesQueryRepo
 }
 
-func NewFilesCmdRepo() FilesCmdRepo {
-	return FilesCmdRepo{
-		filesQueryRepo: FilesQueryRepo{},
+func NewFilesCmdRepo() *FilesCmdRepo {
+	return &FilesCmdRepo{
+		filesQueryRepo: &FilesQueryRepo{},
 	}
 }
 
@@ -90,21 +89,23 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 func (repo FilesCmdRepo) Compress(
 	compressDto dto.CompressUnixFiles,
 ) (compressionProcessReport dto.CompressionProcessReport, err error) {
-	existingFiles := []string{}
+	compressibleFilesStr := []string{}
+	incompressibleFilesStr := map[string]interface{}{}
 	for _, sourcePath := range compressDto.SourcePaths {
 		sourcePathExists := infraHelper.FileExists(sourcePath.String())
 		if !sourcePathExists {
+			incompressibleFilesStr[sourcePath.String()] = nil
 			slog.Debug(
 				"SourcePathNotFound", slog.String("sourcePath", sourcePath.String()),
 			)
 			continue
 		}
 
-		existingFiles = append(existingFiles, sourcePath.String())
+		compressibleFilesStr = append(compressibleFilesStr, sourcePath.String())
 	}
 
-	if len(existingFiles) < 1 {
-		return compressionProcessReport, errors.New("NoExistingFilesToCompress")
+	if len(compressibleFilesStr) == 0 {
+		return compressionProcessReport, errors.New("NoCompressibleFilesFound")
 	}
 
 	compressionTypeStr := "zip"
@@ -138,8 +139,7 @@ func (repo FilesCmdRepo) Compress(
 		return compressionProcessReport, errors.New("UnsupportedCompressionType")
 	}
 
-	destinationPathExists := infraHelper.FileExists(newDestinationPath.String())
-	if destinationPathExists {
+	if infraHelper.FileExists(newDestinationPath.String()) {
 		return compressionProcessReport, errors.New("DestinationPathAlreadyExists")
 	}
 
@@ -150,7 +150,7 @@ func (repo FilesCmdRepo) Compress(
 		compressionBinaryFlag = "-czf"
 	}
 
-	filesToCompress := strings.Join(existingFiles, " ")
+	filesToCompress := strings.Join(compressibleFilesStr, " ")
 	compressCmd := fmt.Sprintf(
 		"%s %s %s %s",
 		compressionBinary, compressionBinaryFlag,
@@ -170,7 +170,7 @@ func (repo FilesCmdRepo) Compress(
 		newDestinationPath,
 	)
 	for _, sourcePath := range compressDto.SourcePaths {
-		if !slices.Contains(existingFiles, sourcePath.String()) {
+		if _, isIncompressible := incompressibleFilesStr[sourcePath.String()]; isIncompressible {
 			compressionProcessReport.FailedPathsWithReason = append(
 				compressionProcessReport.FailedPathsWithReason,
 				valueObject.NewCompressionProcessFailure(
@@ -299,32 +299,24 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	sourcePathStr := moveDto.SourcePath.String()
 	if !infraHelper.FileExists(sourcePathStr) {
-		return errors.New("SourceToMoveOrRenameNotFound")
+		return errors.New("SourceFileNotFound")
 	}
 
-	sourceFileName := moveDto.SourcePath.ReadFileName()
-	destinationAbsolutePathStr := moveDto.DestinationPath.String() + "/" + sourceFileName.String()
-	destinationAbsolutePath, err := valueObject.NewUnixFilePath(
-		destinationAbsolutePathStr,
-	)
-	if err != nil {
-		return errors.New("BuildDestinationAbsolutePathError: " + err.Error())
-	}
-
-	if !infraHelper.FileExists(destinationAbsolutePathStr) {
-		return os.Rename(sourcePathStr, destinationAbsolutePathStr)
+	destinationPathStr := moveDto.DestinationPath.String()
+	if !infraHelper.FileExists(destinationPathStr) {
+		return os.Rename(sourcePathStr, destinationPathStr)
 	}
 
 	if !moveDto.ShouldOverwrite {
 		return nil
 	}
 
-	err = repo.Delete(destinationAbsolutePath)
+	err := repo.Delete(moveDto.DestinationPath)
 	if err != nil {
 		return errors.New("MoveFileToTrashError: " + err.Error())
 	}
 
-	return os.Rename(sourcePathStr, destinationAbsolutePathStr)
+	return os.Rename(sourcePathStr, destinationPathStr)
 }
 
 func (repo FilesCmdRepo) UpdateContent(

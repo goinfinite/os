@@ -243,15 +243,17 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 func (repo *ServicesQueryRepo) ReadInstalledItems(
 	requestDto dto.ReadInstalledServicesItemsRequest,
 ) (installedItemsDto dto.ReadInstalledServicesItemsResponse, err error) {
-	model := dbModel.InstalledService{}
+	installedServiceModel := dbModel.InstalledService{}
 	if requestDto.ServiceNature != nil {
-		model.Nature = requestDto.ServiceNature.String()
+		installedServiceModel.Nature = requestDto.ServiceNature.String()
 	}
 	if requestDto.ServiceType != nil {
-		model.Type = requestDto.ServiceType.String()
+		installedServiceModel.Type = requestDto.ServiceType.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.Model(&model).Where(&model)
+	dbQuery := repo.persistentDbSvc.Handler.
+		Model(&installedServiceModel).
+		Where(&installedServiceModel)
 	if requestDto.ServiceName != nil {
 		serviceNameLike := "%" + requestDto.ServiceName.String() + "%"
 		dbQuery = dbQuery.Where("name LIKE ?", serviceNameLike)
@@ -266,24 +268,25 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		)
 	}
 
-	resultModels := []dbModel.InstalledService{}
-	err = paginatedDbQuery.Find(&resultModels).Error
+	installedServiceModels := []dbModel.InstalledService{}
+	err = paginatedDbQuery.Find(&installedServiceModels).Error
 	if err != nil {
 		return installedItemsDto, errors.New("ReadInstalledServicesItemsError")
 	}
 
-	entities := []entity.InstalledService{}
-	for _, resultModel := range resultModels {
+	installedServiceEntities := []entity.InstalledService{}
+	for _, resultModel := range installedServiceModels {
 		entity, err := resultModel.ToEntity()
 		if err != nil {
 			slog.Debug(
 				"InstalledServiceItemModelToEntityError",
-				slog.String("name", resultModel.Name), slog.String("err", err.Error()),
+				slog.String("name", resultModel.Name),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
 
-		entities = append(entities, entity)
+		installedServiceEntities = append(installedServiceEntities, entity)
 	}
 
 	stoppedServicesNames, err := repo.readStoppedServicesNames()
@@ -294,27 +297,27 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}
 
 	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
-	for entityIndex, entity := range entities {
-		if !slices.Contains(stoppedServicesNames, entity.Name.String()) {
+	for serviceEntityIndex, serviceEntity := range installedServiceEntities {
+		if !slices.Contains(stoppedServicesNames, serviceEntity.Name.String()) {
 			continue
 		}
 
-		entities[entityIndex].Status = stoppedStatus
+		installedServiceEntities[serviceEntityIndex].Status = stoppedStatus
 	}
 
 	if requestDto.ServiceStatus != nil {
-		filteredEntities := []entity.InstalledService{}
-		for _, entity := range entities {
-			if entity.Status.String() != requestDto.ServiceStatus.String() {
+		filteredServiceEntities := []entity.InstalledService{}
+		for _, serviceEntity := range installedServiceEntities {
+			if serviceEntity.Status != *requestDto.ServiceStatus {
 				continue
 			}
 
-			filteredEntities = append(filteredEntities, entity)
+			filteredServiceEntities = append(filteredServiceEntities, serviceEntity)
 		}
 
-		entities = filteredEntities
+		installedServiceEntities = filteredServiceEntities
 
-		itemsTotal := uint64(len(filteredEntities))
+		itemsTotal := uint64(len(filteredServiceEntities))
 		responsePagination.ItemsTotal = &itemsTotal
 
 		pagesTotal := uint32(
@@ -328,12 +331,12 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 
 	if requestDto.ShouldIncludeMetrics != nil && *requestDto.ShouldIncludeMetrics {
 		responseDto.InstalledServicesWithMetrics = repo.installedServicesMetricsFactory(
-			entities,
+			installedServiceEntities,
 		)
 		return responseDto, nil
 	}
 
-	responseDto.InstalledServices = entities
+	responseDto.InstalledServices = installedServiceEntities
 	return responseDto, nil
 }
 
@@ -397,8 +400,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	}
 
 	requiredParams := []string{
-		"name", "nature", "type", "startCmd", "description",
-		"installCmdSteps",
+		"name", "nature", "type", "startCmd", "description", "installCmdSteps",
 	}
 	for _, requiredParam := range requiredParams {
 		if serviceMap[requiredParam] != nil {

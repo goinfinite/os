@@ -10,7 +10,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -389,7 +388,7 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 				placeholderValue = ""
 			}
 
-			printablePlaceholderValue := shellescape.StripUnsafe(placeholderValue)
+			printablePlaceholderValue := infraHelper.ShellEscape{}.StripUnsafe(placeholderValue)
 
 			cmdStepStr = strings.ReplaceAll(
 				cmdStepStr, "%"+stepPlaceholder+"%", printablePlaceholderValue,
@@ -410,22 +409,19 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 func (repo *ServicesCmdRepo) CreateInstallable(
 	createDto dto.CreateInstallableService,
 ) (installedServiceName valueObject.ServiceName, err error) {
-	readInstalledItemRequestDto := dto.ReadInstallableServicesItemsRequest{
-		ServiceName: &createDto.Name,
-	}
-	installableService, err := repo.servicesQueryRepo.ReadFirstInstallableItem(
-		readInstalledItemRequestDto,
+	installableServiceEntity, err := repo.servicesQueryRepo.ReadFirstInstallableItem(
+		dto.ReadInstallableServicesItemsRequest{ServiceName: &createDto.Name},
 	)
 	if err != nil {
 		return installedServiceName, err
 	}
 
-	if installableService.Nature == valueObject.ServiceNatureMulti {
+	if installableServiceEntity.Nature == valueObject.ServiceNatureMulti {
 		if createDto.StartupFile == nil {
-			if installableService.StartupFile == nil {
+			if installableServiceEntity.StartupFile == nil {
 				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
 			}
-			createDto.StartupFile = installableService.StartupFile
+			createDto.StartupFile = installableServiceEntity.StartupFile
 		}
 
 		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
@@ -434,13 +430,13 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		)
 		if err != nil {
 			return installedServiceName, errors.New(
-				"AddFileHashNameSuffixError: " + err.Error(),
+				"AppendFileHashNameSuffixError: " + err.Error(),
 			)
 		}
 	}
 	installedServiceName = createDto.Name
 
-	serviceVersion := installableService.Versions[0]
+	serviceVersion := installableServiceEntity.Versions[0]
 	if createDto.Version != nil {
 		serviceVersion = *createDto.Version
 	}
@@ -456,18 +452,17 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		"version":         serviceVersion.String(),
 		"primaryHostname": primaryHostname.String(),
 	}
+	isSoloService := installableServiceEntity.Nature == valueObject.ServiceNatureSolo
+	if createDto.StartupFile != nil && !isSoloService {
+		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
+	}
 
 	installedServiceNameStr := strings.ToLower(installedServiceName.String())
 	installablesAssetsDirPath := fmt.Sprintf(
 		"%s/%s/%s/assets", infraEnvs.InstallableServicesItemsDir,
-		installableService.Type.String(), installedServiceNameStr,
+		installableServiceEntity.Type.String(), installedServiceNameStr,
 	)
 	stepsPlaceholders["installableServiceAssetsDirPath"] = installablesAssetsDirPath
-
-	isSoloService := installableService.Nature == valueObject.ServiceNatureSolo
-	if createDto.StartupFile != nil && isSoloService {
-		stepsPlaceholders["startupFile"] = createDto.StartupFile.String()
-	}
 
 	err = repo.createDefaultDirectories(installedServiceName)
 	if err != nil {
@@ -475,36 +470,36 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	}
 
 	usableInstallCmdSteps, err := repo.replaceCmdStepsPlaceholders(
-		installableService.InstallCmdSteps, stepsPlaceholders,
+		installableServiceEntity.InstallCmdSteps, stepsPlaceholders,
 	)
 	if err != nil {
 		return installedServiceName, err
 	}
 
 	err = repo.runCmdSteps(
-		"Install", usableInstallCmdSteps, installableService.InstallTimeoutSecs,
+		"Install", usableInstallCmdSteps, installableServiceEntity.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return installedServiceName, err
 	}
 
-	if installableService.ExecUser != nil {
+	if installableServiceEntity.ExecUser != nil {
 		err = repo.updateDefaultDirectoriesPermissions(
-			installableService.Name, *installableService.ExecUser,
+			installableServiceEntity.Name, *installableServiceEntity.ExecUser,
 		)
 		if err != nil {
 			return installedServiceName, err
 		}
 	}
 
-	startCmdSteps := []valueObject.UnixCommand{installableService.StartCmd}
+	startCmdSteps := []valueObject.UnixCommand{installableServiceEntity.StartCmd}
 	usableCmdSteps := map[string][]valueObject.UnixCommand{
 		"start":     startCmdSteps,
-		"stop":      installableService.StopCmdSteps,
-		"preStart":  installableService.PreStartCmdSteps,
-		"postStart": installableService.PostStartCmdSteps,
-		"preStop":   installableService.PreStopCmdSteps,
-		"postStop":  installableService.PostStopCmdSteps,
+		"stop":      installableServiceEntity.StopCmdSteps,
+		"preStart":  installableServiceEntity.PreStartCmdSteps,
+		"postStart": installableServiceEntity.PostStartCmdSteps,
+		"preStop":   installableServiceEntity.PreStopCmdSteps,
+		"postStop":  installableServiceEntity.PostStopCmdSteps,
 	}
 	for cmdStepType, cmdSteps := range usableCmdSteps {
 		usableCmdSteps[cmdStepType], err = repo.replaceCmdStepsPlaceholders(
@@ -522,12 +517,12 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	usableStartCmd := usableStartCmdSteps[0]
 
 	if len(createDto.PortBindings) == 0 {
-		createDto.PortBindings = installableService.PortBindings
+		createDto.PortBindings = installableServiceEntity.PortBindings
 	}
 
 	installedServiceModel := dbModel.NewInstalledService(
-		installedServiceName.String(), installableService.Nature.String(),
-		installableService.Type.String(), serviceVersion.String(),
+		installedServiceName.String(), installableServiceEntity.Nature.String(),
+		installableServiceEntity.Type.String(), serviceVersion.String(),
 		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
 		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
@@ -535,13 +530,13 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		createDto.MaxStartRetries, nil, nil, nil,
 	)
 
-	if installableService.ExecUser != nil {
-		execUserStr := installableService.ExecUser.String()
+	if installableServiceEntity.ExecUser != nil {
+		execUserStr := installableServiceEntity.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
 	}
 
-	if installableService.WorkingDirectory != nil {
-		workingDirectoryStr := installableService.WorkingDirectory.String()
+	if installableServiceEntity.WorkingDirectory != nil {
+		workingDirectoryStr := installableServiceEntity.WorkingDirectory.String()
 		installedServiceModel.WorkingDirectory = &workingDirectoryStr
 	}
 	if createDto.WorkingDir != nil {
@@ -554,18 +549,18 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installedServiceModel.StartupFile = &startupFileStr
 	}
 
-	if installableService.LogOutputPath != nil {
-		logOutputPathStr := installableService.LogOutputPath.String()
+	if installableServiceEntity.LogOutputPath != nil {
+		logOutputPathStr := installableServiceEntity.LogOutputPath.String()
 		installedServiceModel.LogOutputPath = &logOutputPathStr
 	}
 
-	if installableService.LogErrorPath != nil {
-		logErrorPathStr := installableService.LogErrorPath.String()
+	if installableServiceEntity.LogErrorPath != nil {
+		logErrorPathStr := installableServiceEntity.LogErrorPath.String()
 		installedServiceModel.LogErrorPath = &logErrorPathStr
 	}
 
-	if installableService.AvatarUrl != nil {
-		avatarUrlStr := installableService.AvatarUrl.String()
+	if installableServiceEntity.AvatarUrl != nil {
+		avatarUrlStr := installableServiceEntity.AvatarUrl.String()
 		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 

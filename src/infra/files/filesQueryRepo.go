@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -18,7 +19,7 @@ import (
 
 type FilesQueryRepo struct{}
 
-func (repo FilesQueryRepo) unixFileFactory(
+func (repo *FilesQueryRepo) unixFileFactory(
 	filePath valueObject.UnixFilePath,
 	shouldReturnContent bool,
 ) (entity.UnixFile, error) {
@@ -79,7 +80,7 @@ func (repo FilesQueryRepo) unixFileFactory(
 
 	unixFileMimeType := unixFileExtension.GetMimeType()
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.DirectoryMimeType
+		unixFileMimeType = valueObject.MimeTypeDirectory
 		unixFileExtensionPtr = nil
 	}
 
@@ -121,19 +122,17 @@ func (repo FilesQueryRepo) unixFileFactory(
 	return unixFile, nil
 }
 
-func (repo FilesQueryRepo) simplifiedUnixFileFactory(
+func (repo *FilesQueryRepo) simplifiedUnixFileFactory(
 	unixFilePath valueObject.UnixFilePath,
 ) (simplifiedUnixFile entity.SimplifiedUnixFile, err error) {
-	unixFilePath = unixFilePath.ReadWithoutTrailingSlash()
-
 	fileInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
 		return simplifiedUnixFile, err
 	}
 
-	unixFileMimeType := valueObject.GenericMimeType
+	unixFileMimeType := valueObject.MimeTypeGeneric
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.DirectoryMimeType
+		unixFileMimeType = valueObject.MimeTypeDirectory
 	}
 
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
@@ -146,141 +145,128 @@ func (repo FilesQueryRepo) simplifiedUnixFileFactory(
 	), nil
 }
 
-func (repo FilesQueryRepo) readUnixFileBranch(
-	desiredAbsolutePath valueObject.UnixFilePath,
+func (repo *FilesQueryRepo) unixFileBranchFactory(
+	branchAbsolutePath valueObject.UnixFilePath,
 	shouldIncludeFiles bool,
-) (treeBranch dto.UnixFileBranch, err error) {
-	treeDirectory, err := repo.simplifiedUnixFileFactory(desiredAbsolutePath)
+) (fileBranch dto.UnixFileBranch, err error) {
+	simplifiedBranchFileEntity, err := repo.simplifiedUnixFileFactory(branchAbsolutePath)
 	if err != nil {
-		return treeBranch, err
+		return fileBranch, err
 	}
-	treeBranch = dto.NewUnixFileBranch(treeDirectory)
+	fileBranch = dto.NewUnixFileBranch(simplifiedBranchFileEntity)
 
 	findCmdArgs := []string{
-		"-L", desiredAbsolutePath.String(), "-mindepth", "1", "-maxdepth", "1",
+		"-L", branchAbsolutePath.String(),
+		"-mindepth", "1",
+		"-maxdepth", "1",
 	}
 	if !shouldIncludeFiles {
 		findCmdArgs = append(findCmdArgs, "-type", "d")
 	}
 
-	rawDirectoryTree, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawBranchTwigs, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find",
 		Args:    findCmdArgs,
 	})
 	if err != nil {
-		return treeBranch, err
+		return fileBranch, err
 	}
 
-	directoriesToBrowse := strings.Split(rawDirectoryTree, "\n")
-	if len(directoriesToBrowse) == 0 {
-		return treeBranch, err
+	if rawBranchTwigs == "" {
+		return fileBranch, nil
 	}
 
-	for _, rawDirectoryPath := range directoriesToBrowse {
-		if rawDirectoryPath == "" {
+	rawFactorableFiles := strings.SplitSeq(rawBranchTwigs, "\n")
+	for rawFilePath := range rawFactorableFiles {
+		if rawFilePath == "" {
 			continue
 		}
 
-		directoryPath, err := valueObject.NewUnixFilePath(rawDirectoryPath)
+		twigPath, err := valueObject.NewUnixFilePath(rawFilePath)
 		if err != nil {
 			slog.Error(
 				err.Error(),
-				slog.String("directoryPath", rawDirectoryPath),
+				slog.String("rawTwigPath", rawFilePath),
 			)
 			continue
 		}
 
-		treeDirectory, err = repo.simplifiedUnixFileFactory(directoryPath)
+		simplifiedTwigFileEntity, err := repo.simplifiedUnixFileFactory(twigPath)
 		if err != nil {
 			slog.Error(
 				err.Error(),
-				slog.String("directoryPath", rawDirectoryPath),
+				slog.String("twigPath", twigPath.String()),
 			)
 			continue
 		}
-		treeBranch.Branches[treeDirectory.Name] = dto.NewUnixFileBranch(treeDirectory)
+		fileBranch.Branches[simplifiedTwigFileEntity.Name] = dto.NewUnixFileBranch(simplifiedTwigFileEntity)
 	}
 
-	return treeBranch, nil
+	return fileBranch, nil
 }
 
-func (repo FilesQueryRepo) readUnixFileTree(
-	desiredAbsolutePath valueObject.UnixFilePath,
-) (trunkBranch dto.UnixFileBranch, err error) {
-	fileSystemRootDirectory, err := repo.simplifiedUnixFileFactory(
-		valueObject.FileSystemRootDirPath,
-	)
-	if err != nil {
-		return trunkBranch, err
-	}
-	trunkBranch = dto.NewUnixFileBranch(fileSystemRootDirectory)
+func (repo *FilesQueryRepo) unixFileTreeFactory(
+	leafAbsolutePath valueObject.UnixFilePath,
+) (treeTrunk dto.UnixFileBranch, err error) {
+	rawTreeBranches := strings.SplitSeq(leafAbsolutePath.String(), "/")
 
-	directoriesToBrowse := strings.Split(
-		desiredAbsolutePath.ReadWithoutTrailingSlash().String(), "/",
-	)
+	shouldIncludeFiles := false
+	iterationBranch := treeTrunk
+	iterationBranchPath := ""
+	for rawBranchName := range rawTreeBranches {
+		rawBranchName = strings.TrimSpace(rawBranchName)
+		isTreeTrunk := rawBranchName == ""
 
-	directoriesToBrowseLength := len(directoriesToBrowse)
-	if directoriesToBrowseLength == 0 {
-		return trunkBranch, err
-	}
-
-	currentDirectoryPath := ""
-	currentBranch := trunkBranch
-	for rawDirectoryIndex, rawDirectoryName := range directoriesToBrowse {
-		currentDirectoryPath += rawDirectoryName + "/"
-
-		isRootDirectory := rawDirectoryIndex == 0
-		if isRootDirectory {
-			currentDirectoryPath = "/"
-		}
-
-		directoryPath, err := valueObject.NewUnixFilePath(currentDirectoryPath)
+		iterationBranchPath += rawBranchName + "/"
+		branchFilePath, err := valueObject.NewUnixFilePath(iterationBranchPath)
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				err.Error(),
-				slog.String("directoryPath", currentDirectoryPath),
+				slog.String("rawBranchPath", iterationBranchPath),
 			)
 			continue
 		}
 
-		isTheLastDirectory := directoriesToBrowseLength == (rawDirectoryIndex + 1)
-		treeBranch, err := repo.readUnixFileBranch(directoryPath, isTheLastDirectory)
+		treeBranch, err := repo.unixFileBranchFactory(branchFilePath, shouldIncludeFiles)
 		if err != nil {
 			slog.Error(
 				err.Error(),
-				slog.String("directoryPath", currentDirectoryPath),
+				slog.String("branchFilePath", branchFilePath.String()),
 			)
 			continue
 		}
+		if isTreeTrunk {
+			treeTrunk = treeBranch
+			iterationBranch = treeTrunk
+			continue
+		}
 
-		currentBranch.Branches[treeBranch.Name] = treeBranch
-		currentBranch = currentBranch.Branches[treeBranch.Name]
+		iterationBranch.Branches[treeBranch.Name] = treeBranch
+		iterationBranch = treeBranch
 	}
 
-	return trunkBranch, nil
+	return treeTrunk, nil
 }
 
-func (repo FilesQueryRepo) Read(
+func (repo *FilesQueryRepo) Read(
 	requestDto dto.ReadFilesRequest,
 ) (responseDto dto.ReadFilesResponse, err error) {
-	sourcePath := requestDto.SourcePath.ReadWithoutTrailingSlash()
-	sourcePathStr := sourcePath.String()
+	sourcePathStr := requestDto.SourcePath.String()
 
-	exists := infraHelper.FileExists(sourcePathStr)
-	if !exists {
+	if !infraHelper.FileExists(sourcePathStr) {
 		return responseDto, errors.New("PathNotFound")
 	}
 
 	sourcePathInfo, err := os.Stat(sourcePathStr)
 	if err != nil {
-		return responseDto, errors.New("ReadSourcePathInfoError")
+		return responseDto, errors.New("ReadSourcePathInfoError: " + err.Error())
 	}
 
-	filesToFactory := []valueObject.UnixFilePath{sourcePath}
+	factorableFilePaths := []valueObject.UnixFilePath{requestDto.SourcePath}
 
 	if sourcePathInfo.IsDir() {
-		filesToFactoryWithoutSourcePath := filesToFactory[1:]
-		filesToFactory = filesToFactoryWithoutSourcePath
+		factorableFilePathsWithoutSourcePath := factorableFilePaths[1:]
+		factorableFilePaths = factorableFilePathsWithoutSourcePath
 
 		rawDirectoryFiles, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 			Command: "find",
@@ -294,30 +280,34 @@ func (repo FilesQueryRepo) Read(
 			return responseDto, errors.New("ReadDirectoryError")
 		}
 
-		rawDirectoryFilesList := strings.Split(rawDirectoryFiles, "\n")
-		for _, fileToFactoryStr := range rawDirectoryFilesList {
+		rawDirectoryFilesList := strings.SplitSeq(rawDirectoryFiles, "\n")
+		for fileToFactoryStr := range rawDirectoryFilesList {
 			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
 			if err != nil {
 				slog.Error(
-					"FileToFactoryError", slog.String("filePath", filePath.String()),
+					"FactoryFileError",
+					slog.String("filePath", filePath.String()),
 					slog.String("err", err.Error()),
 				)
 				continue
 			}
 
-			filesToFactory = append(filesToFactory, filePath)
+			factorableFilePaths = append(factorableFilePaths, filePath)
 		}
 	}
 
 	shouldReturnContent := false
-	if len(filesToFactory) == 1 {
+	if len(factorableFilePaths) == 1 {
 		shouldReturnContent = true
 	}
 
 	fileEntities := []entity.UnixFile{}
-	for _, filePath := range filesToFactory {
+	directoryEntities := []entity.UnixFile{}
+
+	isSourcePathDir := sourcePathInfo.IsDir()
+	for _, filePath := range factorableFilePaths {
 		isFileTheSourcePath := filePath.String() == sourcePathStr
-		if isFileTheSourcePath && sourcePathInfo.IsDir() {
+		if isFileTheSourcePath && isSourcePathDir {
 			continue
 		}
 
@@ -330,30 +320,40 @@ func (repo FilesQueryRepo) Read(
 			continue
 		}
 
+		if fileEntity.MimeType.IsDir() {
+			directoryEntities = append(directoryEntities, fileEntity)
+			continue
+		}
+
 		fileEntities = append(fileEntities, fileEntity)
 	}
 
+	slices.SortStableFunc(fileEntities, func(a, b entity.UnixFile) int {
+		return strings.Compare(a.Name.String(), b.Name.String())
+	})
+	slices.SortStableFunc(directoryEntities, func(a, b entity.UnixFile) int {
+		return strings.Compare(a.Name.String(), b.Name.String())
+	})
+	fileEntities = append(directoryEntities, fileEntities...)
+
 	responseDto = dto.ReadFilesResponse{Files: fileEntities}
 	if requestDto.ShouldIncludeFileTree != nil && *requestDto.ShouldIncludeFileTree {
-		unixFileTree, err := repo.readUnixFileTree(sourcePath)
+		filesTree, err := repo.unixFileTreeFactory(requestDto.SourcePath)
 		if err != nil {
 			return responseDto, err
 		}
 
-		responseDto.FileTree = &unixFileTree
+		responseDto.FileTree = &filesTree
 	}
 
 	return responseDto, nil
 }
 
-func (repo FilesQueryRepo) ReadFirst(
+func (repo *FilesQueryRepo) ReadFirst(
 	unixFilePath valueObject.UnixFilePath,
-) (entity.UnixFile, error) {
-	var unixFile entity.UnixFile
-
-	exists := infraHelper.FileExists(unixFilePath.String())
-	if !exists {
-		return unixFile, errors.New("FileNotFound")
+) (unixFileEntity entity.UnixFile, err error) {
+	if !infraHelper.FileExists(unixFilePath.String()) {
+		return unixFileEntity, errors.New("FileNotFound")
 	}
 
 	shouldReturnContent := false

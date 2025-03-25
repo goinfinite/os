@@ -72,7 +72,7 @@ document.addEventListener("alpine:init", () => {
       this.saveCurrentWorkingDirPathToHistory("previous");
       this.reloadFileManagerContent();
     },
-    supportedMimeTypesToEdit: [
+    codeEditorSupportedMimeTypes: [
       "application/javascript",
       "application/json",
       "application/pgp-keys",
@@ -97,7 +97,7 @@ document.addEventListener("alpine:init", () => {
         document.getElementById("fileEntity_" + fileName).textContent
       );
 
-      return !this.supportedMimeTypesToEdit.includes(fileEntity.mimeType);
+      return !this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType);
     },
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
@@ -144,20 +144,13 @@ document.addEventListener("alpine:init", () => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
+      const currentUrl = window.location.href;
+      const osBaseUrl = currentUrl.replace("/file-manager/", "");
 
-      const shouldDisplayToast = false;
-      Infinite.JsonAjax(
-        "GET",
-        "/api/v1/files/?sourcePath=" + fileEntity.path,
-        {},
-        shouldDisplayToast
-      ).then((readFilesResponseDto) => {
-        Infinite.DownloadFile(
-          fileEntity.name,
-          readFilesResponseDto.files[0].content,
-          fileEntity.mimeType
-        );
-      });
+      window.open(
+        osBaseUrl + "/api/v1/files/download/?sourcePath=" + fileEntity.path,
+        "_blank"
+      );
     },
     handleSelectPermission(
       permissionClass,
@@ -200,37 +193,10 @@ document.addEventListener("alpine:init", () => {
       this.selectedFileNames = [];
     },
 
-    // Modal States
-    isCreateFileModalOpen: false,
-    openCreateFileModal() {
-      this.resetPrimaryStates();
-
-      this.isCreateFileModalOpen = true;
-    },
-    closeCreateFileModal() {
-      this.isCreateFileModalOpen = false;
-    },
-    isCreateDirectoryModalOpen: false,
-    openCreateDirectoryModal() {
-      this.resetPrimaryStates();
-
-      this.isCreateDirectoryModalOpen = true;
-    },
-    closeCreateDirectoryModal() {
-      this.isCreateDirectoryModalOpen = false;
-    },
-    isUploadFilesModalOpen: false,
-    openUploadFilesModal() {
-      this.resetPrimaryStates();
-
-      this.isUploadFilesModalOpen = true;
-    },
-    closeUploadFilesModal() {
-      this.isUploadFilesModalOpen = false;
-    },
-    isUpdateFileContentModalOpen: false,
+    // Code Editor States
     codeEditorInstance: null,
     codeEditorFontSize: 12,
+    codeEditorMaxFileSize: 5242880,
     resizeCodeEditorFont(operation) {
       switch (operation) {
         case "decrease":
@@ -253,12 +219,12 @@ document.addEventListener("alpine:init", () => {
         document.getElementById("fileEntity_" + fileName).textContent
       );
 
-      if (!this.supportedMimeTypesToEdit.includes(fileEntity.mimeType)) {
+      if (!this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType)) {
         this.resetAuxiliaryStates();
         return;
       }
 
-      if (fileEntity.size >= 1048576) {
+      if (fileEntity.size >= this.codeEditorMaxFileSize) {
         this.downloadFile();
         return;
       }
@@ -317,6 +283,36 @@ document.addEventListener("alpine:init", () => {
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
     },
+
+    // Generic Modal States
+    isCreateFileModalOpen: false,
+    openCreateFileModal() {
+      this.resetPrimaryStates();
+
+      this.isCreateFileModalOpen = true;
+    },
+    closeCreateFileModal() {
+      this.isCreateFileModalOpen = false;
+    },
+    isCreateDirectoryModalOpen: false,
+    openCreateDirectoryModal() {
+      this.resetPrimaryStates();
+
+      this.isCreateDirectoryModalOpen = true;
+    },
+    closeCreateDirectoryModal() {
+      this.isCreateDirectoryModalOpen = false;
+    },
+    isUploadFilesModalOpen: false,
+    openUploadFilesModal() {
+      this.resetPrimaryStates();
+
+      this.isUploadFilesModalOpen = true;
+    },
+    closeUploadFilesModal() {
+      this.isUploadFilesModalOpen = false;
+    },
+    isUpdateFileContentModalOpen: false,
     isMoveFilesModalOpen: false,
     openMoveFilesModal() {
       this.resetPrimaryStates();

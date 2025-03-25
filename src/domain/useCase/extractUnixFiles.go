@@ -22,5 +22,7 @@ func ExtractUnixFiles(
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).ExtractUnixFile(extractDto)
 
+	NormalizeKnownUnixFilePathPermissions(filesCmdRepo, extractDto.DestinationPath)
+
 	return nil
 }

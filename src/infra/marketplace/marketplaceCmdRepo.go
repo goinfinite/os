@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -184,7 +183,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 				dataFieldValue = ""
 			}
 
-			printableDataFieldValue := shellescape.StripUnsafe(dataFieldValue)
+			printableDataFieldValue := infraHelper.ShellEscape{}.StripUnsafe(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
 				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", printableDataFieldValue,
@@ -661,7 +660,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 
 	rawSoftDeleteDestDirPath := fmt.Sprintf(
 		"%s/%s-%s-%s",
-		valueObject.AppTrashDirPath.String(), installedItem.Slug.String(),
+		valueObject.UnixFilePathTrashDir.String(), installedItem.Slug.String(),
 		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
 	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)

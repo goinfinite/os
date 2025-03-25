@@ -7,6 +7,8 @@ import (
 	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -18,15 +20,20 @@ templ FileManagerIndex(
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
 	<!-- FileManager HTML -->
 	<div x-data="fileManager">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"File Manager", "", "ph-files",
-				)
+		@componentStructural.PageTitle("File Manager", "", "ph-files")
+		<div id="file-manager-content" class="mt-3">
+			<div id="file-explorer" class="rounded-lg bg-neutral-950/30 p-3">
+				@FileExplorerToolbar()
+				<div class="mt-6 flex h-[calc(60svh)] flex-row gap-4 overflow-hidden xl:h-[calc(70svh)]">
+					<data id="current-source-path" class="hidden" value={ workingDirPath.String() }></data>
+					<div class="w-1/4 overflow-y-auto overflow-x-hidden xl:w-1/5">
+						@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
+					</div>
+					<div class="bg-neutral-50/2.5 w-3/4 overflow-y-auto overflow-x-hidden rounded-lg xl:w-4/5">
+						@FilesExplorer(readFilesResponseDto.Files)
+					</div>
+				</div>
 			</div>
-		</div>
-		<div id="file-manager-content">
-			@FileManagerModal(workingDirPath, readFilesResponseDto)
 			@CreateFileModal()
 			@CreateDirectoryModal()
 			@UploadFilesModal()
@@ -46,7 +53,8 @@ templ FileManagerIndex(
 }
 
 templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick string) {
-	<div class="relative h-[90%] w-full">
+	<!-- FilesExplorerToolbar SearchBar -->
+	<div class="relative h-full w-full">
 		<input
 			type="text"
 			@keyup.enter={ onClick }
@@ -69,21 +77,21 @@ templ FilesExplorerSearchBar(id, icon, bindModelValuePath, tooltipText, onClick 
 	<button
 		type="button"
 		@click={ onClick }
-		class="bg-os-400 border-os-200 hover:border-os-100 hover:bg-os-200 inline-flex h-[90%] items-center rounded-r-md border-y border-r p-2 text-center"
+		class="bg-os-400 border-os-200 hover:border-os-100 hover:bg-os-200 inline-flex items-center rounded-r-md border-y border-r p-2 text-center"
 	>
-		<i class="ph-duotone ph-arrow-right text-xl"></i>
+		<i class="ph-duotone ph-arrow-fat-lines-right text-xl"></i>
 	</button>
 }
 
-templ FilesExplorerTableHeaders() {
-	<!-- FilesExplorerTable Headers-->
-	<div class="grid grid-rows-2 gap-y-2 rounded">
-		<!-- FilesExplorerTable Headers Buttons -->
-		<div class="grid grid-cols-4 gap-3">
-			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+templ FileExplorerToolbar() {
+	<!-- FileExplorerToolbar -->
+	<div class="flex flex-col gap-4 rounded-lg">
+		<!-- FileExplorerToolbar FirstRow -->
+		<div class="*:bg-neutral-50/2.5 *:flex *:items-center *:justify-center *:gap-3 *:rounded-lg *:p-2 flex flex-row gap-4">
+			<div class="w-1/4 xl:w-1/5">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-file-plus",
-					Description:             "Add File",
+					Description:             "Create File",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateFileModal()",
@@ -91,7 +99,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-folder-plus",
-					Description:             "Add Folder",
+					Description:             "Create Directory",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openCreateDirectoryModal()",
@@ -99,14 +107,23 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-upload-simple",
-					Description:             "Upload",
+					Description:             "Upload File(s)",
 					DefaultColor:            "os-800",
 					HoverColor:              "os-200",
 					OnClick:                 "openUploadFilesModal()",
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 			</div>
-			<div class="bg-os-500 col-span-2 flex justify-center gap-3 rounded p-2">
+			<div class="flex-grow">
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-download-simple",
+					Description:               "Download",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "downloadFile()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
+				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-code",
 					Description:               "Edit",
@@ -115,6 +132,15 @@ templ FilesExplorerTableHeaders() {
 					OnClick:                   "openUpdateFileContentModal()",
 					HideTextBelowBreakpoint:   "[100rem]",
 					DeactivateButtonCondition: "shouldUpdateFileContentButtonBeDeactivate",
+				})
+				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
+					Icon:                      "ph-truck",
+					Description:               "Move",
+					DefaultColor:              "os-800",
+					HoverColor:                "os-200",
+					OnClick:                   "openMoveFilesModal()",
+					HideTextBelowBreakpoint:   "[100rem]",
+					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-copy",
@@ -126,25 +152,7 @@ templ FilesExplorerTableHeaders() {
 					DeactivateButtonCondition: "selectedFileNames.length !== 1",
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-arrow-square-out",
-					Description:               "Move",
-					DefaultColor:              "os-800",
-					HoverColor:                "os-200",
-					OnClick:                   "openMoveFilesModal()",
-					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length !== 1",
-				})
-				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-download-simple",
-					Description:               "Download",
-					DefaultColor:              "os-800",
-					HoverColor:                "os-200",
-					OnClick:                   "downloadFile()",
-					HideTextBelowBreakpoint:   "[100rem]",
-					DeactivateButtonCondition: "selectedFileNames.length !== 1",
-				})
-				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
-					Icon:                      "ph-pencil-line",
+					Icon:                      "ph-textbox",
 					Description:               "Rename",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
@@ -157,12 +165,12 @@ templ FilesExplorerTableHeaders() {
 					Description:               "Delete",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
-					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.AppTrashDirPath.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
+					OnClick:                   "currentWorkingDirPath.startsWith('" + valueObject.UnixFilePathTrashDir.String() + "') ? openEmptyTrashModal() : openMoveFilesToTrashModal()",
 					HideTextBelowBreakpoint:   "[107.5rem]",
 					DeactivateButtonCondition: "selectedFileNames.length === 0",
 				})
 			</div>
-			<div class="bg-os-500 flex justify-center gap-3 rounded p-2">
+			<div class="w-1/4">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-folder-lock",
 					Description:               "Permissions",
@@ -183,7 +191,7 @@ templ FilesExplorerTableHeaders() {
 				})
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                      "ph-split-horizontal",
-					Description:               "Decompress",
+					Description:               "Extract",
 					DefaultColor:              "os-800",
 					HoverColor:                "os-200",
 					OnClick:                   "decompressFile()",
@@ -192,15 +200,15 @@ templ FilesExplorerTableHeaders() {
 				})
 			</div>
 		</div>
-		<!-- FilesExplorerTable Headers Search Bars -->
-		<div class="grid grid-cols-4 gap-2">
-			<div class="flex items-center justify-center gap-1 rounded p-2">
+		<!-- FileExplorerToolbar SecondRow -->
+		<div class="*:flex *:flex-row *:items-center *:justify-center flex flex-row gap-4">
+			<div class="w-1/4 gap-2 xl:w-1/5">
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:                    "ph-house",
 					Description:             "Home",
 					DefaultColor:            "os-400",
 					HoverColor:              "os-200",
-					OnClick:                 "desiredWorkingDirPath = '" + valueObject.DefaultAppWorkingDirPath.String() + "'; accessWorkingDirPath()",
+					OnClick:                 "desiredWorkingDirPath = '" + valueObject.UnixFilePathAppWorkingDir.String() + "'; accessWorkingDirPath()",
 					HideTextBelowBreakpoint: "[107.5rem]",
 				})
 				@componentStructural.RoundedSquareButton(componentStructural.RoundedSquareButtonDto{
@@ -229,10 +237,10 @@ templ FilesExplorerTableHeaders() {
 					TooltipText:  "Show Trash",
 					DefaultColor: "os-400",
 					HoverColor:   "os-200",
-					OnClick:      "desiredWorkingDirPath = '" + valueObject.AppTrashDirPath.String() + "'; accessWorkingDirPath()",
+					OnClick:      "desiredWorkingDirPath = '" + valueObject.UnixFilePathTrashDir.String() + "'; accessWorkingDirPath()",
 				})
 			</div>
-			<div class="col-span-3 flex items-center justify-center rounded px-5 py-2">
+			<div class="flex-grow rounded-lg">
 				@FilesExplorerSearchBar(
 					"fileExplorerSourcePath", "ph-folder", "desiredWorkingDirPath",
 					`Search and open another directory.`,
@@ -247,14 +255,15 @@ templ DirectoriesTreeItems(
 	workDirPath valueObject.UnixFilePath,
 	unixFileTree dto.UnixFileBranch,
 ) {
-	for _, fileBranch := range unixFileTree.Branches {
-		if fileBranch.MimeType == "directory" {
-			<div class="space-y-2 pl-2">
-				<a
-					class="flex w-fit cursor-pointer items-center"
-					@click={ "desiredWorkingDirPath = '" + fileBranch.Path.String() + "'; accessWorkingDirPath()" }
-				>
-					{{
+	{{ lexicalOrderBranchesNames := slices.Sorted(maps.Keys(unixFileTree.Branches)) }}
+	for _, branchName := range lexicalOrderBranchesNames {
+		{{ fileBranch := unixFileTree.Branches[branchName] }}
+		<li>
+			<a
+				class="flex w-fit cursor-pointer items-center"
+				@click={ "desiredWorkingDirPath = '" + fileBranch.Path.String() + "'; accessWorkingDirPath()" }
+			>
+				{{
 						itemIconClasses := "ph-bold mr-2 text-xs text-neutral-500 xl:text-sm"
 						dirIconClasses := "ph-bold text-infinite-500 mr-1 text-sm xl:text-base"
 						dirNameClasses := "text-sm xl:text-base"
@@ -272,16 +281,17 @@ templ DirectoriesTreeItems(
 							itemIconClasses += " ph-caret-right"
 							dirIconClasses += " ph-folder"
 						}
-					}}
-					<i class={ itemIconClasses }></i>
-					<i class={ dirIconClasses }></i>
-					<p class={ dirNameClasses }>{ fileBranch.Name.String() }</p>
-				</a>
-				if len(fileBranch.Branches) > 0 {
+				}}
+				<i class={ itemIconClasses }></i>
+				<i class={ dirIconClasses }></i>
+				<p class={ dirNameClasses }>{ fileBranch.Name.String() }</p>
+			</a>
+			if len(fileBranch.Branches) > 0 {
+				<ul class="*:my-1.5 ml-2 list-none">
 					@DirectoriesTreeItems(workDirPath, fileBranch)
-				}
-			</div>
-		}
+				</ul>
+			}
+		</li>
 	}
 }
 
@@ -289,14 +299,23 @@ templ DirectoriesTree(
 	workingDirPath valueObject.UnixFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
-	<!-- FilesExplorerTable DirectoriesTree -->
+	<!-- FilesExplorerDirectoriesTree -->
 	if unixFileTree != nil {
-		<div class="flex cursor-default items-center">
-			<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
-			<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
-			<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
-		</div>
-		@DirectoriesTreeItems(workingDirPath, *unixFileTree)
+		<ul class="*:my-1.5 list-none">
+			<li>
+				<a
+					class="flex w-fit cursor-pointer items-center"
+					@click={ "desiredWorkingDirPath = '" + unixFileTree.Path.String() + "'; accessWorkingDirPath()" }
+				>
+					<i class="ph-bold ph-caret-down mr-2 text-xs text-neutral-500 xl:text-sm"></i>
+					<i class="ph-bold ph-tree mr-1 text-sm text-neutral-500 xl:text-base"></i>
+					<p class="text-sm xl:text-base">{ unixFileTree.Name.String() }</p>
+				</a>
+			</li>
+			<ul class="*:my-1.5 ml-2 list-none">
+				@DirectoriesTreeItems(workingDirPath, *unixFileTree)
+			</ul>
+		</ul>
 	} else {
 		<div class="flex justify-center">
 			<p class="italic text-slate-500">No directories or files found.</p>
@@ -305,96 +324,73 @@ templ DirectoriesTree(
 }
 
 templ FilesExplorer(unixFilesList []entity.UnixFile) {
-	<!-- FilesExplorerTable FilesExplorer -->
-	<div class="bg-os-500 col-span-3 mr-2 w-full">
-		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
-			<!-- AccountsTable Header -->
-			<thead class="text-[0.6rem] uppercase text-neutral-400 xl:text-xs">
-				<tr class="bg-os-300 h-12">
-					<th scope="col" class="w-0.5/10 py-3 text-center text-base">
+	<!-- FilesExplorerTable -->
+	<table class="w-full border-collapse overflow-y-auto rounded-lg transition-all duration-300 ease-in-out">
+		<!-- FileExplorerTable Header -->
+		<thead class="text-xs uppercase text-neutral-400">
+			<tr class="bg-os-300 *:text-left *:py-3 h-12">
+				<th class="w-0.5/10 rounded-tl-lg">
+					@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
+						Id:       "selectAllSourcePaths",
+						OnChange: "handleSelectAllSourcePaths()",
+					})
+				</th>
+				<th class="w-3.5/10">Name</th>
+				<th class="w-1/10">Size</th>
+				<th class="w-2/10">Updated At</th>
+				<th class="w-1/10">Perms</th>
+				<th class="w-2/10 rounded-tr-lg">Ownership</th>
+			</tr>
+		</thead>
+		<tbody class="*:cursor-default *:select-none *:border-t *:border-neutral-50/10 text-sm">
+			for _, fileEntity := range unixFilesList {
+				{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
+				if fileEntity.MimeType.IsDir() {
+					{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
+				}
+				<tr
+					class="*:py-1 *:h-14 *:overflow-hidden cursor-pointer first:border-opacity-0 hover:bg-neutral-50/10"
+					@click={ "handleSelectSourcePath('" + fileEntity.Name.String() + "')" }
+					@dblclick={ fileTableRowDoubleClick }
+				>
+					@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
+					<td class="w-0.5/10">
 						@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-							Id:       "selectAllSourcePaths",
-							OnChange: "handleSelectAllSourcePaths()",
+							Id:                     "selectSourcePath_" + fileEntity.Name.String(),
+							Name:                   "selectSourcePath",
+							OnChange:               "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
+							CustomValue:            fileEntity.Name.String(),
+							BindIsCheckedCondition: "selectedFileNames.includes('" + fileEntity.Name.String() + "')",
 						})
-					</th>
-					<th scope="col" class="w-2.5/10 py-3 text-left">Name</th>
-					<th scope="col" class="w-1/10 py-3 text-center">Size</th>
-					<th scope="col" class="w-3/10 py-3 text-center">Updated At</th>
-					<th scope="col" class="w-1/10 py-3 text-center">Permissions</th>
-					<th scope="col" class="w-2/10 py-3 text-center">Ownership</th>
+					</td>
+					<td class="w-0.5/10">
+						<div class="flex w-fit items-center">
+							{{ fileHighlightedIcon := "ph-file text-gray-300" }}
+							if fileEntity.MimeType.IsDir() {
+								{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
+							}
+							<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
+							<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
+						</div>
+					</td>
+					<td class="w-1/10">{ fileEntity.Size.StringWithSuffix() }</td>
+					<td class="w-2/10">{ fileEntity.UpdatedAt.ReadDateTime() }</td>
+					<td class="w-1/10">{ fileEntity.Permissions.String() }</td>
+					<td class="w-2/10">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</td>
 				</tr>
-			</thead>
-		</table>
-		<div class="h-110 overflow-y-auto">
-			<table class="w-full">
-				<tbody class="p-2 text-sm xl:text-base">
-					for _, fileEntity := range unixFilesList {
-						{{ fileTableRowDoubleClick := "resetAuxiliaryStates(); handleSelectSourcePath('" + fileEntity.Name.String() + "'); openUpdateFileContentModal()" }}
-						if fileEntity.MimeType.IsDir() {
-							{{ fileTableRowDoubleClick = "desiredWorkingDirPath = '" + fileEntity.Path.String() + "'; accessWorkingDirPath()" }}
-						}
-						<tr
-							class="border-os-300 hover:bg-os-200 cursor-default select-none border-t first:border-opacity-0"
-							@dblclick={ fileTableRowDoubleClick }
-						>
-							<th class="hidden">
-								@templ.JSONScript("fileEntity_"+fileEntity.Name.String(), fileEntity)
-							</th>
-							<th scope="row" class="w-0.5/10 py-3 text-center font-normal">
-								@componentForm.CheckboxInput(componentForm.CheckboxInputDto{
-									Id:          "selectSourcePath_" + fileEntity.Name.String(),
-									Name:        "selectSourcePath",
-									OnChange:    "handleSelectSourcePath('" + fileEntity.Name.String() + "')",
-									CustomValue: fileEntity.Name.String(),
-								})
-							</th>
-							<th scope="row" class="w-2.5/10 py-3 text-left font-normal">
-								<div class="flex w-fit items-center">
-									{{ fileHighlightedIcon := "ph-file text-gray-300" }}
-									if fileEntity.MimeType.IsDir() {
-										{{ fileHighlightedIcon = "ph-folder text-infinite-500" }}
-									}
-									<i class={ "ph-bold " + fileHighlightedIcon + " mr-1.5" }></i>
-									<p class="max-w-45 xl:max-w-75 truncate">{ fileEntity.Name.String() }</p>
-								</div>
-							</th>
-							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Size.StringWithSuffix() }</th>
-							<th scope="row" class="w-3/10 py-3 text-center font-normal">{ fileEntity.UpdatedAt.ReadDateTime() }</th>
-							<th scope="row" class="w-1/10 py-3 text-center font-normal">{ fileEntity.Permissions.String() }</th>
-							<th scope="row" class="w-2/10 py-3 text-center font-normal">{ fileEntity.Owner.String() + ":" + fileEntity.Group.String() }</th>
-						</tr>
-					}
-					if len(unixFilesList) == 0 {
-						<tr class="text-center">
-							<td class="col-span-10 pt-3 text-center italic text-slate-500">No files or directories found.</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
-	</div>
-}
-
-templ FileManagerModal(
-	workingDirPath valueObject.UnixFilePath,
-	readFilesResponseDto dto.ReadFilesResponse,
-) {
-	<!-- FileManagerModal -->
-	<div class="bg-os-800 space-y-2 p-3">
-		@FilesExplorerTableHeaders()
-		<!-- FileManagerModal Content -->
-		<div class="grid h-full grid-cols-4 gap-5">
-			<data
-				id="current-source-path"
-				class="hidden"
-				value={ workingDirPath.String() }
-			></data>
-			<div class="bg-os-500 h-120 ml-2 flex w-full flex-col space-y-2 overflow-x-auto overflow-y-auto p-2">
-				@DirectoriesTree(workingDirPath, readFilesResponseDto.FileTree)
-			</div>
-			@FilesExplorer(readFilesResponseDto.Files)
-		</div>
-	</div>
+			}
+			if len(unixFilesList) == 0 {
+				<tr class="text-center italic text-slate-500">
+					<td class="w-0.5/10"></td>
+					<td class="w-0.5/10 py-4">No files or directories found.</td>
+					<td class="w-1/10"></td>
+					<td class="w-2/10"></td>
+					<td class="w-1/10"></td>
+					<td class="w-2/10"></td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
 templ CreateFileForm(
@@ -416,7 +412,7 @@ templ CreateFileForm(
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 		</div>
@@ -432,7 +428,7 @@ templ CreateFileModal() {
 	@componentStructural.RegularModal(
 		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
 	) {
-		@CreateFileForm(valueObject.GenericMimeType, "closeCreateFileModal()")
+		@CreateFileForm(valueObject.MimeTypeGeneric, "closeCreateFileModal()")
 	}
 }
 
@@ -441,7 +437,7 @@ templ CreateDirectoryModal() {
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
 		"",
 	) {
-		@CreateFileForm(valueObject.DirectoryMimeType, "closeCreateDirectoryModal()")
+		@CreateFileForm(valueObject.MimeTypeDirectory, "closeCreateDirectoryModal()")
 	}
 }
 
@@ -515,9 +511,9 @@ templ UpdateFileContentForm() {
 				)
 				@componentStructural.ResponsibleRoundedSquareButton(componentStructural.ResponsibleRoundedSquareButtonDto{
 					Icon:         "ph-download-simple",
-					Description:  "Download",
-					DefaultColor: "infinite-500",
-					HoverColor:   "infinite-300",
+					Description:  "download",
+					DefaultColor: "os-200",
+					HoverColor:   "infinite-500",
 					OnClick:      "downloadFile(); closeUpdateFileContentModal()",
 				})
 			</div>
@@ -525,7 +521,7 @@ templ UpdateFileContentForm() {
 		<div class="mb-6">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
 			<input name="encodedContent" type="hidden" :value="btoa(file.content)"/>
-			<div id="code-editor" class="relative h-[30rem] w-full"></div>
+			<div id="code-editor" class="relative h-[24rem] w-full xl:h-[30rem] 2xl:h-[36rem]"></div>
 		</div>
 		@componentForm.SubmitButton(
 			"", "Save Changes", "ph-floppy-disk",
@@ -556,7 +552,7 @@ templ MoveFilesForm(
 	>
 		<div class="mb-6 space-y-2">
 			<input name="sourcePath" type="hidden" :value="file.path"/>
-			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath"/>
+			<input name="destinationPath" type="hidden" :value="currentWorkingDirPath + '/' + file.name"/>
 			@componentForm.InputFieldReadOnly(
 				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
@@ -639,7 +635,7 @@ templ RenameFileForm() {
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 		</div>
@@ -744,7 +740,7 @@ templ CompressFilesForm() {
 			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
 				Type:                "text",
 				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath",
+				BindPrefixValuePath: "currentWorkingDirPath + '/'",
 				BindInputValuePath:  "file.name",
 			})
 			@componentForm.SelectInput(

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/alessio/shellescape"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -211,7 +210,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 
 		for _, dataField := range dataFields {
-			escapedField := shellescape.Quote(dataField.String())
+			escapedField := infraHelper.ShellEscape{}.Quote(dataField.String())
 			installParams = append(installParams, "--data-fields", escapedField)
 		}
 

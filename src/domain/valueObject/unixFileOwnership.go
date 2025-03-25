@@ -9,6 +9,8 @@ import (
 
 type UnixFileOwnership string
 
+const UnixFileOwnershipAppWorkingDir = UnixFileOwnership("nobody:nogroup")
+
 func NewUnixFileOwnership(
 	value interface{},
 ) (fileOwnership UnixFileOwnership, err error) {
@@ -36,10 +38,6 @@ func NewUnixFileOwnership(
 
 	fileOwnershipStr := fileOwner.String() + ":" + fileGroup.String()
 	return UnixFileOwnership(fileOwnershipStr), nil
-}
-
-func NewUnixFileDefaultOwnership() UnixFileOwnership {
-	return UnixFileOwnership("nobody:nogroup")
 }
 
 func (vo UnixFileOwnership) String() string {

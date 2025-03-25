@@ -48,14 +48,14 @@ func (InstalledService) TableName() string {
 
 func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	osApiAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/os-api/assets/avatar.jpg"
-	osWorkingDirectory := "/infinite"
+	osWorkingDirectory := infraEnvs.InfiniteOsMainDir
 	osLogOutputPath := "/dev/stdout"
 	osLogErrorPath := "/dev/stderr"
 	osApiPortBindings := infraEnvs.InfiniteOsApiHttpPublicPort + "/http"
 	osApiService := InstalledService{
 		Name:             "os-api",
-		Nature:           "solo",
-		Type:             "system",
+		Nature:           valueObject.ServiceNatureSolo.String(),
+		Type:             valueObject.ServiceTypeSystem.String(),
 		Version:          infraEnvs.InfiniteOsVersion,
 		StartCmd:         infraEnvs.InfiniteOsBinary + " serve",
 		PortBindings:     &osApiPortBindings,
@@ -68,8 +68,8 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	cronAvatarUrl := "https://raw.githubusercontent.com/goinfinite/os-services/refs/heads/v1/system/cron/assets/avatar.jpg"
 	cronService := InstalledService{
 		Name:      "cron",
-		Nature:    "solo",
-		Type:      "system",
+		Nature:    valueObject.ServiceNatureSolo.String(),
+		Type:      valueObject.ServiceTypeSystem.String(),
 		Version:   "3.0",
 		StartCmd:  "/usr/sbin/cron -f",
 		AvatarUrl: &cronAvatarUrl,
@@ -80,9 +80,9 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	nginxAutoStart := false
 	nginxService := InstalledService{
 		Name:         "nginx",
-		Nature:       "solo",
-		Type:         "system",
-		Version:      "1.24.0",
+		Nature:       valueObject.ServiceNatureSolo.String(),
+		Type:         valueObject.ServiceTypeSystem.String(),
+		Version:      "1.26.3",
 		StartCmd:     "/usr/sbin/nginx",
 		PortBindings: &nginxPortBindings,
 		AutoStart:    &nginxAutoStart,

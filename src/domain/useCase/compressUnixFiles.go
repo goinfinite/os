@@ -21,5 +21,8 @@ func CompressUnixFiles(
 	}
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).CompressUnixFile(compressDto)
+
+	NormalizeKnownUnixFilePathPermissions(filesCmdRepo, compressDto.DestinationPath)
+
 	return compressionProcessReport, nil
 }

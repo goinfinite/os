@@ -49,6 +49,14 @@ func NewUnixFile(
 	}
 }
 
+func (entity UnixFile) ToSimplified() SimplifiedUnixFile {
+	return SimplifiedUnixFile{
+		Name:     entity.Name,
+		Path:     entity.Path,
+		MimeType: entity.MimeType,
+	}
+}
+
 type SimplifiedUnixFile struct {
 	Name     valueObject.UnixFileName `json:"name"`
 	Path     valueObject.UnixFilePath `json:"path"`

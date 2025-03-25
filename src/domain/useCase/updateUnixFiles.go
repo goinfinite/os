@@ -7,15 +7,16 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 )
 
 type UpdateUnixFiles struct {
+	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
+	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
@@ -88,14 +89,15 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 func (uc UpdateUnixFiles) fixFilePermissions(
 	sourcePath valueObject.UnixFilePath,
 ) error {
-	sourcePathStr := sourcePath.String()
-	if infraHelper.FileExists(sourcePathStr) {
-		return errors.New("FileOrDirectoryNotFound")
+	_, err := uc.filesQueryRepo.ReadFirst(sourcePath)
+	if err != nil {
+		return errors.New("SourcePathNotFound")
 	}
 
 	filePermissions := valueObject.NewUnixFileDefaultPermissions()
-
 	dirPermissions := valueObject.NewUnixDirDefaultPermissions()
+
+	sourcePathStr := sourcePath.String()
 	if sourcePathStr == "/app/html" {
 		dirPermissions, _ = valueObject.NewUnixFilePermissions("777")
 	}
@@ -104,23 +106,13 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 		sourcePath, filePermissions, &dirPermissions,
 	)
 
-	err := uc.filesCmdRepo.UpdatePermissions(updatePermissionsDto)
+	err = uc.filesCmdRepo.UpdatePermissions(updatePermissionsDto)
 	if err != nil {
 		slog.Error("FixFilePermissionsError", slog.String("err", err.Error()))
 		return errors.New("FixFilePermissionsInfraError")
 	}
 
-	if sourcePathStr == "/app" {
-		defaultOwnership := valueObject.NewUnixFileDefaultOwnership()
-		updateOwnershipDto := dto.NewUpdateUnixFileOwnership(
-			sourcePath, defaultOwnership,
-		)
-
-		err = uc.filesCmdRepo.UpdateOwnership(updateOwnershipDto)
-		if err != nil {
-			return errors.New("FixAppDirOwnershipError: " + err.Error())
-		}
-	}
+	NormalizeKnownUnixFilePathPermissions(uc.filesCmdRepo, sourcePath)
 
 	return nil
 }
@@ -137,6 +129,8 @@ func (uc UpdateUnixFiles) moveFile(
 		slog.Error("MoveFileError", slog.String("err", err.Error()))
 		return errors.New("MoveFileInfraError")
 	}
+
+	NormalizeKnownUnixFilePathPermissions(uc.filesCmdRepo, destinationPath)
 
 	return nil
 }

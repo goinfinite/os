@@ -51,5 +51,17 @@ func UploadUnixFiles(
 
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UploadUnixFiles(uploadDto)
 
+	destinationPathStr := uploadProcessReport.DestinationPath.String()
+	for _, fileName := range uploadProcessReport.FileNamesSuccessfullyUploaded {
+		filePath, err := valueObject.NewUnixFilePath(
+			destinationPathStr + "/" + fileName.String(),
+		)
+		if err != nil {
+			continue
+		}
+
+		NormalizeKnownUnixFilePathPermissions(filesCmdRepo, filePath)
+	}
+
 	return uploadProcessReport, nil
 }

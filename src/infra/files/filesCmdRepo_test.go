@@ -23,7 +23,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &directoryDefaultPermissions, valueObject.DirectoryMimeType,
+			filePath, &directoryDefaultPermissions, valueObject.MimeTypeDirectory,
 			operatorAccountId, ipAddress,
 		)
 
@@ -39,7 +39,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &fileDefaultPermissions, valueObject.GenericMimeType,
+			filePath, &fileDefaultPermissions, valueObject.MimeTypeGeneric,
 			operatorAccountId, ipAddress,
 		)
 

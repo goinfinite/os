@@ -27,7 +27,7 @@ func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
 		ShouldIncludeFileTree: &shouldIncludeFileTree,
 	}
 	readFilesResponseDto, err := useCase.ReadFiles(
-		filesInfra.FilesQueryRepo{}, readFilesRequestDto,
+		&filesInfra.FilesQueryRepo{}, readFilesRequestDto,
 	)
 	if err != nil {
 		return readFilesResponseDto
@@ -39,7 +39,7 @@ func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
 func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 	rawWorkingDirPath := c.QueryParam("workingDirPath")
 	if rawWorkingDirPath == "" {
-		rawWorkingDirPath = valueObject.DefaultAppWorkingDirPath.String()
+		rawWorkingDirPath = valueObject.UnixFilePathAppWorkingDir.String()
 	}
 
 	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
