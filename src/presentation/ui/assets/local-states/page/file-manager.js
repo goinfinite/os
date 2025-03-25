@@ -193,36 +193,6 @@ document.addEventListener("alpine:init", () => {
       this.selectedFileNames = [];
     },
 
-    // Generic Modal States
-    isCreateFileModalOpen: false,
-    openCreateFileModal() {
-      this.resetPrimaryStates();
-
-      this.isCreateFileModalOpen = true;
-    },
-    closeCreateFileModal() {
-      this.isCreateFileModalOpen = false;
-    },
-    isCreateDirectoryModalOpen: false,
-    openCreateDirectoryModal() {
-      this.resetPrimaryStates();
-
-      this.isCreateDirectoryModalOpen = true;
-    },
-    closeCreateDirectoryModal() {
-      this.isCreateDirectoryModalOpen = false;
-    },
-    isUploadFilesModalOpen: false,
-    openUploadFilesModal() {
-      this.resetPrimaryStates();
-
-      this.isUploadFilesModalOpen = true;
-    },
-    closeUploadFilesModal() {
-      this.isUploadFilesModalOpen = false;
-    },
-    isUpdateFileContentModalOpen: false,
-
     // Code Editor States
     codeEditorInstance: null,
     codeEditorFontSize: 12,
@@ -313,6 +283,36 @@ document.addEventListener("alpine:init", () => {
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
     },
+
+    // Generic Modal States
+    isCreateFileModalOpen: false,
+    openCreateFileModal() {
+      this.resetPrimaryStates();
+
+      this.isCreateFileModalOpen = true;
+    },
+    closeCreateFileModal() {
+      this.isCreateFileModalOpen = false;
+    },
+    isCreateDirectoryModalOpen: false,
+    openCreateDirectoryModal() {
+      this.resetPrimaryStates();
+
+      this.isCreateDirectoryModalOpen = true;
+    },
+    closeCreateDirectoryModal() {
+      this.isCreateDirectoryModalOpen = false;
+    },
+    isUploadFilesModalOpen: false,
+    openUploadFilesModal() {
+      this.resetPrimaryStates();
+
+      this.isUploadFilesModalOpen = true;
+    },
+    closeUploadFilesModal() {
+      this.isUploadFilesModalOpen = false;
+    },
+    isUpdateFileContentModalOpen: false,
     isMoveFilesModalOpen: false,
     openMoveFilesModal() {
       this.resetPrimaryStates();
