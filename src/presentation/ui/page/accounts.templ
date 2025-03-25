@@ -25,7 +25,7 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 		<div
 			id="accounts-page-content"
 			hx-get="/accounts/"
-			hx-trigger="submit from:form delay:500ms, delete:account from:window delay:250ms, delete:secure-access-public-key from:window delay:250ms"
+			hx-trigger="submit from:form delay:500ms, refresh:accounts-page-content from:window delay:250ms, delete:account from:window delay:250ms, delete:secure-access-public-key from:window delay:250ms"
 			hx-select="#accounts-page-content"
 			hx-target="#accounts-page-content"
 			hx-swap="outerHTML transition:true"
@@ -54,78 +54,72 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 
 templ AccountsTable(accountsEntities []entity.Account) {
 	<!-- AccountsTable -->
-	<div class="bg-os-800 rounded-md p-4">
-		<div class="bg-os-500 space-y-3 rounded-md p-4">
-			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
-				<!-- AccountsTable Header -->
-				<thead class="text-xs uppercase text-neutral-400">
-					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-						<th scope="col" class="w-1/5 px-5 py-3 text-left">Username(s)</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">UserId(s)/GroupId(s)</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">Home Directory</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">Created At</th>
-						<th scope="col" class="flex justify-end py-3">
-							<div class="mr-2">
-								@componentForm.SubmitButton(
-									"open-create-account-form-button", "Create account",
-									"ph-user-plus", "openCreateAccountModal()", true,
+	<div class="space-y-3 rounded-lg bg-neutral-950/20 p-5 pt-3">
+		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+			<!-- AccountsTable Header -->
+			<thead class="text-xs uppercase text-neutral-400">
+				<tr class="*:py-3 border-b border-neutral-500/50 text-center">
+					<th class="w-1/5 text-left">Username(s)</th>
+					<th class="w-1/5">UserId(s)/GroupId(s)</th>
+					<th class="w-1/5">Home Directory</th>
+					<th class="w-1/5">Created At</th>
+					<th class="float-right">
+						@componentForm.SubmitButton(
+							"open-create-account-form-button", "Create account",
+							"ph-user-plus", "openCreateAccountModal()", true,
+						)
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- AccountsTable Items -->
+				for _, accountEntity := range accountsEntities {
+					<tr class="*:px-5 *:py-3 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+						@templ.JSONScript("secureAccessPublicKeys_"+accountEntity.Id.String(), accountEntity.SecureAccessPublicKeys)
+						<td class="w-1/5 text-left">
+							<div class="flex items-center">
+								{ accountEntity.Username.String() }
+								if accountEntity.IsSuperAdmin {
+									<div class="group/accountType translate-y-10% relative top-1/2 ml-2">
+										<div class="bg-infinite-500 invisible absolute left-1/2 -mt-8 w-max -translate-x-1/2 rounded p-1.5 text-xs group-hover/accountType:visible group-hover/accountType:block">
+											super admin
+										</div>
+										<i class="ph-bold ph-shield-star text-infinite-500"></i>
+									</div>
+								}
+							</div>
+						</td>
+						<td class="w-1/5">{ accountEntity.Id.String() + "/" + accountEntity.GroupId.String() }</td>
+						<td class="w-1/5">{ accountEntity.HomeDirectory.String() }</td>
+						<td class="w-1/5">{ accountEntity.CreatedAt.ReadDateOnly() }</td>
+						<td class="float-right">
+							<div class="flex gap-2">
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-gear", "os-200", "os-100",
+									"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
+									"update account", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-key", "os-200", "os-100",
+									"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"update api key", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-fingerprint", "os-200", "os-100",
+									"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"view secure access public keys", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-trash", "red-800", "red-600",
+									"openDeleteAccountModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"delete account", "red-500",
 								)
 							</div>
-						</th>
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					<!-- AccountsTable Items -->
-					for _, accountEntity := range accountsEntities {
-						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-							<th class="hidden">
-								@templ.JSONScript("secureAccessPublicKeys_"+accountEntity.Id.String(), accountEntity.SecureAccessPublicKeys)
-							</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-left font-normal">
-								<div class="flex items-center">
-									{ accountEntity.Username.String() }
-									if accountEntity.IsSuperAdmin {
-										<div class="group/accountType translate-y-10% relative top-1/2 ml-2">
-											<div class="bg-infinite-500 invisible absolute left-1/2 -mt-8 w-max -translate-x-1/2 rounded p-1.5 text-xs group-hover/accountType:visible group-hover/accountType:block">
-												super admin
-											</div>
-											<i class="ph-bold ph-wrench text-infinite-500"></i>
-										</div>
-									}
-								</div>
-							</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.Id.String() + "/" + accountEntity.GroupId.String() }</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.HomeDirectory.String() }</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ accountEntity.CreatedAt.ReadDateOnly() }</th>
-							<th scope="row" class="px-5 py-3 text-right">
-								<div class="inline-flex space-x-2">
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-gear", "os-200", "os-100",
-										"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
-										"update account", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-key", "os-200", "os-100",
-										"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-										"update api key", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-fingerprint", "os-200", "os-100",
-										"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-										"view secure access public keys", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-trash", "red-800", "red-600",
-										"openDeleteAccountModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-										"delete account", "red-500",
-									)
-								</div>
-							</th>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
+				}
+			</tbody>
+		</table>
 	</div>
 }
 
@@ -135,6 +129,7 @@ templ CreateAccountForm() {
 		hx-post="/api/v1/account/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		@htmx:after-request="$dispatch('refresh:accounts-page-content')"
 	>
 		<div class="mb-6 space-y-6">
 			<div class="flex items-center justify-center gap-2">
