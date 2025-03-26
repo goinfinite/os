@@ -16,108 +16,101 @@ import (
 
 type SslQueryRepo struct{}
 
-type SslCertificates struct {
-	MainCertificate     entity.SslCertificate
-	ChainedCertificates []entity.SslCertificate
-}
-
 func (repo SslQueryRepo) sslCertificatesFactory(
-	sslCertContent valueObject.SslCertificateContent,
-) (SslCertificates, error) {
-	var certificates SslCertificates
-
-	sslCertContentSlice := strings.SplitAfter(
-		sslCertContent.String(),
-		"-----END CERTIFICATE-----\n",
+	sslCertsContent valueObject.SslCertificateContent,
+) (mainCert entity.SslCertificate, chainedCerts []entity.SslCertificate, err error) {
+	rawSslCertsContent := strings.SplitAfter(
+		sslCertsContent.String(), "-----END CERTIFICATE-----\n",
 	)
-	for _, sslCertContentStr := range sslCertContentSlice {
-		if len(sslCertContentStr) == 0 {
+	for _, rawSslCertContent := range rawSslCertsContent {
+		if len(rawSslCertContent) == 0 {
 			continue
 		}
 
-		certificateContent, err := valueObject.NewSslCertificateContent(sslCertContentStr)
+		certificateContent, err := valueObject.NewSslCertificateContent(rawSslCertContent)
 		if err != nil {
-			return certificates, err
+			return mainCert, chainedCerts, err
 		}
 
 		certificate, err := entity.NewSslCertificate(certificateContent)
 		if err != nil {
-			return certificates, err
+			return mainCert, chainedCerts, err
 		}
 
 		if certificate.IsIntermediary {
-			certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
-
+			chainedCerts = append(chainedCerts, certificate)
 			continue
 		}
 
-		certificates.MainCertificate = certificate
+		mainCert = certificate
 	}
 
-	return certificates, nil
+	if mainCert.CertificateContent.String() == "" {
+		return mainCert, chainedCerts, errors.New("MainCertNotFound")
+	}
+
+	return mainCert, chainedCerts, nil
 }
 
 func (repo SslQueryRepo) sslPairFactory(
 	crtFilePath valueObject.UnixFilePath,
-) (entity.SslPair, error) {
-	var ssl entity.SslPair
-
+) (sslPairEntity entity.SslPair, err error) {
 	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
 	crtKeyContentStr, err := infraHelper.GetFileContent(crtKeyFilePath)
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
+		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
 	}
 	privateKey, err := valueObject.NewSslPrivateKey(crtKeyContentStr)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
 	crtFileContentStr, err := infraHelper.GetFileContent(crtFilePath.String())
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
+		return sslPairEntity, errors.New("OpenCertFileError: " + err.Error())
 	}
 	certificate, err := valueObject.NewSslCertificateContent(crtFileContentStr)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
-	sslCertificates, err := repo.sslCertificatesFactory(certificate)
+	mainCert, chainedCerts, err := repo.sslCertificatesFactory(certificate)
 	if err != nil {
-		return ssl, errors.New("FailedToGetMainAndChainedCerts: " + err.Error())
+		return sslPairEntity, errors.New("CertsFactoryError: " + err.Error())
 	}
-
-	mainCertificate := sslCertificates.MainCertificate
-	chainCertificates := sslCertificates.ChainedCertificates
 
 	var chainCertificatesContent []valueObject.SslCertificateContent
-	for _, sslChainCertificate := range chainCertificates {
+	for _, sslChainCertificate := range chainedCerts {
 		chainCertificatesContent = append(
-			chainCertificatesContent,
-			sslChainCertificate.CertificateContent,
+			chainCertificatesContent, sslChainCertificate.CertificateContent,
 		)
 	}
 
-	hashId, err := valueObject.NewSslPairIdFromSslPairContent(
-		mainCertificate.CertificateContent,
-		chainCertificatesContent,
-		privateKey,
+	sslPairHashId, err := valueObject.NewSslPairIdFromSslPairContent(
+		mainCert.CertificateContent, chainCertificatesContent, privateKey,
 	)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
 	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	vhost, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	mainVirtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
-		return ssl, err
+		if mainCert.CommonName == nil {
+			return sslPairEntity, errors.New("MainVirtualHostHostnameError: " + err.Error())
+		}
+
+		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
+		if err != nil {
+			return sslPairEntity, errors.New("MainVirtualHostHostnameFallbackError: " + err.Error())
+		}
+
+		mainVirtualHostHostname = mainCertSslHostname
 	}
 
 	return entity.NewSslPair(
-		hashId,
-		[]valueObject.Fqdn{vhost},
-		mainCertificate,
-		privateKey,
-		chainCertificates,
+		sslPairHashId, mainVirtualHostHostname, []valueObject.Fqdn{mainVirtualHostHostname},
+		mainCert, privateKey, chainedCerts,
 	), nil
 }
 
