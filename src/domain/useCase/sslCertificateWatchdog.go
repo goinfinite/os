@@ -1,7 +1,7 @@
 package useCase
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -16,25 +16,26 @@ func SslCertificateWatchdog(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) {
-	sslPairs, err := sslQueryRepo.Read()
+	sslPairEntities, err := sslQueryRepo.Read()
 	if err != nil {
-		log.Printf("ReadSslPairsError: %s", err.Error())
+		slog.Error("ReadSslPairsInfraError", slog.String("error", err.Error()))
 		return
 	}
 
-	for _, sslPair := range sslPairs {
-		if sslPair.IsPubliclyTrusted() {
+	for _, sslPairEntity := range sslPairEntities {
+		if sslPairEntity.IsPubliclyTrusted() {
 			continue
 		}
 
-		replaceDto := dto.NewReplaceWithValidSsl(
-			sslPair, operatorAccountId, operatorIpAddress,
-		)
-		err = sslCmdRepo.ReplaceWithValidSsl(replaceDto)
+		err = sslCmdRepo.ReplaceWithValidSsl(dto.NewReplaceWithValidSsl(
+			sslPairEntity, operatorAccountId, operatorIpAddress,
+		))
 		if err != nil {
-			mainSslPairHostname := sslPair.VirtualHostsHostnames[0]
-			log.Printf(
-				"ReplaceWithValidSslError (%s): %s", mainSslPairHostname.String(), err.Error(),
+			mainSslPairHostname := sslPairEntity.VirtualHostsHostnames[0]
+			slog.Error(
+				"ReplaceWithValidSslInfraError",
+				slog.String("error", err.Error()),
+				slog.String("mainSslPairHostname", mainSslPairHostname.String()),
 			)
 		}
 	}
