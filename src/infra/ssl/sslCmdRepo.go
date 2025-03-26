@@ -252,39 +252,40 @@ func (repo *SslCmdRepo) issueValidSsl(
 	return infraHelper.ReloadWebServer()
 }
 
-func (repo *SslCmdRepo) ReplaceWithValidSsl(replaceDto dto.ReplaceWithValidSsl) error {
+func (repo *SslCmdRepo) CreatePubliclyTrusted(
+	createDto dto.CreatePubliclyTrustedSslPair,
+) error {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(repo.transientDbSvc)
 	serverPublicIpAddress, err := o11yQueryRepo.ReadServerPublicIpAddress()
 	if err != nil {
 		return err
 	}
 
+	virtualHostsHostnames := []valueObject.Fqdn{createDto.CommonName}
+	virtualHostsHostnames = append(virtualHostsHostnames, createDto.AltNames...)
+
 	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
-		replaceDto.VirtualHostsHostnames, serverPublicIpAddress,
+		virtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
-	expectedOwnershipHash, err := repo.sslQueryRepo.GetOwnershipValidationHash(
-		replaceDto.Certificate.CertificateContent,
-	)
+	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+	dummyValue := dummyValueGenerator.GenPass(64)
+	expectedOwnershipHash, err := valueObject.NewHash(dummyValue)
 	if err != nil {
-		return errors.New(
-			"CreateOwnershipValidationHashError: " + err.Error(),
-		)
+		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
-		replaceDto.OperatorAccountId, replaceDto.OperatorIpAddress,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
 		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
-	return repo.issueValidSsl(
-		replaceDto.VirtualHostsHostnames[0], httpFunctionalHostnames,
-	)
+	return repo.issueValidSsl(createDto.CommonName, httpFunctionalHostnames)
 }
 
 func (repo *SslCmdRepo) Create(
