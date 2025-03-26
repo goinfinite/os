@@ -13,7 +13,7 @@ func addDummyUser() error {
 	username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 	password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
 
-	ipAddress := valueObject.NewLocalhostIpAddress()
+	ipAddress := valueObject.IpAddressSystem
 	operatorAccountId, _ := valueObject.NewAccountId(0)
 	createDto := dto.NewCreateAccount(
 		username, password, false, operatorAccountId, ipAddress,
@@ -62,7 +62,7 @@ func TestAccountCmdRepo(t *testing.T) {
 	t.Run("AddInvalidAccount", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("root")
 		password, _ := valueObject.NewPassword("invalid")
-		ipAddress := valueObject.NewLocalhostIpAddress()
+		ipAddress := valueObject.IpAddressSystem
 		operatorAccountId, _ := valueObject.NewAccountId(0)
 		createDto := dto.NewCreateAccount(
 			username, password, false, operatorAccountId, ipAddress,
@@ -89,7 +89,7 @@ func TestAccountCmdRepo(t *testing.T) {
 		newPassword, _ := valueObject.NewPassword("newPassword")
 		updateDto := dto.NewUpdateAccount(
 			accountId, &newPassword, nil, nil, accountId,
-			valueObject.NewLocalhostIpAddress(),
+			valueObject.IpAddressSystem,
 		)
 		err := accountCmdRepo.Update(updateDto)
 		if err != nil {

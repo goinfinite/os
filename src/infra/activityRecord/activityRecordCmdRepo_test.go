@@ -14,7 +14,7 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 	activityRecordCmdRepo := NewActivityRecordCmdRepo(trailDbSvc)
 	level, _ := valueObject.NewActivityRecordLevel("SEC")
 	recordCode, _ := valueObject.NewActivityRecordCode("LoginFailed")
-	operatorIpAddress := valueObject.NewLocalhostIpAddress()
+	operatorIpAddress := valueObject.IpAddressSystem
 
 	t.Run("CreateActivityRecord", func(t *testing.T) {
 		createDto := dto.CreateActivityRecord{
@@ -30,7 +30,7 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteActivityRecords", func(t *testing.T) {
-		ipAddress := valueObject.NewLocalhostIpAddress()
+		ipAddress := valueObject.IpAddressSystem
 		deleteDto := dto.NewDeleteActivityRecord(
 			nil, &level, &recordCode, nil, nil, &ipAddress, nil, nil,
 		)

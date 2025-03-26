@@ -22,7 +22,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
 		operatorAccountId, _ := valueObject.NewAccountId(0)
-		ipAddress := valueObject.NewLocalhostIpAddress()
+		ipAddress := valueObject.IpAddressSystem
 		dto := dto.NewCreateVirtualHost(
 			vhostName, vhostType, nil, operatorAccountId, ipAddress,
 		)

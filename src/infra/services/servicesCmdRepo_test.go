@@ -28,7 +28,7 @@ func TestServiceCmdRepo(t *testing.T) {
 		serviceName, _ := valueObject.NewServiceName("python-ws")
 		serviceType, _ := valueObject.NewServiceType("webserver")
 		unixCommand, _ := valueObject.NewUnixCommand("python3 -m http.server")
-		ipAddress := valueObject.NewLocalhostIpAddress()
+		ipAddress := valueObject.IpAddressSystem
 		operatorAccountId, _ := valueObject.NewAccountId(0)
 
 		createDto := dto.NewCreateCustomService(
