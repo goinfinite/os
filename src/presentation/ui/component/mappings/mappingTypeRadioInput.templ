@@ -29,7 +29,7 @@ templ MappingTypeRadioInput(id, label, bindModelPath string) {
 		@componentStructural.Alert("info", "Set up direct redirects to an URL.")
 	</div>
 	<div x-show={ bindModelPath + " == 'service'" }>
-		@componentStructural.Alert("info", "Configure how requests are forwarded to backend services, such as PHP, for handling dynamic content.")
+		@componentStructural.Alert("info", "Configure a service to handle the incoming requests, such as a web server, REST API, or a gRPC service.")
 	</div>
 	<div x-show={ bindModelPath + " == 'response-code'" }>
 		@componentStructural.Alert("info", "Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).")
