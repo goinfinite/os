@@ -34,13 +34,14 @@ document.addEventListener("alpine:init", () => {
       this.isCreateMappingFromVhost = false;
     },
     get shouldDisableCreateVhostSubmitButton() {
-      if (this.virtualHost.type == "top-level") {
-        return this.virtualHost.hostname == "";
+      if (this.virtualHost.type == "alias") {
+        return (
+          this.virtualHost.hostname == "" ||
+          this.virtualHost.parentHostname == ""
+        );
       }
 
-      return (
-        this.virtualHost.hostname == "" || this.virtualHost.parentHostname == ""
-      );
+      return this.virtualHost.hostname == "";
     },
     get shouldDisableCreateMappingSubmitButton() {
       const isResponseCodeType = this.mapping.targetType == "response-code";

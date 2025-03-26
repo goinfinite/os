@@ -126,7 +126,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
-					Label:              "Hostname",
+					Label:              "Hostname (e.g. example.com)",
 					BindModelValuePath: "virtualHost.hostname",
 				})
 			</div>
@@ -136,14 +136,8 @@ templ CreateVhostForm() {
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
-					Label:              "Subdomain",
+					Label:              "Hostname (e.g. sub.example.com)",
 					BindModelValuePath: "virtualHost.hostname",
-				})
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "parentHostname",
-					Label:              "Parent Hostname",
-					BindModelValuePath: "virtualHost.parentHostname",
 				})
 			</div>
 		</template>
@@ -152,7 +146,7 @@ templ CreateVhostForm() {
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
-					Label:              "Alias",
+					Label:              "Alias (e.g. example.com)",
 					BindModelValuePath: "virtualHost.hostname",
 				})
 				@componentForm.InputField(componentForm.InputFieldDto{
@@ -163,7 +157,10 @@ templ CreateVhostForm() {
 				})
 			</div>
 		</template>
-		@componentForm.DeactivableSubmitButton("Create", "ph-check-fat", "closeCreateVhostModal", "shouldDisableCreateVhostSubmitButton", false)
+		@componentForm.DeactivableSubmitButton(
+			"Create", "ph-check-fat", "closeCreateVhostModal",
+			"shouldDisableCreateVhostSubmitButton", false,
+		)
 	</form>
 }
 
