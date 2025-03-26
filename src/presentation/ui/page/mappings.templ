@@ -2,16 +2,19 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"slices"
 )
 
 templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
+	installedServices []entity.InstalledService,
 ) {
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
@@ -51,8 +54,8 @@ templ MappingsIndex(
 				"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
 				"virtualHost.hostname", "virtualHost.hostname",
 			)
-			@CreateMappingModal(vhostsHostnames)
-			@CreateMappingFromVhostModal(vhostsHostnames)
+			@CreateMappingModal(vhostsHostnames, installedServices)
+			@CreateMappingFromVhostModal(vhostsHostnames, installedServices)
 			@componentStructural.DeleteModal(
 				"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 				"mapping.path", "mapping.id",
@@ -173,7 +176,10 @@ templ CreateVhostModal() {
 	}
 }
 
-templ CreateMappingForm(vhostsHostnames []string) {
+templ CreateMappingForm(
+	vhostsHostnames []string,
+	installedServices []entity.InstalledService,
+) {
 	<!-- CreateMappingForm -->
 	<form
 		hx-post="/api/v1/vhosts/mapping/"
@@ -201,12 +207,19 @@ templ CreateMappingForm(vhostsHostnames []string) {
 		</div>
 		<template x-if="mapping.targetType == 'service'">
 			<div class="mb-6 space-y-6">
-				@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-					BindLabel:                "'Service Name'",
-					BindModelPath:            "mapping.targetValue",
-					BindOptions:              "await readOnlyServiceNames()",
-					ShouldIncludeBlankOption: true,
-				})
+				{{
+					servicesNames := []string{}
+					for _, serviceEntity := range installedServices {
+						if len(serviceEntity.PortBindings) == 0 {
+							continue
+						}
+						servicesNames = append(servicesNames, serviceEntity.Name.String())
+					}
+					slices.Sort(servicesNames)
+				}}
+				@componentForm.SelectInput(
+					"targetValue", "Service Name", "mapping.targetValue", "", servicesNames, true,
+				)
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'url'">
@@ -252,20 +265,26 @@ templ CreateMappingForm(vhostsHostnames []string) {
 	</form>
 }
 
-templ CreateMappingModal(vhostsHostnames []string) {
+templ CreateMappingModal(
+	vhostsHostnames []string,
+	installedServices []entity.InstalledService,
+) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsHostnames)
+		@CreateMappingForm(vhostsHostnames, installedServices)
 	}
 }
 
-templ CreateMappingFromVhostModal(vhostsHostnames []string) {
+templ CreateMappingFromVhostModal(
+	vhostsHostnames []string,
+	installedServices []entity.InstalledService,
+) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingFromVhostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsHostnames)
+		@CreateMappingForm(vhostsHostnames, installedServices)
 	}
 }
