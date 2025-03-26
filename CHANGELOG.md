@@ -1,8 +1,9 @@
 # Changelog
 
 ```log
-0.2.0 - 2025/XX/XX
-- refactor(front): file manager with HTMX+Alpine.js
+0.2.0 - 2025/03/25
+refactor(front): file manager with HTMX+Alpine.js
+fix: missing service name on mapping targetValue input
 
 0.1.9 - 2025/03/10
 fix(front): file manager permissions and account sudoers
