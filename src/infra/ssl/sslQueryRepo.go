@@ -18,7 +18,10 @@ type SslQueryRepo struct{}
 
 func (repo SslQueryRepo) sslCertificatesFactory(
 	sslCertsContent valueObject.SslCertificateContent,
-) (mainCert entity.SslCertificate, chainedCerts []entity.SslCertificate, err error) {
+) (entity.SslCertificate, []entity.SslCertificate, error) {
+	mainCert := entity.SslCertificate{}
+	chainedCerts := []entity.SslCertificate{}
+
 	rawSslCertsContent := strings.SplitAfter(
 		sslCertsContent.String(), "-----END CERTIFICATE-----\n",
 	)
