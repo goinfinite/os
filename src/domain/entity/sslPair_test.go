@@ -86,7 +86,9 @@ ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
 		}
 		vhostHostnames := []valueObject.Fqdn{testHostname}
 
-		sslPair := NewSslPair(pairId, vhostHostnames, certificate, privateKey, chainCertificates)
+		sslPair := NewSslPair(
+			pairId, testHostname, vhostHostnames, certificate, privateKey, chainCertificates,
+		)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -224,7 +226,9 @@ KPpdzvvtTnOPlC7SQZSYmdunr3Bf9b77AiC/ZidstK36dRILKz7OA54=
 		}
 		vhostHostnames := []valueObject.Fqdn{demoHostname}
 
-		sslPair := NewSslPair(pairId, vhostHostnames, certificate, privateKey, chainCertificates)
+		sslPair := NewSslPair(
+			pairId, demoHostname, vhostHostnames, certificate, privateKey, chainCertificates,
+		)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
