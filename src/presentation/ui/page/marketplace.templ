@@ -142,7 +142,7 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 			<!-- MarketplaceCatalogItemTabContent JavaScript -->
 			@templ.JSONScript("marketplaceCatalogItem_"+item.Id.String(), item)
 			<!-- MarketplaceCatalogItemTabContent HTML -->
-			<div class="bg-os-800 border-os-400 space-y-2 rounded-md border border-4 p-4">
+			<div class="bg-os-800 border-os-400 space-y-2 rounded-md border-4 p-4">
 				<div class="inline-flex items-center">
 					<img class="mr-3 h-10 w-10" src={ item.AvatarUrl.String() }/>
 					<h3>{ item.Name.String() }</h3>
@@ -285,7 +285,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 						componentStructural.AlertTypeWarning,
 						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
 					)
-					<div class="grid grid-cols-2 gap-4 mt-2">
+					<div class="mt-2 grid grid-cols-2 gap-4">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
 								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
