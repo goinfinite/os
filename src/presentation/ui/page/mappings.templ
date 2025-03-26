@@ -49,7 +49,7 @@ templ MappingsIndex(
 			class="flex flex-col"
 		>
 			@MappingsFormTable(vhostsWithMappings)
-			@CreateVhostModal()
+			@CreateVhostModal(vhostsHostnames)
 			@componentStructural.DeleteModal(
 				"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
 				"virtualHost.hostname", "virtualHost.hostname",
@@ -107,7 +107,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	</div>
 }
 
-templ CreateVhostForm() {
+templ CreateVhostForm(existingHostnames []string) {
 	<!-- CreateVhostForm -->
 	<form
 		id="create-vhost-form"
@@ -149,12 +149,10 @@ templ CreateVhostForm() {
 					Label:              "Alias (e.g. example.com)",
 					BindModelValuePath: "virtualHost.hostname",
 				})
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "parentHostname",
-					Label:              "Parent Hostname",
-					BindModelValuePath: "virtualHost.parentHostname",
-				})
+				@componentForm.SelectInput(
+					"parentHostname", "Parent Hostname", "virtualHost.parentHostname", "",
+					existingHostnames, false,
+				)
 			</div>
 		</template>
 		@componentForm.DeactivableSubmitButton(
@@ -164,12 +162,12 @@ templ CreateVhostForm() {
 	</form>
 }
 
-templ CreateVhostModal() {
+templ CreateVhostModal(existingHostnames []string) {
 	@componentStructural.RegularModal(
 		"Create Virtual Host", "isCreateVhostModalOpen", "closeCreateVhostModal()",
 		"",
 	) {
-		@CreateVhostForm()
+		@CreateVhostForm(existingHostnames)
 	}
 }
 
