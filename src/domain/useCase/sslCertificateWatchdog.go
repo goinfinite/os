@@ -18,6 +18,18 @@ type SslCertificateWatchdog struct {
 	sslCmdRepo     repository.SslCmdRepo
 }
 
+func NewSslCertificateWatchdog(
+	vHostQueryRepo repository.VirtualHostQueryRepo,
+	sslQueryRepo repository.SslQueryRepo,
+	sslCmdRepo repository.SslCmdRepo,
+) *SslCertificateWatchdog {
+	return &SslCertificateWatchdog{
+		vHostQueryRepo: vHostQueryRepo,
+		sslQueryRepo:   sslQueryRepo,
+		sslCmdRepo:     sslCmdRepo,
+	}
+}
+
 type sslWatchdogVirtualHostSettings struct {
 	VirtualHost    entity.VirtualHost
 	AliasHostnames []valueObject.Fqdn

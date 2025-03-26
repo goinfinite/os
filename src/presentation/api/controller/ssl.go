@@ -11,6 +11,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -196,15 +197,16 @@ func (controller *SslController) SslCertificateWatchdog() {
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo(
 		controller.persistentDbSvc, controller.transientDbSvc,
 	)
+	sslWatchdogUseCase := useCase.NewSslCertificateWatchdog(
+		vhostQueryRepo, sslQueryRepo, sslCmdRepo,
+	)
 
 	for range timer.C {
-		useCase.SslCertificateWatchdog(
-			sslQueryRepo, sslCmdRepo, service.LocalOperatorAccountId,
-			service.LocalOperatorIpAddress,
-		)
+		sslWatchdogUseCase.Execute()
 	}
 }
