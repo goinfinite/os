@@ -27,7 +27,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 
-	ipAddress := valueObject.NewLocalhostIpAddress()
+	ipAddress := valueObject.IpAddressSystem
 	operatorAccountId, _ := valueObject.NewAccountId(0)
 
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
