@@ -11,16 +11,14 @@ import (
 func CreateInstallableService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
-	mappingQueryRepo repository.MappingQueryRepo,
-	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
 		ServiceName: &createDto.Name,
-	}
-	_, err := servicesQueryRepo.ReadFirstInstalledItem(readFirstInstalledRequestDto)
+	})
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -34,26 +32,25 @@ func CreateInstallableService(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateInstallableService(createDto)
 
-	readFirstInstalledRequestDto.ServiceName = &installedServiceName
-	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
-	)
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
+		ServiceName: &installedServiceName,
+	})
 	if err != nil {
-		slog.Error("GetServiceByNameError", slog.String("err", err.Error()))
-		return errors.New("GetServiceByNameInfraError")
+		slog.Error("ReadServiceEntityError", slog.String("err", err.Error()))
+		return errors.New("ReadServiceEntityInfraError")
 	}
 
 	if createDto.AutoCreateMapping != nil && !*createDto.AutoCreateMapping {
 		return nil
 	}
 
-	serviceTypeStr := serviceEntity.Type.String()
-	if serviceTypeStr != "runtime" && serviceTypeStr != "application" {
+	if len(serviceEntity.PortBindings) == 0 {
+		slog.Debug("AutoCreateMappingSkipped", slog.String("reason", "PortBindingsIsEmpty"))
 		return nil
 	}
 
 	return createFirstMapping(
-		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, installedServiceName,
-		createDto.OperatorAccountId, createDto.OperatorIpAddress,
+		vhostQueryRepo, mappingCmdRepo, installedServiceName, createDto.MappingHostname,
+		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }

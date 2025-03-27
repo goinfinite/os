@@ -14,6 +14,8 @@ type CreateInstallableService struct {
 	AutoRestart       *bool                       `json:"autoRestart"`
 	MaxStartRetries   *uint                       `json:"maxStartRetries"`
 	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
+	MappingHostname   *valueObject.Fqdn           `json:"mappingHostname"`
+	MappingPath       *valueObject.MappingPath    `json:"mappingPath"`
 	OperatorAccountId valueObject.AccountId       `json:"-"`
 	OperatorIpAddress valueObject.IpAddress       `json:"-"`
 }
@@ -30,6 +32,8 @@ func NewCreateInstallableService(
 	autoRestart *bool,
 	maxStartRetries *uint,
 	autoCreateMapping *bool,
+	mappingHostname *valueObject.Fqdn,
+	mappingPath *valueObject.MappingPath,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) CreateInstallableService {
@@ -45,6 +49,8 @@ func NewCreateInstallableService(
 		AutoRestart:       autoRestart,
 		MaxStartRetries:   maxStartRetries,
 		AutoCreateMapping: autoCreateMapping,
+		MappingHostname:   mappingHostname,
+		MappingPath:       mappingPath,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,
 	}
