@@ -16,25 +16,26 @@ func CreateVirtualHost(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateVirtualHost,
 ) error {
-	_, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
+	_, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &createDto.Hostname,
+	})
 	if err == nil {
-		return errors.New("VirtualHostAlreadyExists")
+		return errors.New("HostnameAlreadyInUse")
 	}
 
-	isAlias := createDto.Type.String() == "alias"
-	if isAlias && createDto.ParentHostname == nil {
-		return errors.New("AliasMustHaveParentHostname")
+	if createDto.Type == valueObject.VirtualHostTypeAlias && createDto.ParentHostname == nil {
+		return errors.New("MissingAliasParentHostname")
 	}
 
-	hostnameStr := createDto.Hostname.String()
-	hasWildcardInHostname := strings.HasPrefix(hostnameStr, "*.")
-	if hasWildcardInHostname {
-		hostnameWithoutWildcardStr := strings.Replace(hostnameStr, "*.", "", 1)
+	isWildcardHostname := strings.HasPrefix(createDto.Hostname.String(), "*.")
+	if isWildcardHostname {
+		hostnameWithoutWildcardStr := strings.Replace(createDto.Hostname.String(), "*.", "", 1)
 		hostnameWithoutWildcard, err := valueObject.NewFqdn(hostnameWithoutWildcardStr)
 		if err != nil {
-			return errors.New("FailedToRemoveWildcardFromHostname: " + err.Error())
+			return errors.New("RemoveWildcardFromHostnameError")
 		}
 
+		createDto.Type = valueObject.VirtualHostTypeWildcard
 		createDto.Hostname = hostnameWithoutWildcard
 	}
 
