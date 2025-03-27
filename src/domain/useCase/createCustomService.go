@@ -11,7 +11,6 @@ import (
 
 func createFirstMapping(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
 	mappingHostname *valueObject.Fqdn,
@@ -69,9 +68,8 @@ func createFirstMapping(
 func CreateCustomService(
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
-	mappingQueryRepo repository.MappingQueryRepo,
-	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateCustomService,
 ) error {
@@ -110,9 +108,8 @@ func CreateCustomService(
 	}
 
 	err = createFirstMapping(
-		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, createDto.Name,
-		createDto.MappingHostname, createDto.MappingPath,
-		createDto.OperatorAccountId, createDto.OperatorIpAddress,
+		vhostQueryRepo, mappingCmdRepo, createDto.Name, createDto.MappingHostname,
+		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 	if err != nil {
 		slog.Error("AutoCreateMappingError", slog.String("err", err.Error()))
