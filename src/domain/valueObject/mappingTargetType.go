@@ -10,8 +10,18 @@ import (
 
 type MappingTargetType string
 
+const (
+	MappingTargetTypeUrl          MappingTargetType = "url"
+	MappingTargetTypeService      MappingTargetType = "service"
+	MappingTargetTypeResponseCode MappingTargetType = "response-code"
+	MappingTargetTypeInlineHtml   MappingTargetType = "inline-html"
+	MappingTargetTypeStaticFiles  MappingTargetType = "static-files"
+)
+
 var ValidMappingTargetTypes = []string{
-	"url", "service", "response-code", "inline-html", "static-files",
+	MappingTargetTypeUrl.String(), MappingTargetTypeService.String(),
+	MappingTargetTypeResponseCode.String(), MappingTargetTypeInlineHtml.String(),
+	MappingTargetTypeStaticFiles.String(),
 }
 
 func NewMappingTargetType(value interface{}) (
