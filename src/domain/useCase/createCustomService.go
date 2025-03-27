@@ -14,40 +14,53 @@ func createFirstMapping(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
+	mappingHostname *valueObject.Fqdn,
+	mappingPath *valueObject.MappingPath,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
-	vhosts, err := vhostQueryRepo.Read()
-	if err != nil {
-		return errors.New("VhostsNotFound")
+	if mappingHostname == nil {
+		primaryVirtualHost, err := vhostQueryRepo.ReadPrimary()
+		if err != nil {
+			return errors.New("ReadPrimaryVirtualHostError: " + err.Error())
+		}
+		mappingHostname = &primaryVirtualHost.Hostname
 	}
 
-	primaryVhost := vhosts[0]
-	primaryVhostMappings, err := mappingQueryRepo.ReadByHostname(
-		primaryVhost.Hostname,
+	withMappings := true
+	vhostWithMappings, err := vhostQueryRepo.ReadFirstWithMappings(dto.ReadVirtualHostsRequest{
+		Hostname:     mappingHostname,
+		WithMappings: &withMappings,
+	},
 	)
 	if err != nil {
-		slog.Error("ReadPrimaryVhostMappingsError", slog.String("err", err.Error()))
-		return errors.New("ReadPrimaryVhostMappingsInfraError")
-	}
-	if len(primaryVhostMappings) != 0 {
-		return nil
+		return errors.New("ReadFirstVirtualHostWithMappingsError: " + err.Error())
 	}
 
-	mappingPath, _ := valueObject.NewMappingPath("/")
-	matchPattern, _ := valueObject.NewMappingMatchPattern("begins-with")
-	targetType, _ := valueObject.NewMappingTargetType("service")
-	targetValue, _ := valueObject.NewMappingTargetValue(serviceName.String(), targetType)
+	if mappingPath == nil {
+		rootPath, _ := valueObject.NewMappingPath("/")
+		mappingPath = &rootPath
+	}
+	for _, mappingEntity := range vhostWithMappings.Mappings {
+		if mappingEntity.Path == *mappingPath {
+			return errors.New("MappingAlreadyExists")
+		}
+	}
 
-	createMappingDto := dto.NewCreateMapping(
-		primaryVhost.Hostname, mappingPath, matchPattern, targetType, &targetValue, nil,
+	targetValue, err := valueObject.NewMappingTargetValue(
+		serviceName.String(), valueObject.MappingTargetTypeService,
+	)
+	if err != nil {
+		return errors.New("NewMappingTargetValueError: " + err.Error())
+	}
+
+	_, err = mappingCmdRepo.Create(dto.NewCreateMapping(
+		*mappingHostname, *mappingPath, valueObject.MappingMatchPatternBeginsWith,
+		valueObject.MappingTargetTypeService, &targetValue, nil,
 		operatorAccountId, operatorIpAddress,
-	)
-
-	_, err = mappingCmdRepo.Create(createMappingDto)
+	))
 	if err != nil {
-		slog.Error("CreateServiceMappingError", slog.String("err", err.Error()))
-		return errors.New("CreateServiceMappingInfraError")
+		return errors.New("CreateServiceMappingInfraError: " + err.Error())
 	}
 
 	return nil
@@ -62,10 +75,9 @@ func CreateCustomService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateCustomService,
 ) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &createDto.Name,
-	}
-	_, err := servicesQueryRepo.ReadFirstInstalledItem(readFirstInstalledRequestDto)
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &createDto.Name},
+	)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -92,13 +104,20 @@ func CreateCustomService(
 		return nil
 	}
 
-	serviceTypeStr := createDto.Type.String()
-	if serviceTypeStr != "runtime" && serviceTypeStr != "application" {
+	if len(createDto.PortBindings) == 0 {
+		slog.Debug("AutoCreateMappingSkipped", slog.String("reason", "PortBindingsIsEmpty"))
 		return nil
 	}
 
-	return createFirstMapping(
+	err = createFirstMapping(
 		vhostQueryRepo, mappingQueryRepo, mappingCmdRepo, createDto.Name,
+		createDto.MappingHostname, createDto.MappingPath,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
+	if err != nil {
+		slog.Error("AutoCreateMappingError", slog.String("err", err.Error()))
+		return errors.New("AutoCreateMappingInfraError")
+	}
+
+	return nil
 }

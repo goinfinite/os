@@ -24,6 +24,8 @@ type CreateCustomService struct {
 	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
 	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
 	AutoCreateMapping *bool                       `json:"autoCreateMapping"`
+	MappingHostname   *valueObject.Fqdn           `json:"mappingHostname"`
+	MappingPath       *valueObject.MappingPath    `json:"mappingPath"`
 	OperatorAccountId valueObject.AccountId       `json:"-"`
 	OperatorIpAddress valueObject.IpAddress       `json:"-"`
 }
@@ -43,6 +45,8 @@ func NewCreateCustomService(
 	logOutputPath, logErrorPath *valueObject.UnixFilePath,
 	avatarUrl *valueObject.Url,
 	autoCreateMapping *bool,
+	mappingHostname *valueObject.Fqdn,
+	mappingPath *valueObject.MappingPath,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) CreateCustomService {
@@ -68,6 +72,8 @@ func NewCreateCustomService(
 		LogErrorPath:      logErrorPath,
 		AvatarUrl:         avatarUrl,
 		AutoCreateMapping: autoCreateMapping,
+		MappingHostname:   mappingHostname,
+		MappingPath:       mappingPath,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,
 	}
