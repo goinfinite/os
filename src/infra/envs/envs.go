@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                  string = "0.2.0"
+	InfiniteOsVersion                  string = "0.2.1"
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
@@ -16,7 +16,7 @@ const (
 	InstallableServicesItemsRepoBranch string = "v1"
 	PrimaryPublicDir                   string = "/app/html"
 	VirtualHostsConfDir                string = "/app/conf/nginx"
-	PrimaryVhostFileName               string = "primary.conf"
+	PrimaryVirtualHostFileName         string = "primary.conf"
 	MappingsConfDir                    string = "/app/conf/nginx/mapping"
 	PkiConfDir                         string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
