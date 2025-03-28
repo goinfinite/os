@@ -68,12 +68,12 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("FirstBootDetected! PleaseAwait...")
 
-	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		log.Fatal("PrimaryVirtualHostNotFound")
 	}
 
-	primaryVhostStr := primaryVhost.String()
+	primaryHostname := primaryVirtualHostHostname.String()
 
 	log.Print("UpdatingPrimaryVirtualHost...")
 
@@ -81,7 +81,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
-			"-i", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryVhostStr + "/g", primaryConfFilePath,
+			"-i", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryHostname + "/g", primaryConfFilePath,
 		},
 	})
 	if err != nil {
@@ -102,9 +102,14 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	aliases := []string{}
+	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	if err != nil {
+		log.Fatal("PkiConfDirNotFound")
+	}
+
+	aliasesHostnames := []valueObject.Fqdn{}
 	err = infraHelper.CreateSelfSignedSsl(
-		infraEnvs.PkiConfDir, primaryVhostStr, aliases,
+		pkiConfDir, primaryVirtualHostHostname, aliasesHostnames,
 	)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed: ", err.Error())
