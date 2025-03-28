@@ -12,7 +12,7 @@ type ReadVirtualHostsRequest struct {
 	RootDirectory   *valueObject.UnixFilePath    `json:"rootDirectory"`
 	ParentHostname  *valueObject.Fqdn            `json:"parentHostname"`
 	WithMappings    *bool                        `json:"withMappings"`
-	IsPrimary       *bool                        `json:"isPrimary"`
+	IsPrimary       *bool                        `json:"-"`
 	CreatedBeforeAt *valueObject.UnixTime        `json:"createdBeforeAt"`
 	CreatedAfterAt  *valueObject.UnixTime        `json:"createdAfterAt"`
 }
