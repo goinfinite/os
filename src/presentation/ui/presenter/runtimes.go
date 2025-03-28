@@ -34,7 +34,10 @@ func NewRuntimesPresenter(
 func (presenter *RuntimesPresenter) readVhostsHostnames() ([]string, error) {
 	vhostsHostnames := []string{}
 
-	responseOutput := presenter.virtualHostService.Read()
+	responseOutput := presenter.virtualHostService.Read(map[string]interface{}{
+		"itemsPerPage": 1000,
+		"withMappings": false,
+	})
 	if responseOutput.Status != service.Success {
 		responseBodyErrorStr := responseOutput.Body.(string)
 		return vhostsHostnames, errors.New(responseBodyErrorStr)

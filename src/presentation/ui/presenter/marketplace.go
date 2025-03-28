@@ -32,7 +32,10 @@ func NewMarketplacePresenter(
 func (presenter *MarketplacePresenter) ReadVhostsHostnames() ([]string, error) {
 	vhostHostnames := []string{}
 
-	responseOutput := presenter.virtualHostService.Read()
+	responseOutput := presenter.virtualHostService.Read(map[string]interface{}{
+		"itemsPerPage": 1000,
+		"withMappings": false,
+	})
 	if responseOutput.Status != service.Success {
 		return vhostHostnames, errors.New("FailedToReadVirtualHosts")
 	}

@@ -42,7 +42,9 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	virtualHostService := service.NewVirtualHostService(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readMappingsResponseOutput := virtualHostService.ReadWithMappings()
+	readMappingsResponseOutput := virtualHostService.ReadWithMappings(map[string]interface{}{
+		"itemsPerPage": 1000,
+	})
 	if readMappingsResponseOutput.Status != service.Success {
 		slog.Debug("ReadWithMappingsFailed", slog.Any("output", readMappingsResponseOutput))
 		return nil
