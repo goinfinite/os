@@ -1,11 +1,13 @@
 package presentation
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -26,41 +28,48 @@ func webServerSetup(
 	ws.OnStartSetup()
 }
 
-func HttpServerInit(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
-	trailDbSvc *internalDbInfra.TrailDatabaseService,
+func initialSslSetup() (
+	certFilePath valueObject.UnixFilePath,
+	keyFilePath valueObject.UnixFilePath,
+	err error,
 ) {
-	e := echo.New()
+	rawOsPkiDir := "/infinite/pki"
+	pkiDir, err := valueObject.NewUnixFilePath(rawOsPkiDir)
+	if err != nil {
+		return certFilePath, keyFilePath, errors.New("InvalidPkiDir")
+	}
+	osPkiDirStr := pkiDir.String()
 
-	api.ApiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
-	ui.UiInit(e, persistentDbSvc, transientDbSvc, trailDbSvc)
-
-	httpServer := http.Server{
-		Addr:    ":" + infraEnvs.InfiniteOsApiHttpPublicPort,
-		Handler: e,
+	rawCertFilePath := osPkiDirStr + "/os.crt"
+	certFilePath, err = valueObject.NewUnixFilePath(rawCertFilePath)
+	if err != nil {
+		return certFilePath, keyFilePath, errors.New("InvalidCertFilePath")
 	}
 
-	webServerSetup(persistentDbSvc, transientDbSvc)
+	rawKeyFilePath := osPkiDirStr + "/os.key"
+	keyFilePath, err = valueObject.NewUnixFilePath(rawKeyFilePath)
+	if err != nil {
+		return certFilePath, keyFilePath, errors.New("InvalidKeyFilePath")
+	}
 
-	pkiDir := "/infinite/pki"
-	certFile := pkiDir + "/os.crt"
-	keyFile := pkiDir + "/os.key"
-	if !infraHelper.FileExists(certFile) {
-		err := infraHelper.MakeDir(pkiDir)
+	if !infraHelper.FileExists(certFilePath.String()) {
+		err := infraHelper.MakeDir(osPkiDirStr)
 		if err != nil {
-			slog.Error("MakePkiDirFailed", slog.String("err", err.Error()))
-			os.Exit(1)
+			return certFilePath, keyFilePath, errors.New("CreatePkiDirFailed")
 		}
 
-		aliases := []string{"localhost", "127.0.0.1"}
-		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", aliases)
+		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", []valueObject.Fqdn{})
 		if err != nil {
-			slog.Error("GenerateSelfSignedCertFailed", slog.String("err", err.Error()))
-			os.Exit(1)
+			return certFilePath, keyFilePath, errors.New("CreateSelfSignedSslFailed")
 		}
 	}
 
+	return certFilePath, keyFilePath, nil
+}
+
+func initialBannerSetup(
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+) {
 	osBanner := `Infinite OS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! 🎉`
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(transientDbSvc)
@@ -83,8 +92,33 @@ func HttpServerInit(
 	}
 
 	fmt.Println(osBanner)
+}
 
-	err = httpServer.ListenAndServeTLS(certFile, keyFile)
+func HttpServerInit(
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	trailDbSvc *internalDbInfra.TrailDatabaseService,
+) {
+	echoInstance := echo.New()
+
+	api.ApiInit(echoInstance, persistentDbSvc, transientDbSvc, trailDbSvc)
+	ui.UiInit(echoInstance, persistentDbSvc, transientDbSvc, trailDbSvc)
+
+	webServerSetup(persistentDbSvc, transientDbSvc)
+
+	certFilePath, keyFilePath, err := initialSslSetup()
+	if err != nil {
+		slog.Error("InitialSslSetupError", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+
+	initialBannerSetup(transientDbSvc)
+
+	httpServer := http.Server{
+		Addr:    ":" + infraEnvs.InfiniteOsApiHttpPublicPort,
+		Handler: echoInstance,
+	}
+	err = httpServer.ListenAndServeTLS(certFilePath.String(), keyFilePath.String())
 	if err != http.ErrServerClosed {
 		slog.Error("HttpServerError", slog.String("err", err.Error()))
 		os.Exit(1)
