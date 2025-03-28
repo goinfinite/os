@@ -19,7 +19,10 @@ func createFirstMapping(
 	operatorIpAddress valueObject.IpAddress,
 ) error {
 	if mappingHostname == nil {
-		primaryVirtualHost, err := vhostQueryRepo.ReadPrimary()
+		isPrimary := true
+		primaryVirtualHost, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+			IsPrimary: &isPrimary,
+		})
 		if err != nil {
 			return errors.New("ReadPrimaryVirtualHostError: " + err.Error())
 		}

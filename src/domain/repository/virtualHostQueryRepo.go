@@ -9,6 +9,4 @@ type VirtualHostQueryRepo interface {
 	Read(dto.ReadVirtualHostsRequest) (dto.ReadVirtualHostsResponse, error)
 	ReadFirst(dto.ReadVirtualHostsRequest) (entity.VirtualHost, error)
 	ReadFirstWithMappings(dto.ReadVirtualHostsRequest) (dto.VirtualHostWithMappings, error)
-	ReadPrimary() (entity.VirtualHost, error)
-	ReadPrimaryWithMappings() (dto.VirtualHostWithMappings, error)
 }
