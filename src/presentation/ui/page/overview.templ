@@ -156,11 +156,6 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 					</div>
 					<div class="basis-1/4 space-y-1.5">
 						@componentStructural.TinyTag(componentStructural.TinyTagDto{
-							HighlightedIcon: "ph-memory",
-							TagValue:        catalogItemEntity.ManifestVersion.String(),
-							TagColor:        "infinite-500",
-						})
-						@componentStructural.TinyTag(componentStructural.TinyTagDto{
 							HighlightedIcon: "ph-hard-drives",
 							TagValue:        catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
 							TagColor:        "infinite-500",
