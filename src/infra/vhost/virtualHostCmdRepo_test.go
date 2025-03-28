@@ -34,12 +34,12 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		vhost, err := vhostQueryRepo.ReadByHostname(vhostName)
-		if err != nil {
+		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{})
+		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
 
-		err = vhostCmdRepo.Delete(vhost)
+		err = vhostCmdRepo.Delete(vhostReadResponse.VirtualHosts[0].Hostname)
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
