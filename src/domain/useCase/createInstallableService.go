@@ -49,7 +49,7 @@ func CreateInstallableService(
 		return nil
 	}
 
-	return createFirstMapping(
+	return CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, installedServiceName, createDto.MappingHostname,
 		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)

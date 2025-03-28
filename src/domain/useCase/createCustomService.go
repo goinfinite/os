@@ -9,7 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-func createFirstMapping(
+func CreateServiceAutoMapping(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
@@ -110,7 +110,7 @@ func CreateCustomService(
 		return nil
 	}
 
-	err = createFirstMapping(
+	err = CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, createDto.Name, createDto.MappingHostname,
 		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
