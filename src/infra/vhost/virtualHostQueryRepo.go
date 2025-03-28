@@ -98,7 +98,14 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		virtualHostEntities = append(virtualHostEntities, virtualHostEntity)
 	}
 
-	if requestDto.WithMappings != nil && *requestDto.WithMappings {
+	if requestDto.WithMappings == nil {
+		return dto.ReadVirtualHostsResponse{
+			Pagination:   responsePagination,
+			VirtualHosts: virtualHostEntities,
+		}, nil
+	}
+
+	if !*requestDto.WithMappings {
 		return dto.ReadVirtualHostsResponse{
 			Pagination:   responsePagination,
 			VirtualHosts: virtualHostEntities,
@@ -122,13 +129,14 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 
 	virtualHostWithMappings := []dto.VirtualHostWithMappings{}
 	for _, virtualHostEntity := range virtualHostEntities {
-		if _, mappingExists := hostnameMappingEntitiesMap[virtualHostEntity.Hostname]; !mappingExists {
-			continue
+		mappingEntities := []entity.Mapping{}
+		if _, mappingExists := hostnameMappingEntitiesMap[virtualHostEntity.Hostname]; mappingExists {
+			mappingEntities = hostnameMappingEntitiesMap[virtualHostEntity.Hostname]
 		}
 
 		virtualHostWithMappings = append(virtualHostWithMappings, dto.VirtualHostWithMappings{
 			VirtualHost: virtualHostEntity,
-			Mappings:    hostnameMappingEntitiesMap[virtualHostEntity.Hostname],
+			Mappings:    mappingEntities,
 		})
 	}
 
