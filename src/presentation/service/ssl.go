@@ -94,7 +94,7 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
 	err = useCase.CreateSslPair(
-		service.sslCmdRepo, vhostQueryRepo, service.activityRecordCmdRepo, createDto,
+		vhostQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
