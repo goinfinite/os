@@ -1,8 +1,7 @@
-package mappingInfra
+package vhostInfra
 
 import (
 	"errors"
-	"log/slog"
 	"strings"
 	"text/template"
 
@@ -13,7 +12,6 @@ import (
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
-	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 )
 
 type MappingCmdRepo struct {
@@ -51,7 +49,7 @@ func (repo *MappingCmdRepo) parseCreateDtoToModel(
 	return dbModel.NewMapping(
 		0, createDto.Hostname.String(), createDto.Path.String(),
 		createDto.MatchPattern.String(), createDto.TargetType.String(),
-		targetValuePtr, targetHttpResponseCodePtr, vhostName.String(),
+		targetValuePtr, targetHttpResponseCodePtr,
 	)
 }
 
@@ -306,13 +304,15 @@ func (repo *MappingCmdRepo) parseLocationUri(
 func (repo *MappingCmdRepo) recreateMappingFile(
 	mappingHostname valueObject.Fqdn,
 ) error {
-	mappings, err := repo.mappingQueryRepo.ReadByHostname(mappingHostname)
+	mappingEntities, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
+		Hostname: &mappingHostname,
+	})
 	if err != nil {
 		return err
 	}
 
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	mappingFilePath, err := vhostQueryRepo.GetVirtualHostMappingsFilePath(
+	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
 		mappingHostname,
 	)
 	if err != nil {
@@ -354,7 +354,7 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 	}
 
 	var mappingFileContent strings.Builder
-	err = mappingTemplatePtr.Execute(&mappingFileContent, mappings)
+	err = mappingTemplatePtr.Execute(&mappingFileContent, mappingEntities)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -383,13 +383,15 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
+	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &createDto.Hostname,
+	})
 	if err != nil {
-		return mappingId, errors.New("GetVhostByHostnameError: " + err.Error())
+		return mappingId, errors.New("ReadVirtualHostEntityError: " + err.Error())
 	}
 
-	mappingModel := repo.parseCreateDtoToModel(createDto, vhost.Hostname)
+	mappingModel := repo.parseCreateDtoToModel(createDto, vhostEntity.Hostname)
 	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
 	if createResult.Error != nil {
 		return mappingId, createResult.Error
@@ -426,87 +428,22 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 		return err
 	}
 
-	mapping, err := repo.mappingQueryRepo.ReadById(mappingId)
+	mappingEntity, err := repo.mappingQueryRepo.ReadFirst(dto.ReadMappingsRequest{
+		MappingId: &mappingId,
+	})
 	if err != nil {
 		return err
 	}
 
-	err = repo.persistentDbSvc.Handler.Delete(
-		dbModel.Mapping{},
-		mappingId.Uint64(),
-	).Error
+	err = repo.persistentDbSvc.Handler.Delete(dbModel.Mapping{}, mappingId.Uint64()).Error
 	if err != nil {
 		return err
 	}
 
-	err = repo.recreateMappingFile(mapping.Hostname)
+	err = repo.recreateMappingFile(mappingEntity.Hostname)
 	if err != nil {
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
 	return infraHelper.ReloadWebServer()
-}
-
-func (repo *MappingCmdRepo) DeleteAuto(
-	serviceName valueObject.ServiceName,
-) error {
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-	if err != nil {
-		return errors.New("PrimaryVhostNotFound")
-	}
-
-	primaryVhostMappings, err := repo.mappingQueryRepo.ReadByHostname(primaryVhost)
-	if err != nil {
-		return errors.New("GetPrimaryVhostMappingsError: " + err.Error())
-	}
-
-	var mappingIdToDelete *valueObject.MappingId
-	for _, primaryVhostMapping := range primaryVhostMappings {
-		if primaryVhostMapping.TargetType.String() != "service" {
-			continue
-		}
-
-		if primaryVhostMapping.TargetValue.String() != serviceName.String() {
-			continue
-		}
-
-		mappingIdToDelete = &primaryVhostMapping.Id
-	}
-
-	if mappingIdToDelete == nil {
-		return nil
-	}
-
-	return repo.Delete(*mappingIdToDelete)
-}
-
-func (repo *MappingCmdRepo) RecreateByServiceName(
-	serviceName valueObject.ServiceName,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
-) error {
-	mappings, err := repo.mappingQueryRepo.ReadByServiceName(serviceName)
-	if err != nil {
-		return err
-	}
-
-	for _, mapping := range mappings {
-		err := repo.Delete(mapping.Id)
-		if err != nil {
-			return err
-		}
-
-		createDto := dto.NewCreateMapping(
-			mapping.Hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
-			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
-			operatorIpAddress,
-		)
-
-		_, err = repo.Create(createDto)
-		if err != nil {
-			slog.Error(err.Error(), slog.Uint64("mappingId", uint64(mapping.Id.Uint64())))
-		}
-	}
-
-	return nil
 }

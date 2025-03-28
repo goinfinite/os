@@ -1,4 +1,4 @@
-package mappingInfra
+package vhostInfra
 
 import (
 	"errors"
