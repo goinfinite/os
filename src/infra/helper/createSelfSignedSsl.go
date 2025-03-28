@@ -6,15 +6,17 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func altNamesConfFactory(
-	vhostName string,
-	aliasesHostname []string,
+	vhostHostname valueObject.Fqdn,
+	aliasesHostname []valueObject.Fqdn,
 ) []string {
-	altNames := []string{vhostName, "www." + vhostName}
+	altNames := []string{vhostHostname.String(), "www." + vhostHostname.String()}
 	for _, aliasHostname := range aliasesHostname {
-		altNames = append(altNames, aliasHostname, "www."+aliasHostname)
+		altNames = append(altNames, aliasHostname.String(), "www."+aliasHostname.String())
 	}
 
 	altNamesConfList := []string{}
@@ -29,13 +31,13 @@ func altNamesConfFactory(
 }
 
 func selfSignedConfFileFactory(
-	vhostName string,
-	aliasesHostname []string,
+	vhostHostname valueObject.Fqdn,
+	aliasesHostname []valueObject.Fqdn,
 ) (string, error) {
-	altNamesConf := altNamesConfFactory(vhostName, aliasesHostname)
+	altNamesConf := altNamesConfFactory(vhostHostname, aliasesHostname)
 	valuesToInterpolate := map[string]interface{}{
-		"VhostName":    vhostName,
-		"AltNamesConf": altNamesConf,
+		"VirtualHostHostname": vhostHostname,
+		"AltNamesConf":        altNamesConf,
 	}
 
 	confFileTemplate := `[ req ]
@@ -48,7 +50,7 @@ prompt = no
 C = US
 ST = California
 L = Los Angeles
-CN = {{ .VhostName }}
+CN = {{ .VirtualHostHostname }}
 
 [ v3_req ]
 subjectAltName = @alt_names
@@ -59,18 +61,13 @@ subjectAltName = @alt_names
 {{- end }}
 `
 
-	confFileTemplatePtr, err := template.
-		New("selfSignedConfFile").
-		Parse(confFileTemplate)
+	confFileTemplatePtr, err := template.New("selfSignedConfFile").Parse(confFileTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
 	var confFileContent strings.Builder
-	err = confFileTemplatePtr.Execute(
-		&confFileContent,
-		valuesToInterpolate,
-	)
+	err = confFileTemplatePtr.Execute(&confFileContent, valuesToInterpolate)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -79,41 +76,36 @@ subjectAltName = @alt_names
 }
 
 func CreateSelfSignedSsl(
-	dirPath string,
-	vhostName string,
-	aliasesHostname []string,
+	dirPath valueObject.UnixFilePath,
+	vhostHostname valueObject.Fqdn,
+	aliasesHostname []valueObject.Fqdn,
 ) error {
-	confContent, err := selfSignedConfFileFactory(vhostName, aliasesHostname)
+	confContent, err := selfSignedConfFileFactory(vhostHostname, aliasesHostname)
 	if err != nil {
-		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
+		return errors.New("SelfSignedConfFactoryError: " + err.Error())
 	}
 
-	confTempFilePath := "/tmp/" + vhostName + "_selfSignedSsl.conf"
+	vhostHostnameStr := vhostHostname.String()
+	confTempFilePath := "/tmp/" + vhostHostnameStr + "_selfSignedSsl.conf"
 	shouldOverwrite := true
 	err = UpdateFile(confTempFilePath, confContent, shouldOverwrite)
 	if err != nil {
-		return errors.New("GenerateSelfSignedConfFileError: " + err.Error())
+		return errors.New("UpdateSelfSignedConfFileError: " + err.Error())
 	}
 
-	vhostCertKeyFilePath := dirPath + "/" + vhostName + ".key"
-	vhostCertFilePath := dirPath + "/" + vhostName + ".crt"
+	dirPathStr := dirPath.String()
+	vhostCertKeyFilePath := dirPathStr + "/" + vhostHostnameStr + ".key"
+	vhostCertFilePath := dirPathStr + "/" + vhostHostnameStr + ".crt"
 
-	generateSelfSignedSslCmd := "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout " +
+	createSslCmd := "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout " +
 		vhostCertKeyFilePath + " -out " + vhostCertFilePath + " -config " + confTempFilePath
 	_, err = RunCmd(RunCmdSettings{
-		Command:               generateSelfSignedSslCmd,
+		Command:               createSslCmd,
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil {
-		return errors.New(
-			"CreateSelfSignedSslFailed (" + vhostName + "): " + err.Error(),
-		)
+		return errors.New("CreateSelfSignedSslCmdFailed: " + err.Error())
 	}
 
-	err = os.Remove(confTempFilePath)
-	if err != nil {
-		return errors.New("DeleteSelfSignedConfFileError: " + err.Error())
-	}
-
-	return nil
+	return os.Remove(confTempFilePath)
 }
