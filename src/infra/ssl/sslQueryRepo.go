@@ -192,8 +192,8 @@ func (repo SslQueryRepo) ReadById(
 	return entity.SslPair{}, errors.New("SslPairNotFound")
 }
 
-func (repo SslQueryRepo) ReadByVhostHostname(
-	sslPairVhostHostname valueObject.Fqdn,
+func (repo SslQueryRepo) ReadByVirtualHostHostname(
+	sslPairVirtualHostHostname valueObject.Fqdn,
 ) (entity.SslPair, error) {
 	sslPairs, err := repo.Read()
 	if err != nil {
@@ -205,7 +205,7 @@ func (repo SslQueryRepo) ReadByVhostHostname(
 	}
 
 	for _, ssl := range sslPairs {
-		if !slices.Contains(ssl.VirtualHostsHostnames, sslPairVhostHostname) {
+		if !slices.Contains(ssl.VirtualHostsHostnames, sslPairVirtualHostHostname) {
 			continue
 		}
 
