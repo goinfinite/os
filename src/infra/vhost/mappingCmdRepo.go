@@ -30,29 +30,6 @@ func NewMappingCmdRepo(
 	}
 }
 
-func (repo *MappingCmdRepo) parseCreateDtoToModel(
-	createDto dto.CreateMapping,
-	vhostName valueObject.Fqdn,
-) dbModel.Mapping {
-	var targetValuePtr *string
-	if createDto.TargetValue != nil {
-		targetValueStr := createDto.TargetValue.String()
-		targetValuePtr = &targetValueStr
-	}
-
-	var targetHttpResponseCodePtr *string
-	if createDto.TargetHttpResponseCode != nil {
-		targetHttpResponseCodeStr := createDto.TargetHttpResponseCode.String()
-		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
-	}
-
-	return dbModel.NewMapping(
-		0, createDto.Hostname.String(), createDto.Path.String(),
-		createDto.MatchPattern.String(), createDto.TargetType.String(),
-		targetValuePtr, targetHttpResponseCodePtr,
-	)
-}
-
 func (repo *MappingCmdRepo) getServiceMappingConfig(
 	svcNameStr string,
 ) (svcMappingConfig string, err error) {
@@ -304,7 +281,7 @@ func (repo *MappingCmdRepo) parseLocationUri(
 func (repo *MappingCmdRepo) recreateMappingFile(
 	mappingHostname valueObject.Fqdn,
 ) error {
-	mappingEntities, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
+	mappingsReadResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
 		Hostname: &mappingHostname,
 	})
 	if err != nil {
@@ -354,7 +331,7 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 	}
 
 	var mappingFileContent strings.Builder
-	err = mappingTemplatePtr.Execute(&mappingFileContent, mappingEntities)
+	err = mappingTemplatePtr.Execute(&mappingFileContent, mappingsReadResponse.Mappings)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -383,19 +360,29 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
-		Hostname: &createDto.Hostname,
-	})
-	if err != nil {
-		return mappingId, errors.New("ReadVirtualHostEntityError: " + err.Error())
+	var targetValuePtr *string
+	if createDto.TargetValue != nil {
+		targetValueStr := createDto.TargetValue.String()
+		targetValuePtr = &targetValueStr
 	}
 
-	mappingModel := repo.parseCreateDtoToModel(createDto, vhostEntity.Hostname)
-	createResult := repo.persistentDbSvc.Handler.Create(&mappingModel)
-	if createResult.Error != nil {
-		return mappingId, createResult.Error
+	var targetHttpResponseCodePtr *string
+	if createDto.TargetHttpResponseCode != nil {
+		targetHttpResponseCodeStr := createDto.TargetHttpResponseCode.String()
+		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
 	}
+
+	mappingModel := dbModel.NewMapping(
+		0, createDto.Hostname.String(), createDto.Path.String(),
+		createDto.MatchPattern.String(), createDto.TargetType.String(),
+		targetValuePtr, targetHttpResponseCodePtr,
+	)
+
+	err = repo.persistentDbSvc.Handler.Create(&mappingModel).Error
+	if err != nil {
+		return mappingId, err
+	}
+
 	mappingId, err = valueObject.NewMappingId(mappingModel.ID)
 	if err != nil {
 		return mappingId, err
