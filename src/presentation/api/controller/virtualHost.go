@@ -27,10 +27,29 @@ func NewVirtualHostController(
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} entity.VirtualHost
+// @Param        hostname query  string  false  "Hostname"
+// @Param        type query  string  false  "Type"
+// @Param        rootDirectory query  string  false  "RootDirectory"
+// @Param        parentHostname query  string  false  "ParentHostname"
+// @Param        withMappings query  bool  false  "WithMappings"
+// @Param        createdBeforeAt query  string  false  "CreatedBeforeAt"
+// @Param        createdAfterAt query  string  false  "CreatedAfterAt"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadVirtualHostsResponse
 // @Router       /v1/vhosts/ [get]
 func (controller *VirtualHostController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.virtualHostService.Read())
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.Read(requestInputData),
+	)
 }
 
 // CreateVirtualHost    godoc
@@ -82,10 +101,29 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} dto.VirtualHostWithMappings
+// @Param        hostname query  string  false  "Hostname"
+// @Param        type query  string  false  "Type"
+// @Param        rootDirectory query  string  false  "RootDirectory"
+// @Param        parentHostname query  string  false  "ParentHostname"
+// @Param        withMappings query  bool  false  "WithMappings"
+// @Param        createdBeforeAt query  string  false  "CreatedBeforeAt"
+// @Param        createdAfterAt query  string  false  "CreatedAfterAt"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.VirtualHostWithMappings
 // @Router       /v1/vhosts/mapping/ [get]
 func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.virtualHostService.ReadWithMappings())
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.ReadWithMappings(requestInputData),
+	)
 }
 
 // CreateVirtualHostMapping godoc
