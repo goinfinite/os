@@ -368,7 +368,7 @@ func (repo *O11yQueryRepo) ReadOverview(
 		hostnameStr = "localhost"
 	}
 
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err == nil {
 		hostnameStr = primaryVhost.String()
 	}

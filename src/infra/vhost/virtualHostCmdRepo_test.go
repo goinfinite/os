@@ -17,7 +17,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	vhostCmdRepo := NewVirtualHostCmdRepo(persistentDbSvc)
 	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
-	vhostName, _ := infraHelper.GetPrimaryVirtualHost()
+	vhostName, _ := infraHelper.ReadPrimaryVirtualHostHostname()
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")

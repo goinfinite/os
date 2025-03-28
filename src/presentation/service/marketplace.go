@@ -143,7 +143,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 	input map[string]interface{},
 	shouldSchedule bool,
 ) ServiceOutput {
-	hostname, err := infraHelper.GetPrimaryVirtualHost()
+	hostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
@@ -251,17 +251,16 @@ func (service *MarketplaceService) InstallCatalogItem(
 		}
 	}
 
-	dto := dto.NewInstallMarketplaceCatalogItem(
+	installDto := dto.NewInstallMarketplaceCatalogItem(
 		hostname, idPtr, slugPtr, urlPathPtr, dataFields, operatorAccountId,
 		operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
-	vhostCmdRepo := vhostInfra.NewVirtualHostCmdRepo(service.persistentDbSvc)
 
 	err = useCase.InstallMarketplaceCatalogItem(
-		service.marketplaceQueryRepo, service.marketplaceCmdRepo, vhostQueryRepo,
-		vhostCmdRepo, service.activityRecordCmdRepo, dto,
+		vhostQueryRepo, service.marketplaceQueryRepo, service.marketplaceCmdRepo,
+		service.activityRecordCmdRepo, installDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

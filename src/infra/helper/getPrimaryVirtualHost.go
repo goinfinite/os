@@ -6,20 +6,19 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
-func GetPrimaryVirtualHost() (valueObject.Fqdn, error) {
-	var primaryVhost valueObject.Fqdn
-
-	primaryVhostStr := os.Getenv("PRIMARY_VHOST")
-	if primaryVhostStr == "" {
-		var err error
-		primaryVhostStr, err = RunCmd(RunCmdSettings{
-			Command: "hostname",
-			Args:    []string{"-f"},
-		})
-		if err != nil {
-			return primaryVhost, err
-		}
+func ReadPrimaryVirtualHostHostname() (primaryHostname valueObject.Fqdn, err error) {
+	rawPrimaryHost := os.Getenv("PRIMARY_VHOST")
+	if rawPrimaryHost != "" {
+		return valueObject.NewFqdn(rawPrimaryHost)
 	}
 
-	return valueObject.NewFqdn(primaryVhostStr)
+	rawPrimaryHost, err = RunCmd(RunCmdSettings{
+		Command: "hostname",
+		Args:    []string{"-f"},
+	})
+	if err != nil {
+		return primaryHostname, err
+	}
+
+	return valueObject.NewFqdn(rawPrimaryHost)
 }

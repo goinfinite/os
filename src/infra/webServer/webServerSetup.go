@@ -68,7 +68,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("FirstBootDetected! PleaseAwait...")
 
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		log.Fatal("PrimaryVirtualHostNotFound")
 	}

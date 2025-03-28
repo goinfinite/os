@@ -441,7 +441,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		serviceVersion = *createDto.Version
 	}
 
-	primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
+	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return installedServiceName, err
 	}

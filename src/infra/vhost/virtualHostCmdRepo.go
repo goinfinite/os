@@ -105,7 +105,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = infraEnvs.PrimaryVhostFileName
+		vhostFileNameStr = infraEnvs.PrimaryVirtualHostFileName
 	}
 
 	mappingFilePathStr := infraEnvs.MappingsConfDir + "/" + vhostFileNameStr
@@ -271,7 +271,7 @@ func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
 ) error {
 	vhostFileNameStr := vhostName.String() + ".conf"
 	if infraHelper.IsPrimaryVirtualHost(vhostName) {
-		vhostFileNameStr = infraEnvs.PrimaryVhostFileName
+		vhostFileNameStr = infraEnvs.PrimaryVirtualHostFileName
 	}
 
 	mappingFilePathStr := infraEnvs.MappingsConfDir + "/" + vhostFileNameStr

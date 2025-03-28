@@ -3,7 +3,7 @@ package infraHelper
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 func IsPrimaryVirtualHost(vhost valueObject.Fqdn) bool {
-	primaryVhost, err := GetPrimaryVirtualHost()
+	primaryVhost, err := ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return false
 	}

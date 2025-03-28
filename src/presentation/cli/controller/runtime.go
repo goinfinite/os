@@ -26,7 +26,7 @@ func NewRuntimeController(
 }
 
 func getHostname(hostnameStr string) (hostname valueObject.Fqdn, err error) {
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return hostname, errors.New("PrimaryVirtualHostNotFound")
 	}

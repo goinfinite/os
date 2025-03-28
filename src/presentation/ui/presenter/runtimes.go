@@ -101,7 +101,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		slog.Error("ReadPrimaryVirtualHost", slog.String("err", err.Error()))
 		return nil

@@ -21,9 +21,9 @@ type VirtualHost struct {
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
-	primaryVhostName, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhostName, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
-		return entries, errors.New("GetPrimaryVirtualHostError: " + err.Error())
+		return entries, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
 	}
 
 	primaryEntry := VirtualHost{
