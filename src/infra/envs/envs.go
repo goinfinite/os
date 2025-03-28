@@ -16,7 +16,6 @@ const (
 	InstallableServicesItemsRepoBranch string = "v1"
 	PrimaryPublicDir                   string = "/app/html"
 	VirtualHostsConfDir                string = "/app/conf/nginx"
-	PrimaryVirtualHostFileName         string = "primary.conf"
 	MappingsConfDir                    string = "/app/conf/nginx/mapping"
 	PkiConfDir                         string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"

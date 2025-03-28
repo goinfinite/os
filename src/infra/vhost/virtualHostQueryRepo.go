@@ -202,7 +202,7 @@ func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
 
 	vhostFileNameStr := vhostHostname.String() + ".conf"
 	if vhostEntity.Hostname == primaryVirtualHostEntity.Hostname {
-		vhostFileNameStr = infraEnvs.PrimaryVirtualHostFileName
+		vhostFileNameStr = "primary.conf"
 	}
 
 	return valueObject.NewUnixFilePath(
