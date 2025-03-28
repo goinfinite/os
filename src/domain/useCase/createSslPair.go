@@ -17,8 +17,12 @@ func CreateSslPair(
 	createDto dto.CreateSslPair,
 ) error {
 	readVirtualHostsResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination: dto.Pagination{PageNumber: 0, ItemsPerPage: 1000},
+		Pagination: dto.PaginationUnpaginated,
 	})
+	if err != nil {
+		slog.Error("ReadVirtualHostInfraError", slog.String("err", err.Error()))
+		return errors.New("ReadVirtualHostInfraError")
+	}
 
 	existingHostnames := []valueObject.Fqdn{}
 	for _, vhostEntity := range readVirtualHostsResponse.VirtualHosts {

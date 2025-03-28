@@ -2,6 +2,11 @@ package dto
 
 import "github.com/goinfinite/os/src/domain/valueObject"
 
+var PaginationUnpaginated = Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 1000,
+}
+
 type Pagination struct {
 	PageNumber    uint32                               `json:"pageNumber"`
 	ItemsPerPage  uint16                               `json:"itemsPerPage"`
