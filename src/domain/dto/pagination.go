@@ -2,6 +2,11 @@ package dto
 
 import "github.com/goinfinite/os/src/domain/valueObject"
 
+var PaginationSingleItem = Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 1,
+}
+
 var PaginationUnpaginated = Pagination{
 	PageNumber:   0,
 	ItemsPerPage: 1000,
