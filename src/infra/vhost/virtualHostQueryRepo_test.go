@@ -17,6 +17,7 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 	t.Run("Read", func(t *testing.T) {
 		withMappings := true
 		_, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination:   dto.PaginationUnpaginated,
 			WithMappings: &withMappings,
 		})
 		if err != nil {

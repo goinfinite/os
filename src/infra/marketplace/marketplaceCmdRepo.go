@@ -318,7 +318,8 @@ func (repo *MarketplaceCmdRepo) createMappings(
 ) (mappingIds []valueObject.MappingId, err error) {
 	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	mappingsReadResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Hostname: &hostname,
+		Pagination: dto.PaginationUnpaginated,
+		Hostname:   &hostname,
 	})
 	if err != nil {
 		return mappingIds, err

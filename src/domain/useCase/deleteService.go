@@ -26,7 +26,9 @@ func DeleteServiceMappings(
 	}
 
 	readMappingsResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		TargetType: &targetType, TargetValue: &targetValue,
+		Pagination:  dto.PaginationUnpaginated,
+		TargetType:  &targetType,
+		TargetValue: &targetValue,
 	})
 	if err != nil {
 		return errors.New("ReadMappingsInfraError: " + err.Error())

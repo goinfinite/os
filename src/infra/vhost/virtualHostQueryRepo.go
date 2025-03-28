@@ -114,7 +114,8 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 
 	mappingQueryRepo := NewMappingQueryRepo(repo.persistentDbSvc)
 	readMappingsResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Hostname: requestDto.Hostname,
+		Pagination: dto.PaginationUnpaginated,
+		Hostname:   requestDto.Hostname,
 	})
 	if err != nil {
 		return responseDto, errors.New("ReadMappingsError: " + err.Error())

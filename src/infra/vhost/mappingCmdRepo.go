@@ -282,7 +282,8 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 	mappingHostname valueObject.Fqdn,
 ) error {
 	mappingsReadResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Hostname: &mappingHostname,
+		Pagination: dto.PaginationUnpaginated,
+		Hostname:   &mappingHostname,
 	})
 	if err != nil {
 		return err

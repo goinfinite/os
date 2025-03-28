@@ -47,6 +47,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 	}
 
 	aliasesVirtualHostsReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination:     dto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
 	if err != nil {

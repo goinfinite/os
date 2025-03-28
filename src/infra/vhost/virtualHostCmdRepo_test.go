@@ -34,7 +34,9 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{})
+		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination: dto.PaginationUnpaginated,
+		})
 		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}

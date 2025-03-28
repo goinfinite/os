@@ -93,6 +93,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	publicDir valueObject.UnixFilePath,
 ) error {
 	aliasesVirtualHostsReadResponse, err := repo.queryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination:     dto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
 	if err != nil {
