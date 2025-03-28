@@ -10,7 +10,6 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
@@ -18,8 +17,8 @@ type VirtualHostService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 	vhostQueryRepo        *vhostInfra.VirtualHostQueryRepo
 	vhostCmdRepo          *vhostInfra.VirtualHostCmdRepo
-	mappingQueryRepo      *mappingInfra.MappingQueryRepo
-	mappingCmdRepo        *mappingInfra.MappingCmdRepo
+	mappingQueryRepo      *vhostInfra.MappingQueryRepo
+	mappingCmdRepo        *vhostInfra.MappingCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
@@ -31,8 +30,8 @@ func NewVirtualHostService(
 		persistentDbSvc:       persistentDbSvc,
 		vhostQueryRepo:        vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 		vhostCmdRepo:          vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
-		mappingQueryRepo:      mappingInfra.NewMappingQueryRepo(persistentDbSvc),
-		mappingCmdRepo:        mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		mappingQueryRepo:      vhostInfra.NewMappingQueryRepo(persistentDbSvc),
+		mappingCmdRepo:        vhostInfra.NewMappingCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
@@ -122,7 +121,7 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}

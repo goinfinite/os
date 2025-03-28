@@ -12,7 +12,6 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 )
 
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
@@ -120,7 +119,7 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 }
 
 func (repo *SslCmdRepo) createOwnershipValidationMapping(
-	mappingCmdRepo *mappingInfra.MappingCmdRepo,
+	mappingCmdRepo *vhostInfra.MappingCmdRepo,
 	targetVhostName valueObject.Fqdn,
 	expectedOwnershipHash valueObject.Hash,
 	operatorAccountId valueObject.AccountId,
@@ -158,7 +157,7 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 
 	serverPublicIpAddressStr := serverPublicIpAddress.String()
 	expectedHashStr := expectedOwnershipHash.String()
-	mappingCmdRepo := mappingInfra.NewMappingCmdRepo(repo.persistentDbSvc)
+	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 
 	for _, vhostName := range vhostNames {
 		vhostNameStr := vhostName.String()

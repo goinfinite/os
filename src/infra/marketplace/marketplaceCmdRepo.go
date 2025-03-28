@@ -20,7 +20,6 @@ import (
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +28,7 @@ const installTempDirPath = "/app/marketplace-tmp/"
 type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	marketplaceQueryRepo *MarketplaceQueryRepo
-	mappingCmdRepo       *mappingInfra.MappingCmdRepo
+	mappingCmdRepo       *vhostInfra.MappingCmdRepo
 }
 
 func NewMarketplaceCmdRepo(
@@ -38,7 +37,7 @@ func NewMarketplaceCmdRepo(
 	return &MarketplaceCmdRepo{
 		persistentDbSvc:      persistentDbSvc,
 		marketplaceQueryRepo: NewMarketplaceQueryRepo(persistentDbSvc),
-		mappingCmdRepo:       mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		mappingCmdRepo:       vhostInfra.NewMappingCmdRepo(persistentDbSvc),
 	}
 }
 
@@ -318,7 +317,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) (mappingIds []valueObject.MappingId, err error) {
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
+	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	currentMappings, err := mappingQueryRepo.ReadByHostname(hostname)
 	if err != nil {
 		return mappingIds, err

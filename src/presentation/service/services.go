@@ -17,7 +17,6 @@ import (
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
@@ -25,8 +24,8 @@ type ServicesService struct {
 	persistentDbService   *internalDbInfra.PersistentDatabaseService
 	servicesQueryRepo     *servicesInfra.ServicesQueryRepo
 	servicesCmdRepo       *servicesInfra.ServicesCmdRepo
-	mappingQueryRepo      *mappingInfra.MappingQueryRepo
-	mappingCmdRepo        *mappingInfra.MappingCmdRepo
+	mappingQueryRepo      *vhostInfra.MappingQueryRepo
+	mappingCmdRepo        *vhostInfra.MappingCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
@@ -38,8 +37,8 @@ func NewServicesService(
 		persistentDbService:   persistentDbService,
 		servicesQueryRepo:     servicesInfra.NewServicesQueryRepo(persistentDbService),
 		servicesCmdRepo:       servicesInfra.NewServicesCmdRepo(persistentDbService),
-		mappingQueryRepo:      mappingInfra.NewMappingQueryRepo(persistentDbService),
-		mappingCmdRepo:        mappingInfra.NewMappingCmdRepo(persistentDbService),
+		mappingQueryRepo:      vhostInfra.NewMappingQueryRepo(persistentDbService),
+		mappingCmdRepo:        vhostInfra.NewMappingCmdRepo(persistentDbService),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
