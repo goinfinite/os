@@ -8,8 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 )
 
 type MappingQueryRepo struct {
@@ -19,108 +19,105 @@ type MappingQueryRepo struct {
 func NewMappingQueryRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MappingQueryRepo {
-	return &MappingQueryRepo{
-		persistentDbSvc: persistentDbSvc,
-	}
+	return &MappingQueryRepo{persistentDbSvc: persistentDbSvc}
 }
 
-func (repo *MappingQueryRepo) ReadById(
-	id valueObject.MappingId,
-) (entity entity.Mapping, err error) {
-	model := dbModel.Mapping{}
-	err = repo.persistentDbSvc.Handler.
-		Model(&dbModel.Mapping{}).
-		Where("id = ?", id.Uint64()).
-		First(&model).Error
-	if err != nil {
-		return entity, errors.New("ReadDatabaseEntryError")
-	}
-
-	entity, err = model.ToEntity()
-	if err != nil {
-		return entity, errors.New("ModelToEntityError")
-	}
-
-	return entity, nil
-}
-
-func (repo *MappingQueryRepo) ReadByHostname(
-	hostname valueObject.Fqdn,
-) ([]entity.Mapping, error) {
-	entities := []entity.Mapping{}
-
-	models := []dbModel.Mapping{}
-	err := repo.persistentDbSvc.Handler.
-		Model(&dbModel.Mapping{}).
-		Where("hostname = ?", hostname.String()).
-		Find(&models).Error
-	if err != nil {
-		return entities, errors.New("ReadDatabaseEntriesError")
-	}
-
-	for _, model := range models {
-		entity, err := model.ToEntity()
-		if err != nil {
-			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
-			continue
-		}
-
-		entities = append(entities, entity)
-	}
-
-	return entities, nil
-}
-
-func (repo *MappingQueryRepo) ReadByServiceName(
-	serviceName valueObject.ServiceName,
-) (entities []entity.Mapping, err error) {
-	models := []dbModel.Mapping{}
-	err = repo.persistentDbSvc.Handler.
-		Model(&dbModel.Mapping{}).
-		Where("target_type = 'service' AND target_value = ?", serviceName.String()).
-		Find(&models).Error
-	if err != nil {
-		return entities, errors.New("ReadDatabaseEntriesError")
-	}
-
-	for _, model := range models {
-		entity, err := model.ToEntity()
-		if err != nil {
-			slog.Error("ModelToEntityError", slog.String("err", err.Error()))
-			continue
-		}
-
-		entities = append(entities, entity)
-	}
-
-	return entities, nil
-}
-
-func (repo *MappingQueryRepo) ReadWithMappings() (
-	vhostsWithMappings []dto.VirtualHostWithMappings, err error,
+func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
+	responseDto dto.ReadMappingsResponse, err error,
 ) {
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhosts, err := vhostQueryRepo.Read()
-	if err != nil {
-		return vhostsWithMappings, err
+	mappingModel := dbModel.Mapping{}
+	if requestDto.MappingId != nil {
+		mappingModel.ID = requestDto.MappingId.Uint64()
+	}
+	if requestDto.Hostname != nil {
+		mappingModel.Hostname = requestDto.Hostname.String()
+	}
+	if requestDto.MappingPath != nil {
+		mappingModel.Path = requestDto.MappingPath.String()
+	}
+	if requestDto.MatchPattern != nil {
+		mappingModel.MatchPattern = requestDto.MatchPattern.String()
+	}
+	if requestDto.TargetType != nil {
+		mappingModel.TargetType = requestDto.TargetType.String()
+	}
+	if requestDto.TargetValue != nil {
+		targetValueStr := requestDto.TargetValue.String()
+		mappingModel.TargetValue = &targetValueStr
+	}
+	if requestDto.TargetHttpResponseCode != nil {
+		targetHttpResponseCodeStr := requestDto.TargetHttpResponseCode.String()
+		mappingModel.TargetHttpResponseCode = &targetHttpResponseCodeStr
 	}
 
-	for _, vhost := range vhosts {
-		mappings, err := repo.ReadByHostname(vhost.Hostname)
+	dbQuery := repo.persistentDbSvc.Handler.Model(mappingModel).Where(&mappingModel)
+	if requestDto.CreatedBeforeAt != nil {
+		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
+	}
+	if requestDto.CreatedAfterAt != nil {
+		dbQuery = dbQuery.Where("created_at > ?", requestDto.CreatedAfterAt.ReadAsGoTime())
+	}
+
+	if requestDto.Pagination.SortBy != nil {
+		sortByStr := requestDto.Pagination.SortBy.String()
+		switch sortByStr {
+		case "mappingId", "id":
+			sortByStr = "ID"
+		case "mappingPath":
+			sortByStr = "Path"
+		}
+
+		sortBy, err := valueObject.NewPaginationSortBy(sortByStr)
+		if err == nil {
+			requestDto.Pagination.SortBy = &sortBy
+		}
+	}
+	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination,
+	)
+	if err != nil {
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
+	}
+
+	mappingModels := []dbModel.Mapping{}
+	err = paginatedDbQuery.Find(&mappingModels).Error
+	if err != nil {
+		return responseDto, errors.New("FindMappingsError: " + err.Error())
+	}
+
+	mappingEntities := []entity.Mapping{}
+	for _, mappingModel := range mappingModels {
+		mappingEntity, err := mappingModel.ToEntity()
 		if err != nil {
-			slog.Error(
-				"ReadMappingsError",
-				slog.String("vhostHostname", vhost.Hostname.String()),
-				slog.String("err", err.Error()),
+			slog.Debug(
+				"MappingModelToEntityError",
+				slog.Uint64("mappingId", mappingModel.ID),
+				slog.String("hostname", mappingModel.Hostname),
+				slog.String("error", err.Error()),
 			)
 			continue
 		}
-
-		vhostsWithMappings = append(
-			vhostsWithMappings,
-			dto.NewVirtualHostWithMappings(vhost, mappings),
-		)
+		mappingEntities = append(mappingEntities, mappingEntity)
 	}
 
-	return vhostsWithMappings, nil
+	return dto.ReadMappingsResponse{
+		Pagination: responsePagination,
+		Mappings:   mappingEntities,
+	}, nil
+}
+
+func (repo *MappingQueryRepo) ReadFirst(
+	requestDto dto.ReadMappingsRequest,
+) (mappingEntity entity.Mapping, err error) {
+	requestDto.Pagination = dto.PaginationSingleItem
+	responseDto, err := repo.Read(requestDto)
+	if err != nil {
+		return mappingEntity, err
+	}
+
+	if len(responseDto.Mappings) == 0 {
+		return mappingEntity, errors.New("MappingNotFound")
+	}
+
+	return responseDto.Mappings[0], nil
 }
