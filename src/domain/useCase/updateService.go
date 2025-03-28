@@ -17,14 +17,12 @@ func UpdateService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateService,
 ) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &updateDto.Name,
-	}
 	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &updateDto.Name},
 	)
 	if err != nil {
-		return err
+		slog.Error("ReadServiceInfraEntityError", slog.String("err", err.Error()))
+		return errors.New("ReadServiceEntityError")
 	}
 
 	isSoloService := serviceEntity.Nature == valueObject.ServiceNatureSolo
@@ -40,8 +38,8 @@ func UpdateService(
 			updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
 		)
 		return DeleteService(
-			servicesQueryRepo, servicesCmdRepo, mappingCmdRepo, activityRecordCmdRepo,
-			deleteDto,
+			servicesQueryRepo, servicesCmdRepo, mappingQueryRepo, mappingCmdRepo,
+			activityRecordCmdRepo, deleteDto,
 		)
 	}
 
@@ -57,12 +55,9 @@ func UpdateService(
 		return nil
 	}
 
-	err = mappingCmdRepo.RecreateByServiceName(
-		updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
+	shouldRecreateAutoMappings := true
+	return DeleteServiceMappings(
+		mappingQueryRepo, mappingCmdRepo, updateDto.Name, shouldRecreateAutoMappings,
+		updateDto.OperatorAccountId, updateDto.OperatorIpAddress,
 	)
-	if err != nil {
-		slog.Error("RecreateMappingError", slog.String("err", err.Error()))
-	}
-
-	return nil
 }
