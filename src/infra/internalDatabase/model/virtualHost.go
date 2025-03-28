@@ -15,7 +15,6 @@ type VirtualHost struct {
 	Type           string `gorm:"not null"`
 	RootDirectory  string `gorm:"not null"`
 	ParentHostname *string
-	Mappings       []Mapping
 	CreatedAt      time.Time `gorm:"not null"`
 	UpdatedAt      time.Time `gorm:"not null"`
 }
@@ -60,35 +59,5 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr = &parentHostname
 	}
 
-	return entity.NewVirtualHost(
-		hostname,
-		vhostType,
-		rootDir,
-		parentHostnamePtr,
-	), nil
-}
-
-func (VirtualHost) ToModel(
-	entity entity.VirtualHost,
-	mappings []entity.Mapping,
-) VirtualHost {
-	var parentHostnamePtr *string
-	if entity.ParentHostname != nil {
-		parentHostnameStr := entity.ParentHostname.String()
-		parentHostnamePtr = &parentHostnameStr
-	}
-
-	mappingsModel := []Mapping{}
-	for _, mapping := range mappings {
-		mappingModel := Mapping{}.ToModel(mapping)
-		mappingsModel = append(mappingsModel, mappingModel)
-	}
-
-	return VirtualHost{
-		Hostname:       entity.Hostname.String(),
-		Type:           entity.Type.String(),
-		RootDirectory:  entity.RootDirectory.String(),
-		ParentHostname: parentHostnamePtr,
-		Mappings:       mappingsModel,
-	}
+	return entity.NewVirtualHost(hostname, vhostType, rootDir, parentHostnamePtr), nil
 }
