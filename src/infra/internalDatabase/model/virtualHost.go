@@ -15,20 +15,24 @@ type VirtualHost struct {
 	Type           string `gorm:"not null"`
 	RootDirectory  string `gorm:"not null"`
 	ParentHostname *string
+	IsPrimary      bool      `gorm:"not null,default:false"`
+	IsWildcard     bool      `gorm:"not null,default:false"`
 	CreatedAt      time.Time `gorm:"not null"`
 	UpdatedAt      time.Time `gorm:"not null"`
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
-	primaryVhostName, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return entries, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
 	}
 
 	primaryEntry := VirtualHost{
-		Hostname:      primaryVhostName.String(),
-		Type:          "primary",
+		Hostname:      primaryHostname.String(),
+		Type:          valueObject.VirtualHostTypeTopLevel.String(),
 		RootDirectory: infraEnvs.PrimaryPublicDir,
+		IsPrimary:     true,
+		IsWildcard:    false,
 	}
 
 	return []interface{}{primaryEntry}, nil
@@ -59,5 +63,9 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr = &parentHostname
 	}
 
-	return entity.NewVirtualHost(hostname, vhostType, rootDir, parentHostnamePtr), nil
+	return entity.NewVirtualHost(
+		hostname, vhostType, rootDir, parentHostnamePtr, model.IsPrimary,
+		model.IsWildcard, []valueObject.Fqdn{},
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+	), nil
 }
