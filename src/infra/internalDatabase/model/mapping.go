@@ -8,7 +8,7 @@ import (
 )
 
 type Mapping struct {
-	ID                         uint64 `gorm:"primarykey"`
+	ID                         uint64 `gorm:"primaryKey"`
 	Hostname                   string `gorm:"not null"`
 	Path                       string `gorm:"not null"`
 	MatchPattern               string `gorm:"not null"`
