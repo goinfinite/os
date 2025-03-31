@@ -2,6 +2,7 @@ package vhostInfra
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"strings"
 	"text/template"
@@ -254,7 +255,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
-		return errors.New("ReadVirtualHostError: " + err.Error())
+		return errors.New("ReadVirtualHostEntityError: " + err.Error())
 	}
 
 	vhostHostnameStr := vhostHostname.String()
@@ -278,6 +279,24 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		}
 
 		return repo.createWebServerUnitFile(parentVirtualHostEntity.Hostname)
+	}
+
+	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	if err != nil {
+		return errors.New("InvalidPkiConfDir")
+	}
+	pkiConfDirStr := pkiConfDir.String()
+
+	vhostCertFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".crt"
+	err = os.Remove(vhostCertFilePath)
+	if err != nil {
+		slog.Error("RemoveSslCertFileError", slog.String("error", err.Error()))
+	}
+
+	vhostCertKeyFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".key"
+	err = os.Remove(vhostCertKeyFilePath)
+	if err != nil {
+		slog.Error("RemoveSslCertKeyFileError", slog.String("error", err.Error()))
 	}
 
 	return repo.deleteWebServerUnitFile(vhostHostname)
