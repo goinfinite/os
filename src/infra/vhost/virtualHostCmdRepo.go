@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -17,46 +18,48 @@ import (
 
 type VirtualHostCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	queryRepo       *VirtualHostQueryRepo
+	vhostQueryRepo  *VirtualHostQueryRepo
 }
 
 func NewVirtualHostCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *VirtualHostCmdRepo {
-	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
-
 	return &VirtualHostCmdRepo{
 		persistentDbSvc: persistentDbSvc,
-		queryRepo:       vhostQueryRepo,
+		vhostQueryRepo:  NewVirtualHostQueryRepo(persistentDbSvc),
 	}
 }
 
 func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
-	vhostHostname valueObject.Fqdn,
-	aliasesHostnames []valueObject.Fqdn,
-	publicDir valueObject.UnixFilePath,
+	vhostEntity entity.VirtualHost,
 	mappingFilePath valueObject.UnixFilePath,
 ) (string, error) {
-	vhostHostnameStr := vhostHostname.String()
+	vhostHostnameStr := vhostEntity.Hostname.String()
 
 	aliasesHostnamesStr := []string{}
-	for _, aliasHostname := range aliasesHostnames {
+	for _, aliasHostname := range vhostEntity.AliasesHostnames {
 		aliasesHostnamesStr = append(aliasesHostnamesStr, aliasHostname.String())
 	}
 
-	valuesToInterpolate := map[string]interface{}{
+	mainServerName := vhostHostnameStr + " www." + vhostHostnameStr
+	if vhostEntity.Type == valueObject.VirtualHostTypeWildcard {
+		mainServerName += " *.www." + vhostHostnameStr
+	}
+
+	confVariables := map[string]interface{}{
 		"VirtualHostHostname": vhostHostnameStr,
+		"MainServerName":      mainServerName,
 		"AliasesHostnames":    aliasesHostnamesStr,
-		"PublicDirectory":     publicDir,
+		"PublicDirectory":     vhostEntity.RootDirectory.String(),
 		"CertPath":            infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt",
 		"KeyPath":             infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key",
-		"MappingFilePath":     mappingFilePath,
+		"MappingFilePath":     mappingFilePath.String(),
 	}
 
 	unitConfTemplate := `server {
     listen 80;
     listen 443 ssl;
-    server_name {{ .VirtualHostHostname }} www.{{ .VirtualHostHostname }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
+    server_name {{ .MainServerName }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
 
     root {{ .PublicDirectory }};
 
@@ -77,7 +80,7 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	}
 
 	var unitConfFileContent strings.Builder
-	err = unitConfTemplatePtr.Execute(&unitConfFileContent, valuesToInterpolate)
+	err = unitConfTemplatePtr.Execute(&unitConfFileContent, confVariables)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -85,10 +88,23 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	return unitConfFileContent.String(), nil
 }
 
+func (repo *VirtualHostCmdRepo) ReadVirtualHostWebServerUnitFileFilePath(
+	vhostHostname valueObject.Fqdn,
+) (unitFilePath valueObject.UnixFilePath, err error) {
+	mappingsFilePath, err := repo.vhostQueryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
+	if err != nil {
+		return unitFilePath, errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
+	}
+
+	mappingsFileNameStr := mappingsFilePath.ReadFileName().String()
+	rawUnitConfFilePath := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
+	return valueObject.NewUnixFilePath(rawUnitConfFilePath)
+}
+
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	vhostHostname valueObject.Fqdn,
 ) error {
-	vhostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
@@ -100,7 +116,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 			return errors.New("AliasMissingParentHostname")
 		}
 
-		vhostEntity, err = repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		vhostEntity, err = repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 			Hostname: vhostEntity.ParentHostname,
 		})
 		if err != nil {
@@ -109,34 +125,32 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		vhostHostname = vhostEntity.Hostname
 	}
 
-	mappingsFilePath, err := repo.queryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
+	mappingsFilePath, err := repo.vhostQueryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
 	if err != nil {
 		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	err = infraHelper.UpdateFile(mappingsFilePath.String(), "", false)
-	if err != nil {
-		return errors.New("TruncateMappingFileFailed: " + err.Error())
-	}
-
 	unitConfFileContent, err := repo.webServerUnitFileFactory(
-		vhostEntity.Hostname, vhostEntity.AliasesHostnames,
-		vhostEntity.RootDirectory, mappingsFilePath,
+		vhostEntity, mappingsFilePath,
 	)
 	if err != nil {
 		return err
 	}
 
-	mappingsFileNameStr := mappingsFilePath.ReadFileName().String()
-	rawUnitConfFilePath := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
-	unitConfFilePath, err := valueObject.NewUnixFilePath(rawUnitConfFilePath)
+	unitConfFilePath, err := repo.ReadVirtualHostWebServerUnitFileFilePath(vhostHostname)
 	if err != nil {
-		return errors.New("InvalidUnitConfFilePath")
+		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
 	}
 
 	err = infraHelper.UpdateFile(unitConfFilePath.String(), unitConfFileContent, true)
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())
+	}
+
+	mappingCmdRepo := NewMappingCmdRepo(repo.persistentDbSvc)
+	err = mappingCmdRepo.RecreateMappingFile(vhostHostname)
+	if err != nil {
+		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
 	return infraHelper.ReloadWebServer()
@@ -146,7 +160,7 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 	createDto dto.CreateVirtualHost,
 ) (publicDir valueObject.UnixFilePath, err error) {
 	if createDto.Type == valueObject.VirtualHostTypeAlias {
-		parentVirtualHostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		parentVirtualHostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 			Hostname: createDto.ParentHostname,
 		})
 		if err != nil {
@@ -227,35 +241,33 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	return repo.createWebServerUnitFile(createDto.Hostname)
 }
 
-func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
-	vhostHostname valueObject.Fqdn,
-) error {
-	mappingsFilePath, err := repo.queryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
-	if err != nil {
-		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
-	}
-
-	err = os.Remove(mappingsFilePath.String())
-	if err != nil {
-		return err
-	}
-
-	mappingsFileNameStr := mappingsFilePath.ReadFileName().String()
-	webServerUnitFilePathStr := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
-	err = os.Remove(webServerUnitFilePathStr)
-	if err != nil {
-		return err
-	}
-
-	return infraHelper.ReloadWebServer()
-}
-
 func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
-	vhostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
-		Hostname: &vhostHostname,
+	withMappings := true
+	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Hostname:     &vhostHostname,
+		WithMappings: &withMappings,
 	})
 	if err != nil {
 		return errors.New("ReadVirtualHostEntityError: " + err.Error())
+	}
+
+	if len(vhostReadResponse.VirtualHostWithMappings) == 0 {
+		return errors.New("VirtualHostNotFound")
+	}
+
+	vhostEntity := vhostReadResponse.VirtualHostWithMappings[0].VirtualHost
+	vhostMappings := vhostReadResponse.VirtualHostWithMappings[0].Mappings
+
+	mappingCmdRepo := NewMappingCmdRepo(repo.persistentDbSvc)
+	for _, mappingEntity := range vhostMappings {
+		err = mappingCmdRepo.Delete(mappingEntity.Id)
+		if err != nil {
+			slog.Error(
+				"DeleteMappingError",
+				slog.String("mappingId", mappingEntity.Id.String()),
+				slog.String("error", err.Error()),
+			)
+		}
 	}
 
 	vhostHostnameStr := vhostHostname.String()
@@ -271,7 +283,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 			return errors.New("AliasMissingParentHostname")
 		}
 
-		parentVirtualHostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		parentVirtualHostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 			Hostname: vhostEntity.ParentHostname,
 		})
 		if err != nil {
@@ -299,5 +311,15 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		slog.Error("RemoveSslCertKeyFileError", slog.String("error", err.Error()))
 	}
 
-	return repo.deleteWebServerUnitFile(vhostHostname)
+	unitConfFilePath, err := repo.ReadVirtualHostWebServerUnitFileFilePath(vhostHostname)
+	if err != nil {
+		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
+	}
+
+	err = os.Remove(unitConfFilePath.String())
+	if err != nil {
+		return errors.New("RemoveWebServerUnitConfFileError: " + err.Error())
+	}
+
+	return infraHelper.ReloadWebServer()
 }
