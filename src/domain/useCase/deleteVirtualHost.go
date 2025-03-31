@@ -31,8 +31,8 @@ func DeleteVirtualHost(
 		Hostname: &deleteDto.Hostname,
 	})
 	if err != nil {
-		slog.Error("ReadVirtualHostError", slog.String("err", err.Error()))
-		return errors.New("ReadVirtualHostError")
+		slog.Error("ReadVirtualHostEntityError", slog.String("err", err.Error()))
+		return errors.New("ReadVirtualHostEntityError")
 	}
 
 	err = vhostCmdRepo.Delete(targetVirtualHost.Hostname)

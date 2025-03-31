@@ -40,7 +40,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
-		return errors.New("ReadVirtualHostError: " + err.Error())
+		return errors.New("ReadVirtualHostEntityError: " + err.Error())
 	}
 	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 		return errors.New("AliasVirtualHostSslReliesOnParent")
@@ -389,7 +389,7 @@ func (repo *SslCmdRepo) DeleteSslPairVhosts(
 			Hostname: &vhostHostname,
 		})
 		if err != nil {
-			slog.Debug("ReadVirtualHostError", slog.String("error", err.Error()))
+			slog.Debug("ReadVirtualHostEntityError", slog.String("error", err.Error()))
 			continue
 		}
 
