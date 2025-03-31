@@ -77,7 +77,7 @@ func (repo *O11yQueryRepo) isCgroupV2() bool {
 }
 
 func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
-	fileContent, err := infraHelper.GetFileContent(file)
+	fileContent, err := infraHelper.ReadFileContent(file)
 	if err != nil {
 		return "", err
 	}

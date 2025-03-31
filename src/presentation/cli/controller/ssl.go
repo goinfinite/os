@@ -51,7 +51,7 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
 			}
-			certContentStr, err := infraHelper.GetFileContent(certFilePath.String())
+			certContentStr, err := infraHelper.ReadFileContent(certFilePath.String())
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
@@ -61,7 +61,7 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
 			}
-			privateKeyContentStr, err := infraHelper.GetFileContent(
+			privateKeyContentStr, err := infraHelper.ReadFileContent(
 				privateKeyFilePath.String(),
 			)
 			if err != nil {

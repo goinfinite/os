@@ -98,9 +98,9 @@ func (repo *FilesQueryRepo) unixFileFactory(
 
 	var unixFileContentPtr *valueObject.UnixFileContent
 	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
-		unixFileContentStr, err := infraHelper.GetFileContent(filePath.String())
+		unixFileContentStr, err := infraHelper.ReadFileContent(filePath.String())
 		if err != nil {
-			return unixFile, errors.New("FailedToGetFileContent: " + err.Error())
+			return unixFile, errors.New("FailedToReadFileContent: " + err.Error())
 		}
 
 		unixFileContent, err := valueObject.NewUnixFileContent(unixFileContentStr)

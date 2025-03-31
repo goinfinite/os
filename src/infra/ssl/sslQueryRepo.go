@@ -59,7 +59,7 @@ func (repo SslQueryRepo) sslPairFactory(
 	crtFilePath valueObject.UnixFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
 	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
-	crtKeyContentStr, err := infraHelper.GetFileContent(crtKeyFilePath)
+	crtKeyContentStr, err := infraHelper.ReadFileContent(crtKeyFilePath)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
 	}
@@ -68,7 +68,7 @@ func (repo SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileContentStr, err := infraHelper.GetFileContent(crtFilePath.String())
+	crtFileContentStr, err := infraHelper.ReadFileContent(crtFilePath.String())
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertFileError: " + err.Error())
 	}
