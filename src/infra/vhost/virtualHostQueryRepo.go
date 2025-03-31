@@ -33,7 +33,7 @@ func (repo *VirtualHostQueryRepo) vhostEntitiesFactory(
 	responsePagination dto.Pagination,
 ) (responseDto dto.ReadVirtualHostsResponse, err error) {
 	vhostHostnameEntityMap := map[valueObject.Fqdn]entity.VirtualHost{}
-	aliasParentHostnameEntityMap := map[valueObject.Fqdn]entity.VirtualHost{}
+	aliasParentHostnameAliasEntitiesMap := map[valueObject.Fqdn][]entity.VirtualHost{}
 	for _, virtualHostModel := range vhostModels {
 		virtualHostEntity, err := virtualHostModel.ToEntity()
 		if err != nil {
@@ -47,49 +47,54 @@ func (repo *VirtualHostQueryRepo) vhostEntitiesFactory(
 
 		vhostHostnameEntityMap[virtualHostEntity.Hostname] = virtualHostEntity
 
-		if virtualHostEntity.Type == valueObject.VirtualHostTypeAlias {
-			if virtualHostEntity.ParentHostname == nil {
-				slog.Debug(
-					"AliasMissingParentHostname",
-					slog.String("hostname", virtualHostModel.Hostname),
-				)
-				continue
-			}
-
-			aliasParentHostnameEntityMap[*virtualHostEntity.ParentHostname] = virtualHostEntity
+		if virtualHostEntity.Type != valueObject.VirtualHostTypeAlias {
+			continue
 		}
-	}
 
-	for aliasParentHostname, aliasEntity := range aliasParentHostnameEntityMap {
-		if _, parentExists := vhostHostnameEntityMap[aliasParentHostname]; !parentExists {
+		if virtualHostEntity.ParentHostname == nil {
 			slog.Debug(
-				"AliasParentHostnameNotFound",
-				slog.String("aliasParentHostname", aliasParentHostname.String()),
-				slog.String("aliasHostname", aliasEntity.Hostname.String()),
+				"AliasMissingParentHostname",
+				slog.String("hostname", virtualHostModel.Hostname),
 			)
 			continue
 		}
 
-		parentEntity := vhostHostnameEntityMap[aliasParentHostname]
-		parentEntity.AliasesHostnames = append(
-			parentEntity.AliasesHostnames, aliasEntity.Hostname,
-		)
+		aliasParentHostnameAliasEntitiesMap[*virtualHostEntity.ParentHostname] =
+			append(
+				aliasParentHostnameAliasEntitiesMap[*virtualHostEntity.ParentHostname],
+				virtualHostEntity,
+			)
+		continue
+	}
+
+	for aliasParentHostname, aliasEntities := range aliasParentHostnameAliasEntitiesMap {
+		parentEntity, isAliasParentListed := vhostHostnameEntityMap[aliasParentHostname]
+		if !isAliasParentListed {
+			continue
+		}
+
+		for _, aliasEntity := range aliasEntities {
+			parentEntity.AliasesHostnames = append(
+				parentEntity.AliasesHostnames, aliasEntity.Hostname,
+			)
+		}
 		vhostHostnameEntityMap[aliasParentHostname] = parentEntity
 	}
 
 	virtualHostEntities := []entity.VirtualHost{}
 	for _, vhostEntity := range vhostHostnameEntityMap {
-		if len(requestDto.AliasesHostnames) > 0 {
-			for _, aliasHostname := range requestDto.AliasesHostnames {
-				if vhostEntity.Hostname != aliasHostname {
-					continue
-				}
-				virtualHostEntities = append(virtualHostEntities, vhostEntity)
-			}
+		if len(requestDto.AliasesHostnames) == 0 {
+			virtualHostEntities = append(virtualHostEntities, vhostEntity)
 			continue
 		}
 
-		virtualHostEntities = append(virtualHostEntities, vhostEntity)
+		for _, aliasHostname := range requestDto.AliasesHostnames {
+			if vhostEntity.Hostname != aliasHostname {
+				continue
+			}
+			virtualHostEntities = append(virtualHostEntities, vhostEntity)
+		}
+		continue
 	}
 
 	if len(requestDto.AliasesHostnames) > 0 {
