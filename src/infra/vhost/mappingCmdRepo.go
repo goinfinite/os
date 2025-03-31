@@ -278,12 +278,12 @@ func (repo *MappingCmdRepo) parseLocationUri(
 	return locationUri
 }
 
-func (repo *MappingCmdRepo) recreateMappingFile(
-	mappingHostname valueObject.Fqdn,
+func (repo *MappingCmdRepo) RecreateMappingFile(
+	vhostHostname valueObject.Fqdn,
 ) error {
 	mappingsReadResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
 		Pagination: dto.PaginationUnpaginated,
-		Hostname:   &mappingHostname,
+		Hostname:   &vhostHostname,
 	})
 	if err != nil {
 		return err
@@ -291,7 +291,7 @@ func (repo *MappingCmdRepo) recreateMappingFile(
 
 	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
-		mappingHostname,
+		vhostHostname,
 	)
 	if err != nil {
 		return errors.New("GetVirtualHostMappingsFilePathError: " + err.Error())
@@ -389,7 +389,7 @@ func (repo *MappingCmdRepo) Create(
 		return mappingId, err
 	}
 
-	err = repo.recreateMappingFile(createDto.Hostname)
+	err = repo.RecreateMappingFile(createDto.Hostname)
 	if err != nil {
 		return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
 	}
@@ -401,7 +401,7 @@ func (repo *MappingCmdRepo) Create(
 			return mappingId, err
 		}
 
-		err = repo.recreateMappingFile(createDto.Hostname)
+		err = repo.RecreateMappingFile(createDto.Hostname)
 		if err != nil {
 			return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
 		}
@@ -428,7 +428,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 		return err
 	}
 
-	err = repo.recreateMappingFile(mappingEntity.Hostname)
+	err = repo.RecreateMappingFile(mappingEntity.Hostname)
 	if err != nil {
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
