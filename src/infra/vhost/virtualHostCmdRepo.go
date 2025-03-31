@@ -171,17 +171,39 @@ func (repo *VirtualHostCmdRepo) initialVirtualHostSslSetup(
 	return nil
 }
 
-func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
+func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
+	createDto dto.CreateVirtualHost,
+) (publicDir valueObject.UnixFilePath, err error) {
+	if createDto.Type == valueObject.VirtualHostTypeAlias {
+		parentVirtualHostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+			Hostname: createDto.ParentHostname,
+		})
+		if err != nil {
+			return publicDir, errors.New("ReadAliasParentVirtualHostError: " + err.Error())
+		}
+
+		return parentVirtualHostEntity.RootDirectory, nil
+	}
+
 	rawPublicDir := infraEnvs.PrimaryPublicDir + "/" + createDto.Hostname.String()
 
-	publicDir, err := valueObject.NewUnixFilePath(rawPublicDir)
+	publicDir, err = valueObject.NewUnixFilePath(rawPublicDir)
 	if err != nil {
-		return errors.New("InvalidVirtualHostPublicDir")
+		return publicDir, errors.New("InvalidVirtualHostPublicDir")
 	}
 
 	err = infraHelper.MakeDir(publicDir.String())
 	if err != nil {
-		return errors.New("CreateVirtualHostPublicDirFailed")
+		return publicDir, errors.New("CreateVirtualHostPublicDirFailed")
+	}
+
+	return publicDir, nil
+}
+
+func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
+	publicDir, err := repo.createVirtualHostPublicDirectory(createDto)
+	if err != nil {
+		return errors.New("CreateVirtualHostPublicDirFailed: " + err.Error())
 	}
 
 	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
