@@ -70,7 +70,7 @@ func (uc *SslCertificateWatchdog) vhostSslPairFactory() map[valueObject.Fqdn]*Vi
 	}
 
 	for _, sslPairEntity := range sslPairEntities {
-		vhostMap, mapExists := vhostHostnameSslPairMap[sslPairEntity.MainVirtualHostHostname]
+		_, mapExists := vhostHostnameSslPairMap[sslPairEntity.MainVirtualHostHostname]
 		if !mapExists {
 			slog.Debug(
 				"SslPairWithUnknownVirtualHost",
@@ -81,7 +81,7 @@ func (uc *SslCertificateWatchdog) vhostSslPairFactory() map[valueObject.Fqdn]*Vi
 			continue
 		}
 
-		vhostMap.SslPair = sslPairEntity
+		vhostHostnameSslPairMap[sslPairEntity.MainVirtualHostHostname].SslPair = sslPairEntity
 	}
 
 	return vhostHostnameSslPairMap
