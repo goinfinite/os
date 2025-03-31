@@ -44,43 +44,39 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	}
 
 	valuesToInterpolate := map[string]interface{}{
-		"VhostName":        vhostHostnameStr,
-		"AliasesHostnames": aliasesHostnamesStr,
-		"PublicDirectory":  publicDir,
-		"CertPath":         infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt",
-		"KeyPath":          infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key",
-		"MappingFilePath":  mappingFilePath,
+		"VirtualHostHostname": vhostHostnameStr,
+		"AliasesHostnames":    aliasesHostnamesStr,
+		"PublicDirectory":     publicDir,
+		"CertPath":            infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt",
+		"KeyPath":             infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key",
+		"MappingFilePath":     mappingFilePath,
 	}
 
 	unitConfTemplate := `server {
     listen 80;
     listen 443 ssl;
-    server_name {{ .VhostName }} www.{{ .VhostName }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
+    server_name {{ .VirtualHostHostname }} www.{{ .VirtualHostHostname }}{{ range $aliasHostname := .AliasesHostnames }} {{ $aliasHostname }} www.{{ $aliasHostname }}{{ end }};
 
     root {{ .PublicDirectory }};
 
     ssl_certificate {{ .CertPath }};
     ssl_certificate_key {{ .KeyPath }};
 
-    access_log /app/logs/nginx/{{ .VhostName }}_access.log combined buffer=512k flush=1m;
-    error_log /app/logs/nginx/{{ .VhostName }}_error.log warn;
+    access_log /app/logs/nginx/{{ .VirtualHostHostname }}_access.log combined buffer=512k flush=1m;
+    error_log /app/logs/nginx/{{ .VirtualHostHostname }}_error.log warn;
 
     include /etc/nginx/std.conf;
     include {{ .MappingFilePath }};
-}`
+}
+`
 
-	unitConfTemplatePtr, err := template.
-		New("webServerConfUnitFile").
-		Parse(unitConfTemplate)
+	unitConfTemplatePtr, err := template.New("webServerConfUnitFile").Parse(unitConfTemplate)
 	if err != nil {
 		return "", errors.New("TemplateParsingError: " + err.Error())
 	}
 
 	var unitConfFileContent strings.Builder
-	err = unitConfTemplatePtr.Execute(
-		&unitConfFileContent,
-		valuesToInterpolate,
-	)
+	err = unitConfTemplatePtr.Execute(&unitConfFileContent, valuesToInterpolate)
 	if err != nil {
 		return "", errors.New("TemplateExecutionError: " + err.Error())
 	}
@@ -96,6 +92,20 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	})
 	if err != nil {
 		return errors.New("ReadVirtualHostEntityError: " + err.Error())
+	}
+
+	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
+		if vhostEntity.ParentHostname == nil {
+			return errors.New("AliasMissingParentHostname")
+		}
+
+		vhostEntity, err = repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+			Hostname: vhostEntity.ParentHostname,
+		})
+		if err != nil {
+			return errors.New("ReadAliasParentVirtualHostError: " + err.Error())
+		}
+		vhostHostname = vhostEntity.Hostname
 	}
 
 	mappingsFilePath, err := repo.queryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
