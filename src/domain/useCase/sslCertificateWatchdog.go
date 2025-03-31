@@ -30,16 +30,15 @@ func NewSslCertificateWatchdog(
 	}
 }
 
-type sslWatchdogVirtualHostSettings struct {
-	VirtualHost    entity.VirtualHost
-	AliasHostnames []valueObject.Fqdn
-	SslPair        entity.SslPair
+type VirtualHostSslPair struct {
+	VirtualHost entity.VirtualHost
+	SslPair     entity.SslPair
 }
 
-func (uc *SslCertificateWatchdog) vHostSettingsMapFactory() map[valueObject.Fqdn]*sslWatchdogVirtualHostSettings {
-	vhostSettingsMap := map[valueObject.Fqdn]*sslWatchdogVirtualHostSettings{}
+func (uc *SslCertificateWatchdog) vhostSslPairFactory() map[valueObject.Fqdn]*VirtualHostSslPair {
+	vhostHostnameSslPairMap := map[valueObject.Fqdn]*VirtualHostSslPair{}
 
-	readVirtualHostsResponse, err := uc.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+	vhostReadResponse, err := uc.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination: dto.PaginationUnpaginated,
 	})
 	if err != nil {
@@ -48,45 +47,16 @@ func (uc *SslCertificateWatchdog) vHostSettingsMapFactory() map[valueObject.Fqdn
 			slog.String("error", err.Error()),
 			slog.String("method", "SslCertificateWatchdog"),
 		)
-		return vhostSettingsMap
+		return vhostHostnameSslPairMap
 	}
-
-	virtualHostAliases := []entity.VirtualHost{}
-	for _, vhostEntity := range readVirtualHostsResponse.VirtualHosts {
-		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
-			virtualHostAliases = append(virtualHostAliases, vhostEntity)
-			continue
-		}
-
-		vhostSettingsMap[vhostEntity.Hostname] = &sslWatchdogVirtualHostSettings{
-			VirtualHost:    vhostEntity,
-			AliasHostnames: []valueObject.Fqdn{},
-			SslPair:        entity.SslPair{},
+	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
+		vhostHostnameSslPairMap[vhostEntity.Hostname] = &VirtualHostSslPair{
+			VirtualHost: vhostEntity,
+			SslPair:     entity.SslPair{},
 		}
 	}
-
-	for _, vhostAliasEntity := range virtualHostAliases {
-		if vhostAliasEntity.ParentHostname == nil {
-			slog.Debug(
-				"AliasVirtualHostWithoutParent",
-				slog.String("method", "SslCertificateWatchdog"),
-				slog.String("aliasHostname", vhostAliasEntity.Hostname.String()),
-			)
-			continue
-		}
-
-		vhostSettings, mapExists := vhostSettingsMap[*vhostAliasEntity.ParentHostname]
-		if !mapExists {
-			slog.Debug(
-				"AliasVirtualHostWithUnknownParent",
-				slog.String("method", "SslCertificateWatchdog"),
-				slog.String("aliasHostname", vhostAliasEntity.Hostname.String()),
-				slog.String("parentHostname", vhostAliasEntity.ParentHostname.String()),
-			)
-			continue
-		}
-
-		vhostSettings.AliasHostnames = append(vhostSettings.AliasHostnames, vhostAliasEntity.Hostname)
+	if len(vhostHostnameSslPairMap) == 0 {
+		return vhostHostnameSslPairMap
 	}
 
 	sslPairEntities, err := uc.sslQueryRepo.Read()
@@ -96,11 +66,11 @@ func (uc *SslCertificateWatchdog) vHostSettingsMapFactory() map[valueObject.Fqdn
 			slog.String("error", err.Error()),
 			slog.String("method", "SslCertificateWatchdog"),
 		)
-		return vhostSettingsMap
+		return vhostHostnameSslPairMap
 	}
 
 	for _, sslPairEntity := range sslPairEntities {
-		vhostMap, mapExists := vhostSettingsMap[sslPairEntity.MainVirtualHostHostname]
+		vhostMap, mapExists := vhostHostnameSslPairMap[sslPairEntity.MainVirtualHostHostname]
 		if !mapExists {
 			slog.Debug(
 				"SslPairWithUnknownVirtualHost",
@@ -114,23 +84,23 @@ func (uc *SslCertificateWatchdog) vHostSettingsMapFactory() map[valueObject.Fqdn
 		vhostMap.SslPair = sslPairEntity
 	}
 
-	return vhostSettingsMap
+	return vhostHostnameSslPairMap
 }
 
 func (uc *SslCertificateWatchdog) Execute() {
-	vhostSettingsMap := uc.vHostSettingsMapFactory()
+	vhostHostnameSslPairMap := uc.vhostSslPairFactory()
 
 	skipSubdomainRegex := regexp.MustCompile(`^[^\.]+\.`)
-	for _, vhostSettings := range vhostSettingsMap {
-		shouldRenewCert := vhostSettings.SslPair.IsPubliclyTrusted()
+	for _, vhostPair := range vhostHostnameSslPairMap {
+		shouldRenewCert := vhostPair.SslPair.IsPubliclyTrusted()
 
 		certAltNamesStrMap := map[string]interface{}{}
-		for _, altName := range vhostSettings.SslPair.Certificate.AltNames {
+		for _, altName := range vhostPair.SslPair.Certificate.AltNames {
 			certAltNamesStrMap[altName.String()] = nil
 		}
 
 		missingAltNames := []valueObject.Fqdn{}
-		for _, aliasHostname := range vhostSettings.AliasHostnames {
+		for _, aliasHostname := range vhostPair.VirtualHost.AliasesHostnames {
 			aliasHostnameStr := aliasHostname.String()
 			_, altNameExists := certAltNamesStrMap[aliasHostname.String()]
 			if altNameExists {
@@ -156,7 +126,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 		}
 
 		err := uc.sslCmdRepo.CreatePubliclyTrusted(dto.NewCreatePubliclyTrustedSslPair(
-			vhostSettings.VirtualHost.Hostname, vhostSettings.AliasHostnames,
+			vhostPair.VirtualHost.Hostname, vhostPair.VirtualHost.AliasesHostnames,
 			valueObject.AccountIdSystem, valueObject.IpAddressSystem,
 		))
 		if err != nil {
@@ -164,9 +134,9 @@ func (uc *SslCertificateWatchdog) Execute() {
 				"CreatePubliclyTrustedSslPairError",
 				slog.String("error", err.Error()),
 				slog.String("method", "SslCertificateWatchdog"),
-				slog.String("hostname", vhostSettings.VirtualHost.Hostname.String()),
-				slog.String("sslPairId", vhostSettings.SslPair.Id.String()),
-				slog.String("sslPairHostname", vhostSettings.SslPair.MainVirtualHostHostname.String()),
+				slog.String("hostname", vhostPair.VirtualHost.Hostname.String()),
+				slog.String("sslPairId", vhostPair.SslPair.Id.String()),
+				slog.String("sslPairHostname", vhostPair.SslPair.MainVirtualHostHostname.String()),
 			)
 		}
 	}
