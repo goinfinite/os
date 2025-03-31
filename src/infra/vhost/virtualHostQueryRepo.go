@@ -264,7 +264,7 @@ func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
-		return mappingsFilePath, errors.New("VirtualHostNotFound")
+		return mappingsFilePath, errors.New("ReadVirtualHostEntityError: " + err.Error())
 	}
 
 	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
@@ -272,19 +272,19 @@ func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
 			return mappingsFilePath, errors.New("AliasMissingParentHostname")
 		}
 
-		vhostHostname = *vhostEntity.ParentHostname
-	}
-
-	isPrimary := true
-	primaryVirtualHostEntity, err := repo.ReadFirst(dto.ReadVirtualHostsRequest{
-		IsPrimary: &isPrimary,
-	})
-	if err != nil {
-		return mappingsFilePath, errors.New("ReadPrimaryVirtualHostError: " + err.Error())
+		vhostEntity, err = repo.ReadFirst(dto.ReadVirtualHostsRequest{
+			Hostname: vhostEntity.ParentHostname,
+		})
+		if err != nil {
+			return mappingsFilePath, errors.New(
+				"ReadParentVirtualHostEntityError: " + err.Error(),
+			)
+		}
+		vhostHostname = vhostEntity.Hostname
 	}
 
 	vhostFileNameStr := vhostHostname.String() + ".conf"
-	if vhostEntity.Hostname == primaryVirtualHostEntity.Hostname {
+	if vhostEntity.IsPrimary {
 		vhostFileNameStr = "primary.conf"
 	}
 
