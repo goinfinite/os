@@ -90,19 +90,12 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	vhostHostname valueObject.Fqdn,
-	publicDir valueObject.UnixFilePath,
 ) error {
-	aliasesVirtualHostsReadResponse, err := repo.queryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination:     dto.PaginationUnpaginated,
-		ParentHostname: &vhostHostname,
+	vhostEntity, err := repo.queryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &vhostHostname,
 	})
 	if err != nil {
-		return errors.New("ReadAliasesError: " + err.Error())
-	}
-
-	aliasesHostnames := []valueObject.Fqdn{}
-	for _, aliasVirtualHostEntity := range aliasesVirtualHostsReadResponse.VirtualHosts {
-		aliasesHostnames = append(aliasesHostnames, aliasVirtualHostEntity.Hostname)
+		return errors.New("ReadVirtualHostEntityError: " + err.Error())
 	}
 
 	mappingsFilePath, err := repo.queryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
@@ -116,7 +109,8 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	}
 
 	unitConfFileContent, err := repo.webServerUnitFileFactory(
-		vhostHostname, aliasesHostnames, publicDir, mappingsFilePath,
+		vhostEntity.Hostname, vhostEntity.AliasesHostnames,
+		vhostEntity.RootDirectory, mappingsFilePath,
 	)
 	if err != nil {
 		return err
@@ -216,7 +210,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("InitialVirtualHostSslSetupFailed: " + err.Error())
 	}
 
-	webServerConfDir, err := valueObject.NewUnixFilePath("/app/conf/nginx")
+	webServerConfDir, err := valueObject.NewUnixFilePath(infraEnvs.VirtualHostsConfDir)
 	if err != nil {
 		return errors.New("InvalidWebServerConfDir")
 	}
@@ -250,7 +244,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("DbCreateVirtualHostError: " + err.Error())
 	}
 
-	return repo.createWebServerUnitFile(createDto.Hostname, publicDir)
+	return repo.createWebServerUnitFile(createDto.Hostname)
 }
 
 func (repo *VirtualHostCmdRepo) deleteWebServerUnitFile(
@@ -304,9 +298,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 			return errors.New("ReadAliasParentVirtualHostError: " + err.Error())
 		}
 
-		return repo.createWebServerUnitFile(
-			parentVirtualHostEntity.Hostname, parentVirtualHostEntity.RootDirectory,
-		)
+		return repo.createWebServerUnitFile(parentVirtualHostEntity.Hostname)
 	}
 
 	return repo.deleteWebServerUnitFile(vhostHostname)
