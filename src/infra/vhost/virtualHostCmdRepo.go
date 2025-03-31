@@ -141,40 +141,6 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 	return infraHelper.ReloadWebServer()
 }
 
-func (repo *VirtualHostCmdRepo) initialVirtualHostSslSetup(
-	createDto dto.CreateVirtualHost,
-	pkiConfDir valueObject.UnixFilePath,
-) error {
-	if createDto.Type != valueObject.VirtualHostTypeAlias {
-		aliasHostnames := []valueObject.Fqdn{}
-		return infraHelper.CreateSelfSignedSsl(pkiConfDir, createDto.Hostname, aliasHostnames)
-	}
-
-	if createDto.ParentHostname == nil {
-		return errors.New("AliasMissingParentHostname")
-	}
-	pkiConfDirStr := pkiConfDir.String()
-	aliasHostnameStr := createDto.Hostname.String()
-	aliasCertFilePath := pkiConfDirStr + "/" + aliasHostnameStr + ".crt"
-	aliasCertKeyFilePath := pkiConfDirStr + "/" + aliasHostnameStr + ".key"
-
-	parentHostnameStr := createDto.ParentHostname.String()
-	parentCertFilePath := pkiConfDirStr + "/" + parentHostnameStr + ".crt"
-	parentCertKeyFilePath := pkiConfDirStr + "/" + parentHostnameStr + ".key"
-
-	err := os.Symlink(parentCertFilePath, aliasCertFilePath)
-	if err != nil {
-		return errors.New("CreateAliasCertSymlinkFailed: " + err.Error())
-	}
-
-	err = os.Symlink(parentCertKeyFilePath, aliasCertKeyFilePath)
-	if err != nil {
-		return errors.New("CreateAliasCertKeySymlinkFailed: " + err.Error())
-	}
-
-	return nil
-}
-
 func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 	createDto dto.CreateVirtualHost,
 ) (publicDir valueObject.UnixFilePath, err error) {
@@ -215,9 +181,12 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("InvalidPkiConfDir")
 	}
 
-	err = repo.initialVirtualHostSslSetup(createDto, pkiConfDir)
-	if err != nil {
-		return errors.New("InitialVirtualHostSslSetupFailed: " + err.Error())
+	if createDto.Type != valueObject.VirtualHostTypeAlias {
+		aliasHostnames := []valueObject.Fqdn{}
+		err = infraHelper.CreateSelfSignedSsl(pkiConfDir, createDto.Hostname, aliasHostnames)
+		if err != nil {
+			return errors.New("CreateSelfSignedSslFailed: " + err.Error())
+		}
 	}
 
 	webServerConfDir, err := valueObject.NewUnixFilePath(infraEnvs.VirtualHostsConfDir)
