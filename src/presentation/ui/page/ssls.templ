@@ -42,7 +42,6 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			</div>
 			@ImportSslCertificateModal(vhostsHostnames)
 			@ViewPemFilesModal()
-			@RemoveVirtualHostsHostnamesModal(vhostsHostnames)
 			@SwapToSelfSignedModal()
 		</div>
 	</div>
@@ -67,9 +66,7 @@ templ SslsTable(sslPairs []entity.SslPair) {
 					for _, sslPair := range sslPairs {
 						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
 							<th scope="row" class="w-1/6 space-y-2 px-5 py-3 text-left">
-								for _, vhostHostname := range sslPair.VirtualHostsHostnames {
-									@componentStructural.Tag("ph-network", "", vhostHostname.String(), "infinite-500")
-								}
+								{ sslPair.MainVirtualHostHostname.String() }
 							</th>
 							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.IssuedAt.ReadDateOnly() }</th>
 							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.ExpiresAt.ReadDateOnly() }</th>
@@ -80,11 +77,6 @@ templ SslsTable(sslPairs []entity.SslPair) {
 										"ph-file-magnifying-glass", "os-200", "os-100",
 										"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
 										"view PEM files", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-network-slash", "red-800", "red-600",
-										"openRemoveVirtualHostsHostnamesModal('"+sslPair.Id.String()+"')",
-										"remove virtual hosts hostnames", "red-500",
 									)
 									@componentStructural.CircularIconButtonWithTooltip(
 										"ph-swap", "red-800", "red-600",
@@ -189,38 +181,6 @@ templ ViewPemFilesModal() {
 				)
 			</div>
 		</div>
-	}
-}
-
-templ RemoveVirtualHostsHostnamesForm(vhostsHostnames []string) {
-	<!-- RemoveVirtualHostsHostnamesForm -->
-	<form
-		id="remove-virtual-hosts-hostnames-form"
-		hx-put="/api/v1/ssl/vhost/"
-		hx-indicator="#loading-overlay"
-		hx-swap="none"
-	>
-		<div class="mb-6 space-y-6">
-			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
-			@componentForm.MultiSelectInput(
-				"virtualHosts", "Virtual Hosts Hostnames",
-				"sslPair.virtualHostsHostnames", vhostsHostnames,
-			)
-		</div>
-		@componentForm.DeactivableSubmitButton(
-			"Remove virtual hosts hostnames", "ph-network-slash",
-			"closeRemoveVirtualHostsHostnamesModal()",
-			"shouldDisableRemoveVirtualHostsHostnamesSubmitButton", false,
-		)
-	</form>
-}
-
-templ RemoveVirtualHostsHostnamesModal(vhostsHostnames []string) {
-	@componentStructural.RegularModal(
-		"Remove virtual hosts hostnames", "isRemoveVirtualHostsHostnamesModalOpen",
-		"closeRemoveVirtualHostsHostnamesModal()", "",
-	) {
-		@RemoveVirtualHostsHostnamesForm(vhostsHostnames)
 	}
 }
 

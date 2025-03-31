@@ -208,7 +208,6 @@ func (router Router) sslRoutes() {
 	)
 	sslCmd.AddCommand(sslController.Read())
 	sslCmd.AddCommand(sslController.Create())
-	sslCmd.AddCommand(sslController.DeleteVhosts())
 	sslCmd.AddCommand(sslController.Delete())
 }
 

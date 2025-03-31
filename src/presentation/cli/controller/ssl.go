@@ -105,31 +105,3 @@ func (controller *SslController) Delete() *cobra.Command {
 	cmd.MarkFlagRequired("pairId")
 	return cmd
 }
-
-func (controller *SslController) DeleteVhosts() *cobra.Command {
-	var sslPairIdStr string
-	var virtualHostsSlice []string
-
-	cmd := &cobra.Command{
-		Use:   "delete-vhosts",
-		Short: "RemoveSslPairVhosts",
-		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
-				"id":           sslPairIdStr,
-				"virtualHosts": virtualHostsSlice,
-			}
-
-			cliHelper.ServiceResponseWrapper(
-				controller.sslService.DeleteVhosts(requestBody),
-			)
-		},
-	}
-
-	cmd.Flags().StringVarP(&sslPairIdStr, "id", "i", "", "SslPairId")
-	cmd.MarkFlagRequired("sslPairId")
-	cmd.Flags().StringSliceVarP(
-		&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts",
-	)
-	cmd.MarkFlagRequired("virtualHosts")
-	return cmd
-}

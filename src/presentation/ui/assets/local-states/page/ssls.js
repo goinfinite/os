@@ -65,16 +65,6 @@ document.addEventListener("alpine:init", () => {
     closeViewPemFilesModal() {
       this.isViewPemFilesModalOpen = false;
     },
-    isRemoveVirtualHostsHostnamesModalOpen: false,
-    openRemoveVirtualHostsHostnamesModal(sslPairId) {
-      this.resetPrimaryStates();
-
-      this.sslPair.id = sslPairId;
-      this.isRemoveVirtualHostsHostnamesModalOpen = true;
-    },
-    closeRemoveVirtualHostsHostnamesModal() {
-      this.isRemoveVirtualHostsHostnamesModalOpen = false;
-    },
     isSwapToSelfSignedModalOpen: false,
     openSwapToSelfSignedModal(sslPairId) {
       this.resetPrimaryStates();

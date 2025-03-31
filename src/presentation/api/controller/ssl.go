@@ -163,33 +163,6 @@ func (controller *SslController) Delete(c echo.Context) error {
 	)
 }
 
-// DeleteSslPairVhosts    	 godoc
-// @Summary      DeleteSslPairVhosts
-// @Description  Delete vhosts from a ssl pair.
-// @Tags         ssl
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "All props are required."
-// @Success      200 {object} object{} "SslPairVhostsRemoved"
-// @Router       /v1/ssl/vhost/ [put]
-func (controller *SslController) DeleteVhosts(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
-	}
-
-	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	requestInputData["virtualHosts"] = rawVhosts
-
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.DeleteVhosts(requestInputData),
-	)
-}
-
 func (controller *SslController) SslCertificateWatchdog() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 

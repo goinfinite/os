@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -8,11 +9,14 @@ import (
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type SslsPresenter struct {
-	sslService *service.SslService
+	sslService      *service.SslService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewSslsPresenter(
@@ -21,19 +25,10 @@ func NewSslsPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslsPresenter {
 	return &SslsPresenter{
-		sslService: service.NewSslService(persistentDbSvc, transientDbSvc, trailDbSvc),
+		sslService:      service.NewSslService(persistentDbSvc, transientDbSvc, trailDbSvc),
+		persistentDbSvc: persistentDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
-}
-
-func (presenter *SslsPresenter) getVhostsHostnames(sslPairs []entity.SslPair) []string {
-	vhostHostnames := []string{}
-	for _, sslPair := range sslPairs {
-		for _, vhostHostname := range sslPair.VirtualHostsHostnames {
-			vhostHostnames = append(vhostHostnames, vhostHostname.String())
-		}
-	}
-
-	return vhostHostnames
 }
 
 func (presenter *SslsPresenter) Handler(c echo.Context) error {
@@ -47,6 +42,14 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.SslsIndex(sslPairs, presenter.getVhostsHostnames(sslPairs))
+	vhostHostnames, err := presenterHelper.ReadVirtualHostHostnames(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
+	if err != nil {
+		slog.Debug("ReadVirtualHostHostnamesError", "error", err)
+		return nil
+	}
+
+	pageContent := page.SslsIndex(sslPairs, vhostHostnames)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

@@ -4,8 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"log"
-	"slices"
+	"log/slog"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -112,61 +111,39 @@ func (repo SslQueryRepo) sslPairFactory(
 	}
 
 	return entity.NewSslPair(
-		sslPairHashId, mainVirtualHostHostname, []valueObject.Fqdn{mainVirtualHostHostname},
-		mainCert, privateKey, chainedCerts,
+		sslPairHashId, mainVirtualHostHostname, mainCert, privateKey, chainedCerts,
 	), nil
 }
 
 func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
-	sslPairs := []entity.SslPair{}
+	sslPairEntities := []entity.SslPair{}
 
-	crtFilePathsStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCertFilePaths, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil {
-		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
+		return sslPairEntities, errors.New("FindCertFilesError: " + err.Error())
 	}
 
-	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
-
-	sslPairIdsVhostsNamesMap := map[valueObject.SslPairId][]valueObject.Fqdn{}
-	for _, crtFilePathStr := range crtFilePaths {
-		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
+	for _, rawCertFilePath := range strings.Split(rawCertFilePaths, "\n") {
+		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), crtFilePathStr)
+			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
 			continue
 		}
 
-		sslPair, err := repo.sslPairFactory(crtFilePath)
+		sslPairEntity, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			log.Printf("FailedToReadSslPair (%s): %s", crtFilePath, err.Error())
+			slog.Debug("SslPairFactoryError", slog.String("crtFilePath", crtFilePath.String()))
 			continue
 		}
 
-		pairMainVhostName := sslPair.VirtualHostsHostnames[0]
-
-		_, pairIdAlreadyExists := sslPairIdsVhostsNamesMap[sslPair.Id]
-		if pairIdAlreadyExists {
-			sslPairIdsVhostsNamesMap[sslPair.Id] = append(
-				sslPairIdsVhostsNamesMap[sslPair.Id],
-				pairMainVhostName,
-			)
-			continue
-		}
-
-		sslPairIdsVhostsNamesMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhostName}
-		sslPairs = append(sslPairs, sslPair)
+		sslPairEntities = append(sslPairEntities, sslPairEntity)
 	}
 
-	for sslPairIndex, sslPair := range sslPairs {
-		correctSslPairsVhostsNames := sslPairIdsVhostsNamesMap[sslPair.Id]
-		sslPair.VirtualHostsHostnames = correctSslPairsVhostsNames
-		sslPairs[sslPairIndex] = sslPair
-	}
-
-	return sslPairs, nil
+	return sslPairEntities, nil
 }
 
 func (repo SslQueryRepo) ReadById(
@@ -183,29 +160,6 @@ func (repo SslQueryRepo) ReadById(
 
 	for _, ssl := range sslPairs {
 		if ssl.Id.String() != sslPairId.String() {
-			continue
-		}
-
-		return ssl, nil
-	}
-
-	return entity.SslPair{}, errors.New("SslPairNotFound")
-}
-
-func (repo SslQueryRepo) ReadByVirtualHostHostname(
-	sslPairVirtualHostHostname valueObject.Fqdn,
-) (entity.SslPair, error) {
-	sslPairs, err := repo.Read()
-	if err != nil {
-		return entity.SslPair{}, err
-	}
-
-	if len(sslPairs) < 1 {
-		return entity.SslPair{}, errors.New("SslPairNotFound")
-	}
-
-	for _, ssl := range sslPairs {
-		if !slices.Contains(ssl.VirtualHostsHostnames, sslPairVirtualHostHostname) {
 			continue
 		}
 
