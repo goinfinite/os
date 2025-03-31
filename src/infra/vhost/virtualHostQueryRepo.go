@@ -3,7 +3,6 @@ package vhostInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
@@ -25,91 +24,6 @@ func NewVirtualHostQueryRepo(
 	return &VirtualHostQueryRepo{
 		persistentDbSvc: persistentDbSvc,
 	}
-}
-
-func (repo *VirtualHostQueryRepo) vhostEntitiesFactory(
-	vhostModels []dbModel.VirtualHost,
-	requestDto dto.ReadVirtualHostsRequest,
-	responsePagination dto.Pagination,
-) (responseDto dto.ReadVirtualHostsResponse, err error) {
-	vhostHostnameEntityMap := map[valueObject.Fqdn]entity.VirtualHost{}
-	aliasParentHostnameAliasEntitiesMap := map[valueObject.Fqdn][]entity.VirtualHost{}
-	for _, virtualHostModel := range vhostModels {
-		virtualHostEntity, err := virtualHostModel.ToEntity()
-		if err != nil {
-			slog.Debug(
-				"VirtualHostModelToEntityError",
-				slog.String("hostname", virtualHostModel.Hostname),
-				slog.String("error", err.Error()),
-			)
-			continue
-		}
-
-		vhostHostnameEntityMap[virtualHostEntity.Hostname] = virtualHostEntity
-
-		if virtualHostEntity.Type != valueObject.VirtualHostTypeAlias {
-			continue
-		}
-
-		if virtualHostEntity.ParentHostname == nil {
-			slog.Debug(
-				"AliasMissingParentHostname",
-				slog.String("hostname", virtualHostModel.Hostname),
-			)
-			continue
-		}
-
-		aliasParentHostnameAliasEntitiesMap[*virtualHostEntity.ParentHostname] =
-			append(
-				aliasParentHostnameAliasEntitiesMap[*virtualHostEntity.ParentHostname],
-				virtualHostEntity,
-			)
-		continue
-	}
-
-	for aliasParentHostname, aliasEntities := range aliasParentHostnameAliasEntitiesMap {
-		parentEntity, isAliasParentListed := vhostHostnameEntityMap[aliasParentHostname]
-		if !isAliasParentListed {
-			continue
-		}
-
-		for _, aliasEntity := range aliasEntities {
-			parentEntity.AliasesHostnames = append(
-				parentEntity.AliasesHostnames, aliasEntity.Hostname,
-			)
-		}
-		vhostHostnameEntityMap[aliasParentHostname] = parentEntity
-	}
-
-	virtualHostEntities := []entity.VirtualHost{}
-	for _, vhostEntity := range vhostHostnameEntityMap {
-		if len(requestDto.AliasesHostnames) == 0 {
-			virtualHostEntities = append(virtualHostEntities, vhostEntity)
-			continue
-		}
-
-		for _, aliasHostname := range requestDto.AliasesHostnames {
-			if vhostEntity.Hostname != aliasHostname {
-				continue
-			}
-			virtualHostEntities = append(virtualHostEntities, vhostEntity)
-		}
-		continue
-	}
-
-	if len(requestDto.AliasesHostnames) > 0 {
-		totalVirtualHosts := uint64(len(virtualHostEntities))
-		pagesTotal := uint32(
-			math.Ceil(float64(totalVirtualHosts) / float64(responsePagination.ItemsPerPage)),
-		)
-		responsePagination.ItemsTotal = &totalVirtualHosts
-		responsePagination.PagesTotal = &pagesTotal
-	}
-
-	return dto.ReadVirtualHostsResponse{
-		Pagination:   responsePagination,
-		VirtualHosts: virtualHostEntities,
-	}, nil
 }
 
 func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
@@ -137,9 +51,13 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		virtualHostModel.Hostname = primaryHostname.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.Model(virtualHostModel).Where(&virtualHostModel)
+	dbQuery := repo.persistentDbSvc.Handler.Model(virtualHostModel).
+		Preload("Aliases").Where(&virtualHostModel)
 	if requestDto.IsWildcard != nil {
 		dbQuery = dbQuery.Where("is_wildcard = ?", *requestDto.IsWildcard)
+	}
+	if len(requestDto.AliasesHostnames) > 0 {
+		dbQuery = dbQuery.Where("Aliases.Hostname = ?", requestDto.AliasesHostnames)
 	}
 	if requestDto.CreatedBeforeAt != nil {
 		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
@@ -173,15 +91,28 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		return responseDto, errors.New("FindVirtualHostsError: " + err.Error())
 	}
 
-	responseDto, err = repo.vhostEntitiesFactory(vhostModels, requestDto, responsePagination)
-	if err != nil {
-		return responseDto, errors.New("VirtualHostModelToEntityError: " + err.Error())
+	vhostEntities := []entity.VirtualHost{}
+	for _, virtualHostModel := range vhostModels {
+		vhostEntity, err := virtualHostModel.ToEntity()
+		if err != nil {
+			slog.Debug(
+				"VirtualHostModelToEntityError",
+				slog.String("hostname", virtualHostModel.Hostname),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
+		vhostEntities = append(vhostEntities, vhostEntity)
+	}
+
+	responseDto = dto.ReadVirtualHostsResponse{
+		Pagination:   responsePagination,
+		VirtualHosts: vhostEntities,
 	}
 
 	if requestDto.WithMappings == nil {
 		return responseDto, nil
 	}
-
 	if !*requestDto.WithMappings {
 		return responseDto, nil
 	}

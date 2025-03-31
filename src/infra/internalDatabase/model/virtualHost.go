@@ -2,6 +2,7 @@ package dbModel
 
 import (
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -11,14 +12,15 @@ import (
 )
 
 type VirtualHost struct {
-	Hostname       string `gorm:"primarykey;not null"`
-	Type           string `gorm:"not null"`
-	RootDirectory  string `gorm:"not null"`
-	ParentHostname *string
-	IsPrimary      bool      `gorm:"not null,default:false"`
-	IsWildcard     bool      `gorm:"not null,default:false"`
-	CreatedAt      time.Time `gorm:"not null"`
-	UpdatedAt      time.Time `gorm:"not null"`
+	Hostname       string        `gorm:"primaryKey"`
+	Type           string        `gorm:"not null"`
+	RootDirectory  string        `gorm:"not null"`
+	ParentHostname *string       `gorm:"index"`
+	IsPrimary      bool          `gorm:"not null;default:false"`
+	IsWildcard     bool          `gorm:"not null;default:false"`
+	Aliases        []VirtualHost `gorm:"foreignkey:ParentHostname"`
+	CreatedAt      time.Time     `gorm:"not null"`
+	UpdatedAt      time.Time     `gorm:"not null"`
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
@@ -63,9 +65,19 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr = &parentHostname
 	}
 
+	aliasesHostnames := []valueObject.Fqdn{}
+	for _, alias := range model.Aliases {
+		aliasHostname, err := valueObject.NewFqdn(alias.Hostname)
+		if err != nil {
+			slog.Debug("AliasHostnameError", slog.String("alias", alias.Hostname))
+			continue
+		}
+		aliasesHostnames = append(aliasesHostnames, aliasHostname)
+	}
+
 	return entity.NewVirtualHost(
 		hostname, vhostType, rootDir, parentHostnamePtr, model.IsPrimary,
-		model.IsWildcard, []valueObject.Fqdn{},
+		model.IsWildcard, aliasesHostnames,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 	), nil
 }
