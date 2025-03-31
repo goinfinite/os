@@ -262,11 +262,8 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		return errors.New("VirtualHostNotFound")
 	}
 
-	vhostEntity := vhostReadResponse.VirtualHostWithMappings[0].VirtualHost
-	vhostMappings := vhostReadResponse.VirtualHostWithMappings[0].Mappings
-
 	mappingCmdRepo := NewMappingCmdRepo(repo.persistentDbSvc)
-	for _, mappingEntity := range vhostMappings {
+	for _, mappingEntity := range vhostReadResponse.VirtualHostWithMappings[0].Mappings {
 		err = mappingCmdRepo.Delete(mappingEntity.Id)
 		if err != nil {
 			slog.Error(
@@ -277,6 +274,13 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		}
 	}
 
+	vhostWebServerConfFilePath, err := repo.ReadVirtualHostWebServerUnitFileFilePath(
+		vhostHostname,
+	)
+	if err != nil {
+		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
+	}
+
 	vhostHostnameStr := vhostHostname.String()
 	err = repo.persistentDbSvc.Handler.
 		Where("hostname = ? OR parent_hostname = ?", vhostHostnameStr, vhostHostnameStr).
@@ -285,6 +289,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		return err
 	}
 
+	vhostEntity := vhostReadResponse.VirtualHostWithMappings[0].VirtualHost
 	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 		if vhostEntity.ParentHostname == nil {
 			return errors.New("AliasMissingParentHostname")
@@ -318,12 +323,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		slog.Error("RemoveSslCertKeyFileError", slog.String("error", err.Error()))
 	}
 
-	unitConfFilePath, err := repo.ReadVirtualHostWebServerUnitFileFilePath(vhostHostname)
-	if err != nil {
-		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
-	}
-
-	err = os.Remove(unitConfFilePath.String())
+	err = os.Remove(vhostWebServerConfFilePath.String())
 	if err != nil {
 		return errors.New("RemoveWebServerUnitConfFileError: " + err.Error())
 	}
