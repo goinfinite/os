@@ -42,8 +42,8 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	}
 
 	mainServerName := vhostHostnameStr + " www." + vhostHostnameStr
-	if vhostEntity.Type == valueObject.VirtualHostTypeWildcard {
-		mainServerName += " *.www." + vhostHostnameStr
+	if vhostEntity.IsWildcard || vhostEntity.Type == valueObject.VirtualHostTypeWildcard {
+		mainServerName += " *." + vhostHostnameStr
 	}
 
 	confVariables := map[string]interface{}{
@@ -223,10 +223,16 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
+	isWildcard := false
+	if createDto.IsWildcard != nil {
+		isWildcard = *createDto.IsWildcard
+	}
 	virtualHostModel := dbModel.VirtualHost{
 		Hostname:      createDto.Hostname.String(),
 		Type:          createDto.Type.String(),
 		RootDirectory: publicDir.String(),
+		IsPrimary:     false,
+		IsWildcard:    isWildcard,
 	}
 	if createDto.ParentHostname != nil {
 		parentHostnameStr := createDto.ParentHostname.String()
@@ -244,6 +250,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 	withMappings := true
 	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination:   dto.PaginationSingleItem,
 		Hostname:     &vhostHostname,
 		WithMappings: &withMappings,
 	})

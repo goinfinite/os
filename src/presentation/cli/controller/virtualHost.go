@@ -85,14 +85,15 @@ func (controller *VirtualHostController) Read() *cobra.Command {
 }
 
 func (controller *VirtualHostController) Create() *cobra.Command {
-	var hostnameStr, typeStr, parentHostnameStr string
+	var hostnameStr, typeStr, parentHostnameStr, isWildcardBoolStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"hostname": hostnameStr,
+				"hostname":   hostnameStr,
+				"isWildcard": isWildcardBoolStr,
 			}
 
 			if typeStr != "" {
@@ -115,6 +116,9 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 		&typeStr, "type", "t", "", "VirtualHostType (top-level|subdomain|alias)",
 	)
 	cmd.Flags().StringVarP(&parentHostnameStr, "parent", "p", "", "ParentHostname")
+	cmd.Flags().StringVarP(
+		&isWildcardBoolStr, "is-wildcard", "w", "false", "IsWildcard (true|false)",
+	)
 	return cmd
 }
 

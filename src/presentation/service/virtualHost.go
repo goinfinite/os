@@ -144,6 +144,14 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
+	isWildcard := false
+	if input["isWildcard"] != nil {
+		isWildcard, err = voHelper.InterfaceToBool(input["isWildcard"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
 	var parentHostnamePtr *valueObject.Fqdn
 	if input["parentHostname"] != nil {
 		parentHostname, err := valueObject.NewFqdn(input["parentHostname"])
@@ -170,7 +178,8 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 	}
 
 	createDto := dto.NewCreateVirtualHost(
-		hostname, vhostType, parentHostnamePtr, operatorAccountId, operatorIpAddress,
+		hostname, vhostType, &isWildcard, parentHostnamePtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.CreateVirtualHost(

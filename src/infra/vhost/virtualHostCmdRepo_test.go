@@ -23,11 +23,10 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
 		operatorAccountId, _ := valueObject.NewAccountId(0)
 		ipAddress := valueObject.IpAddressSystem
-		dto := dto.NewCreateVirtualHost(
-			vhostName, vhostType, nil, operatorAccountId, ipAddress,
-		)
 
-		err := vhostCmdRepo.Create(dto)
+		err := vhostCmdRepo.Create(dto.NewCreateVirtualHost(
+			vhostName, vhostType, nil, nil, operatorAccountId, ipAddress,
+		))
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
 		}
