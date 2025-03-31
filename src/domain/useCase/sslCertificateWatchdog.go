@@ -130,7 +130,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 			valueObject.AccountIdSystem, valueObject.IpAddressSystem,
 		))
 		if err != nil {
-			slog.Error(
+			slog.Debug(
 				"CreatePubliclyTrustedSslPairError",
 				slog.String("error", err.Error()),
 				slog.String("method", "SslCertificateWatchdog"),
