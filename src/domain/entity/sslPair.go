@@ -11,7 +11,6 @@ const EarlyRenewalThresholdHours int64 = 48
 type SslPair struct {
 	Id                      valueObject.SslPairId     `json:"sslPairId"`
 	MainVirtualHostHostname valueObject.Fqdn          `json:"mainVirtualHostHostname"`
-	VirtualHostsHostnames   []valueObject.Fqdn        `json:"virtualHostsHostnames"`
 	Certificate             SslCertificate            `json:"certificate"`
 	Key                     valueObject.SslPrivateKey `json:"key"`
 	ChainCertificates       []SslCertificate          `json:"chainCertificates"`
@@ -20,7 +19,6 @@ type SslPair struct {
 func NewSslPair(
 	sslPairId valueObject.SslPairId,
 	mainVirtualHostHostname valueObject.Fqdn,
-	virtualHostsHostnames []valueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,
 	chainCertificates []SslCertificate,
@@ -28,7 +26,6 @@ func NewSslPair(
 	return SslPair{
 		Id:                      sslPairId,
 		MainVirtualHostHostname: mainVirtualHostHostname,
-		VirtualHostsHostnames:   virtualHostsHostnames,
 		Certificate:             certificate,
 		Key:                     key,
 		ChainCertificates:       chainCertificates,
