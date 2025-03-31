@@ -39,6 +39,20 @@ func CreateVirtualHost(
 		createDto.Hostname = hostnameWithoutWildcard
 	}
 
+	if createDto.Type == valueObject.VirtualHostTypeAlias {
+		parentVirtualHostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+			Hostname: createDto.ParentHostname,
+		})
+		if err != nil {
+			slog.Error("ReadAliasParentVirtualHostError", slog.String("err", err.Error()))
+			return errors.New("ReadAliasParentVirtualHostError")
+		}
+
+		if parentVirtualHostEntity.Type == valueObject.VirtualHostTypeAlias {
+			return errors.New("AliasParentVirtualHostCannotAlsoBeAlias")
+		}
+	}
+
 	err = vhostCmdRepo.Create(createDto)
 	if err != nil {
 		slog.Error("CreateVirtualHostError", slog.String("err", err.Error()))
