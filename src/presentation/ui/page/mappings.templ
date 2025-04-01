@@ -25,7 +25,7 @@ templ MappingsIndex(
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
 	<!-- Mappings Page HTML -->
 	<div x-data="mappings">
-		<div class="mb-6 flex flex-row items-center justify-between gap-3">
+		<div class="flex flex-row items-center justify-between gap-3">
 			<div class="basis-[65%]">
 				@componentStructural.PageTitle(
 					"Mappings",
@@ -262,33 +262,32 @@ templ CreateMappingForm(
 ) {
 	<!-- CreateMappingForm -->
 	<form
+		class="flex flex-col gap-5"
 		hx-post="/api/v1/vhost/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateMappingModal()"
 		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
-		<div class="my-6 -mt-4 space-y-6">
-			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
-			<template x-if="isCreateMappingFromVirtualHost">
-				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", "")
-			</template>
-			<template x-if="!isCreateMappingFromVirtualHost">
-				@componentForm.SelectInput(
-					"hostname", "Hostname", "virtualHost.hostname", "",
-					vhostsHostnames, true,
-				)
-			</template>
-			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-				Type:                "text",
-				Id:                  "path",
-				Label:               "Source URL",
-				BindInputValuePath:  "mapping.path",
-				BindPrefixValuePath: "vhostHostnameWithTrailingSlash",
-			})
-		</div>
+		@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
+		<template x-if="isCreateMappingFromVirtualHost">
+			@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", "")
+		</template>
+		<template x-if="!isCreateMappingFromVirtualHost">
+			@componentForm.SelectInput(
+				"hostname", "Hostname", "virtualHost.hostname", "",
+				vhostsHostnames, true,
+			)
+		</template>
+		@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+			Type:                "text",
+			Id:                  "path",
+			Label:               "Source URL",
+			BindInputValuePath:  "mapping.path",
+			BindPrefixValuePath: "vhostHostnameWithTrailingSlash",
+		})
 		<template x-if="mapping.targetType == 'service'">
-			<div class="mb-6 space-y-6">
+			<div>
 				{{
 					servicesNames := []string{}
 					for _, serviceEntity := range installedServices {
@@ -305,31 +304,38 @@ templ CreateMappingForm(
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'url'">
-			<div class="mb-6 space-y-6">
+			<div class="space-y-6">
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "targetValue",
 					Label:              "Destination URL",
 					BindModelValuePath: "mapping.targetValue",
 				})
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'inline-html'">
-			<div class="mb-6 space-y-6">
+			<div class="space-y-6">
 				@componentForm.TextArea(componentForm.TextAreaDto{
 					Id:                 "targetValue",
 					Label:              "Inline HTML",
 					BindModelValuePath: "mapping.targetValue",
 				})
-				@componentMappings.ResponseCodeSelectInput("targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode")
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
 			</div>
 		</template>
 		<template x-if="mapping.targetType == 'response-code'">
-			<div class="mb-6 space-y-6">
-				@componentMappings.ResponseCodeSelectInput("targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode")
+			<div>
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
 			</div>
 		</template>
-		<section class="mb-6 w-full rounded-md">
+		<section class="w-full rounded-md">
 			<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30" x-bin:open="isAdvancedSettingsClosed">
 				<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
 					<i class="ph-duotone ph-gear mr-2 text-2xl"></i>

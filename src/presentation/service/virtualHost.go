@@ -134,16 +134,12 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	rawVhostType := "top-level"
+	vhostType := valueObject.VirtualHostTypeTopLevel
 	if input["type"] != nil {
-		rawVhostType, err = voHelper.InterfaceToString(input["type"])
+		vhostType, err = valueObject.NewVirtualHostType(input["type"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-	}
-	vhostType, err := valueObject.NewVirtualHostType(rawVhostType)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
 	}
 
 	isWildcard := false
@@ -322,20 +318,12 @@ func (service *VirtualHostService) CreateMapping(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	rawMatchPattern := "begins-with"
+	matchPattern := valueObject.MappingMatchPatternBeginsWith
 	if input["matchPattern"] != nil {
-		typedRawMatchPattern, err := voHelper.InterfaceToString(input["matchPattern"])
+		matchPattern, err = valueObject.NewMappingMatchPattern(input["matchPattern"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-
-		if len(typedRawMatchPattern) > 0 {
-			rawMatchPattern = typedRawMatchPattern
-		}
-	}
-	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
 	}
 
 	targetType, err := valueObject.NewMappingTargetType(input["targetType"])
@@ -356,6 +344,9 @@ func (service *VirtualHostService) CreateMapping(
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 	if input["targetHttpResponseCode"] != nil {
+		if input["targetHttpResponseCode"] == "" {
+			input["targetHttpResponseCode"] = 301
+		}
 		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
 			input["targetHttpResponseCode"],
 		)
