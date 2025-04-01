@@ -28,19 +28,12 @@ document.addEventListener("alpine:init", () => {
 
     // Auxiliary states
     isAdvancedSettingsClosed: true,
-    isCreateMappingFromVhost: false,
+    isCreateMappingFromVirtualHost: false,
     resetAuxiliaryStates() {
       this.isAdvancedSettingsClosed = true;
-      this.isCreateMappingFromVhost = false;
+      this.isCreateMappingFromVirtualHost = false;
     },
-    get shouldDisableCreateVhostSubmitButton() {
-      if (this.virtualHost.type == "alias") {
-        return (
-          this.virtualHost.hostname == "" ||
-          this.virtualHost.parentHostname == ""
-        );
-      }
-
+    get shouldDisableCreateVirtualHostSubmitButton() {
       return this.virtualHost.hostname == "";
     },
     get shouldDisableCreateMappingSubmitButton() {
@@ -64,33 +57,32 @@ document.addEventListener("alpine:init", () => {
     },
 
     // Modal states
-    isCreateVhostModalOpen: false,
-    openCreateVhostModal() {
+    isCreateVirtualHostModalOpen: false,
+    openCreateVirtualHostModal() {
       this.resetPrimaryStates();
 
-      this.isCreateVhostModalOpen = true;
+      this.isCreateVirtualHostModalOpen = true;
     },
-    closeCreateVhostModal() {
-      this.isCreateVhostModalOpen = false;
+    closeCreateVirtualHostModal() {
+      this.isCreateVirtualHostModalOpen = false;
     },
-    isDeleteVhostModalOpen: false,
-    openDeleteVhostModal(vhostHostname) {
+    isDeleteVirtualHostModalOpen: false,
+    openDeleteVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();
 
       this.virtualHost.hostname = vhostHostname;
-      this.isDeleteVhostModalOpen = true;
+      this.isDeleteVirtualHostModalOpen = true;
     },
-    closeDeleteVhostModal() {
-      this.isDeleteVhostModalOpen = false;
+    closeDeleteVirtualHostModal() {
+      this.isDeleteVirtualHostModalOpen = false;
     },
-    deleteVhostElement() {
+    deleteVirtualHostElement() {
+      this.closeDeleteVirtualHostModal();
       htmx
         .ajax("DELETE", "/api/v1/vhosts/" + this.virtualHost.hostname + "/", {
           swap: "none",
         })
-        .finally(() => {
-          this.closeDeleteVhostModal();
-        });
+        .then(() => this.$dispatch("refresh:mappings-table"));
     },
     isCreateMappingModalOpen: false,
     openCreateMappingModal() {
@@ -99,18 +91,18 @@ document.addEventListener("alpine:init", () => {
 
       this.isCreateMappingModalOpen = true;
     },
-    isCreateMappingFromVhostModalOpen: false,
-    openCreateMappingFromVhostModal(vhostHostname) {
+    isCreateMappingFromVirtualHostModalOpen: false,
+    openCreateMappingFromVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();
       this.resetAuxiliaryStates();
 
       this.virtualHost.hostname = vhostHostname;
-      this.isCreateMappingFromVhostModalOpen = true;
-      this.isCreateMappingFromVhost = true;
+      this.isCreateMappingFromVirtualHostModalOpen = true;
+      this.isCreateMappingFromVirtualHost = true;
     },
     closeCreateMappingModal() {
       this.isCreateMappingModalOpen = false;
-      this.isCreateMappingFromVhostModalOpen = false;
+      this.isCreateMappingFromVirtualHostModalOpen = false;
     },
     isDeleteMappingModalOpen: false,
     openDeleteMappingModal(mappingId, mappingPath) {
@@ -124,13 +116,12 @@ document.addEventListener("alpine:init", () => {
       this.isDeleteMappingModalOpen = false;
     },
     deleteMappingElement() {
+      this.closeDeleteMappingModal();
       htmx
         .ajax("DELETE", "/api/v1/vhosts/mapping/" + this.mapping.id + "/", {
           swap: "none",
         })
-        .finally(() => {
-          this.closeDeleteMappingModal();
-        });
+        .then(() => this.$dispatch("refresh:mappings-table"));
     },
   }));
 });

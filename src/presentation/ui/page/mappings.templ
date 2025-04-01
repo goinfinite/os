@@ -11,6 +11,11 @@ import (
 	"slices"
 )
 
+const (
+	MappingsRecordsDisplayId               string = "mappings-table"
+	MappingsRecordsDisplayRefreshEventName string = "refresh:" + MappingsRecordsDisplayId
+)
+
 templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
@@ -31,7 +36,7 @@ templ MappingsIndex(
 			<div class="flex basis-[35%] gap-3">
 				@componentForm.SubmitButton(
 					"create-vhost-button", "create virtual host", "ph-plus-square",
-					"openCreateVhostModal()", false,
+					"openCreateVirtualHostModal()", false,
 				)
 				@componentForm.SubmitButton(
 					"create-mapping-button", "create mapping", "ph-plus-square",
@@ -39,34 +44,32 @@ templ MappingsIndex(
 				)
 			</div>
 		</div>
-		<div
-			id="mappings-content"
-			hx-get="/mappings/"
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
-			hx-select="#mappings-content"
-			hx-target="#mappings-content"
-			hx-swap="outerHTML transition:true"
-			class="flex flex-col"
-		>
-			@MappingsFormTable(vhostsWithMappings)
-			@CreateVhostModal(vhostsHostnames)
-			@componentStructural.DeleteModal(
-				"isDeleteVhostModalOpen", "closeDeleteVhostModal()", "deleteVhostElement()",
-				"virtualHost.hostname", "virtualHost.hostname",
-			)
-			@CreateMappingModal(vhostsHostnames, installedServices)
-			@CreateMappingFromVhostModal(vhostsHostnames, installedServices)
-			@componentStructural.DeleteModal(
-				"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
-				"mapping.path", "mapping.id",
-			)
-		</div>
+		@MappingsFormTable(vhostsWithMappings)
+		@CreateVirtualHostModal(vhostsHostnames)
+		@componentStructural.DeleteModal(
+			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
+			"virtualHost.hostname", "virtualHost.hostname",
+		)
+		@CreateMappingModal(vhostsHostnames, installedServices)
+		@CreateMappingFromVirtualHostModal(vhostsHostnames, installedServices)
+		@componentStructural.DeleteModal(
+			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
+			"mapping.path", "mapping.id",
+		)
 	</div>
 }
 
 templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<!-- MappingsFormTable -->
-	<div id="mappings-form-table" class="w-full space-y-3">
+	<div
+		id={ MappingsRecordsDisplayId }
+		hx-get="/mappings/"
+		hx-trigger={ MappingsRecordsDisplayRefreshEventName + " from:window" }
+		hx-select={ "#" + MappingsRecordsDisplayId }
+		hx-target={ "#" + MappingsRecordsDisplayId }
+		hx-swap="outerHTML transition:true"
+		class="flex flex-col"
+	>
 		for _, vhostWithMappings := range vhostsWithMappings {
 			<div class="bg-os-800 mb-4 flex space-x-3 rounded-md p-3">
 				<!-- VirtualHosts Column -->
@@ -76,13 +79,13 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<div class="flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-plus", "infinite-500", "infinite-300",
-								"openCreateMappingFromVhostModal('"+vhostWithMappings.Hostname.String()+"')",
+								"openCreateMappingFromVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
 								"create mapping", "os-200",
 							)
 							if vhostWithMappings.Type.String() != "primary" {
 								@componentStructural.CircularIconButtonWithTooltip(
 									"ph-trash", "red-800", "red-600",
-									"openDeleteVhostModal('"+vhostWithMappings.Hostname.String()+"')",
+									"openDeleteVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
 									"delete virtual host", "red-500",
 								)
 							}
@@ -95,10 +98,10 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 				</div>
 				<!-- Mappings Column -->
 				<div class="w-full flex-col space-y-3">
-					for _, mapping := range vhostWithMappings.Mappings {
-						@componentMappings.VhostMappingsList(
-							mapping, vhostWithMappings.RootDirectory,
-							"openDeleteMappingModal("+mapping.Id.String()+", '"+mapping.Path.String()+"')",
+					for _, mappingEntity := range vhostWithMappings.Mappings {
+						@componentMappings.VirtualHostMappingsList(
+							mappingEntity, vhostWithMappings.RootDirectory,
+							"openDeleteMappingModal('"+mappingEntity.Id.String()+"','"+mappingEntity.Path.String()+"')",
 						)
 					}
 				</div>
@@ -107,13 +110,15 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	</div>
 }
 
-templ CreateVhostForm(existingHostnames []string) {
-	<!-- CreateVhostForm -->
+templ CreateVirtualHostForm(existingHostnames []string) {
+	<!-- CreateVirtualHostForm -->
 	<form
 		id="create-vhost-form"
 		hx-post="/api/v1/vhosts/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		@submit="closeCreateVirtualHostModal()"
+		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
 		<div class="my-6">
 			@componentForm.SelectInput(
@@ -156,18 +161,18 @@ templ CreateVhostForm(existingHostnames []string) {
 			</div>
 		</template>
 		@componentForm.DeactivableSubmitButton(
-			"Create", "ph-check-fat", "closeCreateVhostModal",
-			"shouldDisableCreateVhostSubmitButton", false,
+			"Create", "ph-check-fat", "",
+			"shouldDisableCreateVirtualHostSubmitButton", false,
 		)
 	</form>
 }
 
-templ CreateVhostModal(existingHostnames []string) {
+templ CreateVirtualHostModal(existingHostnames []string) {
 	@componentStructural.RegularModal(
-		"Create Virtual Host", "isCreateVhostModalOpen", "closeCreateVhostModal()",
+		"Create Virtual Host", "isCreateVirtualHostModalOpen", "closeCreateVirtualHostModal()",
 		"",
 	) {
-		@CreateVhostForm(existingHostnames)
+		@CreateVirtualHostForm(existingHostnames)
 	}
 }
 
@@ -180,13 +185,15 @@ templ CreateMappingForm(
 		hx-post="/api/v1/vhosts/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		@submit="closeCreateMappingModal()"
+		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
 		<div class="my-6 -mt-4 space-y-6">
 			@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
-			<template x-if="isCreateMappingFromVhost">
+			<template x-if="isCreateMappingFromVirtualHost">
 				@componentForm.InputFieldReadOnly("text", "hostname", "Hostname", "virtualHost.hostname", "")
 			</template>
-			<template x-if="!isCreateMappingFromVhost">
+			<template x-if="!isCreateMappingFromVirtualHost">
 				@componentForm.SelectInput(
 					"hostname", "Hostname", "virtualHost.hostname", "",
 					vhostsHostnames, true,
@@ -256,7 +263,10 @@ templ CreateMappingForm(
 				</div>
 			</details>
 		</section>
-		@componentForm.DeactivableSubmitButton("Create", "ph-check-fat", "closeCreateMappingModal()", "shouldDisableCreateMappingSubmitButton", false)
+		@componentForm.DeactivableSubmitButton(
+			"Create", "ph-check-fat", "",
+			"shouldDisableCreateMappingSubmitButton", false,
+		)
 	</form>
 }
 
@@ -272,12 +282,12 @@ templ CreateMappingModal(
 	}
 }
 
-templ CreateMappingFromVhostModal(
+templ CreateMappingFromVirtualHostModal(
 	vhostsHostnames []string,
 	installedServices []entity.InstalledService,
 ) {
 	@componentStructural.RegularModal(
-		"Create Mapping", "isCreateMappingFromVhostModalOpen",
+		"Create Mapping", "isCreateMappingFromVirtualHostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
 		@CreateMappingForm(vhostsHostnames, installedServices)
