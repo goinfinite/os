@@ -2051,45 +2051,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ssl/vhost/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete vhosts from a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSslPairVhosts",
-                "parameters": [
-                    {
-                        "description": "All props are required.",
-                        "name": "deleteSslPairVhostsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairVhostsRemoved",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
@@ -2127,7 +2088,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/": {
+        "/v1/vhost/": {
             "get": {
                 "security": [
                     {
@@ -2228,6 +2189,43 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateVirtualHost",
+                "parameters": [
+                    {
+                        "description": "Only hostname is required.",
+                        "name": "updateVirtualHostDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateVirtualHost"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "VirtualHostUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2266,7 +2264,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/mapping/": {
+        "/v1/vhost/mapping/": {
             "get": {
                 "security": [
                     {
@@ -2405,7 +2403,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/mapping/{mappingId}/": {
+        "/v1/vhost/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -2442,7 +2440,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/{hostname}/": {
+        "/v1/vhost/{hostname}/": {
             "delete": {
                 "security": [
                     {
@@ -2798,25 +2796,14 @@ const docTemplate = `{
                 "hostname": {
                     "type": "string"
                 },
+                "isWildcard": {
+                    "type": "boolean"
+                },
                 "parentHostname": {
                     "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.VirtualHostType"
-                }
-            }
-        },
-        "dto.DeleteSslPairVhosts": {
-            "type": "object",
-            "properties": {
-                "sslPairId": {
-                    "type": "string"
-                },
-                "virtualHostsHostnames": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -3301,11 +3288,37 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.VirtualHostWithMappings": {
+        "dto.UpdateVirtualHost": {
             "type": "object",
             "properties": {
                 "hostname": {
                     "type": "string"
+                },
+                "isWildcard": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.VirtualHostWithMappings": {
+            "type": "object",
+            "properties": {
+                "aliasesHostnames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "isPrimary": {
+                    "type": "boolean"
+                },
+                "isWildcard": {
+                    "type": "boolean"
                 },
                 "mappings": {
                     "type": "array",
@@ -3563,8 +3576,17 @@ const docTemplate = `{
         "entity.Mapping": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "marketplaceInstalledItemId": {
+                    "type": "integer"
+                },
+                "marketplaceInstalledItemName": {
+                    "type": "string"
                 },
                 "matchPattern": {
                     "$ref": "#/definitions/valueObject.MappingMatchPattern"
@@ -3580,6 +3602,9 @@ const docTemplate = `{
                 },
                 "targetValue": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
                 }
             }
         },
@@ -3899,12 +3924,6 @@ const docTemplate = `{
                 },
                 "sslPairId": {
                     "type": "string"
-                },
-                "virtualHostsHostnames": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -3952,8 +3971,23 @@ const docTemplate = `{
         "entity.VirtualHost": {
             "type": "object",
             "properties": {
+                "aliasesHostnames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
                 "hostname": {
                     "type": "string"
+                },
+                "isPrimary": {
+                    "type": "boolean"
+                },
+                "isWildcard": {
+                    "type": "boolean"
                 },
                 "parentHostname": {
                     "type": "string"

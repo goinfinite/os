@@ -207,19 +207,12 @@ definitions:
     properties:
       hostname:
         type: string
+      isWildcard:
+        type: boolean
       parentHostname:
         type: string
       type:
         $ref: '#/definitions/valueObject.VirtualHostType'
-    type: object
-  dto.DeleteSslPairVhosts:
-    properties:
-      sslPairId:
-        type: string
-      virtualHostsHostnames:
-        items:
-          type: string
-        type: array
     type: object
   dto.ExtractUnixFiles:
     properties:
@@ -535,10 +528,27 @@ definitions:
           $ref: '#/definitions/valueObject.UnixFilePath'
         type: array
     type: object
-  dto.VirtualHostWithMappings:
+  dto.UpdateVirtualHost:
     properties:
       hostname:
         type: string
+      isWildcard:
+        type: boolean
+    type: object
+  dto.VirtualHostWithMappings:
+    properties:
+      aliasesHostnames:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
+      hostname:
+        type: string
+      isPrimary:
+        type: boolean
+      isWildcard:
+        type: boolean
       mappings:
         items:
           $ref: '#/definitions/entity.Mapping'
@@ -707,8 +717,14 @@ definitions:
     type: object
   entity.Mapping:
     properties:
+      createdAt:
+        type: integer
       id:
         type: integer
+      marketplaceInstalledItemId:
+        type: integer
+      marketplaceInstalledItemName:
+        type: string
       matchPattern:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
@@ -719,6 +735,8 @@ definitions:
         $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+      updatedAt:
+        type: integer
     type: object
   entity.MarketplaceCatalogItem:
     properties:
@@ -928,10 +946,6 @@ definitions:
         type: string
       sslPairId:
         type: string
-      virtualHostsHostnames:
-        items:
-          type: string
-        type: array
     type: object
   entity.UnixFile:
     properties:
@@ -962,8 +976,18 @@ definitions:
     type: object
   entity.VirtualHost:
     properties:
+      aliasesHostnames:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
       hostname:
         type: string
+      isPrimary:
+        type: boolean
+      isWildcard:
+        type: boolean
       parentHostname:
         type: string
       rootDirectory:
@@ -2487,31 +2511,7 @@ paths:
       summary: DeleteSslPair
       tags:
       - ssl
-  /v1/ssl/vhost/:
-    put:
-      consumes:
-      - application/json
-      description: Delete vhosts from a ssl pair.
-      parameters:
-      - description: All props are required.
-        in: body
-        name: deleteSslPairVhostsDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.DeleteSslPairVhosts'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: SslPairVhostsRemoved
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: DeleteSslPairVhosts
-      tags:
-      - ssl
-  /v1/vhosts/:
+  /v1/vhost/:
     get:
       consumes:
       - application/json
@@ -2602,7 +2602,30 @@ paths:
       summary: CreateVirtualHost
       tags:
       - vhosts
-  /v1/vhosts/{hostname}/:
+    put:
+      consumes:
+      - application/json
+      description: Update a vhost.
+      parameters:
+      - description: Only hostname is required.
+        in: body
+        name: updateVirtualHostDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateVirtualHost'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: VirtualHostUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateVirtualHost
+      tags:
+      - vhosts
+  /v1/vhost/{hostname}/:
     delete:
       consumes:
       - application/json
@@ -2625,7 +2648,7 @@ paths:
       summary: DeleteVirtualHost
       tags:
       - vhosts
-  /v1/vhosts/mapping/:
+  /v1/vhost/mapping/:
     get:
       consumes:
       - application/json
@@ -2722,7 +2745,7 @@ paths:
       summary: CreateVirtualHostMapping
       tags:
       - vhosts
-  /v1/vhosts/mapping/{mappingId}/:
+  /v1/vhost/mapping/{mappingId}/:
     delete:
       consumes:
       - application/json
