@@ -523,10 +523,27 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	return repo.persistInstalledItem(
+	err = repo.persistInstalledItem(
 		catalogItem, installDto.Hostname, installUrlPath, installDir, installUuid,
 		mappingIds,
 	)
+	if err != nil {
+		return errors.New("PersistInstalledItemError: " + err.Error())
+	}
+
+	for _, mappingId := range mappingIds {
+		err = repo.mappingCmdRepo.Update(mappingId, catalogItem.Name)
+		if err != nil {
+			slog.Debug(
+				"UpdateMappingItemNameError",
+				slog.String("mappingId", mappingId.String()),
+				slog.String("err", err.Error()),
+			)
+			continue
+		}
+	}
+
+	return nil
 }
 
 func (repo *MarketplaceCmdRepo) moveSelectedFiles(

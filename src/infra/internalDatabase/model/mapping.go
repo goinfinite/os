@@ -8,16 +8,17 @@ import (
 )
 
 type Mapping struct {
-	ID                         uint64 `gorm:"primaryKey"`
-	Hostname                   string `gorm:"not null"`
-	Path                       string `gorm:"not null"`
-	MatchPattern               string `gorm:"not null"`
-	TargetType                 string `gorm:"not null"`
-	TargetValue                *string
-	TargetHttpResponseCode     *string
-	MarketplaceInstalledItemId *uint
-	CreatedAt                  time.Time `gorm:"not null"`
-	UpdatedAt                  time.Time `gorm:"not null"`
+	ID                           uint64 `gorm:"primaryKey"`
+	Hostname                     string `gorm:"not null"`
+	Path                         string `gorm:"not null"`
+	MatchPattern                 string `gorm:"not null"`
+	TargetType                   string `gorm:"not null"`
+	TargetValue                  *string
+	TargetHttpResponseCode       *string
+	MarketplaceInstalledItemID   *uint
+	MarketplaceInstalledItemName *string
+	CreatedAt                    time.Time `gorm:"not null"`
+	UpdatedAt                    time.Time `gorm:"not null"`
 }
 
 func (Mapping) TableName() string {
@@ -94,9 +95,9 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 	}
 
 	var marketplaceInstalledItemIdPtr *valueObject.MarketplaceItemId
-	if model.MarketplaceInstalledItemId != nil {
+	if model.MarketplaceInstalledItemID != nil {
 		marketplaceInstalledItemId, err := valueObject.NewMarketplaceItemId(
-			*model.MarketplaceInstalledItemId,
+			*model.MarketplaceInstalledItemID,
 		)
 		if err != nil {
 			return mappingEntity, err
@@ -104,9 +105,21 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		marketplaceInstalledItemIdPtr = &marketplaceInstalledItemId
 	}
 
+	var marketplaceInstalledItemNamePtr *valueObject.MarketplaceItemName
+	if model.MarketplaceInstalledItemName != nil {
+		marketplaceInstalledItemName, err := valueObject.NewMarketplaceItemName(
+			*model.MarketplaceInstalledItemName,
+		)
+		if err != nil {
+			return mappingEntity, err
+		}
+		marketplaceInstalledItemNamePtr = &marketplaceInstalledItemName
+	}
+
 	return entity.NewMapping(
 		mappingId, hostname, path, matchPattern, targetType, targetValuePtr,
 		targetHttpResponseCodePtr, marketplaceInstalledItemIdPtr,
+		marketplaceInstalledItemNamePtr,
 		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil

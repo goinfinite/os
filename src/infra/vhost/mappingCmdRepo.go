@@ -410,6 +410,22 @@ func (repo *MappingCmdRepo) Create(
 	return mappingId, infraHelper.ReloadWebServer()
 }
 
+func (repo *MappingCmdRepo) Update(
+	mappingId valueObject.MappingId,
+	marketplaceInstalledItemName valueObject.MarketplaceItemName,
+) error {
+	itemNameStr := marketplaceInstalledItemName.String()
+	mappingUpdatedModel := dbModel.Mapping{
+		ID:                           mappingId.Uint64(),
+		MarketplaceInstalledItemName: &itemNameStr,
+	}
+
+	return repo.persistentDbSvc.Handler.
+		Model(&dbModel.Mapping{}).
+		Where("id = ?", mappingId.Uint64()).
+		Updates(&mappingUpdatedModel).Error
+}
+
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 	err := infraHelper.ValidateWebServerConfig()
 	if err != nil {
