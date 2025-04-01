@@ -18,7 +18,7 @@ type VirtualHost struct {
 	ParentHostname *string       `gorm:"index"`
 	IsPrimary      bool          `gorm:"not null;default:false"`
 	IsWildcard     bool          `gorm:"not null;default:false"`
-	Aliases        []VirtualHost `gorm:"foreignkey:ParentHostname"`
+	Aliases        []VirtualHost `gorm:"foreignKey:ParentHostname"`
 	CreatedAt      time.Time     `gorm:"not null"`
 	UpdatedAt      time.Time     `gorm:"not null"`
 }
