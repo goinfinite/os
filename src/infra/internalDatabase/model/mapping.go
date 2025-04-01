@@ -93,9 +93,22 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
+	var marketplaceInstalledItemIdPtr *valueObject.MarketplaceItemId
+	if model.MarketplaceInstalledItemId != nil {
+		marketplaceInstalledItemId, err := valueObject.NewMarketplaceItemId(
+			*model.MarketplaceInstalledItemId,
+		)
+		if err != nil {
+			return mappingEntity, err
+		}
+		marketplaceInstalledItemIdPtr = &marketplaceInstalledItemId
+	}
+
 	return entity.NewMapping(
 		mappingId, hostname, path, matchPattern, targetType, targetValuePtr,
-		targetHttpResponseCodePtr,
+		targetHttpResponseCodePtr, marketplaceInstalledItemIdPtr,
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }
 
