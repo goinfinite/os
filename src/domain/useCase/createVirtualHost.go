@@ -53,6 +53,11 @@ func CreateVirtualHost(
 		}
 	}
 
+	if createDto.Type == valueObject.VirtualHostTypeWildcard {
+		isWildcard := true
+		createDto.IsWildcard = &isWildcard
+	}
+
 	err = vhostCmdRepo.Create(createDto)
 	if err != nil {
 		slog.Error("CreateVirtualHostError", slog.String("err", err.Error()))
