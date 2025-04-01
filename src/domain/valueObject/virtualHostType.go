@@ -19,7 +19,7 @@ const (
 
 var AvailableVirtualHostsTypes = []string{
 	VirtualHostTypeTopLevel.String(), VirtualHostTypeSubdomain.String(),
-	VirtualHostTypeAlias.String(),
+	VirtualHostTypeAlias.String(), VirtualHostTypeWildcard.String(),
 }
 
 func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error) {
