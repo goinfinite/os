@@ -20,6 +20,9 @@ templ VirtualHostMappingsList(
 					@componentStructural.Tag("", "service", mappingEntity.TargetValue.String(), "teal-900")
 				case "url":
 					@componentStructural.Tag("", "url", mappingEntity.TargetValue.String(), "purple-900")
+					if mappingEntity.TargetHttpResponseCode != nil {
+						@componentStructural.Tag("", "responseCode", mappingEntity.TargetHttpResponseCode.String(), "cyan-900")
+					}
 				case "response-code":
 					@componentStructural.Tag("", "responseCode", mappingEntity.TargetHttpResponseCode.String(), "cyan-900")
 				case "inline-html":
