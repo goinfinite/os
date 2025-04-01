@@ -46,6 +46,7 @@ templ MappingsIndex(
 		</div>
 		@MappingsFormTable(vhostsWithMappings)
 		@CreateVirtualHostModal(vhostsHostnames)
+		@UpdateVirtualHostModal()
 		@componentStructural.DeleteModal(
 			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
 			"virtualHost.hostname", "virtualHost.hostname",
@@ -81,14 +82,14 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<span class="truncate text-lg font-bold">{ vhostWithMappings.Hostname.String() }</span>
 						<div class="flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-plus", "infinite-500", "infinite-300",
+								"ph-plus", "infinite-500", "infinite-200",
 								"openCreateMappingFromVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-								"create mapping", "os-200",
+								"create mapping", "neutral-50/10",
 							)
 							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-pencil", "os-500", "os-300",
+								"ph-pencil", "neutral-50/10", "neutral-50/30",
 								"openUpdateVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-								"update vhost", "red-500",
+								"update vhost", "neutral-50/10",
 							)
 							if !vhostWithMappings.IsPrimary {
 								@componentStructural.CircularIconButtonWithTooltip(
@@ -202,69 +203,35 @@ templ CreateVirtualHostModal(existingHostnames []string) {
 	}
 }
 
-templ UpdateVirtualHostForm(existingHostnames []string) {
+templ UpdateVirtualHostForm() {
 	<!-- UpdateVirtualHostForm -->
 	<form
 		id="update-vhost-form"
+		class="flex flex-col gap-3"
 		hx-put="/api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeUpdateVirtualHostModal()"
 		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
-		<div class="my-6">
-			@componentForm.SelectInput(
-				"type", "Type", "virtualHost.type", "",
-				valueObject.AvailableVirtualHostsTypes, false,
-			)
+		<input type="hidden" name="hostname" x-bind:value="virtualHost.hostname"/>
+		<div>
+			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+				Id:            "isWildcard",
+				Label:         "Enable Wildcard (e.g. *.example.com)",
+				BindModelPath: "virtualHost.isWildcard",
+			})
 		</div>
-		<template x-if="virtualHost.type == 'top-level'">
-			<div class="mb-6">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "hostname",
-					Label:              "Hostname (e.g. example.com)",
-					BindModelValuePath: "virtualHost.hostname",
-				})
-			</div>
-		</template>
-		<template x-if="virtualHost.type == 'subdomain'">
-			<div class="mb-6 space-y-6">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "hostname",
-					Label:              "Hostname (e.g. sub.example.com)",
-					BindModelValuePath: "virtualHost.hostname",
-				})
-			</div>
-		</template>
-		<template x-if="virtualHost.type == 'alias'">
-			<div class="mb-6 space-y-6">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "hostname",
-					Label:              "Alias (e.g. example.com)",
-					BindModelValuePath: "virtualHost.hostname",
-				})
-				@componentForm.SelectInput(
-					"parentHostname", "Parent Hostname", "virtualHost.parentHostname", "",
-					existingHostnames, false,
-				)
-			</div>
-		</template>
-		@componentForm.DeactivableSubmitButton(
-			"Update", "ph-check-fat", "",
-			"shouldDisableUpdateVirtualHostSubmitButton", false,
-		)
+		@componentForm.SubmitButton("", "Update", "ph-check-fat", "", false)
 	</form>
 }
 
-templ UpdateVirtualHostModal(existingHostnames []string) {
+templ UpdateVirtualHostModal() {
 	@componentStructural.RegularModal(
-		"Update Virtual Host", "isUpdateVirtualHostModalOpen", "closeUpdateVirtualHostModal()",
-		"",
+		"Update Virtual Host", "isUpdateVirtualHostModalOpen",
+		"closeUpdateVirtualHostModal()", "",
 	) {
-		@UpdateVirtualHostForm(existingHostnames)
+		@UpdateVirtualHostForm()
 	}
 }
 

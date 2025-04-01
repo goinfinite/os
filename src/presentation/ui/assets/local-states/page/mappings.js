@@ -66,6 +66,15 @@ document.addEventListener("alpine:init", () => {
     closeCreateVirtualHostModal() {
       this.isCreateVirtualHostModalOpen = false;
     },
+    isUpdateVirtualHostModalOpen: false,
+    openUpdateVirtualHostModal() {
+      this.resetPrimaryStates();
+
+      this.isUpdateVirtualHostModalOpen = true;
+    },
+    closeUpdateVirtualHostModal() {
+      this.isUpdateVirtualHostModalOpen = false;
+    },
     isDeleteVirtualHostModalOpen: false,
     openDeleteVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();

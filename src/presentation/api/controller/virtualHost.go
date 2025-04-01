@@ -40,7 +40,7 @@ func NewVirtualHostController(
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadVirtualHostsResponse
-// @Router       /v1/vhosts/ [get]
+// @Router       /v1/vhost/ [get]
 func (controller *VirtualHostController) Read(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
@@ -61,7 +61,7 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Security     Bearer
 // @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "Only hostname is required.<br />type may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', 'parentHostname' will be required."
 // @Success      201 {object} object{} "VirtualHostCreated"
-// @Router       /v1/vhosts/ [post]
+// @Router       /v1/vhost/ [post]
 func (controller *VirtualHostController) Create(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
@@ -70,6 +70,27 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.virtualHostService.Create(requestInputData),
+	)
+}
+
+// UpdateVirtualHost    godoc
+// @Summary      UpdateVirtualHost
+// @Description  Update a vhost.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateVirtualHostDto 	  body    dto.UpdateVirtualHost  true  "Only hostname is required."
+// @Success      200 {object} object{} "VirtualHostUpdated"
+// @Router       /v1/vhost/ [put]
+func (controller *VirtualHostController) Update(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.Update(requestInputData),
 	)
 }
 
@@ -82,7 +103,7 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Security     Bearer
 // @Param        hostname path string true "Hostname to delete"
 // @Success      200 {object} object{} "VirtualHostDeleted"
-// @Router       /v1/vhosts/{hostname}/ [delete]
+// @Router       /v1/vhost/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
@@ -114,7 +135,7 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 // @Param        sortDirection query  string  false  "SortDirection (Pagination)"
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.VirtualHostWithMappings
-// @Router       /v1/vhosts/mapping/ [get]
+// @Router       /v1/vhost/mapping/ [get]
 func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
@@ -135,7 +156,7 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Security     Bearer
 // @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required. If both were provided, targetValue will have priority.<br />targetValue must have the same value as the targetType requires."
 // @Success      201 {object} object{} "MappingCreated"
-// @Router       /v1/vhosts/mapping/ [post]
+// @Router       /v1/vhost/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
@@ -156,7 +177,7 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Security     Bearer
 // @Param        mappingId path uint true "MappingId to delete."
 // @Success      200 {object} object{} "MappingDeleted"
-// @Router       /v1/vhosts/mapping/{mappingId}/ [delete]
+// @Router       /v1/vhost/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {

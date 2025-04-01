@@ -223,6 +223,7 @@ func (router Router) virtualHostRoutes() {
 	)
 	vhostCmd.AddCommand(vhostController.Read())
 	vhostCmd.AddCommand(vhostController.Create())
+	vhostCmd.AddCommand(vhostController.Update())
 	vhostCmd.AddCommand(vhostController.Delete())
 
 	var mappingCmd = &cobra.Command{

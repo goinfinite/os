@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -191,6 +193,58 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 	}
 
 	return NewServiceOutput(Created, "VirtualHostCreated")
+}
+
+func (service *VirtualHostService) Update(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"hostname"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	hostname, err := valueObject.NewFqdn(input["hostname"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var isWildcardPtr *bool
+	if input["isWildcard"] != nil {
+		isWildcard, err := voHelper.InterfaceToBool(input["isWildcard"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidIsWildcard"))
+		}
+		isWildcardPtr = &isWildcard
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateVirtualHost(
+		hostname, isWildcardPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateVirtualHost(
+		service.vhostQueryRepo, service.vhostCmdRepo, service.activityRecordCmdRepo,
+		updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "VirtualHostUpdated")
 }
 
 func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceOutput {

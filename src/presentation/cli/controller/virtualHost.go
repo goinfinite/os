@@ -122,6 +122,32 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 	return cmd
 }
 
+func (controller *VirtualHostController) Update() *cobra.Command {
+	var hostnameStr, isWildcardBoolStr string
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "UpdateVirtualHost",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"hostname":   hostnameStr,
+				"isWildcard": isWildcardBoolStr,
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.Update(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(
+		&isWildcardBoolStr, "is-wildcard", "w", "false", "IsWildcard (true|false)",
+	)
+	return cmd
+}
+
 func (controller *VirtualHostController) Delete() *cobra.Command {
 	var hostnameStr string
 
