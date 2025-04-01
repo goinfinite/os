@@ -12,6 +12,8 @@ document.addEventListener("alpine:init", () => {
         type: "top-level",
         rootDirectory: "",
         parentHostname: "",
+        isWildcard: false,
+        isPrimary: false,
       };
       this.mapping = {
         id: 0,
@@ -67,8 +69,14 @@ document.addEventListener("alpine:init", () => {
       this.isCreateVirtualHostModalOpen = false;
     },
     isUpdateVirtualHostModalOpen: false,
-    openUpdateVirtualHostModal() {
+    openUpdateVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();
+
+      const vhostEntity = JSON.parse(
+        document.getElementById("vhostEntity_" + vhostHostname).textContent
+      );
+      this.virtualHost.hostname = vhostEntity.hostname;
+      this.virtualHost.isWildcard = vhostEntity.isWildcard;
 
       this.isUpdateVirtualHostModalOpen = true;
     },

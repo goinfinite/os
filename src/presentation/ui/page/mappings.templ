@@ -75,11 +75,18 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 			if vhostWithMappings.Type == valueObject.VirtualHostTypeAlias {
 				{{ continue }}
 			}
-			<div class="flex gap-3 rounded-lg bg-neutral-950/20 p-4">
+			<div class="flex gap-4 rounded-lg bg-neutral-950/20 p-4">
+				@templ.JSONScript("vhostEntity_"+vhostWithMappings.Hostname.String(), vhostWithMappings)
 				<!-- VirtualHosts Column -->
 				<div class="min-h-56 flex w-1/4 flex-col gap-3 rounded-lg bg-neutral-500/5 p-3">
 					<div class="flex flex-wrap items-center justify-between gap-2">
-						<span class="truncate text-lg font-bold">{ vhostWithMappings.Hostname.String() }</span>
+						<p class="truncate text-lg font-bold">
+							{{ vhostHostname := vhostWithMappings.Hostname.String() }}
+							if vhostWithMappings.IsWildcard {
+								{{ vhostHostname = "*." + vhostWithMappings.Hostname.String() }}
+							}
+							{ vhostHostname }
+						</p>
 						<div class="flex space-x-2">
 							@componentStructural.CircularIconButtonWithTooltip(
 								"ph-plus", "infinite-500", "infinite-200",
@@ -102,7 +109,11 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					</div>
 					<div class="flex flex-wrap gap-3 overflow-hidden">
 						@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "infinite-300")
-						@componentStructural.Tag("ph-file-text", "", vhostWithMappings.Type.String(), "infinite-300")
+						{{ vhostType := vhostWithMappings.Type.String() }}
+						if vhostWithMappings.IsWildcard {
+							{{ vhostType = valueObject.VirtualHostTypeWildcard.String() }}
+						}
+						@componentStructural.Tag("ph-tree-view", "", vhostType, "infinite-300")
 					</div>
 					if len(vhostWithMappings.AliasesHostnames) > 0 {
 						<div>
@@ -141,30 +152,34 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 	<!-- CreateVirtualHostForm -->
 	<form
 		id="create-vhost-form"
+		class="flex flex-col gap-5"
 		hx-post="/api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateVirtualHostModal()"
 		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
-		<div class="my-6">
-			@componentForm.SelectInput(
-				"type", "Type", "virtualHost.type", "",
-				valueObject.AvailableVirtualHostsTypes, false,
-			)
-		</div>
+		@componentForm.SelectInput(
+			"type", "Type", "virtualHost.type", "",
+			valueObject.AvailableVirtualHostsTypes, false,
+		)
 		<template x-if="virtualHost.type == 'top-level'">
-			<div class="mb-6">
+			<div class="space-y-6">
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
 					Label:              "Hostname (e.g. example.com)",
 					BindModelValuePath: "virtualHost.hostname",
 				})
+				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+					Id:            "isWildcard",
+					Label:         "Enable Wildcard (e.g. *.example.com)",
+					BindModelPath: "virtualHost.isWildcard",
+				})
 			</div>
 		</template>
 		<template x-if="virtualHost.type == 'subdomain'">
-			<div class="mb-6 space-y-6">
+			<div>
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
@@ -173,8 +188,16 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 				})
 			</div>
 		</template>
+		<template x-if="virtualHost.type == 'wildcard'">
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "hostname",
+				Label:              "Main Hostname (without asterisk, e.g. example.com)",
+				BindModelValuePath: "virtualHost.hostname",
+			})
+		</template>
 		<template x-if="virtualHost.type == 'alias'">
-			<div class="mb-6 space-y-6">
+			<div class="space-y-6">
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
@@ -215,13 +238,11 @@ templ UpdateVirtualHostForm() {
 		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
 	>
 		<input type="hidden" name="hostname" x-bind:value="virtualHost.hostname"/>
-		<div>
-			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-				Id:            "isWildcard",
-				Label:         "Enable Wildcard (e.g. *.example.com)",
-				BindModelPath: "virtualHost.isWildcard",
-			})
-		</div>
+		@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+			Id:            "isWildcard",
+			Label:         "Enable Wildcard (e.g. *.example.com)",
+			BindModelPath: "virtualHost.isWildcard",
+		})
 		@componentForm.SubmitButton("", "Update", "ph-check-fat", "", false)
 	</form>
 }
