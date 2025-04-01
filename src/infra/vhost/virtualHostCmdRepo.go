@@ -251,6 +251,10 @@ func (repo *VirtualHostCmdRepo) Update(updateDto dto.UpdateVirtualHost) error {
 	zeroableFieldsUpdateMap := map[string]interface{}{}
 	if updateDto.IsWildcard != nil {
 		zeroableFieldsUpdateMap["is_wildcard"] = *updateDto.IsWildcard
+		zeroableFieldsUpdateMap["type"] = valueObject.VirtualHostTypeWildcard.String()
+		if !*updateDto.IsWildcard {
+			zeroableFieldsUpdateMap["type"] = valueObject.VirtualHostTypeTopLevel.String()
+		}
 	}
 
 	err := repo.persistentDbSvc.Handler.
