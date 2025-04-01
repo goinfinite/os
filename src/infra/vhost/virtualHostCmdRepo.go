@@ -247,6 +247,23 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 	return repo.createWebServerUnitFile(createDto.Hostname)
 }
 
+func (repo *VirtualHostCmdRepo) Update(updateDto dto.UpdateVirtualHost) error {
+	zeroableFieldsUpdateMap := map[string]interface{}{}
+	if updateDto.IsWildcard != nil {
+		zeroableFieldsUpdateMap["is_wildcard"] = *updateDto.IsWildcard
+	}
+
+	err := repo.persistentDbSvc.Handler.
+		Model(&dbModel.VirtualHost{}).
+		Where("hostname = ?", updateDto.Hostname.String()).
+		Updates(zeroableFieldsUpdateMap).Error
+	if err != nil {
+		return errors.New("DbUpdateVirtualHostError: " + err.Error())
+	}
+
+	return repo.createWebServerUnitFile(updateDto.Hostname)
+}
+
 func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 	withMappings := true
 	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
