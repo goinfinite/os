@@ -24,7 +24,7 @@ templ MappingsIndex(
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
 	<!-- Mappings Page HTML -->
-	<div x-data="mappings">
+	<div x-data="mappings" class="flex flex-col gap-4">
 		<div class="flex flex-row items-center justify-between gap-3">
 			<div class="basis-[65%]">
 				@componentStructural.PageTitle(
@@ -124,7 +124,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 										<div>{ aliasHostname.String() }</div>
 										<div>
 											<a
-												class="flex cursor-pointer items-center rounded-md text-base text-red-800 hover:text-red-600"
+												class="flex cursor-pointer items-center rounded-md text-base text-neutral-300 hover:text-red-600"
 												@click.prevent={ "openDeleteVirtualHostModal('" + aliasHostname.String() + "')" }
 											><i class={ "ph-bold ph-x-circle" }></i></a>
 										</div>
