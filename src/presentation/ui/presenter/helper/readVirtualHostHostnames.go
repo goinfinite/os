@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 )
@@ -28,8 +29,12 @@ func ReadVirtualHostHostnames(
 		return vhostHostnames, errors.New("AssertReadVirtualHostsResponseFailed")
 	}
 
-	for _, vhost := range vhostReadResponse.VirtualHosts {
-		vhostHostnames = append(vhostHostnames, vhost.Hostname.String())
+	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
+		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
+			continue
+		}
+
+		vhostHostnames = append(vhostHostnames, vhostEntity.Hostname.String())
 	}
 
 	return vhostHostnames, nil
