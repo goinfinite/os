@@ -35,6 +35,13 @@ templ VirtualHostMappingsList(
 					@componentStructural.Tag("", "staticFiles", rootDirectory.String(), "yellow-600")
 			}
 			@componentStructural.Tag("", "matchPattern", mappingEntity.MatchPattern.String(), "infinite-300")
+			if mappingEntity.MarketplaceInstalledItemName != nil {
+				@componentStructural.Tag(
+					"", "marketplaceItem",
+					mappingEntity.MarketplaceInstalledItemName.String()+" (#"+mappingEntity.MarketplaceInstalledItemId.String()+")",
+					"lime-900",
+				)
+			}
 		</div>
 		<div>
 			@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mappingEntity", "red-500")
