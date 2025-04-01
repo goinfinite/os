@@ -85,11 +85,16 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 								"openCreateMappingFromVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
 								"create mapping", "os-200",
 							)
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-pencil", "os-500", "os-300",
+								"openUpdateVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
+								"update vhost", "red-500",
+							)
 							if !vhostWithMappings.IsPrimary {
 								@componentStructural.CircularIconButtonWithTooltip(
 									"ph-trash", "red-800", "red-600",
 									"openDeleteVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-									"delete virtual host", "red-500",
+									"delete vhost", "red-500",
 								)
 							}
 						</div>
@@ -135,7 +140,7 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 	<!-- CreateVirtualHostForm -->
 	<form
 		id="create-vhost-form"
-		hx-post="/api/v1/vhosts/"
+		hx-post="/api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateVirtualHostModal()"
@@ -197,13 +202,79 @@ templ CreateVirtualHostModal(existingHostnames []string) {
 	}
 }
 
+templ UpdateVirtualHostForm(existingHostnames []string) {
+	<!-- UpdateVirtualHostForm -->
+	<form
+		id="update-vhost-form"
+		hx-put="/api/v1/vhost/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUpdateVirtualHostModal()"
+		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
+	>
+		<div class="my-6">
+			@componentForm.SelectInput(
+				"type", "Type", "virtualHost.type", "",
+				valueObject.AvailableVirtualHostsTypes, false,
+			)
+		</div>
+		<template x-if="virtualHost.type == 'top-level'">
+			<div class="mb-6">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Hostname (e.g. example.com)",
+					BindModelValuePath: "virtualHost.hostname",
+				})
+			</div>
+		</template>
+		<template x-if="virtualHost.type == 'subdomain'">
+			<div class="mb-6 space-y-6">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Hostname (e.g. sub.example.com)",
+					BindModelValuePath: "virtualHost.hostname",
+				})
+			</div>
+		</template>
+		<template x-if="virtualHost.type == 'alias'">
+			<div class="mb-6 space-y-6">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "hostname",
+					Label:              "Alias (e.g. example.com)",
+					BindModelValuePath: "virtualHost.hostname",
+				})
+				@componentForm.SelectInput(
+					"parentHostname", "Parent Hostname", "virtualHost.parentHostname", "",
+					existingHostnames, false,
+				)
+			</div>
+		</template>
+		@componentForm.DeactivableSubmitButton(
+			"Update", "ph-check-fat", "",
+			"shouldDisableUpdateVirtualHostSubmitButton", false,
+		)
+	</form>
+}
+
+templ UpdateVirtualHostModal(existingHostnames []string) {
+	@componentStructural.RegularModal(
+		"Update Virtual Host", "isUpdateVirtualHostModalOpen", "closeUpdateVirtualHostModal()",
+		"",
+	) {
+		@UpdateVirtualHostForm(existingHostnames)
+	}
+}
+
 templ CreateMappingForm(
 	vhostsHostnames []string,
 	installedServices []entity.InstalledService,
 ) {
 	<!-- CreateMappingForm -->
 	<form
-		hx-post="/api/v1/vhosts/mapping/"
+		hx-post="/api/v1/vhost/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateMappingModal()"

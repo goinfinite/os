@@ -79,7 +79,7 @@ document.addEventListener("alpine:init", () => {
     deleteVirtualHostElement() {
       this.closeDeleteVirtualHostModal();
       htmx
-        .ajax("DELETE", "/api/v1/vhosts/" + this.virtualHost.hostname + "/", {
+        .ajax("DELETE", "/api/v1/vhost/" + this.virtualHost.hostname + "/", {
           swap: "none",
         })
         .then(() => this.$dispatch("refresh:mappings-table"));
@@ -118,7 +118,7 @@ document.addEventListener("alpine:init", () => {
     deleteMappingElement() {
       this.closeDeleteMappingModal();
       htmx
-        .ajax("DELETE", "/api/v1/vhosts/mapping/" + this.mapping.id + "/", {
+        .ajax("DELETE", "/api/v1/vhost/mapping/" + this.mapping.id + "/", {
           swap: "none",
         })
         .then(() => this.$dispatch("refresh:mappings-table"));
