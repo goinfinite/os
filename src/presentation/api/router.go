@@ -2,6 +2,9 @@ package api
 
 import (
 	_ "embed"
+	"net/http"
+	"net/url"
+	"strings"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiController "github.com/goinfinite/os/src/presentation/api/controller"
@@ -190,17 +193,28 @@ func (router Router) sslRoutes() {
 	go sslController.SslCertificateWatchdog()
 }
 
-func (router Router) vhostsRoutes() {
+func (router Router) vhostRoutes() {
 	vhostsGroup := router.baseRoute.Group("/v1/vhosts")
+	vhostsGroup.Any("/*", func(c echo.Context) error {
+		originalPath := c.Request().URL.Path
+		parsedPath, err := url.Parse(originalPath)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "InvalidUrl")
+		}
+		newPath := strings.ReplaceAll(parsedPath.Path, "/v1/vhosts", "/v1/vhost")
+		return c.Redirect(http.StatusTemporaryRedirect, newPath)
+	})
+
+	vhostGroup := router.baseRoute.Group("/v1/vhost")
 	vhostController := apiController.NewVirtualHostController(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 
-	vhostsGroup.GET("/", vhostController.Read)
-	vhostsGroup.POST("/", vhostController.Create)
-	vhostsGroup.DELETE("/:hostname/", vhostController.Delete)
+	vhostGroup.GET("/", vhostController.Read)
+	vhostGroup.POST("/", vhostController.Create)
+	vhostGroup.DELETE("/:hostname/", vhostController.Delete)
 
-	mappingsGroup := vhostsGroup.Group("/mapping")
+	mappingsGroup := vhostGroup.Group("/mapping")
 	mappingsGroup.GET("/", vhostController.ReadWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateMapping)
 	mappingsGroup.DELETE(
@@ -223,5 +237,5 @@ func (router Router) RegisterRoutes() {
 	router.servicesRoutes()
 	router.setupRoutes()
 	router.sslRoutes()
-	router.vhostsRoutes()
+	router.vhostRoutes()
 }
