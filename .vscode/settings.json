@@ -85,6 +85,7 @@
     "vhosts",
     "virtualhost",
     "webserver",
+    "zeroable",
     "zerolog",
     "Zerolog"
   ],
