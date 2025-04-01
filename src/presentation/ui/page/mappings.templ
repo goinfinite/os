@@ -118,7 +118,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					}
 				</div>
 				<!-- Mappings Column -->
-				<div class="w-3/4 flex-col gap-3">
+				<div class="flex w-3/4 flex-col gap-3">
 					for _, mappingEntity := range vhostWithMappings.Mappings {
 						@componentMappings.VirtualHostMappingsList(
 							mappingEntity, vhostWithMappings.RootDirectory,

@@ -7,36 +7,34 @@ import (
 )
 
 templ VirtualHostMappingsList(
-	mapping entity.Mapping,
+	mappingEntity entity.Mapping,
 	rootDirectory valueObject.UnixFilePath,
 	deleteOnClick string,
 ) {
 	<!-- VirtualHostMappingsList -->
-	<div class="bg-os-500 flex-col rounded-md p-3">
-		<div class="flex items-center justify-between">
-			<div class="flex gap-4">
-				<span>{ mapping.Path.String() }</span>
-				switch mapping.TargetType.String() {
-					case "service":
-						@componentStructural.Tag("", "service", mapping.TargetValue.String(), "teal-900")
-					case "url":
-						@componentStructural.Tag("", "url", mapping.TargetValue.String(), "purple-900")
-					case "response-code":
-						@componentStructural.Tag("", "response code", mapping.TargetHttpResponseCode.String(), "cyan-900")
-					case "inline-html":
-						if len(mapping.TargetValue.String()) > 50 {
-							@componentStructural.Tag("", "inline html", mapping.TargetValue.String()[:50]+"...", "sky-700")
-						} else {
-							@componentStructural.Tag("", "inline html", mapping.TargetValue.String(), "sky-700")
-						}
-					case "static-files":
-						@componentStructural.Tag("", "static files", rootDirectory.String(), "yellow-600")
-				}
-				@componentStructural.Tag("", "match pattern", mapping.MatchPattern.String(), "infinite-300")
-			</div>
-			<div>
-				@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mapping", "red-500")
-			</div>
+	<div class="flex w-full items-center justify-between rounded-md bg-neutral-500/5 p-3">
+		<div class="flex items-center gap-3">
+			<p>{ mappingEntity.Path.String() }</p>
+			switch mappingEntity.TargetType.String() {
+				case "service":
+					@componentStructural.Tag("", "service", mappingEntity.TargetValue.String(), "teal-900")
+				case "url":
+					@componentStructural.Tag("", "url", mappingEntity.TargetValue.String(), "purple-900")
+				case "response-code":
+					@componentStructural.Tag("", "responseCode", mappingEntity.TargetHttpResponseCode.String(), "cyan-900")
+				case "inline-html":
+					if len(mappingEntity.TargetValue.String()) > 50 {
+						@componentStructural.Tag("", "inlineHtml", mappingEntity.TargetValue.String()[:50]+"...", "sky-700")
+					} else {
+						@componentStructural.Tag("", "inlineHtml", mappingEntity.TargetValue.String(), "sky-700")
+					}
+				case "static-files":
+					@componentStructural.Tag("", "staticFiles", rootDirectory.String(), "yellow-600")
+			}
+			@componentStructural.Tag("", "matchPattern", mappingEntity.MatchPattern.String(), "infinite-300")
+		</div>
+		<div>
+			@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mappingEntity", "red-500")
 		</div>
 	</div>
 }
