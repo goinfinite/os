@@ -15,11 +15,14 @@ import (
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type OverviewPresenter struct {
+	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	transientDbSvc       *internalDbInfra.TransientDatabaseService
+	trailDbSvc           *internalDbInfra.TrailDatabaseService
 	marketplacePresenter *MarketplacePresenter
 	servicesService      *service.ServicesService
 }
@@ -30,7 +33,9 @@ func NewOverviewPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *OverviewPresenter {
 	return &OverviewPresenter{
+		persistentDbSvc:      persistentDbSvc,
 		transientDbSvc:       transientDbSvc,
+		trailDbSvc:           trailDbSvc,
 		marketplacePresenter: NewMarketplacePresenter(persistentDbSvc, trailDbSvc),
 		servicesService:      service.NewServicesService(persistentDbSvc, trailDbSvc),
 	}
@@ -156,9 +161,11 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 }
 
 func (presenter *OverviewPresenter) Handler(c echo.Context) error {
-	vhostsHostnames, err := presenter.marketplacePresenter.ReadVhostsHostnames()
+	vhostsHostnames, err := presenterHelper.ReadVirtualHostHostnames(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("ReadVirtualHostsHostnames", slog.String("err", err.Error()))
 		return nil
 	}
 

@@ -10,7 +10,7 @@ func DnsLookup(recordName string, recordType *string) ([]string, error) {
 		recordTypeStr = *recordType
 	}
 
-	digCmd := "dig +short " + recordTypeStr + " " + recordName
+	digCmd := "dig +short +time=5 +tries=2 " + recordTypeStr + " " + recordName
 
 	rawRecords, err := RunCmd(RunCmdSettings{
 		Command:               digCmd + " @dns.google",

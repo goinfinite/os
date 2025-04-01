@@ -1,16 +1,16 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
 
@@ -18,8 +18,8 @@ type VirtualHostService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 	vhostQueryRepo        *vhostInfra.VirtualHostQueryRepo
 	vhostCmdRepo          *vhostInfra.VirtualHostCmdRepo
-	mappingQueryRepo      *mappingInfra.MappingQueryRepo
-	mappingCmdRepo        *mappingInfra.MappingCmdRepo
+	mappingQueryRepo      *vhostInfra.MappingQueryRepo
+	mappingCmdRepo        *vhostInfra.MappingCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
@@ -31,19 +31,95 @@ func NewVirtualHostService(
 		persistentDbSvc:       persistentDbSvc,
 		vhostQueryRepo:        vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 		vhostCmdRepo:          vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
-		mappingQueryRepo:      mappingInfra.NewMappingQueryRepo(persistentDbSvc),
-		mappingCmdRepo:        mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		mappingQueryRepo:      vhostInfra.NewMappingQueryRepo(persistentDbSvc),
+		mappingCmdRepo:        vhostInfra.NewMappingCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
-func (service *VirtualHostService) Read() ServiceOutput {
-	vhostsList, err := useCase.ReadVirtualHosts(service.vhostQueryRepo)
+func (service *VirtualHostService) VirtualHostReadRequestFactory(
+	serviceInput map[string]interface{},
+	withMappings bool,
+) (readRequestDto dto.ReadVirtualHostsRequest, err error) {
+	var hostnamePtr *valueObject.Fqdn
+	if serviceInput["hostname"] != nil {
+		hostname, err := valueObject.NewFqdn(serviceInput["hostname"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		hostnamePtr = &hostname
+	}
+
+	var typePtr *valueObject.VirtualHostType
+	if serviceInput["type"] != nil {
+		vhostType, err := valueObject.NewVirtualHostType(serviceInput["type"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		typePtr = &vhostType
+	}
+
+	var rootDirectoryPtr *valueObject.UnixFilePath
+	if serviceInput["rootDirectory"] != nil {
+		rootDirectory, err := valueObject.NewUnixFilePath(serviceInput["rootDirectory"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		rootDirectoryPtr = &rootDirectory
+	}
+
+	var parentHostnamePtr *valueObject.Fqdn
+	if serviceInput["parentHostname"] != nil {
+		parentHostname, err := valueObject.NewFqdn(serviceInput["parentHostname"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		parentHostnamePtr = &parentHostname
+	}
+
+	if serviceInput["withMappings"] != nil {
+		withMappings, err = voHelper.InterfaceToBool(serviceInput["withMappings"])
+		if err != nil {
+			return readRequestDto, err
+		}
+	}
+
+	timeParamNames := []string{"createdBeforeAt", "createdAfterAt"}
+	timeParamPtrs := serviceHelper.TimeParamsParser(timeParamNames, serviceInput)
+
+	requestPagination, err := serviceHelper.PaginationParser(
+		serviceInput, useCase.VirtualHostsDefaultPagination,
+	)
+	if err != nil {
+		return readRequestDto, err
+	}
+
+	return dto.ReadVirtualHostsRequest{
+		Pagination:      requestPagination,
+		Hostname:        hostnamePtr,
+		VirtualHostType: typePtr,
+		RootDirectory:   rootDirectoryPtr,
+		ParentHostname:  parentHostnamePtr,
+		WithMappings:    &withMappings,
+		CreatedBeforeAt: timeParamPtrs["createdBeforeAt"],
+		CreatedAfterAt:  timeParamPtrs["createdAfterAt"],
+	}, nil
+}
+
+func (service *VirtualHostService) Read(
+	serviceInput map[string]interface{},
+) ServiceOutput {
+	readRequestDto, err := service.VirtualHostReadRequestFactory(serviceInput, false)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	readResponseDto, err := useCase.ReadVirtualHosts(service.vhostQueryRepo, readRequestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, vhostsList)
+	return NewServiceOutput(Success, readResponseDto)
 }
 
 func (service *VirtualHostService) Create(input map[string]interface{}) ServiceOutput {
@@ -58,16 +134,20 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	rawVhostType := "top-level"
+	vhostType := valueObject.VirtualHostTypeTopLevel
 	if input["type"] != nil {
-		rawVhostType, err = voHelper.InterfaceToString(input["type"])
+		vhostType, err = valueObject.NewVirtualHostType(input["type"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
 	}
-	vhostType, err := valueObject.NewVirtualHostType(rawVhostType)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+
+	isWildcard := false
+	if input["isWildcard"] != nil {
+		isWildcard, err = voHelper.InterfaceToBool(input["isWildcard"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
 	}
 
 	var parentHostnamePtr *valueObject.Fqdn
@@ -96,7 +176,8 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 	}
 
 	createDto := dto.NewCreateVirtualHost(
-		hostname, vhostType, parentHostnamePtr, operatorAccountId, operatorIpAddress,
+		hostname, vhostType, &isWildcard, parentHostnamePtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.CreateVirtualHost(
@@ -110,7 +191,7 @@ func (service *VirtualHostService) Create(input map[string]interface{}) ServiceO
 	return NewServiceOutput(Created, "VirtualHostCreated")
 }
 
-func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceOutput {
+func (service *VirtualHostService) Update(input map[string]interface{}) ServiceOutput {
 	requiredParams := []string{"hostname"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
@@ -122,9 +203,13 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+	var isWildcardPtr *bool
+	if input["isWildcard"] != nil {
+		isWildcard, err := voHelper.InterfaceToBool(input["isWildcard"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidIsWildcard"))
+		}
+		isWildcardPtr = &isWildcard
 	}
 
 	operatorAccountId := LocalOperatorAccountId
@@ -143,13 +228,53 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 		}
 	}
 
-	deleteDto := dto.NewDeleteVirtualHost(
-		hostname, primaryVhost, operatorAccountId, operatorIpAddress,
+	updateDto := dto.NewUpdateVirtualHost(
+		hostname, isWildcardPtr, operatorAccountId, operatorIpAddress,
 	)
 
-	err = useCase.DeleteVirtualHost(
+	err = useCase.UpdateVirtualHost(
 		service.vhostQueryRepo, service.vhostCmdRepo, service.activityRecordCmdRepo,
-		deleteDto,
+		updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "VirtualHostUpdated")
+}
+
+func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"hostname"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	hostname, err := valueObject.NewFqdn(input["hostname"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteVirtualHost(hostname, operatorAccountId, operatorIpAddress)
+	err = useCase.DeleteVirtualHost(
+		service.vhostQueryRepo, service.vhostCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -158,15 +283,20 @@ func (service *VirtualHostService) Delete(input map[string]interface{}) ServiceO
 	return NewServiceOutput(Success, "VirtualHostDeleted")
 }
 
-func (service *VirtualHostService) ReadWithMappings() ServiceOutput {
-	vhostsWithMappings, err := useCase.ReadVirtualHostsWithMappings(
-		service.mappingQueryRepo,
-	)
+func (service *VirtualHostService) ReadWithMappings(
+	serviceInput map[string]interface{},
+) ServiceOutput {
+	readRequestDto, err := service.VirtualHostReadRequestFactory(serviceInput, true)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	readResponseDto, err := useCase.ReadVirtualHosts(service.vhostQueryRepo, readRequestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, vhostsWithMappings)
+	return NewServiceOutput(Success, readResponseDto)
 }
 
 func (service *VirtualHostService) CreateMapping(
@@ -188,20 +318,12 @@ func (service *VirtualHostService) CreateMapping(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	rawMatchPattern := "begins-with"
+	matchPattern := valueObject.MappingMatchPatternBeginsWith
 	if input["matchPattern"] != nil {
-		typedRawMatchPattern, err := voHelper.InterfaceToString(input["matchPattern"])
+		matchPattern, err = valueObject.NewMappingMatchPattern(input["matchPattern"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
 		}
-
-		if len(typedRawMatchPattern) > 0 {
-			rawMatchPattern = typedRawMatchPattern
-		}
-	}
-	matchPattern, err := valueObject.NewMappingMatchPattern(rawMatchPattern)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
 	}
 
 	targetType, err := valueObject.NewMappingTargetType(input["targetType"])
@@ -222,6 +344,9 @@ func (service *VirtualHostService) CreateMapping(
 
 	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
 	if input["targetHttpResponseCode"] != nil {
+		if input["targetHttpResponseCode"] == "" {
+			input["targetHttpResponseCode"] = 301
+		}
 		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
 			input["targetHttpResponseCode"],
 		)
@@ -255,8 +380,8 @@ func (service *VirtualHostService) CreateMapping(
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
 
 	err = useCase.CreateMapping(
-		service.mappingQueryRepo, service.mappingCmdRepo, service.vhostQueryRepo,
-		servicesQueryRepo, service.activityRecordCmdRepo, createDto,
+		service.vhostQueryRepo, service.mappingCmdRepo, servicesQueryRepo,
+		service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -300,10 +425,9 @@ func (service *VirtualHostService) DeleteMapping(
 	}
 
 	deleteDto := dto.NewDeleteMapping(id, operatorAccountId, operatorIpAddress)
-
 	err = useCase.DeleteMapping(
-		service.mappingQueryRepo, service.mappingCmdRepo, service.activityRecordCmdRepo,
-		deleteDto,
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())

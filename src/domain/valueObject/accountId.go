@@ -9,6 +9,8 @@ import (
 
 type AccountId uint64
 
+var AccountIdSystem = AccountId(0)
+
 func NewAccountId(value interface{}) (accountId AccountId, err error) {
 	uintValue, err := voHelper.InterfaceToUint(value)
 	if err != nil {

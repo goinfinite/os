@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"slices"
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
@@ -10,25 +9,31 @@ import (
 
 type MappingMatchPattern string
 
-var validMappingMatchPatterns = []string{
-	"begins-with", "contains", "equals", "ends-with",
-}
+const (
+	MappingMatchPatternBeginsWith MappingMatchPattern = "begins-with"
+	MappingMatchPatternContains   MappingMatchPattern = "contains"
+	MappingMatchPatternEquals     MappingMatchPattern = "equals"
+	MappingMatchPatternEndsWith   MappingMatchPattern = "ends-with"
+)
 
 func NewMappingMatchPattern(value interface{}) (
-	mappingMatchPattern MappingMatchPattern, err error,
+	matchPattern MappingMatchPattern, err error,
 ) {
 	stringValue, err := voHelper.InterfaceToString(value)
 	if err != nil {
-		return mappingMatchPattern, errors.New("MappingMatchPatternMustBeString")
+		return matchPattern, errors.New("MappingMatchPatternMustBeString")
 	}
 	stringValue = strings.ToLower(stringValue)
 	stringValue = strings.ReplaceAll(stringValue, " ", "-")
 
-	if !slices.Contains(validMappingMatchPatterns, stringValue) {
-		return mappingMatchPattern, errors.New("InvalidMappingMatchPattern")
+	stringValueVo := MappingMatchPattern(stringValue)
+	switch stringValueVo {
+	case MappingMatchPatternBeginsWith, MappingMatchPatternContains,
+		MappingMatchPatternEquals, MappingMatchPatternEndsWith:
+		return stringValueVo, nil
+	default:
+		return matchPattern, errors.New("InvalidMappingMatchPattern")
 	}
-
-	return MappingMatchPattern(stringValue), nil
 }
 
 func (vo MappingMatchPattern) String() string {

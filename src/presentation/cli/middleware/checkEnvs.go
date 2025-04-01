@@ -36,7 +36,7 @@ func genSecret() (string, error) {
 }
 
 func CheckEnvs() {
-	primaryHostname, err := infraHelper.GetPrimaryVirtualHost()
+	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		log.Fatalf("PrimaryHostnameUnidentifiable")
 	}

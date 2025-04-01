@@ -10,108 +10,93 @@ import (
 )
 
 func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error) {
-	targetTypeStr := createDto.TargetType.String()
-	isStaticFilesMapping := targetTypeStr == "static-files"
-	if isStaticFilesMapping {
+	if createDto.TargetType == valueObject.MappingTargetTypeStaticFiles {
 		return createDto, nil
 	}
 
 	hasTargetValue := createDto.TargetValue != nil
-	hasTargetHttpResponseCode := createDto.TargetHttpResponseCode != nil
-	if !hasTargetValue && !hasTargetHttpResponseCode {
+	hasResponseCode := createDto.TargetHttpResponseCode != nil
+	if !hasTargetValue && !hasResponseCode {
 		return createDto, errors.New("MappingMustHaveValueOrResponseCode")
 	}
 
-	isResponseCodeMapping := targetTypeStr == "response-code"
-	isTargetValueRequired := !isResponseCodeMapping
-	if isTargetValueRequired && !hasTargetValue {
+	isResponseCodeTarget := createDto.TargetType == valueObject.MappingTargetTypeResponseCode
+	if !isResponseCodeTarget && !hasTargetValue {
 		return createDto, errors.New("MappingMustHaveTargetValue")
 	}
 
-	if isResponseCodeMapping {
-		if hasTargetValue {
-			targetValueStr := createDto.TargetValue.String()
-			httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValueStr)
-			if err != nil {
-				return createDto, err
-			}
-
-			createDto.TargetHttpResponseCode = &httpRespondeCode
+	if isResponseCodeTarget && hasTargetValue {
+		targetValueStr := createDto.TargetValue.String()
+		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValueStr)
+		if err != nil {
+			return createDto, errors.New("MappingResponseCodeInvalid")
 		}
+		createDto.TargetHttpResponseCode = &httpRespondeCode
 		createDto.TargetValue = nil
 	}
 
-	isUrlMapping := targetTypeStr == "url"
-	if isUrlMapping && !hasTargetHttpResponseCode {
-		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(301)
-		createDto.TargetHttpResponseCode = &targetHttpResponseCode
+	defaultResponseCode, _ := valueObject.NewHttpResponseCode(200)
+	if createDto.TargetType == valueObject.MappingTargetTypeUrl {
+		defaultResponseCode, _ = valueObject.NewHttpResponseCode(301)
 	}
-
-	isInlineHtmlMapping := targetTypeStr == "inline-html"
-	if isInlineHtmlMapping && !hasTargetHttpResponseCode {
-		targetHttpResponseCode, _ := valueObject.NewHttpResponseCode(200)
-		createDto.TargetHttpResponseCode = &targetHttpResponseCode
+	if !hasResponseCode && createDto.TargetType != valueObject.MappingTargetTypeService {
+		createDto.TargetHttpResponseCode = &defaultResponseCode
 	}
 
 	return createDto, nil
 }
 
 func CreateMapping(
-	mappingQueryRepo repository.MappingQueryRepo,
-	mappingCmdRepo repository.MappingCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
+	mappingCmdRepo repository.MappingCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateMapping,
 ) error {
-	vhost, err := vhostQueryRepo.ReadByHostname(createDto.Hostname)
+	withMappings := true
+	virtualHostWithMappings, err := vhostQueryRepo.ReadFirstWithMappings(dto.ReadVirtualHostsRequest{
+		Hostname:     &createDto.Hostname,
+		WithMappings: &withMappings,
+	})
 	if err != nil {
-		return errors.New("VirtualHostNotFound")
+		slog.Error("ReadFirstVirtualHostWithMappingsError", slog.String("err", err.Error()))
+		return errors.New("ReadFirstVirtualHostWithMappingsInfraError")
 	}
 
-	if vhost.Type.String() == "alias" {
+	if virtualHostWithMappings.Type == valueObject.VirtualHostTypeAlias {
 		return errors.New("AliasCannotHaveMappings")
 	}
 
 	createDto, err = mappingTargetLinter(createDto)
 	if err != nil {
-		return err
+		slog.Error("MappingTargetLinterError", slog.String("err", err.Error()))
+		return errors.New("MappingTargetLinterError")
 	}
 
-	existingMappings, err := mappingQueryRepo.ReadByHostname(createDto.Hostname)
-	if err != nil {
-		slog.Error("ReadMappingsError", slog.String("err", err.Error()))
-		return errors.New("ReadMappingsInfraError")
-	}
-
-	for _, mapping := range existingMappings {
-		if mapping.MatchPattern != createDto.MatchPattern {
+	for _, mappingEntity := range virtualHostWithMappings.Mappings {
+		if mappingEntity.MatchPattern != createDto.MatchPattern {
 			continue
 		}
 
-		if mapping.Path != createDto.Path {
+		if mappingEntity.Path != createDto.Path {
 			continue
 		}
 
 		return errors.New("MappingAlreadyExists")
 	}
 
-	targetTypeStr := createDto.TargetType.String()
-	if targetTypeStr == "service" {
-		targetValueStr := createDto.TargetValue.String()
-		svcName, err := valueObject.NewServiceName(targetValueStr)
+	if createDto.TargetType == valueObject.MappingTargetTypeService {
+		serviceName, err := valueObject.NewServiceName(createDto.TargetValue.String())
 		if err != nil {
-			return errors.New(err.Error() + ": " + targetValueStr)
+			return errors.New("MappingTargetServiceNameInvalid")
 		}
 
-		readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-			ServiceName: &svcName,
-		}
 		serviceEntity, err := svcsQueryRepo.ReadFirstInstalledItem(
-			readFirstInstalledServiceRequestDto,
+			dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &serviceName},
 		)
 		if err != nil {
-			return err
+			slog.Error("ReadServiceEntityError", slog.String("err", err.Error()))
+			return errors.New("ReadServiceEntityInfraError")
 		}
 
 		if len(serviceEntity.PortBindings) == 0 {

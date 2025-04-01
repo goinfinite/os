@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
 
@@ -15,37 +15,13 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
 	t.Run("Read", func(t *testing.T) {
-		vhosts, err := vhostQueryRepo.Read()
+		withMappings := true
+		_, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination:   dto.PaginationUnpaginated,
+			WithMappings: &withMappings,
+		})
 		if err != nil {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
-		}
-
-		if len(vhosts) > 0 {
-			t.Errorf("ExpectingEmptySliceButGot: %v", len(vhosts))
-		}
-	})
-
-	t.Run("ReadByHostname", func(t *testing.T) {
-		hostname, _ := infraHelper.GetPrimaryVirtualHost()
-		vhost, err := vhostQueryRepo.ReadByHostname(hostname)
-		if err != nil && err.Error() != "VhostNotFound" {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
-		}
-
-		if vhost.Hostname != "" {
-			t.Errorf("ExpectingEmptyVhostButGot: %v", vhost)
-		}
-	})
-
-	t.Run("ReadAliasesByParentHostname", func(t *testing.T) {
-		hostname, _ := infraHelper.GetPrimaryVirtualHost()
-		aliases, err := vhostQueryRepo.ReadAliasesByParentHostname(hostname)
-		if err != nil && err.Error() != "VhostNotFound" {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
-		}
-
-		if len(aliases) > 0 {
-			t.Errorf("ExpectingEmptySliceButGot: %v", len(aliases))
 		}
 	})
 }

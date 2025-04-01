@@ -2,7 +2,6 @@ package valueObject
 
 import (
 	"errors"
-	"slices"
 	"strings"
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
@@ -10,11 +9,17 @@ import (
 
 type VirtualHostType string
 
+const (
+	VirtualHostTypeTopLevel  VirtualHostType = "top-level"
+	VirtualHostTypeSubdomain VirtualHostType = "subdomain"
+	VirtualHostTypeAlias     VirtualHostType = "alias"
+	VirtualHostTypeWildcard  VirtualHostType = "wildcard"
+	VirtualHostTypePrimary   VirtualHostType = "primary"
+)
+
 var AvailableVirtualHostsTypes = []string{
-	"top-level", "subdomain", "alias",
-}
-var validVirtualHostTypes = []string{
-	"primary", "top-level", "subdomain", "wildcard", "alias",
+	VirtualHostTypeTopLevel.String(), VirtualHostTypeSubdomain.String(),
+	VirtualHostTypeAlias.String(), VirtualHostTypeWildcard.String(),
 }
 
 func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error) {
@@ -24,11 +29,16 @@ func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	if !slices.Contains(validVirtualHostTypes, stringValue) {
+	stringValueVo := VirtualHostType(stringValue)
+	switch stringValueVo {
+	case VirtualHostTypeTopLevel, VirtualHostTypeSubdomain,
+		VirtualHostTypeAlias, VirtualHostTypeWildcard:
+		return stringValueVo, nil
+	case VirtualHostTypePrimary:
+		return VirtualHostTypeTopLevel, nil
+	default:
 		return vhostType, errors.New("InvalidVirtualHostType")
 	}
-
-	return VirtualHostType(stringValue), nil
 }
 
 func (vo VirtualHostType) String() string {

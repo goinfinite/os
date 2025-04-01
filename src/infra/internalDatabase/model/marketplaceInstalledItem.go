@@ -10,7 +10,7 @@ import (
 )
 
 type MarketplaceInstalledItem struct {
-	ID               uint16 `gorm:"primarykey"`
+	ID               uint16 `gorm:"primaryKey"`
 	Name             string `gorm:"not null"`
 	Hostname         string `gorm:"not null"`
 	Type             string `gorm:"not null"`

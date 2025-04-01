@@ -5,20 +5,20 @@ definitions:
       compressionType:
         type: string
       destinationPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       sourcePaths:
         items:
-          $ref: "#/definitions/valueObject.UnixFilePath"
+          $ref: '#/definitions/valueObject.UnixFilePath'
         type: array
     type: object
   dto.CopyUnixFile:
     properties:
       destinationPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       shouldOverwrite:
         type: boolean
       sourcePath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.CreateAccount:
     properties:
@@ -55,16 +55,20 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       logOutputPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
+      mappingHostname:
+        type: string
+      mappingPath:
+        type: string
       maxStartRetries:
         type: integer
       name:
         type: string
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       postStartCmdSteps:
         items:
@@ -91,11 +95,11 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        $ref: "#/definitions/valueObject.ServiceType"
+        $ref: '#/definitions/valueObject.ServiceType'
       version:
         type: string
       workingDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.CreateDatabase:
     properties:
@@ -127,35 +131,39 @@ definitions:
         items:
           type: string
         type: array
+      mappingHostname:
+        type: string
+      mappingPath:
+        type: string
       maxStartRetries:
         type: integer
       name:
         type: string
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startupFile:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       timeoutStartSecs:
         type: integer
       version:
         type: string
       workingDir:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.CreateMapping:
     properties:
       hostname:
         type: string
       matchPattern:
-        type: string
+        $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
       targetHttpResponseCode:
         type: integer
       targetType:
-        type: string
+        $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
     type: object
@@ -178,7 +186,7 @@ definitions:
   dto.CreateSslPair:
     properties:
       certificate:
-        $ref: "#/definitions/entity.SslCertificate"
+        $ref: '#/definitions/entity.SslCertificate'
       key:
         type: string
       virtualHostsHostnames:
@@ -189,9 +197,9 @@ definitions:
   dto.CreateUnixFile:
     properties:
       filePath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       mimeType:
-        $ref: "#/definitions/valueObject.MimeType"
+        $ref: '#/definitions/valueObject.MimeType'
       permissions:
         type: string
     type: object
@@ -199,32 +207,25 @@ definitions:
     properties:
       hostname:
         type: string
+      isWildcard:
+        type: boolean
       parentHostname:
         type: string
       type:
-        type: string
-    type: object
-  dto.DeleteSslPairVhosts:
-    properties:
-      sslPairId:
-        type: string
-      virtualHostsHostnames:
-        items:
-          type: string
-        type: array
+        $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
   dto.ExtractUnixFiles:
     properties:
       destinationPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       sourcePath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.InstallMarketplaceCatalogItem:
     properties:
       dataFields:
         items:
-          $ref: "#/definitions/valueObject.MarketplaceInstallableItemDataField"
+          $ref: '#/definitions/valueObject.MarketplaceInstallableItemDataField'
         type: array
       hostname:
         type: string
@@ -252,37 +253,37 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       logOutputPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       maxStartRetries:
         type: integer
       metrics:
-        $ref: "#/definitions/valueObject.ServiceMetrics"
+        $ref: '#/definitions/valueObject.ServiceMetrics'
       name:
         type: string
       nature:
-        $ref: "#/definitions/valueObject.ServiceNature"
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startCmd:
         type: string
       startupFile:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       status:
         type: string
       timeoutStartSecs:
         type: integer
       type:
-        $ref: "#/definitions/valueObject.ServiceType"
+        $ref: '#/definitions/valueObject.ServiceType'
       updatedAt:
         type: integer
       version:
         type: string
       workingDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.Pagination:
     properties:
@@ -305,90 +306,103 @@ definitions:
     properties:
       accounts:
         items:
-          $ref: "#/definitions/entity.Account"
+          $ref: '#/definitions/entity.Account'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadCronsResponse:
     properties:
       crons:
         items:
-          $ref: "#/definitions/entity.Cron"
+          $ref: '#/definitions/entity.Cron'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadFilesResponse:
     properties:
       fileTree:
-        $ref: "#/definitions/dto.UnixFileTree"
+        $ref: '#/definitions/dto.UnixFileBranch'
       files:
         items:
-          $ref: "#/definitions/entity.UnixFile"
+          $ref: '#/definitions/entity.UnixFile'
         type: array
     type: object
   dto.ReadInstallableServicesItemsResponse:
     properties:
       installableServices:
         items:
-          $ref: "#/definitions/entity.InstallableService"
+          $ref: '#/definitions/entity.InstallableService'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadInstalledServicesItemsResponse:
     properties:
       installedServices:
         items:
-          $ref: "#/definitions/entity.InstalledService"
+          $ref: '#/definitions/entity.InstalledService'
         type: array
       installedServicesWithMetrics:
         items:
-          $ref: "#/definitions/dto.InstalledServiceWithMetrics"
+          $ref: '#/definitions/dto.InstalledServiceWithMetrics'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
       marketplaceCatalogItems:
         items:
-          $ref: "#/definitions/entity.MarketplaceCatalogItem"
+          $ref: '#/definitions/entity.MarketplaceCatalogItem'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadMarketplaceInstalledItemsResponse:
     properties:
       marketplaceInstalledItems:
         items:
-          $ref: "#/definitions/entity.MarketplaceInstalledItem"
+          $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
     type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
-        $ref: "#/definitions/dto.Pagination"
+        $ref: '#/definitions/dto.Pagination'
       tasks:
         items:
-          $ref: "#/definitions/entity.ScheduledTask"
+          $ref: '#/definitions/entity.ScheduledTask'
         type: array
     type: object
-  dto.UnixFileTree:
+  dto.ReadVirtualHostsResponse:
     properties:
-      children:
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+      virtualHostWithMappings:
         items:
-          $ref: "#/definitions/dto.UnixFileTree"
+          $ref: '#/definitions/dto.VirtualHostWithMappings'
         type: array
+      virtualHosts:
+        items:
+          $ref: '#/definitions/entity.VirtualHost'
+        type: array
+    type: object
+  dto.UnixFileBranch:
+    properties:
+      branches:
+        additionalProperties:
+          $ref: '#/definitions/dto.UnixFileBranch'
+        type: object
       mimeType:
-        $ref: "#/definitions/valueObject.MimeType"
+        $ref: '#/definitions/valueObject.MimeType'
       name:
         type: string
       path:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.UpdateAccount:
     properties:
@@ -418,11 +432,11 @@ definitions:
         type: string
       modules:
         items:
-          $ref: "#/definitions/entity.PhpModule"
+          $ref: '#/definitions/entity.PhpModule'
         type: array
       settings:
         items:
-          $ref: "#/definitions/entity.PhpSetting"
+          $ref: '#/definitions/entity.PhpSetting'
         type: array
       version:
         type: string
@@ -451,16 +465,16 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       logOutputPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       maxStartRetries:
         type: integer
       name:
         type: string
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       postStartCmdSteps:
         items:
@@ -481,7 +495,7 @@ definitions:
       startCmd:
         type: string
       startupFile:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       status:
         type: string
       stopCmdSteps:
@@ -491,43 +505,60 @@ definitions:
       timeoutStartSecs:
         type: integer
       type:
-        $ref: "#/definitions/valueObject.ServiceType"
+        $ref: '#/definitions/valueObject.ServiceType'
       version:
         type: string
       workingDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   dto.UpdateUnixFiles:
     properties:
       destinationPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       encodedContent:
         type: string
       ownership:
-        type: string
+        $ref: '#/definitions/valueObject.UnixFileOwnership'
       permissions:
         type: string
       shouldFixPermissions:
         type: boolean
       sourcePaths:
         items:
-          $ref: "#/definitions/valueObject.UnixFilePath"
+          $ref: '#/definitions/valueObject.UnixFilePath'
         type: array
     type: object
-  dto.VirtualHostWithMappings:
+  dto.UpdateVirtualHost:
     properties:
       hostname:
         type: string
+      isWildcard:
+        type: boolean
+    type: object
+  dto.VirtualHostWithMappings:
+    properties:
+      aliasesHostnames:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
+      hostname:
+        type: string
+      isPrimary:
+        type: boolean
+      isWildcard:
+        type: boolean
       mappings:
         items:
-          $ref: "#/definitions/entity.Mapping"
+          $ref: '#/definitions/entity.Mapping'
         type: array
       parentHostname:
         type: string
       rootDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       type:
-        type: string
+        $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
   entity.AccessToken:
     properties:
@@ -545,14 +576,14 @@ definitions:
       groupId:
         type: integer
       homeDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       id:
         type: integer
       isSuperAdmin:
         type: boolean
       secureAccessPublicKeys:
         items:
-          $ref: "#/definitions/entity.SecureAccessPublicKey"
+          $ref: '#/definitions/entity.SecureAccessPublicKey'
         type: array
       updatedAt:
         type: integer
@@ -580,7 +611,7 @@ definitions:
         type: string
       users:
         items:
-          $ref: "#/definitions/entity.DatabaseUser"
+          $ref: '#/definitions/entity.DatabaseUser'
         type: array
     type: object
   entity.DatabaseUser:
@@ -611,31 +642,31 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       logOutputPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       manifestVersion:
         type: string
       name:
         type: string
       nature:
-        $ref: "#/definitions/valueObject.ServiceNature"
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startCmd:
         type: string
       startupFile:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       type:
-        $ref: "#/definitions/valueObject.ServiceType"
+        $ref: '#/definitions/valueObject.ServiceType'
       versions:
         items:
           type: string
         type: array
       workingDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   entity.InstalledService:
     properties:
@@ -654,50 +685,58 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       logOutputPath:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       maxStartRetries:
         type: integer
       name:
         type: string
       nature:
-        $ref: "#/definitions/valueObject.ServiceNature"
+        $ref: '#/definitions/valueObject.ServiceNature'
       portBindings:
         items:
-          $ref: "#/definitions/valueObject.PortBinding"
+          $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startCmd:
         type: string
       startupFile:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       status:
         type: string
       timeoutStartSecs:
         type: integer
       type:
-        $ref: "#/definitions/valueObject.ServiceType"
+        $ref: '#/definitions/valueObject.ServiceType'
       updatedAt:
         type: integer
       version:
         type: string
       workingDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
     type: object
   entity.Mapping:
     properties:
+      createdAt:
+        type: integer
       id:
         type: integer
-      matchPattern:
+      marketplaceInstalledItemId:
+        type: integer
+      marketplaceInstalledItemName:
         type: string
+      matchPattern:
+        $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
       targetHttpResponseCode:
         type: integer
       targetType:
-        type: string
+        $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+      updatedAt:
+        type: integer
     type: object
   entity.MarketplaceCatalogItem:
     properties:
@@ -705,7 +744,7 @@ definitions:
         type: string
       dataFields:
         items:
-          $ref: "#/definitions/valueObject.MarketplaceCatalogItemDataField"
+          $ref: '#/definitions/valueObject.MarketplaceCatalogItemDataField'
         type: array
       description:
         type: string
@@ -717,7 +756,7 @@ definitions:
         type: string
       mappings:
         items:
-          $ref: "#/definitions/valueObject.MarketplaceItemMapping"
+          $ref: '#/definitions/valueObject.MarketplaceItemMapping'
         type: array
       name:
         type: string
@@ -727,7 +766,7 @@ definitions:
         type: array
       services:
         items:
-          $ref: "#/definitions/valueObject.ServiceNameWithVersion"
+          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
         type: array
       slugs:
         items:
@@ -747,18 +786,18 @@ definitions:
       id:
         type: integer
       installDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       installUuid:
         type: string
       mappings:
         items:
-          $ref: "#/definitions/entity.Mapping"
+          $ref: '#/definitions/entity.Mapping'
         type: array
       name:
         type: string
       services:
         items:
-          $ref: "#/definitions/valueObject.ServiceNameWithVersion"
+          $ref: '#/definitions/valueObject.ServiceNameWithVersion'
         type: array
       type:
         type: string
@@ -770,13 +809,13 @@ definitions:
   entity.O11yOverview:
     properties:
       currentUsage:
-        $ref: "#/definitions/valueObject.CurrentResourceUsage"
+        $ref: '#/definitions/valueObject.CurrentResourceUsage'
       hostname:
         type: string
       publicIp:
         type: string
       specs:
-        $ref: "#/definitions/valueObject.HardwareSpecs"
+        $ref: '#/definitions/valueObject.HardwareSpecs'
       uptimeRelative:
         type: string
       uptimeSecs:
@@ -788,14 +827,14 @@ definitions:
         type: string
       modules:
         items:
-          $ref: "#/definitions/entity.PhpModule"
+          $ref: '#/definitions/entity.PhpModule'
         type: array
       settings:
         items:
-          $ref: "#/definitions/entity.PhpSetting"
+          $ref: '#/definitions/entity.PhpSetting'
         type: array
       version:
-        $ref: "#/definitions/entity.PhpVersion"
+        $ref: '#/definitions/entity.PhpVersion'
     type: object
   entity.PhpModule:
     properties:
@@ -896,19 +935,17 @@ definitions:
   entity.SslPair:
     properties:
       certificate:
-        $ref: "#/definitions/entity.SslCertificate"
+        $ref: '#/definitions/entity.SslCertificate'
       chainCertificates:
         items:
-          $ref: "#/definitions/entity.SslCertificate"
+          $ref: '#/definitions/entity.SslCertificate'
         type: array
       key:
         type: string
+      mainVirtualHostHostname:
+        type: string
       sslPairId:
         type: string
-      virtualHostsHostnames:
-        items:
-          type: string
-        type: array
     type: object
   entity.UnixFile:
     properties:
@@ -921,13 +958,13 @@ definitions:
       group:
         type: string
       mimeType:
-        $ref: "#/definitions/valueObject.MimeType"
+        $ref: '#/definitions/valueObject.MimeType'
       name:
         type: string
       owner:
         type: string
       path:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       permissions:
         type: string
       size:
@@ -939,14 +976,24 @@ definitions:
     type: object
   entity.VirtualHost:
     properties:
+      aliasesHostnames:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
       hostname:
         type: string
+      isPrimary:
+        type: boolean
+      isWildcard:
+        type: boolean
       parentHostname:
         type: string
       rootDirectory:
-        $ref: "#/definitions/valueObject.UnixFilePath"
+        $ref: '#/definitions/valueObject.UnixFilePath'
       type:
-        type: string
+        $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
   valueObject.CurrentResourceUsage:
     properties:
@@ -976,6 +1023,32 @@ definitions:
       storageTotal:
         type: integer
     type: object
+  valueObject.MappingMatchPattern:
+    enum:
+    - begins-with
+    - contains
+    - equals
+    - ends-with
+    type: string
+    x-enum-varnames:
+    - MappingMatchPatternBeginsWith
+    - MappingMatchPatternContains
+    - MappingMatchPatternEquals
+    - MappingMatchPatternEndsWith
+  valueObject.MappingTargetType:
+    enum:
+    - url
+    - service
+    - response-code
+    - inline-html
+    - static-files
+    type: string
+    x-enum-varnames:
+    - MappingTargetTypeUrl
+    - MappingTargetTypeService
+    - MappingTargetTypeResponseCode
+    - MappingTargetTypeInlineHtml
+    - MappingTargetTypeStaticFiles
   valueObject.MarketplaceCatalogItemDataField:
     properties:
       defaultValue:
@@ -1005,24 +1078,24 @@ definitions:
   valueObject.MarketplaceItemMapping:
     properties:
       matchPattern:
-        type: string
+        $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
       targetHttpResponseCode:
         type: integer
       targetType:
-        type: string
+        $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
     type: object
   valueObject.MimeType:
     enum:
-      - directory
-      - generic
+    - directory
+    - generic
     type: string
     x-enum-varnames:
-      - MimeTypeDirectory
-      - MimeTypeGeneric
+    - MimeTypeDirectory
+    - MimeTypeGeneric
   valueObject.PortBinding:
     properties:
       port:
@@ -1052,38 +1125,58 @@ definitions:
     type: object
   valueObject.ServiceNature:
     enum:
-      - solo
-      - multi
-      - custom
+    - solo
+    - multi
+    - custom
     type: string
     x-enum-varnames:
-      - ServiceNatureSolo
-      - ServiceNatureMulti
-      - ServiceNatureCustom
+    - ServiceNatureSolo
+    - ServiceNatureMulti
+    - ServiceNatureCustom
   valueObject.ServiceType:
     enum:
-      - database
-      - other
-      - runtime
-      - system
-      - webserver
+    - system
+    - database
+    - runtime
+    - webserver
+    - other
     type: string
     x-enum-varnames:
-      - ServiceTypeDatabase
-      - ServiceTypeOther
-      - ServiceTypeRuntime
-      - ServiceTypeSystem
-      - ServiceTypeWebServer
+    - ServiceTypeSystem
+    - ServiceTypeDatabase
+    - ServiceTypeRuntime
+    - ServiceTypeWebServer
+    - ServiceTypeOther
+  valueObject.UnixFileOwnership:
+    enum:
+    - nobody:nogroup
+    type: string
+    x-enum-varnames:
+    - UnixFileOwnershipAppWorkingDir
   valueObject.UnixFilePath:
     enum:
-      - /
-      - /app
-      - /app/.trash
+    - /
+    - /app
+    - /app/.trash
     type: string
     x-enum-varnames:
-      - UnixFilePathFileSystemRootDir
-      - UnixFilePathAppWorkingDir
-      - UnixFilePathTrashDir
+    - UnixFilePathFileSystemRootDir
+    - UnixFilePathAppWorkingDir
+    - UnixFilePathTrashDir
+  valueObject.VirtualHostType:
+    enum:
+    - top-level
+    - subdomain
+    - alias
+    - wildcard
+    - primary
+    type: string
+    x-enum-varnames:
+    - VirtualHostTypeTopLevel
+    - VirtualHostTypeSubdomain
+    - VirtualHostTypeAlias
+    - VirtualHostTypeWildcard
+    - VirtualHostTypePrimary
 host: localhost:1618
 info:
   contact:
@@ -1096,539 +1189,534 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.0
+  version: 0.2.1
 paths:
   /v1/account/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List accounts.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: string
-        - description: Username
-          in: query
-          name: username
-          type: string
-        - description:
-            ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service
-            is installed)
-          in: query
-          name: shouldIncludeSecureAccessPublicKeys
-          type: boolean
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: string
+      - description: Username
+        in: query
+        name: username
+        type: string
+      - description: ShouldIncludeSecureAccessPublicKeys (only works if OpenSSH service
+          is installed)
+        in: query
+        name: shouldIncludeSecureAccessPublicKeys
+        type: boolean
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadAccountsResponse"
+            $ref: '#/definitions/dto.ReadAccountsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadAccounts
       tags:
-        - account
+      - account
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new account.
       parameters:
-        - description: All props are required.
-          in: body
-          name: createAccountDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateAccount"
+      - description: All props are required.
+        in: body
+        name: createAccountDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccount'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: AccountCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateAccount
       tags:
-        - account
+      - account
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update an account.
       parameters:
-        - description: Only id or username is required.
-          in: body
-          name: updateDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdateAccount"
+      - description: Only id or username is required.
+        in: body
+        name: updateDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccount'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
-          description: "'AccountUpdated' message or new API key in string format"
+          description: '''AccountUpdated'' message or new API key in string format'
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdateAccount
       tags:
-        - account
+      - account
   /v1/account/{accountId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete an account.
       parameters:
-        - description: AccountId to delete.
-          in: path
-          name: accountId
-          required: true
-          type: string
+      - description: AccountId to delete.
+        in: path
+        name: accountId
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: AccountDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteAccount
       tags:
-        - account
+      - account
   /v1/account/secure-access-public-key/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new secure access public key.
       parameters:
-        - description:
-            "'name' is optional. Will only become required if there is
-            no name in 'content'. If the 'name' is provided, it will overwrite the
-            name in the 'content'."
-          in: body
-          name: createSecureAccessPublicKey
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateSecureAccessPublicKey"
+      - description: '''name'' is optional. Will only become required if there is
+          no name in ''content''. If the ''name'' is provided, it will overwrite the
+          name in the ''content''.'
+        in: body
+        name: createSecureAccessPublicKey
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSecureAccessPublicKey'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: SecureAccessPublicKeyCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateSecureAccessPublicKey
       tags:
-        - account
+      - account
   /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a secure access public key.
       parameters:
-        - description: SecureAccessPublicKeyId to delete.
-          in: path
-          name: secureAccessPublicKeyId
-          required: true
-          type: string
+      - description: SecureAccessPublicKeyId to delete.
+        in: path
+        name: secureAccessPublicKeyId
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: SecureAccessPublicKeyDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteSecureAccessPublicKey
       tags:
-        - account
+      - account
   /v1/auth/login/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new session token with the provided credentials.
       parameters:
-        - description: CreateSessionToken
-          in: body
-          name: createSessionToken
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateSessionToken"
+      - description: CreateSessionToken
+        in: body
+        name: createSessionToken
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSessionToken'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/entity.AccessToken"
+            $ref: '#/definitions/entity.AccessToken'
         "401":
           description: Unauthorized
           schema:
             type: string
       summary: CreateSessionTokenWithCredentials
       tags:
-        - auth
+      - auth
   /v1/cron/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List crons.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: integer
-        - description: Comment
-          in: query
-          name: comment
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Comment
+        in: query
+        name: comment
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadCronsResponse"
+            $ref: '#/definitions/dto.ReadCronsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadCrons
       tags:
-        - cron
+      - cron
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new cron.
       parameters:
-        - description: comment is optional.
-          in: body
-          name: createCronDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateCron"
+      - description: comment is optional.
+        in: body
+        name: createCronDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCron'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: CronCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateCron
       tags:
-        - cron
+      - cron
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update a cron.
       parameters:
-        - description: Only id is required.
-          in: body
-          name: updateCronDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdateCron"
+      - description: Only id is required.
+        in: body
+        name: updateCronDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCron'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: CronUpdated message
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdateCron
       tags:
-        - cron
+      - cron
   /v1/cron/{cronId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a cron.
       parameters:
-        - description: CronId to delete.
-          in: path
-          name: cronId
-          required: true
-          type: string
+      - description: CronId to delete.
+        in: path
+        name: cronId
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: CronDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteCron
       tags:
-        - cron
+      - cron
   /v1/database/{dbType}/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List databases names, users and sizes.
       parameters:
-        - description: DatabaseType (like mysql, postgres)
-          in: path
-          name: dbType
-          required: true
-          type: string
+      - description: DatabaseType (like mysql, postgres)
+        in: path
+        name: dbType
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/entity.Database"
+              $ref: '#/definitions/entity.Database'
             type: array
       security:
-        - Bearer: []
+      - Bearer: []
       summary: GetDatabases
       tags:
-        - database
+      - database
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new database.
       parameters:
-        - description: DatabaseType (like mysql, postgres)
-          in: path
-          name: dbType
-          required: true
-          type: string
-        - description: All props are required.
-          in: body
-          name: createDatabaseDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateDatabase"
+      - description: DatabaseType (like mysql, postgres)
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: All props are required.
+        in: body
+        name: createDatabaseDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDatabase'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: DatabaseCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateDatabase
       tags:
-        - database
+      - database
   /v1/database/{dbType}/{dbName}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a database.
       parameters:
-        - description: DatabaseType (like mysql, postgres)
-          in: path
-          name: dbType
-          required: true
-          type: string
-        - description: DatabaseName
-          in: path
-          name: dbName
-          required: true
-          type: string
+      - description: DatabaseType (like mysql, postgres)
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: DatabaseDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteDatabase
       tags:
-        - database
+      - database
   /v1/database/{dbType}/{dbName}/user/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new database user.
       parameters:
-        - description: DatabaseType (like mysql, postgres)
-          in: path
-          name: dbType
-          required: true
-          type: string
-        - description: DatabaseName
-          in: path
-          name: dbName
-          required: true
-          type: string
-        - description:
-            privileges is optional. When not provided, privileges will be
-            'ALL'.
-          in: body
-          name: createDatabaseUserDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateDatabaseUser"
+      - description: DatabaseType (like mysql, postgres)
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
+      - description: privileges is optional. When not provided, privileges will be
+          'ALL'.
+        in: body
+        name: createDatabaseUserDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDatabaseUser'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: DatabaseUserCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateDatabaseUser
       tags:
-        - database
+      - database
   /v1/database/{dbType}/{dbName}/user/{dbUser}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a database user.
       parameters:
-        - description: DatabaseType (like mysql, postgres)
-          in: path
-          name: dbType
-          required: true
-          type: string
-        - description: DatabaseName
-          in: path
-          name: dbName
-          required: true
-          type: string
-        - description: DatabaseUsername to delete.
-          in: path
-          name: dbUser
-          required: true
-          type: string
+      - description: DatabaseType (like mysql, postgres)
+        in: path
+        name: dbType
+        required: true
+        type: string
+      - description: DatabaseName
+        in: path
+        name: dbName
+        required: true
+        type: string
+      - description: DatabaseUsername to delete.
+        in: path
+        name: dbUser
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: DatabaseUserDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteDatabaseUser
       tags:
-        - database
+      - database
   /v1/files/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List dir/files.
       parameters:
-        - description: SourcePath
-          in: query
-          name: sourcePath
-          required: true
-          type: string
-        - description: ShouldIncludeFileTree
-          in: query
-          name: shouldIncludeFileTree
-          type: boolean
+      - description: SourcePath
+        in: query
+        name: sourcePath
+        required: true
+        type: string
+      - description: ShouldIncludeFileTree
+        in: query
+        name: shouldIncludeFileTree
+        type: boolean
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.ReadFilesResponse"
+              $ref: '#/definitions/dto.ReadFilesResponse'
             type: array
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadFiles
       tags:
-        - files
+      - files
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new dir/file.
       parameters:
-        - description:
-            permissions is optional. When not provided, permissions will
-            be '644' for files and '755' for directories.
-          in: body
-          name: createFileDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateUnixFile"
+      - description: permissions is optional. When not provided, permissions will
+          be '644' for files and '755' for directories.
+        in: body
+        name: createFileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUnixFile'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: FileCreated/DirectoryCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateNewFile
       tags:
-        - files
+      - files
     put:
       consumes:
-        - application/json
-      description:
-        Move a dir/file, update name and/or permissions (Only sourcePath
+      - application/json
+      description: Move a dir/file, update name and/or permissions (Only sourcePath
         is required).
       parameters:
-        - description: Only sourcePaths are required.
-          in: body
-          name: updateUnixFilesDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdateUnixFiles"
+      - description: Only sourcePaths are required.
+        in: body
+        name: updateUnixFilesDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUnixFiles'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: FileUpdated
@@ -1639,24 +1727,24 @@ paths:
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdateFile
       tags:
-        - files
+      - files
   /v1/files/compress/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Compress directories and files.
       parameters:
-        - description: All props are required.
-          in: body
-          name: compressFilesDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CompressUnixFiles"
+      - description: All props are required.
+        in: body
+        name: compressFilesDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CompressUnixFiles'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: FilesCompressed
@@ -1667,125 +1755,125 @@ paths:
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CompressFiles
       tags:
-        - files
+      - files
   /v1/files/copy/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Copy a dir/file.
       parameters:
-        - description: All props are required.
-          in: body
-          name: copyFileDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CopyUnixFile"
+      - description: All props are required.
+        in: body
+        name: copyFileDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CopyUnixFile'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: FileCopied
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CopyFile
       tags:
-        - files
+      - files
   /v1/files/delete/:
     put:
       consumes:
-        - application/json
+      - application/json
       description: Delete one or more directories/files.
       parameters:
-        - description: FilePaths to deleted.
-          in: body
-          name: sourcePaths
-          required: true
-          schema:
-            items:
-              type: string
-            type: array
+      - description: FilePaths to deleted.
+        in: body
+        name: sourcePaths
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: FilesDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteFiles
       tags:
-        - files
+      - files
   /v1/files/download/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Download a file.
       parameters:
-        - description: SourcePath
-          in: query
-          name: sourcePath
-          required: true
-          type: string
+      - description: SourcePath
+        in: query
+        name: sourcePath
+        required: true
+        type: string
       produces:
-        - application/octet-stream
+      - application/octet-stream
       responses:
         "200":
           description: OK
           schema:
             type: file
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DownloadFile
       tags:
-        - files
+      - files
   /v1/files/extract/:
     put:
       consumes:
-        - application/json
+      - application/json
       description: Extract directories and files.
       parameters:
-        - description: All props are required.
-          in: body
-          name: extractFilesDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.ExtractUnixFiles"
+      - description: All props are required.
+        in: body
+        name: extractFilesDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ExtractUnixFiles'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: FilesExtracted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ExtractFiles
       tags:
-        - files
+      - files
   /v1/files/upload/:
     post:
       consumes:
-        - multipart/form-data
+      - multipart/form-data
       description: Upload files.
       parameters:
-        - description: DestinationPath
-          in: formData
-          name: destinationPath
-          required: true
-          type: string
-        - description: FileToUpload
-          in: formData
-          name: file
-          required: true
-          type: file
+      - description: DestinationPath
+        in: formData
+        name: destinationPath
+        required: true
+        type: string
+      - description: FileToUpload
+        in: formData
+        name: file
+        required: true
+        type: file
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: FilesUploaded
@@ -1796,77 +1884,77 @@ paths:
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UploadFiles
       tags:
-        - files
+      - files
   /v1/marketplace/catalog/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List marketplace catalog items.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: integer
-        - description: Slug
-          in: query
-          name: slug
-          type: string
-        - description: Name
-          in: query
-          name: name
-          type: string
-        - description: Type
-          in: query
-          name: type
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Slug
+        in: query
+        name: slug
+        type: string
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadMarketplaceCatalogItemsResponse"
+            $ref: '#/definitions/dto.ReadMarketplaceCatalogItemsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadCatalog
       tags:
-        - marketplace
+      - marketplace
     post:
       consumes:
-        - application/json
+      - application/json
       description: Install a marketplace catalog item.
       parameters:
-        - description: urlPath is both the install directory and HTTP sub-directory.
-          in: body
-          name: InstallMarketplaceCatalogItem
-          required: true
-          schema:
-            $ref: "#/definitions/dto.InstallMarketplaceCatalogItem"
+      - description: urlPath is both the install directory and HTTP sub-directory.
+        in: body
+        name: InstallMarketplaceCatalogItem
+        required: true
+        schema:
+          $ref: '#/definitions/dto.InstallMarketplaceCatalogItem'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: MarketplaceCatalogItemInstallationScheduled
@@ -1874,484 +1962,480 @@ paths:
             type: object
       summary: InstallCatalogItem
       tags:
-        - marketplace
+      - marketplace
   /v1/marketplace/installed/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List marketplace installed items.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: integer
-        - description: Hostname
-          in: query
-          name: hostname
-          type: string
-        - description: Type
-          in: query
-          name: type
-          type: string
-        - description: InstallUuid
-          in: query
-          name: installationUuid
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Hostname
+        in: query
+        name: hostname
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: InstallUuid
+        in: query
+        name: installationUuid
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadMarketplaceInstalledItemsResponse"
+            $ref: '#/definitions/dto.ReadMarketplaceInstalledItemsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadInstalledItems
       tags:
-        - marketplace
+      - marketplace
   /v1/marketplace/installed/{installedId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete/Uninstall an installed item.
       parameters:
-        - description: MarketplaceInstalledItemId to delete.
-          in: path
-          name: installedId
-          required: true
-          type: integer
-        - description: Should uninstall all services not being used? Default is 'true'.
-          in: query
-          name: shouldUninstallServices
-          type: boolean
+      - description: MarketplaceInstalledItemId to delete.
+        in: path
+        name: installedId
+        required: true
+        type: integer
+      - description: Should uninstall all services not being used? Default is 'true'.
+        in: query
+        name: shouldUninstallServices
+        type: boolean
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: MarketplaceInstalledItemDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteInstalledItem
       tags:
-        - marketplace
+      - marketplace
   /v1/o11y/overview/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Show system information and resource usage.
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/entity.O11yOverview"
+            $ref: '#/definitions/entity.O11yOverview'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: O11yOverview
       tags:
-        - o11y
+      - o11y
   /v1/runtime/php/{hostname}/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Get php version, modules and settings for a hostname.
       parameters:
-        - description: Hostname
-          in: path
-          name: hostname
-          required: true
-          type: string
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/entity.PhpConfigs"
+            $ref: '#/definitions/entity.PhpConfigs'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadPhpConfigs
       tags:
-        - runtime
+      - runtime
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update php version, modules and settings for a hostname.
       parameters:
-        - description: Hostname
-          in: path
-          name: hostname
-          required: true
-          type: string
-        - description: modules and settings are optional.
-          in: body
-          name: updatePhpConfigsDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdatePhpConfigs"
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      - description: modules and settings are optional.
+        in: body
+        name: updatePhpConfigsDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePhpConfigs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: PhpConfigsUpdated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdatePhpConfigs
       tags:
-        - runtime
+      - runtime
   /v1/scheduled-task/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List scheduled tasks.
       parameters:
-        - description: TaskId
-          in: query
-          name: taskId
-          type: string
-        - description: TaskName
-          in: query
-          name: taskName
-          type: string
-        - description: TaskStatus
-          in: query
-          name: taskStatus
-          type: string
-        - description: TaskTags (semicolon separated)
-          in: query
-          name: taskTags
-          type: string
-        - description: StartedBeforeAt
-          in: query
-          name: startedBeforeAt
-          type: string
-        - description: StartedAfterAt
-          in: query
-          name: startedAfterAt
-          type: string
-        - description: FinishedBeforeAt
-          in: query
-          name: finishedBeforeAt
-          type: string
-        - description: FinishedAfterAt
-          in: query
-          name: finishedAfterAt
-          type: string
-        - description: CreatedBeforeAt
-          in: query
-          name: createdBeforeAt
-          type: string
-        - description: CreatedAfterAt
-          in: query
-          name: createdAfterAt
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: TaskId
+        in: query
+        name: taskId
+        type: string
+      - description: TaskName
+        in: query
+        name: taskName
+        type: string
+      - description: TaskStatus
+        in: query
+        name: taskStatus
+        type: string
+      - description: TaskTags (semicolon separated)
+        in: query
+        name: taskTags
+        type: string
+      - description: StartedBeforeAt
+        in: query
+        name: startedBeforeAt
+        type: string
+      - description: StartedAfterAt
+        in: query
+        name: startedAfterAt
+        type: string
+      - description: FinishedBeforeAt
+        in: query
+        name: finishedBeforeAt
+        type: string
+      - description: FinishedAfterAt
+        in: query
+        name: finishedAfterAt
+        type: string
+      - description: CreatedBeforeAt
+        in: query
+        name: createdBeforeAt
+        type: string
+      - description: CreatedAfterAt
+        in: query
+        name: createdAfterAt
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadScheduledTasksResponse"
+            $ref: '#/definitions/dto.ReadScheduledTasksResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadScheduledTasks
       tags:
-        - scheduled-task
+      - scheduled-task
     put:
       consumes:
-        - application/json
+      - application/json
       description: Reschedule a task or change its status.
       parameters:
-        - description: UpdateScheduledTask (Only id is required.)
-          in: body
-          name: updateScheduledTaskDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdateScheduledTask"
+      - description: UpdateScheduledTask (Only id is required.)
+        in: body
+        name: updateScheduledTaskDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateScheduledTask'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: ScheduledTaskUpdated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdateScheduledTask
       tags:
-        - scheduled-task
+      - scheduled-task
   /v1/services/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List installed services and their status.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: integer
-        - description: Name
-          in: query
-          name: name
-          type: string
-        - description: Nature
-          in: query
-          name: nature
-          type: string
-        - description: Type
-          in: query
-          name: type
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadInstalledServicesItemsResponse"
+            $ref: '#/definitions/dto.ReadInstalledServicesItemsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadInstalledItems
       tags:
-        - services
+      - services
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update service details.
       parameters:
-        - description:
-            Only name is required.<br />Solo services can only change status.<br
-            />status may be 'running', 'stopped', 'uninstalled' or 'restarting'.
-          in: body
-          name: updateServiceDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UpdateService"
+      - description: Only name is required.<br />Solo services can only change status.<br
+          />status may be 'running', 'stopped', 'uninstalled' or 'restarting'.
+        in: body
+        name: updateServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateService'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: ServiceUpdated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: UpdateService
       tags:
-        - services
+      - services
   /v1/services/{svcName}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete/Uninstall a service.
       parameters:
-        - description: ServiceName to delete
-          in: path
-          name: svcName
-          required: true
-          type: string
+      - description: ServiceName to delete
+        in: path
+        name: svcName
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: ServiceDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteService
       tags:
-        - services
+      - services
   /v1/services/custom/:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Install a new custom service.
       parameters:
-        - description:
-            name, type and startCmd is required.<br />If version is not provided,
-            it will be 'lts'.<br />If portBindings is not provided, it wil be default
-            service port bindings.<br />If autoCreateMapping is not provided, it will
-            be 'true'.
-          in: body
-          name: createCustomServiceDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateCustomService"
+      - description: name, type and startCmd is required.<br />If version is not provided,
+          it will be 'lts'.<br />If portBindings is not provided, it wil be default
+          service port bindings.<br />If autoCreateMapping is not provided, it will
+          be 'true'.
+        in: body
+        name: createCustomServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCustomService'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: CustomServiceCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateCustomService
       tags:
-        - services
+      - services
   /v1/services/installables/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List installable services.
       parameters:
-        - description: Id
-          in: query
-          name: id
-          type: integer
-        - description: Name
-          in: query
-          name: name
-          type: string
-        - description: Nature
-          in: query
-          name: nature
-          type: string
-        - description: Type
-          in: query
-          name: type
-          type: string
-        - description: PageNumber (Pagination)
-          in: query
-          name: pageNumber
-          type: integer
-        - description: ItemsPerPage (Pagination)
-          in: query
-          name: itemsPerPage
-          type: integer
-        - description: SortBy (Pagination)
-          in: query
-          name: sortBy
-          type: string
-        - description: SortDirection (Pagination)
-          in: query
-          name: sortDirection
-          type: string
-        - description: LastSeenId (Pagination)
-          in: query
-          name: lastSeenId
-          type: string
+      - description: Id
+        in: query
+        name: id
+        type: integer
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Nature
+        in: query
+        name: nature
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.ReadInstallableServicesItemsResponse"
+            $ref: '#/definitions/dto.ReadInstallableServicesItemsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadInstallableItems
       tags:
-        - services
+      - services
     post:
       consumes:
-        - application/json
+      - application/json
       description: Install a new installable service.
       parameters:
-        - description:
-            Only name is required.<br />If version is not provided, it will
-            be 'lts'.<br />If portBindings is not provided, it wil be default service
-            port bindings.<br />If autoCreateMapping is not provided, it will be 'true'.
-          in: body
-          name: createInstallableServiceDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateInstallableService"
+      - description: Only name is required.<br />If version is not provided, it will
+          be 'lts'.<br />If portBindings is not provided, it wil be default service
+          port bindings.<br />If autoCreateMapping is not provided, it will be 'true'.
+        in: body
+        name: createInstallableServiceDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInstallableService'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: InstallableServiceCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateInstallableService
       tags:
-        - services
+      - services
   /v1/setup/:
     post:
       consumes:
-        - application/json
-      description:
-        Creates the first Infinite OS account without requiring authentication.<br
+      - application/json
+      description: Creates the first Infinite OS account without requiring authentication.<br
         />This can only be used when the Infinite OS interface is accessed for the
         first time with no accounts created.
       parameters:
-        - description: CreateFirstAccount
-          in: body
-          name: createFirstAccount
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateAccount"
+      - description: CreateFirstAccount
+        in: body
+        name: createFirstAccount
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccount'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: FirstAccountCreated
@@ -2359,241 +2443,331 @@ paths:
             type: object
       summary: SetupInfiniteOs
       tags:
-        - setup
+      - setup
   /v1/ssl/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List ssl pairs.
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/entity.SslPair"
+              $ref: '#/definitions/entity.SslPair'
             type: array
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadSslPairs
       tags:
-        - ssl
+      - ssl
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new ssl pair.
       parameters:
-        - description:
-            All props are required.<br />virtualHosts may be string or []string.
-            Alias is not allowed.<br />certificate is a string field, i.e. ignore the
-            structure shown.<br />certificate and key must be base64 encoded.
-          in: body
-          name: createSslPairDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateSslPair"
+      - description: All props are required.<br />virtualHosts may be string or []string.
+          Alias is not allowed.<br />certificate is a string field, i.e. ignore the
+          structure shown.<br />certificate and key must be base64 encoded.
+        in: body
+        name: createSslPairDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSslPair'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: SslPairCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateSslPair
       tags:
-        - ssl
+      - ssl
   /v1/ssl/{sslPairId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a ssl pair.
       parameters:
-        - description: SslPairId to delete.
-          in: path
-          name: sslPairId
-          required: true
-          type: string
+      - description: SslPairId to delete.
+        in: path
+        name: sslPairId
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: SslPairDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteSslPair
       tags:
-        - ssl
-  /v1/ssl/vhost/:
-    put:
-      consumes:
-        - application/json
-      description: Delete vhosts from a ssl pair.
-      parameters:
-        - description: All props are required.
-          in: body
-          name: deleteSslPairVhostsDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.DeleteSslPairVhosts"
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: SslPairVhostsRemoved
-          schema:
-            type: object
-      security:
-        - Bearer: []
-      summary: DeleteSslPairVhosts
-      tags:
-        - ssl
-  /v1/vhosts/:
+      - ssl
+  /v1/vhost/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List virtual hosts.
+      parameters:
+      - description: Hostname
+        in: query
+        name: hostname
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: RootDirectory
+        in: query
+        name: rootDirectory
+        type: string
+      - description: ParentHostname
+        in: query
+        name: parentHostname
+        type: string
+      - description: WithMappings
+        in: query
+        name: withMappings
+        type: boolean
+      - description: CreatedBeforeAt
+        in: query
+        name: createdBeforeAt
+        type: string
+      - description: CreatedAfterAt
+        in: query
+        name: createdAfterAt
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: "#/definitions/entity.VirtualHost"
-            type: array
+            $ref: '#/definitions/dto.ReadVirtualHostsResponse'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadVirtualHosts
       tags:
-        - vhosts
+      - vhosts
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new vhost.
       parameters:
-        - description:
-            Only hostname is required.<br />type may be 'top-level', 'subdomain',
-            'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
-            is 'alias', 'parentHostname' will be required.
-          in: body
-          name: createVirtualHostDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateVirtualHost"
+      - description: Only hostname is required.<br />type may be 'top-level', 'subdomain',
+          'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type
+          is 'alias', 'parentHostname' will be required.
+        in: body
+        name: createVirtualHostDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVirtualHost'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: VirtualHostCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateVirtualHost
       tags:
-        - vhosts
-  /v1/vhosts/{hostname}/:
+      - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a vhost.
+      parameters:
+      - description: Only hostname is required.
+        in: body
+        name: updateVirtualHostDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateVirtualHost'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: VirtualHostUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateVirtualHost
+      tags:
+      - vhosts
+  /v1/vhost/{hostname}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a vhost.
       parameters:
-        - description: Hostname to delete
-          in: path
-          name: hostname
-          required: true
-          type: string
+      - description: Hostname to delete
+        in: path
+        name: hostname
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: VirtualHostDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteVirtualHost
       tags:
-        - vhosts
-  /v1/vhosts/mapping/:
+      - vhosts
+  /v1/vhost/mapping/:
     get:
       consumes:
-        - application/json
+      - application/json
       description: List virtual hosts with mappings.
+      parameters:
+      - description: Hostname
+        in: query
+        name: hostname
+        type: string
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: RootDirectory
+        in: query
+        name: rootDirectory
+        type: string
+      - description: ParentHostname
+        in: query
+        name: parentHostname
+        type: string
+      - description: WithMappings
+        in: query
+        name: withMappings
+        type: boolean
+      - description: CreatedBeforeAt
+        in: query
+        name: createdBeforeAt
+        type: string
+      - description: CreatedAfterAt
+        in: query
+        name: createdAfterAt
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: "#/definitions/dto.VirtualHostWithMappings"
-            type: array
+            $ref: '#/definitions/dto.VirtualHostWithMappings'
       security:
-        - Bearer: []
+      - Bearer: []
       summary: ReadVirtualHostsWithMappings
       tags:
-        - vhosts
+      - vhosts
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new vhost mapping.
       parameters:
-        - description:
-            hostname, path and targetType are required.<br />matchPattern
-            may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided,
-            it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code',
-            'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode
-            may be provided. If is not provided, targetHttpResponseCode will be '200'.
-            If targetType is 'response-code', targetHttpResponseCode may be provided.
-            If is not provided, targetValue will be required. If both were provided,
-            targetValue will have priority.<br />targetValue must have the same value
-            as the targetType requires.
-          in: body
-          name: createMappingDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateMapping"
+      - description: hostname, path and targetType are required.<br />matchPattern
+          may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided,
+          it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code',
+          'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode
+          may be provided. If is not provided, targetHttpResponseCode will be '200'.
+          If targetType is 'response-code', targetHttpResponseCode may be provided.
+          If is not provided, targetValue will be required. If both were provided,
+          targetValue will have priority.<br />targetValue must have the same value
+          as the targetType requires.
+        in: body
+        name: createMappingDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMapping'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: MappingCreated
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: CreateVirtualHostMapping
       tags:
-        - vhosts
-  /v1/vhosts/mapping/{mappingId}/:
+      - vhosts
+  /v1/vhost/mapping/{mappingId}/:
     delete:
       consumes:
-        - application/json
+      - application/json
       description: Delete a vhost mapping.
       parameters:
-        - description: MappingId to delete.
-          in: path
-          name: mappingId
-          required: true
-          type: integer
+      - description: MappingId to delete.
+        in: path
+        name: mappingId
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: MappingDeleted
           schema:
             type: object
       security:
-        - Bearer: []
+      - Bearer: []
       summary: DeleteVirtualHostMapping
       tags:
-        - vhosts
+      - vhosts
 securityDefinitions:
   Bearer:
     description: Type "Bearer" + JWT token or API key.

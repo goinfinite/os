@@ -4,8 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"log"
-	"slices"
+	"log/slog"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -16,161 +15,135 @@ import (
 
 type SslQueryRepo struct{}
 
-type SslCertificates struct {
-	MainCertificate     entity.SslCertificate
-	ChainedCertificates []entity.SslCertificate
-}
-
 func (repo SslQueryRepo) sslCertificatesFactory(
-	sslCertContent valueObject.SslCertificateContent,
-) (SslCertificates, error) {
-	var certificates SslCertificates
+	sslCertsContent valueObject.SslCertificateContent,
+) (entity.SslCertificate, []entity.SslCertificate, error) {
+	mainCert := entity.SslCertificate{}
+	chainedCerts := []entity.SslCertificate{}
 
-	sslCertContentSlice := strings.SplitAfter(
-		sslCertContent.String(),
-		"-----END CERTIFICATE-----\n",
+	rawSslCertsContent := strings.SplitAfter(
+		sslCertsContent.String(), "-----END CERTIFICATE-----\n",
 	)
-	for _, sslCertContentStr := range sslCertContentSlice {
-		if len(sslCertContentStr) == 0 {
+	for _, rawSslCertContent := range rawSslCertsContent {
+		if len(rawSslCertContent) == 0 {
 			continue
 		}
 
-		certificateContent, err := valueObject.NewSslCertificateContent(sslCertContentStr)
+		certificateContent, err := valueObject.NewSslCertificateContent(rawSslCertContent)
 		if err != nil {
-			return certificates, err
+			return mainCert, chainedCerts, err
 		}
 
 		certificate, err := entity.NewSslCertificate(certificateContent)
 		if err != nil {
-			return certificates, err
+			return mainCert, chainedCerts, err
 		}
 
 		if certificate.IsIntermediary {
-			certificates.ChainedCertificates = append(certificates.ChainedCertificates, certificate)
-
+			chainedCerts = append(chainedCerts, certificate)
 			continue
 		}
 
-		certificates.MainCertificate = certificate
+		mainCert = certificate
 	}
 
-	return certificates, nil
+	if mainCert.CertificateContent.String() == "" {
+		return mainCert, chainedCerts, errors.New("MainCertNotFound")
+	}
+
+	return mainCert, chainedCerts, nil
 }
 
 func (repo SslQueryRepo) sslPairFactory(
 	crtFilePath valueObject.UnixFilePath,
-) (entity.SslPair, error) {
-	var ssl entity.SslPair
-
+) (sslPairEntity entity.SslPair, err error) {
 	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
-	crtKeyContentStr, err := infraHelper.GetFileContent(crtKeyFilePath)
+	crtKeyContentStr, err := infraHelper.ReadFileContent(crtKeyFilePath)
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertKeyFile: " + err.Error())
+		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
 	}
 	privateKey, err := valueObject.NewSslPrivateKey(crtKeyContentStr)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
-	crtFileContentStr, err := infraHelper.GetFileContent(crtFilePath.String())
+	crtFileContentStr, err := infraHelper.ReadFileContent(crtFilePath.String())
 	if err != nil {
-		return ssl, errors.New("FailedToOpenCertFile: " + err.Error())
+		return sslPairEntity, errors.New("OpenCertFileError: " + err.Error())
 	}
 	certificate, err := valueObject.NewSslCertificateContent(crtFileContentStr)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
-	sslCertificates, err := repo.sslCertificatesFactory(certificate)
+	mainCert, chainedCerts, err := repo.sslCertificatesFactory(certificate)
 	if err != nil {
-		return ssl, errors.New("FailedToGetMainAndChainedCerts: " + err.Error())
+		return sslPairEntity, errors.New("CertsFactoryError: " + err.Error())
 	}
-
-	mainCertificate := sslCertificates.MainCertificate
-	chainCertificates := sslCertificates.ChainedCertificates
 
 	var chainCertificatesContent []valueObject.SslCertificateContent
-	for _, sslChainCertificate := range chainCertificates {
+	for _, sslChainCertificate := range chainedCerts {
 		chainCertificatesContent = append(
-			chainCertificatesContent,
-			sslChainCertificate.CertificateContent,
+			chainCertificatesContent, sslChainCertificate.CertificateContent,
 		)
 	}
 
-	hashId, err := valueObject.NewSslPairIdFromSslPairContent(
-		mainCertificate.CertificateContent,
-		chainCertificatesContent,
-		privateKey,
+	sslPairHashId, err := valueObject.NewSslPairIdFromSslPairContent(
+		mainCert.CertificateContent, chainCertificatesContent, privateKey,
 	)
 	if err != nil {
-		return ssl, err
+		return sslPairEntity, err
 	}
 
 	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	vhost, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	mainVirtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
-		return ssl, err
+		if mainCert.CommonName == nil {
+			return sslPairEntity, errors.New("MainVirtualHostHostnameError: " + err.Error())
+		}
+
+		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
+		if err != nil {
+			return sslPairEntity, errors.New("MainVirtualHostHostnameFallbackError: " + err.Error())
+		}
+
+		mainVirtualHostHostname = mainCertSslHostname
 	}
 
 	return entity.NewSslPair(
-		hashId,
-		[]valueObject.Fqdn{vhost},
-		mainCertificate,
-		privateKey,
-		chainCertificates,
+		sslPairHashId, mainVirtualHostHostname, mainCert, privateKey, chainedCerts,
 	), nil
 }
 
 func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
-	sslPairs := []entity.SslPair{}
+	sslPairEntities := []entity.SslPair{}
 
-	crtFilePathsStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCertFilePaths, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil {
-		return sslPairs, errors.New("FailedToGetCertFiles: " + err.Error())
+		return sslPairEntities, errors.New("FindCertFilesError: " + err.Error())
 	}
 
-	crtFilePaths := strings.Split(crtFilePathsStr, "\n")
-
-	sslPairIdsVhostsNamesMap := map[valueObject.SslPairId][]valueObject.Fqdn{}
-	for _, crtFilePathStr := range crtFilePaths {
-		crtFilePath, err := valueObject.NewUnixFilePath(crtFilePathStr)
+	for _, rawCertFilePath := range strings.Split(rawCertFilePaths, "\n") {
+		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
 		if err != nil {
-			log.Printf("%s: %s", err.Error(), crtFilePathStr)
+			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
 			continue
 		}
 
-		sslPair, err := repo.sslPairFactory(crtFilePath)
+		sslPairEntity, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			log.Printf("FailedToReadSslPair (%s): %s", crtFilePath, err.Error())
+			slog.Debug("SslPairFactoryError", slog.String("crtFilePath", crtFilePath.String()))
 			continue
 		}
 
-		pairMainVhostName := sslPair.VirtualHostsHostnames[0]
-
-		_, pairIdAlreadyExists := sslPairIdsVhostsNamesMap[sslPair.Id]
-		if pairIdAlreadyExists {
-			sslPairIdsVhostsNamesMap[sslPair.Id] = append(
-				sslPairIdsVhostsNamesMap[sslPair.Id],
-				pairMainVhostName,
-			)
-			continue
-		}
-
-		sslPairIdsVhostsNamesMap[sslPair.Id] = []valueObject.Fqdn{pairMainVhostName}
-		sslPairs = append(sslPairs, sslPair)
+		sslPairEntities = append(sslPairEntities, sslPairEntity)
 	}
 
-	for sslPairIndex, sslPair := range sslPairs {
-		correctSslPairsVhostsNames := sslPairIdsVhostsNamesMap[sslPair.Id]
-		sslPair.VirtualHostsHostnames = correctSslPairsVhostsNames
-		sslPairs[sslPairIndex] = sslPair
-	}
-
-	return sslPairs, nil
+	return sslPairEntities, nil
 }
 
 func (repo SslQueryRepo) ReadById(
@@ -187,29 +160,6 @@ func (repo SslQueryRepo) ReadById(
 
 	for _, ssl := range sslPairs {
 		if ssl.Id.String() != sslPairId.String() {
-			continue
-		}
-
-		return ssl, nil
-	}
-
-	return entity.SslPair{}, errors.New("SslPairNotFound")
-}
-
-func (repo SslQueryRepo) ReadByVhostHostname(
-	sslPairVhostHostname valueObject.Fqdn,
-) (entity.SslPair, error) {
-	sslPairs, err := repo.Read()
-	if err != nil {
-		return entity.SslPair{}, err
-	}
-
-	if len(sslPairs) < 1 {
-		return entity.SslPair{}, errors.New("SslPairNotFound")
-	}
-
-	for _, ssl := range sslPairs {
-		if !slices.Contains(ssl.VirtualHostsHostnames, sslPairVhostHostname) {
 			continue
 		}
 

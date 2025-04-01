@@ -1,7 +1,7 @@
 package dbModel
 
 type ActivityRecordAffectedResource struct {
-	ID                       uint64 `gorm:"primarykey"`
+	ID                       uint64 `gorm:"primaryKey"`
 	SystemResourceIdentifier string `gorm:"not null"`
 	ActivityRecordID         uint64 `gorm:"not null"`
 }

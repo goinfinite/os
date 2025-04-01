@@ -1,6 +1,19 @@
 # Changelog
 
 ```log
+0.2.1 - 2025/04/01
+refactor: vhost and mapping infra implementation
+refactor: ssl watchdog
+refactor: delete service mappings
+feat: add mapping hostname and path to service mapping auto create
+feat: add support for wildcard vhosts
+feat: add custom response code to url mappings
+feat: add marketplace item reference to mappings
+fix: aliases addition replacing parent ssl
+fix: remove mappings and ssl files when vhost is deleted
+fix: move vhost aliases to parent row
+fix: remove vhost removal from ssl pair
+
 0.2.0 - 2025/03/25
 refactor(front): file manager with HTMX+Alpine.js
 fix: missing service name on mapping targetValue input

@@ -16,7 +16,7 @@ func TestCronQueryRepo(t *testing.T) {
 	schedule, _ := valueObject.NewCronSchedule("* * * * *")
 	command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 	comment, _ := valueObject.NewCronComment("Test cron job")
-	ipAddress := valueObject.NewLocalhostIpAddress()
+	ipAddress := valueObject.IpAddressSystem
 	operatorAccountId, _ := valueObject.NewAccountId(0)
 
 	createDto := dto.NewCreateCron(

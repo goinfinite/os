@@ -14,7 +14,7 @@ const (
 )
 
 // @title			OsApi
-// @version			0.2.0
+// @version			0.2.1
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 

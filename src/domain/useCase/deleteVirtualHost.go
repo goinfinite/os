@@ -14,17 +14,28 @@ func DeleteVirtualHost(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteVirtualHost,
 ) error {
-	isPrimaryHostname := deleteDto.Hostname.String() == deleteDto.PrimaryVirtualHost.String()
-	if isPrimaryHostname {
+	isPrimary := true
+	primaryVirtualHost, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		IsPrimary: &isPrimary,
+	})
+	if err != nil {
+		slog.Error("ReadPrimaryVirtualHostError", slog.String("err", err.Error()))
+		return errors.New("ReadPrimaryVirtualHostError")
+	}
+
+	if primaryVirtualHost.Hostname == deleteDto.Hostname {
 		return errors.New("PrimaryVirtualHostCannotBeDeleted")
 	}
 
-	vhost, err := vhostQueryRepo.ReadByHostname(deleteDto.Hostname)
+	targetVirtualHost, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &deleteDto.Hostname,
+	})
 	if err != nil {
-		return errors.New("VirtualHostNotFound")
+		slog.Error("ReadVirtualHostEntityError", slog.String("err", err.Error()))
+		return errors.New("ReadVirtualHostEntityError")
 	}
 
-	err = vhostCmdRepo.Delete(vhost)
+	err = vhostCmdRepo.Delete(targetVirtualHost.Hostname)
 	if err != nil {
 		slog.Error("DeleteVirtualHostError", slog.String("err", err.Error()))
 		return errors.New("DeleteVirtualHostInfraError")

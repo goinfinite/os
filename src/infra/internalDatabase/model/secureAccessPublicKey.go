@@ -8,7 +8,7 @@ import (
 )
 
 type SecureAccessPublicKey struct {
-	ID        uint16 `gorm:"primarykey"`
+	ID        uint16 `gorm:"primaryKey"`
 	AccountID uint64 `gorm:"not null"`
 	Name      string `gorm:"not null"`
 	Content   string `gorm:"not null"`

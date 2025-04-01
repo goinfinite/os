@@ -27,7 +27,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		primaryVhost, err := infraHelper.GetPrimaryVirtualHost()
+		primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
 		if err != nil {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}

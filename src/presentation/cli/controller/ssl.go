@@ -51,7 +51,7 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
 			}
-			certContentStr, err := infraHelper.GetFileContent(certFilePath.String())
+			certContentStr, err := infraHelper.ReadFileContent(certFilePath.String())
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
@@ -61,7 +61,7 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
 			}
-			privateKeyContentStr, err := infraHelper.GetFileContent(
+			privateKeyContentStr, err := infraHelper.ReadFileContent(
 				privateKeyFilePath.String(),
 			)
 			if err != nil {
@@ -103,33 +103,5 @@ func (controller *SslController) Delete() *cobra.Command {
 
 	cmd.Flags().StringVarP(&sslPairIdStr, "pairId", "i", "", "SslPairId")
 	cmd.MarkFlagRequired("pairId")
-	return cmd
-}
-
-func (controller *SslController) DeleteVhosts() *cobra.Command {
-	var sslPairIdStr string
-	var virtualHostsSlice []string
-
-	cmd := &cobra.Command{
-		Use:   "delete-vhosts",
-		Short: "RemoveSslPairVhosts",
-		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
-				"id":           sslPairIdStr,
-				"virtualHosts": virtualHostsSlice,
-			}
-
-			cliHelper.ServiceResponseWrapper(
-				controller.sslService.DeleteVhosts(requestBody),
-			)
-		},
-	}
-
-	cmd.Flags().StringVarP(&sslPairIdStr, "id", "i", "", "SslPairId")
-	cmd.MarkFlagRequired("sslPairId")
-	cmd.Flags().StringSliceVarP(
-		&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts",
-	)
-	cmd.MarkFlagRequired("virtualHosts")
 	return cmd
 }

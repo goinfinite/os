@@ -11,6 +11,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
@@ -162,33 +163,6 @@ func (controller *SslController) Delete(c echo.Context) error {
 	)
 }
 
-// DeleteSslPairVhosts    	 godoc
-// @Summary      DeleteSslPairVhosts
-// @Description  Delete vhosts from a ssl pair.
-// @Tags         ssl
-// @Accept       json
-// @Produce      json
-// @Security     Bearer
-// @Param        deleteSslPairVhostsDto 	  body    dto.DeleteSslPairVhosts  true  "All props are required."
-// @Success      200 {object} object{} "SslPairVhostsRemoved"
-// @Router       /v1/ssl/vhost/ [put]
-func (controller *SslController) DeleteVhosts(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
-	}
-
-	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	requestInputData["virtualHosts"] = rawVhosts
-
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.DeleteVhosts(requestInputData),
-	)
-}
-
 func (controller *SslController) SslCertificateWatchdog() {
 	validationIntervalMinutes := 60 / useCase.SslValidationsPerHour
 
@@ -196,15 +170,16 @@ func (controller *SslController) SslCertificateWatchdog() {
 	timer := time.NewTicker(taskInterval)
 	defer timer.Stop()
 
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
 	sslQueryRepo := sslInfra.SslQueryRepo{}
 	sslCmdRepo := sslInfra.NewSslCmdRepo(
 		controller.persistentDbSvc, controller.transientDbSvc,
 	)
+	sslWatchdogUseCase := useCase.NewSslCertificateWatchdog(
+		vhostQueryRepo, sslQueryRepo, sslCmdRepo,
+	)
 
 	for range timer.C {
-		useCase.SslCertificateWatchdog(
-			sslQueryRepo, sslCmdRepo, service.LocalOperatorAccountId,
-			service.LocalOperatorIpAddress,
-		)
+		sslWatchdogUseCase.Execute()
 	}
 }

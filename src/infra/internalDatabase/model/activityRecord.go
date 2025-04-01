@@ -8,7 +8,7 @@ import (
 )
 
 type ActivityRecord struct {
-	ID                uint64 `gorm:"primarykey"`
+	ID                uint64 `gorm:"primaryKey"`
 	RecordLevel       string `gorm:"not null"`
 	RecordCode        string `gorm:"not null"`
 	AffectedResources []ActivityRecordAffectedResource

@@ -94,7 +94,7 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
 
 	err = useCase.CreateSslPair(
-		service.sslCmdRepo, vhostQueryRepo, service.activityRecordCmdRepo, createDto,
+		vhostQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -142,56 +142,4 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 	}
 
 	return NewServiceOutput(Success, "SslPairDeleted")
-}
-
-func (service *SslService) DeleteVhosts(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"id", "virtualHosts"}
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	pairId, err := valueObject.NewSslPairId(input["id"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	vhosts := []valueObject.Fqdn{}
-	for _, rawVhost := range input["virtualHosts"].([]string) {
-		vhost, err := valueObject.NewFqdn(rawVhost)
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-		vhosts = append(vhosts, vhost)
-	}
-
-	operatorAccountId := LocalOperatorAccountId
-	if input["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if input["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-	}
-
-	deleteDto := dto.NewDeleteSslPairVhosts(
-		pairId, vhosts, operatorAccountId, operatorIpAddress,
-	)
-
-	err = useCase.DeleteSslPairVhosts(
-		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
-		deleteDto,
-	)
-	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
-	}
-
-	return NewServiceOutput(Success, "SslPairVhostsDeleted")
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
@@ -21,8 +20,7 @@ func requiredDataFieldsInspector(
 			continue
 		}
 
-		dataFieldNameStr := dataField.Name.String()
-		requiredDataFieldNames = append(requiredDataFieldNames, dataFieldNameStr)
+		requiredDataFieldNames = append(requiredDataFieldNames, dataField.Name.String())
 	}
 
 	if len(requiredDataFieldNames) == 0 {
@@ -31,8 +29,7 @@ func requiredDataFieldsInspector(
 
 	receivedDataFieldNames := map[string]interface{}{}
 	for _, dataField := range receivedDataFields {
-		dataFieldNameStr := dataField.Name.String()
-		receivedDataFieldNames[dataFieldNameStr] = nil
+		receivedDataFieldNames[dataField.Name.String()] = nil
 	}
 
 	missingDataFieldNames := []string{}
@@ -43,46 +40,38 @@ func requiredDataFieldsInspector(
 		missingDataFieldNames = append(missingDataFieldNames, requiredDataFieldName)
 	}
 
-	if len(missingDataFieldNames) == 0 {
-		return nil
+	if len(missingDataFieldNames) > 0 {
+		return errors.New(
+			"MissingRequiredDataFields: " + strings.Join(missingDataFieldNames, ","),
+		)
 	}
 
-	return errors.New(
-		"MissingRequiredDataFields: " + strings.Join(missingDataFieldNames, ","),
-	)
-}
-
-func MarketplaceCatalogItemLookup(
-	marketplaceQueryRepo repository.MarketplaceQueryRepo,
-	itemId *valueObject.MarketplaceItemId,
-	itemSlug *valueObject.MarketplaceItemSlug,
-) (itemEntity entity.MarketplaceCatalogItem, err error) {
-	if itemId == nil && itemSlug == nil {
-		return itemEntity, errors.New("ItemIdOrSlugRequired")
-	}
-
-	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
-		MarketplaceCatalogItemId:   itemId,
-		MarketplaceCatalogItemSlug: itemSlug,
-	}
-	return marketplaceQueryRepo.ReadFirstCatalogItem(readCatalogItemRequestDto)
+	return nil
 }
 
 func InstallMarketplaceCatalogItem(
+	vhostQueryRepo repository.VirtualHostQueryRepo,
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,
 	marketplaceCmdRepo repository.MarketplaceCmdRepo,
-	vhostQueryRepo repository.VirtualHostQueryRepo,
-	vhostCmdRepo repository.VirtualHostCmdRepo,
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	installDto dto.InstallMarketplaceCatalogItem,
 ) error {
-	_, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
-	if err != nil {
-		return errors.New("VhostNotFound")
+	if installDto.Id == nil && installDto.Slug == nil {
+		return errors.New("ItemIdOrSlugRequired")
 	}
 
-	catalogItem, err := MarketplaceCatalogItemLookup(
-		marketplaceQueryRepo, installDto.Id, installDto.Slug,
+	_, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &installDto.Hostname,
+	})
+	if err != nil {
+		return errors.New("VirtualHostNotFound")
+	}
+
+	catalogItem, err := marketplaceQueryRepo.ReadFirstCatalogItem(
+		dto.ReadMarketplaceCatalogItemsRequest{
+			MarketplaceCatalogItemId:   installDto.Id,
+			MarketplaceCatalogItemSlug: installDto.Slug,
+		},
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")

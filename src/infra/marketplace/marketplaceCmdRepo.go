@@ -20,7 +20,6 @@ import (
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	mappingInfra "github.com/goinfinite/os/src/infra/vhost/mapping"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +28,7 @@ const installTempDirPath = "/app/marketplace-tmp/"
 type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	marketplaceQueryRepo *MarketplaceQueryRepo
-	mappingCmdRepo       *mappingInfra.MappingCmdRepo
+	mappingCmdRepo       *vhostInfra.MappingCmdRepo
 }
 
 func NewMarketplaceCmdRepo(
@@ -38,7 +37,7 @@ func NewMarketplaceCmdRepo(
 	return &MarketplaceCmdRepo{
 		persistentDbSvc:      persistentDbSvc,
 		marketplaceQueryRepo: NewMarketplaceQueryRepo(persistentDbSvc),
-		mappingCmdRepo:       mappingInfra.NewMappingCmdRepo(persistentDbSvc),
+		mappingCmdRepo:       vhostInfra.NewMappingCmdRepo(persistentDbSvc),
 	}
 }
 
@@ -71,13 +70,12 @@ func (repo *MarketplaceCmdRepo) installServices(
 			continue
 		}
 
-		createServiceDto := dto.NewCreateInstallableService(
-			serviceWithVersion.Name, []valueObject.ServiceEnv{},
-			[]valueObject.PortBinding{}, serviceWithVersion.Version,
-			nil, nil, nil, nil, nil, nil, nil, operatorAccountId, operatorIpAddress,
-		)
-
-		_, err = serviceCmdRepo.CreateInstallable(createServiceDto)
+		_, err = serviceCmdRepo.CreateInstallable(dto.CreateInstallableService{
+			Name:              serviceWithVersion.Name,
+			Version:           serviceWithVersion.Version,
+			OperatorAccountId: operatorAccountId,
+			OperatorIpAddress: operatorIpAddress,
+		})
 		if err != nil {
 			return errors.New("InstallRequiredServiceError: " + err.Error())
 		}
@@ -318,14 +316,17 @@ func (repo *MarketplaceCmdRepo) createMappings(
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) (mappingIds []valueObject.MappingId, err error) {
-	mappingQueryRepo := mappingInfra.NewMappingQueryRepo(repo.persistentDbSvc)
-	currentMappings, err := mappingQueryRepo.ReadByHostname(hostname)
+	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(repo.persistentDbSvc)
+	mappingsReadResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
+		Pagination: dto.PaginationUnpaginated,
+		Hostname:   &hostname,
+	})
 	if err != nil {
 		return mappingIds, err
 	}
 
 	currentMappingsContentHashMap := map[string]entity.Mapping{}
-	for _, currentMapping := range currentMappings {
+	for _, currentMapping := range mappingsReadResponse.Mappings {
 		contentHash := infraHelper.GenStrongShortHash(
 			currentMapping.Hostname.String() +
 				currentMapping.Path.String() +
@@ -381,7 +382,7 @@ func (repo *MarketplaceCmdRepo) persistInstalledItem(
 
 	mappingModels := []dbModel.Mapping{}
 	for _, mappingId := range mappingsId {
-		mappingModel := dbModel.Mapping{ID: uint(mappingId.Uint64())}
+		mappingModel := dbModel.Mapping{ID: mappingId.Uint64()}
 		mappingModels = append(mappingModels, mappingModel)
 	}
 
@@ -422,7 +423,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	vhost, err := vhostQueryRepo.ReadByHostname(installDto.Hostname)
+	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &installDto.Hostname,
+	})
 	if err != nil {
 		return err
 	}
@@ -440,7 +443,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath = *installDto.UrlPath
 	}
 
-	installDirStr := vhost.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
+	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
 	installDir, err := valueObject.NewUnixFilePath(installDirStr)
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
@@ -505,7 +508,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("UpdateFilesPrivilegesError: " + err.Error())
 	}
 
-	isRootDirectory := installDir.String() == vhost.RootDirectory.String()
+	isRootDirectory := installDir.String() == vhostEntity.RootDirectory.String()
 	if !isRootDirectory {
 		catalogItem.Mappings = repo.updateMappingsBase(
 			catalogItem.Mappings, installUrlPath,
@@ -520,10 +523,27 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	return repo.persistInstalledItem(
+	err = repo.persistInstalledItem(
 		catalogItem, installDto.Hostname, installUrlPath, installDir, installUuid,
 		mappingIds,
 	)
+	if err != nil {
+		return errors.New("PersistInstalledItemError: " + err.Error())
+	}
+
+	for _, mappingId := range mappingIds {
+		err = repo.mappingCmdRepo.Update(mappingId, catalogItem.Name)
+		if err != nil {
+			slog.Debug(
+				"UpdateMappingItemNameError",
+				slog.String("mappingId", mappingId.String()),
+				slog.String("err", err.Error()),
+			)
+			continue
+		}
+	}
+
+	return nil
 }
 
 func (repo *MarketplaceCmdRepo) moveSelectedFiles(

@@ -2,6 +2,7 @@ package dbModel
 
 import (
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -11,25 +12,29 @@ import (
 )
 
 type VirtualHost struct {
-	Hostname       string `gorm:"primarykey;not null"`
-	Type           string `gorm:"not null"`
-	RootDirectory  string `gorm:"not null"`
-	ParentHostname *string
-	Mappings       []Mapping
-	CreatedAt      time.Time `gorm:"not null"`
-	UpdatedAt      time.Time `gorm:"not null"`
+	Hostname       string        `gorm:"primaryKey"`
+	Type           string        `gorm:"not null"`
+	RootDirectory  string        `gorm:"not null"`
+	ParentHostname *string       `gorm:"index"`
+	IsPrimary      bool          `gorm:"not null;default:false"`
+	IsWildcard     bool          `gorm:"not null;default:false"`
+	Aliases        []VirtualHost `gorm:"foreignKey:ParentHostname"`
+	CreatedAt      time.Time     `gorm:"not null"`
+	UpdatedAt      time.Time     `gorm:"not null"`
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
-	primaryVhostName, err := infraHelper.GetPrimaryVirtualHost()
+	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
-		return entries, errors.New("GetPrimaryVirtualHostError: " + err.Error())
+		return entries, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
 	}
 
 	primaryEntry := VirtualHost{
-		Hostname:      primaryVhostName.String(),
-		Type:          "primary",
+		Hostname:      primaryHostname.String(),
+		Type:          valueObject.VirtualHostTypeTopLevel.String(),
 		RootDirectory: infraEnvs.PrimaryPublicDir,
+		IsPrimary:     true,
+		IsWildcard:    false,
 	}
 
 	return []interface{}{primaryEntry}, nil
@@ -60,35 +65,19 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		parentHostnamePtr = &parentHostname
 	}
 
+	aliasesHostnames := []valueObject.Fqdn{}
+	for _, alias := range model.Aliases {
+		aliasHostname, err := valueObject.NewFqdn(alias.Hostname)
+		if err != nil {
+			slog.Debug("AliasHostnameError", slog.String("alias", alias.Hostname))
+			continue
+		}
+		aliasesHostnames = append(aliasesHostnames, aliasHostname)
+	}
+
 	return entity.NewVirtualHost(
-		hostname,
-		vhostType,
-		rootDir,
-		parentHostnamePtr,
+		hostname, vhostType, rootDir, parentHostnamePtr, model.IsPrimary,
+		model.IsWildcard, aliasesHostnames,
+		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 	), nil
-}
-
-func (VirtualHost) ToModel(
-	entity entity.VirtualHost,
-	mappings []entity.Mapping,
-) VirtualHost {
-	var parentHostnamePtr *string
-	if entity.ParentHostname != nil {
-		parentHostnameStr := entity.ParentHostname.String()
-		parentHostnamePtr = &parentHostnameStr
-	}
-
-	mappingsModel := []Mapping{}
-	for _, mapping := range mappings {
-		mappingModel := Mapping{}.ToModel(mapping)
-		mappingsModel = append(mappingsModel, mappingModel)
-	}
-
-	return VirtualHost{
-		Hostname:       entity.Hostname.String(),
-		Type:           entity.Type.String(),
-		RootDirectory:  entity.RootDirectory.String(),
-		ParentHostname: parentHostnamePtr,
-		Mappings:       mappingsModel,
-	}
 }

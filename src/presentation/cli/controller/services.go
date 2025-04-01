@@ -193,7 +193,7 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var nameStr, versionStr, startupFileStr, workingDirStr, autoStartStr,
-		autoRestartStr, autoCreateMappingStr string
+		autoRestartStr, autoCreateMappingStr, mappingHostname, mappingPath string
 	var envsSlice, portBindingsSlice []string
 	var timeoutStartSecsInt, maxStartRetriesInt int
 
@@ -213,31 +213,31 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 					envsSlice, valueObject.NewServiceEnv,
 				)
 			}
-
 			if versionStr != "" {
 				requestBody["version"] = versionStr
 			}
-
 			if startupFileStr != "" {
 				requestBody["startupFile"] = startupFileStr
 			}
-
 			if workingDirStr != "" {
 				requestBody["workingDir"] = workingDirStr
 			}
-
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
 				)
 			}
-
 			if timeoutStartSecsInt != 0 {
 				requestBody["timeoutStartSecs"] = uint(timeoutStartSecsInt)
 			}
-
 			if maxStartRetriesInt != 0 {
 				requestBody["maxStartRetries"] = uint(maxStartRetriesInt)
+			}
+			if mappingHostname != "" {
+				requestBody["mappingHostname"] = mappingHostname
+			}
+			if mappingPath != "" {
+				requestBody["mappingPath"] = mappingPath
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -273,12 +273,19 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	cmd.Flags().StringVarP(
 		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
 	)
+	cmd.Flags().StringVarP(
+		&mappingHostname, "mapping-hostname", "H", "", "MappingHostname (for AutoCreateMapping)",
+	)
+	cmd.Flags().StringVarP(
+		&mappingPath, "mapping-path", "P", "", "MappingPath (for AutoCreateMapping)",
+	)
+
 	return cmd
 }
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var nameStr, typeStr, startCmdStr, versionStr, autoStartStr, autoRestartStr,
-		autoCreateMappingStr string
+		autoCreateMappingStr, mappingHostname, mappingPath string
 	var envsSlice, portBindingsSlice []string
 	var timeoutStartSecsInt, maxStartRetriesInt int
 
@@ -300,23 +307,25 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 					envsSlice, valueObject.NewServiceEnv,
 				)
 			}
-
 			if versionStr != "" {
 				requestBody["version"] = versionStr
 			}
-
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
 				)
 			}
-
 			if timeoutStartSecsInt != 0 {
 				requestBody["timeoutStartSecs"] = uint(timeoutStartSecsInt)
 			}
-
 			if maxStartRetriesInt != 0 {
 				requestBody["maxStartRetries"] = uint(maxStartRetriesInt)
+			}
+			if mappingHostname != "" {
+				requestBody["mappingHostname"] = mappingHostname
+			}
+			if mappingPath != "" {
+				requestBody["mappingPath"] = mappingPath
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -355,6 +364,12 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	)
 	cmd.Flags().StringVarP(
 		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
+	)
+	cmd.Flags().StringVarP(
+		&mappingHostname, "mapping-hostname", "H", "", "MappingHostname (for AutoCreateMapping)",
+	)
+	cmd.Flags().StringVarP(
+		&mappingPath, "mapping-path", "P", "", "MappingPath (for AutoCreateMapping)",
 	)
 	return cmd
 }

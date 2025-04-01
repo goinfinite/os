@@ -9,7 +9,7 @@ import (
 )
 
 type Account struct {
-	ID                     uint64 `gorm:"primarykey"`
+	ID                     uint64 `gorm:"primaryKey"`
 	GroupId                uint64 `gorm:"not null"`
 	Username               string `gorm:"not null"`
 	KeyHash                *string

@@ -11,12 +11,14 @@ import (
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type MarketplacePresenter struct {
 	marketplaceService *service.MarketplaceService
-	virtualHostService *service.VirtualHostService
+	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
+	trailDbSvc         *internalDbInfra.TrailDatabaseService
 }
 
 func NewMarketplacePresenter(
@@ -25,28 +27,9 @@ func NewMarketplacePresenter(
 ) *MarketplacePresenter {
 	return &MarketplacePresenter{
 		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
+		persistentDbSvc:    persistentDbSvc,
+		trailDbSvc:         trailDbSvc,
 	}
-}
-
-func (presenter *MarketplacePresenter) ReadVhostsHostnames() ([]string, error) {
-	vhostHostnames := []string{}
-
-	responseOutput := presenter.virtualHostService.Read()
-	if responseOutput.Status != service.Success {
-		return vhostHostnames, errors.New("FailedToReadVirtualHosts")
-	}
-
-	vhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
-	if !assertOk {
-		return vhostHostnames, errors.New("FailedToReadVirtualHosts")
-	}
-
-	for _, vhost := range vhosts {
-		vhostHostnames = append(vhostHostnames, vhost.Hostname.String())
-	}
-
-	return vhostHostnames, nil
 }
 
 func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
@@ -125,9 +108,11 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		}
 	}
 
-	vhostsHostnames, err := presenter.ReadVhostsHostnames()
+	vhostsHostnames, err := presenterHelper.ReadVirtualHostHostnames(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("ReadVirtualHostsHostnames", slog.String("err", err.Error()))
 		return nil
 	}
 

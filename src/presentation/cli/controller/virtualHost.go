@@ -21,26 +21,79 @@ func NewVirtualHostController(
 }
 
 func (controller *VirtualHostController) Read() *cobra.Command {
+	var hostnameStr, typeStr, rootDirectoryStr, parentHostnameStr, withMappingsBoolStr string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "ReadVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.ServiceResponseWrapper(controller.virtualHostService.Read())
+			requestBody := map[string]interface{}{}
+
+			if hostnameStr != "" {
+				requestBody["hostname"] = hostnameStr
+			}
+			if typeStr != "" {
+				requestBody["type"] = typeStr
+			}
+			if rootDirectoryStr != "" {
+				requestBody["rootDirectory"] = rootDirectoryStr
+			}
+			if parentHostnameStr != "" {
+				requestBody["parentHostname"] = parentHostnameStr
+			}
+			if withMappingsBoolStr != "" {
+				requestBody["withMappings"] = withMappingsBoolStr
+			}
+
+			requestBody = cliHelper.PaginationParser(
+				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
+				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
+			)
+
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.Read(requestBody),
+			)
 		},
 	}
 
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "VirtualHostType")
+	cmd.Flags().StringVarP(&rootDirectoryStr, "root", "r", "", "RootDirectory")
+	cmd.Flags().StringVarP(&parentHostnameStr, "parent", "p", "", "ParentHostname")
+	cmd.Flags().StringVarP(
+		&withMappingsBoolStr, "with-mappings", "w", "false", "WithMappings (true|false)",
+	)
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "o", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "j", 0, "ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "x", "", "SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 	return cmd
 }
 
 func (controller *VirtualHostController) Create() *cobra.Command {
-	var hostnameStr, typeStr, parentHostnameStr string
+	var hostnameStr, typeStr, parentHostnameStr, isWildcardBoolStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"hostname": hostnameStr,
+				"hostname":   hostnameStr,
+				"isWildcard": isWildcardBoolStr,
 			}
 
 			if typeStr != "" {
@@ -63,6 +116,35 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 		&typeStr, "type", "t", "", "VirtualHostType (top-level|subdomain|alias)",
 	)
 	cmd.Flags().StringVarP(&parentHostnameStr, "parent", "p", "", "ParentHostname")
+	cmd.Flags().StringVarP(
+		&isWildcardBoolStr, "is-wildcard", "w", "false", "IsWildcard (true|false)",
+	)
+	return cmd
+}
+
+func (controller *VirtualHostController) Update() *cobra.Command {
+	var hostnameStr, isWildcardBoolStr string
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "UpdateVirtualHost",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"hostname":   hostnameStr,
+				"isWildcard": isWildcardBoolStr,
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.Update(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(
+		&isWildcardBoolStr, "is-wildcard", "w", "false", "IsWildcard (true|false)",
+	)
 	return cmd
 }
 
@@ -89,16 +171,62 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 }
 
 func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
+	var hostnameStr, typeStr, rootDirectoryStr, parentHostnameStr string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "ReadVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"withMappings": true,
+			}
+
+			if hostnameStr != "" {
+				requestBody["hostname"] = hostnameStr
+			}
+			if typeStr != "" {
+				requestBody["type"] = typeStr
+			}
+			if rootDirectoryStr != "" {
+				requestBody["rootDirectory"] = rootDirectoryStr
+			}
+			if parentHostnameStr != "" {
+				requestBody["parentHostname"] = parentHostnameStr
+			}
+
+			requestBody = cliHelper.PaginationParser(
+				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
+				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
+			)
+
 			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.ReadWithMappings(),
+				controller.virtualHostService.Read(requestBody),
 			)
 		},
 	}
 
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "VirtualHostType")
+	cmd.Flags().StringVarP(&rootDirectoryStr, "root", "r", "", "RootDirectory")
+	cmd.Flags().StringVarP(&parentHostnameStr, "parent", "p", "", "ParentHostname")
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "o", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "j", 0, "ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "x", "", "SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 	return cmd
 }
 

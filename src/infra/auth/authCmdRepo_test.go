@@ -16,7 +16,7 @@ func TestAuthCmdRepo(t *testing.T) {
 		token, err := authCmdRepo.CreateSessionToken(
 			valueObject.AccountId(1000),
 			valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
-			valueObject.NewLocalhostIpAddress(),
+			valueObject.IpAddressSystem,
 		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %s", err.Error())

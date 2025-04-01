@@ -14,7 +14,7 @@ import (
 )
 
 var LocalOperatorAccountId, _ = valueObject.NewAccountId(0)
-var LocalOperatorIpAddress = valueObject.NewLocalhostIpAddress()
+var LocalOperatorIpAddress = valueObject.IpAddressSystem
 
 type AccountService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService

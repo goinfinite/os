@@ -34,17 +34,17 @@ func UpdatePhpConfigs(
 	activityCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdatePhpConfigs,
 ) error {
-	isPhpVersionInstalled := isPhpVersionInstalled(
-		runtimeQueryRepo, updateDto.PhpVersion,
-	)
+	isPhpVersionInstalled := isPhpVersionInstalled(runtimeQueryRepo, updateDto.PhpVersion)
 	if !isPhpVersionInstalled {
 		return errors.New("PhpVersionNotInstalled")
 	}
 
-	_, err := vhostQueryRepo.ReadByHostname(updateDto.Hostname)
+	_, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &updateDto.Hostname,
+	})
 	if err != nil {
-		slog.Error("HostnameNotFound", slog.String("err", err.Error()))
-		return errors.New("HostnameNotFound")
+		slog.Error("VirtualHostNotFound", slog.String("err", err.Error()))
+		return errors.New("VirtualHostNotFound")
 	}
 
 	err = runtimeCmdRepo.UpdatePhpVersion(updateDto.Hostname, updateDto.PhpVersion)

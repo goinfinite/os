@@ -27,7 +27,7 @@ func NewMappingsPresenter(
 	}
 }
 
-func (presenter *MappingsPresenter) getVhostsHostnames(
+func (presenter *MappingsPresenter) extractVirtualHostHostnames(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 ) []string {
 	vhostsHostnames := []string{}
@@ -42,14 +42,17 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	virtualHostService := service.NewVirtualHostService(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readMappingsResponseOutput := virtualHostService.ReadWithMappings()
-	if readMappingsResponseOutput.Status != service.Success {
-		slog.Debug("ReadWithMappingsFailed", slog.Any("output", readMappingsResponseOutput))
+	readVirtualHostsServiceOutput := virtualHostService.ReadWithMappings(map[string]interface{}{
+		"itemsPerPage": 1000,
+	})
+	if readVirtualHostsServiceOutput.Status != service.Success {
+		slog.Debug("ReadMappingsServiceOutputBadStatus")
 		return nil
 	}
 
-	vhostsWithMappings, assertOk := readMappingsResponseOutput.Body.([]dto.VirtualHostWithMappings)
+	readVirtualHostsResponse, assertOk := readVirtualHostsServiceOutput.Body.(dto.ReadVirtualHostsResponse)
 	if !assertOk {
+		slog.Debug("ReadMappingsServiceOutputBodyAssertionFailed")
 		return nil
 	}
 
@@ -70,7 +73,8 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	}
 
 	pageContent := page.MappingsIndex(
-		vhostsWithMappings, presenter.getVhostsHostnames(vhostsWithMappings),
+		readVirtualHostsResponse.VirtualHostWithMappings,
+		presenter.extractVirtualHostHostnames(readVirtualHostsResponse.VirtualHostWithMappings),
 		installedServicesResponseDto.InstalledServices,
 	)
 	return uiHelper.Render(c, pageContent, http.StatusOK)

@@ -2051,45 +2051,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ssl/vhost/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Delete vhosts from a ssl pair.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ssl"
-                ],
-                "summary": "DeleteSslPairVhosts",
-                "parameters": [
-                    {
-                        "description": "All props are required.",
-                        "name": "deleteSslPairVhostsDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteSslPairVhosts"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "SslPairVhostsRemoved",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
@@ -2127,7 +2088,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/": {
+        "/v1/vhost/": {
             "get": {
                 "security": [
                     {
@@ -2145,14 +2106,122 @@ const docTemplate = `{
                     "vhosts"
                 ],
                 "summary": "ReadVirtualHosts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "RootDirectory",
+                        "name": "rootDirectory",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ParentHostname",
+                        "name": "parentHostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "WithMappings",
+                        "name": "withMappings",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedBeforeAt",
+                        "name": "createdBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedAfterAt",
+                        "name": "createdAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.VirtualHost"
-                            }
+                            "$ref": "#/definitions/dto.ReadVirtualHostsResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a vhost.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateVirtualHost",
+                "parameters": [
+                    {
+                        "description": "Only hostname is required.",
+                        "name": "updateVirtualHostDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateVirtualHost"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "VirtualHostUpdated",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -2195,7 +2264,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/mapping/": {
+        "/v1/vhost/mapping/": {
             "get": {
                 "security": [
                     {
@@ -2213,14 +2282,85 @@ const docTemplate = `{
                     "vhosts"
                 ],
                 "summary": "ReadVirtualHostsWithMappings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "RootDirectory",
+                        "name": "rootDirectory",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ParentHostname",
+                        "name": "parentHostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "WithMappings",
+                        "name": "withMappings",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedBeforeAt",
+                        "name": "createdBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CreatedAfterAt",
+                        "name": "createdAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.VirtualHostWithMappings"
-                            }
+                            "$ref": "#/definitions/dto.VirtualHostWithMappings"
                         }
                     }
                 }
@@ -2263,7 +2403,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/mapping/{mappingId}/": {
+        "/v1/vhost/mapping/{mappingId}/": {
             "delete": {
                 "security": [
                     {
@@ -2300,7 +2440,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/vhosts/{hostname}/": {
+        "/v1/vhost/{hostname}/": {
             "delete": {
                 "security": [
                     {
@@ -2428,6 +2568,12 @@ const docTemplate = `{
                 "logOutputPath": {
                     "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
+                "mappingHostname": {
+                    "type": "string"
+                },
+                "mappingPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2533,6 +2679,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "mappingHostname": {
+                    "type": "string"
+                },
+                "mappingPath": {
+                    "type": "string"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2566,7 +2718,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "matchPattern": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MappingMatchPattern"
                 },
                 "path": {
                     "type": "string"
@@ -2575,7 +2727,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "targetType": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MappingTargetType"
                 },
                 "targetValue": {
                     "type": "string"
@@ -2644,25 +2796,14 @@ const docTemplate = `{
                 "hostname": {
                     "type": "string"
                 },
+                "isWildcard": {
+                    "type": "boolean"
+                },
                 "parentHostname": {
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DeleteSslPairVhosts": {
-            "type": "object",
-            "properties": {
-                "sslPairId": {
-                    "type": "string"
-                },
-                "virtualHostsHostnames": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/valueObject.VirtualHostType"
                 }
             }
         },
@@ -2832,7 +2973,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "fileTree": {
-                    "$ref": "#/definitions/dto.UnixFileTree"
+                    "$ref": "#/definitions/dto.UnixFileBranch"
                 },
                 "files": {
                     "type": "array",
@@ -2918,13 +3059,33 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UnixFileTree": {
+        "dto.ReadVirtualHostsResponse": {
             "type": "object",
             "properties": {
-                "children": {
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                },
+                "virtualHostWithMappings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UnixFileTree"
+                        "$ref": "#/definitions/dto.VirtualHostWithMappings"
+                    }
+                },
+                "virtualHosts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.VirtualHost"
+                    }
+                }
+            }
+        },
+        "dto.UnixFileBranch": {
+            "type": "object",
+            "properties": {
+                "branches": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/dto.UnixFileBranch"
                     }
                 },
                 "mimeType": {
@@ -3111,7 +3272,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ownership": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.UnixFileOwnership"
                 },
                 "permissions": {
                     "type": "string"
@@ -3127,11 +3288,37 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.VirtualHostWithMappings": {
+        "dto.UpdateVirtualHost": {
             "type": "object",
             "properties": {
                 "hostname": {
                     "type": "string"
+                },
+                "isWildcard": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.VirtualHostWithMappings": {
+            "type": "object",
+            "properties": {
+                "aliasesHostnames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "isPrimary": {
+                    "type": "boolean"
+                },
+                "isWildcard": {
+                    "type": "boolean"
                 },
                 "mappings": {
                     "type": "array",
@@ -3146,7 +3333,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.VirtualHostType"
                 }
             }
         },
@@ -3389,11 +3576,20 @@ const docTemplate = `{
         "entity.Mapping": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
-                "matchPattern": {
+                "marketplaceInstalledItemId": {
+                    "type": "integer"
+                },
+                "marketplaceInstalledItemName": {
                     "type": "string"
+                },
+                "matchPattern": {
+                    "$ref": "#/definitions/valueObject.MappingMatchPattern"
                 },
                 "path": {
                     "type": "string"
@@ -3402,10 +3598,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "targetType": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MappingTargetType"
                 },
                 "targetValue": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
                 }
             }
         },
@@ -3720,14 +3919,11 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "sslPairId": {
+                "mainVirtualHostHostname": {
                     "type": "string"
                 },
-                "virtualHostsHostnames": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "sslPairId": {
+                    "type": "string"
                 }
             }
         },
@@ -3775,8 +3971,23 @@ const docTemplate = `{
         "entity.VirtualHost": {
             "type": "object",
             "properties": {
+                "aliasesHostnames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
                 "hostname": {
                     "type": "string"
+                },
+                "isPrimary": {
+                    "type": "boolean"
+                },
+                "isWildcard": {
+                    "type": "boolean"
                 },
                 "parentHostname": {
                     "type": "string"
@@ -3785,7 +3996,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/valueObject.UnixFilePath"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.VirtualHostType"
                 }
             }
         },
@@ -3832,6 +4043,38 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.MappingMatchPattern": {
+            "type": "string",
+            "enum": [
+                "begins-with",
+                "contains",
+                "equals",
+                "ends-with"
+            ],
+            "x-enum-varnames": [
+                "MappingMatchPatternBeginsWith",
+                "MappingMatchPatternContains",
+                "MappingMatchPatternEquals",
+                "MappingMatchPatternEndsWith"
+            ]
+        },
+        "valueObject.MappingTargetType": {
+            "type": "string",
+            "enum": [
+                "url",
+                "service",
+                "response-code",
+                "inline-html",
+                "static-files"
+            ],
+            "x-enum-varnames": [
+                "MappingTargetTypeUrl",
+                "MappingTargetTypeService",
+                "MappingTargetTypeResponseCode",
+                "MappingTargetTypeInlineHtml",
+                "MappingTargetTypeStaticFiles"
+            ]
+        },
         "valueObject.MarketplaceCatalogItemDataField": {
             "type": "object",
             "properties": {
@@ -3876,7 +4119,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "matchPattern": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MappingMatchPattern"
                 },
                 "path": {
                     "type": "string"
@@ -3885,7 +4128,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "targetType": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.MappingTargetType"
                 },
                 "targetValue": {
                     "type": "string"
@@ -3961,18 +4204,27 @@ const docTemplate = `{
         "valueObject.ServiceType": {
             "type": "string",
             "enum": [
-                "database",
-                "other",
-                "runtime",
                 "system",
-                "webserver"
+                "database",
+                "runtime",
+                "webserver",
+                "other"
             ],
             "x-enum-varnames": [
-                "ServiceTypeDatabase",
-                "ServiceTypeOther",
-                "ServiceTypeRuntime",
                 "ServiceTypeSystem",
-                "ServiceTypeWebServer"
+                "ServiceTypeDatabase",
+                "ServiceTypeRuntime",
+                "ServiceTypeWebServer",
+                "ServiceTypeOther"
+            ]
+        },
+        "valueObject.UnixFileOwnership": {
+            "type": "string",
+            "enum": [
+                "nobody:nogroup"
+            ],
+            "x-enum-varnames": [
+                "UnixFileOwnershipAppWorkingDir"
             ]
         },
         "valueObject.UnixFilePath": {
@@ -3986,6 +4238,23 @@ const docTemplate = `{
                 "UnixFilePathFileSystemRootDir",
                 "UnixFilePathAppWorkingDir",
                 "UnixFilePathTrashDir"
+            ]
+        },
+        "valueObject.VirtualHostType": {
+            "type": "string",
+            "enum": [
+                "top-level",
+                "subdomain",
+                "alias",
+                "wildcard",
+                "primary"
+            ],
+            "x-enum-varnames": [
+                "VirtualHostTypeTopLevel",
+                "VirtualHostTypeSubdomain",
+                "VirtualHostTypeAlias",
+                "VirtualHostTypeWildcard",
+                "VirtualHostTypePrimary"
             ]
         }
     },
@@ -4001,7 +4270,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.0",
+	Version:          "0.2.1",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

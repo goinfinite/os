@@ -8,7 +8,7 @@ import (
 )
 
 type ScheduledTask struct {
-	ID          uint64 `gorm:"primarykey"`
+	ID          uint64 `gorm:"primaryKey"`
 	Name        string `gorm:"not null"`
 	Status      string `gorm:"not null,index"`
 	Command     string `gorm:"not null"`

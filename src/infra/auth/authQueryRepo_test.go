@@ -19,7 +19,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	accountId, _ := valueObject.NewAccountId(1001)
 	username, _ := valueObject.NewUsername("authDummyUser")
 	password, _ := valueObject.NewPassword("q1w2e3r4t5y6")
-	localIpAddress := valueObject.NewLocalhostIpAddress()
+	localIpAddress := valueObject.IpAddressSystem
 	createDto := dto.NewCreateAccount(
 		username, password, false, accountId, localIpAddress,
 	)
@@ -53,7 +53,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		token, _ := authCmdRepo.CreateSessionToken(
 			valueObject.AccountId(1000),
 			valueObject.NewUnixTimeAfterNow(3*time.Hour),
-			valueObject.NewLocalhostIpAddress(),
+			valueObject.IpAddressSystem,
 		)
 
 		_, err := authQueryRepo.ReadAccessTokenDetails(token.TokenStr)

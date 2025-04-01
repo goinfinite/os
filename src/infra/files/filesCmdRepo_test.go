@@ -17,7 +17,7 @@ func TestFilesCmdRepo(t *testing.T) {
 	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
 	directoryDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
 	operatorAccountId, _ := valueObject.NewAccountId(0)
-	ipAddress := valueObject.NewLocalhostIpAddress()
+	ipAddress := valueObject.IpAddressSystem
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")

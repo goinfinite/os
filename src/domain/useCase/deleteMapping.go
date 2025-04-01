@@ -14,7 +14,9 @@ func DeleteMapping(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteMapping,
 ) error {
-	_, err := mappingQueryRepo.ReadById(deleteDto.MappingId)
+	_, err := mappingQueryRepo.ReadFirst(dto.ReadMappingsRequest{
+		MappingId: &deleteDto.MappingId,
+	})
 	if err != nil {
 		return errors.New("MappingNotFound")
 	}

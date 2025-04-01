@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -13,12 +12,14 @@ import (
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type RuntimesPresenter struct {
-	runtimeService     *service.RuntimeService
-	virtualHostService *service.VirtualHostService
+	runtimeService  *service.RuntimeService
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRuntimesPresenter(
@@ -26,32 +27,10 @@ func NewRuntimesPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *RuntimesPresenter {
 	return &RuntimesPresenter{
-		runtimeService:     service.NewRuntimeService(persistentDbSvc, trailDbSvc),
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
+		runtimeService:  service.NewRuntimeService(persistentDbSvc, trailDbSvc),
+		persistentDbSvc: persistentDbSvc,
+		trailDbSvc:      trailDbSvc,
 	}
-}
-
-func (presenter *RuntimesPresenter) readVhostsHostnames() ([]string, error) {
-	vhostsHostnames := []string{}
-
-	responseOutput := presenter.virtualHostService.Read()
-	if responseOutput.Status != service.Success {
-		responseBodyErrorStr := responseOutput.Body.(string)
-		return vhostsHostnames, errors.New(responseBodyErrorStr)
-	}
-
-	existentVhosts, assertOk := responseOutput.Body.([]entity.VirtualHost)
-	if !assertOk {
-		return vhostsHostnames, errors.New(
-			"InvalidVirtualHostsHostnamesStructure",
-		)
-	}
-
-	for _, existentVhost := range existentVhosts {
-		vhostsHostnames = append(vhostsHostnames, existentVhost.Hostname.String())
-	}
-
-	return vhostsHostnames, nil
 }
 
 func (presenter *RuntimesPresenter) runtimeOverviewFactory(
@@ -101,7 +80,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	primaryVhostHostname, err := infraHelper.GetPrimaryVirtualHost()
+	primaryVhostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		slog.Error("ReadPrimaryVirtualHost", slog.String("err", err.Error()))
 		return nil
@@ -123,7 +102,9 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	vhostsHostnames, err := presenter.readVhostsHostnames()
+	vhostsHostnames, err := presenterHelper.ReadVirtualHostHostnames(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
 	if err != nil {
 		slog.Error("ReadVirtualHostsHostnames", slog.String("err", err.Error()))
 		return nil

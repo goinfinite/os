@@ -16,7 +16,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
 	runtimeCmdRepo := NewRuntimeCmdRepo(persistentDbSvc)
 
-	primaryVhost, _ := infraHelper.GetPrimaryVirtualHost()
+	primaryVhost, _ := infraHelper.ReadPrimaryVirtualHostHostname()
 	phpVersion, _ := valueObject.NewPhpVersion("8.1")
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {

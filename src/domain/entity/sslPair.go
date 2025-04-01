@@ -9,26 +9,26 @@ import (
 const EarlyRenewalThresholdHours int64 = 48
 
 type SslPair struct {
-	Id                    valueObject.SslPairId     `json:"sslPairId"`
-	VirtualHostsHostnames []valueObject.Fqdn        `json:"virtualHostsHostnames"`
-	Certificate           SslCertificate            `json:"certificate"`
-	Key                   valueObject.SslPrivateKey `json:"key"`
-	ChainCertificates     []SslCertificate          `json:"chainCertificates"`
+	Id                      valueObject.SslPairId     `json:"sslPairId"`
+	MainVirtualHostHostname valueObject.Fqdn          `json:"mainVirtualHostHostname"`
+	Certificate             SslCertificate            `json:"certificate"`
+	Key                     valueObject.SslPrivateKey `json:"key"`
+	ChainCertificates       []SslCertificate          `json:"chainCertificates"`
 }
 
 func NewSslPair(
 	sslPairId valueObject.SslPairId,
-	virtualHostsHostnames []valueObject.Fqdn,
+	mainVirtualHostHostname valueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,
 	chainCertificates []SslCertificate,
 ) SslPair {
 	return SslPair{
-		Id:                    sslPairId,
-		VirtualHostsHostnames: virtualHostsHostnames,
-		Certificate:           certificate,
-		Key:                   key,
-		ChainCertificates:     chainCertificates,
+		Id:                      sslPairId,
+		MainVirtualHostHostname: mainVirtualHostHostname,
+		Certificate:             certificate,
+		Key:                     key,
+		ChainCertificates:       chainCertificates,
 	}
 }
 
