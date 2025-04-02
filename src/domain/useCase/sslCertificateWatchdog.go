@@ -118,6 +118,17 @@ func (uc *SslCertificateWatchdog) Execute() {
 		}
 
 		if len(missingAltNames) > 0 {
+			if !shouldRenewCert {
+				slog.Debug(
+					"SslPairPubliclyTrustedButMissingAltNames",
+					slog.String("method", "SslCertificateWatchdog"),
+					slog.String("hostname", vhostPair.VirtualHost.Hostname.String()),
+					slog.String("sslPairId", vhostPair.SslPair.Id.String()),
+					slog.String("sslPairHostname", vhostPair.SslPair.MainVirtualHostHostname.String()),
+					slog.Any("currentAltNames", vhostPair.SslPair.Certificate.AltNames),
+					slog.Any("missingAltNames", missingAltNames),
+				)
+			}
 			shouldRenewCert = true
 		}
 
