@@ -241,45 +241,10 @@ func (repo *SslCmdRepo) Create(
 		return sslPairId, errors.New("EmptyVirtualHosts")
 	}
 
-	firstVirtualHostHostname := createSslPair.VirtualHostsHostnames[0]
-	firstVirtualHostHostnameStr := firstVirtualHostHostname.String()
-	firstVhostCertFilePath := infraEnvs.PkiConfDir + "/" + firstVirtualHostHostnameStr + ".crt"
-	firstVhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + firstVirtualHostHostnameStr + ".key"
-
 	for _, vhostHostname := range createSslPair.VirtualHostsHostnames {
-		vhostStr := vhostHostname.String()
-		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostStr + ".key"
-
-		shouldBeSymlink := vhostStr != firstVirtualHostHostnameStr
-		if shouldBeSymlink {
-			shouldOverwrite := true
-			err := infraHelper.CreateSymlink(
-				firstVhostCertFilePath, vhostCertFilePath, shouldOverwrite,
-			)
-			if err != nil {
-				slog.Debug(
-					"CreateSslCertSymlinkError",
-					slog.String("hostname", vhostStr),
-					slog.String("error", err.Error()),
-				)
-				continue
-			}
-
-			err = infraHelper.CreateSymlink(
-				firstVhostCertKeyFilePath, vhostCertKeyFilePath, shouldOverwrite,
-			)
-			if err != nil {
-				slog.Debug(
-					"CreateSslKeySymlinkError",
-					slog.String("hostname", vhostStr),
-					slog.String("error", err.Error()),
-				)
-				continue
-			}
-
-			continue
-		}
+		vhostHostnameStr := vhostHostname.String()
+		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
+		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
 
 		shouldOverwrite := true
 		err := infraHelper.UpdateFile(
@@ -288,18 +253,25 @@ func (repo *SslCmdRepo) Create(
 			shouldOverwrite,
 		)
 		if err != nil {
-			return sslPairId, err
+			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}
 
 		err = infraHelper.UpdateFile(
 			vhostCertKeyFilePath, createSslPair.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
-			return sslPairId, err
+			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())
 		}
 	}
 
-	return sslPairId, nil
+	sslPairEntity, err := repo.sslQueryRepo.ReadByHostname(
+		createSslPair.VirtualHostsHostnames[0],
+	)
+	if err != nil {
+		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
+	}
+
+	return sslPairEntity.Id, nil
 }
 
 func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) error {
