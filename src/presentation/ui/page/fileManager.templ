@@ -21,7 +21,7 @@ templ FileManagerIndex(
 	<!-- FileManager HTML -->
 	<div x-data="fileManager">
 		@componentStructural.PageTitle("File Manager", "", "ph-files")
-		<div id="file-manager-content" class="mt-3">
+		<div id="file-manager-content">
 			<div id="file-explorer" class="rounded-lg bg-neutral-950/30 p-3">
 				@FileExplorerToolbar()
 				<div class="mt-6 flex h-[calc(60svh)] flex-row gap-4 overflow-hidden xl:h-[calc(70svh)]">

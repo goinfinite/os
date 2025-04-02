@@ -35,13 +35,11 @@ templ OverviewIndex(
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/overview.js" }></script>
 	<!-- Overview Page HTML -->
 	<div class="flex flex-col">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			@componentStructural.PageTitle(
-				"Overview",
-				"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
-				"ph-speedometer",
-			)
-		</div>
+		@componentStructural.PageTitle(
+			"Overview",
+			"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
+			"ph-speedometer",
+		)
 		<div class="space-y-5">
 			<div id="marketplace" class="card w-full" x-data="marketplace">
 				@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
