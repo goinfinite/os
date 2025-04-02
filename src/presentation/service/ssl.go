@@ -104,6 +104,10 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 }
 
 func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
+	if input["sslPairId"] != nil && input["id"] == nil {
+		input["id"] = input["sslPairId"]
+	}
+
 	requiredParams := []string{"id"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
