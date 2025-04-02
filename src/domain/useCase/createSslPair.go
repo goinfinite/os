@@ -16,7 +16,7 @@ func CreateSslPair(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateSslPair,
 ) error {
-	readVirtualHostsResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+	vHostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination: dto.PaginationUnpaginated,
 	})
 	if err != nil {
@@ -24,8 +24,8 @@ func CreateSslPair(
 		return errors.New("ReadVirtualHostInfraError")
 	}
 
-	existingHostnames := []valueObject.Fqdn{}
-	for _, vhostEntity := range readVirtualHostsResponse.VirtualHosts {
+	existingVirtualHostHostnames := []valueObject.Fqdn{}
+	for _, vhostEntity := range vHostReadResponse.VirtualHosts {
 		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 			continue
 		}
@@ -34,14 +34,14 @@ func CreateSslPair(
 			continue
 		}
 
-		existingHostnames = append(existingHostnames, vhostEntity.Hostname)
+		existingVirtualHostHostnames = append(existingVirtualHostHostnames, vhostEntity.Hostname)
 	}
 
-	if len(existingHostnames) == 0 {
+	if len(existingVirtualHostHostnames) == 0 {
 		return errors.New("SpecifiedVirtualHostsNotFound")
 	}
 
-	createDto.VirtualHostsHostnames = existingHostnames
+	createDto.VirtualHostsHostnames = existingVirtualHostHostnames
 
 	sslPairId, err := sslCmdRepo.Create(createDto)
 	if err != nil {
