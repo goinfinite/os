@@ -45,7 +45,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 			<!-- SslPairsTable Header -->
 			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
 				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
-					<th scope="col" class="w-[25%] text-left">Hostnames</th>
+					<th scope="col" class="w-[25%] text-left">Virtual Hosts</th>
 					<th scope="col" class="w-[15%]">Issued At</th>
 					<th scope="col" class="w-[15%]">Expires At</th>
 					<th scope="col" class="w-[25%]">Certificate Authority (CA)</th>
@@ -59,9 +59,19 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 			</thead>
 			<tbody>
 				for _, sslPairEntity := range sslPairEntities {
-					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0 even:bg-neutral-500/5">
 						<td class="text-left">
-							{ sslPairEntity.MainVirtualHostHostname.String() }
+							<p class="font-bold">{ sslPairEntity.MainVirtualHostHostname.String() }</p>
+							<p class="text-uppercase mt-2 text-[0.75rem] font-bold text-neutral-300/50">
+								Subject Alternative Names (SANs)
+							</p>
+							<div class="mt-0.5 flex flex-col items-center rounded-lg bg-neutral-500/5 text-xs">
+								for _, altName := range sslPairEntity.Certificate.AltNames {
+									<div class="flex w-full items-center justify-between border-t-2 border-neutral-500/20 px-3 py-1.5 first:border-t-0">
+										{ altName.String() }
+									</div>
+								}
+							</div>
 						</td>
 						<td>{ sslPairEntity.Certificate.IssuedAt.ReadDateOnly() }</td>
 						<td>{ sslPairEntity.Certificate.ExpiresAt.ReadDateOnly() }</td>
