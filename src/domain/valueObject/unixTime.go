@@ -67,6 +67,14 @@ func (vo UnixTime) ReadAsGoTime() time.Time {
 	return time.Unix(int64(vo), 0).UTC()
 }
 
+func (vo UnixTime) IsPast() bool {
+	return vo.ReadAsGoTime().Before(time.Now())
+}
+
+func (vo UnixTime) IsFuture() bool {
+	return vo.ReadAsGoTime().After(time.Now())
+}
+
 func (vo UnixTime) String() string {
 	return strconv.FormatInt(int64(vo), 10)
 }
