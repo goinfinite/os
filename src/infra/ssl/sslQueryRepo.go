@@ -169,6 +169,29 @@ func (repo SslQueryRepo) ReadById(
 	return entity.SslPair{}, errors.New("SslPairNotFound")
 }
 
+func (repo SslQueryRepo) ReadByHostname(
+	vhostHostname valueObject.Fqdn,
+) (sslPairEntity entity.SslPair, err error) {
+	sslPairs, err := repo.Read()
+	if err != nil {
+		return sslPairEntity, err
+	}
+
+	if len(sslPairs) < 1 {
+		return sslPairEntity, errors.New("SslPairNotFound")
+	}
+
+	for _, ssl := range sslPairs {
+		if ssl.MainVirtualHostHostname.String() != vhostHostname.String() {
+			continue
+		}
+
+		return ssl, nil
+	}
+
+	return sslPairEntity, errors.New("SslPairNotFound")
+}
+
 func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContent valueObject.SslCertificateContent,
 ) (valueObject.Hash, error) {
