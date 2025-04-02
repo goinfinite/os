@@ -23,6 +23,9 @@ templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 			"ph-lock",
 		)
 		@SslPairsTable(sslPairs)
+		<p class="mt-4 text-xs text-neutral-400">
+			NOTE: To update SSL certificates for aliases, you need to update the SSL certificate of the parent virtual host, as aliases do not have their own SSL certificates.
+		</p>
 		@ImportSslCertificateModal(vhostsHostnames)
 		@ViewPemFilesModal()
 		@SwapToSelfSignedModal()
@@ -74,8 +77,28 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 							</div>
 						</td>
 						<td>{ sslPairEntity.Certificate.IssuedAt.ReadDateOnly() }</td>
-						<td>{ sslPairEntity.Certificate.ExpiresAt.ReadDateOnly() }</td>
-						<td>{ sslPairEntity.Certificate.CertificateAuthority.String() }</td>
+						<td>
+							{{ expiresAtIcon := "ph-warning" }}
+							{{ expiresAtIconColor := "text-amber-500" }}
+							if sslPairEntity.Certificate.ExpiresAt.IsFuture() {
+								{{ expiresAtIcon = "ph-check-circle" }}
+								{{ expiresAtIconColor = "text-green-500" }}
+							}
+							{ sslPairEntity.Certificate.ExpiresAt.ReadDateOnly() }
+							<i class={ "ph-bold text-xs " + expiresAtIcon + " " + expiresAtIconColor }></i>
+						</td>
+						<td>
+							<div>
+								{{ caIcon := "ph-warning" }}
+								{{ caIconColor := "text-amber-500" }}
+								if !sslPairEntity.Certificate.CertificateAuthority.IsSelfSigned() {
+									{{ caIcon = "ph-check-circle" }}
+									{{ caIconColor = "text-green-500" }}
+								}
+								{ sslPairEntity.Certificate.CertificateAuthority.String() }
+								<i class={ "ph-bold text-xs " + caIcon + " " + caIconColor }></i>
+							</div>
+						</td>
 						<td>
 							<div class="inline-flex space-x-2">
 								@componentStructural.CircularIconButtonWithTooltip(
