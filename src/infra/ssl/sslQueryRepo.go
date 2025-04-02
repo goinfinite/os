@@ -127,7 +127,7 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 		return sslPairEntities, errors.New("FindCertFilesError: " + err.Error())
 	}
 
-	for _, rawCertFilePath := range strings.Split(rawCertFilePaths, "\n") {
+	for rawCertFilePath := range strings.SplitSeq(rawCertFilePaths, "\n") {
 		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
 		if err != nil {
 			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
