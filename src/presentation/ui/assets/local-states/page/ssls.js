@@ -76,11 +76,12 @@ document.addEventListener("alpine:init", () => {
       this.isSwapToSelfSignedModalOpen = false;
     },
     swapToSelfSigned() {
+      this.closeSwapToSelfSignedModal();
       htmx
         .ajax("DELETE", "/api/v1/ssl/" + this.sslPair.id + "/", {
           swap: "none",
         })
-        .finally(() => this.closeSwapToSelfSignedModal());
+        .finally(() => this.$dispatch("refresh:ssl-pairs-table"));
     },
   }));
 });

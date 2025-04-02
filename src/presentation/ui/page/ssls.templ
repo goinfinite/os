@@ -7,89 +7,83 @@ import (
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
+const (
+	SslPairsRecordsDisplayId               string = "ssl-pairs-table"
+	SslPairsRecordsDisplayRefreshEventName string = "refresh:" + SslPairsRecordsDisplayId
+)
+
 templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
-	<!-- SSLs Page JavaScript -->
+	<!-- SslPairsPage JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/ssls.js" }></script>
-	<!-- SSLs Page HTML -->
+	<!-- SslPairsPage HTML -->
 	<div x-data="ssls">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"SSL Certificate",
-					"Manage your SSL certificates with ease, adding new ones, replacing existing ones, viewing information about current certificates, and substituting them with self-signed certificates to secure your virtual hosts.",
-					"ph-lock",
-				)
-			</div>
-			<div class="my-4 flex space-x-5">
-				@componentForm.SubmitButton(
-					"import-ssl-certificate-button", "Import SSL certificate",
-					"ph-plus-square", "openImportSslCertificateModal()", false,
-				)
-			</div>
-		</div>
-		<div
-			id="ssls-page-content"
-			hx-get="/ssls/"
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms, click from:button#swap-to-self-signed-button delay:1000ms"
-			hx-select="#ssls-page-content"
-			hx-target="#ssls-page-content"
-			hx-indicator="#loading-overlay"
-			hx-swap="outerHTML transition:true"
-			class="card w-full"
-		>
-			<div id="ssls-table">
-				@SslsTable(sslPairs)
-			</div>
-			@ImportSslCertificateModal(vhostsHostnames)
-			@ViewPemFilesModal()
-			@SwapToSelfSignedModal()
-		</div>
+		@componentStructural.PageTitle(
+			"SSL Certificate",
+			"Import, view, and swap your virtual host SSL certificates.",
+			"ph-lock",
+		)
+		@SslPairsTable(sslPairs)
+		@ImportSslCertificateModal(vhostsHostnames)
+		@ViewPemFilesModal()
+		@SwapToSelfSignedModal()
 	</div>
 }
 
-templ SslsTable(sslPairs []entity.SslPair) {
-	<!-- SslsTable -->
-	<div class="bg-os-800 rounded-md p-4">
-		<div class="bg-os-500 space-y-3 rounded-md p-4">
-			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
-				<!-- SslsTable Header -->
-				<thead class="text-xs uppercase text-neutral-400">
-					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-						<th scope="col" class="w-1/5 px-5 py-3 text-left">Virtual Hosts Hostnames</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">Issued At</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">Expires At</th>
-						<th scope="col" class="w-1/5 px-5 py-3 text-center">Certificate Authority</th>
-						<th scope="col" class="w-1/5 px-5 py-3"></th>
+templ SslPairsTable(sslPairEntities []entity.SslPair) {
+	<!-- SslPairsTable -->
+	<div
+		id={ SslPairsRecordsDisplayId }
+		hx-get="/ssl/"
+		hx-trigger={ SslPairsRecordsDisplayRefreshEventName + " from:window" }
+		hx-select={ "#" + SslPairsRecordsDisplayId }
+		hx-target={ "#" + SslPairsRecordsDisplayId }
+		hx-indicator="#loading-overlay"
+		hx-swap="outerHTML transition:true"
+		class="flex flex-col gap-4 rounded-lg bg-neutral-950/20 p-5"
+	>
+		<table class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out">
+			<!-- SslPairsTable Header -->
+			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[25%] text-left">Hostnames</th>
+					<th scope="col" class="w-[15%]">Issued At</th>
+					<th scope="col" class="w-[15%]">Expires At</th>
+					<th scope="col" class="w-[25%]">Certificate Authority (CA)</th>
+					<th scope="col" class="w-[20%]">
+						@componentForm.SubmitButton(
+							"import-ssl-certificate-button", "Import SSL certificate",
+							"ph-plus-square", "openImportSslCertificateModal()", false,
+						)
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, sslPairEntity := range sslPairEntities {
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+						<td class="text-left">
+							{ sslPairEntity.MainVirtualHostHostname.String() }
+						</td>
+						<td>{ sslPairEntity.Certificate.IssuedAt.ReadDateOnly() }</td>
+						<td>{ sslPairEntity.Certificate.ExpiresAt.ReadDateOnly() }</td>
+						<td>{ sslPairEntity.Certificate.CertificateAuthority.String() }</td>
+						<td>
+							<div class="inline-flex space-x-2">
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-file-magnifying-glass", "os-200", "os-100",
+									"openViewPemFilesModal('"+sslPairEntity.Id.String()+"', `"+sslPairEntity.Certificate.CertificateContent.String()+"`, `"+sslPairEntity.Key.String()+"`)",
+									"view PEM files", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-swap", "red-800", "red-600",
+									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
+									"swap to self-signed", "red-500",
+								)
+							</div>
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					for _, sslPair := range sslPairs {
-						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
-							<th scope="row" class="w-1/6 space-y-2 px-5 py-3 text-left">
-								{ sslPair.MainVirtualHostHostname.String() }
-							</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.IssuedAt.ReadDateOnly() }</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.ExpiresAt.ReadDateOnly() }</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-center font-normal">{ sslPair.Certificate.CertificateAuthority.String() }</th>
-							<th scope="row" class="w-1/5 px-5 py-3 text-right">
-								<div class="inline-flex space-x-2">
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-file-magnifying-glass", "os-200", "os-100",
-										"openViewPemFilesModal('"+sslPair.Id.String()+"', `"+sslPair.Certificate.CertificateContent.String()+"`, `"+sslPair.Key.String()+"`)",
-										"view PEM files", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-swap", "red-800", "red-600",
-										"openSwapToSelfSignedModal('"+sslPair.Id.String()+"')",
-										"swap to self-signed", "red-500",
-									)
-								</div>
-							</th>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
+				}
+			</tbody>
+		</table>
 	</div>
 }
 
@@ -100,6 +94,8 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		hx-post="/api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
+		@submit="closeImportSslCertificateModal()"
+		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
 		<div class="my-6">
 			@componentForm.MultiSelectInput(
@@ -135,7 +131,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 			})
 		</div>
 		@componentForm.DeactivableSubmitButton(
-			"Import SSL certificate", "ph-check-fat", "closeImportSslCertificateModal()",
+			"Import SSL certificate", "ph-check-fat", "",
 			"shouldDisableImportSslCertificateSubmitButton", false,
 		)
 	</form>
