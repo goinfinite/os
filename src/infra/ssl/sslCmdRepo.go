@@ -19,7 +19,8 @@ const DomainOwnershipValidationUrlPath string = "/validateOwnership"
 type SslCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	sslQueryRepo    SslQueryRepo
+	sslQueryRepo    *SslQueryRepo
+	vhostQueryRepo  *vhostInfra.VirtualHostQueryRepo
 }
 
 func NewSslCmdRepo(
@@ -29,7 +30,8 @@ func NewSslCmdRepo(
 	return &SslCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    SslQueryRepo{},
+		sslQueryRepo:    &SslQueryRepo{},
+		vhostQueryRepo:  vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 	}
 }
 
@@ -200,38 +202,64 @@ func (repo *SslCmdRepo) issueValidSsl(
 
 func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	createDto dto.CreatePubliclyTrustedSslPair,
-) error {
+) (sslPairId valueObject.SslPairId, err error) {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(repo.transientDbSvc)
 	serverPublicIpAddress, err := o11yQueryRepo.ReadServerPublicIpAddress()
 	if err != nil {
-		return err
+		return sslPairId, err
 	}
 
-	virtualHostsHostnames := []valueObject.Fqdn{createDto.CommonName}
-	virtualHostsHostnames = append(virtualHostsHostnames, createDto.AltNames...)
+	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination: dto.PaginationSingleItem,
+		Hostname:   &createDto.VirtualHostHostname,
+	})
+	if err != nil {
+		return sslPairId, errors.New("ReadVirtualHostEntitiesError: " + err.Error())
+	}
+
+	if len(vhostReadResponse.VirtualHosts) == 0 {
+		return sslPairId, errors.New("VirtualHostNotFound")
+	}
+
+	virtualHostsHostnames := []valueObject.Fqdn{createDto.VirtualHostHostname}
+	virtualHostsHostnames = append(
+		virtualHostsHostnames, vhostReadResponse.VirtualHosts[0].AliasesHostnames...,
+	)
 
 	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
 		virtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
-		return errors.New("NoSslHostnamePointingToServerIpAddress")
+		return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
 	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	dummyValue := dummyValueGenerator.GenPass(64)
 	expectedOwnershipHash, err := valueObject.NewHash(dummyValue)
 	if err != nil {
-		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
+		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
-		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
+		return sslPairId, errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
-	return repo.issueValidSsl(createDto.CommonName, httpFunctionalHostnames)
+	err = repo.issueValidSsl(createDto.VirtualHostHostname, httpFunctionalHostnames)
+	if err != nil {
+		return sslPairId, errors.New("IssueValidSslError: " + err.Error())
+	}
+
+	sslPairEntity, err := repo.sslQueryRepo.ReadByHostname(
+		createDto.VirtualHostHostname,
+	)
+	if err != nil {
+		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
+	}
+
+	return sslPairEntity.Id, nil
 }
 
 func (repo *SslCmdRepo) Create(
@@ -275,9 +303,7 @@ func (repo *SslCmdRepo) Create(
 }
 
 func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) error {
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-
-	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
@@ -287,7 +313,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 		return errors.New("AliasVirtualHostSslReliesOnParent")
 	}
 
-	aliasesVirtualHostsReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination:     dto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
