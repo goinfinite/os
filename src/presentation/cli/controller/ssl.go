@@ -6,6 +6,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -89,9 +90,12 @@ func (controller *SslController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
-				"virtualHosts": virtualHostsSlice,
-			}
+			requestBody := map[string]interface{}{}
+
+			vhostHostnames := sharedHelper.StringSliceValueObjectParser(
+				virtualHostsSlice, valueObject.NewFqdn,
+			)
+			requestBody["virtualHostHostnames"] = vhostHostnames
 
 			certFilePath, err := valueObject.NewUnixFilePath(certFilePathStr)
 			if err != nil {
