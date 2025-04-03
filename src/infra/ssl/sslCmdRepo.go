@@ -252,9 +252,9 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("IssueValidSslError: " + err.Error())
 	}
 
-	sslPairEntity, err := repo.sslQueryRepo.ReadByHostname(
-		createDto.VirtualHostHostname,
-	)
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		VirtualHostHostname: &createDto.VirtualHostHostname,
+	})
 	if err != nil {
 		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
 	}
@@ -263,13 +263,13 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 }
 
 func (repo *SslCmdRepo) Create(
-	createSslPair dto.CreateSslPair,
+	createDto dto.CreateSslPair,
 ) (sslPairId valueObject.SslPairId, err error) {
-	if len(createSslPair.VirtualHostsHostnames) == 0 {
+	if len(createDto.VirtualHostsHostnames) == 0 {
 		return sslPairId, errors.New("EmptyVirtualHosts")
 	}
 
-	for _, vhostHostname := range createSslPair.VirtualHostsHostnames {
+	for _, vhostHostname := range createDto.VirtualHostsHostnames {
 		vhostHostnameStr := vhostHostname.String()
 		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
 		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
@@ -277,7 +277,7 @@ func (repo *SslCmdRepo) Create(
 		shouldOverwrite := true
 		err := infraHelper.UpdateFile(
 			vhostCertFilePath,
-			createSslPair.Certificate.CertificateContent.String(),
+			createDto.Certificate.CertificateContent.String(),
 			shouldOverwrite,
 		)
 		if err != nil {
@@ -285,16 +285,16 @@ func (repo *SslCmdRepo) Create(
 		}
 
 		err = infraHelper.UpdateFile(
-			vhostCertKeyFilePath, createSslPair.Key.String(), shouldOverwrite,
+			vhostCertKeyFilePath, createDto.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())
 		}
 	}
 
-	sslPairEntity, err := repo.sslQueryRepo.ReadByHostname(
-		createSslPair.VirtualHostsHostnames[0],
-	)
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		VirtualHostHostname: &createDto.VirtualHostsHostnames[0],
+	})
 	if err != nil {
 		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
 	}
@@ -354,12 +354,14 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 }
 
 func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
-	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslPairId)
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		SslPairId: &sslPairId,
+	})
 	if err != nil {
-		return errors.New("SslNotFound")
+		return errors.New("ReadSslPairEntityError: " + err.Error())
 	}
 
-	err = repo.ReplaceWithSelfSigned(sslPairToDelete.VirtualHostHostname)
+	err = repo.ReplaceWithSelfSigned(sslPairEntity.VirtualHostHostname)
 	if err != nil {
 		return errors.New("ReplaceWithSelfSignedError: " + err.Error())
 	}
