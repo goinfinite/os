@@ -136,9 +136,22 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
-	cert, err := entity.NewSslCertificate(certContent)
+	certEntity, err := entity.NewSslCertificate(certContent)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var chainCertsPtr *entity.SslCertificate
+	if input["chainCertificates"] != nil {
+		chainCertContent, err := valueObject.NewSslCertificateContent(input["chainCertificates"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("SslCertificateChainContentError"))
+		}
+		chainCertEntity, err := entity.NewSslCertificate(chainCertContent)
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("SslCertificateChainParseError"))
+		}
+		chainCertsPtr = &chainCertEntity
 	}
 
 	privateKeyContent, err := valueObject.NewSslPrivateKey(input["key"])
@@ -163,7 +176,8 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 	}
 
 	createDto := dto.NewCreateSslPair(
-		vhosts, cert, privateKeyContent, operatorAccountId, operatorIpAddress,
+		vhosts, certEntity, chainCertsPtr, privateKeyContent,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)

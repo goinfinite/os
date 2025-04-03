@@ -114,7 +114,7 @@ func (controller *SslController) parseRawVhosts(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded."
+// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded.<br />certificate should include the CA chain/bundle if not provided in the certificate field."
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
@@ -162,6 +162,10 @@ func (controller *SslController) Create(c echo.Context) error {
 		)
 	}
 	requestInputData["key"] = decodedKey
+
+	if requestInputData["chainCertificates"] != nil && requestInputData["chainCertificates"] == "" {
+		requestInputData["chainCertificates"] = nil
+	}
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.sslService.Create(requestInputData),

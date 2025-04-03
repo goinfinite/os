@@ -274,12 +274,13 @@ func (repo *SslCmdRepo) Create(
 		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
 		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
 
+		certContentStr := createDto.Certificate.CertificateContent.String()
+		if createDto.ChainCertificates != nil {
+			certContentStr += "\n" + createDto.ChainCertificates.CertificateContent.String()
+		}
+
 		shouldOverwrite := true
-		err := infraHelper.UpdateFile(
-			vhostCertFilePath,
-			createDto.Certificate.CertificateContent.String(),
-			shouldOverwrite,
-		)
+		err := infraHelper.UpdateFile(vhostCertFilePath, certContentStr, shouldOverwrite)
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}

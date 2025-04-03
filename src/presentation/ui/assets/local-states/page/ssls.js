@@ -7,6 +7,7 @@ document.addEventListener("alpine:init", () => {
         id: "",
         virtualHostsHostnames: [],
         certificate: "",
+        chainCertificates: "",
         key: "",
       };
     },

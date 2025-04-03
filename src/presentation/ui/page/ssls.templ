@@ -131,23 +131,29 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 	<!-- ImportSslCertificateForm -->
 	<form
 		id="import-ssl-certificate-form"
+		class="flex flex-col gap-4"
 		hx-post="/api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeImportSslCertificateModal()"
 		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
-		<div class="my-6">
-			@componentForm.MultiSelectInput(
-				"virtualHosts", "Virtual Hosts Hostnames",
-				"sslPair.virtualHostsHostnames", vhostsHostnames,
-			)
-		</div>
-		<div class="mb-4 space-y-6" x-show="!shouldImportSslCertificateAsFile">
+		@componentForm.MultiSelectInput(
+			"virtualHosts", "Virtual Hosts Hostnames",
+			"sslPair.virtualHostsHostnames", vhostsHostnames,
+		)
+		<div x-show="!shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "certificate",
 				Label:              "Certificate",
 				BindModelValuePath: "sslPair.certificate",
+				InfoTooltipContent: "Certificate in PEM format, with or without CA chain.<br />Separate each certificate with a new line.",
+			})
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "chainCertificates",
+				Label:              "CA Chain/Bundle Certificates",
+				BindModelValuePath: "sslPair.chainCertificates",
+				InfoTooltipContent: "Optional. CA chain/bundle certificates in PEM format.<br />It's usually provided by the CA when you issue the certificate.<br />Separate each certificate with a new line.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
 				Id:                 "key",
@@ -155,15 +161,18 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				BindModelValuePath: "sslPair.key",
 			})
 		</div>
-		<div class="mb-4 space-y-6" x-show="shouldImportSslCertificateAsFile">
+		<div x-show="shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
 			@componentForm.FileUploadTextInputFileContentReader(
 				"certificate", "Certificate", "sslPair.certificate", ".crt",
+			)
+			@componentForm.FileUploadTextInputFileContentReader(
+				"chainCertificates", "CA Chain/Bundle Certificates", "sslPair.chainCertificates", ".crt",
 			)
 			@componentForm.FileUploadTextInputFileContentReader(
 				"key", "Private Key", "sslPair.key", ".key",
 			)
 		</div>
-		<div class="mb-6 flex justify-end">
+		<div class="mb-4 flex justify-end">
 			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
 				Id:            "change-import-ssl-certificate-form-radio-input",
 				Label:         "OR upload files (.crt/.key - pem format)",
