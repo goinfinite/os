@@ -55,15 +55,21 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 					<th scope="col" class="w-[20%]">
 						@componentForm.SubmitButton(
 							"import-ssl-certificate-button", "Import SSL certificate",
-							"ph-plus-square", "openImportSslCertificateModal()", false,
+							"ph-swap", "openImportSslCertificateModal()", false,
 						)
 					</th>
 				</tr>
 			</thead>
 			<tbody>
 				for _, sslPairEntity := range sslPairEntities {
-					@templ.JSONScript("sslPairEntity_"+sslPairEntity.Id.String(), sslPairEntity)
-					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0 even:bg-neutral-500/5">
+					{{ pairTrClasses := "*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0" }}
+					if sslPairEntity.IsPubliclyTrusted() {
+						{{ pairTrClasses += " even:bg-neutral-500/5" }}
+					} else {
+						{{ pairTrClasses += " bg-red-900/15 even:bg-red-900/25" }}
+					}
+					<tr class={ pairTrClasses }>
+						@templ.JSONScript("sslPairEntity_"+sslPairEntity.Id.String(), sslPairEntity)
 						<td class="text-left">
 							<p class="font-bold">{ sslPairEntity.VirtualHostHostname.String() }</p>
 							<p class="text-infinite-500 text-[0.6rem]">#{ sslPairEntity.Id.String()[0:12] }</p>
@@ -109,14 +115,19 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 									"view PEM files", "neutral-50/10",
 								)
 								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-swap", "red-800", "red-600",
-									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
-									"swap to self-signed", "red-500",
+									"ph-swap", "cyan-800/50", "cyan-600/50",
+									"openImportSslCertificateModal('"+sslPairEntity.VirtualHostHostname.String()+"')",
+									"replace/import certificate", "cyan-500",
 								)
 								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-certificate", "teal-800", "teal-600",
+									"ph-certificate", "green-800/50", "green-600/50",
 									"createPubliclyTrusted('"+sslPairEntity.VirtualHostHostname.String()+"')",
-									"issue publicly trusted certificate", "teal-500",
+									"issue trusted certificate", "green-500",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-trash", "red-800", "red-600",
+									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
+									"swap to self-signed", "red-500",
 								)
 							</div>
 						</td>
@@ -139,37 +150,37 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
 		@componentForm.MultiSelectInput(
-			"virtualHosts", "Virtual Hosts Hostnames",
+			"virtualHostsHostnames", "Virtual Hosts Hostnames",
 			"sslPair.virtualHostsHostnames", vhostsHostnames,
 		)
+		<input name="encodedCertificate" type="hidden" :value="btoa(sslPair.certificate)"/>
+		<input name="encodedChainCertificates" type="hidden" :value="btoa(sslPair.chainCertificates)"/>
+		<input name="encodedKey" type="hidden" :value="btoa(sslPair.key)"/>
 		<div x-show="!shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
 			@componentForm.TextArea(componentForm.TextAreaDto{
-				Id:                 "certificate",
 				Label:              "Certificate",
 				BindModelValuePath: "sslPair.certificate",
 				InfoTooltipContent: "Certificate in PEM format, with or without CA chain.<br />Separate each certificate with a new line.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
-				Id:                 "chainCertificates",
 				Label:              "CA Chain/Bundle Certificates",
 				BindModelValuePath: "sslPair.chainCertificates",
 				InfoTooltipContent: "Optional. CA chain/bundle certificates in PEM format.<br />It's usually provided by the CA when you issue the certificate.<br />Separate each certificate with a new line.",
 			})
 			@componentForm.TextArea(componentForm.TextAreaDto{
-				Id:                 "key",
 				Label:              "Private Key",
 				BindModelValuePath: "sslPair.key",
 			})
 		</div>
 		<div x-show="shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
 			@componentForm.FileUploadTextInputFileContentReader(
-				"certificate", "Certificate", "sslPair.certificate", ".crt",
+				"", "Certificate", "sslPair.certificate", ".crt",
 			)
 			@componentForm.FileUploadTextInputFileContentReader(
-				"chainCertificates", "CA Chain/Bundle Certificates", "sslPair.chainCertificates", ".crt",
+				"", "CA Chain/Bundle Certificates", "sslPair.chainCertificates", ".crt",
 			)
 			@componentForm.FileUploadTextInputFileContentReader(
-				"key", "Private Key", "sslPair.key", ".key",
+				"", "Private Key", "sslPair.key", ".key",
 			)
 		</div>
 		<div class="mb-4 flex justify-end">
@@ -231,17 +242,17 @@ templ ViewPemFilesModal() {
 
 templ SwapToSelfSignedCriticalWarningContent() {
 	<!-- SwapToSelfSignedCriticalWarningContent -->
-	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
-		Are you sure you want to swap SSL certificate?
+	<h3 class="text-pretty mb-3 text-xl font-bold capitalize leading-relaxed">
+		Are you sure you want to replace the current SSL certificate with a self-signed SSL certificate?
 	</h3>
-	<p>This process cannot be undone. Only use this action if you no longer want to use your current SSL certificate. The system will swap the current certificate with a self-signed SSL until it's able to issue a new valid Let's Encrypt SSL certificate.</p>
+	<p>This process cannot be undone. The system will replace the current certificate with a self-signed SSL until a new publicly trusted SSL certificate can be issued.</p>
 }
 
 templ SwapToSelfSignedModal() {
 	@componentStructural.CriticalModal(
 		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
 		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
-		"ph-swap", "Yes, swap ssl certificate",
+		"ph-trash", "yes, replace it!",
 	) {
 		@SwapToSelfSignedCriticalWarningContent()
 	}

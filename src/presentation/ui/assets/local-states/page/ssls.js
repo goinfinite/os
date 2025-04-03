@@ -24,11 +24,6 @@ document.addEventListener("alpine:init", () => {
       );
     },
     shouldImportSslCertificateAsFile: false,
-    get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
-      return (
-        this.sslPair.id == "" || this.sslPair.virtualHostsHostnames.length == 0
-      );
-    },
     downloadPemFile(isKeyFileContent) {
       let pemFileContent = this.sslPair.certificate;
       let fileExtension = "crt";
@@ -43,15 +38,15 @@ document.addEventListener("alpine:init", () => {
 
     // Modal states
     isImportSslCertificateModalOpen: false,
-    openImportSslCertificateModal() {
+    openImportSslCertificateModal(vhostHostname = "") {
       this.resetPrimaryStates();
 
+      if (vhostHostname) {
+        this.sslPair.virtualHostsHostnames = [vhostHostname];
+      }
       this.isImportSslCertificateModalOpen = true;
     },
     closeImportSslCertificateModal() {
-      this.sslPair.certificate = btoa(this.sslPair.certificate);
-      this.sslPair.key = btoa(this.sslPair.key);
-
       this.isImportSslCertificateModalOpen = false;
     },
     isViewPemFilesModalOpen: false,
@@ -63,8 +58,10 @@ document.addEventListener("alpine:init", () => {
       );
 
       this.sslPair.id = sslPairId;
-      this.sslPair.certificate = sslPairEntity.certificate;
-      this.sslPair.key = sslPairEntity.key;
+      this.sslPair.certificate = atob(
+        sslPairEntity.certificate.certificateContent
+      );
+      this.sslPair.key = atob(sslPairEntity.key);
       this.isViewPemFilesModalOpen = true;
     },
     closeViewPemFilesModal() {
