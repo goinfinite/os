@@ -186,6 +186,10 @@ func (service *SslService) CreatePubliclyTrusted(
 		input["virtualHostHostname"] = input["hostname"]
 	}
 
+	if input["vhostHostname"] != nil && input["virtualHostHostname"] == nil {
+		input["virtualHostHostname"] = input["vhostHostname"]
+	}
+
 	requiredParams := []string{"virtualHostHostname"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
