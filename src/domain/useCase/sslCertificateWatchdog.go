@@ -136,9 +136,8 @@ func (uc *SslCertificateWatchdog) Execute() {
 			continue
 		}
 
-		err := uc.sslCmdRepo.CreatePubliclyTrusted(dto.NewCreatePubliclyTrustedSslPair(
-			vhostPair.VirtualHost.Hostname, vhostPair.VirtualHost.AliasesHostnames,
-			valueObject.AccountIdSystem, valueObject.IpAddressSystem,
+		_, err := uc.sslCmdRepo.CreatePubliclyTrusted(dto.NewCreatePubliclyTrustedSslPair(
+			vhostPair.VirtualHost.Hostname, valueObject.AccountIdSystem, valueObject.IpAddressSystem,
 		))
 		if err != nil {
 			slog.Debug(
@@ -146,8 +145,6 @@ func (uc *SslCertificateWatchdog) Execute() {
 				slog.String("error", err.Error()),
 				slog.String("method", "SslCertificateWatchdog"),
 				slog.String("hostname", vhostPair.VirtualHost.Hostname.String()),
-				slog.String("sslPairId", vhostPair.SslPair.Id.String()),
-				slog.String("sslPairHostname", vhostPair.SslPair.MainVirtualHostHostname.String()),
 			)
 		}
 	}

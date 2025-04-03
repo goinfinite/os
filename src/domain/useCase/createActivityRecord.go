@@ -463,6 +463,27 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) CreatePubliclyTrustedSslPair(
+	createDto dto.CreatePubliclyTrustedSslPair,
+	sslPairId valueObject.SslPairId,
+) {
+	operatorAccountId := createDto.OperatorAccountId
+
+	recordCode, _ := valueObject.NewActivityRecordCode("PubliclyTrustedSslPairCreated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewSslSri(operatorAccountId, sslPairId),
+		},
+		RecordDetails:     createDto,
+		OperatorAccountId: &operatorAccountId,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) DeleteSslPair(deleteDto dto.DeleteSslPair) {
 	operatorAccountId := deleteDto.OperatorAccountId
 
