@@ -54,12 +54,16 @@ document.addEventListener("alpine:init", () => {
       this.isImportSslCertificateModalOpen = false;
     },
     isViewPemFilesModalOpen: false,
-    openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
+    openViewPemFilesModal(sslPairId) {
       this.resetPrimaryStates();
 
+      const sslPairEntity = JSON.parse(
+        document.getElementById("sslPairEntity_" + sslPairId).textContent
+      );
+
       this.sslPair.id = sslPairId;
-      this.sslPair.certificate = certificateContent;
-      this.sslPair.key = keyContent;
+      this.sslPair.certificate = sslPairEntity.certificate;
+      this.sslPair.key = sslPairEntity.key;
       this.isViewPemFilesModalOpen = true;
     },
     closeViewPemFilesModal() {
@@ -81,7 +85,16 @@ document.addEventListener("alpine:init", () => {
         .ajax("DELETE", "/api/v1/ssl/" + this.sslPair.id + "/", {
           swap: "none",
         })
-        .finally(() => this.$dispatch("refresh:ssl-pairs-table"));
+        .then(() => this.$dispatch("refresh:ssl-pairs-table"));
+    },
+    createPubliclyTrusted(vhostHostname) {
+      htmx
+        .ajax("POST", "/api/v1/ssl/trusted/", {
+          values: { virtualHostHostname: vhostHostname },
+          swap: "none",
+        })
+        .then(() => this.$dispatch("refresh:ssl-pairs-table"))
+        .finally(() => this.$store.main.refreshScheduledTasksPopover());
     },
   }));
 });

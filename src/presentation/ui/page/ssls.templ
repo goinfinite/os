@@ -62,6 +62,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 			</thead>
 			<tbody>
 				for _, sslPairEntity := range sslPairEntities {
+					@templ.JSONScript("sslPairEntity_"+sslPairEntity.Id.String(), sslPairEntity)
 					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0 even:bg-neutral-500/5">
 						<td class="text-left">
 							<p class="font-bold">{ sslPairEntity.VirtualHostHostname.String() }</p>
@@ -103,14 +104,19 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 						<td>
 							<div class="inline-flex space-x-2">
 								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-file-magnifying-glass", "os-200", "os-100",
-									"openViewPemFilesModal('"+sslPairEntity.Id.String()+"', `"+sslPairEntity.Certificate.CertificateContent.String()+"`, `"+sslPairEntity.Key.String()+"`)",
-									"view PEM files", "os-100",
+									"ph-file-magnifying-glass", "neutral-50/10", "neutral-50/30",
+									"openViewPemFilesModal('"+sslPairEntity.Id.String()+"')",
+									"view PEM files", "neutral-50/10",
 								)
 								@componentStructural.CircularIconButtonWithTooltip(
 									"ph-swap", "red-800", "red-600",
 									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
 									"swap to self-signed", "red-500",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-certificate", "teal-800", "teal-600",
+									"createPubliclyTrusted('"+sslPairEntity.VirtualHostHostname.String()+"')",
+									"issue publicly trusted certificate", "teal-500",
 								)
 							</div>
 						</td>
