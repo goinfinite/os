@@ -24,14 +24,60 @@ func NewSslController(
 }
 
 func (controller *SslController) Read() *cobra.Command {
+	var sslPairIdStr, virtualHostHostnameStr string
+	var altNamesSlice []string
+	var paginationPageNumberUint32 uint32
+	var paginationItemsPerPageUint16 uint16
+	var paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "ReadSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.ServiceResponseWrapper(controller.sslService.Read())
+			requestBody := map[string]interface{}{}
+			if sslPairIdStr != "" {
+				requestBody["sslPairId"] = sslPairIdStr
+			}
+			if virtualHostHostnameStr != "" {
+				requestBody["virtualHostHostname"] = virtualHostHostnameStr
+			}
+			if len(altNamesSlice) > 0 {
+				requestBody["altNames"] = altNamesSlice
+			}
+
+			requestBody = cliHelper.PaginationParser(
+				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
+				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
+			)
+
+			cliHelper.ServiceResponseWrapper(
+				controller.sslService.Read(requestBody),
+			)
 		},
 	}
 
+	cmd.Flags().StringVarP(&sslPairIdStr, "pairId", "i", "", "SslPairId")
+	cmd.Flags().StringVarP(
+		&virtualHostHostnameStr, "hostname", "n", "", "VirtualHostHostname",
+	)
+	cmd.Flags().StringSliceVarP(
+		&altNamesSlice, "altNames", "a", []string{}, "AltNames",
+	)
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "o", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "j", 0, "ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "x", "", "SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 	return cmd
 }
 

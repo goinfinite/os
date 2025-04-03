@@ -14,6 +14,7 @@ import (
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,10 +45,35 @@ func NewSslController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.SslPair
+// @Param        sslPairId query  string  false  "SslPairId"
+// @Param        virtualHostHostname query  string  false  "VirtualHostHostname"
+// @Param        altNames query  string  false  "AltNames"
+// @Param        issuedBeforeAt query  string  false  "IssuedBeforeAt"
+// @Param        issuedAfterAt query  string  false  "IssuedAfterAt"
+// @Param        expiresBeforeAt query  string  false  "ExpiresBeforeAt"
+// @Param        expiresAfterAt query  string  false  "ExpiresAfterAt"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadSslPairsResponse
 // @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	if requestInputData["altNames"] != nil {
+		requestInputData["altNames"] = sharedHelper.StringSliceValueObjectParser(
+			requestInputData["altNames"], valueObject.NewSslHostname,
+		)
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.Read(requestInputData),
+	)
 }
 
 func (controller *SslController) parseRawVhosts(
@@ -192,7 +218,7 @@ func (controller *SslController) SslCertificateWatchdog() {
 	defer timer.Stop()
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslQueryRepo := sslInfra.NewSslQueryRepo()
 	sslCmdRepo := sslInfra.NewSslCmdRepo(
 		controller.persistentDbSvc, controller.transientDbSvc,
 	)

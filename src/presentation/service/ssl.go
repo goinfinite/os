@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -18,7 +19,7 @@ import (
 
 type SslService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
-	sslQueryRepo          sslInfra.SslQueryRepo
+	sslQueryRepo          *sslInfra.SslQueryRepo
 	sslCmdRepo            *sslInfra.SslCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
@@ -30,19 +31,89 @@ func NewSslService(
 ) *SslService {
 	return &SslService{
 		persistentDbSvc:       persistentDbSvc,
-		sslQueryRepo:          sslInfra.SslQueryRepo{},
+		sslQueryRepo:          sslInfra.NewSslQueryRepo(),
 		sslCmdRepo:            sslInfra.NewSslCmdRepo(persistentDbSvc, transientDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
-func (service *SslService) Read() ServiceOutput {
-	pairsList, err := useCase.ReadSslPairs(service.sslQueryRepo)
+func (service *SslService) SslPairReadRequestFactory(
+	serviceInput map[string]interface{},
+	withMappings bool,
+) (readRequestDto dto.ReadSslPairsRequest, err error) {
+	if serviceInput["sslPairId"] == nil && serviceInput["id"] != nil {
+		serviceInput["sslPairId"] = serviceInput["id"]
+	}
+
+	var sslPairIdPtr *valueObject.SslPairId
+	if serviceInput["sslPairId"] != nil {
+		sslPairId, err := valueObject.NewSslPairId(serviceInput["sslPairId"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		sslPairIdPtr = &sslPairId
+	}
+
+	if serviceInput["virtualHostHostname"] == nil && serviceInput["hostname"] != nil {
+		serviceInput["virtualHostHostname"] = serviceInput["hostname"]
+	}
+
+	var vhostHostnamePtr *valueObject.Fqdn
+	if serviceInput["virtualHostHostname"] != nil {
+		vhostHostname, err := valueObject.NewFqdn(serviceInput["virtualHostHostname"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		vhostHostnamePtr = &vhostHostname
+	}
+
+	altNames := []valueObject.SslHostname{}
+	if serviceInput["altNames"] != nil {
+		var assertOk bool
+		altNames, assertOk = serviceInput["altNames"].([]valueObject.SslHostname)
+		if !assertOk {
+			return readRequestDto, errors.New("InvalidAltNamesStructure")
+		}
+	}
+
+	timeParamNames := []string{
+		"issuedBeforeAt", "issuedAfterAt", "expiresBeforeAt", "expiresAfterAt",
+	}
+	timeParamPtrs := serviceHelper.TimeParamsParser(timeParamNames, serviceInput)
+
+	requestPagination, err := serviceHelper.PaginationParser(
+		serviceInput, useCase.SslPairsDefaultPagination,
+	)
+	if err != nil {
+		return readRequestDto, err
+	}
+
+	return dto.ReadSslPairsRequest{
+		Pagination:          requestPagination,
+		SslPairId:           sslPairIdPtr,
+		VirtualHostHostname: vhostHostnamePtr,
+		AltNames:            altNames,
+		IssuedBeforeAt:      timeParamPtrs["issuedBeforeAt"],
+		IssuedAfterAt:       timeParamPtrs["issuedAfterAt"],
+		ExpiresBeforeAt:     timeParamPtrs["expiresBeforeAt"],
+		ExpiresAfterAt:      timeParamPtrs["expiresAfterAt"],
+	}, nil
+}
+
+func (service *SslService) Read(
+	serviceInput map[string]interface{},
+) ServiceOutput {
+	readRequestDto, err := service.SslPairReadRequestFactory(serviceInput, false)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	readResponseDto, err := useCase.ReadSslPairs(service.sslQueryRepo, readRequestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, pairsList)
+	return NewServiceOutput(Success, readResponseDto)
 }
 
 func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
@@ -185,7 +256,7 @@ func (service *SslService) CreatePubliclyTrusted(
 }
 
 func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
-	if input["sslPairId"] != nil && input["id"] == nil {
+	if input["id"] == nil && input["sslPairId"] != nil {
 		input["id"] = input["sslPairId"]
 	}
 
@@ -216,11 +287,9 @@ func (service *SslService) Delete(input map[string]interface{}) ServiceOutput {
 		}
 	}
 
-	deleteDto := dto.NewDeleteSslPair(pairId, operatorAccountId, operatorIpAddress)
-
 	err = useCase.DeleteSslPair(
 		service.sslQueryRepo, service.sslCmdRepo, service.activityRecordCmdRepo,
-		deleteDto,
+		dto.NewDeleteSslPair(pairId, operatorAccountId, operatorIpAddress),
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
