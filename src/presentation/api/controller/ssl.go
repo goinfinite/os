@@ -2,13 +2,11 @@ package apiController
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
@@ -76,35 +74,19 @@ func (controller *SslController) Read(c echo.Context) error {
 	)
 }
 
-func (controller *SslController) parseRawVhosts(
-	rawVhostsInput interface{},
-) (rawVhostsStrSlice []string, err error) {
-	var assertOk bool
-
-	rawVhostsStrSlice, assertOk = rawVhostsInput.([]string)
-	if assertOk {
-		return rawVhostsStrSlice, nil
+func (controller *SslController) decodeContent(
+	rawContent interface{},
+) (decodedContent string, err error) {
+	encodedContent, err := valueObject.NewEncodedContent(rawContent)
+	if err != nil {
+		return decodedContent, err
+	}
+	decodedContent, err = encodedContent.GetDecodedContent()
+	if err != nil {
+		return decodedContent, errors.New("CannotDecodeContent")
 	}
 
-	rawVhostsInterfaceSlice, assertOk := rawVhostsInput.([]interface{})
-	if !assertOk {
-		rawVhostUniqueStr, err := voHelper.InterfaceToString(rawVhostsInput)
-		if err != nil {
-			return rawVhostsStrSlice, errors.New("VirtualHostsMustBeStringOrStringSlice")
-		}
-		return append(rawVhostsStrSlice, rawVhostUniqueStr), err
-	}
-
-	for _, rawVhost := range rawVhostsInterfaceSlice {
-		rawVhostStr, err := voHelper.InterfaceToString(rawVhost)
-		if err != nil {
-			slog.Debug(err.Error(), slog.Any("vhost", rawVhost))
-			continue
-		}
-		rawVhostsStrSlice = append(rawVhostsStrSlice, rawVhostStr)
-	}
-
-	return rawVhostsStrSlice, nil
+	return decodedContent, nil
 }
 
 // CreateSslPair    	 godoc
@@ -123,45 +105,40 @@ func (controller *SslController) Create(c echo.Context) error {
 		return err
 	}
 
-	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	if requestInputData["virtualHostsHostnames"] == nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "VirtualHostHostnameIsRequired")
 	}
-	requestInputData["virtualHosts"] = rawVhosts
 
-	if _, exists := requestInputData["encodedCertificate"]; !exists {
-		if _, exists = requestInputData["certificate"]; exists {
-			requestInputData["encodedCertificate"] = requestInputData["certificate"]
+	requestInputData["virtualHostsHostnames"] = sharedHelper.StringSliceValueObjectParser(
+		requestInputData["virtualHostsHostnames"], valueObject.NewFqdn,
+	)
+
+	if requestInputData["encodedCertificate"] != nil {
+		requestInputData["certificate"], err = controller.decodeContent(
+			requestInputData["encodedCertificate"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslCertificateContent")
 		}
 	}
-	encodedCert, err := valueObject.NewEncodedContent(requestInputData["encodedCertificate"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	decodedCert, err := encodedCert.GetDecodedContent()
-	if err != nil {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "CannotDecodeSslCertificateContent",
-		)
-	}
-	requestInputData["certificate"] = decodedCert
 
-	if _, exists := requestInputData["encodedKey"]; !exists {
-		if _, exists = requestInputData["key"]; exists {
-			requestInputData["encodedKey"] = requestInputData["key"]
+	if requestInputData["encodedKey"] != nil {
+		requestInputData["key"], err = controller.decodeContent(
+			requestInputData["encodedKey"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslKeyContent")
 		}
 	}
-	encodedKey, err := valueObject.NewEncodedContent(requestInputData["encodedKey"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	decodedKey, err := encodedKey.GetDecodedContent()
-	if err != nil {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "CannotDecodeSslPrivateKeyContent",
+
+	if requestInputData["encodedChainCertificates"] != nil && requestInputData["encodedChainCertificates"] != "" {
+		requestInputData["chainCertificates"], err = controller.decodeContent(
+			requestInputData["encodedChainCertificates"],
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslChainCertificatesContent")
+		}
 	}
-	requestInputData["key"] = decodedKey
 
 	if requestInputData["chainCertificates"] != nil && requestInputData["chainCertificates"] == "" {
 		requestInputData["chainCertificates"] = nil
