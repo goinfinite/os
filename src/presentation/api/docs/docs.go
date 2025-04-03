@@ -2051,6 +2051,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/ssl/trusted/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new publicly trusted ssl pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "CreatePubliclyTrusted",
+                "parameters": [
+                    {
+                        "description": "All props are required.",
+                        "name": "createPubliclyTrustedDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePubliclyTrustedSslPair"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "PubliclyTrustedSslPairCreationScheduled",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/ssl/{sslPairId}/": {
             "delete": {
                 "security": [
@@ -2730,6 +2769,14 @@ const docTemplate = `{
                     "$ref": "#/definitions/valueObject.MappingTargetType"
                 },
                 "targetValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreatePubliclyTrustedSslPair": {
+            "type": "object",
+            "properties": {
+                "virtualHostHostname": {
                     "type": "string"
                 }
             }

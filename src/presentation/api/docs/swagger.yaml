@@ -167,6 +167,11 @@ definitions:
       targetValue:
         type: string
     type: object
+  dto.CreatePubliclyTrustedSslPair:
+    properties:
+      virtualHostHostname:
+        type: string
+    type: object
   dto.CreateSecureAccessPublicKey:
     properties:
       accountId:
@@ -2509,6 +2514,30 @@ paths:
       security:
       - Bearer: []
       summary: DeleteSslPair
+      tags:
+      - ssl
+  /v1/ssl/trusted/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new publicly trusted ssl pair.
+      parameters:
+      - description: All props are required.
+        in: body
+        name: createPubliclyTrustedDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePubliclyTrustedSslPair'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: PubliclyTrustedSslPairCreationScheduled
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreatePubliclyTrusted
       tags:
       - ssl
   /v1/vhost/:

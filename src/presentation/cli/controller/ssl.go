@@ -86,6 +86,28 @@ func (controller *SslController) Create() *cobra.Command {
 	return cmd
 }
 
+func (controller *SslController) CreatePubliclyTrusted() *cobra.Command {
+	var hostnameStr string
+
+	cmd := &cobra.Command{
+		Use:   "create-trusted",
+		Short: "CreatePubliclyTrusted",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"virtualHostHostname": hostnameStr,
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.sslService.CreatePubliclyTrusted(requestBody, false),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
+	cmd.MarkFlagRequired("hostname")
+	return cmd
+}
+
 func (controller *SslController) Delete() *cobra.Command {
 	var sslPairIdStr string
 

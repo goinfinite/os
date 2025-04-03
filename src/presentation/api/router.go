@@ -188,6 +188,7 @@ func (router Router) sslRoutes() {
 
 	sslGroup.GET("/", sslController.Read)
 	sslGroup.POST("/", sslController.Create)
+	sslGroup.POST("/trusted/", sslController.CreatePubliclyTrusted)
 	sslGroup.DELETE("/:sslPairId/", sslController.Delete)
 
 	go sslController.SslCertificateWatchdog()

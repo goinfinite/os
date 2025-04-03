@@ -142,6 +142,27 @@ func (controller *SslController) Create(c echo.Context) error {
 	)
 }
 
+// CreatePubliclyTrusted godoc
+// @Summary      CreatePubliclyTrusted
+// @Description  Create a new publicly trusted ssl pair.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        createPubliclyTrustedDto 	  body    dto.CreatePubliclyTrustedSslPair  true "All props are required."
+// @Success      201 {object} object{} "PubliclyTrustedSslPairCreationScheduled"
+// @Router       /v1/ssl/trusted/ [post]
+func (controller *SslController) CreatePubliclyTrusted(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.CreatePubliclyTrusted(requestInputData, true),
+	)
+}
+
 // DeleteSslPair	 godoc
 // @Summary      DeleteSslPair
 // @Description  Delete a ssl pair.
