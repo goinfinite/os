@@ -192,6 +192,8 @@ definitions:
     properties:
       certificate:
         $ref: '#/definitions/entity.SslCertificate'
+      chainCertificates:
+        $ref: '#/definitions/entity.SslCertificate'
       key:
         type: string
       virtualHostsHostnames:
@@ -2531,7 +2533,8 @@ paths:
       parameters:
       - description: All props are required.<br />virtualHosts may be string or []string.
           Alias is not allowed.<br />certificate is a string field, i.e. ignore the
-          structure shown.<br />certificate and key must be base64 encoded.
+          structure shown.<br />certificate and key must be base64 encoded.<br />certificate
+          should include the CA chain/bundle if not provided in the certificate field.
         in: body
         name: createSslPairDto
         required: true

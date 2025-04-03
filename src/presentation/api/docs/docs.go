@@ -2103,7 +2103,7 @@ const docTemplate = `{
                 "summary": "CreateSslPair",
                 "parameters": [
                     {
-                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.",
+                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.\u003cbr /\u003ecertificate should include the CA chain/bundle if not provided in the certificate field.",
                         "name": "createSslPairDto",
                         "in": "body",
                         "required": true,
@@ -2881,6 +2881,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "certificate": {
+                    "$ref": "#/definitions/entity.SslCertificate"
+                },
+                "chainCertificates": {
                     "$ref": "#/definitions/entity.SslCertificate"
                 },
                 "key": {
