@@ -90,6 +90,10 @@ func (uc *SslCertificateWatchdog) Execute() {
 	}
 
 	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
+		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
+			continue
+		}
+
 		sslPairEntity, err := uc.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
 			VirtualHostHostname: &vhostEntity.Hostname,
 		})
