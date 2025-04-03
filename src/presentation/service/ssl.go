@@ -117,19 +117,15 @@ func (service *SslService) Read(
 }
 
 func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"virtualHosts", "certificate", "key"}
+	requiredParams := []string{"virtualHostsHostnames", "certificate", "key"}
 	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	vhosts := []valueObject.Fqdn{}
-	for _, rawVhost := range input["virtualHosts"].([]string) {
-		vhost, err := valueObject.NewFqdn(rawVhost)
-		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
-		}
-		vhosts = append(vhosts, vhost)
+	vhostHostnames, assertOk := input["virtualHostsHostnames"].([]valueObject.Fqdn)
+	if !assertOk {
+		return NewServiceOutput(UserError, errors.New("InvalidVirtualHostsStructure"))
 	}
 
 	certContent, err := valueObject.NewSslCertificateContent(input["certificate"])
@@ -176,7 +172,7 @@ func (service *SslService) Create(input map[string]interface{}) ServiceOutput {
 	}
 
 	createDto := dto.NewCreateSslPair(
-		vhosts, certEntity, chainCertsPtr, privateKeyContent,
+		vhostHostnames, certEntity, chainCertsPtr, privateKeyContent,
 		operatorAccountId, operatorIpAddress,
 	)
 
