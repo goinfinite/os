@@ -35,7 +35,7 @@ func (uc *SslCertificateWatchdog) shouldRenewCert(
 	sslPairEntity entity.SslPair,
 ) bool {
 	if len(vhostEntity.AliasesHostnames) == 0 {
-		return sslPairEntity.IsPubliclyTrusted()
+		return !sslPairEntity.IsPubliclyTrusted()
 	}
 
 	certAltNamesStrMap := map[string]interface{}{}
@@ -61,7 +61,7 @@ func (uc *SslCertificateWatchdog) shouldRenewCert(
 	}
 
 	if len(missingAltNames) == 0 {
-		return sslPairEntity.IsPubliclyTrusted()
+		return !sslPairEntity.IsPubliclyTrusted()
 	}
 
 	if sslPairEntity.IsPubliclyTrusted() {
