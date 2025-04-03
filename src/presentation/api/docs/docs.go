@@ -2001,14 +2001,85 @@ const docTemplate = `{
                     "ssl"
                 ],
                 "summary": "ReadSslPairs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SslPairId",
+                        "name": "sslPairId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "VirtualHostHostname",
+                        "name": "virtualHostHostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "AltNames",
+                        "name": "altNames",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "IssuedBeforeAt",
+                        "name": "issuedBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "IssuedAfterAt",
+                        "name": "issuedAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ExpiresBeforeAt",
+                        "name": "expiresBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ExpiresAfterAt",
+                        "name": "expiresAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.SslPair"
-                            }
+                            "$ref": "#/definitions/dto.ReadSslPairsResponse"
                         }
                     }
                 }
@@ -3106,6 +3177,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReadSslPairsResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                },
+                "virtualHosts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SslPair"
+                    }
+                }
+            }
+        },
         "dto.ReadVirtualHostsResponse": {
             "type": "object",
             "properties": {
@@ -3966,10 +4051,10 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "virtualHostHostname": {
+                "sslPairId": {
                     "type": "string"
                 },
-                "sslPairId": {
+                "virtualHostHostname": {
                     "type": "string"
                 }
             }
