@@ -64,7 +64,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 				for _, sslPairEntity := range sslPairEntities {
 					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0 even:bg-neutral-500/5">
 						<td class="text-left">
-							<p class="font-bold">{ sslPairEntity.MainVirtualHostHostname.String() }</p>
+							<p class="font-bold">{ sslPairEntity.VirtualHostHostname.String() }</p>
 							<p class="text-infinite-500 text-[0.6rem]">#{ sslPairEntity.Id.String()[0:12] }</p>
 							<p class="mt-3 text-[0.75rem] font-bold text-neutral-300">
 								subject alternative names (SANs)

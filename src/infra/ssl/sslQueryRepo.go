@@ -96,22 +96,22 @@ func (repo SslQueryRepo) sslPairFactory(
 	}
 
 	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	mainVirtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	virtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		if mainCert.CommonName == nil {
-			return sslPairEntity, errors.New("MainVirtualHostHostnameError: " + err.Error())
+			return sslPairEntity, errors.New("VirtualHostHostnameError: " + err.Error())
 		}
 
 		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
 		if err != nil {
-			return sslPairEntity, errors.New("MainVirtualHostHostnameFallbackError: " + err.Error())
+			return sslPairEntity, errors.New("VirtualHostHostnameFallbackError: " + err.Error())
 		}
 
-		mainVirtualHostHostname = mainCertSslHostname
+		virtualHostHostname = mainCertSslHostname
 	}
 
 	return entity.NewSslPair(
-		sslPairHashId, mainVirtualHostHostname, mainCert, privateKey, chainedCerts,
+		sslPairHashId, virtualHostHostname, mainCert, privateKey, chainedCerts,
 	), nil
 }
 
@@ -182,7 +182,7 @@ func (repo SslQueryRepo) ReadByHostname(
 	}
 
 	for _, ssl := range sslPairs {
-		if ssl.MainVirtualHostHostname.String() != vhostHostname.String() {
+		if ssl.VirtualHostHostname.String() != vhostHostname.String() {
 			continue
 		}
 

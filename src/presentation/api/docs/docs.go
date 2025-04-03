@@ -3966,7 +3966,7 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "mainVirtualHostHostname": {
+                "virtualHostHostname": {
                     "type": "string"
                 },
                 "sslPairId": {

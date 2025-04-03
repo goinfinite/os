@@ -359,7 +359,7 @@ func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
 		return errors.New("SslNotFound")
 	}
 
-	err = repo.ReplaceWithSelfSigned(sslPairToDelete.MainVirtualHostHostname)
+	err = repo.ReplaceWithSelfSigned(sslPairToDelete.VirtualHostHostname)
 	if err != nil {
 		return errors.New("ReplaceWithSelfSignedError: " + err.Error())
 	}
