@@ -2,18 +2,17 @@ package apiController
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,41 +43,50 @@ func NewSslController(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200 {array} entity.SslPair
+// @Param        sslPairId query  string  false  "SslPairId"
+// @Param        virtualHostHostname query  string  false  "VirtualHostHostname"
+// @Param        altNames query  string  false  "AltNames"
+// @Param        issuedBeforeAt query  string  false  "IssuedBeforeAt"
+// @Param        issuedAfterAt query  string  false  "IssuedAfterAt"
+// @Param        expiresBeforeAt query  string  false  "ExpiresBeforeAt"
+// @Param        expiresAfterAt query  string  false  "ExpiresAfterAt"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadSslPairsResponse
 // @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(c echo.Context) error {
-	return apiHelper.ServiceResponseWrapper(c, controller.sslService.Read())
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	if requestInputData["altNames"] != nil {
+		requestInputData["altNames"] = sharedHelper.StringSliceValueObjectParser(
+			requestInputData["altNames"], valueObject.NewSslHostname,
+		)
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.Read(requestInputData),
+	)
 }
 
-func (controller *SslController) parseRawVhosts(
-	rawVhostsInput interface{},
-) (rawVhostsStrSlice []string, err error) {
-	var assertOk bool
-
-	rawVhostsStrSlice, assertOk = rawVhostsInput.([]string)
-	if assertOk {
-		return rawVhostsStrSlice, nil
+func (controller *SslController) decodeContent(
+	rawContent interface{},
+) (decodedContent string, err error) {
+	encodedContent, err := valueObject.NewEncodedContent(rawContent)
+	if err != nil {
+		return decodedContent, err
+	}
+	decodedContent, err = encodedContent.GetDecodedContent()
+	if err != nil {
+		return decodedContent, errors.New("CannotDecodeContent")
 	}
 
-	rawVhostsInterfaceSlice, assertOk := rawVhostsInput.([]interface{})
-	if !assertOk {
-		rawVhostUniqueStr, err := voHelper.InterfaceToString(rawVhostsInput)
-		if err != nil {
-			return rawVhostsStrSlice, errors.New("VirtualHostsMustBeStringOrStringSlice")
-		}
-		return append(rawVhostsStrSlice, rawVhostUniqueStr), err
-	}
-
-	for _, rawVhost := range rawVhostsInterfaceSlice {
-		rawVhostStr, err := voHelper.InterfaceToString(rawVhost)
-		if err != nil {
-			slog.Debug(err.Error(), slog.Any("vhost", rawVhost))
-			continue
-		}
-		rawVhostsStrSlice = append(rawVhostsStrSlice, rawVhostStr)
-	}
-
-	return rawVhostsStrSlice, nil
+	return decodedContent, nil
 }
 
 // CreateSslPair    	 godoc
@@ -88,7 +96,7 @@ func (controller *SslController) parseRawVhosts(
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded."
+// @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded.<br />certificate should include the CA chain/bundle if not provided in the certificate field."
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(c echo.Context) error {
@@ -97,48 +105,68 @@ func (controller *SslController) Create(c echo.Context) error {
 		return err
 	}
 
-	rawVhosts, err := controller.parseRawVhosts(requestInputData["virtualHosts"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+	if requestInputData["virtualHostsHostnames"] == nil {
+		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "VirtualHostHostnameIsRequired")
 	}
-	requestInputData["virtualHosts"] = rawVhosts
 
-	if _, exists := requestInputData["encodedCertificate"]; !exists {
-		if _, exists = requestInputData["certificate"]; exists {
-			requestInputData["encodedCertificate"] = requestInputData["certificate"]
+	requestInputData["virtualHostsHostnames"] = sharedHelper.StringSliceValueObjectParser(
+		requestInputData["virtualHostsHostnames"], valueObject.NewFqdn,
+	)
+
+	if requestInputData["encodedCertificate"] != nil {
+		requestInputData["certificate"], err = controller.decodeContent(
+			requestInputData["encodedCertificate"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslCertificateContent")
 		}
 	}
-	encodedCert, err := valueObject.NewEncodedContent(requestInputData["encodedCertificate"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	decodedCert, err := encodedCert.GetDecodedContent()
-	if err != nil {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "CannotDecodeSslCertificateContent",
-		)
-	}
-	requestInputData["certificate"] = decodedCert
 
-	if _, exists := requestInputData["encodedKey"]; !exists {
-		if _, exists = requestInputData["key"]; exists {
-			requestInputData["encodedKey"] = requestInputData["key"]
+	if requestInputData["encodedKey"] != nil {
+		requestInputData["key"], err = controller.decodeContent(
+			requestInputData["encodedKey"],
+		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslKeyContent")
 		}
 	}
-	encodedKey, err := valueObject.NewEncodedContent(requestInputData["encodedKey"])
-	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-	}
-	decodedKey, err := encodedKey.GetDecodedContent()
-	if err != nil {
-		return apiHelper.ResponseWrapper(
-			c, http.StatusBadRequest, "CannotDecodeSslPrivateKeyContent",
+
+	if requestInputData["encodedChainCertificates"] != nil && requestInputData["encodedChainCertificates"] != "" {
+		requestInputData["chainCertificates"], err = controller.decodeContent(
+			requestInputData["encodedChainCertificates"],
 		)
+		if err != nil {
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslChainCertificatesContent")
+		}
 	}
-	requestInputData["key"] = decodedKey
+
+	if requestInputData["chainCertificates"] != nil && requestInputData["chainCertificates"] == "" {
+		requestInputData["chainCertificates"] = nil
+	}
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.sslService.Create(requestInputData),
+	)
+}
+
+// CreatePubliclyTrusted godoc
+// @Summary      CreatePubliclyTrusted
+// @Description  Create a new publicly trusted ssl pair.
+// @Tags         ssl
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        createPubliclyTrustedDto 	  body    dto.CreatePubliclyTrustedSslPair  true "All props are required."
+// @Success      201 {object} object{} "PubliclyTrustedSslPairCreationScheduled"
+// @Router       /v1/ssl/trusted/ [post]
+func (controller *SslController) CreatePubliclyTrusted(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.sslService.CreatePubliclyTrusted(requestInputData, true),
 	)
 }
 
@@ -171,7 +199,7 @@ func (controller *SslController) SslCertificateWatchdog() {
 	defer timer.Stop()
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(controller.persistentDbSvc)
-	sslQueryRepo := sslInfra.SslQueryRepo{}
+	sslQueryRepo := sslInfra.NewSslQueryRepo()
 	sslCmdRepo := sslInfra.NewSslCmdRepo(
 		controller.persistentDbSvc, controller.transientDbSvc,
 	)

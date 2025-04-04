@@ -7,6 +7,7 @@ document.addEventListener("alpine:init", () => {
         id: "",
         virtualHostsHostnames: [],
         certificate: "",
+        chainCertificates: "",
         key: "",
       };
     },
@@ -23,11 +24,6 @@ document.addEventListener("alpine:init", () => {
       );
     },
     shouldImportSslCertificateAsFile: false,
-    get shouldDisableRemoveVirtualHostsHostnamesSubmitButton() {
-      return (
-        this.sslPair.id == "" || this.sslPair.virtualHostsHostnames.length == 0
-      );
-    },
     downloadPemFile(isKeyFileContent) {
       let pemFileContent = this.sslPair.certificate;
       let fileExtension = "crt";
@@ -42,24 +38,30 @@ document.addEventListener("alpine:init", () => {
 
     // Modal states
     isImportSslCertificateModalOpen: false,
-    openImportSslCertificateModal() {
+    openImportSslCertificateModal(vhostHostname = "") {
       this.resetPrimaryStates();
 
+      if (vhostHostname) {
+        this.sslPair.virtualHostsHostnames = [vhostHostname];
+      }
       this.isImportSslCertificateModalOpen = true;
     },
     closeImportSslCertificateModal() {
-      this.sslPair.certificate = btoa(this.sslPair.certificate);
-      this.sslPair.key = btoa(this.sslPair.key);
-
       this.isImportSslCertificateModalOpen = false;
     },
     isViewPemFilesModalOpen: false,
-    openViewPemFilesModal(sslPairId, certificateContent, keyContent) {
+    openViewPemFilesModal(sslPairId) {
       this.resetPrimaryStates();
 
+      const sslPairEntity = JSON.parse(
+        document.getElementById("sslPairEntity_" + sslPairId).textContent
+      );
+
       this.sslPair.id = sslPairId;
-      this.sslPair.certificate = certificateContent;
-      this.sslPair.key = keyContent;
+      this.sslPair.certificate = atob(
+        sslPairEntity.certificate.certificateContent
+      );
+      this.sslPair.key = atob(sslPairEntity.key);
       this.isViewPemFilesModalOpen = true;
     },
     closeViewPemFilesModal() {
@@ -76,11 +78,21 @@ document.addEventListener("alpine:init", () => {
       this.isSwapToSelfSignedModalOpen = false;
     },
     swapToSelfSigned() {
+      this.closeSwapToSelfSignedModal();
       htmx
         .ajax("DELETE", "/api/v1/ssl/" + this.sslPair.id + "/", {
           swap: "none",
         })
-        .finally(() => this.closeSwapToSelfSignedModal());
+        .then(() => this.$dispatch("refresh:ssl-pairs-table"));
+    },
+    createPubliclyTrusted(vhostHostname) {
+      htmx
+        .ajax("POST", "/api/v1/ssl/trusted/", {
+          values: { virtualHostHostname: vhostHostname },
+          swap: "none",
+        })
+        .then(() => this.$dispatch("refresh:ssl-pairs-table"))
+        .finally(() => this.$store.main.refreshScheduledTasksPopover());
     },
   }));
 });

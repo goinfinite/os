@@ -62,6 +62,7 @@
     "primarykey",
     "privs",
     "Procs",
+    "Ptrs",
     "publicsuffix",
     "responsetype",
     "serviceid",

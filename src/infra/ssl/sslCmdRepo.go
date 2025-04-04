@@ -19,7 +19,8 @@ const DomainOwnershipValidationUrlPath string = "/validateOwnership"
 type SslCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	sslQueryRepo    SslQueryRepo
+	sslQueryRepo    *SslQueryRepo
+	vhostQueryRepo  *vhostInfra.VirtualHostQueryRepo
 }
 
 func NewSslCmdRepo(
@@ -29,7 +30,8 @@ func NewSslCmdRepo(
 	return &SslCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    SslQueryRepo{},
+		sslQueryRepo:    &SslQueryRepo{},
+		vhostQueryRepo:  vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 	}
 }
 
@@ -200,112 +202,109 @@ func (repo *SslCmdRepo) issueValidSsl(
 
 func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	createDto dto.CreatePubliclyTrustedSslPair,
-) error {
+) (sslPairId valueObject.SslPairId, err error) {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(repo.transientDbSvc)
 	serverPublicIpAddress, err := o11yQueryRepo.ReadServerPublicIpAddress()
 	if err != nil {
-		return err
+		return sslPairId, err
 	}
 
-	virtualHostsHostnames := []valueObject.Fqdn{createDto.CommonName}
-	virtualHostsHostnames = append(virtualHostsHostnames, createDto.AltNames...)
+	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination: dto.PaginationSingleItem,
+		Hostname:   &createDto.VirtualHostHostname,
+	})
+	if err != nil {
+		return sslPairId, errors.New("ReadVirtualHostEntitiesError: " + err.Error())
+	}
+
+	if len(vhostReadResponse.VirtualHosts) == 0 {
+		return sslPairId, errors.New("VirtualHostNotFound")
+	}
+
+	virtualHostsHostnames := []valueObject.Fqdn{createDto.VirtualHostHostname}
+	virtualHostsHostnames = append(
+		virtualHostsHostnames, vhostReadResponse.VirtualHosts[0].AliasesHostnames...,
+	)
 
 	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
 		virtualHostsHostnames, serverPublicIpAddress,
 	)
 	if len(dnsFunctionalHostnames) == 0 {
-		return errors.New("NoSslHostnamePointingToServerIpAddress")
+		return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
 	dummyValueGenerator := infraHelper.DummyValueGenerator{}
 	dummyValue := dummyValueGenerator.GenPass(64)
 	expectedOwnershipHash, err := valueObject.NewHash(dummyValue)
 	if err != nil {
-		return errors.New("CreateOwnershipValidationHashError: " + err.Error())
+		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 	if len(httpFunctionalHostnames) == 0 {
-		return errors.New("NoSslHostnamePassingHttpOwnershipValidation")
+		return sslPairId, errors.New("NoSslHostnamePassingHttpOwnershipValidation")
 	}
 
-	return repo.issueValidSsl(createDto.CommonName, httpFunctionalHostnames)
+	err = repo.issueValidSsl(createDto.VirtualHostHostname, httpFunctionalHostnames)
+	if err != nil {
+		return sslPairId, errors.New("IssueValidSslError: " + err.Error())
+	}
+
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		VirtualHostHostname: &createDto.VirtualHostHostname,
+	})
+	if err != nil {
+		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
+	}
+
+	return sslPairEntity.Id, nil
 }
 
 func (repo *SslCmdRepo) Create(
-	createSslPair dto.CreateSslPair,
+	createDto dto.CreateSslPair,
 ) (sslPairId valueObject.SslPairId, err error) {
-	if len(createSslPair.VirtualHostsHostnames) == 0 {
+	if len(createDto.VirtualHostsHostnames) == 0 {
 		return sslPairId, errors.New("EmptyVirtualHosts")
 	}
 
-	firstVirtualHostHostname := createSslPair.VirtualHostsHostnames[0]
-	firstVirtualHostHostnameStr := firstVirtualHostHostname.String()
-	firstVhostCertFilePath := infraEnvs.PkiConfDir + "/" + firstVirtualHostHostnameStr + ".crt"
-	firstVhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + firstVirtualHostHostnameStr + ".key"
+	for _, vhostHostname := range createDto.VirtualHostsHostnames {
+		vhostHostnameStr := vhostHostname.String()
+		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
+		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
 
-	for _, vhostHostname := range createSslPair.VirtualHostsHostnames {
-		vhostStr := vhostHostname.String()
-		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostStr + ".crt"
-		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostStr + ".key"
-
-		shouldBeSymlink := vhostStr != firstVirtualHostHostnameStr
-		if shouldBeSymlink {
-			shouldOverwrite := true
-			err := infraHelper.CreateSymlink(
-				firstVhostCertFilePath, vhostCertFilePath, shouldOverwrite,
-			)
-			if err != nil {
-				slog.Debug(
-					"CreateSslCertSymlinkError",
-					slog.String("hostname", vhostStr),
-					slog.String("error", err.Error()),
-				)
-				continue
-			}
-
-			err = infraHelper.CreateSymlink(
-				firstVhostCertKeyFilePath, vhostCertKeyFilePath, shouldOverwrite,
-			)
-			if err != nil {
-				slog.Debug(
-					"CreateSslKeySymlinkError",
-					slog.String("hostname", vhostStr),
-					slog.String("error", err.Error()),
-				)
-				continue
-			}
-
-			continue
+		certContentStr := createDto.Certificate.CertificateContent.String()
+		if createDto.ChainCertificates != nil {
+			certContentStr += "\n" + createDto.ChainCertificates.CertificateContent.String()
 		}
 
 		shouldOverwrite := true
-		err := infraHelper.UpdateFile(
-			vhostCertFilePath,
-			createSslPair.Certificate.CertificateContent.String(),
-			shouldOverwrite,
-		)
+		err := infraHelper.UpdateFile(vhostCertFilePath, certContentStr, shouldOverwrite)
 		if err != nil {
-			return sslPairId, err
+			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}
 
 		err = infraHelper.UpdateFile(
-			vhostCertKeyFilePath, createSslPair.Key.String(), shouldOverwrite,
+			vhostCertKeyFilePath, createDto.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
-			return sslPairId, err
+			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())
 		}
 	}
 
-	return sslPairId, nil
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		VirtualHostHostname: &createDto.VirtualHostsHostnames[0],
+	})
+	if err != nil {
+		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
+	}
+
+	return sslPairEntity.Id, nil
 }
 
 func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) error {
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(repo.persistentDbSvc)
-
-	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
@@ -315,7 +314,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 		return errors.New("AliasVirtualHostSslReliesOnParent")
 	}
 
-	aliasesVirtualHostsReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination:     dto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
@@ -356,12 +355,14 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 }
 
 func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
-	sslPairToDelete, err := repo.sslQueryRepo.ReadById(sslPairId)
+	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		SslPairId: &sslPairId,
+	})
 	if err != nil {
-		return errors.New("SslNotFound")
+		return errors.New("ReadSslPairEntityError: " + err.Error())
 	}
 
-	err = repo.ReplaceWithSelfSigned(sslPairToDelete.MainVirtualHostHostname)
+	err = repo.ReplaceWithSelfSigned(sslPairEntity.VirtualHostHostname)
 	if err != nil {
 		return errors.New("ReplaceWithSelfSignedError: " + err.Error())
 	}

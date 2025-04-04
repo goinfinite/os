@@ -12,15 +12,11 @@ templ CronsIndex(crons []entity.Cron) {
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/crons.js" }></script>
 	<!-- Crons Page HTML -->
 	<div x-data="crons">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"Crons",
-					"Manage cron jobs to automate routines and keep your environment organically configured, enabling certain operations to occur periodically without the need for manual execution.",
-					"ph-clock",
-				)
-			</div>
-		</div>
+		@componentStructural.PageTitle(
+			"Crons",
+			"Manage cron jobs to automate routines and keep your environment organically configured, enabling certain operations to occur periodically without the need for manual execution.",
+			"ph-clock",
+		)
 		<div
 			id="crons-page-content"
 			hx-get="/crons/"

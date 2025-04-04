@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
@@ -32,13 +32,17 @@ func NewSslsPresenter(
 }
 
 func (presenter *SslsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.sslService.Read()
-	if responseOutput.Status != service.Success {
+	sslPairsReadResponseServiceOutput := presenter.sslService.Read(map[string]interface{}{
+		"itemsPerPage": 1000,
+	})
+	if sslPairsReadResponseServiceOutput.Status != service.Success {
+		slog.Debug("SslPairsServiceBadOutput")
 		return nil
 	}
 
-	sslPairs, assertOk := responseOutput.Body.([]entity.SslPair)
+	sslPairsReadResponse, assertOk := sslPairsReadResponseServiceOutput.Body.(dto.ReadSslPairsResponse)
 	if !assertOk {
+		slog.Debug("ReadSslPairsResponseAssertionError")
 		return nil
 	}
 
@@ -50,6 +54,6 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.SslsIndex(sslPairs, vhostHostnames)
+	pageContent := page.SslsIndex(sslPairsReadResponse.SslPairs, vhostHostnames)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

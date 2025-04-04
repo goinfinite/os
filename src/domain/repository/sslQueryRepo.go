@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 type SslQueryRepo interface {
-	Read() ([]entity.SslPair, error)
-	ReadById(valueObject.SslPairId) (entity.SslPair, error)
+	Read(dto.ReadSslPairsRequest) (dto.ReadSslPairsResponse, error)
+	ReadFirst(dto.ReadSslPairsRequest) (entity.SslPair, error)
 }

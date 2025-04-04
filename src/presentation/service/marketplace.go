@@ -15,6 +15,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 )
@@ -450,8 +451,14 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		installedId, shouldUninstallServices, operatorAccountId, operatorIpAddress,
 	)
 
+	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(service.persistentDbSvc)
+	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(service.persistentDbSvc)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbSvc)
+
 	err = useCase.DeleteMarketplaceInstalledItem(
 		service.marketplaceQueryRepo, service.marketplaceCmdRepo,
+		mappingQueryRepo, mappingCmdRepo, servicesQueryRepo, servicesCmdRepo,
 		service.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {

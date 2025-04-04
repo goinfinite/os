@@ -5,8 +5,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
+	"slices"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -15,7 +17,11 @@ import (
 
 type SslQueryRepo struct{}
 
-func (repo SslQueryRepo) sslCertificatesFactory(
+func NewSslQueryRepo() *SslQueryRepo {
+	return &SslQueryRepo{}
+}
+
+func (repo *SslQueryRepo) sslCertificatesFactory(
 	sslCertsContent valueObject.SslCertificateContent,
 ) (entity.SslCertificate, []entity.SslCertificate, error) {
 	mainCert := entity.SslCertificate{}
@@ -54,7 +60,7 @@ func (repo SslQueryRepo) sslCertificatesFactory(
 	return mainCert, chainedCerts, nil
 }
 
-func (repo SslQueryRepo) sslPairFactory(
+func (repo *SslQueryRepo) sslPairFactory(
 	crtFilePath valueObject.UnixFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
 	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
@@ -96,26 +102,28 @@ func (repo SslQueryRepo) sslPairFactory(
 	}
 
 	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	mainVirtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	virtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		if mainCert.CommonName == nil {
-			return sslPairEntity, errors.New("MainVirtualHostHostnameError: " + err.Error())
+			return sslPairEntity, errors.New("VirtualHostHostnameError: " + err.Error())
 		}
 
 		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
 		if err != nil {
-			return sslPairEntity, errors.New("MainVirtualHostHostnameFallbackError: " + err.Error())
+			return sslPairEntity, errors.New("VirtualHostHostnameFallbackError: " + err.Error())
 		}
 
-		mainVirtualHostHostname = mainCertSslHostname
+		virtualHostHostname = mainCertSslHostname
 	}
 
 	return entity.NewSslPair(
-		sslPairHashId, mainVirtualHostHostname, mainCert, privateKey, chainedCerts,
+		sslPairHashId, virtualHostHostname, mainCert, privateKey, chainedCerts,
 	), nil
 }
 
-func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
+func (repo *SslQueryRepo) Read(
+	requestDto dto.ReadSslPairsRequest,
+) (responseDto dto.ReadSslPairsResponse, err error) {
 	sslPairEntities := []entity.SslPair{}
 
 	rawCertFilePaths, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
@@ -124,10 +132,10 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 		ShouldRunWithSubShell: true,
 	})
 	if err != nil {
-		return sslPairEntities, errors.New("FindCertFilesError: " + err.Error())
+		return responseDto, errors.New("FindCertFilesError: " + err.Error())
 	}
 
-	for _, rawCertFilePath := range strings.Split(rawCertFilePaths, "\n") {
+	for rawCertFilePath := range strings.SplitSeq(rawCertFilePaths, "\n") {
 		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
 		if err != nil {
 			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
@@ -140,33 +148,112 @@ func (repo SslQueryRepo) Read() ([]entity.SslPair, error) {
 			continue
 		}
 
+		if requestDto.SslPairId != nil {
+			if sslPairEntity.Id != *requestDto.SslPairId {
+				continue
+			}
+		}
+
+		if requestDto.VirtualHostHostname != nil {
+			if sslPairEntity.VirtualHostHostname != *requestDto.VirtualHostHostname {
+				continue
+			}
+		}
+
+		for _, altName := range requestDto.AltNames {
+			if !slices.Contains(sslPairEntity.Certificate.AltNames, altName) {
+				continue
+			}
+		}
+
+		if requestDto.IssuedBeforeAt != nil {
+			if sslPairEntity.Certificate.IssuedAt >= *requestDto.IssuedBeforeAt {
+				continue
+			}
+		}
+		if requestDto.IssuedAfterAt != nil {
+			if sslPairEntity.Certificate.IssuedAt <= *requestDto.IssuedAfterAt {
+				continue
+			}
+		}
+		if requestDto.ExpiresBeforeAt != nil {
+			if sslPairEntity.Certificate.ExpiresAt >= *requestDto.ExpiresBeforeAt {
+				continue
+			}
+		}
+		if requestDto.ExpiresAfterAt != nil {
+			if sslPairEntity.Certificate.ExpiresAt <= *requestDto.ExpiresAfterAt {
+				continue
+			}
+		}
+
 		sslPairEntities = append(sslPairEntities, sslPairEntity)
 	}
 
-	return sslPairEntities, nil
+	sortDirectionStr := "asc"
+	if requestDto.Pagination.SortDirection != nil {
+		sortDirectionStr = requestDto.Pagination.SortDirection.String()
+	}
+
+	if requestDto.Pagination.SortBy != nil {
+		slices.SortStableFunc(sslPairEntities, func(a, b entity.SslPair) int {
+			firstElement := a
+			secondElement := b
+			if sortDirectionStr != "asc" {
+				firstElement = b
+				secondElement = a
+			}
+
+			switch requestDto.Pagination.SortBy.String() {
+			case "id", "pairId", "sslPairId":
+				return strings.Compare(
+					firstElement.Id.String(), secondElement.Id.String(),
+				)
+			case "virtualHostHostname", "vhostHostname", "hostname":
+				return strings.Compare(
+					firstElement.VirtualHostHostname.String(), secondElement.VirtualHostHostname.String(),
+				)
+			case "issuedAt":
+				return strings.Compare(
+					firstElement.Certificate.IssuedAt.String(), secondElement.Certificate.IssuedAt.String(),
+				)
+			case "expiresAt":
+				return strings.Compare(
+					firstElement.Certificate.ExpiresAt.String(), secondElement.Certificate.ExpiresAt.String(),
+				)
+			default:
+				return 0
+			}
+		})
+	}
+
+	itemsTotal := uint64(len(sslPairEntities))
+	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+
+	paginationDto := requestDto.Pagination
+	paginationDto.ItemsTotal = &itemsTotal
+	paginationDto.PagesTotal = &pagesTotal
+
+	return dto.ReadSslPairsResponse{
+		Pagination: paginationDto,
+		SslPairs:   sslPairEntities,
+	}, nil
 }
 
-func (repo SslQueryRepo) ReadById(
-	sslPairId valueObject.SslPairId,
-) (entity.SslPair, error) {
-	sslPairs, err := repo.Read()
+func (repo *SslQueryRepo) ReadFirst(
+	requestDto dto.ReadSslPairsRequest,
+) (sslPairEntity entity.SslPair, err error) {
+	requestDto.Pagination = dto.PaginationSingleItem
+	responseDto, err := repo.Read(requestDto)
 	if err != nil {
-		return entity.SslPair{}, err
+		return sslPairEntity, err
 	}
 
-	if len(sslPairs) < 1 {
-		return entity.SslPair{}, errors.New("SslPairNotFound")
+	if len(responseDto.SslPairs) == 0 {
+		return sslPairEntity, errors.New("SslPairNotFound")
 	}
 
-	for _, ssl := range sslPairs {
-		if ssl.Id.String() != sslPairId.String() {
-			continue
-		}
-
-		return ssl, nil
-	}
-
-	return entity.SslPair{}, errors.New("SslPairNotFound")
+	return responseDto.SslPairs[0], nil
 }
 
 func (repo SslQueryRepo) GetOwnershipValidationHash(

@@ -13,15 +13,11 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/accounts.js" }></script>
 	<!-- Accounts Page HTML -->
 	<div x-data="accounts">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			<div class="basis-[70%]">
-				@componentStructural.PageTitle(
-					"Accounts",
-					"Create and manage accounts with their own API keys, allowing each one to access and use every Infinite OS resource individually.",
-					"ph-users-three",
-				)
-			</div>
-		</div>
+		@componentStructural.PageTitle(
+			"Accounts",
+			"Create and manage accounts with their own API keys, allowing each one to access and use every Infinite OS resource individually.",
+			"ph-users-three",
+		)
 		<div
 			id="accounts-page-content"
 			hx-get="/accounts/"

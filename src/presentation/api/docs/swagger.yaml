@@ -167,6 +167,11 @@ definitions:
       targetValue:
         type: string
     type: object
+  dto.CreatePubliclyTrustedSslPair:
+    properties:
+      virtualHostHostname:
+        type: string
+    type: object
   dto.CreateSecureAccessPublicKey:
     properties:
       accountId:
@@ -186,6 +191,8 @@ definitions:
   dto.CreateSslPair:
     properties:
       certificate:
+        $ref: '#/definitions/entity.SslCertificate'
+      chainCertificates:
         $ref: '#/definitions/entity.SslCertificate'
       key:
         type: string
@@ -376,6 +383,15 @@ definitions:
       tasks:
         items:
           $ref: '#/definitions/entity.ScheduledTask'
+        type: array
+    type: object
+  dto.ReadSslPairsResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+      sslPairs:
+        items:
+          $ref: '#/definitions/entity.SslPair'
         type: array
     type: object
   dto.ReadVirtualHostsResponse:
@@ -942,9 +958,9 @@ definitions:
         type: array
       key:
         type: string
-      mainVirtualHostHostname:
-        type: string
       sslPairId:
+        type: string
+      virtualHostHostname:
         type: string
     type: object
   entity.UnixFile:
@@ -1189,7 +1205,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.1
+  version: 0.2.2
 paths:
   /v1/account/:
     get:
@@ -2449,15 +2465,62 @@ paths:
       consumes:
       - application/json
       description: List ssl pairs.
+      parameters:
+      - description: SslPairId
+        in: query
+        name: sslPairId
+        type: string
+      - description: VirtualHostHostname
+        in: query
+        name: virtualHostHostname
+        type: string
+      - description: AltNames
+        in: query
+        name: altNames
+        type: string
+      - description: IssuedBeforeAt
+        in: query
+        name: issuedBeforeAt
+        type: string
+      - description: IssuedAfterAt
+        in: query
+        name: issuedAfterAt
+        type: string
+      - description: ExpiresBeforeAt
+        in: query
+        name: expiresBeforeAt
+        type: string
+      - description: ExpiresAfterAt
+        in: query
+        name: expiresAfterAt
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.SslPair'
-            type: array
+            $ref: '#/definitions/dto.ReadSslPairsResponse'
       security:
       - Bearer: []
       summary: ReadSslPairs
@@ -2470,7 +2533,8 @@ paths:
       parameters:
       - description: All props are required.<br />virtualHosts may be string or []string.
           Alias is not allowed.<br />certificate is a string field, i.e. ignore the
-          structure shown.<br />certificate and key must be base64 encoded.
+          structure shown.<br />certificate and key must be base64 encoded.<br />certificate
+          should include the CA chain/bundle if not provided in the certificate field.
         in: body
         name: createSslPairDto
         required: true
@@ -2509,6 +2573,30 @@ paths:
       security:
       - Bearer: []
       summary: DeleteSslPair
+      tags:
+      - ssl
+  /v1/ssl/trusted/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new publicly trusted ssl pair.
+      parameters:
+      - description: All props are required.
+        in: body
+        name: createPubliclyTrustedDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePubliclyTrustedSslPair'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: PubliclyTrustedSslPairCreationScheduled
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreatePubliclyTrusted
       tags:
       - ssl
   /v1/vhost/:

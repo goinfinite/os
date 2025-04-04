@@ -8,6 +8,7 @@ import (
 type CreateSslPair struct {
 	VirtualHostsHostnames []valueObject.Fqdn        `json:"virtualHostsHostnames"`
 	Certificate           entity.SslCertificate     `json:"certificate"`
+	ChainCertificates     *entity.SslCertificate    `json:"chainCertificates,omitempty"`
 	Key                   valueObject.SslPrivateKey `json:"key"`
 	OperatorAccountId     valueObject.AccountId     `json:"-"`
 	OperatorIpAddress     valueObject.IpAddress     `json:"-"`
@@ -16,6 +17,7 @@ type CreateSslPair struct {
 func NewCreateSslPair(
 	virtualHostsHostnames []valueObject.Fqdn,
 	certificate entity.SslCertificate,
+	chainCertificates *entity.SslCertificate,
 	key valueObject.SslPrivateKey,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
@@ -23,6 +25,7 @@ func NewCreateSslPair(
 	return CreateSslPair{
 		VirtualHostsHostnames: virtualHostsHostnames,
 		Certificate:           certificate,
+		ChainCertificates:     chainCertificates,
 		Key:                   key,
 		OperatorAccountId:     operatorAccountId,
 		OperatorIpAddress:     operatorIpAddress,

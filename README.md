@@ -1,28 +1,95 @@
+# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
+
+Infinite OS is the simplest way to deploy containerized applications. Full stop. Even if containers sound like rocket science to you, you'll be launching apps with just a few clicks. 🚀
+
+![Infinite OS Screenshots](docs/os-screenshots.webp)
+
+### What's This All About Then?
+
+We've created something rather special - a "metamorphic" container image. Yes, we made up that term because **nothing else quite does what Infinite OS does**!
+
+The traditional container dance goes: write Dockerfile, build image, run container, repeat until your coffee goes cold. Tedious, isn't it?
+
+With Infinite OS, **you can skip all that faff**. No Dockerfile wizardry required. Simply run our container image and then deploy your applications with minimal fuss with the web dashboard, CLI or REST API. Like a magic box. 🧞
+
+For the tech wizards among you - yes, you can still build your own custom Dockerfile images on top of Infinite OS with your preferred applications pre-installed. We're flexible like that.
+
+### Plays Well With Others
+
+Infinite OS works flawlessly with any container orchestration tool that speaks OCI: Docker, Podman, Docker Swarm, Rancher, Kubernetes - the lot.
+
+Though if you fancy an even smoother experience, do check out our sibling project [Infinite Ez](https://github.com/goinfinite/ez) - a self-hosted PaaS solution that pairs perfectly with Infinite OS. Also free and refreshingly straightforward.
+
+### What Infinite OS Is
+
+- Your get-out-of-jail-free card for never writing another Dockerfile;
+- A shape-shifting container that becomes what you need AFTER you run it;
+- A lightweight web dashboard, CLI and REST API that sips resources (mere ~80MB RAM);
+- A handy marketplace to quickly launch and manage apps, databases, etc.
+
+### What Infinite OS Isn't
+
+- A container engine itself (like Docker or Podman);
+- A self-hosted PaaS solution (that's [Infinite Ez's](https://github.com/goinfinite/ez) job);
+- A replacement for Docker, Podman, Kubernetes or any container orchestration tool.
+
+## Online Demo
+
+A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/](https://os.demo.goinfinite.net:1618/). The default credentials are `demo` (user) and `abc123` (password). You can use this demo to explore the dashboard and see how it works. Please note that this is a read-only demo, so you won't be able to make any changes or deploy any applications.
+
+## Features
+
+- **Web Dashboard**: A slick web interface where you can manage your environment and deploy apps without breaking a sweat;
+- **CLI and REST API**: Everything you can do with clicks, you can do with commands or calls - choose your weapon!
+- **Services Catalog**: Runtimes, programming languages, databases - all deployed with fewer clicks than ordering a takeaway;
+- **Marketplace Catalog**: Applications, frameworks and entire tech stacks just waiting for you to press the big friendly button;
+- **Cron Jobs**: Schedule tasks to run whenever you fancy - while you're sleeping, on tea breaks, or precisely at 3:42 PM on Thursdays;
+- **File Manager**: Built-in interface to poke around your container's files and folders without needing to be a terminal ninja;
+- **Automatic SSL**: Let's Encrypt certificates that sort themselves out - because life's too short to manually configure SSL;
+- **Automatic Mappings**: Your marketplace apps magically appear at exactly the right path and domain name - no configuration gymnastics required;
+- **NGINX baked-in**: NGINX comes pre-configured and ready to rock with both the dashboard and your applications;
+- **Runtime Settings**: Tweak PHP versions, NGINX configurations and more - all the knobs and dials you need;
+- **User Management**: Create accounts for the whole team (or just yourself with different hats on) and manage them all in one place.
+
+## Get Started
+
 ```
 This project is still under active development (alpha stage).
 Expect bugs early on. Create issues so they can be fixed.
 ```
 
-# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/_/) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
+### Deploying the Container
 
-Infinite OS is a container operating system designed to allow you to deploy applications knowing little to nothing about containers. It comes with a user-friendly dashboard, REST API, and CLI for seamless container management.
+Infinite OS is designed to be flexible, so you can run it with your preferred graphical user interface (GUI) or command line interface (CLI). This includes popular tools like Docker Desktop, Podman Desktop, Rancher Desktop, Orbstack, Portainer, Kubernetes, and any other OCI-compliant container manager.
 
-A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/\_/](https://os.demo.goinfinite.net:1618/_/). The default credentials are `demo` and `abc123`.
-
-## Running
-
-To run Infinite OS you just need a single command:
+#### Command Line Interface (CLI) Example
 
 ```
-docker run --rm --name myapp-container \
+docker run --rm --name 'myapp.net' \
   --env 'PRIMARY_VHOST=myapp.net' \
   -p 8080:80 -p 8443:443 -p 1618:1618 \
   -it docker.io/goinfinite/os:latest
 ```
 
-Then you'll be able to access the dashboard at `https://localhost:1618/_/` and the setup wizard will allow you to create a new account. Note that you may encounter an SSL warning due to the self-signed certificate, which you can ignore or replace with your own certificate later.
+#### Graphical User Interfaces (GUI) Example
 
-Using the dashboard you can deploy applications with the Marketplace feature in just a few clicks. You can also use the CLI for deployments, such as:
+If you prefer a GUI, the process is similar across most tools:
+
+1. Define the container image URL as `docker.io/goinfinite/os:latest`;
+2. Define the container name to your domain name, e.g. `myapp.net`;
+3. Set the environment variable `PRIMARY_VHOST` also to your domain name, e.g. `myapp.net`;
+4. The only necessary port to publish is 1618, which is the API and dashboard port. The other ports are optional and only needed if you want to access the applications directly from the host. Common used ports are 8080 for the container HTTP port (80) and 8443 for the container HTTPS port (443);
+5. Start the container and you're good to go!
+
+### Accessing the Dashboard
+
+Once the container is up and running, you can access the dashboard with your web browser. The dashboard is available at [`https://localhost:1618/`](https://localhost:1618/) (or the IP address of your host machine if you're not using localhost).
+
+The first time you log in, you'll be prompted to create an admin account via the setup wizard. This one-time process allows you to create an admin account for managing your applications.
+
+The dashboard is where the magic happens. You can deploy applications with just a few clicks using the Marketplace feature. Plus, every action you take in the dashboard has a corresponding CLI and REST API command, making it easy to automate your deployments and manage your applications programmatically.
+
+For example, to deploy a WordPress application, you can use the following CLI command inside the container:
 
 ```
 os mktplace install -s wp \
@@ -31,135 +98,34 @@ os mktplace install -s wp \
   -f 'adminMailAddress:user@example.com'
 ```
 
-In this example, the container ports 80, 443, and 1618 are mapped to host ports 8080, 8443, and 1618, respectively. If you are running multiple containers on the same host, consider using a reverse proxy to manage traffic or [Infinite Ez](https://github.com/goinfinite/ez), our free and easy-to-use self-hosted PaaS solution.
+## Support
 
-You can customize the container name, vhost, and host ports as needed. The `--rm` flag ensures the container is removed upon stopping. To retain the container, simply omit this flag.
+Need help or have questions? We got you covered!
 
-The API Swagger documentation is available at `https://localhost:1618/api/swagger/`.
+Open an issue on our [GitHub repository](https://github.com/goinfinite/os), start a discussion on [GitHub discussions](https://github.com/orgs/goinfinite/discussions) or [Reddit](https://www.reddit.com/r/goinfinite/), or hear me out - consider our cloud offerings at [goinfinite.net](https://goinfinite.net)! ♥️
 
-Infinite OS is compatible with Docker, Podman, Docker Swarm, Rancher, Kubernetes, Portainer, and any other tool that supports OCI-compliant containers.
+## Sponsorship
 
-## Development
+Your support means the world to us! If you find Infinite OS useful, please consider sponsoring us on [GitHub](https://github.com/sponsors/goinfinite) or choosing one of our [cloud offerings](https://goinfinite.net). Your contributions help us maintain and improve the project, ensuring its continued development and support.
 
-The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/9). You may create issues or pull requests to contribute to the project.
+## Contributing
 
-In this repository you'll find the REST API and CLI code plus the dashboard assets. The API and CLI uses Clean Architecture, DDD, TDD, CQRS, Object Calisthenics, etc. Understand how these concepts works before proceeding is advised.
+Ready to contribute to Infinite OS? Please refer to our [CONTRIBUTING.md](docs/CONTRIBUTING.md) file for more information on how to get involved.
 
-### Building
+## Roadmap
 
-#### Simple Build
+The public roadmap is available at [GitHub Projects](https://github.com/orgs/goinfinite/projects/9). Before opening an issue, please discuss your feature requests with our community. We're open to suggestions and feedback, and we encourage you to share your ideas with us.
 
-To build the project, run the command below. It takes two minutes to build the project at first. After that, it takes less than 10 seconds to build.
+For bug fixes, please open an issue with as much detail as possible, including steps to reproduce the issue, expected behavior, and any relevant logs or screenshots. This helps us address the problem more efficiently.
 
-```
-podman build -t os:latest .
-```
+## License
 
-To run the project you may use the following command:
+This project is licensed under the Eclipse Public License (EPL) version 2.0. See the [LICENSE.md](LICENSE.md) file for details.
 
-```
-podman run --name os --env 'PRIMARY_VHOST=goinfinite.local' --rm -p 1618:1618 -it os:latest
-```
+## Acknowledgements
 
-When testing, consider publishing port 80 and 443 to the host so that you don't need to use a reverse proxy. You should also consider using `--env 'LOG_LEVEL=debug'` to increase the log verbosity.
+We're grateful to our contributors, supporters, and the open-source community for making Infinite OS possible. Special thanks to the maintainers of the various open-source libraries and tools that power our project. You can find a complete list of dependencies in our `go.mod` file and on the `Containerfile`.
 
-#### Development Build
+## Disclaimer
 
-When developing the project, you may want to use a script to automate the build process. The `dev-build.sh` script is available in the root of the project and it will take care of all the steps needed to build and run the container.
-
-To run the script you can simply use `bash dev-build.sh` (bash may be replaced by zsh or similar). By default, the script will expose the port 1618 to the host which is used by the API and the dashboard.
-
-- If you pass the `http` argument, it will also expose the ports 80 and 443 to the host;
-- If you pass the `ols` argument, it will expose port 7080 (used by OpenLiteSpeed admin);
-- If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch;
-
-The script will also create a `dev` account with the password `123456` so you can access the dashboard.
-
-When you need to stop the container, just CTRL+C to stop and remove it. If you don't want to remove it, just ditch the `--rm` flag from the `podman run` command in the script.
-
-If you look closely at the script, you'll see that it mounts the project's `bin` directory to the container `/infinite/bin` path. This is done to allow the container to access the binary file generated by Air on the host. The script then replace the binary file that comes with the container with the one on the `/bin` directory.
-
-With this approach you don't need to rebuild the container every time you change the code. Although sometimes you may want to restart the container to apply some changes, specially when changing the dependencies or system configurations. In this case, just hit CTRL+C to stop the container and run the script again.
-
-**Notes:**
-
-1. You must run the script from the project's root directory;
-2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
-
-### Unit Testing
-
-Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
-
-```
-podman build -t os-unit-test:latest -f Containerfile.test .
-podman run --rm -it os-unit-test:latest
-```
-
-Make sure you have a `.env` file in the root of the git directory before running the tests.
-
-Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
-
-```
-sudo mkdir /infinite
-sudo chown $(whoami):$(whoami) /infinite
-```
-
-### Dev Utils
-
-The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
-
-For instance there you'll find a `testHelpers.go` file that is used to read the `.env` during tests.
-
-### Web UIs
-
-This project has two web UIs, the previous Vue.js frontend and the new [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend. The Vue.js frontend is deprecated and will be removed in the future. It's available at `/_/` and the [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) frontend is available at `/`.
-
-The new frontend based on the [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) combo mentioned was developed as a proof of concept to create an interface without needing to leave Go. To understand the entire conceptual and theoretical foundation behind using these technologies to create a new architecture, [access this article](https://ntorga.com/full-stack-go-app-with-htmx-and-alpinejs/). However, to grasp the practical basis of how to apply this new architecture, [refer to the proof of concept](https://github.com/ntorga/clean-ddd-full-stack-go-poc) used to develop it.
-
-For the interface code to be read and rendered by Go, we need to convert all `.templ` files into `.go` files. To do this, run the following command at the root of the application:
-
-```
-templ generate -path src/presentation/api
-```
-
-It is important that this is done before using Air to create the binary; otherwise, the Web UI will not be embedded, and you will not be able to use it.
-
-**NOTE:** If you are using the `dev-build.sh` script, you don't need to run the `templ generate` command (or Air for that matter) since the script will take care of everything for you.
-
-### VSCode Extensions
-
-The following extensions are highly encouraged to be used during development:
-
-```
-EditorConfig.EditorConfig
-GitHub.copilot
-GitHub.vscode-pull-request-github
-esbenp.prettier-vscode
-foxundermoon.shell-format
-golang.go
-hbenl.vscode-test-explorer
-ms-vscode.test-adapter-converter
-redhat.vscode-yaml
-streetsidesoftware.code-spell-checker
-timonwong.shellcheck
-```
-
-## REST API
-
-### Authentication
-
-The API accepts two types of tokens and uses the standard "Authorization: Bearer \<token\>" header:
-
-- **sessionToken**: is a JWT, used for dashboard access and generated with the account login credentials. The token contains the accountId, IP address and expiration date. It expires in 3 hours and only the IP address used on the token generation is allowed to use it.
-
-- **accountApiKey**: is a token meant for M2M communication. The token is a _AES-256-CTR-Encrypted-Base64-Encoded_ string, but only the SHA3-256 hash of the key is stored in the server. The accountId is retrieved during key decoding, thus you don't need to provide it. The token never expires, but the user can update it at any time.
-
-### OpenApi // Swagger
-
-To generate the swagger documentation, you must use the following command:
-
-```
-swag init -g src/presentation/api/api.go -o src/presentation/api/docs
-```
-
-The annotations are in the controller files. The reference file can be found [here](https://github.com/swaggo/swag#attribute).
+Infinite OS is still in the alpha stage of development. While we strive to provide a stable and reliable product, please be aware that there may be bugs and issues. We appreciate your understanding and encourage you to report any problems you encounter, helping us improve the project.

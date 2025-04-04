@@ -29,13 +29,11 @@ templ MarketplaceIndex(
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/marketplace.js" }></script>
 	<!-- Marketplace Page HTML -->
 	<div class="flex flex-col" x-data="marketplace">
-		<div class="mb-6 flex flex-row items-center justify-between">
-			@componentStructural.PageTitle(
-				"Marketplace",
-				"Install and easily manage apps, frameworks, and stacks. With just a few clicks, you can set up ready-to-use solutions like websites and online stores. Flexible configuration of your environment quickly and conveniently, meeting your development and deployment needs.",
-				"ph-storefront",
-			)
-		</div>
+		@componentStructural.PageTitle(
+			"Marketplace",
+			"Install and easily manage apps, frameworks, and stacks. With just a few clicks, you can set up ready-to-use solutions like websites and online stores. Flexible configuration of your environment quickly and conveniently, meeting your development and deployment needs.",
+			"ph-storefront",
+		)
 		<div
 			id="marketplace-page-content"
 			hx-get="/marketplace/"

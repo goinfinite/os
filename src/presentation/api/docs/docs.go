@@ -2001,14 +2001,85 @@ const docTemplate = `{
                     "ssl"
                 ],
                 "summary": "ReadSslPairs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SslPairId",
+                        "name": "sslPairId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "VirtualHostHostname",
+                        "name": "virtualHostHostname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "AltNames",
+                        "name": "altNames",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "IssuedBeforeAt",
+                        "name": "issuedBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "IssuedAfterAt",
+                        "name": "issuedAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ExpiresBeforeAt",
+                        "name": "expiresBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ExpiresAfterAt",
+                        "name": "expiresAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.SslPair"
-                            }
+                            "$ref": "#/definitions/dto.ReadSslPairsResponse"
                         }
                     }
                 }
@@ -2032,7 +2103,7 @@ const docTemplate = `{
                 "summary": "CreateSslPair",
                 "parameters": [
                     {
-                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.",
+                        "description": "All props are required.\u003cbr /\u003evirtualHosts may be string or []string. Alias is not allowed.\u003cbr /\u003ecertificate is a string field, i.e. ignore the structure shown.\u003cbr /\u003ecertificate and key must be base64 encoded.\u003cbr /\u003ecertificate should include the CA chain/bundle if not provided in the certificate field.",
                         "name": "createSslPairDto",
                         "in": "body",
                         "required": true,
@@ -2044,6 +2115,45 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "SslPairCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ssl/trusted/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new publicly trusted ssl pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ssl"
+                ],
+                "summary": "CreatePubliclyTrusted",
+                "parameters": [
+                    {
+                        "description": "All props are required.",
+                        "name": "createPubliclyTrustedDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePubliclyTrustedSslPair"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "PubliclyTrustedSslPairCreationScheduled",
                         "schema": {
                             "type": "object"
                         }
@@ -2734,6 +2844,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreatePubliclyTrustedSslPair": {
+            "type": "object",
+            "properties": {
+                "virtualHostHostname": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateSecureAccessPublicKey": {
             "type": "object",
             "properties": {
@@ -2763,6 +2881,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "certificate": {
+                    "$ref": "#/definitions/entity.SslCertificate"
+                },
+                "chainCertificates": {
                     "$ref": "#/definitions/entity.SslCertificate"
                 },
                 "key": {
@@ -3055,6 +3176,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.ScheduledTask"
+                    }
+                }
+            }
+        },
+        "dto.ReadSslPairsResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                },
+                "sslPairs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SslPair"
                     }
                 }
             }
@@ -3919,10 +4054,10 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "mainVirtualHostHostname": {
+                "sslPairId": {
                     "type": "string"
                 },
-                "sslPairId": {
+                "virtualHostHostname": {
                     "type": "string"
                 }
             }
@@ -4270,7 +4405,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.1",
+	Version:          "0.2.2",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

@@ -3,13 +3,13 @@ package presenter
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,26 +26,8 @@ func NewLoginPresenter(
 	}
 }
 
-func (presenter *LoginPresenter) shouldRedirectToSetupPage() bool {
-	responseOutput := presenter.accountService.Read(map[string]interface{}{})
-	if responseOutput.Status != service.Success {
-		return false
-	}
-
-	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadAccountsResponse)
-	if !assertOk {
-		return false
-	}
-
-	if len(typedOutputBody.Accounts) > 0 {
-		return false
-	}
-
-	return true
-}
-
 func (presenter *LoginPresenter) Handler(c echo.Context) error {
-	if presenter.shouldRedirectToSetupPage() {
+	if presenterHelper.ShouldEnableInitialSetup(presenter.accountService) {
 		return c.Redirect(http.StatusFound, "/setup/")
 	}
 

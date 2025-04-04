@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -14,15 +14,17 @@ func DeleteSslPair(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteSslPair,
 ) error {
-	_, err := sslQueryRepo.ReadById(deleteDto.SslPairId)
+	_, err := sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
+		SslPairId: &deleteDto.SslPairId,
+	})
 	if err != nil {
-		log.Printf("SslPairNotFound: %s", err)
+		slog.Error("ReadSslPairError", slog.String("error", err.Error()))
 		return errors.New("SslPairNotFound")
 	}
 
 	err = sslCmdRepo.Delete(deleteDto.SslPairId)
 	if err != nil {
-		log.Printf("DeleteSslPairError: %s", err)
+		slog.Error("DeleteSslPairError", slog.String("error", err.Error()))
 		return errors.New("DeleteSslPairInfraError")
 	}
 
