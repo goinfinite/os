@@ -3186,7 +3186,7 @@ const docTemplate = `{
                 "pagination": {
                     "$ref": "#/definitions/dto.Pagination"
                 },
-                "virtualHosts": {
+                "sslPairs": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.SslPair"

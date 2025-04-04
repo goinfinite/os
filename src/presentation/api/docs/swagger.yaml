@@ -389,7 +389,7 @@ definitions:
     properties:
       pagination:
         $ref: '#/definitions/dto.Pagination'
-      virtualHosts:
+      sslPairs:
         items:
           $ref: '#/definitions/entity.SslPair'
         type: array

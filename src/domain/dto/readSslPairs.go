@@ -18,5 +18,5 @@ type ReadSslPairsRequest struct {
 
 type ReadSslPairsResponse struct {
 	Pagination Pagination       `json:"pagination"`
-	SslPairs   []entity.SslPair `json:"virtualHosts"`
+	SslPairs   []entity.SslPair `json:"sslPairs"`
 }
