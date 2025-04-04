@@ -16,7 +16,7 @@ func CreateSslPair(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateSslPair,
 ) error {
-	vHostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+	vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination: dto.PaginationUnpaginated,
 	})
 	if err != nil {
@@ -25,7 +25,7 @@ func CreateSslPair(
 	}
 
 	existingVirtualHostHostnames := []valueObject.Fqdn{}
-	for _, vhostEntity := range vHostReadResponse.VirtualHosts {
+	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
 		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 			continue
 		}
