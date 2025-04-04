@@ -60,7 +60,7 @@ func (controller *SetupController) Setup(c echo.Context) error {
 		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 	}
 
-	isSuperAdmin := true
+	isSuperAdmin := false
 
 	operatorIpAddress := service.LocalOperatorIpAddress
 	if requestBody["operatorIpAddress"] != nil {
