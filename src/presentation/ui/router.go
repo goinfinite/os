@@ -93,6 +93,7 @@ func (router *Router) loginRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	loginGroup.GET("/", loginPresenter.Handler)
+	loginGroup.HEAD("/", loginPresenter.Handler)
 }
 
 func (router *Router) mappingsRoutes() {
@@ -120,6 +121,7 @@ func (router *Router) overviewRoutes() {
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	overviewGroup.GET("/", overviewPresenter.Handler)
+	overviewGroup.HEAD("/", overviewPresenter.Handler)
 }
 
 func (router *Router) runtimesRoutes() {
@@ -138,6 +140,7 @@ func (router *Router) setupRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	setupGroup.GET("/", setupPresenter.Handler)
+	setupGroup.HEAD("/", setupPresenter.Handler)
 }
 
 func (router *Router) sslsRoutes() {
