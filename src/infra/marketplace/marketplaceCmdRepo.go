@@ -716,89 +716,25 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 	return nil
 }
 
-func (repo *MarketplaceCmdRepo) uninstallUnusedServices(
-	servicesToUninstall []valueObject.ServiceNameWithVersion,
-) error {
-	serviceNamesToUninstallMap := map[string]interface{}{}
-	for _, serviceNameWithVersion := range servicesToUninstall {
-		serviceNamesToUninstallMap[serviceNameWithVersion.Name.String()] = nil
-	}
-
-	readInstalledItemsDto := dto.ReadMarketplaceInstalledItemsRequest{
-		Pagination: dto.Pagination{
-			ItemsPerPage: 1000,
-		},
-	}
-	installedItemsResponseDto, err := repo.marketplaceQueryRepo.ReadInstalledItems(
-		readInstalledItemsDto,
-	)
-	if err != nil {
-		return errors.New("ReadInstalledItemsError: " + err.Error())
-	}
-
-	serviceNamesInUseMap := map[string]interface{}{}
-	for _, installedItem := range installedItemsResponseDto.MarketplaceInstalledItems {
-		for _, serviceNameWithVersion := range installedItem.Services {
-			serviceNamesInUseMap[serviceNameWithVersion.Name.String()] = nil
-		}
-	}
-
-	unusedServiceNames := []valueObject.ServiceName{}
-	for serviceNameStr := range serviceNamesToUninstallMap {
-		_, isServiceInUse := serviceNamesInUseMap[serviceNameStr]
-		if isServiceInUse {
-			continue
-		}
-
-		serviceName, _ := valueObject.NewServiceName(serviceNameStr)
-		unusedServiceNames = append(unusedServiceNames, serviceName)
-	}
-
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	for _, unusedService := range unusedServiceNames {
-		err = servicesCmdRepo.Delete(unusedService)
-		if err != nil {
-			slog.Debug("UninstallUnusedServiceError", slog.String("err", err.Error()))
-			continue
-		}
-	}
-
-	return nil
-}
-
 func (repo *MarketplaceCmdRepo) UninstallItem(
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
-	readInstalledItemDto := dto.ReadMarketplaceInstalledItemsRequest{
-		MarketplaceInstalledItemId: &deleteDto.InstalledId,
-	}
 	installedItem, err := repo.marketplaceQueryRepo.ReadFirstInstalledItem(
-		readInstalledItemDto,
+		dto.ReadMarketplaceInstalledItemsRequest{
+			MarketplaceInstalledItemId: &deleteDto.InstalledId,
+		},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadMarketplaceInstalledItemError: " + err.Error())
 	}
 
-	for _, installedItemMapping := range installedItem.Mappings {
-		err = repo.mappingCmdRepo.Delete(installedItemMapping.Id)
-		if err != nil {
-			slog.Debug(
-				"DeleteMappingError",
-				slog.String("mappingPath", installedItemMapping.Path.String()),
-				slog.String("err", err.Error()),
-			)
-			continue
-		}
-	}
-
-	readCatalogItemDto := dto.ReadMarketplaceCatalogItemsRequest{
-		MarketplaceCatalogItemSlug: &installedItem.Slug,
-	}
 	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
-		readCatalogItemDto,
+		dto.ReadMarketplaceCatalogItemsRequest{
+			MarketplaceCatalogItemSlug: &installedItem.Slug,
+		},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadMarketplaceCatalogItemError: " + err.Error())
 	}
 
 	err = repo.uninstallFilesDelete(installedItem, catalogItem)
@@ -817,29 +753,9 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	err = repo.runCmdSteps(
+	return repo.runCmdSteps(
 		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
 	)
-	if err != nil {
-		return err
-	}
-
-	installedServiceItemModel := dbModel.MarketplaceInstalledItem{
-		ID: deleteDto.InstalledId.Uint16(),
-	}
-	err = repo.persistentDbSvc.Handler.Delete(&installedServiceItemModel).Error
-	if err != nil {
-		return err
-	}
-
-	if deleteDto.ShouldUninstallServices {
-		err = repo.uninstallUnusedServices(installedItem.Services)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
