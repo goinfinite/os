@@ -1,7 +1,23 @@
 # Changelog
 
 ```log
-0.2.2 - X/X/2025
+0.2.2 - 2025/04/04
+refactor: ssl infra implementation
+refactor: ssl watchdog after ssl infra refactor
+feat(front): add visual clues on ssl list pages
+feat(front): add ca bundle field on import ssl modal
+feat: issue valid SSL endpoint and UI button
+fix(front): swap self-signed ssl bug
+fix: skip aliases on ssl watchdog
+fix: vhosts key on ssl create pair
+fix: add error enums to auth query
+fix: add head routes to public api routes
+fix: disable default super admin for first account
+fix: remove altNames from create ssl pair
+fix: stop uninstall of databases on mktplace uninstall
+fix: only remove services without mappings on mktplace uninstall
+fix: improve first setup with presentation helper
+docs: improve project readme
 
 0.2.1 - 2025/04/01
 refactor: vhost and mapping infra implementation
