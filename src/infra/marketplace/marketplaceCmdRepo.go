@@ -753,9 +753,17 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 		return errors.New("ParseCmdStepWithDataFieldsError: " + err.Error())
 	}
 
-	return repo.runCmdSteps(
+	err = repo.runCmdSteps(
 		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
 	)
+	if err != nil {
+		return err
+	}
+
+	marketplaceInstalledItemModel := dbModel.MarketplaceInstalledItem{
+		ID: deleteDto.InstalledId.Uint16(),
+	}
+	return repo.persistentDbSvc.Handler.Delete(&marketplaceInstalledItemModel).Error
 }
 
 func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
