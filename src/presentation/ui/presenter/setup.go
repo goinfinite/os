@@ -3,10 +3,10 @@ package presenter
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,17 +24,7 @@ func NewSetupPresenter(
 }
 
 func (presenter *SetupPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.accountService.Read(map[string]interface{}{})
-	if responseOutput.Status != service.Success {
-		return nil
-	}
-
-	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadAccountsResponse)
-	if !assertOk {
-		return nil
-	}
-
-	if len(typedOutputBody.Accounts) > 0 {
+	if !presenterHelper.ShouldEnableInitialSetup(presenter.accountService) {
 		return c.Redirect(http.StatusFound, "/login/")
 	}
 
