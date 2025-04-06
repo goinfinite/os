@@ -47,9 +47,13 @@ func (dbSvc *TransientDatabaseService) Has(key string) bool {
 
 func (dbSvc *TransientDatabaseService) Read(key string) (string, error) {
 	var keyValueModel KeyValueModel
-	result := dbSvc.Handler.Where("key = ?", key).First(&keyValueModel)
+	result := dbSvc.Handler.Where("key = ?", key).Find(&keyValueModel)
 	if result.Error != nil {
 		return "", result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return "", errors.New("KeyNotFound")
 	}
 
 	return keyValueModel.Value, nil
