@@ -53,7 +53,7 @@ func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
 	ipAddress valueObject.IpAddress,
 	err error,
 ) {
-	cachedIpAddressStr, err := repo.transientDbSvc.Get(PublicIpTransientKey)
+	cachedIpAddressStr, err := repo.transientDbSvc.Read(PublicIpTransientKey)
 	if err == nil {
 		return valueObject.NewIpAddress(cachedIpAddressStr)
 	}
