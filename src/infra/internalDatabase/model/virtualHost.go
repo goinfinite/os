@@ -67,6 +67,16 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 
 	aliasesHostnames := []valueObject.Fqdn{}
 	for _, alias := range model.Aliases {
+		if alias.Type != valueObject.VirtualHostTypeAlias.String() {
+			continue
+		}
+		if alias.Hostname == model.Hostname {
+			continue
+		}
+		if alias.Hostname == *model.ParentHostname {
+			continue
+		}
+
 		aliasHostname, err := valueObject.NewFqdn(alias.Hostname)
 		if err != nil {
 			slog.Debug("AliasHostnameError", slog.String("alias", alias.Hostname))
