@@ -73,7 +73,7 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		if alias.Hostname == model.Hostname {
 			continue
 		}
-		if alias.Hostname == *model.ParentHostname {
+		if model.ParentHostname != nil && alias.Hostname == *model.ParentHostname {
 			continue
 		}
 
