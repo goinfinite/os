@@ -3,75 +3,75 @@ package internalDbInfra
 import (
 	"errors"
 
-	"github.com/dgraph-io/badger/v4"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
 type TransientDatabaseService struct {
-	Handler *badger.DB
+	Handler *gorm.DB
+}
+
+type KeyValueModel struct {
+	Key   string `gorm:"primaryKey"`
+	Value string
 }
 
 func NewTransientDatabaseService() (*TransientDatabaseService, error) {
-	dbSvcOptions := badger.DefaultOptions("").
-		WithInMemory(true).
-		WithNumVersionsToKeep(1).
-		WithLoggingLevel(badger.ERROR)
-
-	dbSvc, err := badger.Open(dbSvcOptions)
+	ormSvc, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		return nil, errors.New("TransientDatabaseConnectionError")
 	}
 
-	return &TransientDatabaseService{
-		Handler: dbSvc,
-	}, nil
+	err = ormSvc.AutoMigrate(&KeyValueModel{})
+	if err != nil {
+		return nil, errors.New("TransientDatabaseMigrationError: " + err.Error())
+	}
+
+	return &TransientDatabaseService{Handler: ormSvc}, nil
 }
 
 func (dbSvc *TransientDatabaseService) Has(key string) bool {
-	hasKey := false
-	err := dbSvc.Handler.View(func(txn *badger.Txn) error {
-		_, err := txn.Get([]byte(key))
-		if err == nil {
-			hasKey = true
-		}
-
-		return nil
-	})
-	if err != nil {
+	var count int64
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).Count(&count)
+	if result.Error != nil {
 		return false
 	}
 
-	return hasKey
+	return count > 0
 }
 
-func (dbSvc *TransientDatabaseService) Get(key string) (string, error) {
-	var value string
-	err := dbSvc.Handler.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-
-		err = item.Value(func(val []byte) error {
-			value = string(val)
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return "", err
+func (dbSvc *TransientDatabaseService) Read(key string) (string, error) {
+	var keyValueModel KeyValueModel
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).Find(&keyValueModel)
+	if result.Error != nil {
+		return "", result.Error
 	}
 
-	return value, nil
+	if result.RowsAffected == 0 {
+		return "", errors.New("KeyNotFound")
+	}
+
+	return keyValueModel.Value, nil
 }
 
 func (dbSvc *TransientDatabaseService) Set(key string, value string) error {
-	err := dbSvc.Handler.Update(func(txn *badger.Txn) error {
-		err := txn.Set([]byte(key), []byte(value))
-		return err
-	})
-	return err
+	keyValueModel := KeyValueModel{Key: key, Value: value}
+
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).FirstOrCreate(&keyValueModel)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		result = dbSvc.Handler.Model(&KeyValueModel{}).
+			Where("key = ?", key).Update("value", value)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
 }

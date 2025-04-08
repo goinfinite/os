@@ -23,7 +23,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const installTempDirPath = "/app/marketplace-tmp/"
+const installTempDirPath = "/app/marketplace-tmp"
 
 type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService

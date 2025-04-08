@@ -1,6 +1,13 @@
 # Changelog
 
 ```log
+0.2.3 - 2025/04/08
+refactor: replace BadgerDB with SQLite in-memory
+fix(critical): x-bind misplacement on InputClientSide component
+fix: remove / from marketplace temp dir
+fix: check type of vhost on aliasesHostname ToEntity()
+tests: add tests for transientDbSvc
+
 0.2.2 - 2025/04/04
 refactor: ssl infra implementation
 refactor: ssl watchdog after ssl infra refactor
