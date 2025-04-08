@@ -1,6 +1,8 @@
 # Changelog
 
 ```log
+0.2.4 - 2025/XX/XX
+
 0.2.3 - 2025/04/08
 refactor: replace BadgerDB with SQLite in-memory
 fix(critical): x-bind misplacement on InputClientSide component
