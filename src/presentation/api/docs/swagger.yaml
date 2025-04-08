@@ -160,6 +160,8 @@ definitions:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:
@@ -745,6 +747,8 @@ definitions:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:
@@ -1097,6 +1101,8 @@ definitions:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:

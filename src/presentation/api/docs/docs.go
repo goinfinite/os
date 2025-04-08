@@ -2833,6 +2833,9 @@ const docTemplate = `{
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -3729,6 +3732,9 @@ const docTemplate = `{
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -4258,6 +4264,9 @@ const docTemplate = `{
                 },
                 "path": {
                     "type": "string"
+                },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
                 },
                 "targetHttpResponseCode": {
                     "type": "integer"

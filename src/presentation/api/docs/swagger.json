@@ -2827,6 +2827,9 @@
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -3723,6 +3726,9 @@
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -4252,6 +4258,9 @@
                 },
                 "path": {
                     "type": "string"
+                },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
                 },
                 "targetHttpResponseCode": {
                     "type": "integer"

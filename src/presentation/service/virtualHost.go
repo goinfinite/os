@@ -356,6 +356,17 @@ func (service *VirtualHostService) CreateMapping(
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
+	var shouldUpgradeInsecureRequestsPtr *bool
+	if input["shouldUpgradeInsecureRequests"] != nil {
+		shouldUpgradeInsecureRequests, err := voHelper.InterfaceToBool(
+			input["shouldUpgradeInsecureRequests"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidShouldUpgradeInsecureRequests")
+		}
+		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -374,7 +385,8 @@ func (service *VirtualHostService) CreateMapping(
 
 	createDto := dto.NewCreateMapping(
 		hostname, path, matchPattern, targetType, targetValuePtr,
-		targetHttpResponseCodePtr, operatorAccountId, operatorIpAddress,
+		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)

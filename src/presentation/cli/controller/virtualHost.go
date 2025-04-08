@@ -231,17 +231,21 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 }
 
 func (controller *VirtualHostController) CreateMapping() *cobra.Command {
-	var hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr string
-	var targetHttpResponseCodeUint uint
+	var (
+		hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr string
+		shouldUpgradeInsecureRequestsBoolStr                                 string
+		targetHttpResponseCodeUint                                           uint
+	)
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "CreateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"hostname":   hostnameStr,
-				"path":       pathStr,
-				"targetType": targetTypeStr,
+				"hostname":                      hostnameStr,
+				"path":                          pathStr,
+				"targetType":                    targetTypeStr,
+				"shouldUpgradeInsecureRequests": shouldUpgradeInsecureRequestsBoolStr,
 			}
 
 			if matchPatternStr != "" {
@@ -278,6 +282,10 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	cmd.Flags().StringVarP(&targetValueStr, "value", "v", "", "MappingTargetValue")
 	cmd.Flags().UintVarP(
 		&targetHttpResponseCodeUint, "response-code", "r", 0, "TargetHttpResponseCode",
+	)
+	cmd.Flags().StringVarP(
+		&shouldUpgradeInsecureRequestsBoolStr, "should-upgrade-insecure-requests", "u",
+		"false", "ShouldUpgradeInsecureRequests (true|false)",
 	)
 	return cmd
 }
