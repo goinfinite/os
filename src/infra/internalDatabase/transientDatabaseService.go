@@ -17,10 +17,7 @@ type KeyValueModel struct {
 }
 
 func NewTransientDatabaseService() (*TransientDatabaseService, error) {
-	ormSvc, err := gorm.Open(
-		sqlite.Open(":memory:"),
-		&gorm.Config{},
-	)
+	ormSvc, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		return nil, errors.New("TransientDatabaseConnectionError")
 	}
@@ -30,14 +27,13 @@ func NewTransientDatabaseService() (*TransientDatabaseService, error) {
 		return nil, errors.New("TransientDatabaseMigrationError: " + err.Error())
 	}
 
-	return &TransientDatabaseService{
-		Handler: ormSvc,
-	}, nil
+	return &TransientDatabaseService{Handler: ormSvc}, nil
 }
 
 func (dbSvc *TransientDatabaseService) Has(key string) bool {
 	var count int64
-	result := dbSvc.Handler.Model(&KeyValueModel{}).Where("key = ?", key).Count(&count)
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).Count(&count)
 	if result.Error != nil {
 		return false
 	}
@@ -47,7 +43,8 @@ func (dbSvc *TransientDatabaseService) Has(key string) bool {
 
 func (dbSvc *TransientDatabaseService) Read(key string) (string, error) {
 	var keyValueModel KeyValueModel
-	result := dbSvc.Handler.Where("key = ?", key).Find(&keyValueModel)
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).Find(&keyValueModel)
 	if result.Error != nil {
 		return "", result.Error
 	}
@@ -62,15 +59,15 @@ func (dbSvc *TransientDatabaseService) Read(key string) (string, error) {
 func (dbSvc *TransientDatabaseService) Set(key string, value string) error {
 	keyValueModel := KeyValueModel{Key: key, Value: value}
 
-	result := dbSvc.Handler.Where("key = ?", key).FirstOrCreate(&keyValueModel)
+	result := dbSvc.Handler.Model(&KeyValueModel{}).
+		Where("key = ?", key).FirstOrCreate(&keyValueModel)
 	if result.Error != nil {
 		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
 		result = dbSvc.Handler.Model(&KeyValueModel{}).
-			Where("key = ?", key).
-			Update("value", value)
+			Where("key = ?", key).Update("value", value)
 		if result.Error != nil {
 			return result.Error
 		}
