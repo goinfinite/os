@@ -373,12 +373,15 @@ func (repo *MappingCmdRepo) Create(
 		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
 	}
 
-	mappingModel := dbModel.NewMapping(
-		0, createDto.Hostname.String(), createDto.Path.String(),
-		createDto.MatchPattern.String(), createDto.TargetType.String(),
-		targetValuePtr, targetHttpResponseCodePtr,
-	)
-
+	mappingModel := dbModel.Mapping{
+		Hostname:                      createDto.Hostname.String(),
+		Path:                          createDto.Path.String(),
+		MatchPattern:                  createDto.MatchPattern.String(),
+		TargetType:                    createDto.TargetType.String(),
+		TargetValue:                   targetValuePtr,
+		TargetHttpResponseCode:        targetHttpResponseCodePtr,
+		ShouldUpgradeInsecureRequests: createDto.ShouldUpgradeInsecureRequests,
+	}
 	err = repo.persistentDbSvc.Handler.Create(&mappingModel).Error
 	if err != nil {
 		return mappingId, err

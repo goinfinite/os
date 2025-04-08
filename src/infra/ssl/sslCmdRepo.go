@@ -86,10 +86,11 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	targetValue, _ := valueObject.NewMappingTargetValue(
 		expectedOwnershipHash.String(), targetType,
 	)
+	shouldUpgradeInsecureRequests := false
 
 	inlineHtmlMapping := dto.NewCreateMapping(
 		targetVirtualHostHostname, path, matchPattern, targetType, &targetValue,
-		&httpResponseCode, operatorAccountId, operatorIpAddress,
+		&httpResponseCode, &shouldUpgradeInsecureRequests, operatorAccountId, operatorIpAddress,
 	)
 
 	return mappingCmdRepo.Create(inlineHtmlMapping)

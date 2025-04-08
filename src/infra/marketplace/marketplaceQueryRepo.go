@@ -126,8 +126,21 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 			targetHttpResponseCodePtr = &targetHttpResponseCode
 		}
 
+		var shouldUpgradeInsecureRequestsPtr *bool
+		if rawItemMappingMap["shouldUpgradeInsecureRequests"] != nil {
+			shouldUpgradeInsecureRequests, err := voHelper.InterfaceToBool(
+				rawItemMappingMap["shouldUpgradeInsecureRequests"],
+			)
+			if err != nil {
+				slog.Debug("ShouldUpgradeInsecureInvalidFormat", slog.Int("index", mappingIndex))
+				shouldUpgradeInsecureRequests = false
+			}
+			shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+		}
+
 		itemMapping := valueObject.NewMarketplaceItemMapping(
 			path, matchPattern, targetType, targetValuePtr, targetHttpResponseCodePtr,
+			shouldUpgradeInsecureRequestsPtr,
 		)
 		itemMappings = append(itemMappings, itemMapping)
 	}

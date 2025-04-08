@@ -51,6 +51,11 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 	}
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(mappingModel).Where(&mappingModel)
+	if requestDto.ShouldUpgradeInsecureRequests != nil {
+		dbQuery = dbQuery.Where(
+			"should_upgrade_insecure_requests = ?", *requestDto.ShouldUpgradeInsecureRequests,
+		)
+	}
 	if requestDto.CreatedBeforeAt != nil {
 		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
 	}

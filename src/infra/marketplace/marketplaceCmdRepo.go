@@ -337,10 +337,10 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		currentMappingsContentHashMap[contentHash] = currentMapping
 	}
 
-	for _, mapping := range catalogMappings {
+	for _, itemMappingVo := range catalogMappings {
 		contentHash := infraHelper.GenStrongShortHash(
-			hostname.String() + mapping.Path.String() + mapping.MatchPattern.String() +
-				mapping.TargetType.String(),
+			hostname.String() + itemMappingVo.Path.String() + itemMappingVo.MatchPattern.String() +
+				itemMappingVo.TargetType.String(),
 		)
 		currentMapping, alreadyExists := currentMappingsContentHashMap[contentHash]
 		if alreadyExists {
@@ -349,9 +349,9 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		}
 
 		createDto := dto.NewCreateMapping(
-			hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
-			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
-			operatorIpAddress,
+			hostname, itemMappingVo.Path, itemMappingVo.MatchPattern, itemMappingVo.TargetType,
+			itemMappingVo.TargetValue, itemMappingVo.TargetHttpResponseCode,
+			itemMappingVo.ShouldUpgradeInsecureRequests, operatorAccountId, operatorIpAddress,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
