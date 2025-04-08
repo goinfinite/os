@@ -2684,6 +2684,9 @@ const docTemplate = `{
                 "mappingPath": {
                     "type": "string"
                 },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2794,6 +2797,9 @@ const docTemplate = `{
                 },
                 "mappingPath": {
                     "type": "string"
+                },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
                 },
                 "maxStartRetries": {
                     "type": "integer"

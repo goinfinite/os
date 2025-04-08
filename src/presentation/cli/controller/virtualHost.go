@@ -232,9 +232,9 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 
 func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	var (
-		hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr string
-		shouldUpgradeInsecureRequestsBoolStr                                 string
-		targetHttpResponseCodeUint                                           uint
+		hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr,
+		shouldUpgradeInsecureRequestsBoolStr string
+		targetHttpResponseCodeUint uint
 	)
 
 	cmd := &cobra.Command{

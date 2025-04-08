@@ -367,6 +367,17 @@ func (service *ServicesService) CreateInstallable(
 		mappingPathPtr = &mappingPath
 	}
 
+	var mappingUpgradeInsecureRequestsPtr *bool
+	if input["mappingUpgradeInsecureRequests"] != nil {
+		mappingUpgradeInsecureRequests, err := voHelper.InterfaceToBool(
+			input["mappingUpgradeInsecureRequests"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidMappingUpgradeInsecureRequests")
+		}
+		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -444,6 +455,14 @@ func (service *ServicesService) CreateInstallable(
 			installParams = append(installParams, "--mapping-path", mappingPathPtr.String())
 		}
 
+		if mappingUpgradeInsecureRequestsPtr != nil {
+			installParams = append(
+				installParams,
+				"--mapping-upgrade-insecure-requests",
+				strconv.FormatBool(*mappingUpgradeInsecureRequestsPtr),
+			)
+		}
+
 		cliCmd += " " + strings.Join(installParams, " ")
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbService)
@@ -469,7 +488,7 @@ func (service *ServicesService) CreateInstallable(
 		name, envs, portBindings, versionPtr, startupFilePtr, workingDirPtr,
 		autoStartPtr, timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr,
 		&autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
-		operatorAccountId, operatorIpAddress,
+		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)
@@ -636,6 +655,17 @@ func (service *ServicesService) CreateCustom(
 		mappingPathPtr = &mappingPath
 	}
 
+	var mappingUpgradeInsecureRequestsPtr *bool
+	if input["mappingUpgradeInsecureRequests"] != nil {
+		mappingUpgradeInsecureRequests, err := voHelper.InterfaceToBool(
+			input["mappingUpgradeInsecureRequests"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidMappingUpgradeInsecureRequests")
+		}
+		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -657,7 +687,7 @@ func (service *ServicesService) CreateCustom(
 		versionPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, &autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
-		operatorAccountId, operatorIpAddress,
+		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbService)

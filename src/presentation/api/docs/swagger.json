@@ -2678,6 +2678,9 @@
                 "mappingPath": {
                     "type": "string"
                 },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2788,6 +2791,9 @@
                 },
                 "mappingPath": {
                     "type": "string"
+                },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
                 },
                 "maxStartRetries": {
                     "type": "integer"
