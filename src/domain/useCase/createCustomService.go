@@ -58,7 +58,7 @@ func CreateServiceAutoMapping(
 
 	_, err = mappingCmdRepo.Create(dto.NewCreateMapping(
 		*mappingHostname, *mappingPath, valueObject.MappingMatchPatternBeginsWith,
-		valueObject.MappingTargetTypeService, &targetValue, nil,
+		valueObject.MappingTargetTypeService, &targetValue, nil, nil,
 		operatorAccountId, operatorIpAddress,
 	))
 	if err != nil {
