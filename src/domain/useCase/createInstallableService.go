@@ -16,9 +16,9 @@ func CreateInstallableService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &createDto.Name,
-	})
+	_, err := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &createDto.Name},
+	)
 	if err == nil {
 		return errors.New("ServiceAlreadyInstalled")
 	}
@@ -32,9 +32,9 @@ func CreateInstallableService(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateInstallableService(createDto)
 
-	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &installedServiceName,
-	})
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &installedServiceName},
+	)
 	if err != nil {
 		slog.Error("ReadServiceEntityError", slog.String("err", err.Error()))
 		return errors.New("ReadServiceEntityInfraError")
@@ -51,6 +51,7 @@ func CreateInstallableService(
 
 	return CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, installedServiceName, createDto.MappingHostname,
-		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
+		createDto.MappingPath, createDto.MappingUpgradeInsecureRequests,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }
