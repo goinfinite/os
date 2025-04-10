@@ -24,6 +24,7 @@ require (
 )
 
 require (
+	github.com/goinfinite/ui v0.0.0-20250410144933-f36e8585737c // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
