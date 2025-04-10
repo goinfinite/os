@@ -22,6 +22,7 @@ document.addEventListener("alpine:init", () => {
         targetType: "url",
         targetValue: "",
         targetHttpResponseCode: "",
+        shouldUpgradeInsecureRequests: "false",
       };
     },
     init() {

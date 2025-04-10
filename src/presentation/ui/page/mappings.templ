@@ -8,6 +8,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/form"
 	"slices"
 )
 
@@ -343,6 +344,23 @@ templ CreateMappingForm(
 					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
 				</summary>
 				<div class="mt-5 py-2">
+					@uiForm.InlineRadioGroup(uiForm.InlineRadioGroupSettings{
+						Label: "Upgrade Insecure Requests (force HTTPS)",
+						InputSettings: []uiForm.RadioInputSettings{
+							{
+								Label:           "Yes",
+								StateValue:      "true",
+								TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+							},
+							{
+								Label:           "No",
+								StateValue:      "false",
+								TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+							},
+						},
+						TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+						InputName:       "shouldUpgradeInsecureRequests",
+					})
 					@componentMappings.MatchPatternSelectInput(
 						"matchPattern", "Match Pattern", "mapping.matchPattern",
 					)
