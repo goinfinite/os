@@ -8,6 +8,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/form"
 	"slices"
 )
@@ -257,6 +258,29 @@ templ UpdateVirtualHostModal() {
 	}
 }
 
+templ CreateMappingFormAdvancedSettings() {
+	@uiForm.InlineRadioGroup(uiForm.InlineRadioGroupSettings{
+		Label: "Upgrade Insecure Requests (force HTTPS)",
+		InputSettings: []uiForm.RadioInputSettings{
+			{
+				Label:           "Yes",
+				StateValue:      "true",
+				TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+			},
+			{
+				Label:           "No",
+				StateValue:      "false",
+				TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+			},
+		},
+		TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+		InputName:       "shouldUpgradeInsecureRequests",
+	})
+	@componentMappings.MatchPatternSelectInput(
+		"matchPattern", "Match Pattern", "mapping.matchPattern",
+	)
+}
+
 templ CreateMappingForm(
 	vhostsHostnames []string,
 	installedServices []entity.InstalledService,
@@ -336,37 +360,15 @@ templ CreateMappingForm(
 				)
 			</div>
 		</template>
-		<section class="w-full rounded-md">
-			<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30" x-bin:open="isAdvancedSettingsClosed">
-				<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
-					<i class="ph-duotone ph-gear mr-2 text-2xl"></i>
-					<span class="font-bold">Advanced Settings</span>
-					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
-				</summary>
-				<div class="mt-5 py-2">
-					@uiForm.InlineRadioGroup(uiForm.InlineRadioGroupSettings{
-						Label: "Upgrade Insecure Requests (force HTTPS)",
-						InputSettings: []uiForm.RadioInputSettings{
-							{
-								Label:           "Yes",
-								StateValue:      "true",
-								TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
-							},
-							{
-								Label:           "No",
-								StateValue:      "false",
-								TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
-							},
-						},
-						TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
-						InputName:       "shouldUpgradeInsecureRequests",
-					})
-					@componentMappings.MatchPatternSelectInput(
-						"matchPattern", "Match Pattern", "mapping.matchPattern",
-					)
-				</div>
-			</details>
-		</section>
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: CreateMappingFormAdvancedSettings(),
+				},
+			},
+		})
 		@componentForm.DeactivableSubmitButton(
 			"Create", "ph-check-fat", "",
 			"shouldDisableCreateMappingSubmitButton", false,
