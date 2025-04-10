@@ -38,6 +38,10 @@ github.com/goinfinite/ui v0.0.0-20250410124053-25f2d93ddad0 h1:4AHimZUliOe+BIgA1
 github.com/goinfinite/ui v0.0.0-20250410124053-25f2d93ddad0/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
 github.com/goinfinite/ui v0.0.0-20250410144933-f36e8585737c h1:uyWpWOXvTCSfPr9qpyGqe+l0qMTliPngpE70OO8kxzc=
 github.com/goinfinite/ui v0.0.0-20250410144933-f36e8585737c/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
+github.com/goinfinite/ui v0.0.0-20250410152546-d2267ce0b593 h1:20DZsG6pfprVFxPMJe6xjiIiBdFfyX3YIXfvKIxqn6w=
+github.com/goinfinite/ui v0.0.0-20250410152546-d2267ce0b593/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
+github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63 h1:q+zl6J1hp5zANvtG3Lldzumx52ndG72sNwpaoSM3l1k=
+github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
