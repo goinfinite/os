@@ -39,8 +39,11 @@ templ VirtualHostMappingsList(
 				@componentStructural.Tag(
 					"", "marketplaceItem",
 					mappingEntity.MarketplaceInstalledItemName.String()+" (#"+mappingEntity.MarketplaceInstalledItemId.String()+")",
-					"lime-900",
+					"violet-900",
 				)
+			}
+			if mappingEntity.ShouldUpgradeInsecureRequests != nil && *mappingEntity.ShouldUpgradeInsecureRequests {
+				@componentStructural.Tag("ph-lock", "", "httpsOnly", "lime-900")
 			}
 		</div>
 		<div>
