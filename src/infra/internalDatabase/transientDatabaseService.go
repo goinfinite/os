@@ -17,7 +17,7 @@ type KeyValueModel struct {
 }
 
 func NewTransientDatabaseService() (*TransientDatabaseService, error) {
-	ormSvc, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	ormSvc, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		return nil, errors.New("TransientDatabaseConnectionError")
 	}
