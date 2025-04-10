@@ -30,7 +30,7 @@ func NewMappingCmdRepo(
 	}
 }
 
-func (repo *MappingCmdRepo) getServiceMappingConfig(
+func (repo *MappingCmdRepo) serviceMappingConfigFactory(
 	svcNameStr string,
 ) (svcMappingConfig string, err error) {
 	svcMappingConfig = ""
@@ -251,7 +251,7 @@ func (repo *MappingCmdRepo) getServiceMappingConfig(
 	return svcMappingConfig, nil
 }
 
-func (repo *MappingCmdRepo) parseLocationUri(
+func (repo *MappingCmdRepo) locationUriConfigFactory(
 	matchPattern valueObject.MappingMatchPattern,
 	path valueObject.MappingPath,
 ) (locationUri string) {
@@ -289,16 +289,14 @@ func (repo *MappingCmdRepo) RecreateMappingFile(
 		return err
 	}
 
-	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
-	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
-		vhostHostname,
-	)
-	if err != nil {
-		return errors.New("GetVirtualHostMappingsFilePathError: " + err.Error())
-	}
-
 	mappingConfigTemplate := `{{- range . -}}
-location {{ parseLocationUri .MatchPattern .Path }} {
+location {{ locationUriConfigFactory .MatchPattern .Path }} {
+	{{- if not .ShouldUpgradeInsecureRequests }}
+	{{- else }}
+	if ($scheme != "https") {
+		return 301 https://$host$request_uri;
+	}
+	{{- end }}
 	{{- if eq .TargetType "response-code" }}
 	return {{ .TargetHttpResponseCode }};
 	{{- end }}
@@ -310,7 +308,7 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 	return {{ .TargetHttpResponseCode }} "{{ .TargetValue }}";
 	{{- end }}
 	{{- if eq .TargetType "service" }}
-{{ getServiceMappingConfig .TargetValue.String }}
+{{ serviceMappingConfigFactory .TargetValue.String }}
 	{{- end }}
 	{{- if eq .TargetType "static-files" }}
 	try_files $uri $uri/ index.html?$query_string;
@@ -318,11 +316,10 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 }
 {{ end }}`
 
-	mappingTemplatePtr := template.New("mappingFile")
-	mappingTemplatePtr = mappingTemplatePtr.Funcs(
+	mappingTemplatePtr := template.New("mappingFile").Funcs(
 		template.FuncMap{
-			"parseLocationUri":        repo.parseLocationUri,
-			"getServiceMappingConfig": repo.getServiceMappingConfig,
+			"locationUriConfigFactory":    repo.locationUriConfigFactory,
+			"serviceMappingConfigFactory": repo.serviceMappingConfigFactory,
 		},
 	)
 
@@ -335,6 +332,14 @@ location {{ parseLocationUri .MatchPattern .Path }} {
 	err = mappingTemplatePtr.Execute(&mappingFileContent, mappingsReadResponse.Mappings)
 	if err != nil {
 		return errors.New("TemplateExecutionError: " + err.Error())
+	}
+
+	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
+	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
+		vhostHostname,
+	)
+	if err != nil {
+		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
 	shouldOverwrite := true
