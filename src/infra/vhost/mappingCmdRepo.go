@@ -293,7 +293,7 @@ func (repo *MappingCmdRepo) RecreateMappingFile(
 location {{ locationUriConfigFactory .MatchPattern .Path }} {
 	{{- if not .ShouldUpgradeInsecureRequests }}
 	{{- else }}
-	if ($scheme != "https") {
+	if ($scheme = http) {
 		return 301 https://$host$request_uri;
 	}
 	{{- end }}
