@@ -1,14 +1,13 @@
 package apiController
 
 import (
-	"errors"
-	"log/slog"
-	"net/http"
-
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
+
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type DatabaseController struct {
@@ -93,35 +92,6 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 	)
 }
 
-func (controller *DatabaseController) parseUserPrivileges(rawPrivileges interface{}) (
-	rawPrivilegesStrSlice []string, err error,
-) {
-	rawUniquePrivilegeStr, assertOk := rawPrivileges.(string)
-	if assertOk {
-		return []string{rawUniquePrivilegeStr}, nil
-	}
-
-	rawPrivilegesStrSlice, assertOk = rawPrivileges.([]string)
-	if assertOk {
-		return rawPrivilegesStrSlice, nil
-	}
-
-	rawPrivilegesInterfaceSlice, assertOk := rawPrivileges.([]interface{})
-	if !assertOk {
-		return rawPrivilegesStrSlice, errors.New("PrivilegesMustBeStringOrStringSlice")
-	}
-	for _, rawPrivilege := range rawPrivilegesInterfaceSlice {
-		rawPrivilegeStr, assertOk := rawPrivilege.(string)
-		if !assertOk {
-			slog.Debug("InvalidPrivilegeType", slog.Any("privilege", rawPrivilege))
-			continue
-		}
-		rawPrivilegesStrSlice = append(rawPrivilegesStrSlice, rawPrivilegeStr)
-	}
-
-	return rawPrivilegesStrSlice, nil
-}
-
 // CreateDatabaseUser godoc
 // @Summary      CreateDatabaseUser
 // @Description  Create a new database user.
@@ -140,16 +110,11 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	rawPrivilegesSlice := []string{}
 	if requestInputData["privileges"] != nil {
-		rawPrivilegesSlice, err = controller.parseUserPrivileges(
-			requestInputData["privileges"],
+		requestInputData["privileges"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["privileges"], valueObject.NewDatabasePrivilege,
 		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
-		}
 	}
-	requestInputData["privileges"] = rawPrivilegesSlice
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.dbService.CreateUser(requestInputData),

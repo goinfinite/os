@@ -1,9 +1,11 @@
 package cliController
 
 import (
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -112,7 +114,9 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 			}
 
 			if len(privilegesSlice) > 0 {
-				requestBody["privileges"] = privilegesSlice
+				requestBody["privileges"] = tkPresentation.StringSliceValueObjectParser(
+					privilegesSlice, valueObject.NewDatabasePrivilege,
+				)
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -131,7 +135,7 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 	cmd.MarkFlagRequired("password")
 	cmd.Flags().StringSliceVarP(
 		&privilegesSlice, "privileges", "r", []string{},
-		"DatabasePrivileges (Comma-separated)",
+		"DatabasePrivileges (Comma or semicolon separated)",
 	)
 
 	return cmd
