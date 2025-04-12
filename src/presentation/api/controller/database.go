@@ -111,6 +111,10 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 	}
 
 	if requestInputData["privileges"] != nil {
+		if requestInputData["privileges"] == "" {
+			delete(requestInputData, "privileges")
+		}
+
 		requestInputData["privileges"] = tkPresentation.StringSliceValueObjectParser(
 			requestInputData["privileges"], valueObject.NewDatabasePrivilege,
 		)
