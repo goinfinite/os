@@ -410,13 +410,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CatalogIdOrSlugMustBeProvided")
 	}
 
-	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
-		MarketplaceCatalogItemId:   installDto.Id,
-		MarketplaceCatalogItemSlug: installDto.Slug,
-	}
-
 	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
-		readCatalogItemRequestDto,
+		dto.ReadMarketplaceCatalogItemsRequest{
+			MarketplaceCatalogItemId:   installDto.Id,
+			MarketplaceCatalogItemSlug: installDto.Slug,
+		},
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
@@ -449,6 +447,12 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
 	}
 	installDirStr = installDir.String()
+	if installDirStr == infraEnvs.PrimaryPublicDir {
+		err := infraHelper.BackupPrimaryIndexFile()
+		if err != nil {
+			return err
+		}
+	}
 
 	rawInstallUuid := uuid.New().String()[:16]
 	rawInstallUuidNoHyphens := strings.Replace(rawInstallUuid, "-", "", -1)
@@ -711,6 +715,13 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
 	if err != nil {
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
+	}
+
+	if installedItem.InstallDirectory.String() == infraEnvs.PrimaryPublicDir {
+		err := infraHelper.RestorePrimaryIndexFile()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
