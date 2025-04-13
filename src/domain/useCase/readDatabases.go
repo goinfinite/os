@@ -4,18 +4,24 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+var DatabasesDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
+
 func ReadDatabases(
 	databaseQueryRepo repository.DatabaseQueryRepo,
-) (databasesList []entity.Database, err error) {
-	databasesList, err = databaseQueryRepo.Read()
+	requestDto dto.ReadDatabasesRequest,
+) (responseDto dto.ReadDatabasesResponse, err error) {
+	responseDto, err = databaseQueryRepo.Read(requestDto)
 	if err != nil {
 		slog.Error("ReadDatabasesError", slog.String("err", err.Error()))
-		return databasesList, errors.New("ReadDatabasesInfraError")
+		return responseDto, errors.New("ReadDatabasesInfraError")
 	}
 
-	return databasesList, nil
+	return responseDto, nil
 }

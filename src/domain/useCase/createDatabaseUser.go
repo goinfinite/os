@@ -15,7 +15,9 @@ func CreateDatabaseUser(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateDatabaseUser,
 ) error {
-	_, err := dbQueryRepo.ReadByName(createDto.DatabaseName)
+	_, err := dbQueryRepo.ReadFirst(dto.ReadDatabasesRequest{
+		DatabaseName: &createDto.DatabaseName,
+	})
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}

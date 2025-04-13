@@ -14,7 +14,9 @@ func CreateDatabase(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateDatabase,
 ) error {
-	_, err := dbQueryRepo.ReadByName(createDto.DatabaseName)
+	_, err := dbQueryRepo.ReadFirst(dto.ReadDatabasesRequest{
+		DatabaseName: &createDto.DatabaseName,
+	})
 	if err == nil {
 		return errors.New("DatabaseAlreadyExists")
 	}
