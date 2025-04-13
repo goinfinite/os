@@ -27,7 +27,12 @@ func NewDatabaseController(
 }
 
 func (controller *DatabaseController) Read() *cobra.Command {
-	var dbTypeStr string
+	var (
+		dbTypeStr, dbNameStr, usernameStr                                        string
+		paginationPageNumberUint32                                               uint32
+		paginationItemsPerPageUint16                                             uint16
+		paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "get",
@@ -37,6 +42,19 @@ func (controller *DatabaseController) Read() *cobra.Command {
 				"dbType": dbTypeStr,
 			}
 
+			if dbNameStr != "" {
+				requestBody["name"] = dbNameStr
+			}
+
+			if usernameStr != "" {
+				requestBody["username"] = usernameStr
+			}
+
+			requestBody = cliHelper.PaginationParser(
+				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
+				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
+			)
+
 			cliHelper.ServiceResponseWrapper(
 				controller.dbService.Read(requestBody),
 			)
@@ -45,6 +63,23 @@ func (controller *DatabaseController) Read() *cobra.Command {
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
 	cmd.MarkFlagRequired("db-type")
+	cmd.Flags().StringVarP(&dbNameStr, "name", "n", "", "DatabaseName")
+	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "DatabaseUsername")
+	cmd.Flags().Uint32VarP(
+		&paginationPageNumberUint32, "page-number", "o", 0, "PageNumber (Pagination)",
+	)
+	cmd.Flags().Uint16VarP(
+		&paginationItemsPerPageUint16, "items-per-page", "j", 0, "ItemsPerPage (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortByStr, "sort-by", "y", "", "SortBy (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationSortDirectionStr, "sort-direction", "x", "", "SortDirection (Pagination)",
+	)
+	cmd.Flags().StringVarP(
+		&paginationLastSeenIdStr, "last-seen-id", "l", "", "LastSeenId (Pagination)",
+	)
 	return cmd
 }
 

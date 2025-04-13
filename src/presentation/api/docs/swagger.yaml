@@ -333,6 +333,15 @@ definitions:
       pagination:
         $ref: '#/definitions/dto.Pagination'
     type: object
+  dto.ReadDatabasesResponse:
+    properties:
+      databases:
+        items:
+          $ref: '#/definitions/entity.Database'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadFilesResponse:
     properties:
       fileTree:
@@ -1538,18 +1547,44 @@ paths:
         name: dbType
         required: true
         type: string
+      - description: DatabaseName
+        in: query
+        name: name
+        type: string
+      - description: DatabaseUsername
+        in: query
+        name: username
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.Database'
-            type: array
+            $ref: '#/definitions/dto.ReadDatabasesResponse'
       security:
       - Bearer: []
-      summary: GetDatabases
+      summary: ReadDatabases
       tags:
       - database
     post:

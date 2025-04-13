@@ -529,7 +529,7 @@ const docTemplate = `{
                 "tags": [
                     "database"
                 ],
-                "summary": "GetDatabases",
+                "summary": "ReadDatabases",
                 "parameters": [
                     {
                         "type": "string",
@@ -537,16 +537,55 @@ const docTemplate = `{
                         "name": "dbType",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseUsername",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Database"
-                            }
+                            "$ref": "#/definitions/dto.ReadDatabasesResponse"
                         }
                     }
                 }
@@ -3092,6 +3131,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.Cron"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
+        "dto.ReadDatabasesResponse": {
+            "type": "object",
+            "properties": {
+                "databases": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Database"
                     }
                 },
                 "pagination": {

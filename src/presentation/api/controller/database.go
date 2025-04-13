@@ -27,15 +27,22 @@ func NewDatabaseController(
 	}
 }
 
-// GetDatabases godoc
-// @Summary      GetDatabases
+// ReadDatabases godoc
+// @Summary      ReadDatabases
 // @Description  List databases names, users and sizes.
 // @Tags         database
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
-// @Success      200 {array} entity.Database
+// @Param        name query string false "DatabaseName"
+// @Param        username query string false "DatabaseUsername"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadDatabasesResponse
 // @Router       /v1/database/{dbType}/ [get]
 func (controller *DatabaseController) Read(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
