@@ -1,6 +1,9 @@
 package databaseInfra
 
 import (
+	"errors"
+	"regexp"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
@@ -26,9 +29,13 @@ func (repo PostgresDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) erro
 	return err
 }
 
-func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabaseUser) error {
-	dbNameStr := createDatabaseUser.DatabaseName.String()
+func (repo PostgresDatabaseCmdRepo) CreateUser(
+	createDatabaseUser dto.CreateDatabaseUser,
+) error {
 	dbUserStr := createDatabaseUser.Username.String()
+	if regexp.MustCompile(`^\d`).MatchString(dbUserStr) {
+		return errors.New("PostgresUsernameCannotStartWithNumbers")
+	}
 
 	postgresDatabaseQueryRepo := PostgresDatabaseQueryRepo{}
 	userExists := postgresDatabaseQueryRepo.UserExists(createDatabaseUser.Username)
@@ -42,9 +49,9 @@ func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateData
 		}
 	}
 
+	dbNameStr := createDatabaseUser.DatabaseName.String()
 	_, err := PostgresqlCmd(
-		"GRANT ALL PRIVILEGES ON DATABASE "+dbNameStr+
-			" TO "+dbUserStr,
+		"GRANT ALL PRIVILEGES ON DATABASE "+dbNameStr+" TO "+dbUserStr,
 		nil,
 	)
 	if err != nil {
@@ -62,18 +69,16 @@ func (repo PostgresDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateData
 	}
 
 	_, err = PostgresqlCmd(
-		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"GRANT ALL ON TABLES TO "+dbUserStr,
-		&dbNameStr,
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "+dbUserStr,
+		&createDatabaseUser.DatabaseName,
 	)
 	if err != nil {
 		return err
 	}
 
 	_, err = PostgresqlCmd(
-		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"GRANT ALL ON SEQUENCES TO "+dbUserStr,
-		&dbNameStr,
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "+dbUserStr,
+		&createDatabaseUser.DatabaseName,
 	)
 	return err
 }
@@ -94,18 +99,16 @@ func (repo PostgresDatabaseCmdRepo) DeleteUser(
 	}
 
 	_, err = PostgresqlCmd(
-		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"REVOKE ALL ON TABLES FROM "+dbUserStr,
-		&dbNameStr,
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM "+dbUserStr,
+		&dbName,
 	)
 	if err != nil {
 		return err
 	}
 
 	_, err = PostgresqlCmd(
-		"ALTER DEFAULT PRIVILEGES IN SCHEMA public "+
-			"REVOKE ALL ON SEQUENCES FROM "+dbUserStr,
-		&dbNameStr,
+		"ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM "+dbUserStr,
+		&dbName,
 	)
 	if err != nil {
 		return err
