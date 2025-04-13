@@ -73,20 +73,22 @@ func (repo MysqlDatabaseQueryRepo) readDatabaseUsernames(
 ) ([]valueObject.DatabaseUsername, error) {
 	dbUsernames := []valueObject.DatabaseUsername{}
 
-	dbUserStr, err := MysqlCmd(
+	rawDatabaseUsers, err := MysqlCmd(
 		"SELECT User FROM mysql.db WHERE Db = '" + dbName.String() + "'",
 	)
 	if err != nil {
 		return dbUsernames, errors.New("ReadDatabaseUserError: " + err.Error())
 	}
+	rawDatabaseUsers = strings.TrimSpace(rawDatabaseUsers)
 
-	for rawDatabaseUsername := range strings.SplitSeq(dbUserStr, "\n") {
+	for rawDatabaseUsername := range strings.SplitSeq(rawDatabaseUsers, "\n") {
+		if rawDatabaseUsername == "" {
+			continue
+		}
+
 		dbUsername, err := valueObject.NewDatabaseUsername(rawDatabaseUsername)
 		if err != nil {
-			slog.Debug(
-				err.Error(),
-				slog.String("rawDbUser", rawDatabaseUsername),
-			)
+			slog.Debug(err.Error(), slog.String("rawDbUser", rawDatabaseUsername))
 			continue
 		}
 		dbUsernames = append(dbUsernames, dbUsername)
