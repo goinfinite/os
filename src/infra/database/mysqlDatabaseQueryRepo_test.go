@@ -12,12 +12,12 @@ func TestMysqlDatabaseQueryRepo(t *testing.T) {
 
 	t.Run("GetDatabases", func(t *testing.T) {
 		databasesQueryRepo := MysqlDatabaseQueryRepo{}
-		databasesList, err := databasesQueryRepo.Read()
+		allDatabases, err := databasesQueryRepo.readAllDatabases()
 		if err != nil {
 			t.Errorf("Error: %v", err)
 		}
-		if len(databasesList) == 0 {
-			t.Errorf("Expected: %v, got: %v", "a list of databases", databasesList)
+		if len(allDatabases) == 0 {
+			t.Errorf("Expected: %v, got: %v", "a list of databases", allDatabases)
 		}
 	})
 }
