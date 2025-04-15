@@ -3,15 +3,16 @@ package dto
 import "github.com/goinfinite/os/src/domain/valueObject"
 
 type CreateMapping struct {
-	Hostname                      valueObject.Fqdn                `json:"hostname"`
-	Path                          valueObject.MappingPath         `json:"path"`
-	MatchPattern                  valueObject.MappingMatchPattern `json:"matchPattern"`
-	TargetType                    valueObject.MappingTargetType   `json:"targetType"`
-	TargetValue                   *valueObject.MappingTargetValue `json:"targetValue"`
-	TargetHttpResponseCode        *valueObject.HttpResponseCode   `json:"targetHttpResponseCode"`
-	ShouldUpgradeInsecureRequests *bool                           `json:"shouldUpgradeInsecureRequests"`
-	OperatorAccountId             valueObject.AccountId           `json:"-"`
-	OperatorIpAddress             valueObject.IpAddress           `json:"-"`
+	Hostname                      valueObject.Fqdn                   `json:"hostname"`
+	Path                          valueObject.MappingPath            `json:"path"`
+	MatchPattern                  valueObject.MappingMatchPattern    `json:"matchPattern"`
+	TargetType                    valueObject.MappingTargetType      `json:"targetType"`
+	TargetValue                   *valueObject.MappingTargetValue    `json:"targetValue"`
+	TargetHttpResponseCode        *valueObject.HttpResponseCode      `json:"targetHttpResponseCode"`
+	ShouldUpgradeInsecureRequests *bool                              `json:"shouldUpgradeInsecureRequests"`
+	MappingSecurityRuleId         *valueObject.MappingSecurityRuleId `json:"mappingSecurityRuleId"`
+	OperatorAccountId             valueObject.AccountId              `json:"-"`
+	OperatorIpAddress             valueObject.IpAddress              `json:"-"`
 }
 
 func NewCreateMapping(
@@ -22,6 +23,7 @@ func NewCreateMapping(
 	targetValue *valueObject.MappingTargetValue,
 	targetHttpResponseCode *valueObject.HttpResponseCode,
 	shouldUpgradeInsecureRequests *bool,
+	mappingSecurityRuleId *valueObject.MappingSecurityRuleId,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) CreateMapping {
@@ -33,6 +35,7 @@ func NewCreateMapping(
 		TargetValue:                   targetValue,
 		TargetHttpResponseCode:        targetHttpResponseCode,
 		ShouldUpgradeInsecureRequests: shouldUpgradeInsecureRequests,
+		MappingSecurityRuleId:         mappingSecurityRuleId,
 		OperatorAccountId:             operatorAccountId,
 		OperatorIpAddress:             operatorIpAddress,
 	}
