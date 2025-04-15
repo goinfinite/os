@@ -1,10 +1,13 @@
 package apiController
 
 import (
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
+
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type VirtualHostController struct {
@@ -198,7 +201,8 @@ func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 // @Produce      json
 // @Param        id query  string  false  "MappingSecurityRuleId"
 // @Param        name query  string  false  "MappingSecurityRuleName"
-// @Param        nameLike query  string  false  "MappingSecurityRuleNameLike"
+// @Param        allowedIp query  string  false  "AllowedIpAddress"
+// @Param        blockedIp query  string  false  "BlockedIpAddress"
 // @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
 // @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
 // @Param        sortBy query  string  false  "SortBy (Pagination)"
@@ -226,13 +230,25 @@ func (controller *VirtualHostController) ReadMappingSecurityRules(c echo.Context
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        createMappingSecurityRuleDto body dto.CreateMappingSecurityRule true "name and description are required."
+// @Param        createMappingSecurityRuleDto body dto.CreateMappingSecurityRule true "Only name is required."
 // @Success      201 {object} object{} "MappingSecurityRuleCreated"
 // @Router       /v1/vhost/mapping/security-rule/ [post]
 func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
+	}
+
+	if requestInputData["allowedIps"] != nil {
+		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["allowedIps"], valueObject.NewIpAddress,
+		)
+	}
+
+	if requestInputData["blockedIps"] != nil {
+		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["blockedIps"], valueObject.NewIpAddress,
+		)
 	}
 
 	return apiHelper.ServiceResponseWrapper(
@@ -255,6 +271,18 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Contex
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
 		return err
+	}
+
+	if requestInputData["allowedIps"] != nil {
+		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["allowedIps"], valueObject.NewIpAddress,
+		)
+	}
+
+	if requestInputData["blockedIps"] != nil {
+		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["blockedIps"], valueObject.NewIpAddress,
+		)
 	}
 
 	return apiHelper.ServiceResponseWrapper(
