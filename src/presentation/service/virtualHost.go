@@ -17,15 +17,13 @@ import (
 )
 
 type VirtualHostService struct {
-	persistentDbSvc              *internalDbInfra.PersistentDatabaseService
-	trailDbSvc                   *internalDbInfra.TrailDatabaseService
-	vhostQueryRepo               *vhostInfra.VirtualHostQueryRepo
-	vhostCmdRepo                 *vhostInfra.VirtualHostCmdRepo
-	mappingQueryRepo             *vhostInfra.MappingQueryRepo
-	mappingCmdRepo               *vhostInfra.MappingCmdRepo
-	mappingSecurityRuleQueryRepo *vhostInfra.MappingSecurityRuleQueryRepo
-	mappingSecurityRuleCmdRepo   *vhostInfra.MappingSecurityRuleCmdRepo
-	activityRecordCmdRepo        *activityRecordInfra.ActivityRecordCmdRepo
+	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	trailDbSvc            *internalDbInfra.TrailDatabaseService
+	vhostQueryRepo        *vhostInfra.VirtualHostQueryRepo
+	vhostCmdRepo          *vhostInfra.VirtualHostCmdRepo
+	mappingQueryRepo      *vhostInfra.MappingQueryRepo
+	mappingCmdRepo        *vhostInfra.MappingCmdRepo
+	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 }
 
 func NewVirtualHostService(
@@ -33,15 +31,13 @@ func NewVirtualHostService(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *VirtualHostService {
 	return &VirtualHostService{
-		persistentDbSvc:              persistentDbSvc,
-		trailDbSvc:                   trailDbSvc,
-		vhostQueryRepo:               vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
-		vhostCmdRepo:                 vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
-		mappingQueryRepo:             vhostInfra.NewMappingQueryRepo(persistentDbSvc),
-		mappingCmdRepo:               vhostInfra.NewMappingCmdRepo(persistentDbSvc),
-		mappingSecurityRuleQueryRepo: vhostInfra.NewMappingSecurityRuleQueryRepo(persistentDbSvc),
-		mappingSecurityRuleCmdRepo:   vhostInfra.NewMappingSecurityRuleCmdRepo(persistentDbSvc),
-		activityRecordCmdRepo:        activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+		persistentDbSvc:       persistentDbSvc,
+		trailDbSvc:            trailDbSvc,
+		vhostQueryRepo:        vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		vhostCmdRepo:          vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
+		mappingQueryRepo:      vhostInfra.NewMappingQueryRepo(persistentDbSvc),
+		mappingCmdRepo:        vhostInfra.NewMappingCmdRepo(persistentDbSvc),
+		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
 	}
 }
 
@@ -520,7 +516,7 @@ func (service *VirtualHostService) ReadMappingSecurityRules(
 	}
 
 	readResponseDto, err := useCase.ReadMappingSecurityRules(
-		service.mappingSecurityRuleQueryRepo, readRequestDto,
+		service.mappingQueryRepo, readRequestDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
@@ -657,7 +653,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	)
 
 	mappingSecurityRuleId, err := useCase.CreateMappingSecurityRule(
-		service.mappingSecurityRuleQueryRepo, service.mappingSecurityRuleCmdRepo,
+		service.mappingQueryRepo, service.mappingCmdRepo,
 		service.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
@@ -807,7 +803,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	)
 
 	err = useCase.UpdateMappingSecurityRule(
-		service.mappingSecurityRuleQueryRepo, service.mappingSecurityRuleCmdRepo,
+		service.mappingQueryRepo, service.mappingCmdRepo,
 		service.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
@@ -848,8 +844,8 @@ func (service *VirtualHostService) DeleteMappingSecurityRule(
 	}
 
 	err = useCase.DeleteMappingSecurityRule(
-		service.mappingSecurityRuleQueryRepo, service.mappingSecurityRuleCmdRepo,
-		service.mappingQueryRepo, service.activityRecordCmdRepo, ruleId,
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, ruleId,
 		operatorAccountId, operatorIpAddress,
 	)
 	if err != nil {
