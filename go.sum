@@ -34,10 +34,14 @@ github.com/go-openapi/swag v0.23.1/go.mod h1:STZs8TbRvEQQKUA+JZNAm3EWlgaOBGpyFDq
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/goinfinite/tk v0.0.0-20250411184107-1c5bc2d63301 h1:o5v6DcmyLK1GhvP73VMdL+/QoOSMjemHjO8nfF+xRmc=
 github.com/goinfinite/tk v0.0.0-20250411184107-1c5bc2d63301/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
+github.com/goinfinite/tk v0.0.0-20250411202534-c023cfab6db4 h1:LP4M98D5m3TyA0q4r5c30HtWiBVMfdPpJ9kEK/h6Xrs=
+github.com/goinfinite/tk v0.0.0-20250411202534-c023cfab6db4/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
 github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63 h1:q+zl6J1hp5zANvtG3Lldzumx52ndG72sNwpaoSM3l1k=
 github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
 github.com/goinfinite/ui v0.0.0-20250410230657-56a209d7c1ec h1:cRUwMBjJ/cscbrEnlRAEBQ0hE1G26C/5oTqCvVBQ7+E=
 github.com/goinfinite/ui v0.0.0-20250410230657-56a209d7c1ec/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250412131000-d1d2d467de12 h1:z+nv8XGv8IlFv5fXD2ehBEQloW5z7FcsEEr7I6ZrqAY=
+github.com/goinfinite/ui v0.0.0-20250412131000-d1d2d467de12/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
