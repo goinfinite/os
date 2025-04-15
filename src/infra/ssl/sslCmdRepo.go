@@ -90,7 +90,8 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 
 	inlineHtmlMapping := dto.NewCreateMapping(
 		targetVirtualHostHostname, path, matchPattern, targetType, &targetValue,
-		&httpResponseCode, &shouldUpgradeInsecureRequests, operatorAccountId, operatorIpAddress,
+		&httpResponseCode, &shouldUpgradeInsecureRequests, nil,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	return mappingCmdRepo.Create(inlineHtmlMapping)
@@ -235,11 +236,14 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	}
 
 	dummyValueGenerator := infraHelper.DummyValueGenerator{}
-	dummyValue := dummyValueGenerator.GenPass(64)
-	expectedOwnershipHash, err := valueObject.NewHash(dummyValue)
+	dummyValue := dummyValueGenerator.GenPass(32)
+	dummyValueHash := infraHelper.GenStrongHash(dummyValue)
+
+	expectedOwnershipHash, err := valueObject.NewHash(dummyValueHash)
 	if err != nil {
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
+
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,
