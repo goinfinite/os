@@ -2552,6 +2552,208 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/vhost/mapping/security-rule/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List mapping security rules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "ReadMappingSecurityRules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "MappingSecurityRuleId",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "MappingSecurityRuleName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "AllowedIpAddress",
+                        "name": "allowedIp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "BlockedIpAddress",
+                        "name": "blockedIp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReadMappingSecurityRulesResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "CreateMappingSecurityRule",
+                "parameters": [
+                    {
+                        "description": "Only name is required.",
+                        "name": "createMappingSecurityRuleDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateMappingSecurityRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "MappingSecurityRuleCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/vhost/mapping/security-rule/{id}/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateMappingSecurityRule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MappingSecurityRuleId to update.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Only id is required.",
+                        "name": "updateMappingSecurityRuleDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMappingSecurityRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingSecurityRuleUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteMappingSecurityRule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MappingSecurityRuleId to delete.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingSecurityRuleDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/vhost/mapping/{mappingId}/": {
             "delete": {
                 "security": [
@@ -2872,6 +3074,9 @@ const docTemplate = `{
                 "hostname": {
                     "type": "string"
                 },
+                "mappingSecurityRuleId": {
+                    "type": "integer"
+                },
                 "matchPattern": {
                     "$ref": "#/definitions/valueObject.MappingMatchPattern"
                 },
@@ -2889,6 +3094,50 @@ const docTemplate = `{
                 },
                 "targetValue": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.CreateMappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "hardLimitRequestsPerIp": {
+                    "type": "integer"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "softLimitRequestsPerIp": {
+                    "type": "integer"
                 }
             }
         },
@@ -3200,6 +3449,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReadMappingSecurityRulesResponse": {
+            "type": "object",
+            "properties": {
+                "mappingSecurityRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.MappingSecurityRule"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
         "dto.ReadMarketplaceCatalogItemsResponse": {
             "type": "object",
             "properties": {
@@ -3327,6 +3590,53 @@ const docTemplate = `{
                 },
                 "schedule": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateMappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "hardLimitRequestsPerIp": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "softLimitRequestsPerIp": {
+                    "type": "integer"
                 }
             }
         },
@@ -3779,6 +4089,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "mappingSecurityRuleId": {
+                    "type": "integer"
+                },
                 "marketplaceInstalledItemId": {
                     "type": "integer"
                 },
@@ -3802,6 +4115,59 @@ const docTemplate = `{
                 },
                 "targetValue": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.MappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "hardLimitRequestsPerIp": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "softLimitRequestsPerIp": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "integer"

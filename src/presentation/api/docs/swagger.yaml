@@ -160,6 +160,8 @@ definitions:
     properties:
       hostname:
         type: string
+      mappingSecurityRuleId:
+        type: integer
       matchPattern:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
@@ -172,6 +174,35 @@ definitions:
         $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+    type: object
+  dto.CreateMappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      hardLimitRequestsPerIp:
+        type: integer
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      softLimitRequestsPerIp:
+        type: integer
     type: object
   dto.CreatePubliclyTrustedSslPair:
     properties:
@@ -373,6 +404,15 @@ definitions:
       pagination:
         $ref: '#/definitions/dto.Pagination'
     type: object
+  dto.ReadMappingSecurityRulesResponse:
+    properties:
+      mappingSecurityRules:
+        items:
+          $ref: '#/definitions/entity.MappingSecurityRule'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
       marketplaceCatalogItems:
@@ -456,6 +496,37 @@ definitions:
         type: integer
       schedule:
         type: string
+    type: object
+  dto.UpdateMappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      hardLimitRequestsPerIp:
+        type: integer
+      id:
+        type: integer
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      softLimitRequestsPerIp:
+        type: integer
     type: object
   dto.UpdatePhpConfigs:
     properties:
@@ -752,6 +823,8 @@ definitions:
         type: integer
       id:
         type: integer
+      mappingSecurityRuleId:
+        type: integer
       marketplaceInstalledItemId:
         type: integer
       marketplaceInstalledItemName:
@@ -768,6 +841,41 @@ definitions:
         $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+      updatedAt:
+        type: integer
+    type: object
+  entity.MappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
+      description:
+        type: string
+      hardLimitRequestsPerIp:
+        type: integer
+      id:
+        type: integer
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      softLimitRequestsPerIp:
+        type: integer
       updatedAt:
         type: integer
     type: object
@@ -2899,6 +3007,134 @@ paths:
       security:
       - Bearer: []
       summary: DeleteVirtualHostMapping
+      tags:
+      - vhosts
+  /v1/vhost/mapping/security-rule/:
+    get:
+      consumes:
+      - application/json
+      description: List mapping security rules.
+      parameters:
+      - description: MappingSecurityRuleId
+        in: query
+        name: id
+        type: string
+      - description: MappingSecurityRuleName
+        in: query
+        name: name
+        type: string
+      - description: AllowedIpAddress
+        in: query
+        name: allowedIp
+        type: string
+      - description: BlockedIpAddress
+        in: query
+        name: blockedIp
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReadMappingSecurityRulesResponse'
+      security:
+      - Bearer: []
+      summary: ReadMappingSecurityRules
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Create a new mapping security rule.
+      parameters:
+      - description: Only name is required.
+        in: body
+        name: createMappingSecurityRuleDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMappingSecurityRule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: MappingSecurityRuleCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreateMappingSecurityRule
+      tags:
+      - vhosts
+  /v1/vhost/mapping/security-rule/{id}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a mapping security rule.
+      parameters:
+      - description: MappingSecurityRuleId to delete.
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingSecurityRuleDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteMappingSecurityRule
+      tags:
+      - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a mapping security rule.
+      parameters:
+      - description: MappingSecurityRuleId to update.
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Only id is required.
+        in: body
+        name: updateMappingSecurityRuleDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMappingSecurityRule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingSecurityRuleUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateMappingSecurityRule
       tags:
       - vhosts
 securityDefinitions:
