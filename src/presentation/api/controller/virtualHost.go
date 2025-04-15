@@ -188,3 +188,97 @@ func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 		c, controller.virtualHostService.DeleteMapping(requestInputData),
 	)
 }
+
+// ReadMappingSecurityRules godoc
+// @Summary      ReadMappingSecurityRules
+// @Description  List mapping security rules.
+// @Tags         vhosts
+// @Security     Bearer
+// @Accept       json
+// @Produce      json
+// @Param        id query  string  false  "MappingSecurityRuleId"
+// @Param        name query  string  false  "MappingSecurityRuleName"
+// @Param        nameLike query  string  false  "MappingSecurityRuleNameLike"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadMappingSecurityRulesResponse
+// @Router       /v1/vhost/mapping/security-rule/ [get]
+func (controller *VirtualHostController) ReadMappingSecurityRules(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.ReadMappingSecurityRules(
+			requestInputData,
+		),
+	)
+}
+
+// CreateMappingSecurityRule godoc
+// @Summary      CreateMappingSecurityRule
+// @Description  Create a new mapping security rule.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        createMappingSecurityRuleDto body dto.CreateMappingSecurityRule true "name and description are required."
+// @Success      201 {object} object{} "MappingSecurityRuleCreated"
+// @Router       /v1/vhost/mapping/security-rule/ [post]
+func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.CreateMappingSecurityRule(requestInputData),
+	)
+}
+
+// UpdateMappingSecurityRule godoc
+// @Summary      UpdateMappingSecurityRule
+// @Description  Update a mapping security rule.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path uint true "MappingSecurityRuleId to update."
+// @Param        updateMappingSecurityRuleDto body dto.UpdateMappingSecurityRule true "Only id is required."
+// @Success      200 {object} object{} "MappingSecurityRuleUpdated"
+// @Router       /v1/vhost/mapping/security-rule/{id}/ [put]
+func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.UpdateMappingSecurityRule(requestInputData),
+	)
+}
+
+// DeleteMappingSecurityRule godoc
+// @Summary      DeleteMappingSecurityRule
+// @Description  Delete a mapping security rule.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path uint true "MappingSecurityRuleId to delete."
+// @Success      200 {object} object{} "MappingSecurityRuleDeleted"
+// @Router       /v1/vhost/mapping/security-rule/{id}/ [delete]
+func (controller *VirtualHostController) DeleteMappingSecurityRule(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.DeleteMappingSecurityRule(requestInputData),
+	)
+}
