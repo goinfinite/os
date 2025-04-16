@@ -293,8 +293,7 @@ func (repo *MappingCmdRepo) RecreateMappingFile(
 
 	mappingConfigTemplate := `{{- range . -}}
 location {{ locationUriConfigFactory .MatchPattern .Path }} {
-	{{- if not .ShouldUpgradeInsecureRequests }}
-	{{- else }}
+	{{- if boolPtrDeref .ShouldUpgradeInsecureRequests }}
 	if ($scheme = http) {
 		return 301 https://$host$request_uri;
 	}
@@ -325,6 +324,12 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 		template.FuncMap{
 			"locationUriConfigFactory":    repo.locationUriConfigFactory,
 			"serviceMappingConfigFactory": repo.serviceMappingConfigFactory,
+			"boolPtrDeref": func(boolPtr *bool) bool {
+				if boolPtr == nil {
+					return false
+				}
+				return *boolPtr
+			},
 		},
 	)
 
@@ -474,7 +479,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 
 func (repo *MappingCmdRepo) recreateSecurityRuleFile(
 	mappingSecurityRuleId valueObject.MappingSecurityRuleId,
-) (err error) {
+) error {
 	ruleEntity, err := repo.mappingQueryRepo.ReadFirstSecurityRule(
 		dto.ReadMappingSecurityRulesRequest{MappingSecurityRuleId: &mappingSecurityRuleId},
 	)
@@ -572,6 +577,24 @@ deny {{ . }};
 	err = infraHelper.UpdateFile(ruleEmbeddableFilePath, ruleEmbeddableFileContent.String(), true)
 	if err != nil {
 		return errors.New("CreateSecurityRuleEmbeddableFileError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *MappingCmdRepo) RecreateSecurityRuleFiles() error {
+	responseDto, err := repo.mappingQueryRepo.ReadSecurityRule(
+		dto.ReadMappingSecurityRulesRequest{Pagination: dto.PaginationUnpaginated},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, ruleEntity := range responseDto.MappingSecurityRules {
+		err = repo.recreateSecurityRuleFile(ruleEntity.Id)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
