@@ -3121,9 +3121,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "maxConnectionsPerIp": {
                     "type": "integer"
                 },
@@ -3136,7 +3133,10 @@ const docTemplate = `{
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 }
             }
@@ -3617,9 +3617,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -3635,7 +3632,10 @@ const docTemplate = `{
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 }
             }
@@ -4148,9 +4148,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -4166,7 +4163,10 @@ const docTemplate = `{
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 },
                 "updatedAt": {

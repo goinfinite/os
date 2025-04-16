@@ -3115,9 +3115,6 @@
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "maxConnectionsPerIp": {
                     "type": "integer"
                 },
@@ -3130,7 +3127,10 @@
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 }
             }
@@ -3611,9 +3611,6 @@
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -3629,7 +3626,10 @@
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 }
             }
@@ -4142,9 +4142,6 @@
                 "description": {
                     "type": "string"
                 },
-                "hardLimitRequestsPerIp": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -4160,7 +4157,10 @@
                 "responseCodeOnMaxRequests": {
                     "type": "integer"
                 },
-                "softLimitRequestsPerIp": {
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
                     "type": "integer"
                 },
                 "updatedAt": {

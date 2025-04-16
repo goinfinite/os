@@ -566,22 +566,22 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 		blockedIps = blockedIpsInput
 	}
 
-	var softLimitRequestsPerIpPtr *uint
-	if input["softLimitRequestsPerIp"] != nil {
-		softLimit, err := tkVoUtil.InterfaceToUint(input["softLimitRequestsPerIp"])
+	var rpsSoftLimitPerIpPtr *uint
+	if input["rpsSoftLimitPerIp"] != nil {
+		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidSoftLimitRequestsPerIp")
+			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
 		}
-		softLimitRequestsPerIpPtr = &softLimit
+		rpsSoftLimitPerIpPtr = &softLimit
 	}
 
-	var hardLimitRequestsPerIpPtr *uint
-	if input["hardLimitRequestsPerIp"] != nil {
-		hardLimit, err := tkVoUtil.InterfaceToUint(input["hardLimitRequestsPerIp"])
+	var rpsHardLimitPerIpPtr *uint
+	if input["rpsHardLimitPerIp"] != nil {
+		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidHardLimitRequestsPerIp")
+			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
 		}
-		hardLimitRequestsPerIpPtr = &hardLimit
+		rpsHardLimitPerIpPtr = &hardLimit
 	}
 
 	var responseCodeOnMaxRequestsPtr *uint
@@ -646,8 +646,8 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	createDto := dto.NewCreateMappingSecurityRule(
-		name, descriptionPtr, allowedIps, blockedIps, softLimitRequestsPerIpPtr,
-		hardLimitRequestsPerIpPtr, responseCodeOnMaxRequestsPtr, maxConnectionsPerIpPtr,
+		name, descriptionPtr, allowedIps, blockedIps, rpsSoftLimitPerIpPtr,
+		rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr, maxConnectionsPerIpPtr,
 		bandwidthBpsLimitPerConnectionPtr, bandwidthLimitOnlyAfterBytesPtr,
 		responseCodeOnMaxConnectionsPtr, operatorAccountId, operatorIpAddress,
 	)
@@ -715,22 +715,22 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 		blockedIpsPtr = &blockedIpsInput
 	}
 
-	var softLimitRequestsPerIpPtr *uint
-	if input["softLimitRequestsPerIp"] != nil {
-		softLimit, err := tkVoUtil.InterfaceToUint(input["softLimitRequestsPerIp"])
+	var rpsSoftLimitPerIpPtr *uint
+	if input["rpsSoftLimitPerIp"] != nil {
+		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidSoftLimitRequestsPerIp")
+			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
 		}
-		softLimitRequestsPerIpPtr = &softLimit
+		rpsSoftLimitPerIpPtr = &softLimit
 	}
 
-	var hardLimitRequestsPerIpPtr *uint
-	if input["hardLimitRequestsPerIp"] != nil {
-		hardLimit, err := tkVoUtil.InterfaceToUint(input["hardLimitRequestsPerIp"])
+	var rpsHardLimitPerIpPtr *uint
+	if input["rpsHardLimitPerIp"] != nil {
+		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
 		if err != nil {
-			return NewServiceOutput(UserError, "InvalidHardLimitRequestsPerIp")
+			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
 		}
-		hardLimitRequestsPerIpPtr = &hardLimit
+		rpsHardLimitPerIpPtr = &hardLimit
 	}
 
 	var responseCodeOnMaxRequestsPtr *uint
@@ -796,10 +796,10 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 
 	updateDto := dto.NewUpdateMappingSecurityRule(
 		id, namePtr, descriptionPtr, allowedIpsPtr, blockedIpsPtr,
-		softLimitRequestsPerIpPtr, hardLimitRequestsPerIpPtr,
-		responseCodeOnMaxRequestsPtr, maxConnectionsPerIpPtr,
-		bandwidthBpsLimitPerConnectionPtr, bandwidthLimitOnlyAfterBytesPtr,
-		responseCodeOnMaxConnectionsPtr, operatorAccountId, operatorIpAddress,
+		rpsSoftLimitPerIpPtr, rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr,
+		maxConnectionsPerIpPtr, bandwidthBpsLimitPerConnectionPtr,
+		bandwidthLimitOnlyAfterBytesPtr, responseCodeOnMaxConnectionsPtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateMappingSecurityRule(

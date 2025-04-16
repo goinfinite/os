@@ -10,8 +10,8 @@ type UpdateMappingSecurityRule struct {
 	Description                    *valueObject.MappingSecurityRuleDescription `json:"description"`
 	AllowedIps                     *[]valueObject.IpAddress                    `json:"allowedIps"`
 	BlockedIps                     *[]valueObject.IpAddress                    `json:"blockedIps"`
-	SoftLimitRequestsPerIp         *uint                                       `json:"softLimitRequestsPerIp"`
-	HardLimitRequestsPerIp         *uint                                       `json:"hardLimitRequestsPerIp"`
+	RpsSoftLimitPerIp              *uint                                       `json:"rpsSoftLimitPerIp"`
+	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
 	MaxConnectionsPerIp            *uint                                       `json:"maxConnectionsPerIp"`
 	BandwidthBpsLimitPerConnection *valueObject.Byte                           `json:"bandwidthBpsLimitPerConnection"`
@@ -26,7 +26,7 @@ func NewUpdateMappingSecurityRule(
 	name *valueObject.MappingSecurityRuleName,
 	description *valueObject.MappingSecurityRuleDescription,
 	allowedIps, blockedIps *[]valueObject.IpAddress,
-	softLimitRequestsPerIp, hardLimitRequestsPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
+	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
 	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
 	responseCodeOnMaxConnections *uint,
 	operatorAccountId valueObject.AccountId,
@@ -38,8 +38,8 @@ func NewUpdateMappingSecurityRule(
 		Description:                    description,
 		AllowedIps:                     allowedIps,
 		BlockedIps:                     blockedIps,
-		SoftLimitRequestsPerIp:         softLimitRequestsPerIp,
-		HardLimitRequestsPerIp:         hardLimitRequestsPerIp,
+		RpsSoftLimitPerIp:              rpsSoftLimitPerIp,
+		RpsHardLimitPerIp:              rpsHardLimitPerIp,
 		ResponseCodeOnMaxRequests:      responseCodeOnMaxRequests,
 		MaxConnectionsPerIp:            maxConnectionsPerIp,
 		BandwidthBpsLimitPerConnection: bandwidthBpsLimitPerConnection,

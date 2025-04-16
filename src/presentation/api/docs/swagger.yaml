@@ -191,8 +191,6 @@ definitions:
         type: array
       description:
         type: string
-      hardLimitRequestsPerIp:
-        type: integer
       maxConnectionsPerIp:
         type: integer
       name:
@@ -201,7 +199,9 @@ definitions:
         type: integer
       responseCodeOnMaxRequests:
         type: integer
-      softLimitRequestsPerIp:
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
         type: integer
     type: object
   dto.CreatePubliclyTrustedSslPair:
@@ -513,8 +513,6 @@ definitions:
         type: array
       description:
         type: string
-      hardLimitRequestsPerIp:
-        type: integer
       id:
         type: integer
       maxConnectionsPerIp:
@@ -525,7 +523,9 @@ definitions:
         type: integer
       responseCodeOnMaxRequests:
         type: integer
-      softLimitRequestsPerIp:
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
         type: integer
     type: object
   dto.UpdatePhpConfigs:
@@ -862,8 +862,6 @@ definitions:
         type: integer
       description:
         type: string
-      hardLimitRequestsPerIp:
-        type: integer
       id:
         type: integer
       maxConnectionsPerIp:
@@ -874,7 +872,9 @@ definitions:
         type: integer
       responseCodeOnMaxRequests:
         type: integer
-      softLimitRequestsPerIp:
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
         type: integer
       updatedAt:
         type: integer
