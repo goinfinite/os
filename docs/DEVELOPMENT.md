@@ -1,6 +1,6 @@
 # Development
 
-Before contributing to the project, please read the [Contributing](docs/CONTRIBUTING.md) document. It contains important information about the project's guidelines and expectations.
+Before contributing to the project, please read the [Contributing](/docs/CONTRIBUTING.md) document. It contains important information about the project's guidelines and expectations.
 
 The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/9). You may create issues or pull requests to contribute to the project.
 

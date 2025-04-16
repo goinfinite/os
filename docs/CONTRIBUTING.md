@@ -8,9 +8,9 @@ Before submitting any changes, please discuss your proposed modifications with t
 
 We value meaningful contributions that substantively improve the project. Please focus on quality over quantity - contributions should address real needs or enhancement opportunities rather than superficial changes. **Proposals that appear primarily aimed at gaining contributor status without adding significant value will be declined**.
 
-For technical assistance, please refer to the [Development](docs/DEVELOPMENT.md) documentation. It contains information on setting up your development environment, running tests, and other essential details.
+For technical assistance, please refer to the [Development](/docs/DEVELOPMENT.md) documentation. It contains information on setting up your development environment, running tests, and other essential details.
 
-For security-related issues, please refer to our [Security Policy](docs/SECURITY.md) for guidelines on reporting vulnerabilities and security concerns.
+For security-related issues, please refer to our [Security Policy](/docs/SECURITY.md) for guidelines on reporting vulnerabilities and security concerns.
 
 ## Code of Conduct
 
