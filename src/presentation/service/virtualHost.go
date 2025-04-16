@@ -702,22 +702,22 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 		descriptionPtr = &description
 	}
 
-	var allowedIpsPtr *[]valueObject.IpAddress
+	allowedIps := []valueObject.IpAddress{}
 	if input["allowedIps"] != nil {
-		allowedIpsInput, assertOk := input["allowedIps"].([]valueObject.IpAddress)
+		var assertOk bool
+		allowedIps, assertOk = input["allowedIps"].([]valueObject.IpAddress)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidAllowedIps")
 		}
-		allowedIpsPtr = &allowedIpsInput
 	}
 
-	var blockedIpsPtr *[]valueObject.IpAddress
+	blockedIps := []valueObject.IpAddress{}
 	if input["blockedIps"] != nil {
-		blockedIpsInput, assertOk := input["blockedIps"].([]valueObject.IpAddress)
+		var assertOk bool
+		blockedIps, assertOk = input["blockedIps"].([]valueObject.IpAddress)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidBlockedIps")
 		}
-		blockedIpsPtr = &blockedIpsInput
 	}
 
 	var rpsSoftLimitPerIpPtr *uint
@@ -800,7 +800,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	updateDto := dto.NewUpdateMappingSecurityRule(
-		id, namePtr, descriptionPtr, allowedIpsPtr, blockedIpsPtr,
+		id, namePtr, descriptionPtr, allowedIps, blockedIps,
 		rpsSoftLimitPerIpPtr, rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr,
 		maxConnectionsPerIpPtr, bandwidthBpsLimitPerConnectionPtr,
 		bandwidthLimitOnlyAfterBytesPtr, responseCodeOnMaxConnectionsPtr,

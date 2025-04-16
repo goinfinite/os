@@ -8,8 +8,8 @@ type UpdateMappingSecurityRule struct {
 	Id                             valueObject.MappingSecurityRuleId           `json:"id"`
 	Name                           *valueObject.MappingSecurityRuleName        `json:"name"`
 	Description                    *valueObject.MappingSecurityRuleDescription `json:"description"`
-	AllowedIps                     *[]valueObject.IpAddress                    `json:"allowedIps"`
-	BlockedIps                     *[]valueObject.IpAddress                    `json:"blockedIps"`
+	AllowedIps                     []valueObject.IpAddress                     `json:"allowedIps"`
+	BlockedIps                     []valueObject.IpAddress                     `json:"blockedIps"`
 	RpsSoftLimitPerIp              *uint                                       `json:"rpsSoftLimitPerIp"`
 	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
@@ -25,7 +25,7 @@ func NewUpdateMappingSecurityRule(
 	id valueObject.MappingSecurityRuleId,
 	name *valueObject.MappingSecurityRuleName,
 	description *valueObject.MappingSecurityRuleDescription,
-	allowedIps, blockedIps *[]valueObject.IpAddress,
+	allowedIps, blockedIps []valueObject.IpAddress,
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
 	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
 	responseCodeOnMaxConnections *uint,
