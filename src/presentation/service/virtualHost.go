@@ -843,10 +843,13 @@ func (service *VirtualHostService) DeleteMappingSecurityRule(
 		}
 	}
 
+	deleteDto := dto.NewDeleteMappingSecurityRule(
+		ruleId, operatorAccountId, operatorIpAddress,
+	)
+
 	err = useCase.DeleteMappingSecurityRule(
 		service.mappingQueryRepo, service.mappingCmdRepo,
-		service.activityRecordCmdRepo, ruleId,
-		operatorAccountId, operatorIpAddress,
+		service.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
