@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MappingTargetType string
@@ -27,7 +27,7 @@ var ValidMappingTargetTypes = []string{
 func NewMappingTargetType(value interface{}) (
 	mappingTargetType MappingTargetType, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return mappingTargetType, errors.New("MappingTargetTypeMustBeString")
 	}
