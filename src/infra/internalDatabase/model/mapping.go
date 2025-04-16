@@ -18,6 +18,7 @@ type Mapping struct {
 	ShouldUpgradeInsecureRequests *bool
 	MarketplaceInstalledItemID    *uint
 	MarketplaceInstalledItemName  *string
+	MappingSecurityRuleID         *uint64
 	CreatedAt                     time.Time `gorm:"not null"`
 	UpdatedAt                     time.Time `gorm:"not null"`
 }
@@ -96,11 +97,22 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		marketplaceInstalledItemNamePtr = &marketplaceInstalledItemName
 	}
 
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if model.MappingSecurityRuleID != nil {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(
+			*model.MappingSecurityRuleID,
+		)
+		if err != nil {
+			return mappingEntity, err
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
 	return entity.NewMapping(
 		mappingId, hostname, path, matchPattern, targetType, targetValuePtr,
 		targetHttpResponseCodePtr, model.ShouldUpgradeInsecureRequests,
 		marketplaceInstalledItemIdPtr, marketplaceInstalledItemNamePtr,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		mappingSecurityRuleIdPtr, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }
