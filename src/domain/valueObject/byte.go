@@ -40,6 +40,10 @@ func (vo Byte) Int64() int64 {
 	return int64(vo)
 }
 
+func (vo Byte) Uint64() uint64 {
+	return uint64(vo)
+}
+
 func (vo Byte) ToKiB() int64 {
 	return vo.Int64() / 1024
 }
