@@ -487,24 +487,16 @@ func (repo *MappingCmdRepo) recreateSecurityRuleFile(
 		return errors.New("ReadMappingSecurityRuleError: " + err.Error())
 	}
 
-	ruleGlobalTemplateStr := `{{- if .RpsSoftLimitPerIp && .RpsHardLimitPerIp }}
+	ruleGlobalTemplateStr := `{{- if and .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
 limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s;
-{{- else if .RpsSoftLimitPerIp }}
+{{- else if .RpsSoftLimitPerIp -}}
 limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s;
-{{- else if .RpsHardLimitPerIp }}
+{{- else if .RpsHardLimitPerIp -}}
 limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsHardLimitPerIp }}r/s;
-{{- end }}
-{{- if .RpsSoftLimitPerIp || .RpsHardLimitPerIp }}
-{{- if .ResponseCodeOnMaxRequests }}
-limit_req_status {{ .ResponseCodeOnMaxRequests }};
-{{- end }}
-{{- end }}
+{{- end -}}
 
 {{- if .MaxConnectionsPerIp }}
 limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m;
-{{- if .ResponseCodeOnMaxConnections }}
-limit_conn_status {{ .ResponseCodeOnMaxConnections }};
-{{- end }}
 {{- end }}
 `
 
@@ -531,14 +523,22 @@ limit_conn_status {{ .ResponseCodeOnMaxConnections }};
 		return errors.New("CreateSecurityRuleGlobalFileError: " + err.Error())
 	}
 
-	ruleEmbeddableTemplateStr := `{{- if .RpsSoftLimitPerIp && .RpsHardLimitPerIp }}
+	ruleEmbeddableTemplateStr := `{{- if and .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
 limit_req zone=rps_limit_{{ .Id }} burst={{ .RpsHardLimitPerIp }};
-{{- else if .RpsSoftLimitPerIp || .RpsHardLimitPerIp }}
+{{- else if or .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
 limit_req zone=rps_limit_{{ .Id }};
+{{- end -}}
+{{- if or .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
+{{- if .ResponseCodeOnMaxRequests }}
+limit_req_status {{ .ResponseCodeOnMaxRequests }};
 {{- end }}
+{{- end -}}
 
 {{- if .MaxConnectionsPerIp }}
 limit_conn conn_limit_{{ .Id }} {{ .MaxConnectionsPerIp }};
+{{- if .ResponseCodeOnMaxConnections }}
+limit_conn_status {{ .ResponseCodeOnMaxConnections }};
+{{- end }}
 {{- end }}
 	
 {{- if .BandwidthBpsLimitPerConnection }}
@@ -577,6 +577,11 @@ deny {{ . }};
 	err = infraHelper.UpdateFile(ruleEmbeddableFilePath, ruleEmbeddableFileContent.String(), true)
 	if err != nil {
 		return errors.New("CreateSecurityRuleEmbeddableFileError: " + err.Error())
+	}
+
+	err = infraHelper.UpdateOwnershipForWebServerUse(infraEnvs.MappingsSecurityRulesConfDir, true, false)
+	if err != nil {
+		return errors.New("UpdateSecurityRulesDirOwnershipError: " + err.Error())
 	}
 
 	return nil
@@ -655,7 +660,25 @@ func (repo *MappingCmdRepo) CreateSecurityRule(
 		return ruleId, err
 	}
 
-	return ruleId, repo.recreateSecurityRuleFile(ruleId)
+	err = repo.recreateSecurityRuleFile(ruleId)
+	if err != nil {
+		return ruleId, errors.New("RecreateMappingSecurityRuleFileError: " + err.Error())
+	}
+
+	err = infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		err = repo.persistentDbSvc.Handler.Delete(&securityRuleModel).Error
+		if err != nil {
+			return ruleId, err
+		}
+
+		err = repo.recreateSecurityRuleFile(ruleId)
+		if err != nil {
+			return ruleId, errors.New("RecreateMappingSecurityRuleFileError: " + err.Error())
+		}
+	}
+
+	return ruleId, infraHelper.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) UpdateSecurityRule(
@@ -721,7 +744,12 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 		return errors.New("UpdateMappingSecurityRuleInfraError: " + err.Error())
 	}
 
-	return repo.recreateSecurityRuleFile(updateDto.Id)
+	err = repo.recreateSecurityRuleFile(updateDto.Id)
+	if err != nil {
+		return errors.New("RecreateMappingSecurityRuleFileError: " + err.Error())
+	}
+
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) DeleteSecurityRule(
