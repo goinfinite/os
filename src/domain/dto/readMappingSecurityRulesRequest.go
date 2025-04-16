@@ -11,6 +11,8 @@ type ReadMappingSecurityRulesRequest struct {
 	MappingSecurityRuleName *valueObject.MappingSecurityRuleName `json:"mappingSecurityRuleName"`
 	AllowedIp               *valueObject.IpAddress               `json:"allowedIp"`
 	BlockedIp               *valueObject.IpAddress               `json:"blockedIp"`
+	CreatedBeforeAt         *valueObject.UnixTime                `json:"createdBeforeAt"`
+	CreatedAfterAt          *valueObject.UnixTime                `json:"createdAfterAt"`
 }
 
 type ReadMappingSecurityRulesResponse struct {

@@ -491,6 +491,9 @@ func (service *VirtualHostService) MappingSecurityRuleReadRequestFactory(
 		blockedIpPtr = &blockedIp
 	}
 
+	timeParamNames := []string{"createdBeforeAt", "createdAfterAt"}
+	timeParamPtrs := serviceHelper.TimeParamsParser(timeParamNames, serviceInput)
+
 	requestPagination, err := serviceHelper.PaginationParser(
 		serviceInput, useCase.MappingSecurityRulesDefaultPagination,
 	)
@@ -504,6 +507,8 @@ func (service *VirtualHostService) MappingSecurityRuleReadRequestFactory(
 		MappingSecurityRuleName: mappingSecurityRuleNamePtr,
 		AllowedIp:               allowedIpPtr,
 		BlockedIp:               blockedIpPtr,
+		CreatedBeforeAt:         timeParamPtrs["createdBeforeAt"],
+		CreatedAfterAt:          timeParamPtrs["createdAfterAt"],
 	}, nil
 }
 

@@ -152,6 +152,14 @@ func (repo *MappingQueryRepo) ReadSecurityRule(
 		dbQuery = dbQuery.Where("blocked_ips LIKE ?", "%"+requestDto.BlockedIp.String()+"%")
 	}
 
+	if requestDto.CreatedBeforeAt != nil {
+		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
+	}
+
+	if requestDto.CreatedAfterAt != nil {
+		dbQuery = dbQuery.Where("created_at > ?", requestDto.CreatedAfterAt.ReadAsGoTime())
+	}
+
 	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
 		dbQuery, requestDto.Pagination,
 	)

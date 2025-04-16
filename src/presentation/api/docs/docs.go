@@ -2463,14 +2463,14 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "CreatedBeforeAt",
+                        "type": "integer",
+                        "description": "CreatedBeforeAt (Unix timestamp)",
                         "name": "createdBeforeAt",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "CreatedAfterAt",
+                        "type": "integer",
+                        "description": "CreatedAfterAt (Unix timestamp)",
                         "name": "createdAfterAt",
                         "in": "query"
                     },
@@ -2593,6 +2593,18 @@ const docTemplate = `{
                         "type": "string",
                         "description": "BlockedIpAddress",
                         "name": "blockedIp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "CreatedBeforeAt (Unix timestamp)",
+                        "name": "createdBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "CreatedAfterAt (Unix timestamp)",
+                        "name": "createdAfterAt",
                         "in": "query"
                     },
                     {

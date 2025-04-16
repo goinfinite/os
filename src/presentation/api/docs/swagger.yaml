@@ -2915,14 +2915,14 @@ paths:
         in: query
         name: withMappings
         type: boolean
-      - description: CreatedBeforeAt
+      - description: CreatedBeforeAt (Unix timestamp)
         in: query
         name: createdBeforeAt
-        type: string
-      - description: CreatedAfterAt
+        type: integer
+      - description: CreatedAfterAt (Unix timestamp)
         in: query
         name: createdAfterAt
-        type: string
+        type: integer
       - description: PageNumber (Pagination)
         in: query
         name: pageNumber
@@ -3031,6 +3031,14 @@ paths:
         in: query
         name: blockedIp
         type: string
+      - description: CreatedBeforeAt (Unix timestamp)
+        in: query
+        name: createdBeforeAt
+        type: integer
+      - description: CreatedAfterAt (Unix timestamp)
+        in: query
+        name: createdAfterAt
+        type: integer
       - description: PageNumber (Pagination)
         in: query
         name: pageNumber
