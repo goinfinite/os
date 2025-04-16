@@ -31,50 +31,54 @@ func (MappingSecurityRule) TableName() string {
 
 func (MappingSecurityRule) InitialEntries() (initialEntries []interface{}, err error) {
 	for _, initialPreset := range entity.MappingSecurityRuleInitialPresets() {
-		var descriptionPtr *string
-		if initialPreset.Description != nil {
-			descriptionStr := initialPreset.Description.String()
-			descriptionPtr = &descriptionStr
-		}
-
-		allowedIps := []string{}
-		for _, ipAddress := range initialPreset.AllowedIps {
-			allowedIps = append(allowedIps, ipAddress.String())
-		}
-
-		blockedIps := []string{}
-		for _, ipAddress := range initialPreset.BlockedIps {
-			blockedIps = append(blockedIps, ipAddress.String())
-		}
-
-		var bandwidthBpsLimitPerConnectionPtr *uint64
-		if initialPreset.BandwidthBpsLimitPerConnection != nil {
-			perConnectionUint64 := initialPreset.BandwidthBpsLimitPerConnection.Uint64()
-			bandwidthBpsLimitPerConnectionPtr = &perConnectionUint64
-		}
-
-		var bandwidthLimitOnlyAfterBytesPtr *uint64
-		if initialPreset.BandwidthLimitOnlyAfterBytes != nil {
-			afterBytesUint64 := initialPreset.BandwidthLimitOnlyAfterBytes.Uint64()
-			bandwidthLimitOnlyAfterBytesPtr = &afterBytesUint64
-		}
-
-		initialEntries = append(initialEntries, MappingSecurityRule{
-			Name:                           initialPreset.Name.String(),
-			Description:                    descriptionPtr,
-			AllowedIps:                     allowedIps,
-			BlockedIps:                     blockedIps,
-			RpsSoftLimitPerIp:              initialPreset.RpsSoftLimitPerIp,
-			RpsHardLimitPerIp:              initialPreset.RpsHardLimitPerIp,
-			ResponseCodeOnMaxRequests:      initialPreset.ResponseCodeOnMaxRequests,
-			MaxConnectionsPerIp:            initialPreset.MaxConnectionsPerIp,
-			BandwidthBpsLimitPerConnection: bandwidthBpsLimitPerConnectionPtr,
-			BandwidthLimitOnlyAfterBytes:   bandwidthLimitOnlyAfterBytesPtr,
-			ResponseCodeOnMaxConnections:   initialPreset.ResponseCodeOnMaxConnections,
-		})
+		initialEntries = append(initialEntries, MappingSecurityRule{}.ToModel(initialPreset))
 	}
 
 	return initialEntries, nil
+}
+
+func (MappingSecurityRule) ToModel(ruleEntity entity.MappingSecurityRule) MappingSecurityRule {
+	var descriptionPtr *string
+	if ruleEntity.Description != nil {
+		descriptionStr := ruleEntity.Description.String()
+		descriptionPtr = &descriptionStr
+	}
+
+	allowedIps := []string{}
+	for _, ipAddress := range ruleEntity.AllowedIps {
+		allowedIps = append(allowedIps, ipAddress.String())
+	}
+
+	blockedIps := []string{}
+	for _, ipAddress := range ruleEntity.BlockedIps {
+		blockedIps = append(blockedIps, ipAddress.String())
+	}
+
+	var bandwidthBpsLimitPerConnectionPtr *uint64
+	if ruleEntity.BandwidthBpsLimitPerConnection != nil {
+		perConnectionUint64 := ruleEntity.BandwidthBpsLimitPerConnection.Uint64()
+		bandwidthBpsLimitPerConnectionPtr = &perConnectionUint64
+	}
+
+	var bandwidthLimitOnlyAfterBytesPtr *uint64
+	if ruleEntity.BandwidthLimitOnlyAfterBytes != nil {
+		afterBytesUint64 := ruleEntity.BandwidthLimitOnlyAfterBytes.Uint64()
+		bandwidthLimitOnlyAfterBytesPtr = &afterBytesUint64
+	}
+
+	return MappingSecurityRule{
+		Name:                           ruleEntity.Name.String(),
+		Description:                    descriptionPtr,
+		AllowedIps:                     allowedIps,
+		BlockedIps:                     blockedIps,
+		RpsSoftLimitPerIp:              ruleEntity.RpsSoftLimitPerIp,
+		RpsHardLimitPerIp:              ruleEntity.RpsHardLimitPerIp,
+		ResponseCodeOnMaxRequests:      ruleEntity.ResponseCodeOnMaxRequests,
+		MaxConnectionsPerIp:            ruleEntity.MaxConnectionsPerIp,
+		BandwidthBpsLimitPerConnection: bandwidthBpsLimitPerConnectionPtr,
+		BandwidthLimitOnlyAfterBytes:   bandwidthLimitOnlyAfterBytesPtr,
+		ResponseCodeOnMaxConnections:   ruleEntity.ResponseCodeOnMaxConnections,
+	}
 }
 
 func (model MappingSecurityRule) ToEntity() (ruleEntity entity.MappingSecurityRule, err error) {
