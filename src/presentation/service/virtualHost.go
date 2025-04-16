@@ -371,6 +371,17 @@ func (service *VirtualHostService) CreateMapping(
 		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
 	}
 
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if input["mappingSecurityRuleId"] != nil {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(
+			input["mappingSecurityRuleId"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -390,7 +401,7 @@ func (service *VirtualHostService) CreateMapping(
 	createDto := dto.NewCreateMapping(
 		hostname, path, matchPattern, targetType, targetValuePtr,
 		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
-		nil, operatorAccountId, operatorIpAddress,
+		mappingSecurityRuleIdPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)

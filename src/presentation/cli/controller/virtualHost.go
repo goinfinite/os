@@ -234,7 +234,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	var (
 		hostnameStr, pathStr, matchPatternStr, targetTypeStr, targetValueStr,
 		shouldUpgradeInsecureRequestsBoolStr string
-		targetHttpResponseCodeUint uint
+		targetHttpResponseCodeUint, mappingSecurityRuleIdUint uint
 	)
 
 	cmd := &cobra.Command{
@@ -258,6 +258,10 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 
 			if targetHttpResponseCodeUint != 0 {
 				requestBody["targetHttpResponseCode"] = targetHttpResponseCodeUint
+			}
+
+			if mappingSecurityRuleIdUint != 0 {
+				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
 			}
 
 			cliHelper.ServiceResponseWrapper(
@@ -286,6 +290,9 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	cmd.Flags().StringVarP(
 		&shouldUpgradeInsecureRequestsBoolStr, "should-upgrade-insecure-requests", "u",
 		"false", "ShouldUpgradeInsecureRequests (true|false)",
+	)
+	cmd.Flags().UintVarP(
+		&mappingSecurityRuleIdUint, "mapping-security-rule-id", "s", 0, "MappingSecurityRuleId",
 	)
 	return cmd
 }
