@@ -15,6 +15,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	"github.com/goinfinite/os/src/presentation/service"
 )
 
@@ -119,6 +120,14 @@ func (ws *WebServerSetup) FirstSetup() {
 	err = infraHelper.RestorePrimaryIndexFile()
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+
+	log.Print("GenerateMappingSecurityRules...")
+
+	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
+	err = mappingCmdRepo.RecreateSecurityRuleFiles()
+	if err != nil {
+		log.Fatal("GenerateMappingSecurityRulesFailed: ", err.Error())
 	}
 
 	log.Print("ConfiguringWebServerAutoStart...")
