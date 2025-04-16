@@ -351,7 +351,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		createDto := dto.NewCreateMapping(
 			hostname, itemMappingVo.Path, itemMappingVo.MatchPattern, itemMappingVo.TargetType,
 			itemMappingVo.TargetValue, itemMappingVo.TargetHttpResponseCode,
-			itemMappingVo.ShouldUpgradeInsecureRequests, operatorAccountId, operatorIpAddress,
+			itemMappingVo.ShouldUpgradeInsecureRequests, nil, operatorAccountId, operatorIpAddress,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
