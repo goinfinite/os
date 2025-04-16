@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 )
@@ -15,6 +16,13 @@ func CreateMappingSecurityRule(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateMappingSecurityRule,
 ) (mappingSecurityRuleId valueObject.MappingSecurityRuleId, err error) {
+	if createDto.ResponseCodeOnMaxRequests == nil {
+		createDto.ResponseCodeOnMaxRequests = &entity.MappingSecurityRuleDefaultResponseCodeOnMaxRequests
+	}
+	if createDto.ResponseCodeOnMaxConnections == nil {
+		createDto.ResponseCodeOnMaxConnections = &entity.MappingSecurityRuleDefaultResponseCodeOnMaxConnections
+	}
+
 	mappingSecurityRuleId, err = mappingCmdRepo.CreateSecurityRule(createDto)
 	if err != nil {
 		slog.Error("CreateMappingSecurityRuleError", slog.String("err", err.Error()))
