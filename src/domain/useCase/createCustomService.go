@@ -60,7 +60,7 @@ func CreateServiceAutoMapping(
 	_, err = mappingCmdRepo.Create(dto.NewCreateMapping(
 		*mappingHostname, *mappingPath, valueObject.MappingMatchPatternBeginsWith,
 		valueObject.MappingTargetTypeService, &targetValue, nil,
-		mappingUpgradeInsecureRequests, operatorAccountId, operatorIpAddress,
+		mappingUpgradeInsecureRequests, nil, operatorAccountId, operatorIpAddress,
 	))
 	if err != nil {
 		return errors.New("CreateServiceMappingInfraError: " + err.Error())

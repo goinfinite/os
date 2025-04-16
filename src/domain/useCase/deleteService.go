@@ -59,7 +59,7 @@ func DeleteServiceMappings(
 			mappingEntity.Hostname, mappingEntity.Path,
 			mappingEntity.MatchPattern, mappingEntity.TargetType,
 			mappingEntity.TargetValue, mappingEntity.TargetHttpResponseCode,
-			mappingEntity.ShouldUpgradeInsecureRequests,
+			mappingEntity.ShouldUpgradeInsecureRequests, mappingEntity.MappingSecurityRuleId,
 			operatorAccountId, operatorIpAddress,
 		))
 		if err != nil {
