@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MappingSecurityRule struct {
@@ -101,9 +102,9 @@ func (model MappingSecurityRule) ToEntity() (ruleEntity entity.MappingSecurityRu
 		descriptionPtr = &description
 	}
 
-	allowedIps := []valueObject.IpAddress{}
+	allowedIps := []tkValueObject.CidrBlock{}
 	for _, rawIpAddress := range model.AllowedIps {
-		ipAddress, err := valueObject.NewIpAddress(rawIpAddress)
+		ipAddress, err := tkValueObject.NewCidrBlock(rawIpAddress)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("rawIpAddress", rawIpAddress))
 			continue
@@ -111,9 +112,9 @@ func (model MappingSecurityRule) ToEntity() (ruleEntity entity.MappingSecurityRu
 		allowedIps = append(allowedIps, ipAddress)
 	}
 
-	blockedIps := []valueObject.IpAddress{}
+	blockedIps := []tkValueObject.CidrBlock{}
 	for _, rawIpAddress := range model.BlockedIps {
-		ipAddress, err := valueObject.NewIpAddress(rawIpAddress)
+		ipAddress, err := tkValueObject.NewCidrBlock(rawIpAddress)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("rawIpAddress", rawIpAddress))
 			continue

@@ -1,6 +1,9 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 var (
 	MappingSecurityRuleDefaultResponseCodeOnMaxRequests    uint = 429
@@ -11,8 +14,8 @@ type MappingSecurityRule struct {
 	Id                             valueObject.MappingSecurityRuleId           `json:"id"`
 	Name                           valueObject.MappingSecurityRuleName         `json:"name"`
 	Description                    *valueObject.MappingSecurityRuleDescription `json:"description"`
-	AllowedIps                     []valueObject.IpAddress                     `json:"allowedIps"`
-	BlockedIps                     []valueObject.IpAddress                     `json:"blockedIps"`
+	AllowedIps                     []tkValueObject.CidrBlock                   `json:"allowedIps"`
+	BlockedIps                     []tkValueObject.CidrBlock                   `json:"blockedIps"`
 	RpsSoftLimitPerIp              *uint                                       `json:"rpsSoftLimitPerIp"`
 	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
@@ -28,7 +31,7 @@ func NewMappingSecurityRule(
 	id valueObject.MappingSecurityRuleId,
 	name valueObject.MappingSecurityRuleName,
 	description *valueObject.MappingSecurityRuleDescription,
-	allowedIps, blockedIps []valueObject.IpAddress,
+	allowedIps, blockedIps []tkValueObject.CidrBlock,
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
 	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
 	responseCodeOnMaxConnections *uint,

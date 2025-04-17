@@ -1,12 +1,12 @@
 package apiController
 
 import (
-	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
 
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
@@ -243,13 +243,13 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Contex
 
 	if requestInputData["allowedIps"] != nil {
 		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["allowedIps"], valueObject.NewIpAddress,
+			requestInputData["allowedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
 	if requestInputData["blockedIps"] != nil {
 		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["blockedIps"], valueObject.NewIpAddress,
+			requestInputData["blockedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
@@ -277,13 +277,13 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Contex
 
 	if requestInputData["allowedIps"] != nil {
 		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["allowedIps"], valueObject.NewIpAddress,
+			requestInputData["allowedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
 	if requestInputData["blockedIps"] != nil {
 		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["blockedIps"], valueObject.NewIpAddress,
+			requestInputData["blockedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 

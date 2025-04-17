@@ -13,6 +13,7 @@ import (
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
 
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
@@ -484,18 +485,18 @@ func (service *VirtualHostService) MappingSecurityRuleReadRequestFactory(
 		mappingSecurityRuleNamePtr = &name
 	}
 
-	var allowedIpPtr *valueObject.IpAddress
+	var allowedIpPtr *tkValueObject.CidrBlock
 	if serviceInput["allowedIp"] != nil {
-		allowedIp, err := valueObject.NewIpAddress(serviceInput["allowedIp"])
+		allowedIp, err := tkValueObject.NewCidrBlock(serviceInput["allowedIp"])
 		if err != nil {
 			return readRequestDto, err
 		}
 		allowedIpPtr = &allowedIp
 	}
 
-	var blockedIpPtr *valueObject.IpAddress
+	var blockedIpPtr *tkValueObject.CidrBlock
 	if serviceInput["blockedIp"] != nil {
-		blockedIp, err := valueObject.NewIpAddress(serviceInput["blockedIp"])
+		blockedIp, err := tkValueObject.NewCidrBlock(serviceInput["blockedIp"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -564,18 +565,18 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 		descriptionPtr = &description
 	}
 
-	allowedIps := []valueObject.IpAddress{}
+	allowedIps := []tkValueObject.CidrBlock{}
 	if input["allowedIps"] != nil {
-		allowedIpsInput, assertOk := input["allowedIps"].([]valueObject.IpAddress)
+		allowedIpsInput, assertOk := input["allowedIps"].([]tkValueObject.CidrBlock)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidAllowedIps")
 		}
 		allowedIps = allowedIpsInput
 	}
 
-	blockedIps := []valueObject.IpAddress{}
+	blockedIps := []tkValueObject.CidrBlock{}
 	if input["blockedIps"] != nil {
-		blockedIpsInput, assertOk := input["blockedIps"].([]valueObject.IpAddress)
+		blockedIpsInput, assertOk := input["blockedIps"].([]tkValueObject.CidrBlock)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidBlockedIps")
 		}
@@ -713,19 +714,19 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 		descriptionPtr = &description
 	}
 
-	allowedIps := []valueObject.IpAddress{}
+	allowedIps := []tkValueObject.CidrBlock{}
 	if input["allowedIps"] != nil {
 		var assertOk bool
-		allowedIps, assertOk = input["allowedIps"].([]valueObject.IpAddress)
+		allowedIps, assertOk = input["allowedIps"].([]tkValueObject.CidrBlock)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidAllowedIps")
 		}
 	}
 
-	blockedIps := []valueObject.IpAddress{}
+	blockedIps := []tkValueObject.CidrBlock{}
 	if input["blockedIps"] != nil {
 		var assertOk bool
-		blockedIps, assertOk = input["blockedIps"].([]valueObject.IpAddress)
+		blockedIps, assertOk = input["blockedIps"].([]tkValueObject.CidrBlock)
 		if !assertOk {
 			return NewServiceOutput(UserError, "InvalidBlockedIps")
 		}
