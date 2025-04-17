@@ -52,64 +52,18 @@ func NewMappingSecurityRule(
 	}
 }
 
-func MappingSecurityRulePresetRelaxed() MappingSecurityRule {
+func MappingSecurityRulePresetBreezy() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
-		"Basic restrictions, likely to go unnoticed by most.",
+		"Security in shorts and flip‑flops. Best for debugging or very low‑risk scenarios.",
 	)
-	rpsSoftLimitPerIp := uint(32)
-	rpsHardLimitPerIp := uint(64)
-	maxConnectionsPerIp := uint(32)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(32 * 1024 * 1024) // 32MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(64 * 1024 * 1024)   // 64MB
-
-	return MappingSecurityRule{
-		Name:                           valueObject.MappingSecurityRuleName("relaxed"),
-		Description:                    &ruleDescription,
-		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
-		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
-		ResponseCodeOnMaxRequests:      &MappingSecurityRuleDefaultResponseCodeOnMaxRequests,
-		MaxConnectionsPerIp:            &maxConnectionsPerIp,
-		BandwidthBpsLimitPerConnection: &bandwidthBpsLimitPerConnection,
-		BandwidthLimitOnlyAfterBytes:   &bandwidthLimitOnlyAfterBytes,
-		ResponseCodeOnMaxConnections:   &MappingSecurityRuleDefaultResponseCodeOnMaxConnections,
-	}
-}
-
-func MappingSecurityRulePresetLow() MappingSecurityRule {
-	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
-		"Low restrictions, suitable for most use cases.",
-	)
-	rpsSoftLimitPerIp := uint(24)
-	rpsHardLimitPerIp := uint(48)
-	maxConnectionsPerIp := uint(24)
+	rpsSoftLimitPerIp := uint(18)
+	rpsHardLimitPerIp := uint(24)
+	maxConnectionsPerIp := uint(18)
 	bandwidthBpsLimitPerConnection := valueObject.Byte(24 * 1024 * 1024) // 24MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(48 * 1024 * 1024)   // 48MB
-
-	return MappingSecurityRule{
-		Name:                           valueObject.MappingSecurityRuleName("low"),
-		Description:                    &ruleDescription,
-		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
-		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
-		ResponseCodeOnMaxRequests:      &MappingSecurityRuleDefaultResponseCodeOnMaxRequests,
-		MaxConnectionsPerIp:            &maxConnectionsPerIp,
-		BandwidthBpsLimitPerConnection: &bandwidthBpsLimitPerConnection,
-		BandwidthLimitOnlyAfterBytes:   &bandwidthLimitOnlyAfterBytes,
-		ResponseCodeOnMaxConnections:   &MappingSecurityRuleDefaultResponseCodeOnMaxConnections,
-	}
-}
-
-func MappingSecurityRulePresetMedium() MappingSecurityRule {
-	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
-		"Medium restrictions, may limit some traffic patterns.",
-	)
-	rpsSoftLimitPerIp := uint(16)
-	rpsHardLimitPerIp := uint(32)
-	maxConnectionsPerIp := uint(16)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(16 * 1024 * 1024) // 16MB
 	bandwidthLimitOnlyAfterBytes := valueObject.Byte(32 * 1024 * 1024)   // 32MB
 
 	return MappingSecurityRule{
-		Name:                           valueObject.MappingSecurityRuleName("medium"),
+		Name:                           valueObject.MappingSecurityRuleName("breezy"),
 		Description:                    &ruleDescription,
 		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
 		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
@@ -121,18 +75,18 @@ func MappingSecurityRulePresetMedium() MappingSecurityRule {
 	}
 }
 
-func MappingSecurityRulePresetHigh() MappingSecurityRule {
+func MappingSecurityRulePresetPermissive() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
-		"High restrictions, useful for resource-intensive endpoints.",
+		"Easy‑going yet alert. Basic protection without slowing down everyday traffic.",
 	)
-	rpsSoftLimitPerIp := uint(12)
-	rpsHardLimitPerIp := uint(16)
-	maxConnectionsPerIp := uint(12)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(12 * 1024 * 1024) // 12MB
+	rpsSoftLimitPerIp := uint(15)
+	rpsHardLimitPerIp := uint(21)
+	maxConnectionsPerIp := uint(15)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(20 * 1024 * 1024) // 20MB
 	bandwidthLimitOnlyAfterBytes := valueObject.Byte(24 * 1024 * 1024)   // 24MB
 
 	return MappingSecurityRule{
-		Name:                           valueObject.MappingSecurityRuleName("high"),
+		Name:                           valueObject.MappingSecurityRuleName("permissive"),
 		Description:                    &ruleDescription,
 		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
 		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
@@ -144,18 +98,64 @@ func MappingSecurityRulePresetHigh() MappingSecurityRule {
 	}
 }
 
-func MappingSecurityRulePresetStrict() MappingSecurityRule {
+func MappingSecurityRulePresetReasonable() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
-		"Strict restrictions, suitable for highly sensitive endpoints.",
+		"Sweet spot: prevent most abuses while minimizing false positives.",
 	)
-	rpsSoftLimitPerIp := uint(8)
-	rpsHardLimitPerIp := uint(12)
-	maxConnectionsPerIp := uint(8)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(8 * 1024 * 1024) // 8MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(16 * 1024 * 1024)  // 16MB
+	rpsSoftLimitPerIp := uint(12)
+	rpsHardLimitPerIp := uint(15)
+	maxConnectionsPerIp := uint(12)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(16 * 1024 * 1024) // 16MB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(16 * 1024 * 1024)   // 16MB
 
 	return MappingSecurityRule{
-		Name:                           valueObject.MappingSecurityRuleName("strict"),
+		Name:                           valueObject.MappingSecurityRuleName("reasonable"),
+		Description:                    &ruleDescription,
+		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
+		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
+		ResponseCodeOnMaxRequests:      &MappingSecurityRuleDefaultResponseCodeOnMaxRequests,
+		MaxConnectionsPerIp:            &maxConnectionsPerIp,
+		BandwidthBpsLimitPerConnection: &bandwidthBpsLimitPerConnection,
+		BandwidthLimitOnlyAfterBytes:   &bandwidthLimitOnlyAfterBytes,
+		ResponseCodeOnMaxConnections:   &MappingSecurityRuleDefaultResponseCodeOnMaxConnections,
+	}
+}
+
+func MappingSecurityRulePresetVigilant() MappingSecurityRule {
+	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
+		"Lower tolerances, higher standards - might be too restrictive.",
+	)
+	rpsSoftLimitPerIp := uint(6)
+	rpsHardLimitPerIp := uint(9)
+	maxConnectionsPerIp := uint(6)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(12 * 1024 * 1024) // 12MB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(12 * 1024 * 1024)   // 12MB
+
+	return MappingSecurityRule{
+		Name:                           valueObject.MappingSecurityRuleName("vigilant"),
+		Description:                    &ruleDescription,
+		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
+		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
+		ResponseCodeOnMaxRequests:      &MappingSecurityRuleDefaultResponseCodeOnMaxRequests,
+		MaxConnectionsPerIp:            &maxConnectionsPerIp,
+		BandwidthBpsLimitPerConnection: &bandwidthBpsLimitPerConnection,
+		BandwidthLimitOnlyAfterBytes:   &bandwidthLimitOnlyAfterBytes,
+		ResponseCodeOnMaxConnections:   &MappingSecurityRuleDefaultResponseCodeOnMaxConnections,
+	}
+}
+
+func MappingSecurityRulePresetIronclad() MappingSecurityRule {
+	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
+		"Draconian limits, permanent red alert. Use with caution.",
+	)
+	rpsSoftLimitPerIp := uint(3)
+	rpsHardLimitPerIp := uint(6)
+	maxConnectionsPerIp := uint(3)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(8 * 1024 * 1024) // 8MB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(8 * 1024 * 1024)   // 8MB
+
+	return MappingSecurityRule{
+		Name:                           valueObject.MappingSecurityRuleName("ironclad"),
 		Description:                    &ruleDescription,
 		RpsSoftLimitPerIp:              &rpsSoftLimitPerIp,
 		RpsHardLimitPerIp:              &rpsHardLimitPerIp,
@@ -169,8 +169,8 @@ func MappingSecurityRulePresetStrict() MappingSecurityRule {
 
 func MappingSecurityRuleInitialPresets() []MappingSecurityRule {
 	return []MappingSecurityRule{
-		MappingSecurityRulePresetRelaxed(), MappingSecurityRulePresetLow(),
-		MappingSecurityRulePresetMedium(), MappingSecurityRulePresetHigh(),
-		MappingSecurityRulePresetStrict(),
+		MappingSecurityRulePresetBreezy(), MappingSecurityRulePresetPermissive(),
+		MappingSecurityRulePresetReasonable(), MappingSecurityRulePresetVigilant(),
+		MappingSecurityRulePresetIronclad(),
 	}
 }
