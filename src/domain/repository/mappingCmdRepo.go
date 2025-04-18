@@ -7,6 +7,7 @@ import (
 
 type MappingCmdRepo interface {
 	Create(dto.CreateMapping) (valueObject.MappingId, error)
+	Update(dto.UpdateMapping) error
 	Delete(valueObject.MappingId) error
 	CreateSecurityRule(
 		dto.CreateMappingSecurityRule,

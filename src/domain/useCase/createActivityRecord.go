@@ -559,6 +559,22 @@ func (uc *CreateSecurityActivityRecord) CreateMapping(
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) UpdateMapping(updateDto dto.UpdateMapping) {
+	recordCode, _ := valueObject.NewActivityRecordCode("MappingUpdated")
+	createRecordDto := dto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []valueObject.SystemResourceIdentifier{
+			valueObject.NewMappingSri(updateDto.OperatorAccountId, updateDto.Id),
+		},
+		RecordDetails:     updateDto,
+		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) DeleteMapping(deleteDto dto.DeleteMapping) {
 	recordCode, _ := valueObject.NewActivityRecordCode("MappingDeleted")
 	createRecordDto := dto.CreateActivityRecord{
