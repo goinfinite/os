@@ -497,6 +497,25 @@ definitions:
       schedule:
         type: string
     type: object
+  dto.UpdateMapping:
+    properties:
+      id:
+        type: integer
+      mappingSecurityRuleId:
+        type: integer
+      matchPattern:
+        $ref: '#/definitions/valueObject.MappingMatchPattern'
+      path:
+        type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
+      targetHttpResponseCode:
+        type: integer
+      targetType:
+        $ref: '#/definitions/valueObject.MappingTargetType'
+      targetValue:
+        type: string
+    type: object
   dto.UpdateMappingSecurityRule:
     properties:
       allowedIps:
@@ -2984,6 +3003,30 @@ paths:
       security:
       - Bearer: []
       summary: CreateVirtualHostMapping
+      tags:
+      - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a vhost mapping.
+      parameters:
+      - description: Only id is required. Other fields are optional and will only
+          be updated if provided.
+        in: body
+        name: updateMappingDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMapping'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateVirtualHostMapping
       tags:
       - vhosts
   /v1/vhost/mapping/{mappingId}/:

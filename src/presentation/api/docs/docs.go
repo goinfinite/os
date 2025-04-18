@@ -2514,6 +2514,43 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateVirtualHostMapping",
+                "parameters": [
+                    {
+                        "description": "Only id is required. Other fields are optional and will only be updated if provided.",
+                        "name": "updateMappingDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMapping"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -3601,6 +3638,35 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "schedule": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateMapping": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "mappingSecurityRuleId": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "$ref": "#/definitions/valueObject.MappingMatchPattern"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetType": {
+                    "$ref": "#/definitions/valueObject.MappingTargetType"
+                },
+                "targetValue": {
                     "type": "string"
                 }
             }
