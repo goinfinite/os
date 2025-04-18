@@ -36,6 +36,10 @@ github.com/goinfinite/tk v0.0.0-20250411184107-1c5bc2d63301 h1:o5v6DcmyLK1GhvP73
 github.com/goinfinite/tk v0.0.0-20250411184107-1c5bc2d63301/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
 github.com/goinfinite/tk v0.0.0-20250411202534-c023cfab6db4 h1:LP4M98D5m3TyA0q4r5c30HtWiBVMfdPpJ9kEK/h6Xrs=
 github.com/goinfinite/tk v0.0.0-20250411202534-c023cfab6db4/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
+github.com/goinfinite/tk v0.0.0-20250417190633-bf923e8fb1d2 h1:XFK0TMeeo8qBc67gUz3sUdTlke9pt6S3U3W8iHg6ZRU=
+github.com/goinfinite/tk v0.0.0-20250417190633-bf923e8fb1d2/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
+github.com/goinfinite/tk v0.0.0-20250417210118-b1083886841f h1:VCmA2eul7gFHVZ8CzUygYaQ+I8SIB/PTnhIbZpVfQ4M=
+github.com/goinfinite/tk v0.0.0-20250417210118-b1083886841f/go.mod h1:dfJdjXxw2jazQpr25EU6ZzzQvUwZdF0NtLGK16QmsX4=
 github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63 h1:q+zl6J1hp5zANvtG3Lldzumx52ndG72sNwpaoSM3l1k=
 github.com/goinfinite/ui v0.0.0-20250410195547-7000c9a6be63/go.mod h1:o/gZd2lXoPkytqsV+w1vaXKe73KHNUKZFLE7uMgeZE4=
 github.com/goinfinite/ui v0.0.0-20250410230657-56a209d7c1ec h1:cRUwMBjJ/cscbrEnlRAEBQ0hE1G26C/5oTqCvVBQ7+E=
