@@ -488,15 +488,14 @@ func (repo *MappingCmdRepo) recreateSecurityRuleFile(
 	}
 
 	ruleGlobalTemplateStr := `{{- if and .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
-limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s;
+limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s; #RpsSoftLimitPerIp
 {{- else if .RpsSoftLimitPerIp -}}
-limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s;
+limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsSoftLimitPerIp }}r/s; #RpsSoftLimitPerIp
 {{- else if .RpsHardLimitPerIp -}}
-limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsHardLimitPerIp }}r/s;
+limit_req_zone $binary_remote_addr zone=rps_limit_{{ .Id }}:10m rate={{ .RpsHardLimitPerIp }}r/s; #RpsHardLimitPerIp
 {{- end -}}
-
 {{- if .MaxConnectionsPerIp }}
-limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m;
+limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectionsPerIp
 {{- end }}
 `
 
@@ -524,37 +523,35 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m;
 	}
 
 	ruleEmbeddableTemplateStr := `{{- if and .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
-limit_req zone=rps_limit_{{ .Id }} burst={{ .RpsHardLimitPerIp }};
+limit_req zone=rps_limit_{{ .Id }} burst={{ .RpsHardLimitPerIp }}; #RpsHardLimitPerIp
 {{- else if or .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
-limit_req zone=rps_limit_{{ .Id }};
+limit_req zone=rps_limit_{{ .Id }}; #RpsLimitPerIp
 {{- end -}}
 {{- if or .RpsSoftLimitPerIp .RpsHardLimitPerIp -}}
 {{- if .ResponseCodeOnMaxRequests }}
-limit_req_status {{ .ResponseCodeOnMaxRequests }};
+limit_req_status {{ .ResponseCodeOnMaxRequests }}; #ResponseCodeOnMaxRequests
 {{- end }}
 {{- end -}}
-
 {{- if .MaxConnectionsPerIp }}
-limit_conn conn_limit_{{ .Id }} {{ .MaxConnectionsPerIp }};
+limit_conn conn_limit_{{ .Id }} {{ .MaxConnectionsPerIp }}; #MaxConnectionsPerIp
 {{- if .ResponseCodeOnMaxConnections }}
-limit_conn_status {{ .ResponseCodeOnMaxConnections }};
+limit_conn_status {{ .ResponseCodeOnMaxConnections }}; #ResponseCodeOnMaxConnections
 {{- end }}
 {{- end }}
-	
 {{- if .BandwidthBpsLimitPerConnection }}
-limit_rate {{ .BandwidthBpsLimitPerConnection }};
+limit_rate {{ .BandwidthBpsLimitPerConnection }}; #BandwidthBpsLimitPerConnection
 {{- if .BandwidthLimitOnlyAfterBytes }}
-limit_rate_after {{ .BandwidthLimitOnlyAfterBytes }};
+limit_rate_after {{ .BandwidthLimitOnlyAfterBytes }}; #BandwidthLimitOnlyAfterBytes
 {{- end }}
 {{- end }}
-
 {{- if .AllowedIps -}}
+#AllowedIps
 {{- range .AllowedIps }}
 allow {{ . }};
 {{- end }}
 {{- end }}
-
 {{- if .BlockedIps -}}
+#BlockedIps
 {{- range .BlockedIps -}}
 deny {{ . }};
 {{- end }}
