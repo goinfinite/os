@@ -536,7 +536,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	for _, mappingId := range mappingIds {
-		err = repo.mappingCmdRepo.Update(mappingId, catalogItem.Name)
+		err = repo.mappingCmdRepo.UpdateMarketplaceItem(mappingId, catalogItem.Name)
 		if err != nil {
 			slog.Debug(
 				"UpdateMappingItemNameError",
