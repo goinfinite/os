@@ -219,6 +219,7 @@ func (router Router) vhostRoutes() {
 	mappingsGroup := vhostGroup.Group("/mapping")
 	mappingsGroup.GET("/", vhostController.ReadWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateMapping)
+	mappingsGroup.PUT("/", vhostController.UpdateMapping)
 	mappingsGroup.DELETE(
 		"/:mappingId/",
 		vhostController.DeleteMapping,

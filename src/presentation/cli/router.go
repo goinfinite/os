@@ -235,6 +235,7 @@ func (router Router) virtualHostRoutes() {
 
 	mappingCmd.AddCommand(vhostController.ReadWithMappings())
 	mappingCmd.AddCommand(vhostController.CreateMapping())
+	mappingCmd.AddCommand(vhostController.UpdateMapping())
 	mappingCmd.AddCommand(vhostController.DeleteMapping())
 
 	var securityRuleCmd = &cobra.Command{

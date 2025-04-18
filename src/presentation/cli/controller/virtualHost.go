@@ -299,6 +299,81 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	return cmd
 }
 
+func (controller *VirtualHostController) UpdateMapping() *cobra.Command {
+	var (
+		mappingIdUint uint
+		pathStr, matchPatternStr, targetTypeStr, targetValueStr,
+		shouldUpgradeInsecureRequestsBoolStr string
+		targetHttpResponseCodeUint, mappingSecurityRuleIdUint uint
+	)
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "UpdateVirtualHostMapping",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]interface{}{
+				"id": mappingIdUint,
+			}
+
+			if pathStr != "" {
+				requestBody["path"] = pathStr
+			}
+
+			if matchPatternStr != "" {
+				requestBody["matchPattern"] = matchPatternStr
+			}
+
+			if targetTypeStr != "" {
+				requestBody["targetType"] = targetTypeStr
+			}
+
+			if targetValueStr != "" {
+				requestBody["targetValue"] = targetValueStr
+			}
+
+			if targetHttpResponseCodeUint != 0 {
+				requestBody["targetHttpResponseCode"] = targetHttpResponseCodeUint
+			}
+
+			if shouldUpgradeInsecureRequestsBoolStr != "" {
+				requestBody["shouldUpgradeInsecureRequests"] = shouldUpgradeInsecureRequestsBoolStr
+			}
+
+			if mappingSecurityRuleIdUint != 0 {
+				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
+			}
+
+			cliHelper.ServiceResponseWrapper(
+				controller.virtualHostService.UpdateMapping(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().UintVarP(&mappingIdUint, "id", "i", 0, "MappingId")
+	cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVarP(&pathStr, "path", "p", "", "MappingPath")
+	cmd.Flags().StringVarP(
+		&matchPatternStr, "match", "m", "",
+		"MatchPattern (begins-with|contains|ends-with)",
+	)
+	cmd.Flags().StringVarP(
+		&targetTypeStr, "type", "t", "",
+		"MappingTargetType (url|service|response-code|inline-html|static-files)",
+	)
+	cmd.Flags().StringVarP(&targetValueStr, "value", "v", "", "MappingTargetValue")
+	cmd.Flags().UintVarP(
+		&targetHttpResponseCodeUint, "response-code", "r", 0, "TargetHttpResponseCode",
+	)
+	cmd.Flags().StringVarP(
+		&shouldUpgradeInsecureRequestsBoolStr, "should-upgrade-insecure-requests", "u",
+		"", "ShouldUpgradeInsecureRequests (true|false)",
+	)
+	cmd.Flags().UintVarP(
+		&mappingSecurityRuleIdUint, "mapping-security-rule-id", "s", 0, "MappingSecurityRuleId",
+	)
+	return cmd
+}
+
 func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 	var mappingIdUint uint
 

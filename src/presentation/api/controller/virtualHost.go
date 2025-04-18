@@ -171,6 +171,27 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 	)
 }
 
+// UpdateVirtualHostMapping godoc
+// @Summary      UpdateVirtualHostMapping
+// @Description  Update a vhost mapping.
+// @Tags         vhosts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        updateMappingDto body dto.UpdateMapping true "Only id is required. Other fields are optional and will only be updated if provided."
+// @Success      200 {object} object{} "MappingUpdated"
+// @Router       /v1/vhost/mapping/ [put]
+func (controller *VirtualHostController) UpdateMapping(c echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(c)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.ServiceResponseWrapper(
+		c, controller.virtualHostService.UpdateMapping(requestInputData),
+	)
+}
+
 // DeleteVirtualHostMapping godoc
 // @Summary      DeleteVirtualHostMapping
 // @Description  Delete a vhost mapping.
