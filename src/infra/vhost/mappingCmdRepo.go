@@ -435,7 +435,7 @@ func (repo *MappingCmdRepo) Create(
 	return mappingId, infraHelper.ReloadWebServer()
 }
 
-func (repo *MappingCmdRepo) Update(
+func (repo *MappingCmdRepo) UpdateMarketplaceItem(
 	mappingId valueObject.MappingId,
 	marketplaceInstalledItemName valueObject.MarketplaceItemName,
 ) error {
@@ -449,6 +449,67 @@ func (repo *MappingCmdRepo) Update(
 		Model(&dbModel.Mapping{}).
 		Where("id = ?", mappingId.Uint64()).
 		Updates(&mappingUpdatedModel).Error
+}
+
+func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
+	err := infraHelper.ValidateWebServerConfig()
+	if err != nil {
+		return err
+	}
+
+	mappingEntity, err := repo.mappingQueryRepo.ReadFirst(dto.ReadMappingsRequest{
+		MappingId: &updateDto.Id,
+	})
+	if err != nil {
+		return err
+	}
+
+	updateMap := map[string]interface{}{}
+
+	if updateDto.Path != nil {
+		updateMap["path"] = updateDto.Path.String()
+	}
+
+	if updateDto.MatchPattern != nil {
+		updateMap["match_pattern"] = updateDto.MatchPattern.String()
+	}
+
+	if updateDto.TargetType != nil {
+		updateMap["target_type"] = updateDto.TargetType.String()
+	}
+
+	if updateDto.TargetValue != nil {
+		targetValueStr := updateDto.TargetValue.String()
+		updateMap["target_value"] = &targetValueStr
+	}
+
+	if updateDto.TargetHttpResponseCode != nil {
+		targetHttpResponseCodeStr := updateDto.TargetHttpResponseCode.String()
+		updateMap["target_http_response_code"] = &targetHttpResponseCodeStr
+	}
+
+	if updateDto.ShouldUpgradeInsecureRequests != nil {
+		updateMap["should_upgrade_insecure_requests"] = updateDto.ShouldUpgradeInsecureRequests
+	}
+
+	if updateDto.MappingSecurityRuleId != nil {
+		updateMap["mapping_security_rule_id"] = updateDto.MappingSecurityRuleId.Uint64()
+	}
+
+	err = repo.persistentDbSvc.Handler.
+		Model(&dbModel.Mapping{}).
+		Where("id = ?", updateDto.Id.Uint64()).
+		Updates(updateMap).Error
+	if err != nil {
+		return errors.New("DbUpdateMappingError: " + err.Error())
+	}
+
+	err = repo.RecreateMappingFile(mappingEntity.Hostname)
+	if err != nil {
+		return errors.New("RecreateMappingFileError: " + err.Error())
+	}
+
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
