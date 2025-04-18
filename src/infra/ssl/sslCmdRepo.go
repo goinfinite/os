@@ -12,6 +12,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
@@ -235,11 +236,11 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
-	dummyValue := dummyValueGenerator.GenPass(32)
-	dummyValueHash := infraHelper.GenStrongHash(dummyValue)
+	synthesizer := tkInfra.Synthesizer{}
+	dummyValue := synthesizer.PasswordFactory(32, false)
+	dummyHash := infraHelper.GenStrongHash(dummyValue)
 
-	expectedOwnershipHash, err := valueObject.NewHash(dummyValueHash)
+	expectedOwnershipHash, err := valueObject.NewHash(dummyHash)
 	if err != nil {
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}

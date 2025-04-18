@@ -16,6 +16,7 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /infinite/supervisord.conf"
@@ -446,11 +447,12 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+	synthesizer := tkInfra.Synthesizer{}
 	stepsPlaceholders := map[string]string{
-		"randomPassword":  dummyValueGenerator.GenPass(16),
-		"version":         serviceVersion.String(),
-		"primaryHostname": primaryHostname.String(),
+		"randomPassword":            synthesizer.PasswordFactory(16, false),
+		"randomPasswordWithSymbols": synthesizer.PasswordFactory(16, true),
+		"version":                   serviceVersion.String(),
+		"primaryHostname":           primaryHostname.String(),
 	}
 	isSoloService := installableServiceEntity.Nature == valueObject.ServiceNatureSolo
 	if createDto.StartupFile != nil && !isSoloService {

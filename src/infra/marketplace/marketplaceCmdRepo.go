@@ -20,6 +20,7 @@ import (
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/google/uuid"
 )
 
@@ -97,14 +98,15 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installHostname valueObject.Fqdn,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+	synthesizer := tkInfra.Synthesizer{}
 	dataMap := map[string]string{
-		"installDirectory":      installDir.String(),
-		"installUrlPath":        installUrlPath.String(),
-		"installHostname":       installHostname.String(),
-		"installUuid":           installUuid.String(),
-		"installTempDir":        installTempDirPath,
-		"installRandomPassword": dummyValueGenerator.GenPass(16),
+		"installDirectory":                 installDir.String(),
+		"installUrlPath":                   installUrlPath.String(),
+		"installHostname":                  installHostname.String(),
+		"installUuid":                      installUuid.String(),
+		"installTempDir":                   installTempDirPath,
+		"installRandomPassword":            synthesizer.PasswordFactory(16, false),
+		"installRandomPasswordWithSymbols": synthesizer.PasswordFactory(16, true),
 	}
 
 	itemNameStr := strings.ToLower(itemName.String())
