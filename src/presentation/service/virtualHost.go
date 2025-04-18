@@ -363,7 +363,7 @@ func (service *VirtualHostService) CreateMapping(
 
 	var shouldUpgradeInsecureRequestsPtr *bool
 	if input["shouldUpgradeInsecureRequests"] != nil {
-		shouldUpgradeInsecureRequests, err := voHelper.InterfaceToBool(
+		shouldUpgradeInsecureRequests, err := tkVoUtil.InterfaceToBool(
 			input["shouldUpgradeInsecureRequests"],
 		)
 		if err != nil {
@@ -462,6 +462,124 @@ func (service *VirtualHostService) DeleteMapping(
 	}
 
 	return NewServiceOutput(Created, "MappingDeleted")
+}
+
+func (service *VirtualHostService) UpdateMapping(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	id, err := valueObject.NewMappingId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var pathPtr *valueObject.MappingPath
+	if input["path"] != nil {
+		path, err := valueObject.NewMappingPath(input["path"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		pathPtr = &path
+	}
+
+	var matchPatternPtr *valueObject.MappingMatchPattern
+	if input["matchPattern"] != nil {
+		matchPattern, err := valueObject.NewMappingMatchPattern(input["matchPattern"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		matchPatternPtr = &matchPattern
+	}
+
+	var targetTypePtr *valueObject.MappingTargetType
+	if input["targetType"] != nil {
+		targetType, err := valueObject.NewMappingTargetType(input["targetType"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetTypePtr = &targetType
+	}
+
+	var targetValuePtr *valueObject.MappingTargetValue
+	if input["targetValue"] != nil {
+		if targetTypePtr == nil {
+			mappingEntity, err := service.mappingQueryRepo.ReadFirst(
+				dto.ReadMappingsRequest{MappingId: &id},
+			)
+			if err != nil {
+				return NewServiceOutput(InfraError, "ReadMappingEntityToRetrieveTargetTypeError")
+			}
+			targetTypePtr = &mappingEntity.TargetType
+		}
+
+		targetValue, err := valueObject.NewMappingTargetValue(input["targetValue"], *targetTypePtr)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetValuePtr = &targetValue
+	}
+
+	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	if input["targetHttpResponseCode"] != nil {
+		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(input["targetHttpResponseCode"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetHttpResponseCodePtr = &targetHttpResponseCode
+	}
+
+	var shouldUpgradeInsecureRequestsPtr *bool
+	if input["shouldUpgradeInsecureRequests"] != nil {
+		shouldUpgradeInsecureRequests, err := tkVoUtil.InterfaceToBool(input["shouldUpgradeInsecureRequests"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidShouldUpgradeInsecureRequests"))
+		}
+		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+	}
+
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if input["mappingSecurityRuleId"] != nil {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(input["mappingSecurityRuleId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateMapping(
+		id, pathPtr, matchPatternPtr, targetTypePtr, targetValuePtr,
+		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
+		mappingSecurityRuleIdPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateMapping(
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "MappingUpdated")
 }
 
 func (service *VirtualHostService) MappingSecurityRuleReadRequestFactory(
