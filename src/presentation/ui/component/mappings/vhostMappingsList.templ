@@ -9,10 +9,10 @@ import (
 templ VirtualHostMappingsList(
 	mappingEntity entity.Mapping,
 	rootDirectory valueObject.UnixFilePath,
-	deleteOnClick string,
 ) {
 	<!-- VirtualHostMappingsList -->
 	<div class="flex w-full items-center justify-between rounded-md bg-neutral-500/5 p-3">
+		@templ.JSONScript("mappingEntity_"+mappingEntity.Id.String(), mappingEntity)
 		<div class="flex items-center gap-3">
 			<p>{ mappingEntity.Path.String() }</p>
 			switch mappingEntity.TargetType.String() {
@@ -46,8 +46,17 @@ templ VirtualHostMappingsList(
 				@componentStructural.Tag("ph-lock", "", "httpsOnly", "lime-900")
 			}
 		</div>
-		<div>
-			@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mappingEntity", "red-500")
+		<div class="flex gap-2">
+			@componentStructural.CircularIconButtonWithTooltip(
+				"ph-pencil", "neutral-50/10", "neutral-50/30",
+				"openUpdateMappingModal('"+mappingEntity.Id.String()+"')", "update",
+				"neutral-50/10",
+			)
+			@componentStructural.CircularIconButtonWithTooltip(
+				"ph-trash", "red-800", "red-600",
+				"openDeleteMappingModal('"+mappingEntity.Id.String()+"', '"+mappingEntity.Path.String()+"')",
+				"delete", "red-500",
+			)
 		</div>
 	</div>
 }

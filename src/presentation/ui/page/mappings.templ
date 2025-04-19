@@ -2,7 +2,6 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
@@ -10,7 +9,6 @@ import (
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/form"
-	"slices"
 )
 
 const (
@@ -21,7 +19,7 @@ const (
 templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
 ) {
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
@@ -53,8 +51,9 @@ templ MappingsIndex(
 			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
 			"virtualHost.hostname", "virtualHost.hostname",
 		)
-		@CreateMappingModal(vhostsHostnames, installedServices)
-		@CreateMappingFromVirtualHostModal(vhostsHostnames, installedServices)
+		@CreateMappingModal(vhostsHostnames, installedServiceNames)
+		@CreateMappingFromVirtualHostModal(vhostsHostnames, installedServiceNames)
+		@UpdateMappingModal(installedServiceNames)
 		@componentStructural.DeleteModal(
 			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 			"mapping.path", "mapping.id",
@@ -141,7 +140,6 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					for _, mappingEntity := range vhostWithMappings.Mappings {
 						@componentMappings.VirtualHostMappingsList(
 							mappingEntity, vhostWithMappings.RootDirectory,
-							"openDeleteMappingModal('"+mappingEntity.Id.String()+"','"+mappingEntity.Path.String()+"')",
 						)
 					}
 				</div>
@@ -283,7 +281,7 @@ templ CreateMappingFormAdvancedSettings() {
 
 templ CreateMappingForm(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
 ) {
 	<!-- CreateMappingForm -->
 	<form
@@ -313,18 +311,9 @@ templ CreateMappingForm(
 		})
 		<template x-if="mapping.targetType == 'service'">
 			<div>
-				{{
-					servicesNames := []string{}
-					for _, serviceEntity := range installedServices {
-						if len(serviceEntity.PortBindings) == 0 {
-							continue
-						}
-						servicesNames = append(servicesNames, serviceEntity.Name.String())
-					}
-					slices.Sort(servicesNames)
-				}}
 				@componentForm.SelectInput(
-					"targetValue", "Service Name", "mapping.targetValue", "", servicesNames, true,
+					"targetValue", "Service Name", "mapping.targetValue", "",
+					installedServiceNames, true,
 				)
 			</div>
 		</template>
@@ -378,24 +367,107 @@ templ CreateMappingForm(
 
 templ CreateMappingModal(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServices)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames)
 	}
 }
 
 templ CreateMappingFromVirtualHostModal(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingFromVirtualHostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServices)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames)
+	}
+}
+
+templ UpdateMappingForm(installedServiceNames []string) {
+	<!-- UpdateMappingForm -->
+	<form
+		hx-put="/api/v1/vhost/mapping/"
+		class="flex flex-col gap-5"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUpdateMappingModal()"
+		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
+	>
+		<input name="id" type="hidden" :value="mapping.id"/>
+		@componentForm.InputFieldReadOnly("text", "hostname", "Virtual Host", "virtualHost.hostname", "")
+		@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
+		@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+			Type:                "text",
+			Id:                  "path",
+			Label:               "Source URL",
+			BindInputValuePath:  "mapping.path",
+			BindPrefixValuePath: "vhostHostnameWithTrailingSlash",
+		})
+		<template x-if="mapping.targetType == 'service'">
+			<div>
+				@componentForm.SelectInput(
+					"targetValue", "Service Name", "mapping.targetValue", "",
+					installedServiceNames, true,
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'url'">
+			<div class="space-y-6">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "targetValue",
+					Label:              "Destination URL",
+					BindModelValuePath: "mapping.targetValue",
+				})
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'inline-html'">
+			<div class="space-y-6">
+				@componentForm.TextArea(componentForm.TextAreaDto{
+					Id:                 "targetValue",
+					Label:              "Inline HTML",
+					BindModelValuePath: "mapping.targetValue",
+				})
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'response-code'">
+			<div>
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: CreateMappingFormAdvancedSettings(),
+				},
+			},
+		})
+		@componentForm.SubmitButton(
+			"update-mapping-button", "Update", "ph-check-fat", "closeUpdateMappingModal()", false,
+		)
+	</form>
+}
+
+templ UpdateMappingModal(installedServiceNames []string) {
+	@componentStructural.RegularModal(
+		"Update Mapping", "isUpdateMappingModalOpen", "closeUpdateMappingModal()", "mapping.id",
+	) {
+		@UpdateMappingForm(installedServiceNames)
 	}
 }
