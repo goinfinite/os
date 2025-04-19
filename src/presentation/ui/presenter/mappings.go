@@ -3,6 +3,7 @@ package presenter
 import (
 	"log/slog"
 	"net/http"
+	"slices"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -38,6 +39,36 @@ func (presenter *MappingsPresenter) extractVirtualHostHostnames(
 	return vhostsHostnames
 }
 
+func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
+	servicesService := service.NewServicesService(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
+	installedServicesResponseOutput := servicesService.ReadInstalledItems(
+		map[string]interface{}{"itemsPerPage": 1000},
+	)
+	if installedServicesResponseOutput.Status != service.Success {
+		slog.Debug("ReadInstalledItemsFailed", slog.Any("output", installedServicesResponseOutput))
+		return nil
+	}
+
+	installedServicesResponseDto, assertOk := installedServicesResponseOutput.Body.(dto.ReadInstalledServicesItemsResponse)
+	if !assertOk {
+		slog.Debug("ReadInstalledItemsResponseDtoAssertionFailed")
+		return nil
+	}
+
+	servicesNames := []string{}
+	for _, serviceEntity := range installedServicesResponseDto.InstalledServices {
+		if len(serviceEntity.PortBindings) == 0 {
+			continue
+		}
+		servicesNames = append(servicesNames, serviceEntity.Name.String())
+	}
+	slices.Sort(servicesNames)
+
+	return servicesNames
+}
+
 func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	virtualHostService := service.NewVirtualHostService(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
@@ -56,26 +87,10 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	servicesService := service.NewServicesService(
-		presenter.persistentDbSvc, presenter.trailDbSvc,
-	)
-	installedServicesResponseOutput := servicesService.ReadInstalledItems(
-		map[string]interface{}{"itemsPerPage": 1000},
-	)
-	if installedServicesResponseOutput.Status != service.Success {
-		slog.Debug("ReadInstalledItemsFailed", slog.Any("output", installedServicesResponseOutput))
-		return nil
-	}
-
-	installedServicesResponseDto, assertOk := installedServicesResponseOutput.Body.(dto.ReadInstalledServicesItemsResponse)
-	if !assertOk {
-		return nil
-	}
-
 	pageContent := page.MappingsIndex(
 		readVirtualHostsResponse.VirtualHostWithMappings,
 		presenter.extractVirtualHostHostnames(readVirtualHostsResponse.VirtualHostWithMappings),
-		installedServicesResponseDto.InstalledServices,
+		presenter.readInstalledServiceNames(),
 	)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }
