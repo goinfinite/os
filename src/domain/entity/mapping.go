@@ -4,7 +4,7 @@ import "github.com/goinfinite/os/src/domain/valueObject"
 
 type Mapping struct {
 	Id                            valueObject.MappingId              `json:"id"`
-	Hostname                      valueObject.Fqdn                   `json:"-"`
+	Hostname                      valueObject.Fqdn                   `json:"hostname"`
 	Path                          valueObject.MappingPath            `json:"path"`
 	MatchPattern                  valueObject.MappingMatchPattern    `json:"matchPattern"`
 	TargetType                    valueObject.MappingTargetType      `json:"targetType"`
