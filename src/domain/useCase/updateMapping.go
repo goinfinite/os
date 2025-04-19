@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func UpdateMapping(
@@ -20,6 +21,13 @@ func UpdateMapping(
 	if err != nil {
 		slog.Debug("ReadMappingError", slog.String("err", err.Error()))
 		return errors.New("MappingNotFound")
+	}
+
+	if updateDto.TargetType != nil &&
+		*updateDto.TargetType == valueObject.MappingTargetTypeResponseCode {
+		// TODO: When the "truncatable" feature is implemented, change this to
+		// populate the truncatable slice instead.
+		updateDto.TargetValue = nil
 	}
 
 	err = mappingCmdRepo.Update(updateDto)

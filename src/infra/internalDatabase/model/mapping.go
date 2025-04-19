@@ -54,7 +54,7 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 	}
 
 	var targetValuePtr *valueObject.MappingTargetValue
-	if model.TargetValue != nil {
+	if model.TargetValue != nil && targetType != valueObject.MappingTargetTypeResponseCode {
 		targetValue, err := valueObject.NewMappingTargetValue(
 			*model.TargetValue, targetType,
 		)
