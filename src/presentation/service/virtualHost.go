@@ -373,7 +373,7 @@ func (service *VirtualHostService) CreateMapping(
 	}
 
 	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
-	if input["mappingSecurityRuleId"] != nil {
+	if input["mappingSecurityRuleId"] != nil && input["mappingSecurityRuleId"] != "" {
 		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(
 			input["mappingSecurityRuleId"],
 		)
@@ -541,7 +541,7 @@ func (service *VirtualHostService) UpdateMapping(input map[string]interface{}) S
 	}
 
 	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
-	if input["mappingSecurityRuleId"] != nil {
+	if input["mappingSecurityRuleId"] != nil && input["mappingSecurityRuleId"] != "" {
 		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(input["mappingSecurityRuleId"])
 		if err != nil {
 			return NewServiceOutput(UserError, err.Error())
