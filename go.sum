@@ -48,6 +48,16 @@ github.com/goinfinite/ui v0.0.0-20250410230657-56a209d7c1ec h1:cRUwMBjJ/cscbrEnl
 github.com/goinfinite/ui v0.0.0-20250410230657-56a209d7c1ec/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/goinfinite/ui v0.0.0-20250412131000-d1d2d467de12 h1:z+nv8XGv8IlFv5fXD2ehBEQloW5z7FcsEEr7I6ZrqAY=
 github.com/goinfinite/ui v0.0.0-20250412131000-d1d2d467de12/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250421133005-3b0de860a7e0 h1:0/gQhoT33u7ut+T7pIQvZ+pGb82/1nbrbWOKUsUyUaQ=
+github.com/goinfinite/ui v0.0.0-20250421133005-3b0de860a7e0/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250422132205-52c653d20fc7 h1:zMP0O2ZPhhw4zs21AswGks1cfea1RI9aqTuqgK4grpc=
+github.com/goinfinite/ui v0.0.0-20250422132205-52c653d20fc7/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250422144724-89dac0ac5780 h1:DlQX82GTPTe3EbE7oBA6/ci2bjSwyUpdiZkcm3mCWE4=
+github.com/goinfinite/ui v0.0.0-20250422144724-89dac0ac5780/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250422202456-b7ab46d69527 h1:lwgHzPvxNWW2P8EI6NtnVEUZur3AKxhIwqHHDaJx2kk=
+github.com/goinfinite/ui v0.0.0-20250422202456-b7ab46d69527/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250423184716-dc44025135a3 h1:6vlKNnOAF9y+lurFtnahe1cbogHNWiZpj60/f4RhQzU=
+github.com/goinfinite/ui v0.0.0-20250423184716-dc44025135a3/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=

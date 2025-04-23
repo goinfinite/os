@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/goinfinite/tk v0.0.0-20250418152007-904c857646f4
-	github.com/goinfinite/ui v0.0.0-20250412131000-d1d2d467de12
+	github.com/goinfinite/ui v0.0.0-20250423184716-dc44025135a3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
