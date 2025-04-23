@@ -23,6 +23,7 @@ document.addEventListener("alpine:init", () => {
         targetValue: "",
         targetHttpResponseCode: "",
         shouldUpgradeInsecureRequests: "false",
+        mappingSecurityRuleId: "",
       };
     },
     init() {
