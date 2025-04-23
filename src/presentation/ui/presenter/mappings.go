@@ -8,8 +8,10 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
+	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/os/src/presentation/ui/page"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +28,27 @@ func NewMappingsPresenter(
 		persistentDbSvc: persistentDbSvc,
 		trailDbSvc:      trailDbSvc,
 	}
+}
+
+func (presenter *MappingsPresenter) readVirtualHostWithMappings() []dto.VirtualHostWithMappings {
+	virtualHostService := service.NewVirtualHostService(
+		presenter.persistentDbSvc, presenter.trailDbSvc,
+	)
+	readVirtualHostsServiceOutput := virtualHostService.ReadWithMappings(map[string]interface{}{
+		"itemsPerPage": 1000,
+	})
+	if readVirtualHostsServiceOutput.Status != service.Success {
+		slog.Debug("ReadMappingsServiceOutputBadStatus")
+		return nil
+	}
+
+	readVirtualHostsResponse, assertOk := readVirtualHostsServiceOutput.Body.(dto.ReadVirtualHostsResponse)
+	if !assertOk {
+		slog.Debug("ReadMappingsServiceOutputBodyAssertionFailed")
+		return nil
+	}
+
+	return readVirtualHostsResponse.VirtualHostWithMappings
 }
 
 func (presenter *MappingsPresenter) extractVirtualHostHostnames(
@@ -69,28 +92,46 @@ func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
 	return servicesNames
 }
 
-func (presenter *MappingsPresenter) Handler(c echo.Context) error {
+func (presenter *MappingsPresenter) readSecRulesLabelValueOptions() []uiForm.SelectLabelValueOption {
 	virtualHostService := service.NewVirtualHostService(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readVirtualHostsServiceOutput := virtualHostService.ReadWithMappings(map[string]interface{}{
+	readSecRulesServiceOutput := virtualHostService.ReadMappingSecurityRules(map[string]interface{}{
 		"itemsPerPage": 1000,
 	})
-	if readVirtualHostsServiceOutput.Status != service.Success {
-		slog.Debug("ReadMappingsServiceOutputBadStatus")
+
+	if readSecRulesServiceOutput.Status != service.Success {
+		slog.Debug("ReadSecRulesServiceOutputBadStatus")
 		return nil
 	}
 
-	readVirtualHostsResponse, assertOk := readVirtualHostsServiceOutput.Body.(dto.ReadVirtualHostsResponse)
+	readSecRulesResponse, assertOk := readSecRulesServiceOutput.Body.(dto.ReadMappingSecurityRulesResponse)
 	if !assertOk {
-		slog.Debug("ReadMappingsServiceOutputBodyAssertionFailed")
+		slog.Debug("ReadSecRulesServiceOutputBodyAssertionFailed")
 		return nil
 	}
+
+	secRulesLabelValueOptions := []uiForm.SelectLabelValueOption{}
+	for _, secRuleEntity := range readSecRulesResponse.MappingSecurityRules {
+		secRulesLabelValueOptions = append(
+			secRulesLabelValueOptions,
+			uiForm.SelectLabelValueOption{
+				Label:     secRuleEntity.Name.String() + " (#" + secRuleEntity.Id.String() + ")",
+				LabelHtml: componentMappings.MappingSecurityRuleSummary(secRuleEntity),
+				Value:     secRuleEntity.Id.String(),
+			})
+	}
+
+	return secRulesLabelValueOptions
+}
+
+func (presenter *MappingsPresenter) Handler(c echo.Context) error {
+	vhostWithMappings := presenter.readVirtualHostWithMappings()
 
 	pageContent := page.MappingsIndex(
-		readVirtualHostsResponse.VirtualHostWithMappings,
-		presenter.extractVirtualHostHostnames(readVirtualHostsResponse.VirtualHostWithMappings),
+		vhostWithMappings, presenter.extractVirtualHostHostnames(vhostWithMappings),
 		presenter.readInstalledServiceNames(),
+		presenter.readSecRulesLabelValueOptions(),
 	)
 	return uiHelper.Render(c, pageContent, http.StatusOK)
 }

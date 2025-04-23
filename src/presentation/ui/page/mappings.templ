@@ -20,6 +20,7 @@ templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
 	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
@@ -51,9 +52,15 @@ templ MappingsIndex(
 			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
 			"virtualHost.hostname", "virtualHost.hostname",
 		)
-		@CreateMappingModal(vhostsHostnames, installedServiceNames)
-		@CreateMappingFromVirtualHostModal(vhostsHostnames, installedServiceNames)
-		@UpdateMappingModal(installedServiceNames)
+		@CreateMappingModal(
+			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
+		)
+		@CreateMappingFromVirtualHostModal(
+			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
+		)
+		@UpdateMappingModal(
+			installedServiceNames, secRulesLabelValueOptions,
+		)
 		@componentStructural.DeleteModal(
 			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 			"mapping.path", "mapping.id",
@@ -109,12 +116,22 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						</div>
 					</div>
 					<div class="flex flex-wrap gap-3 overflow-hidden">
-						@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "infinite-300")
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "neutral-50/10",
+							OuterLeftIcon:        "ph-folder-open",
+							InnerLabel:           vhostWithMappings.RootDirectory.String(),
+						})
 						{{ vhostType := vhostWithMappings.Type.String() }}
 						if vhostWithMappings.IsWildcard {
 							{{ vhostType = valueObject.VirtualHostTypeWildcard.String() }}
 						}
-						@componentStructural.Tag("ph-tree-view", "", vhostType, "infinite-300")
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "neutral-50/10",
+							OuterLeftIcon:        "ph-tree-view",
+							InnerLabel:           vhostType,
+						})
 					</div>
 					if len(vhostWithMappings.AliasesHostnames) > 0 {
 						<div>
@@ -256,7 +273,8 @@ templ UpdateVirtualHostModal() {
 	}
 }
 
-templ CreateMappingFormAdvancedSettings() {
+templ MappingFormAdvancedSettings(secRulesLabelValueOptions []uiForm.SelectLabelValueOption) {
+	<!-- MappingUpgradeInsecureRequestsRadioInput -->
 	@uiForm.InlineRadioGroup(uiForm.InlineRadioGroupSettings{
 		Label: "Upgrade Insecure Requests (force HTTPS)",
 		InputSettings: []uiForm.RadioInputSettings{
@@ -274,14 +292,34 @@ templ CreateMappingFormAdvancedSettings() {
 		TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
 		InputName:       "shouldUpgradeInsecureRequests",
 	})
-	@componentMappings.MatchPatternSelectInput(
-		"matchPattern", "Match Pattern", "mapping.matchPattern",
-	)
+	<!-- MappingMatchPatternSelectInput -->
+	@uiForm.SelectInput(uiForm.SelectInputSettings{
+		InputName: "matchPattern",
+		Label:     "Match Pattern",
+		LabelValueOptions: []uiForm.SelectLabelValueOption{
+			{Label: "Begins With", Value: "begins-with"},
+			{Label: "Contains", Value: "contains"},
+			{Label: "Equals", Value: "equals"},
+			{Label: "Ends With", Value: "ends-with"},
+		},
+		TwoWayStatePath:         "mapping.matchPattern",
+		DropdownBackgroundColor: "primary-500/95",
+	})
+	<!-- MappingSecurityRuleSelectInput -->
+	@uiForm.SelectInput(uiForm.SelectInputSettings{
+		InputName:                "mappingSecurityRuleId",
+		Label:                    "Security Rule",
+		LabelValueOptions:        secRulesLabelValueOptions,
+		TwoWayStatePath:          "mapping.mappingSecurityRuleId",
+		DropdownBackgroundColor:  "primary-500/95",
+		ShouldIncludeBlankOption: true,
+	})
 }
 
 templ CreateMappingForm(
 	vhostsHostnames []string,
 	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	<!-- CreateMappingForm -->
 	<form
@@ -354,7 +392,7 @@ templ CreateMappingForm(
 				{
 					Title:   "Advanced Settings",
 					Icon:    "ph-gear",
-					Content: CreateMappingFormAdvancedSettings(),
+					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
 				},
 			},
 		})
@@ -368,28 +406,33 @@ templ CreateMappingForm(
 templ CreateMappingModal(
 	vhostsHostnames []string,
 	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServiceNames)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
 	}
 }
 
 templ CreateMappingFromVirtualHostModal(
 	vhostsHostnames []string,
 	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingFromVirtualHostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServiceNames)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
 	}
 }
 
-templ UpdateMappingForm(installedServiceNames []string) {
+templ UpdateMappingForm(
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
+) {
 	<!-- UpdateMappingForm -->
 	<form
 		hx-put="/api/v1/vhost/mapping/"
@@ -454,7 +497,7 @@ templ UpdateMappingForm(installedServiceNames []string) {
 				{
 					Title:   "Advanced Settings",
 					Icon:    "ph-gear",
-					Content: CreateMappingFormAdvancedSettings(),
+					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
 				},
 			},
 		})
@@ -464,10 +507,13 @@ templ UpdateMappingForm(installedServiceNames []string) {
 	</form>
 }
 
-templ UpdateMappingModal(installedServiceNames []string) {
+templ UpdateMappingModal(
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
+) {
 	@componentStructural.RegularModal(
 		"Update Mapping", "isUpdateMappingModalOpen", "closeUpdateMappingModal()", "mapping.id",
 	) {
-		@UpdateMappingForm(installedServiceNames)
+		@UpdateMappingForm(installedServiceNames, secRulesLabelValueOptions)
 	}
 }

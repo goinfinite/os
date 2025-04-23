@@ -1,0 +1,64 @@
+package componentMappings
+
+import "github.com/goinfinite/os/src/domain/entity"
+import "github.com/goinfinite/ui/src/display"
+import "strconv"
+
+templ MappingSecurityRuleSummary(ruleEntity entity.MappingSecurityRule) {
+	<div class="flex flex-col gap-2">
+		<div class="flex flex-col">
+			<p class="font-bold">
+				{ ruleEntity.Name.String() } <span class="text-xs font-normal">#{ ruleEntity.Id.String() }</span>
+			</p>
+			if ruleEntity.Description != nil {
+				<p class="text-xs">{ ruleEntity.Description.String() }</p>
+			}
+		</div>
+		<div class="flex flex-row gap-2">
+			if ruleEntity.RpsSoftLimitPerIp != nil {
+				{{ rpsInnerLabel := "≥" + strconv.Itoa(int(*ruleEntity.RpsSoftLimitPerIp)) }}
+				if ruleEntity.RpsHardLimitPerIp != nil {
+					{{ rpsInnerLabel += "≤" + strconv.Itoa(int(*ruleEntity.RpsHardLimitPerIp)) }}
+				}
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "neutral-50/10",
+					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterBackgroundColor: "transparent",
+					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterLeftLabel:       "RequestsPerSec",
+					InnerLabel:           rpsInnerLabel,
+					InnerRadius:          uiDisplay.TagRadiusMd,
+				})
+			}
+			if ruleEntity.MaxConnectionsPerIp != nil {
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "neutral-50/10",
+					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterBackgroundColor: "transparent",
+					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterLeftLabel:       "MaxConns",
+					InnerLabel:           strconv.Itoa(int(*ruleEntity.MaxConnectionsPerIp)),
+					InnerRadius:          uiDisplay.TagRadiusMd,
+				})
+			}
+			if ruleEntity.BandwidthBpsLimitPerConnection != nil {
+				{{ bpsLimitInnerLabel := ruleEntity.BandwidthBpsLimitPerConnection.StringWithSuffix() + "/s" }}
+				if ruleEntity.BandwidthLimitOnlyAfterBytes != nil {
+					{{ bpsLimitInnerLabel += " (≥" + ruleEntity.BandwidthLimitOnlyAfterBytes.StringWithSuffix() + ")" }}
+				}
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "neutral-50/10",
+					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterBackgroundColor: "transparent",
+					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterLeftLabel:       "BandwidthLimit",
+					InnerLabel:           bpsLimitInnerLabel,
+					InnerRadius:          uiDisplay.TagRadiusMd,
+				})
+			}
+		</div>
+	</div>
+}
