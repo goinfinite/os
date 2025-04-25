@@ -7,6 +7,9 @@ http)
   sudo sysctl net.ipv4.ip_unprivileged_port_start=80
   ports+=(-p 80:80 -p 443:443)
   ;;
+http-unpriv)
+  ports+=(-p 8080:80 -p 8443:443)
+  ;;
 ols)
   ports+=(-p 7080:7080)
   ;;
