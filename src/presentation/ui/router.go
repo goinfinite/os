@@ -103,6 +103,12 @@ func (router *Router) mappingsRoutes() {
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
+
+	secRulesGroup := mappingsGroup.Group("/security-rules")
+	secRulesPresenter := presenter.NewMappingSecurityRulesPresenter(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+	secRulesGroup.GET("/", secRulesPresenter.Handler)
 }
 
 func (router *Router) marketplaceRoutes() {
