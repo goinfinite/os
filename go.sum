@@ -58,6 +58,14 @@ github.com/goinfinite/ui v0.0.0-20250422202456-b7ab46d69527 h1:lwgHzPvxNWW2P8EI6
 github.com/goinfinite/ui v0.0.0-20250422202456-b7ab46d69527/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/goinfinite/ui v0.0.0-20250423184716-dc44025135a3 h1:6vlKNnOAF9y+lurFtnahe1cbogHNWiZpj60/f4RhQzU=
 github.com/goinfinite/ui v0.0.0-20250423184716-dc44025135a3/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250428230635-983536561f35 h1:tbFl9Il3hHwG7QGfFr2cTZ6hoNYz/UUbGwhehQjJ9m4=
+github.com/goinfinite/ui v0.0.0-20250428230635-983536561f35/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250502173311-0eb306c3bb74 h1:viNb2X3NrGNa4MIUSvuTfg61PSt0k7UmoQ05lSN2f1I=
+github.com/goinfinite/ui v0.0.0-20250502173311-0eb306c3bb74/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250502205023-8f789aa5e827 h1:9BckqfdyVKP1b+F6HSICOBWeHT7F06ul2M1u9EdGI8A=
+github.com/goinfinite/ui v0.0.0-20250502205023-8f789aa5e827/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250502211851-d7f958f61715 h1:J668KpMvxB12HmmW3I31Iy1waLDS5GEmXKretpSRm8w=
+github.com/goinfinite/ui v0.0.0-20250502211851-d7f958f61715/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
