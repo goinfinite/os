@@ -200,6 +200,39 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 	</div>
 }
 
+templ ListManager(inputName, inputLabel, listTwoWayStatePath string) {
+	<!-- ListManager -->
+	<div class="flex w-full flex-col gap-2" x-data="{currentItem: ''}">
+		<input type="hidden" name={ inputName } x-model:value={ listTwoWayStatePath + ".join(';')" }/>
+		<!-- ListManagerInput -->
+		<div class="flex w-full flex-row items-center justify-stretch gap-2">
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				Label:           inputLabel,
+				TwoWayStatePath: "currentItem",
+			})
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:              "ph-plus",
+				Shape:                 uiControl.ButtonShapeRounded,
+				BackgroundColor:       "secondary-500",
+				OnClickFunc:           listTwoWayStatePath + ".push(currentItem); currentItem = ''",
+				OnClickPreventDefault: true,
+			})
+		</div>
+		<!-- ListManagerTable -->
+		<ul class="rounded-lg bg-neutral-950/10 p-1" x-show={ listTwoWayStatePath + ".length > 0" } x-cloak>
+			<template x-for={ "item in " + listTwoWayStatePath }>
+				<li class="flex w-full items-center justify-between border-b border-neutral-500/20 p-2 last:border-b-0">
+					<span x-text="item"></span>
+					<a
+						class="flex cursor-pointer items-center rounded-md text-base text-neutral-300 transition-colors hover:text-red-800"
+						@click.prevent={ listTwoWayStatePath + ".splice(" + listTwoWayStatePath + ".indexOf(item), 1)" }
+					><i class={ "ph-bold ph-x-circle" }></i></a>
+				</li>
+			</template>
+		</ul>
+	</div>
+}
+
 templ CreateMappingSecurityRuleForm() {
 	<!-- CreateMappingSecurityRuleForm -->
 	<form
@@ -211,62 +244,29 @@ templ CreateMappingSecurityRuleForm() {
 		@submit="closeCreateMappingSecurityRuleModal()"
 		@htmx:after-request={ "$dispatch('" + MappingSecurityRulesDisplayRefreshEventName + "')" }
 	>
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			@uiForm.InputField(uiForm.InputFieldSettings{
-				Label:           "Name",
-				InputType:       "text",
-				InputName:       "name",
-				TwoWayStatePath: "mappingSecurityRule.name",
-			})
-			@uiForm.TextArea(uiForm.TextAreaSettings{
-				Label:           "Description",
-				InputName:       "description",
-				TwoWayStatePath: "mappingSecurityRule.description",
-			})
-		</div>
-		<div
-			class="mt-2 rounded-md bg-neutral-950/20 p-4"
-			x-data="{allowIp: '', blockIp': '', allowedIps: [], blockedIps: []}"
-		>
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			Label:           "Name",
+			InputType:       "text",
+			InputName:       "name",
+			TwoWayStatePath: "mappingSecurityRule.name",
+		})
+		@uiForm.TextArea(uiForm.TextAreaSettings{
+			Label:           "Description",
+			InputName:       "description",
+			TwoWayStatePath: "mappingSecurityRule.description",
+		})
+		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
 			<h3 class="mb-3 text-lg font-semibold">IP Access Control</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<input type="hidden" name="allowedIps" x-model:value="allowedIps.join(';')"/>
-				<div class="flex flex-col gap-2">
-					@uiForm.InputField(uiForm.InputFieldSettings{
-						Label:           "IpAddress OR CIDR",
-						TwoWayStatePath: "allowIp",
-					})
-					@uiControl.Button(uiControl.ButtonSettings{
-						IconLeft:    "ph-plus",
-						Shape:       uiControl.ButtonShapeCircular,
-						OnClickFunc: "allowedIps.push(allowIp); allowIp = ''",
-					})
-					<div class="flex flex-col gap-2">
-						<ul class="list-disc">
-							<template x-for="ip in allowedIps" :key="ip">
-								<li x-text="ip"></li>
-							</template>
-						</ul>
-					</div>
+			<div class="flex flex-row justify-stretch gap-5">
+				<div class="flex w-full flex-col gap-1">
+					<h4>Allowed</h4>
+					<!-- AllowedIps -->
+					@ListManager("allowedIps", "IpAddress", "mappingSecurityRule.allowedIps")
 				</div>
-				<div class="flex flex-col gap-2">
-					<input type="hidden" name="blockedIps" x-model:value="blockedIps.join(';')"/>
-					@uiForm.InputField(uiForm.InputFieldSettings{
-						Label:           "IpAddress OR CIDR",
-						TwoWayStatePath: "blockIp",
-					})
-					@uiControl.Button(uiControl.ButtonSettings{
-						IconLeft:    "ph-plus",
-						Shape:       uiControl.ButtonShapeCircular,
-						OnClickFunc: "blockedIps.push(blockIp); blockIp = ''",
-					})
-					<div class="flex flex-col gap-2">
-						<ul class="list-disc">
-							<template x-for="ip in blockedIps" :key="ip">
-								<li x-text="ip"></li>
-							</template>
-						</ul>
-					</div>
+				<div class="flex w-full flex-col gap-1">
+					<h4>Blocked</h4>
+					<!-- BlockedIps -->
+					@ListManager("blockedIps", "IpAddress", "mappingSecurityRule.blockedIps")
 				</div>
 			</div>
 		</div>
@@ -380,49 +380,18 @@ templ UpdateMappingSecurityRuleForm() {
 				TwoWayStatePath: "mappingSecurityRule.description",
 			})
 		</div>
-		<div
-			class="mt-2 rounded-md bg-neutral-950/20 p-4"
-			x-data="{allowIp: '', blockIp': '', allowedIps: [], blockedIps: []}"
-		>
+		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
 			<h3 class="mb-3 text-lg font-semibold">IP Access Control</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<input type="hidden" name="allowedIps" x-model:value="allowedIps.join(';')"/>
-				<div class="flex flex-col gap-2">
-					@uiForm.InputField(uiForm.InputFieldSettings{
-						Label:           "IpAddress OR CIDR",
-						TwoWayStatePath: "allowIp",
-					})
-					@uiControl.Button(uiControl.ButtonSettings{
-						IconLeft:    "ph-plus",
-						Shape:       uiControl.ButtonShapeCircular,
-						OnClickFunc: "allowedIps.push(allowIp); allowIp = ''",
-					})
-					<div class="flex flex-col gap-2">
-						<ul class="list-disc">
-							<template x-for="ip in allowedIps" :key="ip">
-								<li x-text="ip"></li>
-							</template>
-						</ul>
-					</div>
+			<div class="flex flex-row justify-stretch gap-5">
+				<div class="flex w-full flex-col gap-1">
+					<h4>Allowed</h4>
+					<!-- AllowedIps -->
+					@ListManager("allowedIps", "IpAddress", "mappingSecurityRule.allowedIps")
 				</div>
-				<div class="flex flex-col gap-2">
-					<input type="hidden" name="blockedIps" x-model:value="blockedIps.join(';')"/>
-					@uiForm.InputField(uiForm.InputFieldSettings{
-						Label:           "IpAddress OR CIDR",
-						TwoWayStatePath: "blockIp",
-					})
-					@uiControl.Button(uiControl.ButtonSettings{
-						IconLeft:    "ph-plus",
-						Shape:       uiControl.ButtonShapeCircular,
-						OnClickFunc: "blockedIps.push(blockIp); blockIp = ''",
-					})
-					<div class="flex flex-col gap-2">
-						<ul class="list-disc">
-							<template x-for="ip in blockedIps" :key="ip">
-								<li x-text="ip"></li>
-							</template>
-						</ul>
-					</div>
+				<div class="flex w-full flex-col gap-1">
+					<h4>Blocked</h4>
+					<!-- BlockedIps -->
+					@ListManager("blockedIps", "IpAddress", "mappingSecurityRule.blockedIps")
 				</div>
 			</div>
 		</div>
