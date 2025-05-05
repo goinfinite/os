@@ -233,17 +233,27 @@ templ ListManager(inputName, inputLabel, listTwoWayStatePath string) {
 	</div>
 }
 
-templ CreateMappingSecurityRuleForm() {
-	<!-- CreateMappingSecurityRuleForm -->
+templ MappingSecurityRuleForm(isUpdate bool) {
+	<!-- MappingSecurityRuleForm -->
 	<form
-		id="create-mapping-security-rule-form"
 		class="flex flex-col gap-4"
-		hx-post="/api/v1/vhost/mapping/security-rule/"
+		if !isUpdate {
+			hx-post="/api/v1/vhost/mapping/security-rule/"
+		} else {
+			hx-put="/api/v1/vhost/mapping/security-rule/"
+		}
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
-		@submit="closeCreateMappingSecurityRuleModal()"
+		if !isUpdate {
+			@submit="closeCreateMappingSecurityRuleModal()"
+		} else {
+			@submit="closeUpdateMappingSecurityRuleModal()"
+		}
 		@htmx:after-request={ "$dispatch('" + MappingSecurityRulesDisplayRefreshEventName + "')" }
 	>
+		if !isUpdate {
+			<input type="hidden" name="id" x-bind:value="mappingSecurityRule.id"/>
+		}
 		@uiForm.InputField(uiForm.InputFieldSettings{
 			Label:           "Name",
 			InputType:       "text",
@@ -255,28 +265,30 @@ templ CreateMappingSecurityRuleForm() {
 			InputName:       "description",
 			TwoWayStatePath: "mappingSecurityRule.description",
 		})
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">IP Access Control</h3>
-			<div class="flex flex-row justify-stretch gap-5">
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">IP Access Control</h3>
+			<div class="flex flex-row items-start justify-stretch gap-5">
 				<div class="flex w-full flex-col gap-1">
 					<h4>Allowed</h4>
 					<!-- AllowedIps -->
-					@ListManager("allowedIps", "IpAddress", "mappingSecurityRule.allowedIps")
+					@ListManager("allowedIps", "IpAddress (or CIDR)", "mappingSecurityRule.allowedIps")
 				</div>
 				<div class="flex w-full flex-col gap-1">
 					<h4>Blocked</h4>
 					<!-- BlockedIps -->
-					@ListManager("blockedIps", "IpAddress", "mappingSecurityRule.blockedIps")
+					@ListManager("blockedIps", "IpAddress (or CIDR)", "mappingSecurityRule.blockedIps")
 				</div>
 			</div>
 		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Rate Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">
+				Rate Limit <small class="italic">(Requests per Second (RPS))</small>
+			</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
 				@uiForm.InputField(uiForm.InputFieldSettings{
 					InputType:       "number",
 					InputName:       "rpsSoftLimitPerIp",
-					Label:           "Soft Limit (RPS per IP)",
+					Label:           "Soft Limit",
 					TwoWayStatePath: "mappingSecurityRule.rpsSoftLimitPerIp",
 					InputNumberMin:  "1",
 					InputNumberStep: "1",
@@ -285,7 +297,7 @@ templ CreateMappingSecurityRuleForm() {
 				@uiForm.InputField(uiForm.InputFieldSettings{
 					InputType:       "number",
 					InputName:       "rpsHardLimitPerIp",
-					Label:           "Hard Limit (RPS per IP)",
+					Label:           "Hard Limit",
 					TwoWayStatePath: "mappingSecurityRule.rpsHardLimitPerIp",
 					InputNumberMin:  "1",
 					InputNumberStep: "1",
@@ -294,7 +306,7 @@ templ CreateMappingSecurityRuleForm() {
 				@uiForm.InputField(uiForm.InputFieldSettings{
 					InputType:       "number",
 					InputName:       "responseCodeOnMaxRequests",
-					Label:           "Response Code on Max Requests",
+					Label:           "Max Requests Response Code",
 					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxRequests",
 					InputNumberMin:  "100",
 					InputNumberStep: "1",
@@ -302,13 +314,15 @@ templ CreateMappingSecurityRuleForm() {
 				})
 			</div>
 		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Connection Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">
+				Connection Limit <small class="italic">(per ip address)</small>
+			</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
 				@uiForm.InputField(uiForm.InputFieldSettings{
 					InputType:       "number",
 					InputName:       "maxConnectionsPerIp",
-					Label:           "Max Connections per IP",
+					Label:           "Max Connections",
 					TwoWayStatePath: "mappingSecurityRule.maxConnectionsPerIp",
 					InputNumberMin:  "1",
 					InputNumberStep: "1",
@@ -317,7 +331,7 @@ templ CreateMappingSecurityRuleForm() {
 				@uiForm.InputField(uiForm.InputFieldSettings{
 					InputType:       "number",
 					InputName:       "responseCodeOnMaxConnections",
-					Label:           "Response Code on Max Connections",
+					Label:           "Max Connections Response Code",
 					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxConnections",
 					InputNumberMin:  "100",
 					InputNumberStep: "1",
@@ -325,157 +339,71 @@ templ CreateMappingSecurityRuleForm() {
 				})
 			</div>
 		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Bandwidth Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">Bandwidth Limiting</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
+				@uiForm.SelectInput(uiForm.SelectInputSettings{
+					Label:           "Bandwidth Limit per Connection",
 					InputName:       "bandwidthBpsLimitPerConnection",
-					Label:           "Bandwidth Limit per Connection (bytes/s)",
 					TwoWayStatePath: "mappingSecurityRule.bandwidthBpsLimitPerConnection",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
+					LabelValueOptions: []uiForm.SelectLabelValueOption{
+						{Label: "Unlimited", Value: "0"},
+						{Label: "2 MiB/s", Value: "2097152"},
+						{Label: "4 MiB/s", Value: "4194304"},
+						{Label: "8 MiB/s", Value: "8388608"},
+						{Label: "12 MiB/s", Value: "12582912"},
+						{Label: "16 MiB/s", Value: "16777216"},
+						{Label: "24 MiB/s", Value: "25165824"},
+						{Label: "32 MiB/s", Value: "33554432"},
+						{Label: "48 MiB/s", Value: "48318384"},
+						{Label: "64 MiB/s", Value: "67108864"},
+						{Label: "96 MiB/s", Value: "96468768"},
+						{Label: "128 MiB/s", Value: "134217728"},
+						{Label: "192 MiB/s", Value: "192737536"},
+						{Label: "256 MiB/s", Value: "268435456"},
+						{Label: "384 MiB/s", Value: "388536320"},
+						{Label: "512 MiB/s", Value: "536870912"},
+						{Label: "768 MiB/s", Value: "786432000"},
+						{Label: "1 GiB/s", Value: "1073741824"},
+					},
 				})
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
+				@uiForm.SelectInput(uiForm.SelectInputSettings{
+					Label:           "Apply Bandwidth Limit After",
 					InputName:       "bandwidthLimitOnlyAfterBytes",
-					Label:           "Apply Bandwidth Limit After (bytes)",
 					TwoWayStatePath: "mappingSecurityRule.bandwidthLimitOnlyAfterBytes",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
+					LabelValueOptions: []uiForm.SelectLabelValueOption{
+						{Label: "Unlimited", Value: "0"},
+						{Label: "2 MiB", Value: "2097152"},
+						{Label: "4 MiB", Value: "4194304"},
+						{Label: "8 MiB", Value: "8388608"},
+						{Label: "12 MiB", Value: "12582912"},
+						{Label: "16 MiB", Value: "16777216"},
+						{Label: "24 MiB", Value: "25165824"},
+						{Label: "32 MiB", Value: "33554432"},
+						{Label: "48 MiB", Value: "48318384"},
+						{Label: "64 MiB", Value: "67108864"},
+						{Label: "96 MiB", Value: "96468768"},
+						{Label: "128 MiB", Value: "134217728"},
+						{Label: "192 MiB", Value: "192737536"},
+						{Label: "256 MiB", Value: "268435456"},
+						{Label: "384 MiB", Value: "388536320"},
+						{Label: "512 MiB", Value: "536870912"},
+						{Label: "768 MiB", Value: "786432000"},
+						{Label: "1 GiB", Value: "1073741824"},
+					},
 				})
 			</div>
 		</div>
+		{{ buttonLabel := "create" }}
+		if isUpdate {
+			{{ buttonLabel = "update" }}
+		}
 		@uiControl.Button(uiControl.ButtonSettings{
-			Label:       "Create",
-			IconLeft:    "ph-check-fat",
-			IsSubmit:    true,
-			IsFullWidth: true,
-		})
-	</form>
-}
-
-templ UpdateMappingSecurityRuleForm() {
-	<!-- UpdateMappingSecurityRuleForm -->
-	<form
-		id="update-mapping-security-rule-form"
-		class="flex flex-col gap-4"
-		hx-put="/api/v1/vhost/mapping/security-rule/"
-		hx-indicator="#loading-overlay"
-		hx-swap="none"
-		@submit="closeUpdateMappingSecurityRuleModal()"
-		@htmx:after-request={ "$dispatch('" + MappingSecurityRulesDisplayRefreshEventName + "')" }
-	>
-		<input type="hidden" name="id" x-bind:value="mappingSecurityRule.id"/>
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:       "text",
-				InputName:       "name",
-				Label:           "Name",
-				TwoWayStatePath: "mappingSecurityRule.name",
-			})
-			@uiForm.TextArea(uiForm.TextAreaSettings{
-				InputName:       "description",
-				Label:           "Description",
-				TwoWayStatePath: "mappingSecurityRule.description",
-			})
-		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">IP Access Control</h3>
-			<div class="flex flex-row justify-stretch gap-5">
-				<div class="flex w-full flex-col gap-1">
-					<h4>Allowed</h4>
-					<!-- AllowedIps -->
-					@ListManager("allowedIps", "IpAddress", "mappingSecurityRule.allowedIps")
-				</div>
-				<div class="flex w-full flex-col gap-1">
-					<h4>Blocked</h4>
-					<!-- BlockedIps -->
-					@ListManager("blockedIps", "IpAddress", "mappingSecurityRule.blockedIps")
-				</div>
-			</div>
-		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Rate Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "rpsSoftLimitPerIp",
-					Label:           "Soft Limit (RPS per IP)",
-					TwoWayStatePath: "mappingSecurityRule.rpsSoftLimitPerIp",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
-					InputNumberMax:  "1000",
-				})
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "rpsHardLimitPerIp",
-					Label:           "Hard Limit (RPS per IP)",
-					TwoWayStatePath: "mappingSecurityRule.rpsHardLimitPerIp",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
-					InputNumberMax:  "1000",
-				})
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "responseCodeOnMaxRequests",
-					Label:           "Response Code on Max Requests",
-					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxRequests",
-					InputNumberMin:  "100",
-					InputNumberStep: "1",
-					InputNumberMax:  "599",
-				})
-			</div>
-		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Connection Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "maxConnectionsPerIp",
-					Label:           "Max Connections per IP",
-					TwoWayStatePath: "mappingSecurityRule.maxConnectionsPerIp",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
-					InputNumberMax:  "1000",
-				})
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "responseCodeOnMaxConnections",
-					Label:           "Response Code on Max Connections",
-					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxConnections",
-					InputNumberMin:  "100",
-					InputNumberStep: "1",
-					InputNumberMax:  "599",
-				})
-			</div>
-		</div>
-		<div class="mt-2 rounded-md bg-neutral-950/20 p-4">
-			<h3 class="mb-3 text-lg font-semibold">Bandwidth Limiting</h3>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "bandwidthBpsLimitPerConnection",
-					Label:           "Bandwidth Limit per Connection (bytes/s)",
-					TwoWayStatePath: "mappingSecurityRule.bandwidthBpsLimitPerConnection",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
-				})
-				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       "number",
-					InputName:       "bandwidthLimitOnlyAfterBytes",
-					Label:           "Apply Bandwidth Limit After (bytes)",
-					TwoWayStatePath: "mappingSecurityRule.bandwidthLimitOnlyAfterBytes",
-					InputNumberMin:  "1",
-					InputNumberStep: "1",
-				})
-			</div>
-		</div>
-		@uiControl.Button(uiControl.ButtonSettings{
-			Label:       "Update",
-			IconLeft:    "ph-check-fat",
-			IsSubmit:    true,
-			IsFullWidth: true,
+			Label:           buttonLabel,
+			IconLeft:        "ph-check-fat",
+			BackgroundColor: "secondary-500",
+			IsSubmit:        true,
+			IsFullWidth:     true,
 		})
 	</form>
 }
@@ -485,7 +413,7 @@ templ CreateMappingSecurityRuleModal() {
 		"Create Mapping Security Rule", "isCreateMappingSecurityRuleModalOpen",
 		"closeCreateMappingSecurityRuleModal()", "",
 	) {
-		@CreateMappingSecurityRuleForm()
+		@MappingSecurityRuleForm(false)
 	}
 }
 
@@ -494,6 +422,6 @@ templ UpdateMappingSecurityRuleModal() {
 		"Update Mapping Security Rule", "isUpdateMappingSecurityRuleModalOpen",
 		"closeUpdateMappingSecurityRuleModal()", "",
 	) {
-		@UpdateMappingSecurityRuleForm()
+		@MappingSecurityRuleForm(true)
 	}
 }

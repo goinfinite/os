@@ -21,13 +21,6 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    get shouldDisableCreateMappingSecurityRuleSubmitButton() {
-      return this.mappingSecurityRule.name === "";
-    },
-    get shouldDisableUpdateMappingSecurityRuleSubmitButton() {
-      return this.mappingSecurityRule.name === "";
-    },
-
     isCreateMappingSecurityRuleModalOpen: false,
     openCreateMappingSecurityRuleModal() {
       this.resetPrimaryStates();
@@ -38,15 +31,13 @@ document.addEventListener("alpine:init", () => {
     },
 
     isUpdateMappingSecurityRuleModalOpen: false,
-    openUpdateMappingSecurityRuleModal(mappingSecurityRuleId) {
+    openUpdateMappingSecurityRuleModal(secRuleId) {
       this.resetPrimaryStates();
 
-      const mappingSecurityRuleEntity = JSON.parse(
-        document.getElementById(
-          "mappingSecurityRuleEntity_" + mappingSecurityRuleId
-        ).textContent
+      const secRuleEntity = JSON.parse(
+        document.getElementById("secRuleEntity_" + secRuleId).textContent
       );
-      this.mappingSecurityRule = mappingSecurityRuleEntity;
+      this.mappingSecurityRule = secRuleEntity;
       this.isUpdateMappingSecurityRuleModalOpen = true;
     },
     closeUpdateMappingSecurityRuleModal() {
@@ -54,13 +45,10 @@ document.addEventListener("alpine:init", () => {
     },
 
     isDeleteMappingSecurityRuleModalOpen: false,
-    openDeleteMappingSecurityRuleModal(
-      mappingSecurityRuleId,
-      mappingSecurityRuleName
-    ) {
+    openDeleteMappingSecurityRuleModal(secRuleId, secRuleName) {
       this.resetPrimaryStates();
-      this.mappingSecurityRule.id = mappingSecurityRuleId;
-      this.mappingSecurityRule.name = mappingSecurityRuleName;
+      this.mappingSecurityRule.id = secRuleId;
+      this.mappingSecurityRule.name = secRuleName;
       this.isDeleteMappingSecurityRuleModalOpen = true;
     },
     closeDeleteMappingSecurityRuleModal() {
