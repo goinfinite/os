@@ -605,15 +605,15 @@ limit_rate {{ .BandwidthBpsLimitPerConnection }}; #BandwidthBpsLimitPerConnectio
 limit_rate_after {{ .BandwidthLimitOnlyAfterBytes }}; #BandwidthLimitOnlyAfterBytes
 {{- end }}
 {{- end }}
-{{- if .AllowedIps -}}
+{{- if .AllowedIps }}
 #AllowedIps
 {{- range .AllowedIps }}
 allow {{ . }};
 {{- end }}
 {{- end }}
-{{- if .BlockedIps -}}
+{{- if .BlockedIps }}
 #BlockedIps
-{{- range .BlockedIps -}}
+{{- range .BlockedIps }}
 deny {{ . }};
 {{- end }}
 {{- end }}
@@ -752,22 +752,6 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 		updateMap["description"] = updateDto.Description.String()
 	}
 
-	allowedIps := []string{}
-	for _, ipAddress := range updateDto.AllowedIps {
-		allowedIps = append(allowedIps, ipAddress.String())
-	}
-	if len(allowedIps) > 0 {
-		updateMap["allowed_ips"] = allowedIps
-	}
-
-	blockedIps := []string{}
-	for _, ipAddress := range updateDto.BlockedIps {
-		blockedIps = append(blockedIps, ipAddress.String())
-	}
-	if len(blockedIps) > 0 {
-		updateMap["blocked_ips"] = blockedIps
-	}
-
 	if updateDto.RpsSoftLimitPerIp != nil {
 		updateMap["rps_soft_limit_per_ip"] = *updateDto.RpsSoftLimitPerIp
 	}
@@ -800,6 +784,31 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 		Where("id = ?", updateDto.Id.Uint64()).Updates(updateMap).Error
 	if err != nil {
 		return errors.New("UpdateMappingSecurityRuleInfraError: " + err.Error())
+	}
+
+	updateModel := dbModel.MappingSecurityRule{}
+	allowedIps := []string{}
+	for _, ipAddress := range updateDto.AllowedIps {
+		allowedIps = append(allowedIps, ipAddress.String())
+	}
+	if len(allowedIps) > 0 {
+		updateModel.AllowedIps = allowedIps
+	}
+
+	blockedIps := []string{}
+	for _, ipAddress := range updateDto.BlockedIps {
+		blockedIps = append(blockedIps, ipAddress.String())
+	}
+	if len(blockedIps) > 0 {
+		updateModel.BlockedIps = blockedIps
+	}
+
+	if len(updateModel.AllowedIps) > 0 || len(updateModel.BlockedIps) > 0 {
+		err = repo.persistentDbSvc.Handler.Model(&dbModel.MappingSecurityRule{}).
+			Where("id = ?", updateDto.Id.Uint64()).Updates(updateModel).Error
+		if err != nil {
+			return errors.New("UpdateMappingSecurityRuleInfraError: " + err.Error())
+		}
 	}
 
 	err = repo.recreateSecurityRuleFile(updateDto.Id)
