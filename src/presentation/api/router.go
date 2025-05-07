@@ -228,7 +228,7 @@ func (router Router) vhostRoutes() {
 	mappingSecurityRuleGroup := mappingsGroup.Group("/security-rule")
 	mappingSecurityRuleGroup.GET("/", vhostController.ReadMappingSecurityRules)
 	mappingSecurityRuleGroup.POST("/", vhostController.CreateMappingSecurityRule)
-	mappingSecurityRuleGroup.PUT("/:id/", vhostController.UpdateMappingSecurityRule)
+	mappingSecurityRuleGroup.PUT("/", vhostController.UpdateMappingSecurityRule)
 	mappingSecurityRuleGroup.DELETE("/:id/", vhostController.DeleteMappingSecurityRule)
 }
 

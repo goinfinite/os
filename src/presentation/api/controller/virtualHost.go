@@ -286,10 +286,9 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Contex
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        id path uint true "MappingSecurityRuleId to update."
 // @Param        updateMappingSecurityRuleDto body dto.UpdateMappingSecurityRule true "Only id is required."
 // @Success      200 {object} object{} "MappingSecurityRuleUpdated"
-// @Router       /v1/vhost/mapping/security-rule/{id}/ [put]
+// @Router       /v1/vhost/mapping/security-rule/ [put]
 func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
 	if err != nil {
