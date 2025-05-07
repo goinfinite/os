@@ -59,11 +59,11 @@ func MappingSecurityRulePresetBreezy() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
 		"Security in shorts and flip‑flops. Best for debugging or very low‑risk scenarios.",
 	)
-	rpsSoftLimitPerIp := uint(18)
-	rpsHardLimitPerIp := uint(24)
-	maxConnectionsPerIp := uint(18)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(24 * 1024 * 1024) // 24MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(32 * 1024 * 1024)   // 32MB
+	rpsSoftLimitPerIp := uint(24)
+	rpsHardLimitPerIp := uint(32)
+	maxConnectionsPerIp := uint(16)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(32 * 1024 * 1024) // 32MiB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(64 * 1024 * 1024)   // 32MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("breezy"),
@@ -82,11 +82,11 @@ func MappingSecurityRulePresetPermissive() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
 		"Easy‑going yet alert. Basic protection without slowing down everyday traffic.",
 	)
-	rpsSoftLimitPerIp := uint(15)
-	rpsHardLimitPerIp := uint(21)
-	maxConnectionsPerIp := uint(15)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(20 * 1024 * 1024) // 20MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(24 * 1024 * 1024)   // 24MB
+	rpsSoftLimitPerIp := uint(16)
+	rpsHardLimitPerIp := uint(24)
+	maxConnectionsPerIp := uint(12)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(16 * 1024 * 1024) // 16MiB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(32 * 1024 * 1024)   // 24MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("permissive"),
@@ -106,10 +106,10 @@ func MappingSecurityRulePresetReasonable() MappingSecurityRule {
 		"Sweet spot: prevent most abuses while minimizing false positives.",
 	)
 	rpsSoftLimitPerIp := uint(12)
-	rpsHardLimitPerIp := uint(15)
-	maxConnectionsPerIp := uint(12)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(16 * 1024 * 1024) // 16MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(16 * 1024 * 1024)   // 16MB
+	rpsHardLimitPerIp := uint(16)
+	maxConnectionsPerIp := uint(8)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(8 * 1024 * 1024) // 8MiB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(16 * 1024 * 1024)  // 16MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("reasonable"),
@@ -128,11 +128,11 @@ func MappingSecurityRulePresetVigilant() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
 		"Lower tolerances, higher standards - might be too restrictive.",
 	)
-	rpsSoftLimitPerIp := uint(6)
-	rpsHardLimitPerIp := uint(9)
+	rpsSoftLimitPerIp := uint(8)
+	rpsHardLimitPerIp := uint(12)
 	maxConnectionsPerIp := uint(6)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(12 * 1024 * 1024) // 12MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(12 * 1024 * 1024)   // 12MB
+	bandwidthBpsLimitPerConnection := valueObject.Byte(4 * 1024 * 1024) // 4MiB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(8 * 1024 * 1024)   // 12MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("vigilant"),
@@ -151,11 +151,11 @@ func MappingSecurityRulePresetIronclad() MappingSecurityRule {
 	ruleDescription, _ := valueObject.NewMappingSecurityRuleDescription(
 		"Draconian limits, permanent red alert. Use with caution.",
 	)
-	rpsSoftLimitPerIp := uint(3)
-	rpsHardLimitPerIp := uint(6)
-	maxConnectionsPerIp := uint(3)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(8 * 1024 * 1024) // 8MB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(8 * 1024 * 1024)   // 8MB
+	rpsSoftLimitPerIp := uint(6)
+	rpsHardLimitPerIp := uint(8)
+	maxConnectionsPerIp := uint(4)
+	bandwidthBpsLimitPerConnection := valueObject.Byte(2 * 1024 * 1024) // 2MiB
+	bandwidthLimitOnlyAfterBytes := valueObject.Byte(4 * 1024 * 1024)   // 8MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("ironclad"),
