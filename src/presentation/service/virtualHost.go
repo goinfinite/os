@@ -702,7 +702,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var rpsSoftLimitPerIpPtr *uint
-	if input["rpsSoftLimitPerIp"] != nil {
+	if input["rpsSoftLimitPerIp"] != nil && input["rpsSoftLimitPerIp"] != "" {
 		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
@@ -711,7 +711,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var rpsHardLimitPerIpPtr *uint
-	if input["rpsHardLimitPerIp"] != nil {
+	if input["rpsHardLimitPerIp"] != nil && input["rpsHardLimitPerIp"] != "" {
 		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
@@ -720,7 +720,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var responseCodeOnMaxRequestsPtr *uint
-	if input["responseCodeOnMaxRequests"] != nil {
+	if input["responseCodeOnMaxRequests"] != nil && input["responseCodeOnMaxRequests"] != "" {
 		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxRequests"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxRequests")
@@ -729,7 +729,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var maxConnectionsPerIpPtr *uint
-	if input["maxConnectionsPerIp"] != nil {
+	if input["maxConnectionsPerIp"] != nil && input["maxConnectionsPerIp"] != "" {
 		maxConns, err := tkVoUtil.InterfaceToUint(input["maxConnectionsPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidMaxConnectionsPerIp")
@@ -738,7 +738,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
-	if input["bandwidthBpsLimitPerConnection"] != nil {
+	if input["bandwidthBpsLimitPerConnection"] != nil && input["bandwidthBpsLimitPerConnection"] != "" {
 		bandwidthBpsLimit, err := valueObject.NewByte(input["bandwidthBpsLimitPerConnection"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
@@ -747,7 +747,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
-	if input["bandwidthLimitOnlyAfterBytes"] != nil {
+	if input["bandwidthLimitOnlyAfterBytes"] != nil && input["bandwidthLimitOnlyAfterBytes"] != "" {
 		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(input["bandwidthLimitOnlyAfterBytes"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
@@ -756,7 +756,7 @@ func (service *VirtualHostService) CreateMappingSecurityRule(
 	}
 
 	var responseCodeOnMaxConnectionsPtr *uint
-	if input["responseCodeOnMaxConnections"] != nil {
+	if input["responseCodeOnMaxConnections"] != nil && input["responseCodeOnMaxConnections"] != "" {
 		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxConnections"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxConnections")
@@ -851,7 +851,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var rpsSoftLimitPerIpPtr *uint
-	if input["rpsSoftLimitPerIp"] != nil {
+	if input["rpsSoftLimitPerIp"] != nil && input["rpsSoftLimitPerIp"] != "" {
 		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
@@ -860,7 +860,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var rpsHardLimitPerIpPtr *uint
-	if input["rpsHardLimitPerIp"] != nil {
+	if input["rpsHardLimitPerIp"] != nil && input["rpsHardLimitPerIp"] != "" {
 		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
@@ -869,7 +869,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var responseCodeOnMaxRequestsPtr *uint
-	if input["responseCodeOnMaxRequests"] != nil {
+	if input["responseCodeOnMaxRequests"] != nil && input["responseCodeOnMaxRequests"] != "" {
 		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxRequests"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxRequests")
@@ -878,7 +878,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var maxConnectionsPerIpPtr *uint
-	if input["maxConnectionsPerIp"] != nil {
+	if input["maxConnectionsPerIp"] != nil && input["maxConnectionsPerIp"] != "" {
 		maxConns, err := tkVoUtil.InterfaceToUint(input["maxConnectionsPerIp"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidMaxConnectionsPerIp")
@@ -887,7 +887,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
-	if input["bandwidthBpsLimitPerConnection"] != nil {
+	if input["bandwidthBpsLimitPerConnection"] != nil && input["bandwidthBpsLimitPerConnection"] != "" {
 		bandwidthBpsLimit, err := valueObject.NewByte(input["bandwidthBpsLimitPerConnection"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
@@ -896,7 +896,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
-	if input["bandwidthLimitOnlyAfterBytes"] != nil {
+	if input["bandwidthLimitOnlyAfterBytes"] != nil && input["bandwidthLimitOnlyAfterBytes"] != "" {
 		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(input["bandwidthLimitOnlyAfterBytes"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
@@ -905,7 +905,7 @@ func (service *VirtualHostService) UpdateMappingSecurityRule(
 	}
 
 	var responseCodeOnMaxConnectionsPtr *uint
-	if input["responseCodeOnMaxConnections"] != nil {
+	if input["responseCodeOnMaxConnections"] != nil && input["responseCodeOnMaxConnections"] != "" {
 		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxConnections"])
 		if err != nil {
 			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxConnections")
