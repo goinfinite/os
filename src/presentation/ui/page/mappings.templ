@@ -7,8 +7,9 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
-	"github.com/goinfinite/ui/src/display"
-	"github.com/goinfinite/ui/src/form"
+	"github.com/goinfinite/ui/src/control"
+	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 )
 
 const (
@@ -25,24 +26,40 @@ templ MappingsIndex(
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
 	<!-- Mappings Page HTML -->
-	<div x-data="mappings" class="flex flex-col gap-4">
-		<div class="flex flex-row items-center justify-between gap-3">
-			<div class="-mb-4 basis-[65%]">
-				@componentStructural.PageTitle(
-					"Mappings",
-					"Manage virtual hosts and their mappings to services, URLs, inline HTML etc.",
-					"ph-graph",
-				)
-			</div>
-			<div class="flex basis-[35%] gap-3">
-				@componentForm.SubmitButton(
-					"create-vhost-button", "create virtual host", "ph-plus-square",
-					"openCreateVirtualHostModal()", false,
-				)
-				@componentForm.SubmitButton(
-					"create-mapping-button", "create mapping", "ph-plus-square",
-					"openCreateMappingModal()", false,
-				)
+	<div x-data="mappings" class="flex flex-col gap-2">
+		<div class="flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Mappings",
+				"Manage virtual hosts and their mappings to services, URLs, inline HTML etc.",
+				"ph-graph",
+			)
+			<div class="flex basis-[50%] flex-row gap-3">
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:                "create virtual host",
+					IconLeft:             "ph-plus-square",
+					BackgroundColor:      "secondary-500",
+					BackgroundColorHover: "secondary-300",
+					IsFullWidth:          true,
+					OnClickFunc:          "openCreateVirtualHostModal()",
+				})
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:                "create mapping",
+					IconLeft:             "ph-plus-square",
+					BackgroundColor:      "secondary-500",
+					BackgroundColorHover: "secondary-300",
+					IsFullWidth:          true,
+					OnClickFunc:          "openCreateMappingModal()",
+				})
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:           "security rules",
+					IconLeft:        "ph-shield",
+					BackgroundColor: "transparent",
+					RingColor:       "secondary-500",
+					TextColor:       "secondary-500",
+					TextColorHover:  "secondary-300",
+					IsFullWidth:     true,
+					OnClickFunc:     "window.location.href = '/mappings/security-rules/'",
+				})
 			</div>
 		</div>
 		@MappingsFormTable(vhostsWithMappings)
