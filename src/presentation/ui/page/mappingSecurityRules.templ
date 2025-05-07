@@ -251,7 +251,7 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 		}
 		@htmx:after-request={ "$dispatch('" + MappingSecurityRulesDisplayRefreshEventName + "')" }
 	>
-		if !isUpdate {
+		if isUpdate {
 			<input type="hidden" name="id" x-bind:value="mappingSecurityRule.id"/>
 		}
 		@uiForm.InputField(uiForm.InputFieldSettings{
@@ -399,11 +399,12 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 			{{ buttonLabel = "update" }}
 		}
 		@uiControl.Button(uiControl.ButtonSettings{
-			Label:           buttonLabel,
-			IconLeft:        "ph-check-fat",
-			BackgroundColor: "secondary-500",
-			IsSubmit:        true,
-			IsFullWidth:     true,
+			Label:                buttonLabel,
+			IconLeft:             "ph-check-fat",
+			BackgroundColor:      "secondary-500",
+			BackgroundColorHover: "secondary-300",
+			IsSubmit:             true,
+			IsFullWidth:          true,
 		})
 	</form>
 }
