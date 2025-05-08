@@ -47,6 +47,7 @@ A read-only demo of the dashboard is available at [https://os.demo.goinfinite.ne
 - **File Manager**: Built-in interface to poke around your container's files and folders without needing to be a terminal ninja;
 - **Automatic SSL**: Let's Encrypt certificates that sort themselves out - because life's too short to manually configure SSL;
 - **Automatic Mappings**: Your marketplace apps magically appear at exactly the right path and domain name - no configuration gymnastics required;
+- **Mapping Security Rules**: Protect your applications with custom rate, bandwidth and connection limits;
 - **NGINX baked-in**: NGINX comes pre-configured and ready to rock with both the dashboard and your applications;
 - **Runtime Settings**: Tweak PHP versions, NGINX configurations and more - all the knobs and dials you need;
 - **User Management**: Create accounts for the whole team (or just yourself with different hats on) and manage them all in one place.
@@ -54,7 +55,7 @@ A read-only demo of the dashboard is available at [https://os.demo.goinfinite.ne
 ## Get Started
 
 ```
-This project is still under active development (alpha stage).
+This project is still under active development (beta stage).
 Expect bugs early on. Create issues so they can be fixed.
 ```
 
@@ -128,4 +129,4 @@ We're grateful to our contributors, supporters, and the open-source community fo
 
 ## Disclaimer
 
-Infinite OS is still in the alpha stage of development. While we strive to provide a stable and reliable product, please be aware that there may be bugs and issues. We appreciate your understanding and encourage you to report any problems you encounter, helping us improve the project.
+Infinite OS is still in the beta stage of development. While we strive to provide a stable and reliable product, please be aware that there may be bugs and issues. We appreciate your understanding and encourage you to report any problems you encounter, helping us improve the project.
