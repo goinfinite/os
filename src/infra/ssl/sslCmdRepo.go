@@ -12,6 +12,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
@@ -86,10 +87,12 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	targetValue, _ := valueObject.NewMappingTargetValue(
 		expectedOwnershipHash.String(), targetType,
 	)
+	shouldUpgradeInsecureRequests := false
 
 	inlineHtmlMapping := dto.NewCreateMapping(
 		targetVirtualHostHostname, path, matchPattern, targetType, &targetValue,
-		&httpResponseCode, operatorAccountId, operatorIpAddress,
+		&httpResponseCode, &shouldUpgradeInsecureRequests, nil,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	return mappingCmdRepo.Create(inlineHtmlMapping)
@@ -233,12 +236,15 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
 	}
 
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
-	dummyValue := dummyValueGenerator.GenPass(64)
-	expectedOwnershipHash, err := valueObject.NewHash(dummyValue)
+	synthesizer := tkInfra.Synthesizer{}
+	dummyValue := synthesizer.PasswordFactory(32, false)
+	dummyHash := infraHelper.GenStrongHash(dummyValue)
+
+	expectedOwnershipHash, err := valueObject.NewHash(dummyHash)
 	if err != nil {
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
+
 	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,

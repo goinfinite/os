@@ -50,14 +50,46 @@ func (service *DatabaseService) Read(input map[string]interface{}) ServiceOutput
 		return NewServiceOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
+	requestPagination, err := serviceHelper.PaginationParser(
+		input, useCase.DatabasesDefaultPagination,
+	)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var databaseNamePtr *valueObject.DatabaseName
+	if input["name"] != nil {
+		databaseName, err := valueObject.NewDatabaseName(input["name"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		databaseNamePtr = &databaseName
+	}
+
+	var usernamePtr *valueObject.DatabaseUsername
+	if input["username"] != nil {
+		username, err := valueObject.NewDatabaseUsername(input["username"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		usernamePtr = &username
+	}
+
+	requestDto := dto.ReadDatabasesRequest{
+		Pagination:   requestPagination,
+		DatabaseName: databaseNamePtr,
+		DatabaseType: &dbType,
+		Username:     usernamePtr,
+	}
+
 	databaseQueryRepo := databaseInfra.NewDatabaseQueryRepo(dbType)
 
-	databasesList, err := useCase.ReadDatabases(databaseQueryRepo)
+	responseDto, err := useCase.ReadDatabases(databaseQueryRepo, requestDto)
 	if err != nil {
 		return NewServiceOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, databasesList)
+	return NewServiceOutput(Success, responseDto)
 }
 
 func (service *DatabaseService) Create(input map[string]interface{}) ServiceOutput {
@@ -209,14 +241,14 @@ func (service *DatabaseService) CreateUser(
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	dbPrivileges := []valueObject.DatabasePrivilege{}
+	dbPrivileges := []valueObject.DatabasePrivilege{
+		valueObject.DatabasePrivilege("ALL"),
+	}
 	if input["privileges"] != nil {
-		for _, rawPrivilege := range input["privileges"].([]string) {
-			dbPrivilege, err := valueObject.NewDatabasePrivilege(rawPrivilege)
-			if err != nil {
-				return NewServiceOutput(UserError, err.Error())
-			}
-			dbPrivileges = append(dbPrivileges, dbPrivilege)
+		var assertOk bool
+		dbPrivileges, assertOk = input["privileges"].([]valueObject.DatabasePrivilege)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidDatabasePrivileges")
 		}
 	}
 

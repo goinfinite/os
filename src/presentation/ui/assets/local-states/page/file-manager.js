@@ -353,6 +353,7 @@ document.addEventListener("alpine:init", () => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
+      this.file.name = fileEntity.name;
       this.file.path = fileEntity.path;
 
       this.isRenameFileModalOpen = true;

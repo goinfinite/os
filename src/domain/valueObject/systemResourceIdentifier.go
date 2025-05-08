@@ -180,6 +180,15 @@ func NewMappingSri(
 	)
 }
 
+func NewMappingSecurityRuleSri(
+	accountId AccountId,
+	mappingSecurityRuleId MappingSecurityRuleId,
+) SystemResourceIdentifier {
+	return NewSystemResourceIdentifierIgnoreError(
+		"sri://" + accountId.String() + ":mappingSecurityRule/" + mappingSecurityRuleId.String(),
+	)
+}
+
 func (vo SystemResourceIdentifier) String() string {
 	return string(vo)
 }

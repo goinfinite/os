@@ -15,6 +15,7 @@ func CreateServiceAutoMapping(
 	serviceName valueObject.ServiceName,
 	mappingHostname *valueObject.Fqdn,
 	mappingPath *valueObject.MappingPath,
+	mappingUpgradeInsecureRequests *bool,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) error {
@@ -59,7 +60,7 @@ func CreateServiceAutoMapping(
 	_, err = mappingCmdRepo.Create(dto.NewCreateMapping(
 		*mappingHostname, *mappingPath, valueObject.MappingMatchPatternBeginsWith,
 		valueObject.MappingTargetTypeService, &targetValue, nil,
-		operatorAccountId, operatorIpAddress,
+		mappingUpgradeInsecureRequests, nil, operatorAccountId, operatorIpAddress,
 	))
 	if err != nil {
 		return errors.New("CreateServiceMappingInfraError: " + err.Error())
@@ -112,7 +113,8 @@ func CreateCustomService(
 
 	err = CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, createDto.Name, createDto.MappingHostname,
-		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
+		createDto.MappingPath, createDto.MappingUpgradeInsecureRequests,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 	if err != nil {
 		slog.Error("AutoCreateMappingError", slog.String("err", err.Error()))

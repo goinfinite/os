@@ -22,6 +22,8 @@ document.addEventListener("alpine:init", () => {
         targetType: "url",
         targetValue: "",
         targetHttpResponseCode: "",
+        shouldUpgradeInsecureRequests: "false",
+        mappingSecurityRuleId: "",
       };
     },
     init() {
@@ -120,6 +122,20 @@ document.addEventListener("alpine:init", () => {
     closeCreateMappingModal() {
       this.isCreateMappingModalOpen = false;
       this.isCreateMappingFromVirtualHostModalOpen = false;
+    },
+    isUpdateMappingModalOpen: false,
+    openUpdateMappingModal(mappingId) {
+      this.resetPrimaryStates();
+
+      this.mapping = JSON.parse(
+        document.getElementById("mappingEntity_" + mappingId).textContent
+      );
+      this.virtualHost.hostname = this.mapping.hostname;
+
+      this.isUpdateMappingModalOpen = true;
+    },
+    closeUpdateMappingModal() {
+      this.isUpdateMappingModalOpen = false;
     },
     isDeleteMappingModalOpen: false,
     openDeleteMappingModal(mappingId, mappingPath) {

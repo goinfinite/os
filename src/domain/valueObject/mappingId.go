@@ -4,13 +4,13 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MappingId uint64
 
 func NewMappingId(value interface{}) (mappingId MappingId, err error) {
-	uintValue, err := voHelper.InterfaceToUint64(value)
+	uintValue, err := tkVoUtil.InterfaceToUint64(value)
 	if err != nil {
 		return mappingId, errors.New("MappingIdMustBeUint64")
 	}

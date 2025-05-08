@@ -11,11 +11,12 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/iancoleman/strcase"
 )
 
@@ -126,8 +127,21 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 			targetHttpResponseCodePtr = &targetHttpResponseCode
 		}
 
+		var shouldUpgradeInsecureRequestsPtr *bool
+		if rawItemMappingMap["shouldUpgradeInsecureRequests"] != nil {
+			shouldUpgradeInsecureRequests, err := tkVoUtil.InterfaceToBool(
+				rawItemMappingMap["shouldUpgradeInsecureRequests"],
+			)
+			if err != nil {
+				slog.Debug("ShouldUpgradeInsecureInvalidFormat", slog.Int("index", mappingIndex))
+				shouldUpgradeInsecureRequests = false
+			}
+			shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+		}
+
 		itemMapping := valueObject.NewMarketplaceItemMapping(
 			path, matchPattern, targetType, targetValuePtr, targetHttpResponseCodePtr,
+			shouldUpgradeInsecureRequestsPtr,
 		)
 		itemMappings = append(itemMappings, itemMapping)
 	}
@@ -138,16 +152,16 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 func (repo *MarketplaceQueryRepo) specificTypeDataFieldValueGenerator(
 	dataFieldSpecificType valueObject.DataFieldSpecificType,
 ) (valueObject.DataFieldValue, error) {
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+	synthesizer := tkInfra.Synthesizer{}
 
 	var dummyValue string
 	switch dataFieldSpecificType.String() {
 	case "password":
-		dummyValue = dummyValueGenerator.GenPass(16)
+		dummyValue = synthesizer.PasswordFactory(16, false)
 	case "username":
-		dummyValue = dummyValueGenerator.GenUsername()
+		dummyValue = synthesizer.UsernameFactory()
 	case "email":
-		dummyValue = dummyValueGenerator.GenMailAddress(nil)
+		dummyValue = synthesizer.MailAddressFactory(nil)
 	}
 
 	return valueObject.NewDataFieldValue(dummyValue)
@@ -246,7 +260,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 
 		isRequired := false
 		if rawItemDataFieldMap["isRequired"] != nil {
-			rawIsRequired, err := voHelper.InterfaceToBool(
+			rawIsRequired, err := tkVoUtil.InterfaceToBool(
 				rawItemDataFieldMap["isRequired"],
 			)
 			if err != nil {

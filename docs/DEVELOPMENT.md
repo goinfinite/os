@@ -1,6 +1,6 @@
 # Development
 
-Before contributing to the project, please read the [Contributing](docs/CONTRIBUTING.md) document. It contains important information about the project's guidelines and expectations.
+Before contributing to the project, please read the [Contributing](/docs/CONTRIBUTING.md) document. It contains important information about the project's guidelines and expectations.
 
 The public roadmap for Infinite OS is available [here](https://github.com/orgs/goinfinite/projects/9). You may create issues or pull requests to contribute to the project.
 
@@ -90,8 +90,10 @@ The marketplace and services catalog are not part of this project. You can find 
 The following extensions are highly encouraged to be used during development:
 
 ```
+a-h.templ
+Augment.vscode-augment
+bradlc.vscode-tailwindcss
 EditorConfig.EditorConfig
-GitHub.copilot
 GitHub.vscode-pull-request-github
 esbenp.prettier-vscode
 foxundermoon.shell-format
@@ -101,6 +103,8 @@ ms-vscode.test-adapter-converter
 redhat.vscode-yaml
 streetsidesoftware.code-spell-checker
 timonwong.shellcheck
+Trapfether.tailwind-raw-reorder
+yy0931.vscode-sqlite3-editor
 ```
 
 ## REST API
@@ -115,13 +119,15 @@ The API accepts two types of tokens and uses the standard "Authorization: Bearer
 
 ### OpenApi // Swagger
 
-To generate the swagger documentation, you must use the following command:
+Do not edit the files at `src/presentation/api/docs` directly. To generate the swagger documentation, you MUST use the following command:
 
 ```
-swag init -g src/presentation/api/api.go -o src/presentation/api/docs
+swag init --pdl 3 -g src/presentation/api/api.go -o src/presentation/api/docs
 ```
 
 The annotations are in the controller files. The reference file can be found [here](https://github.com/swaggo/swag#attribute).
+
+The `--pdl 3` flag is used to gather external components from goinfinite/tk and goinfinite/ui packages.
 
 When the project is running, you can access the documentation at [`https://localhost:1618/api/swagger/`](https://localhost:1618/api/swagger/) (or the IP address of your host machine if you're not using localhost).
 

@@ -26,7 +26,7 @@ templ MappingTypeRadioInput(id, label, bindModelPath string) {
 		}
 	</div>
 	<div x-show={ bindModelPath + " == 'url'" }>
-		@componentStructural.Alert("info", "Set up direct redirects to an URL.")
+		@componentStructural.Alert("info", "Set up direct redirects to an URL, optionally with a custom HTTP response code.")
 	</div>
 	<div x-show={ bindModelPath + " == 'service'" }>
 		@componentStructural.Alert("info", "Configure a service to handle the incoming requests, such as a web server, REST API, or a gRPC service.")
@@ -38,6 +38,6 @@ templ MappingTypeRadioInput(id, label, bindModelPath string) {
 		@componentStructural.Alert("info", "Send a specific HTTP status code along with HTML content in the server's response.")
 	</div>
 	<div x-show={ bindModelPath + " == 'static-files'" }>
-		@componentStructural.Alert("info", "Set the root directory to make static files accessible. The server will attempt to locate files in various locations until it finds one that exists.")
+		@componentStructural.Alert("info", "URLs will act as file paths, serving static files from the specified directory.")
 	</div>
 }

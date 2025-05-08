@@ -1,14 +1,13 @@
 package apiController
 
 import (
-	"errors"
-	"log/slog"
-	"net/http"
-
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/labstack/echo/v4"
+
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type DatabaseController struct {
@@ -28,15 +27,22 @@ func NewDatabaseController(
 	}
 }
 
-// GetDatabases godoc
-// @Summary      GetDatabases
+// ReadDatabases godoc
+// @Summary      ReadDatabases
 // @Description  List databases names, users and sizes.
 // @Tags         database
 // @Security     Bearer
 // @Accept       json
 // @Produce      json
 // @Param        dbType path string true "DatabaseType (like mysql, postgres)"
-// @Success      200 {array} entity.Database
+// @Param        name query string false "DatabaseName"
+// @Param        username query string false "DatabaseUsername"
+// @Param        pageNumber query  uint  false  "PageNumber (Pagination)"
+// @Param        itemsPerPage query  uint  false  "ItemsPerPage (Pagination)"
+// @Param        sortBy query  string  false  "SortBy (Pagination)"
+// @Param        sortDirection query  string  false  "SortDirection (Pagination)"
+// @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
+// @Success      200 {object} dto.ReadDatabasesResponse
 // @Router       /v1/database/{dbType}/ [get]
 func (controller *DatabaseController) Read(c echo.Context) error {
 	requestInputData, err := apiHelper.ReadRequestInputData(c)
@@ -93,35 +99,6 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 	)
 }
 
-func (controller *DatabaseController) parseUserPrivileges(rawPrivileges interface{}) (
-	rawPrivilegesStrSlice []string, err error,
-) {
-	rawUniquePrivilegeStr, assertOk := rawPrivileges.(string)
-	if assertOk {
-		return []string{rawUniquePrivilegeStr}, nil
-	}
-
-	rawPrivilegesStrSlice, assertOk = rawPrivileges.([]string)
-	if assertOk {
-		return rawPrivilegesStrSlice, nil
-	}
-
-	rawPrivilegesInterfaceSlice, assertOk := rawPrivileges.([]interface{})
-	if !assertOk {
-		return rawPrivilegesStrSlice, errors.New("PrivilegesMustBeStringOrStringSlice")
-	}
-	for _, rawPrivilege := range rawPrivilegesInterfaceSlice {
-		rawPrivilegeStr, assertOk := rawPrivilege.(string)
-		if !assertOk {
-			slog.Debug("InvalidPrivilegeType", slog.Any("privilege", rawPrivilege))
-			continue
-		}
-		rawPrivilegesStrSlice = append(rawPrivilegesStrSlice, rawPrivilegeStr)
-	}
-
-	return rawPrivilegesStrSlice, nil
-}
-
 // CreateDatabaseUser godoc
 // @Summary      CreateDatabaseUser
 // @Description  Create a new database user.
@@ -140,16 +117,15 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	rawPrivilegesSlice := []string{}
 	if requestInputData["privileges"] != nil {
-		rawPrivilegesSlice, err = controller.parseUserPrivileges(
-			requestInputData["privileges"],
-		)
-		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		if requestInputData["privileges"] == "" {
+			delete(requestInputData, "privileges")
 		}
+
+		requestInputData["privileges"] = tkPresentation.StringSliceValueObjectParser(
+			requestInputData["privileges"], valueObject.NewDatabasePrivilege,
+		)
 	}
-	requestInputData["privileges"] = rawPrivilegesSlice
 
 	return apiHelper.ServiceResponseWrapper(
 		c, controller.dbService.CreateUser(requestInputData),

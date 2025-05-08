@@ -49,8 +49,17 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 		targetHttpResponseCodeStr := requestDto.TargetHttpResponseCode.String()
 		mappingModel.TargetHttpResponseCode = &targetHttpResponseCodeStr
 	}
+	if requestDto.MappingSecurityRuleId != nil {
+		mappingSecurityRuleId := requestDto.MappingSecurityRuleId.Uint64()
+		mappingModel.MappingSecurityRuleID = &mappingSecurityRuleId
+	}
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(mappingModel).Where(&mappingModel)
+	if requestDto.ShouldUpgradeInsecureRequests != nil {
+		dbQuery = dbQuery.Where(
+			"should_upgrade_insecure_requests = ?", *requestDto.ShouldUpgradeInsecureRequests,
+		)
+	}
 	if requestDto.CreatedBeforeAt != nil {
 		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
 	}
@@ -120,4 +129,84 @@ func (repo *MappingQueryRepo) ReadFirst(
 	}
 
 	return responseDto.Mappings[0], nil
+}
+
+func (repo *MappingQueryRepo) ReadSecurityRule(
+	requestDto dto.ReadMappingSecurityRulesRequest,
+) (responseDto dto.ReadMappingSecurityRulesResponse, err error) {
+	securityRuleModel := dbModel.MappingSecurityRule{}
+	if requestDto.MappingSecurityRuleId != nil {
+		securityRuleModel.ID = requestDto.MappingSecurityRuleId.Uint64()
+	}
+
+	if requestDto.MappingSecurityRuleName != nil {
+		securityRuleModel.Name = requestDto.MappingSecurityRuleName.String()
+	}
+
+	dbQuery := repo.persistentDbSvc.Handler.Model(&securityRuleModel).Where(&securityRuleModel)
+	if requestDto.AllowedIp != nil {
+		dbQuery = dbQuery.Where("allowed_ips LIKE ?", "%"+requestDto.AllowedIp.String()+"%")
+	}
+
+	if requestDto.BlockedIp != nil {
+		dbQuery = dbQuery.Where("blocked_ips LIKE ?", "%"+requestDto.BlockedIp.String()+"%")
+	}
+
+	if requestDto.CreatedBeforeAt != nil {
+		dbQuery = dbQuery.Where("created_at < ?", requestDto.CreatedBeforeAt.ReadAsGoTime())
+	}
+
+	if requestDto.CreatedAfterAt != nil {
+		dbQuery = dbQuery.Where("created_at > ?", requestDto.CreatedAfterAt.ReadAsGoTime())
+	}
+
+	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination,
+	)
+	if err != nil {
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
+	}
+
+	securityRuleModels := []dbModel.MappingSecurityRule{}
+	err = paginatedDbQuery.Find(&securityRuleModels).Error
+	if err != nil {
+		return responseDto, errors.New("FindMappingSecurityRulesError: " + err.Error())
+	}
+
+	mappingSecurityRuleEntities := []entity.MappingSecurityRule{}
+	for _, securityRuleModel := range securityRuleModels {
+		mappingSecurityRuleEntity, err := securityRuleModel.ToEntity()
+		if err != nil {
+			slog.Debug(
+				"MappingSecurityRuleModelToEntityError",
+				slog.Uint64("mappingSecurityRuleId", securityRuleModel.ID),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
+		mappingSecurityRuleEntities = append(
+			mappingSecurityRuleEntities, mappingSecurityRuleEntity,
+		)
+	}
+
+	return dto.ReadMappingSecurityRulesResponse{
+		Pagination:           responsePagination,
+		MappingSecurityRules: mappingSecurityRuleEntities,
+	}, nil
+}
+
+func (repo *MappingQueryRepo) ReadFirstSecurityRule(
+	requestDto dto.ReadMappingSecurityRulesRequest,
+) (ruleEntity entity.MappingSecurityRule, err error) {
+	requestDto.Pagination = dto.PaginationSingleItem
+	readResponse, err := repo.ReadSecurityRule(requestDto)
+	if err != nil {
+		return ruleEntity, err
+	}
+
+	if len(readResponse.MappingSecurityRules) == 0 {
+		return ruleEntity, errors.New("MappingSecurityRuleNotFound")
+	}
+
+	return readResponse.MappingSecurityRules[0], nil
 }

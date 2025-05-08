@@ -8,4 +8,10 @@ import (
 type MappingQueryRepo interface {
 	Read(dto.ReadMappingsRequest) (dto.ReadMappingsResponse, error)
 	ReadFirst(dto.ReadMappingsRequest) (entity.Mapping, error)
+	ReadSecurityRule(
+		dto.ReadMappingSecurityRulesRequest,
+	) (dto.ReadMappingSecurityRulesResponse, error)
+	ReadFirstSecurityRule(
+		dto.ReadMappingSecurityRulesRequest,
+	) (entity.MappingSecurityRule, error)
 }

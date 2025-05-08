@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -27,7 +28,7 @@ func NewDatabasesPresenter(
 	}
 }
 
-func (presenter *DatabasesPresenter) getDatabaseOverviewByType(
+func (presenter *DatabasesPresenter) databaseOverviewFactory(
 	rawDatabaseType string,
 ) (databaseOverview presenterDto.DatabaseOverview, err error) {
 	databaseType, err := valueObject.NewDatabaseType(rawDatabaseType)
@@ -36,21 +37,27 @@ func (presenter *DatabasesPresenter) getDatabaseOverviewByType(
 	}
 
 	isInstalled := false
+	databaseEntities := []entity.Database{}
+	databaseOverview = presenterDto.NewDatabaseOverview(
+		databaseType, isInstalled, databaseEntities,
+	)
 
-	requestBody := map[string]interface{}{"dbType": databaseType.String()}
+	requestBody := map[string]interface{}{
+		"dbType":       databaseType.String(),
+		"itemsPerPage": 1000,
+	}
 	responseOutput := presenter.databaseService.Read(requestBody)
-	if responseOutput.Status == service.Success {
-		isInstalled = true
+	if responseOutput.Status != service.Success {
+		return databaseOverview, err
 	}
 
-	databases, assertOk := responseOutput.Body.([]entity.Database)
-	if !assertOk {
-		isInstalled = false
+	responseDto, assertOk := responseOutput.Body.(dto.ReadDatabasesResponse)
+	if assertOk {
+		databaseOverview.IsInstalled = true
+		databaseOverview.Databases = responseDto.Databases
 	}
 
-	return presenterDto.NewDatabaseOverview(
-		databaseType, isInstalled, databases,
-	), nil
+	return databaseOverview, nil
 }
 
 func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
@@ -59,11 +66,11 @@ func (presenter *DatabasesPresenter) Handler(c echo.Context) error {
 		rawDatabaseType = c.QueryParam("dbType")
 	}
 
-	selectedDatabaseOverview, err := presenter.getDatabaseOverviewByType(
+	selectedDatabaseOverview, err := presenter.databaseOverviewFactory(
 		rawDatabaseType,
 	)
 	if err != nil {
-		slog.Error("GetDatabaseOverviewByTypeError", slog.String("err", err.Error()))
+		slog.Error("DatabaseOverviewFactoryError", slog.String("err", err.Error()))
 		return nil
 	}
 

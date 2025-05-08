@@ -8,42 +8,23 @@ import (
 )
 
 type Mapping struct {
-	ID                           uint64 `gorm:"primaryKey"`
-	Hostname                     string `gorm:"not null"`
-	Path                         string `gorm:"not null"`
-	MatchPattern                 string `gorm:"not null"`
-	TargetType                   string `gorm:"not null"`
-	TargetValue                  *string
-	TargetHttpResponseCode       *string
-	MarketplaceInstalledItemID   *uint
-	MarketplaceInstalledItemName *string
-	CreatedAt                    time.Time `gorm:"not null"`
-	UpdatedAt                    time.Time `gorm:"not null"`
+	ID                            uint64 `gorm:"primaryKey"`
+	Hostname                      string `gorm:"not null"`
+	Path                          string `gorm:"not null"`
+	MatchPattern                  string `gorm:"not null"`
+	TargetType                    string `gorm:"not null"`
+	TargetValue                   *string
+	TargetHttpResponseCode        *string
+	ShouldUpgradeInsecureRequests *bool
+	MarketplaceInstalledItemID    *uint
+	MarketplaceInstalledItemName  *string
+	MappingSecurityRuleID         *uint64
+	CreatedAt                     time.Time `gorm:"not null"`
+	UpdatedAt                     time.Time `gorm:"not null"`
 }
 
 func (Mapping) TableName() string {
 	return "mappings"
-}
-
-func NewMapping(
-	id uint64,
-	hostname, path, matchPattern, targetType string,
-	targetValue, targetHttpResponseCode *string,
-) Mapping {
-	mappingModel := Mapping{
-		Hostname:               hostname,
-		Path:                   path,
-		MatchPattern:           matchPattern,
-		TargetType:             targetType,
-		TargetValue:            targetValue,
-		TargetHttpResponseCode: targetHttpResponseCode,
-	}
-
-	if id != 0 {
-		mappingModel.ID = id
-	}
-
-	return mappingModel
 }
 
 func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
@@ -73,7 +54,7 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 	}
 
 	var targetValuePtr *valueObject.MappingTargetValue
-	if model.TargetValue != nil {
+	if model.TargetValue != nil && targetType != valueObject.MappingTargetTypeResponseCode {
 		targetValue, err := valueObject.NewMappingTargetValue(
 			*model.TargetValue, targetType,
 		)
@@ -116,31 +97,22 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		marketplaceInstalledItemNamePtr = &marketplaceInstalledItemName
 	}
 
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if model.MappingSecurityRuleID != nil {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(
+			*model.MappingSecurityRuleID,
+		)
+		if err != nil {
+			return mappingEntity, err
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
 	return entity.NewMapping(
 		mappingId, hostname, path, matchPattern, targetType, targetValuePtr,
-		targetHttpResponseCodePtr, marketplaceInstalledItemIdPtr,
-		marketplaceInstalledItemNamePtr,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		targetHttpResponseCodePtr, model.ShouldUpgradeInsecureRequests,
+		marketplaceInstalledItemIdPtr, marketplaceInstalledItemNamePtr,
+		mappingSecurityRuleIdPtr, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
-}
-
-func (Mapping) ToModel(mappingEntity entity.Mapping) Mapping {
-	var targetValuePtr *string
-	if mappingEntity.TargetValue != nil {
-		targetValueStr := mappingEntity.TargetValue.String()
-		targetValuePtr = &targetValueStr
-	}
-
-	var targetHttpResponseCodePtr *string
-	if mappingEntity.TargetHttpResponseCode != nil {
-		targetHttpResponseCodeStr := mappingEntity.TargetHttpResponseCode.String()
-		targetHttpResponseCodePtr = &targetHttpResponseCodeStr
-	}
-
-	return NewMapping(
-		mappingEntity.Id.Uint64(), mappingEntity.Hostname.String(),
-		mappingEntity.Path.String(), mappingEntity.MatchPattern.String(),
-		mappingEntity.TargetType.String(), targetValuePtr, targetHttpResponseCodePtr,
-	)
 }

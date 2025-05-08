@@ -12,10 +12,14 @@ import (
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type VirtualHostService struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
+	trailDbSvc            *internalDbInfra.TrailDatabaseService
 	vhostQueryRepo        *vhostInfra.VirtualHostQueryRepo
 	vhostCmdRepo          *vhostInfra.VirtualHostCmdRepo
 	mappingQueryRepo      *vhostInfra.MappingQueryRepo
@@ -29,6 +33,7 @@ func NewVirtualHostService(
 ) *VirtualHostService {
 	return &VirtualHostService{
 		persistentDbSvc:       persistentDbSvc,
+		trailDbSvc:            trailDbSvc,
 		vhostQueryRepo:        vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 		vhostCmdRepo:          vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
 		mappingQueryRepo:      vhostInfra.NewMappingQueryRepo(persistentDbSvc),
@@ -356,6 +361,28 @@ func (service *VirtualHostService) CreateMapping(
 		targetHttpResponseCodePtr = &targetHttpResponseCode
 	}
 
+	var shouldUpgradeInsecureRequestsPtr *bool
+	if input["shouldUpgradeInsecureRequests"] != nil {
+		shouldUpgradeInsecureRequests, err := tkVoUtil.InterfaceToBool(
+			input["shouldUpgradeInsecureRequests"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidShouldUpgradeInsecureRequests")
+		}
+		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+	}
+
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if input["mappingSecurityRuleId"] != nil && input["mappingSecurityRuleId"] != "" {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(
+			input["mappingSecurityRuleId"],
+		)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
 	operatorAccountId := LocalOperatorAccountId
 	if input["operatorAccountId"] != nil {
 		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
@@ -374,7 +401,8 @@ func (service *VirtualHostService) CreateMapping(
 
 	createDto := dto.NewCreateMapping(
 		hostname, path, matchPattern, targetType, targetValuePtr,
-		targetHttpResponseCodePtr, operatorAccountId, operatorIpAddress,
+		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
+		mappingSecurityRuleIdPtr, operatorAccountId, operatorIpAddress,
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
@@ -434,4 +462,533 @@ func (service *VirtualHostService) DeleteMapping(
 	}
 
 	return NewServiceOutput(Created, "MappingDeleted")
+}
+
+func (service *VirtualHostService) UpdateMapping(input map[string]interface{}) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	id, err := valueObject.NewMappingId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var pathPtr *valueObject.MappingPath
+	if input["path"] != nil {
+		path, err := valueObject.NewMappingPath(input["path"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		pathPtr = &path
+	}
+
+	var matchPatternPtr *valueObject.MappingMatchPattern
+	if input["matchPattern"] != nil {
+		matchPattern, err := valueObject.NewMappingMatchPattern(input["matchPattern"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		matchPatternPtr = &matchPattern
+	}
+
+	var targetTypePtr *valueObject.MappingTargetType
+	if input["targetType"] != nil {
+		targetType, err := valueObject.NewMappingTargetType(input["targetType"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetTypePtr = &targetType
+	}
+
+	var targetValuePtr *valueObject.MappingTargetValue
+	if input["targetValue"] != nil {
+		if targetTypePtr == nil {
+			mappingEntity, err := service.mappingQueryRepo.ReadFirst(
+				dto.ReadMappingsRequest{MappingId: &id},
+			)
+			if err != nil {
+				return NewServiceOutput(InfraError, "ReadMappingEntityToRetrieveTargetTypeError")
+			}
+			targetTypePtr = &mappingEntity.TargetType
+		}
+
+		targetValue, err := valueObject.NewMappingTargetValue(input["targetValue"], *targetTypePtr)
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetValuePtr = &targetValue
+	}
+
+	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	if input["targetHttpResponseCode"] != nil {
+		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(input["targetHttpResponseCode"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		targetHttpResponseCodePtr = &targetHttpResponseCode
+	}
+
+	var shouldUpgradeInsecureRequestsPtr *bool
+	if input["shouldUpgradeInsecureRequests"] != nil {
+		shouldUpgradeInsecureRequests, err := tkVoUtil.InterfaceToBool(input["shouldUpgradeInsecureRequests"])
+		if err != nil {
+			return NewServiceOutput(UserError, errors.New("InvalidShouldUpgradeInsecureRequests"))
+		}
+		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
+	}
+
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if input["mappingSecurityRuleId"] != nil && input["mappingSecurityRuleId"] != "" {
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(input["mappingSecurityRuleId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		mappingSecurityRuleIdPtr = &mappingSecurityRuleId
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateMapping(
+		id, pathPtr, matchPatternPtr, targetTypePtr, targetValuePtr,
+		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
+		mappingSecurityRuleIdPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateMapping(
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "MappingUpdated")
+}
+
+func (service *VirtualHostService) MappingSecurityRuleReadRequestFactory(
+	serviceInput map[string]interface{},
+) (readRequestDto dto.ReadMappingSecurityRulesRequest, err error) {
+	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
+	if serviceInput["id"] != nil {
+		id, err := valueObject.NewMappingSecurityRuleId(serviceInput["id"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		mappingSecurityRuleIdPtr = &id
+	}
+
+	var mappingSecurityRuleNamePtr *valueObject.MappingSecurityRuleName
+	if serviceInput["name"] != nil {
+		name, err := valueObject.NewMappingSecurityRuleName(serviceInput["name"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		mappingSecurityRuleNamePtr = &name
+	}
+
+	var allowedIpPtr *tkValueObject.CidrBlock
+	if serviceInput["allowedIp"] != nil {
+		allowedIp, err := tkValueObject.NewCidrBlock(serviceInput["allowedIp"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		allowedIpPtr = &allowedIp
+	}
+
+	var blockedIpPtr *tkValueObject.CidrBlock
+	if serviceInput["blockedIp"] != nil {
+		blockedIp, err := tkValueObject.NewCidrBlock(serviceInput["blockedIp"])
+		if err != nil {
+			return readRequestDto, err
+		}
+		blockedIpPtr = &blockedIp
+	}
+
+	timeParamNames := []string{"createdBeforeAt", "createdAfterAt"}
+	timeParamPtrs := serviceHelper.TimeParamsParser(timeParamNames, serviceInput)
+
+	requestPagination, err := serviceHelper.PaginationParser(
+		serviceInput, useCase.MappingSecurityRulesDefaultPagination,
+	)
+	if err != nil {
+		return readRequestDto, err
+	}
+
+	return dto.ReadMappingSecurityRulesRequest{
+		Pagination:              requestPagination,
+		MappingSecurityRuleId:   mappingSecurityRuleIdPtr,
+		MappingSecurityRuleName: mappingSecurityRuleNamePtr,
+		AllowedIp:               allowedIpPtr,
+		BlockedIp:               blockedIpPtr,
+		CreatedBeforeAt:         timeParamPtrs["createdBeforeAt"],
+		CreatedAfterAt:          timeParamPtrs["createdAfterAt"],
+	}, nil
+}
+
+func (service *VirtualHostService) ReadMappingSecurityRules(
+	serviceInput map[string]interface{},
+) ServiceOutput {
+	readRequestDto, err := service.MappingSecurityRuleReadRequestFactory(serviceInput)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	readResponseDto, err := useCase.ReadMappingSecurityRules(
+		service.mappingQueryRepo, readRequestDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, readResponseDto)
+}
+
+func (service *VirtualHostService) CreateMappingSecurityRule(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"name"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	name, err := valueObject.NewMappingSecurityRuleName(input["name"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var descriptionPtr *valueObject.MappingSecurityRuleDescription
+	if input["description"] != nil {
+		description, err := valueObject.NewMappingSecurityRuleDescription(input["description"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		descriptionPtr = &description
+	}
+
+	allowedIps := []tkValueObject.CidrBlock{}
+	if input["allowedIps"] != nil {
+		allowedIpsInput, assertOk := input["allowedIps"].([]tkValueObject.CidrBlock)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidAllowedIps")
+		}
+		allowedIps = allowedIpsInput
+	}
+
+	blockedIps := []tkValueObject.CidrBlock{}
+	if input["blockedIps"] != nil {
+		blockedIpsInput, assertOk := input["blockedIps"].([]tkValueObject.CidrBlock)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidBlockedIps")
+		}
+		blockedIps = blockedIpsInput
+	}
+
+	var rpsSoftLimitPerIpPtr *uint
+	if input["rpsSoftLimitPerIp"] != nil && input["rpsSoftLimitPerIp"] != "" {
+		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
+		}
+		rpsSoftLimitPerIpPtr = &softLimit
+	}
+
+	var rpsHardLimitPerIpPtr *uint
+	if input["rpsHardLimitPerIp"] != nil && input["rpsHardLimitPerIp"] != "" {
+		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
+		}
+		rpsHardLimitPerIpPtr = &hardLimit
+	}
+
+	var responseCodeOnMaxRequestsPtr *uint
+	if input["responseCodeOnMaxRequests"] != nil && input["responseCodeOnMaxRequests"] != "" {
+		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxRequests"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxRequests")
+		}
+		responseCodeOnMaxRequestsPtr = &responseCode
+	}
+
+	var maxConnectionsPerIpPtr *uint
+	if input["maxConnectionsPerIp"] != nil && input["maxConnectionsPerIp"] != "" {
+		maxConns, err := tkVoUtil.InterfaceToUint(input["maxConnectionsPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidMaxConnectionsPerIp")
+		}
+		maxConnectionsPerIpPtr = &maxConns
+	}
+
+	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
+	if input["bandwidthBpsLimitPerConnection"] != nil && input["bandwidthBpsLimitPerConnection"] != "" {
+		bandwidthBpsLimit, err := valueObject.NewByte(input["bandwidthBpsLimitPerConnection"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
+		}
+		bandwidthBpsLimitPerConnectionPtr = &bandwidthBpsLimit
+	}
+
+	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
+	if input["bandwidthLimitOnlyAfterBytes"] != nil && input["bandwidthLimitOnlyAfterBytes"] != "" {
+		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(input["bandwidthLimitOnlyAfterBytes"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
+		}
+		bandwidthLimitOnlyAfterBytesPtr = &bandwidthLimitOnlyAfterBytes
+	}
+
+	var responseCodeOnMaxConnectionsPtr *uint
+	if input["responseCodeOnMaxConnections"] != nil && input["responseCodeOnMaxConnections"] != "" {
+		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxConnections"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxConnections")
+		}
+		responseCodeOnMaxConnectionsPtr = &responseCode
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	createDto := dto.NewCreateMappingSecurityRule(
+		name, descriptionPtr, allowedIps, blockedIps, rpsSoftLimitPerIpPtr,
+		rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr, maxConnectionsPerIpPtr,
+		bandwidthBpsLimitPerConnectionPtr, bandwidthLimitOnlyAfterBytesPtr,
+		responseCodeOnMaxConnectionsPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	mappingSecurityRuleId, err := useCase.CreateMappingSecurityRule(
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, createDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Created, map[string]interface{}{
+		"id": mappingSecurityRuleId.Uint64(),
+	})
+}
+
+func (service *VirtualHostService) UpdateMappingSecurityRule(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	id, err := valueObject.NewMappingSecurityRuleId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	var namePtr *valueObject.MappingSecurityRuleName
+	if input["name"] != nil {
+		name, err := valueObject.NewMappingSecurityRuleName(input["name"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		namePtr = &name
+	}
+
+	var descriptionPtr *valueObject.MappingSecurityRuleDescription
+	if input["description"] != nil {
+		description, err := valueObject.NewMappingSecurityRuleDescription(input["description"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+		descriptionPtr = &description
+	}
+
+	allowedIps := []tkValueObject.CidrBlock{}
+	if input["allowedIps"] != nil {
+		var assertOk bool
+		allowedIps, assertOk = input["allowedIps"].([]tkValueObject.CidrBlock)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidAllowedIps")
+		}
+	}
+
+	blockedIps := []tkValueObject.CidrBlock{}
+	if input["blockedIps"] != nil {
+		var assertOk bool
+		blockedIps, assertOk = input["blockedIps"].([]tkValueObject.CidrBlock)
+		if !assertOk {
+			return NewServiceOutput(UserError, "InvalidBlockedIps")
+		}
+	}
+
+	var rpsSoftLimitPerIpPtr *uint
+	if input["rpsSoftLimitPerIp"] != nil && input["rpsSoftLimitPerIp"] != "" {
+		softLimit, err := tkVoUtil.InterfaceToUint(input["rpsSoftLimitPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidRpsSoftLimitPerIp")
+		}
+		rpsSoftLimitPerIpPtr = &softLimit
+	}
+
+	var rpsHardLimitPerIpPtr *uint
+	if input["rpsHardLimitPerIp"] != nil && input["rpsHardLimitPerIp"] != "" {
+		hardLimit, err := tkVoUtil.InterfaceToUint(input["rpsHardLimitPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidRpsHardLimitPerIp")
+		}
+		rpsHardLimitPerIpPtr = &hardLimit
+	}
+
+	var responseCodeOnMaxRequestsPtr *uint
+	if input["responseCodeOnMaxRequests"] != nil && input["responseCodeOnMaxRequests"] != "" {
+		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxRequests"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxRequests")
+		}
+		responseCodeOnMaxRequestsPtr = &responseCode
+	}
+
+	var maxConnectionsPerIpPtr *uint
+	if input["maxConnectionsPerIp"] != nil && input["maxConnectionsPerIp"] != "" {
+		maxConns, err := tkVoUtil.InterfaceToUint(input["maxConnectionsPerIp"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidMaxConnectionsPerIp")
+		}
+		maxConnectionsPerIpPtr = &maxConns
+	}
+
+	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
+	if input["bandwidthBpsLimitPerConnection"] != nil && input["bandwidthBpsLimitPerConnection"] != "" {
+		bandwidthBpsLimit, err := valueObject.NewByte(input["bandwidthBpsLimitPerConnection"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
+		}
+		bandwidthBpsLimitPerConnectionPtr = &bandwidthBpsLimit
+	}
+
+	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
+	if input["bandwidthLimitOnlyAfterBytes"] != nil && input["bandwidthLimitOnlyAfterBytes"] != "" {
+		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(input["bandwidthLimitOnlyAfterBytes"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
+		}
+		bandwidthLimitOnlyAfterBytesPtr = &bandwidthLimitOnlyAfterBytes
+	}
+
+	var responseCodeOnMaxConnectionsPtr *uint
+	if input["responseCodeOnMaxConnections"] != nil && input["responseCodeOnMaxConnections"] != "" {
+		responseCode, err := tkVoUtil.InterfaceToUint(input["responseCodeOnMaxConnections"])
+		if err != nil {
+			return NewServiceOutput(UserError, "InvalidResponseCodeOnMaxConnections")
+		}
+		responseCodeOnMaxConnectionsPtr = &responseCode
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	updateDto := dto.NewUpdateMappingSecurityRule(
+		id, namePtr, descriptionPtr, allowedIps, blockedIps,
+		rpsSoftLimitPerIpPtr, rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr,
+		maxConnectionsPerIpPtr, bandwidthBpsLimitPerConnectionPtr,
+		bandwidthLimitOnlyAfterBytesPtr, responseCodeOnMaxConnectionsPtr,
+		operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateMappingSecurityRule(
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, updateDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "MappingSecurityRuleUpdated")
+}
+
+func (service *VirtualHostService) DeleteMappingSecurityRule(
+	input map[string]interface{},
+) ServiceOutput {
+	requiredParams := []string{"id"}
+	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	ruleId, err := valueObject.NewMappingSecurityRuleId(input["id"])
+	if err != nil {
+		return NewServiceOutput(UserError, err.Error())
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if input["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if input["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+		if err != nil {
+			return NewServiceOutput(UserError, err.Error())
+		}
+	}
+
+	deleteDto := dto.NewDeleteMappingSecurityRule(
+		ruleId, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.DeleteMappingSecurityRule(
+		service.mappingQueryRepo, service.mappingCmdRepo,
+		service.activityRecordCmdRepo, deleteDto,
+	)
+	if err != nil {
+		return NewServiceOutput(InfraError, err.Error())
+	}
+
+	return NewServiceOutput(Success, "MappingSecurityRuleDeleted")
 }

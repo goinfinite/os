@@ -15,6 +15,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	"github.com/goinfinite/os/src/presentation/service"
 )
 
@@ -72,20 +73,21 @@ func (ws *WebServerSetup) FirstSetup() {
 	if err != nil {
 		log.Fatal("PrimaryVirtualHostNotFound")
 	}
-
-	primaryHostname := primaryVirtualHostHostname.String()
+	primaryHostnameStr := primaryVirtualHostHostname.String()
 
 	log.Print("UpdatingPrimaryVirtualHost...")
 
-	primaryConfFilePath := "/app/conf/nginx/primary.conf"
+	primaryConfFilePath := infraEnvs.VirtualHostsConfDir + "/primary.conf"
 	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
-			"-i", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryHostname + "/g", primaryConfFilePath,
+			"-i",
+			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryHostnameStr + "/g",
+			primaryConfFilePath,
 		},
 	})
 	if err != nil {
-		log.Fatal("UpdateVhostFailed")
+		log.Fatal("UpdatePrimaryVirtualHostFileFailed")
 	}
 
 	log.Print("GeneratingDhParams...")
@@ -113,6 +115,19 @@ func (ws *WebServerSetup) FirstSetup() {
 	)
 	if err != nil {
 		log.Fatal("GenerateSelfSignedCertFailed: ", err.Error())
+	}
+
+	err = infraHelper.RestorePrimaryIndexFile()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Print("GenerateMappingSecurityRules...")
+
+	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
+	err = mappingCmdRepo.RecreateSecurityRuleFiles()
+	if err != nil {
+		log.Fatal("GenerateMappingSecurityRulesFailed: ", err.Error())
 	}
 
 	log.Print("ConfiguringWebServerAutoStart...")

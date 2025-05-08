@@ -98,6 +98,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		&dbModel.Account{},
 		&dbModel.InstalledService{},
 		&dbModel.Mapping{},
+		&dbModel.MappingSecurityRule{},
 		&dbModel.MarketplaceInstalledItem{},
 		&dbModel.ScheduledTask{},
 		&dbModel.ScheduledTaskTag{},
@@ -109,8 +110,9 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 	}
 
 	modelsWithInitialEntries := map[string]interface{}{
-		"VirtualHost":      &dbModel.VirtualHost{},
-		"InstalledService": &dbModel.InstalledService{},
+		"VirtualHost":         &dbModel.VirtualHost{},
+		"InstalledService":    &dbModel.InstalledService{},
+		"MappingSecurityRule": &dbModel.MappingSecurityRule{},
 	}
 
 	err = dbSvc.seedDatabase(modelsWithInitialEntries)

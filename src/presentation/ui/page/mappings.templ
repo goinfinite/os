@@ -2,13 +2,14 @@ package page
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
-	"slices"
+	"github.com/goinfinite/ui/src/control"
+	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 )
 
 const (
@@ -19,29 +20,46 @@ const (
 templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	<!-- Mappings Page JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
 	<!-- Mappings Page HTML -->
-	<div x-data="mappings" class="flex flex-col gap-4">
-		<div class="flex flex-row items-center justify-between gap-3">
-			<div class="-mb-4 basis-[65%]">
-				@componentStructural.PageTitle(
-					"Mappings",
-					"Manage virtual hosts and their mappings to services, URLs, inline HTML etc.",
-					"ph-graph",
-				)
-			</div>
-			<div class="flex basis-[35%] gap-3">
-				@componentForm.SubmitButton(
-					"create-vhost-button", "create virtual host", "ph-plus-square",
-					"openCreateVirtualHostModal()", false,
-				)
-				@componentForm.SubmitButton(
-					"create-mapping-button", "create mapping", "ph-plus-square",
-					"openCreateMappingModal()", false,
-				)
+	<div x-data="mappings" class="flex flex-col gap-2">
+		<div class="flex flex-row items-center justify-between">
+			@componentStructural.PageTitle(
+				"Mappings",
+				"Manage virtual hosts and their mappings to services, URLs, inline HTML etc.",
+				"ph-graph",
+			)
+			<div class="flex basis-[50%] flex-row gap-3">
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:                "create virtual host",
+					IconLeft:             "ph-plus-square",
+					BackgroundColor:      "secondary-500",
+					BackgroundColorHover: "secondary-300",
+					IsFullWidth:          true,
+					OnClickFunc:          "openCreateVirtualHostModal()",
+				})
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:                "create mapping",
+					IconLeft:             "ph-plus-square",
+					BackgroundColor:      "secondary-500",
+					BackgroundColorHover: "secondary-300",
+					IsFullWidth:          true,
+					OnClickFunc:          "openCreateMappingModal()",
+				})
+				@uiControl.Button(uiControl.ButtonSettings{
+					Label:           "security rules",
+					IconLeft:        "ph-shield",
+					BackgroundColor: "transparent",
+					RingColor:       "secondary-500",
+					TextColor:       "secondary-500",
+					TextColorHover:  "secondary-300",
+					IsFullWidth:     true,
+					OnClickFunc:     "window.location.href = '/mappings/security-rules/'",
+				})
 			</div>
 		</div>
 		@MappingsFormTable(vhostsWithMappings)
@@ -51,8 +69,15 @@ templ MappingsIndex(
 			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
 			"virtualHost.hostname", "virtualHost.hostname",
 		)
-		@CreateMappingModal(vhostsHostnames, installedServices)
-		@CreateMappingFromVirtualHostModal(vhostsHostnames, installedServices)
+		@CreateMappingModal(
+			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
+		)
+		@CreateMappingFromVirtualHostModal(
+			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
+		)
+		@UpdateMappingModal(
+			installedServiceNames, secRulesLabelValueOptions,
+		)
 		@componentStructural.DeleteModal(
 			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
 			"mapping.path", "mapping.id",
@@ -108,12 +133,22 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						</div>
 					</div>
 					<div class="flex flex-wrap gap-3 overflow-hidden">
-						@componentStructural.Tag("ph-folder-open", "", vhostWithMappings.RootDirectory.String(), "infinite-300")
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "neutral-50/10",
+							OuterLeftIcon:        "ph-folder-open",
+							InnerLabel:           vhostWithMappings.RootDirectory.String(),
+						})
 						{{ vhostType := vhostWithMappings.Type.String() }}
 						if vhostWithMappings.IsWildcard {
 							{{ vhostType = valueObject.VirtualHostTypeWildcard.String() }}
 						}
-						@componentStructural.Tag("ph-tree-view", "", vhostType, "infinite-300")
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "neutral-50/10",
+							OuterLeftIcon:        "ph-tree-view",
+							InnerLabel:           vhostType,
+						})
 					</div>
 					if len(vhostWithMappings.AliasesHostnames) > 0 {
 						<div>
@@ -139,7 +174,6 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 					for _, mappingEntity := range vhostWithMappings.Mappings {
 						@componentMappings.VirtualHostMappingsList(
 							mappingEntity, vhostWithMappings.RootDirectory,
-							"openDeleteMappingModal('"+mappingEntity.Id.String()+"','"+mappingEntity.Path.String()+"')",
 						)
 					}
 				</div>
@@ -256,9 +290,53 @@ templ UpdateVirtualHostModal() {
 	}
 }
 
+templ MappingFormAdvancedSettings(secRulesLabelValueOptions []uiForm.SelectLabelValueOption) {
+	<!-- MappingUpgradeInsecureRequestsRadioInput -->
+	@uiForm.InlineRadioGroup(uiForm.InlineRadioGroupSettings{
+		Label: "Upgrade Insecure Requests (force HTTPS)",
+		InputSettings: []uiForm.RadioInputSettings{
+			{
+				Label:           "Yes",
+				StateValue:      "true",
+				TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+			},
+			{
+				Label:           "No",
+				StateValue:      "false",
+				TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+			},
+		},
+		TwoWayStatePath: "mapping.shouldUpgradeInsecureRequests",
+		InputName:       "shouldUpgradeInsecureRequests",
+	})
+	<!-- MappingMatchPatternSelectInput -->
+	@uiForm.SelectInput(uiForm.SelectInputSettings{
+		InputName: "matchPattern",
+		Label:     "Match Pattern",
+		LabelValueOptions: []uiForm.SelectLabelValueOption{
+			{Label: "Begins With", Value: "begins-with"},
+			{Label: "Contains", Value: "contains"},
+			{Label: "Equals", Value: "equals"},
+			{Label: "Ends With", Value: "ends-with"},
+		},
+		TwoWayStatePath:         "mapping.matchPattern",
+		DropdownBackgroundColor: "primary-500/95",
+	})
+	<!-- MappingSecurityRuleSelectInput -->
+	@uiForm.SelectInput(uiForm.SelectInputSettings{
+		InputName:                "mappingSecurityRuleId",
+		Label:                    "Security Rule",
+		LabelValueOptions:        secRulesLabelValueOptions,
+		TwoWayStatePath:          "mapping.mappingSecurityRuleId",
+		DropdownBackgroundColor:  "primary-500/95",
+		ShouldIncludeBlankOption: true,
+	})
+}
+
 templ CreateMappingForm(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	<!-- CreateMappingForm -->
 	<form
@@ -288,18 +366,9 @@ templ CreateMappingForm(
 		})
 		<template x-if="mapping.targetType == 'service'">
 			<div>
-				{{
-					servicesNames := []string{}
-					for _, serviceEntity := range installedServices {
-						if len(serviceEntity.PortBindings) == 0 {
-							continue
-						}
-						servicesNames = append(servicesNames, serviceEntity.Name.String())
-					}
-					slices.Sort(servicesNames)
-				}}
 				@componentForm.SelectInput(
-					"targetValue", "Service Name", "mapping.targetValue", "", servicesNames, true,
+					"targetValue", "Service Name", "mapping.targetValue", "",
+					installedServiceNames, true,
 				)
 			</div>
 		</template>
@@ -335,20 +404,15 @@ templ CreateMappingForm(
 				)
 			</div>
 		</template>
-		<section class="w-full rounded-md">
-			<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30" x-bin:open="isAdvancedSettingsClosed">
-				<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
-					<i class="ph-duotone ph-gear mr-2 text-2xl"></i>
-					<span class="font-bold">Advanced Settings</span>
-					<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
-				</summary>
-				<div class="mt-5 py-2">
-					@componentMappings.MatchPatternSelectInput(
-						"matchPattern", "Match Pattern", "mapping.matchPattern",
-					)
-				</div>
-			</details>
-		</section>
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
+				},
+			},
+		})
 		@componentForm.DeactivableSubmitButton(
 			"Create", "ph-check-fat", "",
 			"shouldDisableCreateMappingSubmitButton", false,
@@ -358,24 +422,115 @@ templ CreateMappingForm(
 
 templ CreateMappingModal(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServices)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
 	}
 }
 
 templ CreateMappingFromVirtualHostModal(
 	vhostsHostnames []string,
-	installedServices []entity.InstalledService,
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingFromVirtualHostModalOpen",
 		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
-		@CreateMappingForm(vhostsHostnames, installedServices)
+		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
+	}
+}
+
+templ UpdateMappingForm(
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
+) {
+	<!-- UpdateMappingForm -->
+	<form
+		hx-put="/api/v1/vhost/mapping/"
+		class="flex flex-col gap-5"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeUpdateMappingModal()"
+		@htmx:after-request={ "$dispatch('" + MappingsRecordsDisplayRefreshEventName + "')" }
+	>
+		<input name="id" type="hidden" :value="mapping.id"/>
+		@componentForm.InputFieldReadOnly("text", "hostname", "Virtual Host", "virtualHost.hostname", "")
+		@componentMappings.MappingTypeRadioInput("targetType", "Type", "mapping.targetType")
+		@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+			Type:                "text",
+			Id:                  "path",
+			Label:               "Source URL",
+			BindInputValuePath:  "mapping.path",
+			BindPrefixValuePath: "vhostHostnameWithTrailingSlash",
+		})
+		<template x-if="mapping.targetType == 'service'">
+			<div>
+				@componentForm.SelectInput(
+					"targetValue", "Service Name", "mapping.targetValue", "",
+					installedServiceNames, true,
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'url'">
+			<div class="space-y-6">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "targetValue",
+					Label:              "Destination URL",
+					BindModelValuePath: "mapping.targetValue",
+				})
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'inline-html'">
+			<div class="space-y-6">
+				@componentForm.TextArea(componentForm.TextAreaDto{
+					Id:                 "targetValue",
+					Label:              "Inline HTML",
+					BindModelValuePath: "mapping.targetValue",
+				})
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		<template x-if="mapping.targetType == 'response-code'">
+			<div>
+				@componentMappings.ResponseCodeSelectInput(
+					"targetHttpResponseCode", "Response Code", "mapping.targetHttpResponseCode",
+				)
+			</div>
+		</template>
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
+				},
+			},
+		})
+		@componentForm.SubmitButton(
+			"update-mapping-button", "Update", "ph-check-fat", "closeUpdateMappingModal()", false,
+		)
+	</form>
+}
+
+templ UpdateMappingModal(
+	installedServiceNames []string,
+	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
+) {
+	@componentStructural.RegularModal(
+		"Update Mapping", "isUpdateMappingModalOpen", "closeUpdateMappingModal()", "mapping.id",
+	) {
+		@UpdateMappingForm(installedServiceNames, secRulesLabelValueOptions)
 	}
 }

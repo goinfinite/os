@@ -8,6 +8,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
+	"github.com/goinfinite/ui/src/display"
 )
 
 templ DatabasesIndex(selectedDbOverview presenterDto.DatabaseOverview) {
@@ -168,41 +169,39 @@ templ CreateDatabaseUserForm(selectedDbOverview presenterDto.DatabaseOverview) {
 	<!-- CreateDatabaseUserForm -->
 	<form
 		id="create-database-user-form"
+		class="flex flex-col gap-5"
 		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="my-6 space-y-6">
-			@componentForm.SelectInput(
-				"dbName", "Database Name", "database.name", "",
-				getOnlyDatabasesNames(selectedDbOverview.Databases), true,
-			)
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Id:                 "username",
-				Label:              "Username",
-				BindModelValuePath: "databaseUser.username",
+		@componentForm.SelectInput(
+			"dbName", "Database Name", "database.name", "",
+			getOnlyDatabasesNames(selectedDbOverview.Databases), true,
+		)
+		@componentForm.InputField(componentForm.InputFieldDto{
+			Type:               "text",
+			Id:                 "username",
+			Label:              "Username",
+			BindModelValuePath: "databaseUser.username",
+		})
+		@componentForm.PasswordInput(componentForm.PasswordInputDto{
+			Id:                                "password",
+			Label:                             "Password",
+			BindModelPath:                     "databaseUser.password",
+			ShouldIncludeGenRandomPassBtn:     true,
+			ShouldIncludePassStrengthCriteria: true,
+		})
+		if selectedDbOverview.Type.String() == "mariadb" {
+			@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+				Items: []uiDisplay.AccordionItemSettings{
+					{
+						Title:   "Privileges",
+						Icon:    "ph-user-gear",
+						Content: componentDatabases.DatabaseUserPrivilegesCheckboxInputsSwitchToggles(),
+					},
+				},
 			})
-			@componentForm.PasswordInput(componentForm.PasswordInputDto{
-				Id:                                "password",
-				Label:                             "Password",
-				BindModelPath:                     "databaseUser.password",
-				ShouldIncludeGenRandomPassBtn:     true,
-				ShouldIncludePassStrengthCriteria: true,
-			})
-			if selectedDbOverview.Type.String() == "mariadb" {
-				<section class="mb-6 w-full rounded-md">
-					<details class="bg-os-500 group rounded-md p-4 group-open:bg-opacity-30">
-						<summary class="relative flex cursor-pointer list-none items-center pr-8 text-neutral-50 text-opacity-80 focus-visible:outline-none group-open:text-opacity-100 group-hover:text-opacity-100 [&::-webkit-details-marker]:hidden">
-							<i class="ph-duotone ph-user-gear mr-2 text-2xl"></i>
-							<span class="font-bold">Privileges</span>
-							<i class="ph-bold ph-plus absolute right-0 top-1.5 text-xs transition duration-300 group-open:rotate-45"></i>
-						</summary>
-						@componentDatabases.DatabaseUserPrivilegesCheckboxInputsSwitchToggles()
-					</details>
-				</section>
-			}
-		</div>
+		}
 		@componentForm.DeactivableSubmitButton(
 			"Create", "ph-check-fat", "closeCreateDatabaseUserModal()",
 			"shouldDisableCreateDatabaseUserSubmitButton", false,

@@ -192,20 +192,24 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 }
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
-	var nameStr, versionStr, startupFileStr, workingDirStr, autoStartStr,
-		autoRestartStr, autoCreateMappingStr, mappingHostname, mappingPath string
-	var envsSlice, portBindingsSlice []string
-	var timeoutStartSecsInt, maxStartRetriesInt int
+	var (
+		nameStr, versionStr, startupFileStr, workingDirStr, autoStartBoolStr,
+		autoRestartBoolStr, autoCreateMappingBoolStr, mappingHostname, mappingPath,
+		mappingUpgradeInsecureRequestsBoolStr string
+		envsSlice, portBindingsSlice            []string
+		timeoutStartSecsInt, maxStartRetriesInt int
+	)
 
 	cmd := &cobra.Command{
 		Use:   "create-installable",
 		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"name":              nameStr,
-				"autoStart":         autoStartStr,
-				"autoRestart":       autoRestartStr,
-				"autoCreateMapping": autoCreateMappingStr,
+				"name":                           nameStr,
+				"autoStart":                      autoStartBoolStr,
+				"autoRestart":                    autoRestartBoolStr,
+				"autoCreateMapping":              autoCreateMappingBoolStr,
+				"mappingUpgradeInsecureRequests": mappingUpgradeInsecureRequestsBoolStr,
 			}
 
 			if len(envsSlice) > 0 {
@@ -262,16 +266,17 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
 	)
 	cmd.Flags().StringVarP(
-		&autoStartStr, "auto-start", "s", "true", "AutoStart",
+		&autoStartBoolStr, "auto-start", "s", "true", "AutoStart (true|false)",
+	)
+	cmd.Flags().StringVarP(
+		&autoRestartBoolStr, "auto-restart", "r", "true", "AutoRestart (true|false)",
 	)
 	cmd.Flags().IntVarP(
 		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
 	)
 	cmd.Flags().StringVarP(
-		&autoRestartStr, "auto-restart", "r", "true", "AutoRestart",
-	)
-	cmd.Flags().StringVarP(
-		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
+		&autoCreateMappingBoolStr, "auto-create-mapping", "a", "true",
+		"AutoCreateMapping (true|false)",
 	)
 	cmd.Flags().StringVarP(
 		&mappingHostname, "mapping-hostname", "H", "", "MappingHostname (for AutoCreateMapping)",
@@ -279,27 +284,35 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	cmd.Flags().StringVarP(
 		&mappingPath, "mapping-path", "P", "", "MappingPath (for AutoCreateMapping)",
 	)
+	cmd.Flags().StringVarP(
+		&mappingUpgradeInsecureRequestsBoolStr, "mapping-upgrade-insecure-requests", "u",
+		"false", "MappingUpgradeInsecureRequests (true|false)",
+	)
 
 	return cmd
 }
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
-	var nameStr, typeStr, startCmdStr, versionStr, autoStartStr, autoRestartStr,
-		autoCreateMappingStr, mappingHostname, mappingPath string
-	var envsSlice, portBindingsSlice []string
-	var timeoutStartSecsInt, maxStartRetriesInt int
+	var (
+		nameStr, typeStr, startCmdStr, versionStr, autoStartBoolStr, autoRestartBoolStr,
+		autoCreateMappingBoolStr, mappingHostname, mappingPath,
+		mappingUpgradeInsecureRequestsBoolStr string
+		envsSlice, portBindingsSlice            []string
+		timeoutStartSecsInt, maxStartRetriesInt int
+	)
 
 	cmd := &cobra.Command{
 		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"name":              nameStr,
-				"type":              typeStr,
-				"startCmd":          startCmdStr,
-				"autoStart":         autoStartStr,
-				"autoRestart":       autoRestartStr,
-				"autoCreateMapping": autoCreateMappingStr,
+				"name":                           nameStr,
+				"type":                           typeStr,
+				"startCmd":                       startCmdStr,
+				"autoStart":                      autoStartBoolStr,
+				"autoRestart":                    autoRestartBoolStr,
+				"autoCreateMapping":              autoCreateMappingBoolStr,
+				"mappingUpgradeInsecureRequests": mappingUpgradeInsecureRequestsBoolStr,
 			}
 
 			if len(envsSlice) > 0 {
@@ -354,22 +367,27 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		&timeoutStartSecsInt, "timeout-start-secs", "o", 0, "TimeoutStartSecs",
 	)
 	cmd.Flags().StringVarP(
-		&autoStartStr, "auto-start", "s", "true", "AutoStart",
+		&autoStartBoolStr, "auto-start", "s", "true", "AutoStart (true|false)",
 	)
 	cmd.Flags().IntVarP(
 		&maxStartRetriesInt, "max-start-retries", "m", 0, "MaxStartRetries",
 	)
 	cmd.Flags().StringVarP(
-		&autoRestartStr, "auto-restart", "r", "true", "AutoRestart",
+		&autoRestartBoolStr, "auto-restart", "r", "true", "AutoRestart (true|false)",
 	)
 	cmd.Flags().StringVarP(
-		&autoCreateMappingStr, "auto-create-mapping", "a", "true", "AutoCreateMapping",
+		&autoCreateMappingBoolStr, "auto-create-mapping", "a", "true",
+		"AutoCreateMapping (true|false)",
 	)
 	cmd.Flags().StringVarP(
 		&mappingHostname, "mapping-hostname", "H", "", "MappingHostname (for AutoCreateMapping)",
 	)
 	cmd.Flags().StringVarP(
 		&mappingPath, "mapping-path", "P", "", "MappingPath (for AutoCreateMapping)",
+	)
+	cmd.Flags().StringVarP(
+		&mappingUpgradeInsecureRequestsBoolStr, "mapping-upgrade-insecure-requests", "u",
+		"false", "MappingUpgradeInsecureRequests (true|false) (for AutoCreateMapping)",
 	)
 	return cmd
 }

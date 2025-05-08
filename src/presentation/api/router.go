@@ -219,10 +219,17 @@ func (router Router) vhostRoutes() {
 	mappingsGroup := vhostGroup.Group("/mapping")
 	mappingsGroup.GET("/", vhostController.ReadWithMappings)
 	mappingsGroup.POST("/", vhostController.CreateMapping)
+	mappingsGroup.PUT("/", vhostController.UpdateMapping)
 	mappingsGroup.DELETE(
 		"/:mappingId/",
 		vhostController.DeleteMapping,
 	)
+
+	mappingSecurityRuleGroup := mappingsGroup.Group("/security-rule")
+	mappingSecurityRuleGroup.GET("/", vhostController.ReadMappingSecurityRules)
+	mappingSecurityRuleGroup.POST("/", vhostController.CreateMappingSecurityRule)
+	mappingSecurityRuleGroup.PUT("/", vhostController.UpdateMappingSecurityRule)
+	mappingSecurityRuleGroup.DELETE("/:id/", vhostController.DeleteMappingSecurityRule)
 }
 
 func (router Router) RegisterRoutes() {

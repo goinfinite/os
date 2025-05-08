@@ -15,14 +15,17 @@ func transformDbUserPrivilegeIntoComponentValueFormat(
 
 templ DatabaseUserPrivilegesCheckboxInputsSwitchToggles() {
 	<!-- DatabaseUserPrivilegesCheckboxInputsSwitchToggles -->
-	<div class="bg-os-500 p-5 rounded-md grid grid-cols-2 gap-6">
-		for _, databaseUserPrivilege := range valueObject.AvailableDatabasePrivileges {
-			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-				Id:            "privileges",
-				Label:         databaseUserPrivilege,
-				BindModelPath: "databaseUser.privileges",
-				CustomValue:   transformDbUserPrivilegeIntoComponentValueFormat(databaseUserPrivilege),
-			})
-		}
+	<div class="flex flex-col gap-5">
+		<input type="hidden" name="privileges" x-model="databaseUser.privileges"/>
+		<p>If none are selected, the "ALL" privilege will be granted by default.</p>
+		<div class="grid grid-cols-2 gap-6">
+			for _, databaseUserPrivilege := range valueObject.AvailableDatabasePrivileges {
+				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+					Label:         databaseUserPrivilege,
+					BindModelPath: "databaseUser.privileges",
+					CustomValue:   transformDbUserPrivilegeIntoComponentValueFormat(databaseUserPrivilege),
+				})
+			}
+		</div>
 	</div>
 }

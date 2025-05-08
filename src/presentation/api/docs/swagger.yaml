@@ -62,6 +62,8 @@ definitions:
         type: string
       mappingPath:
         type: string
+      mappingUpgradeInsecureRequests:
+        type: boolean
       maxStartRetries:
         type: integer
       name:
@@ -135,6 +137,8 @@ definitions:
         type: string
       mappingPath:
         type: string
+      mappingUpgradeInsecureRequests:
+        type: boolean
       maxStartRetries:
         type: integer
       name:
@@ -156,16 +160,49 @@ definitions:
     properties:
       hostname:
         type: string
+      mappingSecurityRuleId:
+        type: integer
       matchPattern:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:
         $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+    type: object
+  dto.CreateMappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
+        type: integer
     type: object
   dto.CreatePubliclyTrustedSslPair:
     properties:
@@ -327,6 +364,15 @@ definitions:
       pagination:
         $ref: '#/definitions/dto.Pagination'
     type: object
+  dto.ReadDatabasesResponse:
+    properties:
+      databases:
+        items:
+          $ref: '#/definitions/entity.Database'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
   dto.ReadFilesResponse:
     properties:
       fileTree:
@@ -354,6 +400,15 @@ definitions:
       installedServicesWithMetrics:
         items:
           $ref: '#/definitions/dto.InstalledServiceWithMetrics'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.ReadMappingSecurityRulesResponse:
+    properties:
+      mappingSecurityRules:
+        items:
+          $ref: '#/definitions/entity.MappingSecurityRule'
         type: array
       pagination:
         $ref: '#/definitions/dto.Pagination'
@@ -441,6 +496,56 @@ definitions:
         type: integer
       schedule:
         type: string
+    type: object
+  dto.UpdateMapping:
+    properties:
+      id:
+        type: integer
+      mappingSecurityRuleId:
+        type: integer
+      matchPattern:
+        $ref: '#/definitions/valueObject.MappingMatchPattern'
+      path:
+        type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
+      targetHttpResponseCode:
+        type: integer
+      targetType:
+        $ref: '#/definitions/valueObject.MappingTargetType'
+      targetValue:
+        type: string
+    type: object
+  dto.UpdateMappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      id:
+        type: integer
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
+        type: integer
     type: object
   dto.UpdatePhpConfigs:
     properties:
@@ -735,7 +840,11 @@ definitions:
     properties:
       createdAt:
         type: integer
+      hostname:
+        type: string
       id:
+        type: integer
+      mappingSecurityRuleId:
         type: integer
       marketplaceInstalledItemId:
         type: integer
@@ -745,12 +854,49 @@ definitions:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:
         $ref: '#/definitions/valueObject.MappingTargetType'
       targetValue:
         type: string
+      updatedAt:
+        type: integer
+    type: object
+  entity.MappingSecurityRule:
+    properties:
+      allowedIps:
+        items:
+          type: string
+        type: array
+      bandwidthBpsLimitPerConnection:
+        type: integer
+      bandwidthLimitOnlyAfterBytes:
+        type: integer
+      blockedIps:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      maxConnectionsPerIp:
+        type: integer
+      name:
+        type: string
+      responseCodeOnMaxConnections:
+        type: integer
+      responseCodeOnMaxRequests:
+        type: integer
+      rpsHardLimitPerIp:
+        type: integer
+      rpsSoftLimitPerIp:
+        type: integer
       updatedAt:
         type: integer
     type: object
@@ -1097,6 +1243,8 @@ definitions:
         $ref: '#/definitions/valueObject.MappingMatchPattern'
       path:
         type: string
+      shouldUpgradeInsecureRequests:
+        type: boolean
       targetHttpResponseCode:
         type: integer
       targetType:
@@ -1205,7 +1353,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.3
+  version: 0.2.4
 paths:
   /v1/account/:
     get:
@@ -1528,18 +1676,44 @@ paths:
         name: dbType
         required: true
         type: string
+      - description: DatabaseName
+        in: query
+        name: name
+        type: string
+      - description: DatabaseUsername
+        in: query
+        name: username
+        type: string
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.Database'
-            type: array
+            $ref: '#/definitions/dto.ReadDatabasesResponse'
       security:
       - Bearer: []
-      summary: GetDatabases
+      summary: ReadDatabases
       tags:
       - database
     post:
@@ -2762,14 +2936,14 @@ paths:
         in: query
         name: withMappings
         type: boolean
-      - description: CreatedBeforeAt
+      - description: CreatedBeforeAt (Unix timestamp)
         in: query
         name: createdBeforeAt
-        type: string
-      - description: CreatedAfterAt
+        type: integer
+      - description: CreatedAfterAt (Unix timestamp)
         in: query
         name: createdAfterAt
-        type: string
+        type: integer
       - description: PageNumber (Pagination)
         in: query
         name: pageNumber
@@ -2833,6 +3007,30 @@ paths:
       summary: CreateVirtualHostMapping
       tags:
       - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a vhost mapping.
+      parameters:
+      - description: Only id is required. Other fields are optional and will only
+          be updated if provided.
+        in: body
+        name: updateMappingDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMapping'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateVirtualHostMapping
+      tags:
+      - vhosts
   /v1/vhost/mapping/{mappingId}/:
     delete:
       consumes:
@@ -2854,6 +3052,137 @@ paths:
       security:
       - Bearer: []
       summary: DeleteVirtualHostMapping
+      tags:
+      - vhosts
+  /v1/vhost/mapping/security-rule/:
+    get:
+      consumes:
+      - application/json
+      description: List mapping security rules.
+      parameters:
+      - description: MappingSecurityRuleId
+        in: query
+        name: id
+        type: string
+      - description: MappingSecurityRuleName
+        in: query
+        name: name
+        type: string
+      - description: AllowedIpAddress
+        in: query
+        name: allowedIp
+        type: string
+      - description: BlockedIpAddress
+        in: query
+        name: blockedIp
+        type: string
+      - description: CreatedBeforeAt (Unix timestamp)
+        in: query
+        name: createdBeforeAt
+        type: integer
+      - description: CreatedAfterAt (Unix timestamp)
+        in: query
+        name: createdAfterAt
+        type: integer
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      - description: LastSeenId (Pagination)
+        in: query
+        name: lastSeenId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReadMappingSecurityRulesResponse'
+      security:
+      - Bearer: []
+      summary: ReadMappingSecurityRules
+      tags:
+      - vhosts
+    post:
+      consumes:
+      - application/json
+      description: Create a new mapping security rule.
+      parameters:
+      - description: Only name is required.
+        in: body
+        name: createMappingSecurityRuleDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMappingSecurityRule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: MappingSecurityRuleCreated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: CreateMappingSecurityRule
+      tags:
+      - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a mapping security rule.
+      parameters:
+      - description: Only id is required.
+        in: body
+        name: updateMappingSecurityRuleDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMappingSecurityRule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingSecurityRuleUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateMappingSecurityRule
+      tags:
+      - vhosts
+  /v1/vhost/mapping/security-rule/{id}/:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a mapping security rule.
+      parameters:
+      - description: MappingSecurityRuleId to delete.
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingSecurityRuleDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteMappingSecurityRule
       tags:
       - vhosts
 securityDefinitions:

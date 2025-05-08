@@ -20,6 +20,7 @@ import (
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/google/uuid"
 )
 
@@ -97,14 +98,15 @@ func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	installHostname valueObject.Fqdn,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
-	dummyValueGenerator := infraHelper.DummyValueGenerator{}
+	synthesizer := tkInfra.Synthesizer{}
 	dataMap := map[string]string{
-		"installDirectory":      installDir.String(),
-		"installUrlPath":        installUrlPath.String(),
-		"installHostname":       installHostname.String(),
-		"installUuid":           installUuid.String(),
-		"installTempDir":        installTempDirPath,
-		"installRandomPassword": dummyValueGenerator.GenPass(16),
+		"installDirectory":                 installDir.String(),
+		"installUrlPath":                   installUrlPath.String(),
+		"installHostname":                  installHostname.String(),
+		"installUuid":                      installUuid.String(),
+		"installTempDir":                   installTempDirPath,
+		"installRandomPassword":            synthesizer.PasswordFactory(16, false),
+		"installRandomPasswordWithSymbols": synthesizer.PasswordFactory(16, true),
 	}
 
 	itemNameStr := strings.ToLower(itemName.String())
@@ -337,10 +339,10 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		currentMappingsContentHashMap[contentHash] = currentMapping
 	}
 
-	for _, mapping := range catalogMappings {
+	for _, itemMappingVo := range catalogMappings {
 		contentHash := infraHelper.GenStrongShortHash(
-			hostname.String() + mapping.Path.String() + mapping.MatchPattern.String() +
-				mapping.TargetType.String(),
+			hostname.String() + itemMappingVo.Path.String() + itemMappingVo.MatchPattern.String() +
+				itemMappingVo.TargetType.String(),
 		)
 		currentMapping, alreadyExists := currentMappingsContentHashMap[contentHash]
 		if alreadyExists {
@@ -349,9 +351,9 @@ func (repo *MarketplaceCmdRepo) createMappings(
 		}
 
 		createDto := dto.NewCreateMapping(
-			hostname, mapping.Path, mapping.MatchPattern, mapping.TargetType,
-			mapping.TargetValue, mapping.TargetHttpResponseCode, operatorAccountId,
-			operatorIpAddress,
+			hostname, itemMappingVo.Path, itemMappingVo.MatchPattern, itemMappingVo.TargetType,
+			itemMappingVo.TargetValue, itemMappingVo.TargetHttpResponseCode,
+			itemMappingVo.ShouldUpgradeInsecureRequests, nil, operatorAccountId, operatorIpAddress,
 		)
 
 		mappingId, err := repo.mappingCmdRepo.Create(createDto)
@@ -410,13 +412,11 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("CatalogIdOrSlugMustBeProvided")
 	}
 
-	readCatalogItemRequestDto := dto.ReadMarketplaceCatalogItemsRequest{
-		MarketplaceCatalogItemId:   installDto.Id,
-		MarketplaceCatalogItemSlug: installDto.Slug,
-	}
-
 	catalogItem, err := repo.marketplaceQueryRepo.ReadFirstCatalogItem(
-		readCatalogItemRequestDto,
+		dto.ReadMarketplaceCatalogItemsRequest{
+			MarketplaceCatalogItemId:   installDto.Id,
+			MarketplaceCatalogItemSlug: installDto.Slug,
+		},
 	)
 	if err != nil {
 		return errors.New("MarketplaceCatalogItemNotFound")
@@ -449,6 +449,12 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
 	}
 	installDirStr = installDir.String()
+	if installDirStr == infraEnvs.PrimaryPublicDir {
+		err := infraHelper.BackupPrimaryIndexFile()
+		if err != nil {
+			return err
+		}
+	}
 
 	rawInstallUuid := uuid.New().String()[:16]
 	rawInstallUuidNoHyphens := strings.Replace(rawInstallUuid, "-", "", -1)
@@ -532,7 +538,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	for _, mappingId := range mappingIds {
-		err = repo.mappingCmdRepo.Update(mappingId, catalogItem.Name)
+		err = repo.mappingCmdRepo.UpdateMarketplaceItem(mappingId, catalogItem.Name)
 		if err != nil {
 			slog.Debug(
 				"UpdateMappingItemNameError",
@@ -711,6 +717,13 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 	err = repo.updateFilesPrivileges(softDeleteDestDirPath)
 	if err != nil {
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
+	}
+
+	if installedItem.InstallDirectory.String() == infraEnvs.PrimaryPublicDir {
+		err := infraHelper.RestorePrimaryIndexFile()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

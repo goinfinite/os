@@ -4,47 +4,125 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/display"
 )
 
 templ VirtualHostMappingsList(
 	mappingEntity entity.Mapping,
 	rootDirectory valueObject.UnixFilePath,
-	deleteOnClick string,
 ) {
 	<!-- VirtualHostMappingsList -->
 	<div class="flex w-full items-center justify-between rounded-md bg-neutral-500/5 p-3">
+		@templ.JSONScript("mappingEntity_"+mappingEntity.Id.String(), mappingEntity)
 		<div class="flex items-center gap-3">
 			<p>{ mappingEntity.Path.String() }</p>
 			switch mappingEntity.TargetType.String() {
 				case "service":
-					@componentStructural.Tag("", "service", mappingEntity.TargetValue.String(), "teal-900")
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "teal-950",
+						OuterLeftLabel:       "service",
+						InnerLabel:           mappingEntity.TargetValue.String(),
+					})
 				case "url":
-					@componentStructural.Tag("", "url", mappingEntity.TargetValue.String(), "purple-900")
-					if mappingEntity.TargetHttpResponseCode != nil {
-						@componentStructural.Tag("", "responseCode", mappingEntity.TargetHttpResponseCode.String(), "cyan-900")
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "violet-950",
+						OuterLeftLabel:       "url",
+						InnerLabel:           mappingEntity.TargetValue.String(),
+					})
+					if mappingEntity.TargetHttpResponseCode != nil &&
+					mappingEntity.TargetHttpResponseCode.String() != "301" &&
+					mappingEntity.TargetHttpResponseCode.String() != "302" {
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "cyan-950",
+							OuterLeftLabel:       "responseCode",
+							InnerLabel:           mappingEntity.TargetHttpResponseCode.String(),
+						})
 					}
 				case "response-code":
-					@componentStructural.Tag("", "responseCode", mappingEntity.TargetHttpResponseCode.String(), "cyan-900")
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "cyan-950",
+						OuterLeftLabel:       "responseCode",
+						InnerLabel:           mappingEntity.TargetHttpResponseCode.String(),
+					})
 				case "inline-html":
+					{{ inlineHtmlValue := mappingEntity.TargetValue.String() }}
 					if len(mappingEntity.TargetValue.String()) > 50 {
-						@componentStructural.Tag("", "inlineHtml", mappingEntity.TargetValue.String()[:50]+"...", "sky-700")
-					} else {
-						@componentStructural.Tag("", "inlineHtml", mappingEntity.TargetValue.String(), "sky-700")
+						{{ inlineHtmlValue = mappingEntity.TargetValue.String()[:50] + "..." }}
 					}
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "stone-700",
+						OuterLeftLabel:       "inlineHtml",
+						InnerLabel:           inlineHtmlValue,
+					})
 				case "static-files":
-					@componentStructural.Tag("", "staticFiles", rootDirectory.String(), "yellow-600")
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "yellow-700",
+						OuterLeftLabel:       "staticFiles",
+						InnerLabel:           rootDirectory.String(),
+					})
 			}
-			@componentStructural.Tag("", "matchPattern", mappingEntity.MatchPattern.String(), "infinite-300")
+			if mappingEntity.MatchPattern != valueObject.MappingMatchPatternBeginsWith {
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "neutral-400",
+					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterBackgroundColor: "transparent",
+					OuterTextColor:       "neutral-400",
+					OuterLeftIcon:        "ph-map-pin",
+					InnerLabel:           mappingEntity.MatchPattern.String(),
+				})
+			}
 			if mappingEntity.MarketplaceInstalledItemName != nil {
-				@componentStructural.Tag(
-					"", "marketplaceItem",
-					mappingEntity.MarketplaceInstalledItemName.String()+" (#"+mappingEntity.MarketplaceInstalledItemId.String()+")",
-					"lime-900",
-				)
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "amber-500",
+					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterBackgroundColor: "transparent",
+					OuterTextColor:       "amber-500",
+					OuterLeftIcon:        "ph-storefront",
+					InnerLabel:           mappingEntity.MarketplaceInstalledItemName.String() + " (#" + mappingEntity.MarketplaceInstalledItemId.String() + ")",
+				})
+			}
+			if mappingEntity.ShouldUpgradeInsecureRequests != nil && *mappingEntity.ShouldUpgradeInsecureRequests {
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "lime-700",
+					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterBackgroundColor: "transparent",
+					OuterTextColor:       "lime-700",
+					OuterLeftIcon:        "ph-lock",
+					InnerLabel:           "httpsOnly",
+				})
+			}
+			if mappingEntity.MappingSecurityRuleId != nil {
+				@uiDisplay.Tag(uiDisplay.TagSettings{
+					Size:                 uiDisplay.TagSizeXs,
+					OuterRingColor:       "red-600",
+					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterBackgroundColor: "transparent",
+					OuterTextColor:       "red-600",
+					OuterLeftIcon:        "ph-shield",
+					InnerLabel:           "#" + mappingEntity.MappingSecurityRuleId.String(),
+				})
 			}
 		</div>
-		<div>
-			@componentStructural.CircularIconButtonWithTooltip("ph-trash", "red-800", "red-600", deleteOnClick, "delete mappingEntity", "red-500")
+		<div class="flex gap-2">
+			@componentStructural.CircularIconButtonWithTooltip(
+				"ph-pencil", "neutral-50/10", "neutral-50/30",
+				"openUpdateMappingModal('"+mappingEntity.Id.String()+"')", "update",
+				"neutral-50/10",
+			)
+			@componentStructural.CircularIconButtonWithTooltip(
+				"ph-trash", "red-800", "red-600",
+				"openDeleteMappingModal('"+mappingEntity.Id.String()+"', '"+mappingEntity.Path.String()+"')",
+				"delete", "red-500",
+			)
 		</div>
 	</div>
 }

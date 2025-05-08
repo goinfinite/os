@@ -529,7 +529,7 @@ const docTemplate = `{
                 "tags": [
                     "database"
                 ],
-                "summary": "GetDatabases",
+                "summary": "ReadDatabases",
                 "parameters": [
                     {
                         "type": "string",
@@ -537,16 +537,55 @@ const docTemplate = `{
                         "name": "dbType",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "DatabaseUsername",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.Database"
-                            }
+                            "$ref": "#/definitions/dto.ReadDatabasesResponse"
                         }
                     }
                 }
@@ -2424,14 +2463,14 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "CreatedBeforeAt",
+                        "type": "integer",
+                        "description": "CreatedBeforeAt (Unix timestamp)",
                         "name": "createdBeforeAt",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "CreatedAfterAt",
+                        "type": "integer",
+                        "description": "CreatedAfterAt (Unix timestamp)",
                         "name": "createdAfterAt",
                         "in": "query"
                     },
@@ -2475,6 +2514,43 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a vhost mapping.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateVirtualHostMapping",
+                "parameters": [
+                    {
+                        "description": "Only id is required. Other fields are optional and will only be updated if provided.",
+                        "name": "updateMappingDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMapping"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2506,6 +2582,213 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "MappingCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/vhost/mapping/security-rule/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List mapping security rules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "ReadMappingSecurityRules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "MappingSecurityRuleId",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "MappingSecurityRuleName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "AllowedIpAddress",
+                        "name": "allowedIp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "BlockedIpAddress",
+                        "name": "blockedIp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "CreatedBeforeAt (Unix timestamp)",
+                        "name": "createdBeforeAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "CreatedAfterAt (Unix timestamp)",
+                        "name": "createdAfterAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "LastSeenId (Pagination)",
+                        "name": "lastSeenId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReadMappingSecurityRulesResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateMappingSecurityRule",
+                "parameters": [
+                    {
+                        "description": "Only id is required.",
+                        "name": "updateMappingSecurityRuleDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMappingSecurityRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingSecurityRuleUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "CreateMappingSecurityRule",
+                "parameters": [
+                    {
+                        "description": "Only name is required.",
+                        "name": "createMappingSecurityRuleDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateMappingSecurityRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "MappingSecurityRuleCreated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/vhost/mapping/security-rule/{id}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "DeleteMappingSecurityRule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MappingSecurityRuleId to delete.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingSecurityRuleDeleted",
                         "schema": {
                             "type": "object"
                         }
@@ -2684,6 +2967,9 @@ const docTemplate = `{
                 "mappingPath": {
                     "type": "string"
                 },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2795,6 +3081,9 @@ const docTemplate = `{
                 "mappingPath": {
                     "type": "string"
                 },
+                "mappingUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "maxStartRetries": {
                     "type": "integer"
                 },
@@ -2827,11 +3116,17 @@ const docTemplate = `{
                 "hostname": {
                     "type": "string"
                 },
+                "mappingSecurityRuleId": {
+                    "type": "integer"
+                },
                 "matchPattern": {
                     "$ref": "#/definitions/valueObject.MappingMatchPattern"
                 },
                 "path": {
                     "type": "string"
+                },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
                 },
                 "targetHttpResponseCode": {
                     "type": "integer"
@@ -2841,6 +3136,50 @@ const docTemplate = `{
                 },
                 "targetValue": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.CreateMappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
+                    "type": "integer"
                 }
             }
         },
@@ -3090,6 +3429,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ReadDatabasesResponse": {
+            "type": "object",
+            "properties": {
+                "databases": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Database"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
         "dto.ReadFilesResponse": {
             "type": "object",
             "properties": {
@@ -3131,6 +3484,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.InstalledServiceWithMetrics"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.Pagination"
+                }
+            }
+        },
+        "dto.ReadMappingSecurityRulesResponse": {
+            "type": "object",
+            "properties": {
+                "mappingSecurityRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.MappingSecurityRule"
                     }
                 },
                 "pagination": {
@@ -3265,6 +3632,82 @@ const docTemplate = `{
                 },
                 "schedule": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateMapping": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "mappingSecurityRuleId": {
+                    "type": "integer"
+                },
+                "matchPattern": {
+                    "$ref": "#/definitions/valueObject.MappingMatchPattern"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
+                "targetHttpResponseCode": {
+                    "type": "integer"
+                },
+                "targetType": {
+                    "$ref": "#/definitions/valueObject.MappingTargetType"
+                },
+                "targetValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateMappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
+                    "type": "integer"
                 }
             }
         },
@@ -3714,7 +4157,13 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "integer"
                 },
+                "hostname": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "mappingSecurityRuleId": {
                     "type": "integer"
                 },
                 "marketplaceInstalledItemId": {
@@ -3729,6 +4178,9 @@ const docTemplate = `{
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -3737,6 +4189,59 @@ const docTemplate = `{
                 },
                 "targetValue": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.MappingSecurityRule": {
+            "type": "object",
+            "properties": {
+                "allowedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bandwidthBpsLimitPerConnection": {
+                    "type": "integer"
+                },
+                "bandwidthLimitOnlyAfterBytes": {
+                    "type": "integer"
+                },
+                "blockedIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "maxConnectionsPerIp": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "responseCodeOnMaxConnections": {
+                    "type": "integer"
+                },
+                "responseCodeOnMaxRequests": {
+                    "type": "integer"
+                },
+                "rpsHardLimitPerIp": {
+                    "type": "integer"
+                },
+                "rpsSoftLimitPerIp": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "integer"
@@ -4259,6 +4764,9 @@ const docTemplate = `{
                 "path": {
                     "type": "string"
                 },
+                "shouldUpgradeInsecureRequests": {
+                    "type": "boolean"
+                },
                 "targetHttpResponseCode": {
                     "type": "integer"
                 },
@@ -4405,7 +4913,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.3",
+	Version:          "0.2.4",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

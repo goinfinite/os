@@ -2,7 +2,7 @@ package databaseInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -24,166 +24,165 @@ func MysqlCmd(cmd string) (string, error) {
 	})
 }
 
-func (repo MysqlDatabaseQueryRepo) getDatabaseNames() ([]valueObject.DatabaseName, error) {
-	var dbNameList []valueObject.DatabaseName
+func (repo MysqlDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseName, error) {
+	databaseNames := []valueObject.DatabaseName{}
 
-	dbNameListStr, err := MysqlCmd("SHOW DATABASES")
+	rawDatabaseNames, err := MysqlCmd("SHOW DATABASES")
 	if err != nil {
-		log.Printf("GetDatabaseNamesError: %v", err)
-		return dbNameList, errors.New("GetDatabaseNamesError")
+		return databaseNames, errors.New("ReadDatabaseNamesError: " + err.Error())
 	}
 
-	dbNameListSlice := strings.Split(dbNameListStr, "\n")
-	dbExcludeRegex := "^(information_schema|mysql|performance_schema|sys)$"
-	for _, dbName := range dbNameListSlice {
-		if regexp.MustCompile(dbExcludeRegex).MatchString(dbName) {
+	dbExcludeRegex := regexp.MustCompile(
+		`^(information_schema|mysql|performance_schema|sys)$`,
+	)
+	for rawDatabaseName := range strings.SplitSeq(rawDatabaseNames, "\n") {
+		if dbExcludeRegex.MatchString(rawDatabaseName) {
 			continue
 		}
-		dbName, err := valueObject.NewDatabaseName(dbName)
+
+		dbName, err := valueObject.NewDatabaseName(rawDatabaseName)
 		if err != nil {
+			slog.Debug(
+				err.Error(),
+				slog.String("rawDbName", rawDatabaseName),
+			)
 			continue
 		}
-		dbNameList = append(dbNameList, dbName)
+		databaseNames = append(databaseNames, dbName)
 	}
 
-	return dbNameList, nil
+	return databaseNames, nil
 }
 
-func (repo MysqlDatabaseQueryRepo) getDatabaseSize(dbName valueObject.DatabaseName) (
+func (repo MysqlDatabaseQueryRepo) readDatabaseSize(dbName valueObject.DatabaseName) (
 	valueObject.Byte,
 	error,
 ) {
-	dbSizeStr, err := MysqlCmd(
+	rawDatabaseSize, err := MysqlCmd(
 		"SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = '" + dbName.String() + "'",
 	)
 	if err != nil {
-		log.Printf("GetDatabaseSizeError: %v", err)
-		return 0, errors.New("GetDatabaseSizeError")
+		return 0, errors.New("ReadDatabaseSizeError: " + err.Error())
 	}
 
-	return valueObject.NewByte(dbSizeStr)
+	return valueObject.NewByte(rawDatabaseSize)
 }
 
-func (repo MysqlDatabaseQueryRepo) getDatabaseUsernames(
+func (repo MysqlDatabaseQueryRepo) readDatabaseUsernames(
 	dbName valueObject.DatabaseName,
 ) ([]valueObject.DatabaseUsername, error) {
-	var dbUsernameList []valueObject.DatabaseUsername
+	dbUsernames := []valueObject.DatabaseUsername{}
 
-	dbUserStr, err := MysqlCmd(
+	rawDatabaseUsers, err := MysqlCmd(
 		"SELECT User FROM mysql.db WHERE Db = '" + dbName.String() + "'",
 	)
 	if err != nil {
-		log.Printf("GetDatabaseUserError: %v", err)
-		return dbUsernameList, errors.New("GetDatabaseUserError")
+		return dbUsernames, errors.New("ReadDatabaseUserError: " + err.Error())
 	}
+	rawDatabaseUsers = strings.TrimSpace(rawDatabaseUsers)
 
-	dbUserSlice := strings.Split(dbUserStr, "\n")
-	for _, dbUser := range dbUserSlice {
-		dbUser, err := valueObject.NewDatabaseUsername(dbUser)
-		if err != nil {
+	for rawDatabaseUsername := range strings.SplitSeq(rawDatabaseUsers, "\n") {
+		if rawDatabaseUsername == "" {
 			continue
 		}
-		dbUsernameList = append(dbUsernameList, dbUser)
+
+		dbUsername, err := valueObject.NewDatabaseUsername(rawDatabaseUsername)
+		if err != nil {
+			slog.Debug(err.Error(), slog.String("rawDbUser", rawDatabaseUsername))
+			continue
+		}
+		dbUsernames = append(dbUsernames, dbUsername)
 	}
 
-	return dbUsernameList, nil
+	return dbUsernames, nil
 }
 
-func (repo MysqlDatabaseQueryRepo) getDatabaseUserPrivileges(
+func (repo MysqlDatabaseQueryRepo) readDatabaseUserPrivileges(
 	dbName valueObject.DatabaseName,
 	dbUser valueObject.DatabaseUsername,
 ) ([]valueObject.DatabasePrivilege, error) {
-	var dbUserPrivileges []valueObject.DatabasePrivilege
+	dbUserPrivileges := []valueObject.DatabasePrivilege{}
 
 	userGrantsStr, err := MysqlCmd(
 		"SHOW GRANTS FOR '" + dbUser.String() + "'",
 	)
 	if err != nil {
-		log.Printf("GetDatabaseUserGrantsError: %v", err)
-		return dbUserPrivileges, errors.New("GetDatabaseUserGrantsError")
+		return dbUserPrivileges, errors.New(
+			"ReadDatabaseUserPrivilegesError: " + err.Error(),
+		)
 	}
 
-	userGrantsSlice := strings.Split(userGrantsStr, "\n")
-	if len(userGrantsSlice) == 0 {
-		return dbUserPrivileges, nil
-	}
-
-	privsRegexp := regexp.MustCompile(
+	grantsRegexp := regexp.MustCompile(
 		`GRANT (?P<privs>.*) ON (?:\x60|'|")?` + dbName.String() + `(?:\x60|'|")?\.`,
 	)
-	for _, privileges := range userGrantsSlice {
-		privileges = strings.TrimSpace(privileges)
-		if !privsRegexp.MatchString(privileges) {
+	for rawGrants := range strings.SplitSeq(userGrantsStr, "\n") {
+		rawGrants = strings.TrimSpace(rawGrants)
+		if !grantsRegexp.MatchString(rawGrants) {
 			continue
 		}
 
-		privsStr := privsRegexp.FindStringSubmatch(privileges)[1]
-		privsSlice := strings.Split(privsStr, ",")
-		for _, singlePriv := range privsSlice {
-			singlePriv = strings.TrimSpace(singlePriv)
-			parsedPriv, err := valueObject.NewDatabasePrivilege(singlePriv)
+		rawGrantsRegexParts := grantsRegexp.FindStringSubmatch(rawGrants)
+		if len(rawGrantsRegexParts) < 2 {
+			continue
+		}
+
+		rawPrivileges := rawGrantsRegexParts[1]
+		for rawSinglePrivilege := range strings.SplitSeq(rawPrivileges, ",") {
+			privilege, err := valueObject.NewDatabasePrivilege(rawSinglePrivilege)
 			if err != nil {
+				slog.Debug(
+					err.Error(),
+					slog.String("rawPrivilege", rawSinglePrivilege),
+					slog.String("dbName", dbName.String()),
+					slog.String("dbUser", dbUser.String()),
+				)
 				continue
 			}
 
-			dbUserPrivileges = append(dbUserPrivileges, parsedPriv)
+			dbUserPrivileges = append(dbUserPrivileges, privilege)
 		}
 	}
 
 	return dbUserPrivileges, nil
 }
 
-func (repo MysqlDatabaseQueryRepo) Read() ([]entity.Database, error) {
-	databases := []entity.Database{}
+func (repo MysqlDatabaseQueryRepo) readAllDatabases() ([]entity.Database, error) {
+	databaseEntities := []entity.Database{}
 
-	dbNames, err := repo.getDatabaseNames()
+	dbNames, err := repo.readDatabaseNames()
 	if err != nil {
-		return databases, err
+		return databaseEntities, err
 	}
 	dbType, _ := valueObject.NewDatabaseType("mariadb")
 
 	for _, dbName := range dbNames {
-		dbSize, err := repo.getDatabaseSize(dbName)
+		dbSize, err := repo.readDatabaseSize(dbName)
 		if err != nil {
 			dbSize, _ = valueObject.NewByte(0)
 		}
 
-		dbUsernames, err := repo.getDatabaseUsernames(dbName)
+		dbUsernames, err := repo.readDatabaseUsernames(dbName)
 		if err != nil {
 			dbUsernames = []valueObject.DatabaseUsername{}
 		}
 
-		var dbUserPrivileges []valueObject.DatabasePrivilege
-		for _, dbUser := range dbUsernames {
-			dbUserPrivileges, err = repo.getDatabaseUserPrivileges(dbName, dbUser)
+		dbUsersWithPrivileges := []entity.DatabaseUser{}
+		for _, dbUsername := range dbUsernames {
+			dbUserPrivileges, err := repo.readDatabaseUserPrivileges(dbName, dbUsername)
 			if err != nil {
 				dbUserPrivileges = []valueObject.DatabasePrivilege{}
 			}
-		}
 
-		dbUsersWithPrivileges := []entity.DatabaseUser{}
-		for _, dbUsername := range dbUsernames {
 			dbUsersWithPrivileges = append(
 				dbUsersWithPrivileges,
-				entity.NewDatabaseUser(
-					dbUsername,
-					dbName,
-					dbType,
-					dbUserPrivileges,
-				),
+				entity.NewDatabaseUser(dbUsername, dbName, dbType, dbUserPrivileges),
 			)
 		}
 
-		databases = append(
-			databases,
-			entity.NewDatabase(
-				dbName,
-				dbType,
-				dbSize,
-				dbUsersWithPrivileges,
-			),
+		databaseEntities = append(
+			databaseEntities, entity.NewDatabase(dbName, dbType, dbSize, dbUsersWithPrivileges),
 		)
 	}
 
-	return databases, nil
+	return databaseEntities, nil
 }

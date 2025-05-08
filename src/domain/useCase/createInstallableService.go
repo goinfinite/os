@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func CreateInstallableService(
@@ -16,11 +17,17 @@ func CreateInstallableService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &createDto.Name,
-	})
+	installedServiceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &createDto.Name},
+	)
 	if err == nil {
-		return errors.New("ServiceAlreadyInstalled")
+		if installedServiceEntity.Nature != valueObject.ServiceNatureMulti {
+			return errors.New("ServiceAlreadyInstalled")
+		}
+
+		if createDto.StartupFile == nil {
+			return errors.New("StartupFileRequiredAfterFirstMultiNatureServiceInstance")
+		}
 	}
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
@@ -32,9 +39,9 @@ func CreateInstallableService(
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateInstallableService(createDto)
 
-	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &installedServiceName,
-	})
+	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &installedServiceName},
+	)
 	if err != nil {
 		slog.Error("ReadServiceEntityError", slog.String("err", err.Error()))
 		return errors.New("ReadServiceEntityInfraError")
@@ -51,6 +58,7 @@ func CreateInstallableService(
 
 	return CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, installedServiceName, createDto.MappingHostname,
-		createDto.MappingPath, createDto.OperatorAccountId, createDto.OperatorIpAddress,
+		createDto.MappingPath, createDto.MappingUpgradeInsecureRequests,
+		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
 }

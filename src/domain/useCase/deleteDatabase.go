@@ -14,7 +14,9 @@ func DeleteDatabase(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteDatabase,
 ) error {
-	_, err := dbQueryRepo.ReadByName(deleteDto.DatabaseName)
+	_, err := dbQueryRepo.ReadFirst(dto.ReadDatabasesRequest{
+		DatabaseName: &deleteDto.DatabaseName,
+	})
 	if err != nil {
 		return errors.New("DatabaseNotFound")
 	}
