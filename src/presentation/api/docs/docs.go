@@ -2684,6 +2684,43 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a mapping security rule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vhosts"
+                ],
+                "summary": "UpdateMappingSecurityRule",
+                "parameters": [
+                    {
+                        "description": "Only id is required.",
+                        "name": "updateMappingSecurityRuleDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMappingSecurityRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MappingSecurityRuleUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2723,50 +2760,6 @@ const docTemplate = `{
             }
         },
         "/v1/vhost/mapping/security-rule/{id}/": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update a mapping security rule.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vhosts"
-                ],
-                "summary": "UpdateMappingSecurityRule",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MappingSecurityRuleId to update.",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Only id is required.",
-                        "name": "updateMappingSecurityRuleDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateMappingSecurityRule"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "MappingSecurityRuleUpdated",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "security": [
                     {
@@ -4163,6 +4156,9 @@ const docTemplate = `{
             "properties": {
                 "createdAt": {
                     "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"

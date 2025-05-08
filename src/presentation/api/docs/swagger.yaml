@@ -840,6 +840,8 @@ definitions:
     properties:
       createdAt:
         type: integer
+      hostname:
+        type: string
       id:
         type: integer
       mappingSecurityRuleId:
@@ -3137,6 +3139,29 @@ paths:
       summary: CreateMappingSecurityRule
       tags:
       - vhosts
+    put:
+      consumes:
+      - application/json
+      description: Update a mapping security rule.
+      parameters:
+      - description: Only id is required.
+        in: body
+        name: updateMappingSecurityRuleDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMappingSecurityRule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MappingSecurityRuleUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateMappingSecurityRule
+      tags:
+      - vhosts
   /v1/vhost/mapping/security-rule/{id}/:
     delete:
       consumes:
@@ -3158,34 +3183,6 @@ paths:
       security:
       - Bearer: []
       summary: DeleteMappingSecurityRule
-      tags:
-      - vhosts
-    put:
-      consumes:
-      - application/json
-      description: Update a mapping security rule.
-      parameters:
-      - description: MappingSecurityRuleId to update.
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Only id is required.
-        in: body
-        name: updateMappingSecurityRuleDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateMappingSecurityRule'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: MappingSecurityRuleUpdated
-          schema:
-            type: object
-      security:
-      - Bearer: []
-      summary: UpdateMappingSecurityRule
       tags:
       - vhosts
 securityDefinitions:
