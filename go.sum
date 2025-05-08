@@ -66,6 +66,16 @@ github.com/goinfinite/ui v0.0.0-20250502205023-8f789aa5e827 h1:9BckqfdyVKP1b+F6H
 github.com/goinfinite/ui v0.0.0-20250502205023-8f789aa5e827/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/goinfinite/ui v0.0.0-20250502211851-d7f958f61715 h1:J668KpMvxB12HmmW3I31Iy1waLDS5GEmXKretpSRm8w=
 github.com/goinfinite/ui v0.0.0-20250502211851-d7f958f61715/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250503152503-000a87c65eae h1:csGXXVIsdy9bzwez7H6UgyV3ou8ylL+1FDmSQx2yXHM=
+github.com/goinfinite/ui v0.0.0-20250503152503-000a87c65eae/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250503155109-72c69d4f8ee8 h1:Ty5qusMMsCZ1SdWy8cvyoukJYi/5KoWp1r01hD05SeU=
+github.com/goinfinite/ui v0.0.0-20250503155109-72c69d4f8ee8/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250505145234-b126f2c3cec8 h1:oxXOnXWKyPjt3uyZwhZlI3OGw6E5F/C/pHrhTeXa1Sw=
+github.com/goinfinite/ui v0.0.0-20250505145234-b126f2c3cec8/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250507195028-c69cc33a2eb0 h1:hYnU5eraFkdxgKg+F7vp8VVd6GuFiDNCtH8Kt+cfZTA=
+github.com/goinfinite/ui v0.0.0-20250507195028-c69cc33a2eb0/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
+github.com/goinfinite/ui v0.0.0-20250507202128-9c9768388a49 h1:4LxPv7oIw9W10EvVGG0/I2w3YQ/JNPVKik2hXvd89kU=
+github.com/goinfinite/ui v0.0.0-20250507202128-9c9768388a49/go.mod h1:o8eV/tz/0e6vHeKvi/v4ffKWMxsFlDa7UWtf4HmJ6ck=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
