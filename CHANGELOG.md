@@ -1,7 +1,16 @@
 # Changelog
 
 ```log
-0.2.4 - 2025/XX/XX
+0.2.4 - 2025/05/08
+feat!: add pagination to database read ops
+feat: mappings security rules
+feat: add should upgrade insecure requests to mappings
+feat: add default index html page
+fix: allow multi instances of multi nature services
+fix: gorm sqlite memory file spec
+fix: typo on vhost type select input
+fix: hash gen on ssl ownership check
+chore: install (and use) ui and tk projects
 
 0.2.3 - 2025/04/08
 refactor: replace BadgerDB with SQLite in-memory
