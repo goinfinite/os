@@ -6,6 +6,7 @@ import (
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/ui/src/control"
+	"github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/form"
 	"strconv"
 )
@@ -50,26 +51,31 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 		<table class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out">
 			<!-- MappingSecurityRulesTable Header -->
 			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
-				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
-					<th scope="col" class="w-[50%] text-left">Identification</th>
-					<th scope="col" class="w-[15%]">
+				<tr class="*:px-2 *:py-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[35%] text-left">Identification</th>
+					<th scope="col" class="w-[17.5%]">
 						Rate Limit
 						<br/>
 						<small>Requests per Second (RPS)</small>
 					</th>
-					<th scope="col" class="w-[15%]">
+					<th scope="col" class="w-[12%]">
 						Connection Limit
 						<br/>
 						<small>(per ip address)</small>
 					</th>
-					<th scope="col" class="w-[20%]">
+					<th scope="col" class="w-[13%]">
+						Bandwidth Limit
+						<br/>
+						<small>(per connection)</small>
+					</th>
+					<th scope="col" class="w-[17.5%]">
 						@uiControl.Button(uiControl.ButtonSettings{
 							Label:                "create security rule",
 							BackgroundColor:      "secondary-500",
 							BackgroundColorHover: "secondary-300",
 							IconLeft:             "ph-plus-square",
 							IsFullWidth:          true,
-							Size:                 uiControl.ButtonSizeMd,
+							Size:                 uiControl.ButtonSizeSm,
 							OnClickFunc:          "openCreateMappingSecurityRuleModal()",
 						})
 					</th>
@@ -77,7 +83,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 			</thead>
 			<tbody>
 				for _, secRuleEntity := range mappingSecurityRuleEntities {
-					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0 even:bg-neutral-500/5">
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center text-sm last:border-b-0 even:bg-neutral-500/5">
 						@templ.JSONScript("secRuleEntity_"+secRuleEntity.Id.String(), secRuleEntity)
 						<td class="text-left">
 							<p class="font-bold">
@@ -88,75 +94,100 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 							}
 						</td>
 						<td>
-							if secRuleEntity.RpsSoftLimitPerIp != nil && secRuleEntity.RpsHardLimitPerIp != nil {
-								{{ trackStartValue := int(*secRuleEntity.RpsSoftLimitPerIp - 5) }}
-								if trackStartValue < 1 {
-									{{ trackStartValue = 0 }}
+							<div class="flex flex-col gap-3">
+								if secRuleEntity.RpsSoftLimitPerIp != nil && secRuleEntity.RpsHardLimitPerIp != nil {
+									{{ trackStartValue := int(*secRuleEntity.RpsSoftLimitPerIp - 5) }}
+									if trackStartValue < 1 {
+										{{ trackStartValue = 0 }}
+									}
+									{{ trackEndValue := int(*secRuleEntity.RpsHardLimitPerIp + 5) }}
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                           uiControl.RangeSliderThumbShapePipe,
+										ThumbDualValueModeEnabled:            true,
+										Size:                                 uiControl.RangeSliderSizeMd,
+										TrackStartValue:                      strconv.Itoa(trackStartValue),
+										TrackEndValue:                        strconv.Itoa(trackEndValue),
+										TrackSteps:                           "1",
+										TrackFillColorFrom:                   "amber-500",
+										TrackFillColorTo:                     "red-500",
+										ThumbValue:                           uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
+										ThumbBackgroundColor:                 "amber-500",
+										ThumbValueBubbleEnabled:              true,
+										ThumbValueBubbleShape:                uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor:      "amber-500",
+										ThumbUpperValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
+										ThumbUpperBackgroundColor:            "red-500",
+										ThumbUpperValueBubbleEnabled:         true,
+										ThumbUpperValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbUpperValueBubblePosition:        uiControl.RangeSliderThumbValueBubblePositionBottom,
+										ThumbUpperValueBubbleBackgroundColor: "red-500",
+									})
+								} else if secRuleEntity.RpsSoftLimitPerIp != nil {
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
+										Size:                            uiControl.RangeSliderSizeMd,
+										TrackStartValue:                 "0",
+										TrackEndValue:                   "30",
+										TrackSteps:                      "1",
+										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
+										ThumbBackgroundColor:            "amber-500",
+										ThumbValueBubbleEnabled:         true,
+										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor: "amber-500",
+									})
+								} else if secRuleEntity.RpsHardLimitPerIp != nil {
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
+										Size:                            uiControl.RangeSliderSizeMd,
+										TrackStartValue:                 "0",
+										TrackEndValue:                   "30",
+										TrackSteps:                      "1",
+										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
+										ThumbBackgroundColor:            "red-500",
+										ThumbValueBubbleEnabled:         true,
+										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor: "red-500",
+									})
+								} else {
+									<span class="text-neutral-500">--</span>
 								}
-								{{ trackEndValue := int(*secRuleEntity.RpsHardLimitPerIp + 5) }}
-								@uiControl.RangeSlider(uiControl.RangeSliderSettings{
-									ThumbShape:                           uiControl.RangeSliderThumbShapePipe,
-									ThumbDualValueModeEnabled:            true,
-									Size:                                 uiControl.RangeSliderSizeMd,
-									TrackStartValue:                      strconv.Itoa(trackStartValue),
-									TrackEndValue:                        strconv.Itoa(trackEndValue),
-									TrackSteps:                           "1",
-									TrackFillColorFrom:                   "amber-500",
-									TrackFillColorTo:                     "red-500",
-									ThumbValue:                           uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
-									ThumbBackgroundColor:                 "amber-500",
-									ThumbValueBubbleEnabled:              true,
-									ThumbValueBubbleShape:                uiControl.RangeSliderThumbValueBubbleShapeRounded,
-									ThumbValueBubbleBackgroundColor:      "amber-500",
-									ThumbUpperValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
-									ThumbUpperBackgroundColor:            "red-500",
-									ThumbUpperValueBubbleEnabled:         true,
-									ThumbUpperValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
-									ThumbUpperValueBubblePosition:        uiControl.RangeSliderThumbValueBubblePositionBottom,
-									ThumbUpperValueBubbleBackgroundColor: "red-500",
-								})
-							} else if secRuleEntity.RpsSoftLimitPerIp != nil {
-								@uiControl.RangeSlider(uiControl.RangeSliderSettings{
-									ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
-									Size:                            uiControl.RangeSliderSizeMd,
-									TrackStartValue:                 "0",
-									TrackEndValue:                   "30",
-									TrackSteps:                      "1",
-									ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
-									ThumbBackgroundColor:            "amber-500",
-									ThumbValueBubbleEnabled:         true,
-									ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
-									ThumbValueBubbleBackgroundColor: "amber-500",
-								})
-							} else if secRuleEntity.RpsHardLimitPerIp != nil {
-								@uiControl.RangeSlider(uiControl.RangeSliderSettings{
-									ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
-									Size:                            uiControl.RangeSliderSizeMd,
-									TrackStartValue:                 "0",
-									TrackEndValue:                   "30",
-									TrackSteps:                      "1",
-									ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
-									ThumbBackgroundColor:            "red-500",
-									ThumbValueBubbleEnabled:         true,
-									ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
-									ThumbValueBubbleBackgroundColor: "red-500",
-								})
-							} else {
-								<span class="text-neutral-500">--</span>
-							}
-							if secRuleEntity.ResponseCodeOnMaxRequests != nil && *secRuleEntity.ResponseCodeOnMaxRequests != 429 {
-								<div class="text-xs text-neutral-400">
-									ResponseCode: { uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxRequests) }
-								</div>
-							}
+								if secRuleEntity.ResponseCodeOnMaxRequests != nil && *secRuleEntity.ResponseCodeOnMaxRequests != 429 {
+									<div class="flex justify-center">
+										@uiDisplay.Tag(uiDisplay.TagSettings{
+											Size:                 uiDisplay.TagSizeXs,
+											OuterBackgroundColor: "neutral-50/10",
+											OuterLeftLabel:       "responseCode",
+											InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxRequests),
+										})
+									</div>
+								}
+							</div>
 						</td>
 						<td>
-							if secRuleEntity.MaxConnectionsPerIp != nil {
-								<strong>{ uiHelper.FormatPointer(secRuleEntity.MaxConnectionsPerIp) }</strong> <small class="italic">conns</small>
-							}
+							<div class="flex flex-col gap-2">
+								if secRuleEntity.MaxConnectionsPerIp != nil {
+									<p>
+										<strong>{ uiHelper.FormatPointer(secRuleEntity.MaxConnectionsPerIp) }</strong> <small class="italic">conns</small>
+									</p>
+									if secRuleEntity.ResponseCodeOnMaxConnections != nil && *secRuleEntity.ResponseCodeOnMaxConnections != 420 {
+										<div class="flex justify-center">
+											@uiDisplay.Tag(uiDisplay.TagSettings{
+												Size:                 uiDisplay.TagSizeXs,
+												OuterBackgroundColor: "neutral-50/10",
+												OuterLeftLabel:       "responseCode",
+												InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxConnections),
+											})
+										</div>
+									}
+								} else {
+									<span class="text-neutral-500">--</span>
+								}
+							</div>
+						</td>
+						<td>
 							if secRuleEntity.BandwidthBpsLimitPerConnection != nil {
-								<div class="mt-1.5 flex flex-row items-center justify-center gap-0.5 text-xs text-neutral-400">
-									<i class="ph-bold ph-arrows-down-up text-base text-emerald-700"></i>
+								<div class="flex flex-row items-center justify-center gap-0.5">
+									<i class="ph-bold ph-arrows-down-up pt-0.5 text-base text-emerald-700"></i>
 									{ uiHelper.FormatPointer(secRuleEntity.BandwidthBpsLimitPerConnection) }/s
 								</div>
 								if secRuleEntity.BandwidthLimitOnlyAfterBytes != nil {
@@ -164,11 +195,8 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 										(after { uiHelper.FormatPointer(secRuleEntity.BandwidthLimitOnlyAfterBytes) })
 									</p>
 								}
-							}
-							if secRuleEntity.ResponseCodeOnMaxConnections != nil && *secRuleEntity.ResponseCodeOnMaxConnections != 420 {
-								<div class="text-xs text-neutral-400">
-									ResponseCode: { uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxConnections) }
-								</div>
+							} else {
+								<span class="text-neutral-500">--</span>
 							}
 						</td>
 						<td class="flex flex-row items-center justify-center gap-2 py-8">
@@ -219,9 +247,9 @@ templ ListManager(inputName, inputLabel, listTwoWayStatePath string) {
 			})
 		</div>
 		<!-- ListManagerTable -->
-		<ul class="rounded-lg bg-neutral-950/10 p-1" x-show={ listTwoWayStatePath + ".length > 0" } x-cloak>
+		<ul class="bg-neutral-50/2.5 rounded-lg p-1" x-show={ listTwoWayStatePath + ".length > 0" } x-cloak>
 			<template x-for={ "item in " + listTwoWayStatePath }>
-				<li class="flex w-full items-center justify-between border-b border-neutral-500/20 p-2 last:border-b-0">
+				<li class="flex w-full items-center justify-between border-b border-neutral-500/20 p-2 text-sm last:border-b-0">
 					<span x-text="item"></span>
 					<a
 						class="flex cursor-pointer items-center rounded-md text-base text-neutral-300 transition-colors hover:text-red-800"
@@ -366,6 +394,7 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 						{Label: "768 MiB/s", Value: "786432000"},
 						{Label: "1 GiB/s", Value: "1073741824"},
 					},
+					DropdownBackgroundColor: "primary-500/95",
 				})
 				@uiForm.SelectInput(uiForm.SelectInputSettings{
 					Label:           "Apply Bandwidth Limit After",
@@ -391,6 +420,7 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 						{Label: "768 MiB", Value: "786432000"},
 						{Label: "1 GiB", Value: "1073741824"},
 					},
+					DropdownBackgroundColor: "primary-500/95",
 				})
 			</div>
 		</div>
