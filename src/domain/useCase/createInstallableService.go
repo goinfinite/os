@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func CreateInstallableService(
@@ -16,11 +17,17 @@ func CreateInstallableService(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
-	_, err := servicesQueryRepo.ReadFirstInstalledItem(
+	installedServiceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(
 		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &createDto.Name},
 	)
 	if err == nil {
-		return errors.New("ServiceAlreadyInstalled")
+		if installedServiceEntity.Nature != valueObject.ServiceNatureMulti {
+			return errors.New("ServiceAlreadyInstalled")
+		}
+
+		if createDto.StartupFile == nil {
+			return errors.New("StartupFileRequiredAfterFirstMultiNatureServiceInstance")
+		}
 	}
 
 	installedServiceName, err := servicesCmdRepo.CreateInstallable(createDto)
