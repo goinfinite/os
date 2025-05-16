@@ -8,9 +8,9 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Julius Sans One", sans-serif;
-  text-shadow: -1px 0 0 #fff;
-  word-spacing: -0.1618rem;
+  font-family: "Space Grotesk";
+  word-spacing: -0.05rem;
+  font-weight: 700;
 }
 
 #sidebarMenu::-webkit-scrollbar {
@@ -28,15 +28,15 @@ h6 {
 }
 
 ::-webkit-scrollbar {
-    width: 5px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
-    background-color:rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color:rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 input::-webkit-outer-spin-button,
