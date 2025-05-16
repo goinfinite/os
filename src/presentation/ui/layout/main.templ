@@ -4,6 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject/helper"
 	"github.com/goinfinite/os/src/infra/envs"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+	uiImport "github.com/goinfinite/ui/src/import"
 	"os"
 )
 
@@ -12,32 +13,9 @@ templ HeadTag() {
 		<title>Infinite OS</title>
 		<meta charset="utf-8"/>
 		<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
-		<link
-			rel="stylesheet"
-			href="https://cdn.jsdelivr.net/npm/@unocss/reset@0.65.1/tailwind-compat.css"
-			integrity="sha256-pCKlYZLg3IXpMC3ZJUcT48bRjbo4yEfjdPPvnn+psc8="
-			crossorigin="anonymous"
-		/>
-		<link
-			rel="stylesheet"
-			type="text/css"
-			href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"
-		/>
-		<link
-			rel="stylesheet"
-			type="text/css"
-			href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css"
-		/>
-		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Julius Sans One:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap"
-		/>
-		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
 		<script src="/assets/additional.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime@0.61.5/uno.global.min.js" integrity="sha256-miwoG1k3DDK5ai24d7edKuvz3xRNHkUNcX8zl6qru5U=" crossorigin="anonymous"></script>
-		<script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.1/dist/htmx.min.js" integrity="sha256-bUqqSw0+i0yR+Nl7kqNhoZsb1FRN6j9mj9w+YqY5ld8=" crossorigin="anonymous"></script>
-		<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.14.1/dist/cdn.min.js" integrity="sha256-jFBwr6faTqqhp3sVi4/VTxJ0FpaF9YGZN1ZGLl/5QYM=" crossorigin="anonymous"></script>
-		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" integrity="sha256-NY2a+7GrW++i9IBhowd25bzXcH9BCmBrqYX5i8OxwDQ=" crossorigin="anonymous"></script>
+		@uiImport.HeadTagsFull()
+		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
 		<script src="https://cdn.jsdelivr.net/npm/vega@5.31.0/build/vega.min.js" integrity="sha256-cYdMz6q7m7D3OhasQJRy1/5Th1YCEncQpVT0dz1Zmjc=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.23.0/build/vega-lite.min.js" integrity="sha256-WMJzWOJvLTGc9i9FvBekyDYvCGRQAd8uyNNB7uQJfH8=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.29.0/build/vega-embed.min.js" integrity="sha256-EtAqz74+xZ75o33UgiouBOKWG1u7Zxu+Zh0iIXFbmdo=" crossorigin="anonymous"></script>
