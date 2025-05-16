@@ -399,7 +399,7 @@ func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
 	catalogItemFilePath valueObject.UnixFilePath,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	itemMap, err := infraHelper.FileSerializedDataToMap(catalogItemFilePath)
+	itemMap, err := tkInfra.FileDeserializer(catalogItemFilePath.String())
 	if err != nil {
 		return catalogItem, err
 	}
