@@ -23,14 +23,14 @@ var SidebarItems = []SidebarItem{
 }
 
 templ SidebarHeader() {
-	<div class="mx-auto flex flex-col items-center justify-center gap-4 py-8">
+	<div class="mx-auto flex flex-col items-center justify-center gap-4 py-6">
 		<!-- Logo -->
 		<div class="flex flex-col items-center justify-center gap-1">
 			<a
 				href="https://goinfinite.net/os/"
 				title="Infinite OS"
 				target="_blank"
-				:class={ "{'w-12':isSidebarCollapsed, 'w-24':!isSidebarCollapsed}" }
+				:class="isSidebarCollapsed ? 'w-12' : 'w-24'"
 			>
 				<img src="/assets/os-logo.svg" alt="Infinite OS" class="fill-white"/>
 			</a>
@@ -41,16 +41,16 @@ templ SidebarHeader() {
 			type="button"
 			@click="clearSession()"
 			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
-			:class={ "{'p-0.75':isSidebarCollapsed, 'p-2 gap-1':!isSidebarCollapsed}" }
+			:class="isSidebarCollapsed ? 'p-0.75' : 'px-2 py-1 gap-1'"
 		>
 			<i class="ph-bold ph-sign-out"></i>
-			<span :class="{'hidden':isSidebarCollapsed}">logout</span>
+			<span :class="isSidebarCollapsed && 'hidden'">logout</span>
 		</button>
 	</div>
 }
 
 templ SidebarMiddle() {
-	<ul class="flex flex-col gap-4 py-8" :class="{'items-center':isSidebarCollapsed, 'px-4':!isSidebarCollapsed}">
+	<ul class="flex flex-col gap-4 py-6" :class="{'items-center':isSidebarCollapsed, 'px-3':!isSidebarCollapsed}">
 		for _, sidebarItem := range SidebarItems {
 			<li>
 				<a
@@ -60,16 +60,17 @@ templ SidebarMiddle() {
 					hx-swap="outerHTML transition:true"
 					hx-push-url="true"
 					@click={ "updateCurrentPath('" + sidebarItem.Link + "')" }
-					class="group flex cursor-pointer items-center gap-2"
+					class="group relative flex cursor-pointer items-center gap-2"
+					title={ sidebarItem.Label }
 				>
-					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 group-hover:bg-neutral-50/10">
+					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 transition-colors group-hover:bg-neutral-50/10">
 						<i
 							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
 							:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "')}" }
 						></i>
 					</div>
 					<span
-						class="group-hover:text-secondary-500 text-center text-sm"
+						class="group-hover:text-secondary-500 text-sm"
 						:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "'), 'hidden':isSidebarCollapsed}" }
 					>
 						{ sidebarItem.Label }
@@ -90,7 +91,7 @@ templ Sidebar() {
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
 			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
 			BackgroundColor:            "bg-primary-800",
-			Width:                      "w-48",
+			Width:                      "w-45",
 		})
 	</div>
 }
