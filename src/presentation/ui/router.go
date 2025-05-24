@@ -37,21 +37,25 @@ func NewRouter(
 	}
 }
 
-//go:embed assets/*
-var assetsFiles embed.FS
-
 func (router *Router) assetsRoute() {
-	assetsFs, err := fs.Sub(assetsFiles, "assets")
-	if err != nil {
-		slog.Error("ReadAssetsFilesError", slog.String("err", err.Error()))
-		os.Exit(1)
-	}
-	assetsFileServer := http.FileServer(http.FS(assetsFs))
+	router.baseRoute.GET("/assets/*", func(c echo.Context) error {
+		assetsFiles, assertOk := c.Get("assets").(embed.FS)
+		if !assertOk {
+			slog.Error("AssertAssetsFilesFailed")
+			os.Exit(1)
+		}
 
-	router.baseRoute.GET(
-		"/assets/*",
-		echo.WrapHandler(http.StripPrefix("/assets/", assetsFileServer)),
-	)
+		assetsFs, err := fs.Sub(assetsFiles, "assets")
+		if err != nil {
+			slog.Error("ReadAssetsFilesError", slog.String("err", err.Error()))
+			os.Exit(1)
+		}
+		assetsFileServer := http.FileServer(http.FS(assetsFs))
+
+		http.StripPrefix("/assets/", assetsFileServer).
+			ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
 }
 
 func (router *Router) accountsRoutes() {
